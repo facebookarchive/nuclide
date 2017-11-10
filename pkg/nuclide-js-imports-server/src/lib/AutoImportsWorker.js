@@ -19,24 +19,21 @@ import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
 import {initializeLoggerForWorker} from '../../logging/initializeLogging';
-import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getConfigFromFlow} from '../getConfig';
 import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
 import {getHasteName, hasteReduceName} from './HasteUtils';
+import {watchDirectory, getFileIndex} from './file-index';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HasteSettings} from '../getConfig';
 import type {JSExport} from './types';
 import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
-import type {WatchmanSubscriptionOptions} from '../../../nuclide-watchman-helpers/lib/WatchmanSubscription';
+import type {FileIndex} from './file-index';
 
 initializeLoggerForWorker();
 const logger = log4js.getLogger('js-imports-worker');
-
-// TODO: index the entry points of node_modules
-const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];
 
 const CONCURRENCY = 1;
 
@@ -55,7 +52,7 @@ export type ExportUpdateForFile = {
   exports: Array<JSExport>,
 };
 
-function main() {
+async function main() {
   if (process.argv.length > 2 && process.argv[2] === '--child') {
     return runChild();
   }
@@ -75,31 +72,15 @@ function main() {
   watchDirectoryRecursively(root, hasteSettings);
 
   // Build up the initial index with all files recursively from the root.
-  indexDirectoryAndSendExportsToParent(root, hasteSettings);
-
-  indexNodeModulesAndSendToParent(root);
-}
-
-// Function should be called once when the server is initialized.
-function indexDirectoryAndSendExportsToParent(
-  root: NuclideUri,
-  hasteSettings: HasteSettings,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    indexDirectory(root, hasteSettings).subscribe({
-      next: exportForFile => {
-        sendExportUpdateToParent(exportForFile);
-      },
-      error: err => {
-        logger.error('Encountered error in AutoImportsWorker', err);
-        return reject(err);
-      },
-      complete: () => {
-        logger.info(`Finished indexing ${root}`);
-        return resolve();
-      },
-    });
-  });
+  const index = await getFileIndex(root);
+  disposables.add(
+    Observable.merge(
+      indexDirectory(index, hasteSettings),
+      indexNodeModules(index),
+    ).subscribe(sendExportUpdateToParent, error => {
+      logger.error('Received error while indexing files', error);
+    }),
+  );
 }
 
 // Watches a directory for changes and reindexes files as needed.
@@ -107,29 +88,20 @@ function watchDirectoryRecursively(
   root: NuclideUri,
   hasteSettings: HasteSettings,
 ) {
-  const watchmanClient = new WatchmanClient();
-  disposables.add(watchmanClient);
-  watchmanClient
-    .watchDirectoryRecursive(
-      root,
-      'js-imports-subscription',
-      getWatchmanSubscriptionOptions(root),
-    )
-    .then(watchmanSubscription => {
-      disposables.add(watchmanSubscription);
-      const watchmanRoot = watchmanSubscription.root;
-      Observable.fromEvent(watchmanSubscription, 'change')
-        .switchMap(x => Observable.from(x)) // convert to Observable<FileChange>
-        .mergeMap(
-          (fileChange: FileChange) =>
-            handleFileChange(watchmanRoot, fileChange, hasteSettings),
-          CONCURRENCY,
-        )
-        .subscribe(() => {});
-    })
-    .catch(error => {
-      logger.error(error);
-    });
+  disposables.add(
+    watchDirectory(root)
+      .mergeMap(
+        (fileChange: FileChange) =>
+          handleFileChange(root, fileChange, hasteSettings),
+        CONCURRENCY,
+      )
+      .subscribe(
+        () => {},
+        error => {
+          logger.error(`Failed to watch ${root}`, error);
+        },
+      ),
+  );
 }
 
 async function handleFileChange(
@@ -141,7 +113,7 @@ async function handleFileChange(
     // File created or modified
     const exportForFile = await addFileToIndex(
       root,
-      fileChange.name,
+      nuclideUri.relative(root, fileChange.name),
       hasteSettings,
     );
     if (exportForFile) {
@@ -152,102 +124,72 @@ async function handleFileChange(
     sendExportUpdateToParent([
       {
         updateType: 'deleteExports',
-        file: nuclideUri.resolve(root, fileChange.name),
+        file: fileChange.name,
         exports: [],
       },
     ]);
   }
 }
 
-async function listFilesWithWatchman(root: NuclideUri): Promise<Array<string>> {
-  const client = new WatchmanClient();
-  try {
-    return await client.listFiles(root, getWatchmanSubscriptionOptions(root));
-  } finally {
-    client.dispose();
-  }
-}
-
-function listFilesWithGlob(root: NuclideUri): Promise<Array<string>> {
-  return fsPromise.glob('**/*.js', {
-    cwd: root,
-    ignore: TO_IGNORE,
-  });
-}
-
-function listNodeModulesWithGlob(root: NuclideUri): Promise<Array<string>> {
-  return fsPromise.glob('node_modules/*/package.json', {
-    cwd: root,
-  });
-}
-
 // Exported for testing purposes.
 export function indexDirectory(
-  root: NuclideUri,
+  {root, jsFiles}: FileIndex,
   hasteSettings: HasteSettings,
   maxWorkers?: number = Math.round(os.cpus().length / 2),
 ): Observable<Array<ExportUpdateForFile>> {
-  return Observable.fromPromise(
-    listFilesWithWatchman(root).catch(() => listFilesWithGlob(root)),
-  )
-    .do(files => {
-      logger.info(`Indexing ${files.length} files`);
-    })
-    .do(files => {
-      // As an optimization, we can send up the Haste reduced name as a default export.
-      if (hasteSettings.isHaste && hasteSettings.useNameReducers) {
-        addHasteNames(root, files, hasteSettings);
-      }
-    })
-    .switchMap(files => {
-      // As an optimization, shuffle the files so that the work is well distributed.
-      shuffle(files);
-      const numWorkers = Math.min(
-        Math.max(1, Math.floor(files.length / MIN_FILES_PER_WORKER)),
-        maxWorkers,
+  const files = jsFiles.map(file => file.name);
+  // To get faster results, we can send up the Haste reduced names as a default export.
+  if (hasteSettings.isHaste && hasteSettings.useNameReducers) {
+    addHasteNames(root, files, hasteSettings);
+  }
+  logger.info(`Indexing ${files.length} files`);
+  // As an optimization, shuffle the files so that the work is well distributed.
+  shuffle(files);
+  const numWorkers = Math.min(
+    Math.max(1, Math.floor(files.length / MIN_FILES_PER_WORKER)),
+    maxWorkers,
+  );
+  const filesPerWorker = Math.floor(files.length / numWorkers);
+  return Observable.range(0, numWorkers)
+    .mergeMap(workerId => {
+      return niceSafeSpawn(
+        process.execPath,
+        [
+          nuclideUri.join(__dirname, 'AutoImportsWorker-entry.js'),
+          '--child',
+          root,
+        ],
+        {
+          stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+        },
       );
-      const filesPerWorker = Math.floor(files.length / numWorkers);
-      return Observable.range(0, numWorkers)
-        .mergeMap(workerId => {
-          return niceSafeSpawn(
-            process.execPath,
-            [
-              nuclideUri.join(__dirname, 'AutoImportsWorker-entry.js'),
-              '--child',
-              root,
-            ],
-            {
-              stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-            },
-          );
-        })
-        .mergeMap((worker, workerId) => {
-          invariant(typeof workerId === 'number'); // For Flow
-          const updateStream = Observable.fromEvent(worker, 'message')
-            .takeUntil(
-              Observable.fromEvent(worker, 'error').do(error => {
-                logger.warn(`Worker ${workerId} had received ${error}`);
-              }),
-            )
-            .takeUntil(
-              Observable.fromEvent(worker, 'exit').do(() => {
-                logger.debug(`Worker ${workerId} terminated.`);
-              }),
-            );
-          return Observable.merge(
-            updateStream,
-            Observable.timer(0)
-              .do(() => {
-                worker.send({
-                  files: files.slice(
-                    workerId * filesPerWorker,
-                    Math.min((workerId + 1) * filesPerWorker, files.length),
-                  ),
-                });
-              })
-              .ignoreElements(),
-          );
-        });
+    })
+    .mergeMap((worker, workerId) => {
+      invariant(typeof workerId === 'number'); // For Flow
+      const updateStream = Observable.fromEvent(worker, 'message')
+        .takeUntil(
+          Observable.fromEvent(worker, 'error').do(error => {
+            logger.warn(`Worker ${workerId} had received ${error}`);
+          }),
+        )
+        .takeUntil(
+          Observable.fromEvent(worker, 'exit').do(() => {
+            logger.debug(`Worker ${workerId} terminated.`);
+          }),
+        );
+      return Observable.merge(
+        updateStream,
+        Observable.timer(0)
+          .do(() => {
+            worker.send({
+              files: files.slice(
+                workerId * filesPerWorker,
+                Math.min((workerId + 1) * filesPerWorker, files.length),
+              ),
+            });
+          })
+          .ignoreElements(),
+      );
     });
 }
 
@@ -351,18 +293,6 @@ async function getExportsForFile(
   }
 }
 
-function getWatchmanSubscriptionOptions(
-  root: NuclideUri,
-): WatchmanSubscriptionOptions {
-  return {
-    expression: [
-      'allof',
-      ['match', '*.js'],
-      ...getWatchmanMatchesFromIgnoredFiles(),
-    ],
-  };
-}
-
 function setupDisconnectedParentHandler(): void {
   process.on('disconnect', () => {
     logger.debug('Parent process disconnected. AutoImportsWorker terminating.');
@@ -428,36 +358,15 @@ function addHasteNames(
       .filter(Boolean),
   );
 }
-function indexNodeModulesAndSendToParent(root: NuclideUri): Promise<void> {
-  return new Promise((resolve, reject) => {
-    logger.info('Indexing node modules.');
-    indexNodeModules(root).subscribe({
-      next: exportForFile => {
-        if (exportForFile) {
-          sendExportUpdateToParent([exportForFile]);
-        }
-      },
-      error: err => {
-        logger.error('Encountered error in AutoImportsWorker', err);
-        return reject(err);
-      },
-      complete: () => {
-        logger.info(`Finished node modules for ${root}`);
-        return resolve();
-      },
-    });
-  });
-}
-
-export function indexNodeModules(
-  root: NuclideUri,
-): Observable<?ExportUpdateForFile> {
-  return Observable.fromPromise(
-    // TODO: Use Watchman for better performance.
-    listNodeModulesWithGlob(root),
-  )
-    .switchMap(x => Observable.from(x)) // convert to Observable<string>
-    .mergeMap(file => handleNodeModule(root, file), CONCURRENCY);
+export function indexNodeModules({
+  root,
+  nodeModulesPackageJsonFiles,
+}: FileIndex): Observable<Array<ExportUpdateForFile>> {
+  const files = nodeModulesPackageJsonFiles.map(file => file.name);
+  return Observable.from(files)
+    .mergeMap(file => handleNodeModule(root, file), CONCURRENCY)
+    .let(compact)
+    .bufferCount(BATCH_SIZE);
 }
 
 async function handleNodeModule(
@@ -511,13 +420,9 @@ function decorateExportUpdateWithMainDirectory(
 async function sendExportUpdateToParent(
   exportsForFiles: Array<ExportUpdateForFile>,
 ): Promise<void> {
-  return send(
-    exportsForFiles.filter(
-      exportsForFile =>
-        exportsForFile.updateType !== 'setExports' ||
-        exportsForFile.exports.length > 0,
-    ),
-  );
+  for (let i = 0; i < exportsForFiles.length; i += BATCH_SIZE) {
+    send(exportsForFiles.slice(i, i + BATCH_SIZE));
+  }
 }
 
 async function send(message: mixed) {
@@ -530,15 +435,6 @@ async function send(message: mixed) {
       );
     });
   }
-}
-
-function getWatchmanMatchesFromIgnoredFiles() {
-  return TO_IGNORE.map(patternToIgnore => {
-    return [
-      'not',
-      ['match', patternToIgnore, 'wholename', {includedotfiles: true}],
-    ];
-  });
 }
 
 function runChild() {

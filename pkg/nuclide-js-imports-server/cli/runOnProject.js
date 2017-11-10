@@ -20,6 +20,7 @@ import {observeProcess} from 'nuclide-commons/process';
 import {getEslintEnvs, getConfigFromFlow} from '../src/getConfig';
 import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
+import {getFileIndex} from '../src/lib/file-index';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -28,7 +29,7 @@ const DEFAULT_PROJECT_PATH = nuclideUri.join(__dirname, '..', '..', '..');
 let numErrors = 0;
 let numFiles = 0;
 
-function main() {
+async function main() {
   const root =
     process.argv.length === 3 ? toPath(process.argv[2]) : DEFAULT_PROJECT_PATH;
 
@@ -36,15 +37,16 @@ function main() {
   const autoImportsManager = new AutoImportsManager(envs);
   const {hasteSettings} = getConfigFromFlow(root);
 
+  const index = await getFileIndex(root);
   const indexDirStream = indexDirectory(
-    root,
+    index,
     hasteSettings,
     os.cpus().length,
   ).do({
     next: exportForFiles => {
-      exportForFiles.forEach(exportForFile =>
-        autoImportsManager.handleUpdateForFile(exportForFile),
-      );
+      exportForFiles.forEach(exportForFile => {
+        autoImportsManager.handleUpdateForFile(exportForFile);
+      });
     },
     error: err => {
       console.error('Encountered error in AutoImportsWorker', err);
@@ -54,11 +56,11 @@ function main() {
     },
   });
 
-  const indexModulesStream = indexNodeModules(root).do({
-    next: exportForFile => {
-      if (exportForFile) {
+  const indexModulesStream = indexNodeModules(index).do({
+    next: exportForFiles => {
+      exportForFiles.forEach(exportForFile => {
         autoImportsManager.handleUpdateForFile(exportForFile);
-      }
+      });
     },
     error: err => {
       console.error('Encountered error in AutoImportsWorker', err);

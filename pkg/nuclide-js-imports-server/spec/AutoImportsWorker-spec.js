@@ -12,6 +12,7 @@
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getFileIndex} from '../src/lib/file-index';
 
 const hasteSettings = {
   isHaste: false,
@@ -22,45 +23,29 @@ const hasteSettings = {
 };
 
 describe('AutoImportsWorker', () => {
-  it('Should index imports in a directory asynchronously', () => {
-    const exports = [];
-    indexDirectory(
-      nuclideUri.join(__dirname, 'fixtures'),
-      hasteSettings,
-    ).subscribe(exportsForFiles => {
-      exportsForFiles.forEach(exportsForFile => {
-        exportsForFile.exports.forEach(exp => {
-          exports.push(exp);
-        });
-      });
-    });
-    waitsFor(() => {
-      return exports.find(exp => exp.id === 'MyFakeClassForTesting');
-    });
-
-    waitsFor(() => {
-      return exports.find(exp => exp.id === 'MyFakeTypeForTesting');
+  let fileIndex;
+  const dirPath = nuclideUri.join(__dirname, 'fixtures');
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      fileIndex = await getFileIndex(dirPath);
     });
   });
 
-  it('Should index all files in a directory', () => {
-    const exports = [];
-    indexDirectory(
-      nuclideUri.join(__dirname, 'fixtures'),
-      hasteSettings,
-    ).subscribe(exportsForFiles => {
-      exportsForFiles.forEach(exportsForFile => {
-        exportsForFile.exports.forEach(exp => {
-          exports.push(exp);
-        });
-      });
-    });
-    waitsFor(() => {
-      return exports.find(exp => exp.id === 'MyFakeClassForTesting');
-    });
+  it('Should index imports in a directory asynchronously', () => {
+    waitsForPromise(async () => {
+      const ids = await indexDirectory(fileIndex, hasteSettings)
+        .concatAll()
+        .concatMap(update => update.exports)
+        .map(jsExport => jsExport.id)
+        .toArray()
+        .toPromise();
 
-    waitsFor(() => {
-      return exports.find(exp => exp.id === 'FooBarClass');
+      expect(ids.sort()).toEqual([
+        'FooBarClass',
+        'MyFakeClassForTesting',
+        'MyFakeTypeForTesting',
+        'SomeType',
+      ]);
     });
   });
 });
@@ -68,6 +53,7 @@ describe('AutoImportsWorker', () => {
 describe('AutoImportsWorker main files indexer', () => {
   // Create fixtures for these tests.
   let dirPath: string = (null: any);
+  let fileIndex;
   beforeEach(() => {
     waitsForPromise(async () => {
       dirPath = await generateFixture(
@@ -97,114 +83,40 @@ describe('AutoImportsWorker main files indexer', () => {
           ['package_json_without_main/index.js', 'export class Test{}'],
         ]),
       );
+      fileIndex = await getFileIndex(dirPath);
     });
   });
 
   it('Should correctly mark files as main', () => {
-    let found = false;
-    indexDirectory(dirPath, hasteSettings).subscribe(exportsForFiles => {
-      if (
-        exportsForFiles.find(
-          exportsForFile =>
-            exportsForFile.exports.find(e => e.directoryForMainFile != null) &&
-            exportsForFile.file ===
-              nuclideUri.join(dirPath, 'some_package/lib/main.js'),
-        )
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
-    });
-  });
-  it('Should index non-main files correctly', () => {
-    let found = false;
-    indexDirectory(dirPath, hasteSettings).subscribe(exportsForFiles => {
-      if (
-        exportsForFiles.find(exportsForFile =>
-          exportsForFile.exports.find(exp => exp.directoryForMainFile == null),
-        ) &&
-        exportsForFiles.find(
-          exportsForFile =>
-            exportsForFile.file ===
-            nuclideUri.join(dirPath, 'some_package/lib/someOtherFile.js'),
-        )
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
-    });
-  });
-  it('Should work with complicated file paths', () => {
-    let found = false;
-    indexDirectory(dirPath, hasteSettings).subscribe(exportsForFiles => {
-      if (
-        exportsForFiles.find(exportsForFile =>
-          exportsForFile.exports.find(exp => exp.directoryForMainFile == null),
-        ) &&
-        exportsForFiles.find(
-          exportsForFile =>
-            exportsForFile.file ===
-            nuclideUri.join(dirPath, 'some_package/lib/someOtherFile.js'),
-        )
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
-    });
-  });
-  it('Should work with main files without an extension', () => {
-    let found = false;
-    indexDirectory(dirPath, hasteSettings).subscribe(exportsForFiles => {
-      if (
-        exportsForFiles.find(
-          exportsForFile =>
-            exportsForFile.exports.find(e => e.directoryForMainFile != null) &&
-            exportsForFile.file ===
-              nuclideUri.join(
-                dirPath,
-                'package_with_main_without_extension/main.js',
-              ),
-        )
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
-    });
-  });
-  it('Should assume main is index.js by default', () => {
-    let found = false;
-    indexDirectory(dirPath, hasteSettings).subscribe(exportsForFiles => {
-      if (
-        exportsForFiles.find(
-          exportsForFile =>
-            exportsForFile.exports.find(
-              e =>
-                e.directoryForMainFile ===
-                nuclideUri.join(dirPath, 'package_json_without_main'),
-            ) &&
-            exportsForFile.file ===
-              nuclideUri.join(dirPath, 'package_json_without_main/index.js'),
-        )
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
+    waitsForPromise(async () => {
+      const exports = await indexDirectory(fileIndex, hasteSettings)
+        .concatAll()
+        .concatMap(update => update.exports)
+        .toArray()
+        .toPromise();
+
+      const exportById = new Map(
+        exports.map(exp => [exp.id, exp.directoryForMainFile]),
+      );
+      expect(exportById.get('SomeTestClass')).toBe(
+        nuclideUri.join(dirPath, 'some_package'),
+      );
+      expect(exportById.has('Something')).toBeTruthy();
+      expect(exportById.get('Something')).toBe(undefined);
+      expect(exportById.get('SomeType')).toBe(undefined);
+      expect(exportById.get('AnotherClass')).toBe(
+        nuclideUri.join(dirPath, 'package_with_main_without_extension'),
+      );
+      expect(exportById.get('Test')).toBe(
+        nuclideUri.join(dirPath, 'package_json_without_main'),
+      );
     });
   });
 });
 
 describe('AutoImportsWorker node_modules indexer', () => {
   let dirPath: string = (null: any);
+  let fileIndex;
   beforeEach(() => {
     waitsForPromise(async () => {
       dirPath = await generateFixture(
@@ -219,12 +131,14 @@ describe('AutoImportsWorker node_modules indexer', () => {
           ['node_modules/left-pad/lib/index.js', 'module.exports = {};'],
         ]),
       );
+      fileIndex = await getFileIndex(dirPath);
     });
   });
 
   it('Should index node_modules correctly', () => {
     waitsForPromise(async () => {
-      const files = await indexNodeModules(dirPath)
+      const files = await indexNodeModules(fileIndex)
+        .concatAll()
         .map(data => data && data.file)
         .toArray()
         .toPromise();
