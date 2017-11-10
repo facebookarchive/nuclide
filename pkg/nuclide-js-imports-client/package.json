@@ -50,6 +50,11 @@
         "0.0.0": "registerQuickOpenProvider"
       }
     },
+    "nuclide-project-symbol-search-service": {
+      "versions": {
+        "0.0.0": "provideProjectSymbolSearch"
+      }
+    },
     "js-symbol-search-service": {
       "versions": {
         "0.0.0": "provideJSSymbolSearchService"

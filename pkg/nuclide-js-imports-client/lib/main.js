@@ -9,6 +9,8 @@
  * @format
  */
 
+// $FlowFB
+import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
 import type {CodeActionConfig} from '../../nuclide-language-service/lib/CodeActionProvider';
 import type {
   GlobalProviderType,
@@ -31,6 +33,7 @@ import {getServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import QuickOpenProvider from './QuickOpenProvider';
 import JSSymbolSearchProvider from './JSSymbolSearchProvider';
+import Omni2ProjectSymbolProvider from './Omni2ProjectSymbolProvider';
 
 const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
 
@@ -116,6 +119,10 @@ class Activation {
     this._languageService = createLanguageService();
     this._languageService.activate();
     this._quickOpenProvider = new QuickOpenProvider(this._languageService);
+  }
+
+  provideProjectSymbolSearch(): ProjectSymbolSearchProvider {
+    return new Omni2ProjectSymbolProvider(this._languageService);
   }
 
   provideJSSymbolSearchService(): JSSymbolSearchProvider {
