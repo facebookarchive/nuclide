@@ -8,7 +8,21 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "Language",
+        "Clangd"
+      ]
+    },
+    "config": {
+      "useClangd": {
+        "title": "Use clangd instead of libclang (experimental)",
+        "type": "boolean",
+        "default": "false",
+        "description": "Still in early development. You need clangd in your PATH and a restart is required"
+      }
+    }
   },
   "activationHooks": [
     "language-c:grammar-used",

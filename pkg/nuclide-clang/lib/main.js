@@ -27,8 +27,8 @@ import type {
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 
 import {Disposable} from 'atom';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import passesGK from '../../commons-node/passesGK';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeActions from './CodeActions';
 import CodeFormatHelpers from './CodeFormatHelpers';
@@ -37,12 +37,7 @@ import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
 import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
-import {
-  GRAMMARS,
-  GRAMMAR_SET,
-  PACKAGE_NAME,
-  ALTERNATE_PROVIDER_GK,
-} from './constants';
+import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {
   resetForSource,
   registerClangProvider,
@@ -76,17 +71,17 @@ export function activate() {
       },
     ),
   );
-  passesGK(ALTERNATE_PROVIDER_GK).then(passes => {
+  if (featureConfig.get('nuclide-clangd-lsp.useClangd')) {
     const deactivateSelf = () => {
       if (atom.packages.isPackageActive(PACKAGE_NAME)) {
         atom.packages.deactivatePackage(PACKAGE_NAME);
       }
     };
-    if (passes && subscriptions != null) {
+    if (subscriptions != null) {
       subscriptions.add(atom.packages.onDidActivatePackage(deactivateSelf));
       deactivateSelf();
     }
-  });
+  }
 }
 
 /** Provider for autocomplete service. */

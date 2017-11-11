@@ -40,8 +40,8 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 
 import {getLogger} from 'log4js';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import passesGK from '../../commons-node/passesGK';
 // TODO pelmers: maybe don't import from libclang
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {
@@ -57,8 +57,6 @@ import {
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getClangdLSPServiceByConnection} from '../../nuclide-remote-connection';
-
-const FB_CLANGD_LSP_GK = 'nuclide_clangd_lsp';
 
 // Wrapper that queries for clang settings when new files seen.
 class ClangdLSPClient {
@@ -278,11 +276,11 @@ class Activation {
 
   constructor(state: ?mixed) {
     this._subscriptions = new UniversalDisposable();
-    passesGK(FB_CLANGD_LSP_GK).then(passes => {
-      if (passes && !this._subscriptions.disposed) {
+    if (featureConfig.get('nuclide-clangd-lsp.useClangd')) {
+      if (!this._subscriptions.disposed) {
         this._subscriptions.add(this.initializeLsp());
       }
-    });
+    }
   }
 
   consumeClangConfigurationProvider(
