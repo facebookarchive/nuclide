@@ -222,6 +222,9 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'flow.outline',
+      // Disabled as it's responsible for many calls/spawns that:
+      // In aggregate degrades the performance siginificantly.
+      updateOnEdit: false,
     },
     coverage: {
       version: '0.0.0',

@@ -20,12 +20,14 @@ export type OutlineViewConfig = {|
   version: '0.1.0',
   priority: number,
   analyticsEventName: string,
+  updateOnEdit?: boolean,
 |};
 
 export class OutlineViewProvider<T: LanguageService> {
   grammarScopes: Array<string>;
   priority: number;
   name: string;
+  updateOnEdit: boolean | typeof undefined;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
@@ -34,11 +36,13 @@ export class OutlineViewProvider<T: LanguageService> {
     grammarScopes: Array<string>,
     priority: number,
     analyticsEventName: string,
+    updateOnEdit: ?boolean,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
+    this.updateOnEdit = updateOnEdit == null ? undefined : updateOnEdit;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
@@ -57,6 +61,7 @@ export class OutlineViewProvider<T: LanguageService> {
         grammarScopes,
         config.priority,
         config.analyticsEventName,
+        config.updateOnEdit,
         connectionToLanguageService,
       ),
     );
