@@ -189,7 +189,7 @@ describe('fsPromise test suite', () => {
         let err;
         try {
           await fsPromise.writeFileAtomic(
-            pathToWriteFile + '/that/is/missing',
+            pathToWriteFile + '/that/is/missing/',
             'something',
           );
         } catch (e) {

@@ -325,7 +325,7 @@ async function writeFileAtomic(
 
     // TODO: put renames into a queue so we don't write older save over new save.
     // Use mv as fs.rename doesn't work across partitions.
-    await mv(tempFilePath, realPath);
+    await mv(tempFilePath, realPath, {mkdirp: true});
   } catch (err) {
     await unlink(tempFilePath);
     throw err;
