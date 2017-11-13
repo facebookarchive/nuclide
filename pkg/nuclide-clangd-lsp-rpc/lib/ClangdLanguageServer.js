@@ -16,6 +16,7 @@ import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-type
 import fs from 'nuclide-commons/fsPromise';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Observable} from 'rxjs';
 import {
   MultiProjectLanguageService,
   forkHostServices,
@@ -48,7 +49,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
 > {
   // Maps clang settings => settings metadata with same key as _processes field.
-  _managedRoots: Map<string, ManagedRoot>;
+  _managedRoots: Map<string, Promise<ManagedRoot>>;
   constructor(
     languageId: string,
     command: string,
@@ -60,12 +61,11 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
 
     this._resources = new UniversalDisposable();
 
-    this._logger = logger;
     const server = this; // Access class scope within closure.
     async function clangdServiceFactory(
       compileCommandsPath: string,
     ): Promise<?LspLanguageService> {
-      const managedRoot = server._managedRoots.get(compileCommandsPath);
+      const managedRoot = await server._managedRoots.get(compileCommandsPath);
       // Only proceed if we added the compile commands via addClangRequest
       if (!managedRoot) {
         return null;
@@ -120,7 +120,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       () => {
         // Delete temporary directories.
         for (const managedRoot of this._managedRoots.values()) {
-          disposeManagedRoot(managedRoot);
+          managedRoot.then(disposeManagedRoot);
         }
       },
     );
@@ -129,19 +129,32 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       fileCache
         .observeFileEvents()
         .filter(event => event.kind === 'save')
-        .map(({fileVersion: {filePath}}) =>
-          // Get array of managed servers that are watching this file.
-          Array.from(this._managedRoots.entries())
-            .filter(([_, val]) => val.watchFile === filePath)
-            .map(([key, _]) => key),
+        .switchMap(({fileVersion: {filePath}}) =>
+          Observable.fromPromise(
+            Promise.all(
+              Array.from(
+                this._managedRoots.entries(),
+              ).map(([key, valPromise]) =>
+                valPromise.then(value => ({key, value})),
+              ),
+            ).then(entries =>
+              // Keep only the roots that are watching the saved file.
+              entries
+                .filter(({value}) => value.watchFile === filePath)
+                .map(({key}) => key),
+            ),
+          ),
         )
         .subscribe(
           keys => {
             for (const key of keys) {
               this._logger.info('Watch file saved, invalidating ' + key);
               this._processes.delete(key);
-              disposeManagedRoot(this._managedRoots.get(key));
               this._managedRoots.delete(key);
+              const managedRoot = this._managedRoots.get(key);
+              if (managedRoot) {
+                managedRoot.then(disposeManagedRoot);
+              }
             }
           },
           undefined, // error
@@ -151,6 +164,39 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
           },
         ),
     );
+  }
+
+  async _setupManagedRoot(
+    file: string,
+    flagsFile: string,
+  ): Promise<ManagedRoot> {
+    const rootDir = nuclideUri.dirname(flagsFile);
+    // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
+    // Add the files of this database to the managed map.
+    const contents = await fs.readFile(file);
+    // Create a temporary directory with only compile_commands.json because
+    // clangd requires the name of a directory containing a
+    // compile_commands.json, which is not always what we are provided here.
+    const tmpDir = nuclideUri.join(
+      os.tmpdir(),
+      'nuclide-clangd-lsp-' + Math.random().toString(),
+    );
+    if (!await fs.mkdirp(tmpDir)) {
+      throw new Error(`Failed to create temporary directory at ${tmpDir}`);
+    }
+    const tmpCommandsPath = nuclideUri.join(tmpDir, COMPILATION_DATABASE_FILE);
+    await fs.writeFile(tmpCommandsPath, contents);
+    this._logger.info(
+      'Copied commands from ' + file + ' to ' + tmpCommandsPath,
+    );
+    // Trigger the factory to construct the server.
+    this._processes.get(file);
+    return {
+      rootDir,
+      watchFile: flagsFile,
+      files: new Set(JSON.parse(contents.toString()).map(entry => entry.file)),
+      tempCommandsDir: tmpDir,
+    };
   }
 
   async addClangRequest(clangRequest: ClangRequestSettings): Promise<boolean> {
@@ -165,36 +211,9 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     if (file == null || flagsFile == null) {
       return false;
     }
-    if (this._managedRoots.has(file)) {
-      return true;
+    if (!this._managedRoots.has(file)) {
+      this._managedRoots.set(file, this._setupManagedRoot(file, flagsFile));
     }
-    const rootDir = nuclideUri.dirname(flagsFile);
-    // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
-    // Add the files of this database to the managed map.
-    const contents = await fs.readFile(file);
-    // Create a temporary directory with only compile_commands.json because
-    // clangd requires the name of a directory containing a
-    // compile_commands.json, which is not always what we are provided here.
-    const tmpDir = nuclideUri.join(
-      os.tmpdir(),
-      'nuclide-clangd-lsp-' + Math.random().toString(),
-    );
-    if (!await fs.mkdirp(tmpDir)) {
-      return false;
-    }
-    const tmpCommandsPath = nuclideUri.join(tmpDir, COMPILATION_DATABASE_FILE);
-    await fs.writeFile(tmpCommandsPath, contents);
-    this._managedRoots.set(file, {
-      rootDir,
-      watchFile: flagsFile,
-      files: new Set(JSON.parse(contents.toString()).map(entry => entry.file)),
-      tempCommandsDir: tmpDir,
-    });
-    this._logger.info(
-      'Copied commands from ' + file + ' to ' + tmpCommandsPath,
-    );
-    // Trigger the factory to construct the server.
-    this._processes.get(file);
     return true;
   }
 
@@ -207,7 +226,12 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
   async getClangRequestSettingsForFile(filePath: NuclideUri): Promise<?string> {
     const absPath = nuclideUri.getPath(filePath);
     this._logger.info('checking for ' + absPath);
-    for (const [commandsPath, managedRoot] of this._managedRoots) {
+    const resolvedRoots = await Promise.all(
+      Array.from(this._managedRoots.entries()).map(([k, vPromise]) =>
+        vPromise.then(v => [k, v]),
+      ),
+    );
+    for (const [commandsPath, managedRoot] of resolvedRoots) {
       if (managedRoot.files.has(absPath)) {
         return commandsPath;
       }
