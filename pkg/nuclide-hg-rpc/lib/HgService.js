@@ -1305,10 +1305,7 @@ export class HgService {
       .publish();
   }
 
-  diff(
-    revision: string,
-    {unified}: {unified?: number},
-  ): ConnectableObservable<string> {
+  diff(revision: string, unified: ?number): ConnectableObservable<string> {
     const args = ['diff', '-r', revision];
     if (unified != null) {
       args.push('--unified', `${unified}`);

@@ -980,7 +980,8 @@ export class HgRepositoryClient {
     revision: number | string,
     options: {unified?: number} = {},
   ): Observable<string> {
-    return this._service.diff(String(revision), options).refCount();
+    const {unified} = options;
+    return this._service.diff(String(revision), unified).refCount();
   }
 
   purge(): Promise<void> {
