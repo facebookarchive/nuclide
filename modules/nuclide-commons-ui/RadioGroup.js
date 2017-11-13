@@ -17,7 +17,7 @@ let uid = 0;
 
 type Props = {
   className?: string,
-  optionLabels: Array<React.Element<any>>,
+  optionLabels: Array<React.Node>,
   selectedIndex: number,
   onSelectedChange(selectedIndex: number): void,
 };

@@ -33,7 +33,6 @@ class RadioGroupExample extends React.Component<any, {selectedIndex: number}> {
   render(): React.Node {
     return (
       <Block>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <RadioGroup
           selectedIndex={this.state.selectedIndex}
           optionLabels={labels}
