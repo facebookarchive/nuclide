@@ -1,5 +1,17 @@
 # Nuclide Changelog
 
+## v0.268.0
+
+### Highlights
+
+* Nuclide's SSH tunnel now works in both directions!
+
+### General
+
+* Upgrade to [Atom 1.22](http://blog.atom.io/2017/11/07/atom-1-22.html). Along with other improvements, this resolves an issue with copying the current file's relative path from the status bar.
+* The JavaScript imports services now uses an on-disk cache to reduce CPU usage during subsequent runs.
+* Fixed server crashes from misbehaving LSP servers.
+
 ## v0.267.0
 
 Another hotfix:
@@ -24,6 +36,7 @@ Hotfix release to fix task runner issues with remote directories.
 * Fixed spurious Flow highlights for older Flow versions (< 0.55).
 * Reduce flakiness of Hyperclick underlines and loading indicators.
 * Outline view is now less aggressive about auto-focusing the search input.
+* Added new terminal option to the context menu of breadcrumbs
 
 ### Debugger
 
