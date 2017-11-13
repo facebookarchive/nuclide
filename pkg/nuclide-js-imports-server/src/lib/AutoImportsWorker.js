@@ -84,7 +84,7 @@ async function main() {
       indexNodeModules(index),
     ).subscribe(
       message => {
-        sendExportUpdateToParent(message);
+        sendUpdatesBatched(message);
         message.forEach(update => {
           if (update.sha1 != null) {
             newCache.set(
@@ -143,11 +143,11 @@ async function handleFileChange(
       hasteSettings,
     );
     if (exportForFile) {
-      sendExportUpdateToParent([exportForFile]);
+      sendUpdatesBatched([exportForFile]);
     }
   } else {
     // File deleted.
-    sendExportUpdateToParent([
+    sendUpdatesBatched([
       {
         updateType: 'deleteExports',
         file: fileChange.name,
@@ -194,7 +194,7 @@ export function indexDirectory(
     Math.max(1, Math.floor(files.length / MIN_FILES_PER_WORKER)),
     maxWorkers,
   );
-  const filesPerWorker = Math.floor(files.length / numWorkers);
+  const filesPerWorker = Math.ceil(files.length / numWorkers);
   const workerMessages = Observable.range(0, numWorkers)
     .mergeMap(workerId => {
       return niceSafeSpawn(
@@ -374,7 +374,7 @@ function setupParentMessagesHandler(
         fileContents,
       );
       if (exportUpdate != null) {
-        sendExportUpdateToParent([exportUpdate]);
+        sendUpdatesBatched([exportUpdate]);
       }
     } catch (error) {
       logger.error(`Could not index file ${fileUri}. Error: ${error}`);
@@ -495,9 +495,7 @@ function decorateExportUpdateWithMainDirectory(
   return update;
 }
 
-async function sendExportUpdateToParent(
-  exportsForFiles: Array<ExportUpdateForFile>,
-): Promise<void> {
+function sendUpdatesBatched(exportsForFiles: Array<ExportUpdateForFile>): void {
   for (let i = 0; i < exportsForFiles.length; i += BATCH_SIZE) {
     send(exportsForFiles.slice(i, i + BATCH_SIZE));
   }
@@ -535,7 +533,7 @@ function runChild() {
       })
       .let(compact)
       .bufferCount(BATCH_SIZE)
-      .mergeMap(sendExportUpdateToParent, SEND_CONCURRENCY)
+      .mergeMap(send, SEND_CONCURRENCY)
       .subscribe({complete: exitCleanly});
   });
 }
