@@ -54,6 +54,10 @@ export class Sdb extends DebugBridge {
       });
   }
 
+  async stopProcess(packageName: string, pid: number): Promise<void> {
+    await this.runShortCommand('shell', 'kill', '-9', `${pid}`).toPromise();
+  }
+
   getDeviceArchitecture(): Observable<string> {
     return this.runShortCommand('shell', 'uname', '-m').map(s => s.trim());
   }

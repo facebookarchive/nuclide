@@ -59,11 +59,12 @@ export function getProcesses(
   return new Processes(new Adb(device)).fetch(timeout).publish();
 }
 
-export async function stopPackage(
+export async function stopProcess(
   device: DeviceId,
   packageName: string,
+  pid: number,
 ): Promise<void> {
-  return new Adb(device).stopPackage(packageName);
+  return new Adb(device).stopProcess(packageName, pid);
 }
 
 export function getDeviceList(): ConnectableObservable<

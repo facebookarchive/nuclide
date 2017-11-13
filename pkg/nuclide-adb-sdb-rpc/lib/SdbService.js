@@ -83,6 +83,14 @@ export async function launchApp(
   return new Sdb(device).launchApp(identifier);
 }
 
+export async function stopProcess(
+  device: DeviceId,
+  packageName: string,
+  pid: number,
+): Promise<void> {
+  return new Sdb(device).stopProcess(packageName, pid);
+}
+
 export function uninstallPackage(
   device: DeviceId,
   packageName: string,

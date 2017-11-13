@@ -18,12 +18,13 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {AndroidBridge} from '../bridges/AndroidBridge';
+import {TizenBridge} from '../bridges/TizenBridge';
 import {Observable} from 'rxjs';
 
-export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
-  _bridge: AndroidBridge;
+export class ATDeviceStopProcessProvider implements DeviceProcessTaskProvider {
+  _bridge: AndroidBridge | TizenBridge;
 
-  constructor(bridge: AndroidBridge) {
+  constructor(bridge: AndroidBridge | TizenBridge) {
     this._bridge = bridge;
   }
 
@@ -36,7 +37,7 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   }
 
   getName(): string {
-    return 'Stop package';
+    return 'Stop process/package';
   }
 
   isSupported(proc: Process): boolean {
@@ -52,6 +53,8 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   }
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return this._bridge.getService(host).stopPackage(device, proc.name);
+    return this._bridge
+      .getService(host)
+      .stopProcess(device, proc.name, proc.pid);
   }
 }

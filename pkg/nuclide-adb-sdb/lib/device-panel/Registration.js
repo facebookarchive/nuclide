@@ -17,7 +17,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
-import {ATDeviceStopPackageProvider} from './ATDeviceStopPackageProvider';
+import {ATDeviceStopProcessProvider} from './ATDeviceStopProcessProvider';
 import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 
 export function registerDevicePanelProviders(
@@ -36,7 +36,8 @@ export function registerDevicePanelProviders(
     api.registerProcessesProvider(new ATDeviceProcessesProvider(android)),
     api.registerProcessesProvider(new ATDeviceProcessesProvider(tizen)),
     // process tasks
-    api.registerProcessTaskProvider(new ATDeviceStopPackageProvider(android)),
+    api.registerProcessTaskProvider(new ATDeviceStopProcessProvider(android)),
+    api.registerProcessTaskProvider(new ATDeviceStopProcessProvider(tizen)),
     // device type tasks
     api.registerDeviceTypeTaskProvider(
       new ATConfigurePathTaskProvider(android),

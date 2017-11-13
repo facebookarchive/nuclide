@@ -122,15 +122,26 @@ export class Adb extends DebugBridge {
     });
   }
 
-  // Can't use kill, the only option is to use the package name
+  // In some android devices, we have to kill the package, not the process.
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
-  async stopPackage(packageName: string): Promise<void> {
-    await this.runShortCommand(
-      'shell',
-      'am',
-      'force-stop',
-      packageName,
-    ).toPromise();
+  async stopProcess(packageName: string, pid: number): Promise<void> {
+    await Promise.all([
+      this.runShortCommand(
+        'shell',
+        'am',
+        'force-stop',
+        packageName,
+      ).toPromise(),
+      this.runShortCommand('shell', 'kill', '-9', `${pid}`).toPromise(),
+      this.runShortCommand(
+        'shell',
+        'run-as',
+        packageName,
+        'kill',
+        '-9',
+        `${pid}`,
+      ).toPromise(),
+    ]);
   }
 
   getOSVersion(): Observable<string> {
