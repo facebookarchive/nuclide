@@ -46,7 +46,7 @@
       "enableReferencesHighlight": {
         "title": "Highlight identifier references (requires restart)",
         "type": "boolean",
-        "default": true,
+        "default": false,
         "description": "This feature requires flow >=0.55.0."
       },
       "enableFindReferences": {
