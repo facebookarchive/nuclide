@@ -111,7 +111,10 @@ export function isCorrectConnection(
     invariant(launchScriptPath != null, 'Null launchScriptPath in launch mode');
 
     if (launchWrapperCommand != null) {
-      return nuclideUri.basename(requestScriptPath) === launchWrapperCommand;
+      return (
+        nuclideUri.basename(requestScriptPath) ===
+        nuclideUri.basename(launchWrapperCommand)
+      );
     }
 
     return shellParse(launchScriptPath)[0] === requestScriptPath;
