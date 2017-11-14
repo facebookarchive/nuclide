@@ -80,18 +80,22 @@ function ensureReadOnlyOperations(
 }
 
 describe('enforceReadOnlyEditor', () => {
+  function getOperations(editor) {
+    return [
+      () => editor.insertText('xyz'),
+      () => editor.backspace(),
+      () => editor.duplicateLines(),
+      () => editor.insertNewline(),
+    ];
+  }
+
   it('should not be able to write to the text editor', () => {
     waitsForPromise(async () => {
       const editor = await atom.workspace.open('');
       editor.setText('ABC\nDEF');
       const buffer = editor.getBuffer();
 
-      const operations = [
-        () => editor.insertText('xyz'),
-        () => editor.backspace(),
-        () => editor.duplicateLines(),
-        () => editor.insertNewline(),
-      ];
+      const operations = getOperations(editor);
 
       ensureReadOnlyOperations(buffer, operations, false);
 
@@ -105,27 +109,59 @@ describe('enforceReadOnlyEditor', () => {
       );
     });
   });
+
+  it('should be able to write to the text editor after cancelling', () => {
+    waitsForPromise(async () => {
+      const editor = await atom.workspace.open('');
+      editor.setText('ABC\nDEF');
+      const buffer = editor.getBuffer();
+
+      const operations = getOperations(editor);
+
+      const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
+      enforceReadOnlyEditorDisposable.dispose();
+      ensureReadOnlyOperations(buffer, operations, false);
+    });
+  });
 });
 
 describe('enforceReadOnlyBuffer', () => {
+  function getOperations(buffer) {
+    return [
+      () => buffer.append('xyz'),
+      () => buffer.deleteRows(0, 1),
+      () => buffer.delete(new Range([0, 0], [1, 0])),
+      () => buffer.insert(new Point(0, 0), 'lol'),
+      () => buffer.undo(),
+      () => buffer.setText('lol'),
+    ];
+  }
+
   it('should not be able to write to the text buffer', () => {
     waitsForPromise(async () => {
       const editor = await atom.workspace.open('');
       const buffer = editor.getBuffer();
       buffer.setText('ABC\nDEF');
 
-      const operations = [
-        () => buffer.append('xyz'),
-        () => buffer.deleteRows(0, 1),
-        () => buffer.delete(new Range([0, 0], [1, 0])),
-        () => buffer.insert(new Point(0, 0), 'lol'),
-        () => buffer.undo(),
-        () => buffer.setText('lol'),
-      ];
+      const operations = getOperations(buffer);
 
       ensureReadOnlyOperations(buffer, operations, false);
       enforceReadOnlyEditor(editor, []);
       ensureReadOnlyOperations(buffer, operations, true);
+    });
+  });
+
+  it('should be able to write to the text buffer after cancelling', () => {
+    waitsForPromise(async () => {
+      const editor = await atom.workspace.open('');
+      const buffer = editor.getBuffer();
+      buffer.setText('ABC\nDEF');
+
+      const operations = getOperations(buffer);
+
+      const enforceReadOnlyEditorDisposable = enforceReadOnlyEditor(editor, []);
+      enforceReadOnlyEditorDisposable.dispose();
+      ensureReadOnlyOperations(buffer, operations, false);
     });
   });
 });

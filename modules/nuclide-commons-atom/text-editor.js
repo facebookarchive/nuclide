@@ -13,6 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -115,22 +116,27 @@ export function observeEditorDestroy(
 export function enforceReadOnlyEditor(
   textEditor: atom$TextEditor,
   readOnlyExceptions?: Array<string> = ['append', 'setText'],
-): void {
+): IDisposable {
   // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
-  textEditor.onWillInsertText(event => {
+  const willInsertTextDisposable = textEditor.onWillInsertText(event => {
     event.cancel();
   });
-  // `setText` & `append` are the only exceptions that's used to set the read-only text.
-  enforceReadOnlyBuffer(textEditor.getBuffer(), readOnlyExceptions);
+
+  return new UniversalDisposable(
+    willInsertTextDisposable,
+    // `setText` & `append` are the only exceptions that's used to set the read-only text.
+    enforceReadOnlyBuffer(textEditor.getBuffer(), readOnlyExceptions),
+  );
 }
 
 function enforceReadOnlyBuffer(
   textBuffer: atom$TextBuffer,
   readOnlyExceptions?: Array<string> = [],
-): void {
+): IDisposable {
   const noop = () => {};
   // All user edits use `transact` - so, mocking this will effectively make the editor read-only.
   const originalApplyChange = textBuffer.applyChange;
+  const originalReadOnlyExceptionFunctions = {};
   textBuffer.applyChange = noop;
 
   readOnlyExceptions.forEach(passReadOnlyException);
@@ -138,6 +144,7 @@ function enforceReadOnlyBuffer(
   function passReadOnlyException(functionName: string) {
     const buffer: any = textBuffer;
     const originalFunction = buffer[functionName];
+    originalReadOnlyExceptionFunctions[functionName] = originalFunction;
 
     buffer[functionName] = function() {
       textBuffer.applyChange = originalApplyChange;
@@ -146,6 +153,17 @@ function enforceReadOnlyBuffer(
       return result;
     };
   }
+
+  return new UniversalDisposable(() => {
+    textBuffer.applyChange = originalApplyChange;
+
+    const buffer: any = textBuffer;
+    readOnlyExceptions.forEach(
+      functionName =>
+        (buffer[functionName] =
+          originalReadOnlyExceptionFunctions[functionName]),
+    );
+  });
 }
 
 // Turn off soft wrap setting for these editors so diffs properly align.
