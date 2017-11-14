@@ -38,7 +38,6 @@ type State = {
   fontFamily: string,
   fontSize: number,
   lineHeight: number,
-  outline: OutlineForUi,
 };
 
 type Props = {
@@ -61,18 +60,11 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
 export class OutlineView extends React.PureComponent<Props, State> {
   subscription: ?UniversalDisposable;
   _outlineViewRef: ?React.ElementRef<typeof OutlineViewComponent>;
-
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      fontFamily: (atom.config.get('editor.fontFamily'): any),
-      fontSize: (atom.config.get('editor.fontSize'): any),
-      lineHeight: (atom.config.get('editor.lineHeight'): any),
-      outline: {
-        kind: 'empty',
-      },
-    };
-  }
+  state = {
+    fontFamily: (atom.config.get('editor.fontFamily'): any),
+    fontSize: (atom.config.get('editor.fontSize'): any),
+    lineHeight: (atom.config.get('editor.lineHeight'): any),
+  };
 
   componentDidMount(): void {
     invariant(this.subscription == null);
