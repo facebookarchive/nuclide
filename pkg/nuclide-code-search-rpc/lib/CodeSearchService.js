@@ -44,7 +44,7 @@ async function isFbManaged(rootDirectory: NuclideUri): Promise<boolean> {
       return false;
     }
     // $FlowFB
-    const bigGrep = require('../../commons-atom/fb-biggrep-query'); // eslint-disable-line rulesdir/no-cross-atom-imports
+    const bigGrep = require('../../commons-node/fb-biggrep');
     const corpus = bigGrep.ARC_PROJECT_CORPUS[projectId];
     if (corpus != null) {
       return true;
