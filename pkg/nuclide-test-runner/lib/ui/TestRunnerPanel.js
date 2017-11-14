@@ -47,28 +47,23 @@ type State = {
 };
 
 export default class TestRunnerPanel extends React.Component<Props, State> {
-  _paneContainer: Object;
-  _textEditorModel: TextEditor;
-
-  // Bound Functions for use as callbacks.
-  setSelectedTestRunnerIndex: Function;
-
   static ExecutionState = Object.freeze({
     RUNNING: 0,
     STOPPED: 1,
   });
 
-  constructor(props: Object) {
-    super(props);
-    this.state = {
-      roots: [],
-      treeContainer: null,
-      consoleContainer: null,
-      // If there are test runners, start with the first one selected. Otherwise store -1 to
-      // later indicate there were no active test runners.
-      selectedTestRunnerIndex: props.testRunners.length > 0 ? 0 : -1,
-    };
-  }
+  _paneContainer: Object;
+  _textEditorModel: TextEditor;
+  // Bound Functions for use as callbacks.
+  setSelectedTestRunnerIndex: Function;
+
+  state = {
+    treeContainer: null,
+    consoleContainer: null,
+    // If there are test runners, start with the first one selected. Otherwise store -1 to
+    // later indicate there were no active test runners.
+    selectedTestRunnerIndex: this.props.testRunners.length > 0 ? 0 : -1,
+  };
 
   componentDidMount() {
     this._paneContainer = createPaneContainer();
@@ -229,8 +224,7 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
     const tree =
       this.state.treeContainer == null
         ? null
-        : // $FlowIssue: This API isn't known by our current version of Flow.
-          ReactDOM.createPortal(
+        : ReactDOM.createPortal(
             <TestClassTree
               isRunning={
                 this.props.executionState ===
@@ -244,8 +238,7 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
     const console =
       this.state.consoleContainer == null
         ? null
-        : // $FlowIssue: This API isn't known by our current version of Flow.
-          ReactDOM.createPortal(
+        : ReactDOM.createPortal(
             <Console textBuffer={this.props.buffer} />,
             this.state.consoleContainer,
           );
