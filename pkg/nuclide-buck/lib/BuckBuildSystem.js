@@ -118,7 +118,9 @@ export class BuckBuildSystem {
 
         const args =
           runArguments.length > 0 &&
-          (subcommand === 'run' || subcommand === 'install')
+          (subcommand === 'run' ||
+            subcommand === 'install' ||
+            subcommand === 'test')
             ? buildArguments.concat(['--']).concat(runArguments)
             : buildArguments;
 
