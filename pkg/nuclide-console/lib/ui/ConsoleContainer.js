@@ -34,6 +34,9 @@ import Console from './Console';
 import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
 
+// since state is shared amongst instances, this rule is too risky
+/* eslint-disable react/no-unused-state */
+
 type Props = {
   store: Store,
   initialFilterText?: string,
