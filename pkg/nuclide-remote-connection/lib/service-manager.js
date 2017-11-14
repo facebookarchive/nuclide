@@ -12,8 +12,10 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Transport} from '../../nuclide-rpc';
 
+import {IpcClientTransport} from './IpcTransports';
 import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {fork} from 'nuclide-commons/process';
 import invariant from 'assert';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {
@@ -48,11 +50,37 @@ function createLocalRpcClient(): RpcConnection<Transport> {
   );
 }
 
-export function setUseLocalRpc(value: boolean): void {
+function createLocalRpcServerClient(): RpcConnection<Transport> {
+  // We cannot synchronously spawn the process here due to the shell environment.
+  // process.js will wait for Atom's shell environment to become ready.
+  const localServerProcess = fork(
+    '--require',
+    [
+      require.resolve('../../commons-node/load-transpiler'),
+      require.resolve('./LocalRpcServer'),
+    ],
+    {
+      killTreeWhenDone: true,
+      silent: true, // Needed so stdout/stderr are available.
+    },
+  );
+  const transport = new IpcClientTransport(localServerProcess);
+  return RpcConnection.createLocal(
+    transport,
+    getAtomSideLoopbackMarshalers,
+    servicesConfig,
+  );
+}
+
+export function setUseLocalRpc(value: boolean, server: boolean): void {
   invariant(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
   knownLocalRpc = true;
   if (value) {
-    localRpcClient = createLocalRpcClient();
+    if (server) {
+      localRpcClient = createLocalRpcServerClient();
+    } else {
+      localRpcClient = createLocalRpcClient();
+    }
   }
 }
 

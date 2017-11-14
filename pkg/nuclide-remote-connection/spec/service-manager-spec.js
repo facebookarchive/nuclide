@@ -9,10 +9,18 @@
  * @format
  */
 
+import {getVersion} from '../../nuclide-version';
+import {getInfoServiceByNuclideUri} from '..';
 import {setUseLocalRpc} from '../lib/service-manager';
 
 describe('setUseLocalRpc', () => {
-  it('successfully loads all the services', () => {
-    expect(() => setUseLocalRpc(true)).not.toThrow();
+  it('successfully starts up a local RPC server', () => {
+    setUseLocalRpc(true, true);
+
+    waitsForPromise(async () => {
+      const infoService = getInfoServiceByNuclideUri('');
+      const version = await infoService.getServerVersion();
+      expect(version).toBe(getVersion());
+    });
   });
 });
