@@ -113,6 +113,9 @@ async function getRefactorings(
       editor,
       cursorPosition,
     );
+    availableRefactorings.sort(
+      (x, y) => (x.disabled === true ? 1 : 0) - (y.disabled === true ? 1 : 0),
+    );
     return Actions.gotRefactorings(
       editor,
       cursorPosition,
