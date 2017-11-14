@@ -408,6 +408,7 @@ module.exports = {
     'react/no-unescaped-entities': 0,
     'react/no-unknown-property': 1,
     'react/no-unused-prop-types': 1,
+    'react/no-unused-state': 1,
     'react/prefer-es6-class': 0,
     'react/prefer-stateless-function': 0,
     // 'react/prefer-stateless-function': 1,
