@@ -69,10 +69,6 @@ export class ObjectRegistry {
     this._context = context;
   }
 
-  hasService(serviceName: string): boolean {
-    return this._serviceRegistry.hasService(serviceName);
-  }
-
   getService(serviceName: string): Object {
     let service = this._services.get(serviceName);
     if (service == null) {

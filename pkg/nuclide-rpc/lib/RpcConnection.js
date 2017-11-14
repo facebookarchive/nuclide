@@ -259,7 +259,9 @@ export class RpcConnection<TransportType: Transport> {
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(predefinedTypes, services, protocol),
+      // We can afford to be lazy when creating the RPC client.
+      // Client code always explicitly loads services by name!
+      new ServiceRegistry(predefinedTypes, services, protocol, {lazy: true}),
       transport,
     );
   }

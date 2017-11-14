@@ -36,6 +36,11 @@ export type ServiceDefinition = {
   factory: ProxyFactory, // Maps from RpcContext to proxy
 };
 
+type ServiceRegistryOptions = {
+  // Lazily load services.
+  lazy?: boolean,
+};
+
 export class ServiceRegistry {
   _protocol: string;
 
@@ -55,11 +60,14 @@ export class ServiceRegistry {
 
   _predefinedTypes: Array<string>;
   _services: Map<string, ServiceDefinition>;
+  // Cache the configs for lazy loading.
+  _serviceConfigs: Map<string, ConfigEntry>;
 
   constructor(
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
     protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
+    options: ServiceRegistryOptions = {},
   ) {
     this._protocol = protocol;
     this._typeRegistry = new TypeRegistry(predefinedTypes);
@@ -69,19 +77,19 @@ export class ServiceRegistry {
     this._functionsByName = new Map();
     this._classesByName = new Map();
     this._services = new Map();
-
-    this.addServices(services);
+    this._serviceConfigs = new Map(
+      services.map(service => [service.name, service]),
+    );
+    if (options.lazy !== true) {
+      services.map(service => this.addService(service));
+    }
   }
 
   getProtocol(): string {
     return this._protocol;
   }
 
-  addServices(services: Array<ConfigEntry>): void {
-    services.forEach(this.addService, this);
-  }
-
-  addService(service: ConfigEntry): void {
+  addService(service: ConfigEntry): ServiceDefinition {
     const preserveFunctionNames =
       service.preserveFunctionNames != null && service.preserveFunctionNames;
     try {
@@ -91,10 +99,8 @@ export class ServiceRegistry {
         service.definition,
         this._predefinedTypes,
       );
-      this._services.set(service.name, {
-        name: service.name,
-        factory,
-      });
+      const serviceDefinition = {name: service.name, factory};
+      this._services.set(service.name, serviceDefinition);
 
       // Register type aliases.
       const defs: Definitions = factory.defs;
@@ -157,6 +163,8 @@ export class ServiceRegistry {
             break;
         }
       });
+
+      return serviceDefinition;
     } catch (e) {
       logger.error(
         `Failed to load service ${service.name}. Stack Trace:\n${e.stack}`,
@@ -222,17 +230,13 @@ export class ServiceRegistry {
     return this._typeRegistry;
   }
 
-  getServices(): Iterator<ServiceDefinition> {
-    return this._services.values();
-  }
-
-  hasService(serviceName: string): boolean {
-    return this._services.has(serviceName);
-  }
-
   getService(serviceName: string): ServiceDefinition {
-    const result = this._services.get(serviceName);
-    invariant(result != null);
+    let result = this._services.get(serviceName);
+    if (result == null) {
+      const config = this._serviceConfigs.get(serviceName);
+      invariant(config != null, `Service ${serviceName} does not exist`);
+      result = this.addService(config);
+    }
     return result;
   }
 }
