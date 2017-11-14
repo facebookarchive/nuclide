@@ -35,30 +35,11 @@ async function resolveTool(tool: ?string): Promise<?string> {
   );
 }
 
-async function isFbManaged(rootDirectory: NuclideUri): Promise<boolean> {
-  try {
-    // $FlowFB
-    const {findArcProjectIdOfPath} = require('../../fb-arcanist-rpc');
-    const projectId = await findArcProjectIdOfPath(rootDirectory);
-    if (projectId == null) {
-      return false;
-    }
-    // $FlowFB
-    const bigGrep = require('../../commons-node/fb-biggrep');
-    const corpus = bigGrep.ARC_PROJECT_CORPUS[projectId];
-    if (corpus != null) {
-      return true;
-    }
-  } catch (err) {}
-  return false;
-}
-
 export async function isEligibleForDirectory(
   rootDirectory: NuclideUri,
 ): Promise<boolean> {
   const checks = await Promise.all([
     resolveTool(null).then(tool => tool == null),
-    isFbManaged(rootDirectory),
     isNfs(rootDirectory),
     isFuse(rootDirectory),
   ]);

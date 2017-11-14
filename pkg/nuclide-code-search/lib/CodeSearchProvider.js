@@ -50,6 +50,15 @@ export const CodeSearchProvider: Provider<FileResult> = {
     title: 'Code Search',
   },
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+    try {
+      const {
+        isAvailableForPath,
+        // $FlowFB
+      } = require('../../commons-atom/fb-biggrep-query');
+      if (await isAvailableForPath(directory.getPath())) {
+        return false;
+      }
+    } catch (err) {}
     const projectRoot = directory.getPath();
     return getCodeSearchServiceByNuclideUri(projectRoot).isEligibleForDirectory(
       projectRoot,
