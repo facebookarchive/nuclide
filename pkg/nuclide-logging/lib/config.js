@@ -9,10 +9,7 @@
  * @format
  */
 
-import {
-  isRunningInTest,
-  isRunningInClient,
-} from '../../commons-node/system-info';
+import {isRunningInTest} from '../../commons-node/system-info';
 
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -45,8 +42,8 @@ export function getDefaultConfig(): log4js$Config {
       },
     },
   ];
-  // The server's console output isn't visible, so don't bother logging it.
-  if (isRunningInClient()) {
+  // Anything not in Atom doesn't have a visible console.
+  if (typeof atom === 'object') {
     appenders.push({
       type: 'logLevelFilter',
       level: 'WARN',

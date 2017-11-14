@@ -13,7 +13,7 @@ import {
   getOsType,
   getAtomVersion,
   getNuclideVersion,
-  isRunningInClient,
+  isRunningInServer,
 } from './system-info';
 import os from 'os';
 import uuid from 'uuid';
@@ -46,9 +46,9 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
     user: os.userInfo().username,
     osType: getOsType(),
     timestamp: 0,
-    isClient: isRunningInClient(),
+    isClient: !isRunningInServer(),
     isDevelopment: __DEV__,
-    atomVersion: isRunningInClient() ? getAtomVersion() : '',
+    atomVersion: typeof atom === 'object' ? getAtomVersion() : '',
     nuclideVersion: getNuclideVersion(),
     installerPackageVersion: 0,
     uptime: 0,
