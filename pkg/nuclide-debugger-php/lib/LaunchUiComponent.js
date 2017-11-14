@@ -41,21 +41,13 @@ type State = {
 };
 
 export class LaunchUiComponent extends React.Component<Props, State> {
-  props: Props;
-  state: State;
-  _disposables: UniversalDisposable;
+  _disposables: UniversalDisposable = new UniversalDisposable();
 
-  constructor(props: Props) {
-    super(props);
-    this._disposables = new UniversalDisposable();
-    this.state = {
-      pathsDropdownIndex: 0,
-      pathMenuItems: this._getPathMenuItems(),
-      recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
-      recentlyLaunchedScript: null,
-      runInTerminal: false,
-    };
-  }
+  state = {
+    recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
+    recentlyLaunchedScript: null,
+    runInTerminal: false,
+  };
 
   _getSerializationArgs() {
     return [
