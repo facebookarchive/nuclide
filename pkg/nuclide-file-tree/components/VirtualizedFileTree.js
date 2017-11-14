@@ -27,14 +27,12 @@ import {ProjectSelection} from './ProjectSelection';
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ReorderPreviewStatus} from '../lib/FileTreeStore';
 
 type State = {|
   trackedIndex: ?number,
   isEditingWorkingSet: boolean,
   roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
   shownNodes: number,
-  reorderPreviewStatus: ?ReorderPreviewStatus,
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   rootHeight: ?number,
@@ -85,7 +83,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       isEditingWorkingSet: this._store.isEditingWorkingSet(),
       roots: this._store.roots,
       shownNodes,
-      reorderPreviewStatus: this._store.reorderPreviewStatus,
       selectedNodes: this._store.selectionManager.selectedNodes(),
       focusedNodes: this._store.selectionManager.focusedNodes(),
       rootHeight: null,
@@ -182,7 +179,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     const roots = this._store.roots;
     const shownNodes = countShownNodes(roots);
     const trackedIndex = findIndexOfTheTrackedNode(this._store, shownNodes);
-    const reorderPreviewStatus = this._store.reorderPreviewStatus;
     const selectedNodes = this._store.selectionManager.selectedNodes();
     const focusedNodes = this._store.selectionManager.focusedNodes();
 
@@ -191,7 +187,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       isEditingWorkingSet,
       roots,
       shownNodes,
-      reorderPreviewStatus,
       selectedNodes,
       focusedNodes,
     });
