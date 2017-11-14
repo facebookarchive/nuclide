@@ -25,7 +25,7 @@ import type {
   Babel$Node,
 } from './types';
 
-import * as babylon from 'babylon';
+import memoizeWithDisk from '../../commons-node/memoizeWithDisk';
 import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
@@ -33,6 +33,7 @@ import resolveFrom from 'resolve-from';
 import {objectFromMap} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
+import os from 'os';
 
 function isPrivateMemberName(name: string): boolean {
   return name.startsWith('_');
@@ -140,6 +141,16 @@ export function _clearFileParsers(): void {
   fileParsers.clear();
 }
 
+const memoizedBabylonParse = memoizeWithDisk(
+  function babylonParse(src, options) {
+    // External dependency: ensure that it's included in the key below.
+    const babylon = require('babylon');
+    return babylon.parse(src, options).program;
+  },
+  (src, options) => [src, options, require('babylon/package.json').version],
+  nuclideUri.join(os.tmpdir(), 'nuclide-rpc-cache'),
+);
+
 class FileParser {
   _fileName: string;
   // Whether this file defines the service (i.e. not an import)
@@ -187,11 +198,11 @@ class FileParser {
    * This doesn't actually visit any of the type definitions.
    */
   parse(source: string): void {
-    const ast = babylon.parse(source, {
+    const babylonOptions = {
       sourceType: 'module',
       plugins: ['*', 'jsx', 'flow'],
-    });
-    const program = ast.program;
+    };
+    const program = memoizedBabylonParse(source, babylonOptions);
     invariant(
       program && program.type === 'Program',
       'The result of parsing is a Program node.',

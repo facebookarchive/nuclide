@@ -12,12 +12,13 @@
 import fs from 'fs';
 import * as t from 'babel-types';
 import generate from 'babel-generator';
-import {generateProxy} from '../lib/proxy-generator';
+import createProxyGenerator from '../lib/proxy-generator';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import vm from 'vm';
-import {__test__} from '../lib/proxy-generator';
+
+const {generateProxy, __test__} = createProxyGenerator(t, generate);
 
 import type {Type} from '../lib/types';
 
