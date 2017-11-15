@@ -322,10 +322,9 @@ export class HgRepositoryClient {
       .let(fastDebounce(BOOKMARKS_DEBOUNCE_DELAY))
       .switchMap(() =>
         Observable.defer(() => {
-          return this._service
-            .fetchBookmarks()
-            .refCount()
-            .timeout(FETCH_BOOKMARKS_TIMEOUT);
+          return Observable.fromPromise(this._service.fetchBookmarks()).timeout(
+            FETCH_BOOKMARKS_TIMEOUT,
+          );
         })
           .retry(2)
           .catch(error => {
@@ -1015,10 +1014,6 @@ export class HgRepositoryClient {
 
   renameBookmark(name: string, nextName: string): Promise<void> {
     return this._service.renameBookmark(name, nextName);
-  }
-
-  getBookmarks(): Array<BookmarkInfo> {
-    return this._bookmarks.getValue().bookmarks;
   }
 
   /**

@@ -50,7 +50,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import debounce from 'nuclide-commons/debounce';
 import invariant from 'assert';
 
-import {fetchActiveBookmark} from './hg-bookmark-helpers';
+import {fetchActiveBookmark, fetchBookmarks} from './hg-bookmark-helpers';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 
@@ -122,7 +122,6 @@ export type BookmarkInfo = {
   active: boolean,
   bookmark: string,
   node: string,
-  rev: number,
 };
 
 export type DiffInfo = {
@@ -905,15 +904,8 @@ export class HgService {
   /**
    * @return An Array of bookmarks for this repository.
    */
-  fetchBookmarks(): ConnectableObservable<Array<BookmarkInfo>> {
-    const args = ['bookmarks', '-Tjson'];
-    const execOptions = {
-      cwd: this._workingDirectory,
-    };
-
-    return this._hgRunCommand(args, execOptions)
-      .map(stdout => JSON.parse(stdout))
-      .publish();
+  fetchBookmarks(): Promise<Array<BookmarkInfo>> {
+    return fetchBookmarks(nuclideUri.join(this._workingDirectory, '.hg'));
   }
 
   /**

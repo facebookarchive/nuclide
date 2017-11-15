@@ -10,7 +10,7 @@
  */
 
 import {ConnectableObservable, Observable, Subject} from 'rxjs';
-import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
+import type {DiffInfo, StatusCodeIdValue, BookmarkInfo} from '../lib/HgService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 // This class is meant to be stubbed out.
@@ -64,7 +64,7 @@ export default class MockHgService {
     return Promise.resolve('');
   }
 
-  fetchBookmarks(): Promise<Array<Object>> {
+  fetchBookmarks(): Promise<Array<BookmarkInfo>> {
     return Promise.resolve([]);
   }
 
