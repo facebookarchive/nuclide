@@ -5,7 +5,11 @@
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
     "alt-shift-t": "nuclide-terminal:new-terminal"
   },
+  ".platform-win32 .terminal-pane, .platform-linux .terminal-pane": {
+    "ctrl-backspace": "nuclide-terminal:add-escape-prefix"
+  },
   ".platform-darwin .terminal-pane": {
+    "alt-backspace": "nuclide-terminal:add-escape-prefix",
     "cmd-right": "window:focus-pane-on-right",
     "cmd-left": "window:focus-pane-on-left",
     "cmd-up": "window:focus-pane-above",
