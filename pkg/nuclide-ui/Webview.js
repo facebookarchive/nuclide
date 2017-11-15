@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Webview = undefined;
+
+var _atom = require('atom');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +28,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {Disposable} from 'atom';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
+class Webview extends _react.Component {
 
-type Props = {
-  className: ?string,
-  nodeintegration?: boolean,
-  onDidFinishLoad: (event: Event) => mixed,
-  src: string,
-  style: ?Object,
-};
-
-export class Webview extends React.Component<Props, void> {
-  props: Props;
-
-  _disposables: UniversalDisposable;
-
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+
+    this._handleDidFinishLoad = event => {
+      if (this.props.onDidFinishLoad) {
+        this.props.onDidFinishLoad(event);
+      }
+    };
+
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   componentDidMount() {
-    const element = ReactDOM.findDOMNode(this);
+    const element = _reactDom.default.findDOMNode(this);
 
     // Add event listeners. This has the drawbacks of 1) adding an event listener even when we don't
     // have a callback for it and 2) needing to add explicit support for each event type we want to
@@ -41,20 +55,14 @@ export class Webview extends React.Component<Props, void> {
     // it at this time.
     // $FlowFixMe
     element.addEventListener('did-finish-load', this._handleDidFinishLoad);
-    this._disposables.add(
-      new Disposable(() =>
-        // $FlowFixMe
-        element.removeEventListener(
-          'did-finish-load',
-          this._handleDidFinishLoad,
-        ),
-      ),
-    );
+    this._disposables.add(new _atom.Disposable(() =>
+    // $FlowFixMe
+    element.removeEventListener('did-finish-load', this._handleDidFinishLoad)));
 
     this.updateAttributes({});
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     this.updateAttributes(prevProps);
   }
 
@@ -62,10 +70,8 @@ export class Webview extends React.Component<Props, void> {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    return (
-      <webview className={this.props.className} style={this.props.style} />
-    );
+  render() {
+    return _react.createElement('webview', { className: this.props.className, style: this.props.style });
   }
 
   /**
@@ -74,12 +80,10 @@ export class Webview extends React.Component<Props, void> {
    * attributes ourselves. But not "className" or "style" because React has special rules for those.
    * *sigh*
    */
-  updateAttributes(prevProps: Object): void {
-    const element = ReactDOM.findDOMNode(this);
+  updateAttributes(prevProps) {
+    const element = _reactDom.default.findDOMNode(this);
     const specialProps = ['className', 'style', 'onDidFinishLoad'];
-    const normalProps = Object.keys(this.props).filter(
-      prop => specialProps.indexOf(prop) === -1,
-    );
+    const normalProps = Object.keys(this.props).filter(prop => specialProps.indexOf(prop) === -1);
     normalProps.forEach(prop => {
       const value = this.props[prop];
       const prevValue = prevProps[prop];
@@ -91,9 +95,5 @@ export class Webview extends React.Component<Props, void> {
     });
   }
 
-  _handleDidFinishLoad = (event: Event): void => {
-    if (this.props.onDidFinishLoad) {
-      this.props.onDidFinishLoad(event);
-    }
-  };
 }
+exports.Webview = Webview;

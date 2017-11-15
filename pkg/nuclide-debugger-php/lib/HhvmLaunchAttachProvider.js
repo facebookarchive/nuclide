@@ -1,69 +1,83 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HhvmLaunchAttachProvider = undefined;
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import * as React from 'react';
-import {LaunchUiComponent} from './LaunchUiComponent';
-import {AttachUiComponent} from './AttachUiComponent';
-import invariant from 'assert';
+var _nuclideDebuggerBase;
 
-export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(debuggingTypeName: string, targetUri: string) {
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _LaunchUiComponent;
+
+function _load_LaunchUiComponent() {
+  return _LaunchUiComponent = require('./LaunchUiComponent');
+}
+
+var _AttachUiComponent;
+
+function _load_AttachUiComponent() {
+  return _AttachUiComponent = require('./AttachUiComponent');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class HhvmLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(debuggingTypeName, targetUri) {
     super(debuggingTypeName, targetUri);
   }
 
-  getCallbacksForAction(action: DebuggerConfigAction) {
+  getCallbacksForAction(action) {
     return {
       /**
        * Whether this provider is enabled or not.
        */
-      isEnabled: (): Promise<boolean> => {
+      isEnabled: () => {
         return Promise.resolve(true);
       },
 
       /**
        * Returns a list of supported debugger types + environments for the specified action.
        */
-      getDebuggerTypeNames: super.getCallbacksForAction(action)
-        .getDebuggerTypeNames,
+      getDebuggerTypeNames: super.getCallbacksForAction(action).getDebuggerTypeNames,
 
       /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
-      getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      getComponent: (debuggerTypeName, configIsValidChanged) => {
         if (action === 'launch') {
-          return (
-            <LaunchUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
+          return _react.createElement((_LaunchUiComponent || _load_LaunchUiComponent()).LaunchUiComponent, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged
+          });
         } else if (action === 'attach') {
-          return (
-            <AttachUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
+          return _react.createElement((_AttachUiComponent || _load_AttachUiComponent()).AttachUiComponent, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged
+          });
         } else {
-          invariant(false, 'Unrecognized action for component.');
+          if (!false) {
+            throw new Error('Unrecognized action for component.');
+          }
         }
-      },
+      }
     };
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.HhvmLaunchAttachProvider = HhvmLaunchAttachProvider; /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              * 
+                                                              * @format
+                                                              */

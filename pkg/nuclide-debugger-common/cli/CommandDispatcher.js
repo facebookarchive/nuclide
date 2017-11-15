@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,51 +15,59 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Command} from './Command';
-import type {DispatcherInterface} from './DispatcherInterface';
+class CommandDispatcher {
+  constructor() {
+    this.commands = [];
+  }
 
-export default class CommandDispatcher implements DispatcherInterface {
-  commands: Command[] = [];
-
-  registerCommand(command: Command): void {
+  registerCommand(command) {
     this.commands.push(command);
   }
 
-  getCommands(): Command[] {
+  getCommands() {
     return this.commands;
   }
 
-  async execute(line: string): Promise<void> {
-    const tokens = line.split(/\s+/);
-    return this.executeTokenizedLine(tokens);
+  execute(line) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const tokens = line.split(/\s+/);
+      return _this.executeTokenizedLine(tokens);
+    })();
   }
 
-  async executeTokenizedLine(tokens: string[]): Promise<void> {
-    if (tokens.length === 0 || !tokens[0]) {
-      return;
-    }
+  executeTokenizedLine(tokens) {
+    var _this2 = this;
 
-    // Get all commands of which the given command is a prefix
-    const cmd = tokens[0];
-    const re = new RegExp(`^${cmd}`);
-    const matches = this.commands.filter(x => x.name.match(re));
+    return (0, _asyncToGenerator.default)(function* () {
+      if (tokens.length === 0 || !tokens[0]) {
+        return;
+      }
 
-    if (matches.length === 0) {
-      throw new Error(`No command matches "${cmd}".`);
-    }
+      // Get all commands of which the given command is a prefix
+      const cmd = tokens[0];
+      const re = new RegExp(`^${cmd}`);
+      const matches = _this2.commands.filter(function (x) {
+        return x.name.match(re);
+      });
 
-    if (matches.length > 1) {
-      throw new Error(
-        `Multiple commands match "${cmd}": "${matches
-          .map(x => x.name)
-          .join('", "')}".`,
-      );
-    }
+      if (matches.length === 0) {
+        throw new Error(`No command matches "${cmd}".`);
+      }
 
-    return matches[0].execute(tokens.slice(1));
+      if (matches.length > 1) {
+        throw new Error(`Multiple commands match "${cmd}": "${matches.map(function (x) {
+          return x.name;
+        }).join('", "')}".`);
+      }
+
+      return matches[0].execute(tokens.slice(1));
+    })();
   }
 }
+exports.default = CommandDispatcher;

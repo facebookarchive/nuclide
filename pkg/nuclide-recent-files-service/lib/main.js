@@ -1,3 +1,29 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.provideRecentFilesService = provideRecentFilesService;
+exports.serialize = serialize;
+exports.deactivate = deactivate;
+
+var _atom = require('atom');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _RecentFilesService;
+
+function _load_RecentFilesService() {
+  return _RecentFilesService = _interopRequireDefault(require('./RecentFilesService'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +31,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import {Disposable} from 'atom';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import RecentFilesService from './RecentFilesService';
-
 class Activation {
-  _subscriptions: UniversalDisposable;
-  _service: RecentFilesService;
 
-  constructor(state: ?Object) {
-    this._subscriptions = new UniversalDisposable();
-    this._service = new RecentFilesService(state);
-    this._subscriptions.add(
-      new Disposable(() => {
-        this._service.dispose();
-      }),
-    );
+  constructor(state) {
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._service = new (_RecentFilesService || _load_RecentFilesService()).default(state);
+    this._subscriptions.add(new _atom.Disposable(() => {
+      this._service.dispose();
+    }));
   }
 
-  getService(): RecentFilesService {
+  getService() {
     return this._service;
   }
 
@@ -37,27 +54,33 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
   }
 }
 
-export function provideRecentFilesService(): RecentFilesService {
-  invariant(activation);
+function provideRecentFilesService() {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return activation.getService();
 }
 
-export function serialize(): Object {
-  invariant(activation);
+function serialize() {
+  if (!activation) {
+    throw new Error('Invariant violation: "activation"');
+  }
+
   return {
-    filelist: activation.getService().getRecentFiles(),
+    filelist: activation.getService().getRecentFiles()
   };
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

@@ -1,42 +1,27 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/* global HTMLElement */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CustomPaneItem = undefined;
 
-import invariant from 'assert';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
+var _react = _interopRequireWildcard(require('react'));
 
-export type CustomPaneItemOptions = {
-  title: string, // Title for the custom pane item being created.
-  iconName?: string, // Optional string representing the octicon that is rendered next to the title.
-  uri?: string,
-  allowSplit?: boolean, // Whether splits are allowed on the pane item. Defaults to false.
-  initialProps: Object, // The pane item specific properties.
-};
+var _reactDom = _interopRequireDefault(require('react-dom'));
 
-export class CustomPaneItem extends HTMLElement {
-  _title: ?string;
-  _iconName: ?string;
-  _uri: ?string;
-  _allowSplit: boolean;
-  __component: React.Component<any, any>;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  initialize(options: CustomPaneItemOptions) {
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class CustomPaneItem extends HTMLElement {
+
+  initialize(options) {
     this._title = options.title;
     this._iconName = options.iconName;
     this._uri = options.uri;
     this._allowSplit = Boolean(options.allowSplit);
 
-    this.__component = ReactDOM.render(this.__renderPaneItem(options), this);
+    this.__component = _reactDom.default.render(this.__renderPaneItem(options), this);
   }
 
   /**
@@ -46,29 +31,44 @@ export class CustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
+  __renderPaneItem(options) {
     throw new Error('Subclass should implement this method.');
   }
 
-  getTitle(): string {
+  getTitle() {
     // flowlint-next-line sketchy-null-string:off
-    invariant(this._title);
+    if (!this._title) {
+      throw new Error('Invariant violation: "this._title"');
+    }
+
     return this._title;
   }
 
-  getIconName(): ?string {
+  getIconName() {
     return this._iconName;
   }
 
-  getURI(): ?string {
+  getURI() {
     return this._uri;
   }
 
-  copy(): boolean {
+  copy() {
     return this._allowSplit;
   }
 
-  detachedCallback(): mixed {
-    ReactDOM.unmountComponentAtNode(this);
+  detachedCallback() {
+    _reactDom.default.unmountComponentAtNode(this);
   }
 }
+exports.CustomPaneItem = CustomPaneItem; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
+
+/* global HTMLElement */
