@@ -13,7 +13,7 @@
 import classnames from 'classnames';
 import * as React from 'react';
 
-type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
+export type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
 
 type Props = {
   className?: string,
