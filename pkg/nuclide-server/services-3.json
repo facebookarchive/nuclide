@@ -119,5 +119,13 @@
   {
     "implementation": "../nuclide-clangd-lsp-rpc/lib/main.js",
     "name": "ClangdLSPService"
+  },
+  {
+    "implementation": "../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService.js",
+    "name": "RemoteDebuggerCommandService"
+  },
+  {
+    "implementation": "../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService.js",
+    "name": "VSCodeDebuggerAdapterService"
   }
 ]

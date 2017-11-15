@@ -32,14 +32,14 @@ export default class DebuggerAdapterFactory {
       VsAdapterTypes.PYTHON,
       nuclideUri.join(
         __dirname,
-        '../../fb-debugger-vscode-adapter/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+        '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
       ),
     ],
     [
       VsAdapterTypes.NODE,
       nuclideUri.join(
         __dirname,
-        '../../fb-debugger-vscode-adapter/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+        '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
       ),
     ],
   ]);

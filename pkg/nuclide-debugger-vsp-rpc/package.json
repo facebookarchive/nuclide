@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-debugger-vsp-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/VSCodeDebuggerAdapterService.js",
+  "version": "0.0.0",
+  "description": "VSCode deug protocol adapter",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "private": true,
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

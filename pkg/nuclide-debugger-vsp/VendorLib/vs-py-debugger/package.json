@@ -1,0 +1,1525 @@
+{
+	"name": "python",
+	"displayName": "Python",
+	"description": "Linting, Debugging (multi-threaded, remote), Intellisense, code formatting, refactoring, unit tests, snippets, Data Science (with Jupyter), PySpark and more.",
+	"version": "0.7.0",
+	"publisher": "donjayamanne",
+	"author": {
+		"name": "Don Jayamanne",
+		"email": "don.jayamanne@yahoo.com"
+	},
+	"license": "MIT",
+	"homepage": "http://donjayamanne.github.io/pythonVSCode/",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/DonJayamanne/pythonVSCode"
+	},
+	"bugs": {
+		"url": "https://github.com/DonJayamanne/pythonVSCode/issues"
+	},
+	"icon": "icon.png",
+	"galleryBanner": {
+		"color": "#1e415e",
+		"theme": "dark"
+	},
+	"engines": {
+		"vscode": "^1.9.0"
+	},
+	"recommendations": [
+		"donjayamanne.jupyter"
+	],
+	"keywords": [
+		"python",
+		"jupyter",
+		"django",
+		"debugger",
+		"unittest"
+	],
+	"categories": [
+		"Languages",
+		"Debuggers",
+		"Linters",
+		"Snippets",
+		"Formatters",
+		"Other"
+	],
+	"activationEvents": [
+		"onLanguage:python",
+		"onCommand:python.python-debug.startSession",
+		"onCommand:python.execInTerminal",
+		"onCommand:python.sortImports",
+		"onCommand:python.runtests",
+		"onCommand:python.debugtests",
+		"onCommand:python.setInterpreter",
+		"onCommand:python.viewTestUI",
+		"onCommand:python.viewTestOutput",
+		"onCommand:python.selectAndRunTestMethod",
+		"onCommand:python.selectAndDebugTestMethod",
+		"onCommand:python.selectAndRunTestFile",
+		"onCommand:python.runCurrentTestFile",
+		"onCommand:python.runFailedTests",
+		"onCommand:python.execSelectionInTerminal",
+		"onCommand:python.execSelectionInDjangoShell",
+		"onCommand:jupyter.runSelectionLine",
+		"onCommand:jupyter.execCurrentCell",
+		"onCommand:jupyter.execCurrentCellAndAdvance",
+		"onCommand:python.displayHelp",
+		"onCommand:python.buildWorkspaceSymbols",
+		"onCommand:python.updateSparkLibrary",
+		"onCommand:python.startREPL",
+		"onCommand:python.goToPythonObject"
+	],
+	"main": "./out/client/extension",
+	"contributes": {
+		"languages": [{
+			"id": "testOutput",
+			"aliases": [
+				"vscode-output-colorizer",
+				"testOutput"
+			],
+			"extensions": [
+				".log"
+			],
+			"configuration": "./syntaxes/test.configuration.json",
+			"mimetypes": [
+				"text/x-code-output"
+			]
+		}],
+		"grammars": [{
+			"language": "testOutput",
+			"scopeName": "testOutput.log",
+			"path": "./syntaxes/test.tmLanguage"
+		}],
+		"snippets": [{
+			"language": "python",
+			"path": "./snippets/python.json"
+		}],
+		"keybindings": [{
+			"command": "jupyter.runSelectionLine",
+			"key": "ctrl+alt+enter",
+			"when": "editorFocus && !replaceActive && !searchViewletVisible && !findWidgetVisible"
+		}],
+		"commands": [{
+				"command": "python.sortImports",
+				"title": "Sort Imports",
+				"category": "Python Refactor"
+			},
+			{
+				"command": "python.startREPL",
+				"title": "Start REPL",
+				"category": "Python"
+			},
+			{
+				"command": "python.buildWorkspaceSymbols",
+				"title": "Build Workspace Symbols",
+				"category": "Python"
+			},
+			{
+				"command": "python.runtests",
+				"title": "Run All Unit Tests",
+				"category": "Python"
+			},
+			{
+				"command": "python.debugtests",
+				"title": "Debug All Unit Tests",
+				"category": "Python"
+			},
+			{
+				"command": "python.execInTerminal",
+				"title": "Run Python File in Terminal",
+				"category": "Python"
+			},
+			{
+				"command": "python.setInterpreter",
+				"title": "Select Workspace Interpreter",
+				"category": "Python"
+			},
+			{
+				"command": "python.updateSparkLibrary",
+				"title": "Update Workspace PySpark Libraries",
+				"category": "Python"
+			},
+			{
+				"command": "python.refactorExtractVariable",
+				"title": "Extract Variable",
+				"category": "Python Refactor"
+			},
+			{
+				"command": "python.refactorExtractMethod",
+				"title": "Extract Method",
+				"category": "Python Refactor"
+			},
+			{
+				"command": "python.viewTestOutput",
+				"title": "Show Unit Test Output",
+				"category": "Python"
+			},
+			{
+				"command": "python.selectAndRunTestMethod",
+				"title": "Run Unit Test Method ...",
+				"category": "Python"
+			},
+			{
+				"command": "python.selectAndDebugTestMethod",
+				"title": "Debug Unit Test Method ...",
+				"category": "Python"
+			},
+			{
+				"command": "python.selectAndRunTestFile",
+				"title": "Run Unit Test File ...",
+				"category": "Python"
+			},
+			{
+				"command": "python.runCurrentTestFile",
+				"title": "Run Current Unit Test File",
+				"category": "Python"
+			},
+			{
+				"command": "python.runFailedTests",
+				"title": "Run Failed Unit Tests",
+				"category": "Python"
+			},
+			{
+				"command": "python.execSelectionInTerminal",
+				"title": "Run Selection/Line in Python Terminal",
+				"category": "Python"
+			},
+			{
+				"command": "python.execSelectionInDjangoShell",
+				"title": "Run Selection/Line in Django Shell",
+				"category": "Python"
+			},
+			{
+				"command": "jupyter.runSelectionLine",
+				"title": "Run Selection/Line",
+				"category": "Jupyter"
+			},
+			{
+				"command": "jupyter.execCurrentCell",
+				"title": "Run Cell",
+				"category": "Jupyter"
+			},
+			{
+				"command": "jupyter.execCurrentCellAndAdvance",
+				"title": "Run Cell and Advance",
+				"category": "Jupyter"
+			},
+			{
+				"command": "jupyter.gotToPreviousCell",
+				"title": "Go to Previous Cell",
+				"category": "Jupyter"
+			},
+			{
+				"command": "jupyter.gotToNextCell",
+				"title": "Go to Next Cell",
+				"category": "Jupyter"
+			},
+			{
+				"command": "python.displayHelp",
+				"title": "Help",
+				"category": "Python"
+			},
+			{
+				"command": "python.goToPythonObject",
+				"title": "Go to Python Object",
+				"category": "Python"
+			}
+		],
+		"menus": {
+			"editor/context": [{
+					"command": "python.refactorExtractVariable",
+					"title": "Refactor: Extract Variable",
+					"group": "Refactor",
+					"when": "editorHasSelection && editorLangId == python"
+				},
+				{
+					"command": "python.refactorExtractMethod",
+					"title": "Refactor: Extract Method",
+					"group": "Refactor",
+					"when": "editorHasSelection && editorLangId == python"
+				},
+				{
+					"command": "python.sortImports",
+					"title": "Refactor: Sort Imports",
+					"group": "Refactor",
+					"when": "editorLangId == python"
+				},
+				{
+					"command": "python.execSelectionInTerminal",
+					"group": "Python",
+					"when": "editorHasSelection && editorLangId == python"
+				},
+				{
+					"command": "python.execSelectionInDjangoShell",
+					"group": "Python",
+					"when": "editorHasSelection && editorLangId == python && python.isDjangoProject"
+				},
+				{
+					"when": "resourceLangId == python",
+					"command": "python.execInTerminal",
+					"group": "Python"
+				},
+				{
+					"when": "resourceLangId == python",
+					"command": "python.runCurrentTestFile",
+					"group": "Python"
+				}
+			],
+			"explorer/context": [{
+					"when": "resourceLangId == python",
+					"command": "python.runtests",
+					"group": "Python"
+				},
+				{
+					"when": "resourceLangId == python",
+					"command": "python.debugtests",
+					"group": "Python"
+				},
+				{
+					"when": "resourceLangId == python",
+					"command": "python.execInTerminal",
+					"group": "Python"
+				}
+			]
+		},
+		"debuggers": [{
+			"type": "python",
+			"label": "Python",
+			"languages": [
+				"python"
+			],
+			"startSessionCommand": "python.python-debug.startSession",
+			"enableBreakpointsFor": {
+				"languageIds": [
+					"python",
+					"html"
+				]
+			},
+			"aiKey": "fce7a3d5-4665-4404-b786-31a6306749a6",
+			"program": "./out/client/debugger/Main.js",
+			"runtime": "node",
+			"configurationSnippets": [{
+					"label": "%python.snippet.launch.standard.label%",
+					"description": "%python.snippet.launch.standard.description%",
+					"body": {
+						"name": "Python",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${file}\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.pyspark.label%",
+					"description": "%python.snippet.launch.pyspark.description%",
+					"body": {
+						"name": "PySpark",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"osx": {
+							"pythonPath": "^\"\\${env:SPARK_HOME}/bin/spark-submit\""
+						},
+						"windows": {
+							"pythonPath": "^\"\\${env:SPARK_HOME}/bin/spark-submit.cmd\""
+						},
+						"linux": {
+							"pythonPath": "^\"\\${env:SPARK_HOME}/bin/spark-submit\""
+						},
+						"program": "^\"\\${file}\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.module.label%",
+					"description": "%python.snippet.launch.module.description%",
+					"body": {
+						"name": "Python Module",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"module": "module.name",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.terminal.label%",
+					"description": "%python.snippet.launch.terminal.description%",
+					"body": {
+						"name": "Integrated Terminal/Console",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${file}\"",
+						"cwd": "",
+						"console": "integratedTerminal",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.externalTerminal.label%",
+					"description": "%python.snippet.launch.externalTerminal.description%",
+					"body": {
+						"name": "External Terminal/Console",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${file}\"",
+						"cwd": "",
+						"console": "externalTerminal",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.django.label%",
+					"description": "%python.snippet.launch.django.description%",
+					"body": {
+						"name": "Django",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${workspaceRoot}/manage.py\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"args": [
+							"runserver",
+							"--noreload",
+							"--nothreading"
+						],
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput",
+							"DjangoDebugging"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.flask.label%",
+					"description": "%python.snippet.launch.flask.description%",
+					"body": {
+						"name": "Flask",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": false,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "fully qualified path fo 'flask' executable. Generally located along with python interpreter",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"env": {
+							"FLASK_APP": "^\"\\${workspaceRoot}/quickstart/app.py\""
+						},
+						"args": [
+							"run",
+							"--no-debugger",
+							"--no-reload"
+						],
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.flaskOld.label%",
+					"description": "%python.snippet.launch.flaskOld.description%",
+					"body": {
+						"name": "Flask (old)",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": false,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${workspaceRoot}/run.py\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"args": [],
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.pyramid.label%",
+					"description": "%python.snippet.launch.pyramid.description%",
+					"body": {
+						"name": "Pyramid",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"args": [
+							"^\"\\${workspaceRoot}/development.ini\""
+						],
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput",
+							"Pyramid"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.watson.label%",
+					"description": "%python.snippet.launch.watson.description%",
+					"body": {
+						"name": "Watson",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "^\"\\${workspaceRoot}/console.py\"",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"args": [
+							"dev",
+							"runserver",
+							"--noreload=True"
+						],
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit",
+							"RedirectOutput"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.scrapy.label%",
+					"description": "%python.snippet.launch.scrapy.description%",
+					"body": {
+						"name": "Scrapy",
+						"type": "python",
+						"request": "launch",
+						"stopOnEntry": true,
+						"pythonPath": "^\"\\${config:python.pythonPath}\"",
+						"program": "~/.virtualenvs/scrapy/bin/scrapy",
+						"cwd": "^\"\\${workspaceRoot}\"",
+						"args": [
+							"crawl",
+							"specs",
+							"-o",
+							"bikes.json"
+						],
+						"console": "integratedTerminal",
+						"env": {},
+						"envFile": "^\"\\${workspaceRoot}/.env\"",
+						"debugOptions": [
+							"WaitOnAbnormalExit",
+							"WaitOnNormalExit"
+						]
+					}
+				},
+				{
+					"label": "%python.snippet.launch.attach.label%",
+					"description": "%python.snippet.launch.attach.description%",
+					"body": {
+						"name": "Attach (Remote Debug)",
+						"type": "python",
+						"request": "attach",
+						"localRoot": "^\"\\${workspaceRoot}\"",
+						"remoteRoot": "^\"\\${workspaceRoot}\"",
+						"port": 3000,
+						"secret": "my_secret",
+						"host": "localhost"
+					}
+				}
+			],
+			"configurationAttributes": {
+				"launch": {
+					"required": [
+						"program"
+					],
+					"properties": {
+						"module": {
+							"type": "string",
+							"description": "Name of the module to be debugged.",
+							"default": ""
+						},
+						"program": {
+							"type": "string",
+							"description": "Absolute path to the program.",
+							"default": "${file}"
+						},
+						"pythonPath": {
+							"type": "string",
+							"description": "Path (fully qualified) to python executable. Defaults to the value in settings.json",
+							"default": "${config:python.pythonPath}"
+						},
+						"args": {
+							"type": "array",
+							"description": "Command line arguments passed to the program",
+							"default": [],
+							"items": {
+								"type": "string"
+							}
+						},
+						"stopOnEntry": {
+							"type": "boolean",
+							"description": "Automatically stop after launch.",
+							"default": true
+						},
+						"externalConsole": {
+							"type": "boolean",
+							"description": "Deprecated: use 'console' attribute instead.",
+							"default": false
+						},
+						"console": {
+							"enum": [
+								"none",
+								"integratedTerminal",
+								"externalTerminal"
+							],
+							"description": "Where to launch the debug target: internal console, integrated terminal, or external terminal.",
+							"default": "none"
+						},
+						"cwd": {
+							"type": "string",
+							"description": "Absolute path to the working directory of the program being debugged. Default is the root directory of the file (leave empty).",
+							"default": ""
+						},
+						"debugOptions": {
+							"type": "array",
+							"description": "Advanced options, view read me for further details.",
+							"items": {
+								"type": "string",
+								"enum": [
+									"WaitOnAbnormalExit",
+									"WaitOnNormalExit",
+									"RedirectOutput",
+									"DebugStdLib",
+									"BreakOnSystemExitZero",
+									"DjangoDebugging",
+									"Sudo",
+									"IgnoreDjangoTemplateWarnings",
+									"Pyramid"
+								]
+							},
+							"default": [
+								"WaitOnAbnormalExit",
+								"WaitOnNormalExit",
+								"RedirectOutput"
+							]
+						},
+						"exceptionHandling": {
+							"description": "List of exception types and how they are handled during debugging (ignore, always break or break only if unhandled).",
+							"properties": {
+								"ignore": {
+									"type": "array",
+									"description": "Never break into these exceptions, e.g. 'copy.Error'",
+									"default": [],
+									"items": {
+										"type": "string"
+									}
+								},
+								"always": {
+									"type": "array",
+									"description": "Always break into these exceptions, e.g. 'copy.Error'",
+									"default": [],
+									"items": {
+										"type": "string"
+									}
+								},
+								"unhandled": {
+									"type": "array",
+									"description": "Break into these exceptions if they aren't handled, e.g. 'copy.Error'",
+									"default": [],
+									"items": {
+										"type": "string"
+									}
+								}
+							}
+						},
+						"env": {
+							"type": "object",
+							"description": "Environment variables defined as a key value pair. Property ends up being the Environment Variable and the value of the property ends up being the value of the Env Variable.",
+							"default": {}
+						},
+						"envFile": {
+							"type": "string",
+							"description": "Absolute path to a file containing environment variable definitions.",
+							"default": ""
+						}
+					}
+				},
+				"attach": {
+					"required": [
+						"localRoot",
+						"remoteRoot"
+					],
+					"properties": {
+						"localRoot": {
+							"type": "string",
+							"description": "Local source root that corrresponds to the 'remoteRoot'.",
+							"default": "${workspaceRoot}"
+						},
+						"remoteRoot": {
+							"type": "string",
+							"description": "The source root of the remote host.",
+							"default": ""
+						},
+						"port": {
+							"type": "number",
+							"description": "Debug port to attach",
+							"default": 0
+						},
+						"host": {
+							"type": "string",
+							"description": "IP Address of the of remote server (default is localhost or use 127.0.0.1).",
+							"default": "localhost"
+						},
+						"secret": {
+							"type": "string",
+							"description": "Secret used to authenticate for remote debugging.",
+							"default": ""
+						}
+					}
+				}
+			},
+			"initialConfigurations": [{
+					"name": "Python",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${file}",
+					"cwd": "${workspaceRoot}",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "PySpark",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"osx": {
+						"pythonPath": "${env:SPARK_HOME}/bin/spark-submit"
+					},
+					"windows": {
+						"pythonPath": "${env:SPARK_HOME}/bin/spark-submit.cmd"
+					},
+					"linux": {
+						"pythonPath": "${env:SPARK_HOME}/bin/spark-submit"
+					},
+					"program": "${file}",
+					"cwd": "${workspaceRoot}",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "Python Module",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"module": "module.name",
+					"cwd": "${workspaceRoot}",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "Integrated Terminal/Console",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${file}",
+					"cwd": "",
+					"console": "integratedTerminal",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit"
+					]
+				},
+				{
+					"name": "External Terminal/Console",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${file}",
+					"cwd": "",
+					"console": "externalTerminal",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit"
+					]
+				},
+				{
+					"name": "Django",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${workspaceRoot}/manage.py",
+					"cwd": "${workspaceRoot}",
+					"args": [
+						"runserver",
+						"--noreload",
+						"--nothreading"
+					],
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput",
+						"DjangoDebugging"
+					]
+				},
+				{
+					"name": "Flask",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": false,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "fully qualified path fo 'flask' executable. Generally located along with python interpreter",
+					"cwd": "${workspaceRoot}",
+					"env": {
+						"FLASK_APP": "${workspaceRoot}/quickstart/app.py"
+					},
+					"args": [
+						"run",
+						"--no-debugger",
+						"--no-reload"
+					],
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "Flask (old)",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": false,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${workspaceRoot}/run.py",
+					"cwd": "${workspaceRoot}",
+					"args": [],
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "Pyramid",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"cwd": "${workspaceRoot}",
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"args": [
+						"${workspaceRoot}/development.ini"
+					],
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput",
+						"Pyramid"
+					]
+				},
+				{
+					"name": "Watson",
+					"type": "python",
+					"request": "launch",
+					"stopOnEntry": true,
+					"pythonPath": "${config:python.pythonPath}",
+					"program": "${workspaceRoot}/console.py",
+					"cwd": "${workspaceRoot}",
+					"args": [
+						"dev",
+						"runserver",
+						"--noreload=True"
+					],
+					"env": {},
+					"envFile": "${workspaceRoot}/.env",
+					"debugOptions": [
+						"WaitOnAbnormalExit",
+						"WaitOnNormalExit",
+						"RedirectOutput"
+					]
+				},
+				{
+					"name": "Attach (Remote Debug)",
+					"type": "python",
+					"request": "attach",
+					"localRoot": "${workspaceRoot}",
+					"remoteRoot": "${workspaceRoot}",
+					"port": 3000,
+					"secret": "my_secret",
+					"host": "localhost"
+				}
+			]
+		}],
+		"configuration": {
+			"type": "object",
+			"title": "Python Configuration",
+			"properties": {
+				"python.promptToInstallJupyter": {
+					"type": "boolean",
+					"default": true,
+					"description": "Display prompt to install Jupyter Extension."
+				},
+				"python.pythonPath": {
+					"type": "string",
+					"default": "python",
+					"description": "Path to Python, you can use a custom version of Python by modifying this setting to include the full path."
+				},
+				"python.venvPath": {
+					"type": "string",
+					"default": "",
+					"description": "Path to folder with a list of Virtual Environments (e.g. ~/.pyenv, ~/Envs, ~/.virtualenvs)."
+				},
+				"python.envFile": {
+					"type": "string",
+					"description": "Absolute path to a file containing environment variable definitions.",
+					"default": "${workspaceRoot}/.env"
+				},
+				"python.jediPath": {
+					"type": "string",
+					"default": "",
+					"description": "Path to directory containing the Jedi library (this path will contain the 'Jedi' sub directory)."
+				},
+				"python.sortImports.path": {
+					"type": "string",
+					"description": "Path to isort script, default using inner version",
+					"default": ""
+				},
+				"python.sortImports.args": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to lint Python files."
+				},
+				"python.linting.enabledWithoutWorkspace": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to lint Python files when no workspace is opened."
+				},
+				"python.linting.prospectorEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using prospector."
+				},
+				"python.linting.pylintEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to lint Python files using pylint."
+				},
+				"python.linting.pep8Enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using pep8"
+				},
+				"python.linting.flake8Enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using flake8"
+				},
+				"python.linting.pydocstyleEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using pydocstyle"
+				},
+				"python.linting.mypyEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using mypy."
+				},
+				"python.linting.lintOnTextChange": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to lint Python files when modified."
+				},
+				"python.linting.lintOnSave": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to lint Python files when saved."
+				},
+				"python.linting.maxNumberOfProblems": {
+					"type": "number",
+					"default": 100,
+					"description": "Controls the maximum number of problems produced by the server."
+				},
+				"python.linting.pylintCategorySeverity.convention": {
+					"type": "string",
+					"default": "Information",
+					"description": "Severity of Pylint message type 'Convention/C'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pylintCategorySeverity.refactor": {
+					"type": "string",
+					"default": "Hint",
+					"description": "Severity of Pylint message type 'Refactor/R'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pylintCategorySeverity.warning": {
+					"type": "string",
+					"default": "Warning",
+					"description": "Severity of Pylint message type 'Warning/W'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pylintCategorySeverity.error": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Pylint message type 'Error/E'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pylintCategorySeverity.fatal": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Pylint message type 'Fatal/F'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pep8CategorySeverity.W": {
+					"type": "string",
+					"default": "Warning",
+					"description": "Severity of Pep8 message type 'W'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.pep8CategorySeverity.E": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Pep8 message type 'E'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.flake8CategorySeverity.F": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Flake8 message type 'F'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.flake8CategorySeverity.E": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Flake8 message type 'E'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.flake8CategorySeverity.W": {
+					"type": "string",
+					"default": "Warning",
+					"description": "Severity of Flake8 message type 'W'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.mypyCategorySeverity.error": {
+					"type": "string",
+					"default": "Error",
+					"description": "Severity of Mypy message type 'Error'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.mypyCategorySeverity.note": {
+					"type": "string",
+					"default": "Information",
+					"description": "Severity of Mypy message type 'Note'.",
+					"enum": [
+						"Hint",
+						"Error",
+						"Information",
+						"Warning"
+					]
+				},
+				"python.linting.prospectorPath": {
+					"type": "string",
+					"default": "prospector",
+					"description": "Path to Prospector, you can use a custom version of prospector by modifying this setting to include the full path."
+				},
+				"python.linting.pylintPath": {
+					"type": "string",
+					"default": "pylint",
+					"description": "Path to Pylint, you can use a custom version of pylint by modifying this setting to include the full path."
+				},
+				"python.linting.pep8Path": {
+					"type": "string",
+					"default": "pep8",
+					"description": "Path to pep8, you can use a custom version of pep8 by modifying this setting to include the full path."
+				},
+				"python.linting.flake8Path": {
+					"type": "string",
+					"default": "flake8",
+					"description": "Path to flake8, you can use a custom version of flake8 by modifying this setting to include the full path."
+				},
+				"python.linting.pydocstylePath": {
+					"type": "string",
+					"default": "pydocstyle",
+					"description": "Path to pydocstyle, you can use a custom version of pydocstyle by modifying this setting to include the full path."
+				},
+				"python.linting.mypyPath": {
+					"type": "string",
+					"default": "mypy",
+					"description": "Path to mypy, you can use a custom version of mypy by modifying this setting to include the full path."
+				},
+				"python.linting.prospectorArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.pylintArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.pep8Args": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.flake8Args": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.pydocstyleArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.mypyArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [
+						"--ignore-missing-imports",
+						"--follow-imports=silent"
+					],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.outputWindow": {
+					"type": "string",
+					"default": "Python",
+					"description": "The output window name for the linting messages, defaults to Python output window."
+				},
+				"python.formatting.provider": {
+					"type": "string",
+					"default": "autopep8",
+					"description": "Provider for formatting. Possible options include 'autopep8' and 'yapf'.",
+					"enum": [
+						"autopep8",
+						"yapf",
+						"none"
+					]
+				},
+				"python.formatting.autopep8Path": {
+					"type": "string",
+					"default": "autopep8",
+					"description": "Path to autopep8, you can use a custom version of autopep8 by modifying this setting to include the full path."
+				},
+				"python.formatting.yapfPath": {
+					"type": "string",
+					"default": "yapf",
+					"description": "Path to yapf, you can use a custom version of yapf by modifying this setting to include the full path."
+				},
+				"python.formatting.autopep8Args": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.formatting.yapfArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.formatting.formatOnSave": {
+					"type": "boolean",
+					"default": false,
+					"description": "Format the document upon saving."
+				},
+				"python.formatting.outputWindow": {
+					"type": "string",
+					"default": "Python",
+					"description": "The output window name for the formatting messages, defaults to Python output window."
+				},
+				"python.autoComplete.preloadModules": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Comma delimited list of modules preloaded to speed up Auto Complete (e.g. add Numpy, Pandas, etc, items slow to load when autocompleting)."
+				},
+				"python.autoComplete.extraPaths": {
+					"type": "array",
+					"default": [],
+					"description": "List of paths to libraries and the like that need to be imported by auto complete engine. E.g. when using Google App SDK, the paths are not in system path, hence need to be added into this list."
+				},
+				"python.autoComplete.addBrackets": {
+					"type": "boolean",
+					"default": false,
+					"description": "Automatically add brackets for functions."
+				},
+				"python.workspaceSymbols.tagFilePath": {
+					"type": "string",
+					"default": "${workspaceRoot}/.vscode/tags",
+					"description": "Fully qualified path to tag file (exuberant ctag file), used to provide workspace symbols."
+				},
+				"python.workspaceSymbols.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Set to 'false' to disable Workspace Symbol provider using ctags."
+				},
+				"python.workspaceSymbols.rebuildOnStart": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to re-build the tags file on start (defaults to true)."
+				},
+				"python.workspaceSymbols.rebuildOnFileSave": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to re-build the tags file on when changes made to python files are saved."
+				},
+				"python.workspaceSymbols.ctagsPath": {
+					"type": "string",
+					"default": "ctags",
+					"description": "Fully qualilified path to the ctags executable (else leave as ctags, assuming it is in current path)."
+				},
+				"python.workspaceSymbols.exclusionPatterns": {
+					"type": "array",
+					"default": [
+						"**/site-packages/**"
+					],
+					"items": {
+						"type": "string"
+					},
+					"description": "Pattern used to exclude files and folders from ctags See http://ctags.sourceforge.net/ctags.html."
+				},
+				"python.unitTest.promptToConfigure": {
+					"type": "boolean",
+					"default": true,
+					"description": "Where to prompt to configure a test framework if potential tests directories are discovered."
+				},
+				"python.unitTest.debugPort": {
+					"type": "number",
+					"default": 3000,
+					"description": "Port number used for debugging of unittests."
+				},
+				"python.unitTest.nosetestsEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to enable or disable unit testing using nosetests."
+				},
+				"python.unitTest.nosetestPath": {
+					"type": "string",
+					"default": "nosetests",
+					"description": "Path to nosetests, you can use a custom version of nosetests by modifying this setting to include the full path."
+				},
+				"python.unitTest.pyTestEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to enable or disable unit testing using pytest."
+				},
+				"python.unitTest.pyTestPath": {
+					"type": "string",
+					"default": "py.test",
+					"description": "Path to pytest (py.test), you can use a custom version of pytest by modifying this setting to include the full path."
+				},
+				"python.unitTest.nosetestArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.unitTest.pyTestArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.unitTest.unittestEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to enable or disable unit testing using unittest."
+				},
+				"python.unitTest.unittestArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [
+						"-v",
+						"-s",
+						".",
+						"-p",
+						"*test*.py"
+					],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.ignorePatterns": {
+					"type": "array",
+					"description": "Patterns used to exclude files or folders from being linted.",
+					"default": [
+						".vscode/*.py",
+						"**/site-packages/**/*.py"
+					],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.linting.pylamaEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether to lint Python files using pylama."
+				},
+				"python.linting.pylamaPath": {
+					"type": "string",
+					"default": "pylama",
+					"description": "Path to pylama, you can use a custom version of pylama by modifying this setting to include the full path."
+				},
+				"python.linting.pylamaArgs": {
+					"type": "array",
+					"description": "Arguments passed in. Each argument is a separate item in the array.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				},
+				"python.unitTest.outputWindow": {
+					"type": "string",
+					"default": "Python Test Log",
+					"description": "The output window name for the unit test messages, defaults to Python output window."
+				},
+				"python.terminal.executeInFileDir": {
+					"type": "boolean",
+					"default": false,
+					"description": "When executing a file in the terminal, whether to use execute in the file's directory, instead of the current open folder."
+				},
+				"python.terminal.launchArgs": {
+					"type": "array",
+					"default": [],
+					"description": "Python launch arguments to use when executing a file in the terminal."
+				},
+				"python.jupyter.appendResults": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to appen the results to results window, else clear and display."
+				},
+				"python.jupyter.defaultKernel": {
+					"type": "string",
+					"default": "",
+					"description": "Default kernel to be used. By default the first available kernel is used."
+				},
+				"python.jupyter.startupCode": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"%matplotlib inline"
+					],
+					"description": "Code executed when the kernel starts. Such as the default of '%matplotlib inline'. Individual lines can be placed in separate items of the array."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "tsc -p ./ && webpack",
+		"compile": "webpack && tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "node ./node_modules/vscode/bin/test"
+	},
+	"dependencies": {
+		"anser": "^1.1.0",
+		"copy-paste": "^1.3.0",
+		"diff-match-patch": "^1.0.0",
+		"fs-extra": "^0.30.0",
+		"fuzzy": "^0.1.3",
+		"line-by-line": "^0.1.5",
+		"minimatch": "^3.0.3",
+		"named-js-regexp": "^1.3.1",
+		"node-static": "^0.7.9",
+		"prepend-file": "^1.3.0",
+		"rx": "^4.1.0",
+		"socket.io": "^1.4.8",
+		"tmp": "0.0.29",
+		"transformime": "^3.1.2",
+		"transformime-marked": "0.0.1",
+		"tree-kill": "^1.1.0",
+		"uint64be": "^1.0.1",
+		"untildify": "^3.0.2",
+		"vscode-debugadapter": "^1.0.1",
+		"vscode-debugprotocol": "^1.0.1",
+		"vscode-extension-telemetry": "0.0.5",
+		"vscode-languageclient": "^1.1.0",
+		"vscode-languageserver": "^1.1.0",
+		"xml2js": "^0.4.17"
+	},
+	"devDependencies": {
+		"@types/jquery": "^1.10.31",
+		"@types/mocha": "^2.2.32",
+		"@types/node": "^6.0.40",
+		"@types/rx": "^2.5.33",
+		"@types/socket.io": "^1.4.27",
+		"@types/socket.io-client": "^1.4.27",
+		"@types/uuid": "^3.3.27",
+		"@types/sinon": "^2.3.2",
+		"babel-core": "^6.14.0",
+		"babel-loader": "^6.2.5",
+		"babel-preset-es2015": "^6.14.0",
+		"ignore-loader": "^0.1.1",
+		"mocha": "^2.3.3",
+		"sinon": "^2.3.6",
+		"retyped-diff-match-patch-tsd-ambient": "^1.0.0-0",
+		"ts-loader": "^0.8.2",
+		"tslint": "^3.15.1",
+		"typescript": "^2.3.2",
+		"vscode": "^1.0.3",
+		"webpack": "^1.13.2"
+	}
+}
