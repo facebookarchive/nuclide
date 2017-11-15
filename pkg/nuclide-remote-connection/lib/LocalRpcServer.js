@@ -9,6 +9,7 @@
  * @format
  */
 
+import child_process from 'child_process';
 import {getLogger} from 'log4js';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
@@ -28,6 +29,21 @@ process.on('uncaughtException', err => {
 
 process.on('unhandledRejection', (error, promise) => {
   logger.error('Unhandled promise rejection in LocalRpcServer', error);
+});
+
+// Make sure that we cleanly exit if the parent (Atom) goes away.
+process.on('disconnect', () => {
+  process.exit();
+});
+
+// And when we do exit, make sure that all child processes get cleaned up.
+process.on('exit', () => {
+  // $FlowIgnore: Private method.
+  process._getActiveHandles().forEach(handle => {
+    if (handle instanceof child_process.ChildProcess) {
+      handle.kill();
+    }
+  });
 });
 
 const serviceRegistry = new ServiceRegistry(
