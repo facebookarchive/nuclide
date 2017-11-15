@@ -1270,6 +1270,10 @@ export class HgRepositoryClient {
     return this._service.pull(options).refCount();
   }
 
+  fold(from: string, to: string, message: string): Observable<string> {
+    return this._service.fold(from, to, message).refCount();
+  }
+
   _clearClientCache(filePaths: Array<NuclideUri>): void {
     if (filePaths.length === 0) {
       this._hgDiffCache = new Map();

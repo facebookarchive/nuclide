@@ -1642,4 +1642,23 @@ export class HgService {
     };
     return this._hgRunCommand(args, execOptions).publish();
   }
+
+  /**
+   * @param from This could be a changeset ID, name of a bookmark, revision number, etc.
+   * @param to This could be a changeset ID, name of a bookmark, revision number, etc.
+   * @param message New message for the resulting folded commit.
+   */
+  fold(
+    from: string,
+    to: string,
+    message: string,
+  ): ConnectableObservable<string> {
+    const args = ['fold', '--exact', `${from}::${to}`, '--message', message];
+
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+
+    return this._hgRunCommand(args, execOptions).publish();
+  }
 }
