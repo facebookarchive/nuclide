@@ -48,6 +48,10 @@ async function createOCamlLanguageService(
         debounce: {
           linter: 500,
         },
+        diagnostics: {
+          merlinPerfLogging: true,
+          tools: ['merlin'],
+        },
         path: {
           ocamlfind: 'ocamlfind',
           ocamlmerlin: 'ocamlmerlin',
@@ -70,11 +74,6 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'OCaml',
     grammars: ['source.ocaml'],
-    highlight: {
-      version: '0.1.0',
-      priority: 1,
-      analyticsEventName: 'ocaml.codeHighlight',
-    },
     outline: {
       version: '0.1.0',
       priority: 1,

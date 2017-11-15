@@ -166,6 +166,8 @@ export class LspLanguageService {
   _hoverCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
   _highlightCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
   _definitionCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
+  _autocompleteCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
+  _outlineCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
 
   constructor(
     logger: log4js$Logger,
@@ -1331,7 +1333,12 @@ export class LspLanguageService {
 
     let response;
     try {
-      response = await this._lspConnection.completion(params);
+      this._autocompleteCancellation.cancel();
+      this._autocompleteCancellation = new rpc.CancellationTokenSource();
+      response = await this._lspConnection.completion(
+        params,
+        this._autocompleteCancellation.token,
+      );
       invariant(response != null, 'null textDocument/completion');
     } catch (e) {
       this._logLspException(e);
@@ -1527,7 +1534,10 @@ export class LspLanguageService {
 
     let response;
     try {
-      response = await this._lspConnection.documentSymbol(params);
+      this._outlineCancellation.cancel();
+      this._outlineCancellation = new rpc.CancellationTokenSource();
+      const token = this._outlineCancellation.token;
+      response = await this._lspConnection.documentSymbol(params, token);
       invariant(response != null, 'null textDocument/documentSymbol');
     } catch (e) {
       this._logLspException(e);

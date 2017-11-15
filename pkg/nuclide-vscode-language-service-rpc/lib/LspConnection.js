@@ -102,10 +102,12 @@ export class LspConnection {
 
   completion(
     params: p.TextDocumentPositionParams,
+    token: CancellationToken,
   ): Promise<p.CompletionList | Array<p.CompletionItem>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/completion',
       params,
+      token,
     );
   }
 
@@ -169,10 +171,12 @@ export class LspConnection {
 
   documentSymbol(
     params: p.DocumentSymbolParams,
+    token: CancellationToken,
   ): Promise<Array<p.SymbolInformation>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/documentSymbol',
       params,
+      token,
     );
   }
 
