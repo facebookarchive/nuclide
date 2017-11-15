@@ -127,7 +127,6 @@ export class DebuggerControlsView extends React.PureComponent<
             store={model.getStore()}
             bridge={model.getBridge()}
             breakpointStore={model.getBreakpointStore()}
-            openDevTools={this._openDevTools}
             stopDebugging={this._stopDebugging}
           />
         </div>
@@ -142,11 +141,6 @@ export class DebuggerControlsView extends React.PureComponent<
       </div>
     );
   }
-
-  _openDevTools = (): void => {
-    const {model} = this.props;
-    model.getActions().openDevTools();
-  };
 
   _stopDebugging = (): void => {
     const {model} = this.props;

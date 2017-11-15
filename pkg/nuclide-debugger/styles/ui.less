@@ -76,42 +76,6 @@
   padding-bottom: 5px;
 }
 
-.nuclide-debugger-webview {
-  // This is only used because we're piggybacking on its state management. It
-  // needs to be in the DOM, but we don't want to see it.
-  height: 0;
-  overflow: hidden;
-}
-
-/*
-Hack for flexbox + vertical scaling with webview shadow dom.
-Use flexbox cross-axis stretch to fill the vertical space.
-*/
-
-.nuclide-debugger-vfill-parent() {
-  display: flex;
-  flex-direction:row;
-  align-children: stretch;
-  align-items: stretch;
-}
-
-.nuclide-debugger-vfill-child() {
-  flex: 1 0 auto;
-}
-
-.nuclide-debugger-webview {
-  background-color: #fff;
-  .nuclide-debugger-vfill-parent();
-  .nuclide-debugger-vfill-child(); // child relative to .inspector
-
-  &::shadow object,
-  object {
-    .nuclide-debugger-vfill-child();
-    // The object element is generated with inline style height:100%.
-    height: auto !important;
-  }
-}
-
 /* General debugger UI */
 .nuclide-debugger-starting-message {
   align-items: baseline;

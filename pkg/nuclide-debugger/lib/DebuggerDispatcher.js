@@ -104,9 +104,6 @@ export type DebuggerAction =
       data: {callstack: Callstack},
     }
   | {
-      actionType: 'OPEN_DEV_TOOLS',
-    }
-  | {
       actionType: 'OPEN_SOURCE_LOCATION',
       data: {sourceURL: string, lineNumber: number},
     }
@@ -251,7 +248,6 @@ export const ActionTypes = Object.freeze({
   REMOVE_REGISTER_EXECUTOR: 'REMOVE_REGISTER_EXECUTOR',
   REGISTER_CONSOLE: 'REGISTER_CONSOLE',
   UNREGISTER_CONSOLE: 'UNREGISTER_CONSOLE',
-  OPEN_DEV_TOOLS: 'OPEN_DEV_TOOLS',
   OPEN_SOURCE_LOCATION: 'OPEN_SOURCE_LOCATION',
   CLEAR_INTERFACE: 'CLEAR_INTERFACE',
   UPDATE_CALLSTACK: 'UPDATE_CALLSTACK',

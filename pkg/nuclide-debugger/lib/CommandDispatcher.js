@@ -19,7 +19,6 @@ import InspectorBackendClass from './Protocol/NuclideProtocolParser';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import BridgeAdapter from './Protocol/BridgeAdapter';
-import {isNewProtocolChannelEnabled} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {reportError} from './Protocol/EventReporter';
 
@@ -30,10 +29,7 @@ import {reportError} from './Protocol/EventReporter';
   */
 export default class CommandDispatcher {
   _sessionSubscriptions: ?UniversalDisposable;
-  _webview: ?WebviewElement;
-  _webviewUrl: ?string;
   _bridgeAdapter: ?BridgeAdapter;
-  _useNewChannel: boolean;
   _getIsReadonlyTarget: () => boolean;
   _shouldFilterBreak: (pausedEvent: PausedEvent) => boolean;
 
@@ -41,77 +37,33 @@ export default class CommandDispatcher {
     getIsReadonlyTarget: () => boolean,
     shouldFilterBreak: (pausedEvent: PausedEvent) => boolean,
   ) {
-    this._useNewChannel = false;
     this._getIsReadonlyTarget = getIsReadonlyTarget;
     this._shouldFilterBreak = shouldFilterBreak;
   }
 
-  isNewChannel(): boolean {
-    return this._useNewChannel;
-  }
-
-  setupChromeChannel(url: string): void {
+  setupChromeChannel(): void {
     this._ensureSessionCreated();
     // Do not bother setup load if new channel is enabled.
-    if (this._useNewChannel) {
-      invariant(this._bridgeAdapter != null);
-      this._bridgeAdapter.enable();
-      return;
-    }
-    if (this._webview == null) {
-      // Cast from HTMLElement down to WebviewElement without instanceof
-      // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement(
-        'webview',
-      ): any): WebviewElement);
-      webview.src = url;
-      webview.nodeintegration = true;
-      webview.disablewebsecurity = true;
-      webview.classList.add('native-key-bindings'); // required to pass through certain key events
-      webview.classList.add('nuclide-debugger-webview');
 
-      // The webview is actually only used for its state; it's really more of a model that just has
-      // to live in the DOM. We render it into the body to keep it separate from our view, which may
-      // be detached. If the webview were a child, it would cause the webview to reload when
-      // reattached, and we'd lose our state.
-      invariant(document.body != null);
-      document.body.appendChild(webview);
-
-      this._webview = webview;
-      invariant(this._sessionSubscriptions != null);
-      this._sessionSubscriptions.add(() => {
-        webview.remove();
-        this._webview = null;
-        this._webviewUrl = null;
-      });
-    } else if (url !== this._webviewUrl) {
-      this._webview.src = url;
-    }
-    this._webviewUrl = url;
+    invariant(this._bridgeAdapter != null);
+    this._bridgeAdapter.enable();
   }
 
   async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
     this._ensureSessionCreated();
-    this._useNewChannel = isNewProtocolChannelEnabled(
-      debuggerInstance.getProviderName(),
+    const dispatchers = await InspectorBackendClass.bootstrap(debuggerInstance);
+    this._bridgeAdapter = new BridgeAdapter(
+      dispatchers,
+      this._getIsReadonlyTarget,
+      this._shouldFilterBreak,
     );
-    if (this._useNewChannel) {
-      const dispatchers = await InspectorBackendClass.bootstrap(
-        debuggerInstance,
-      );
-      this._bridgeAdapter = new BridgeAdapter(
-        dispatchers,
-        this._getIsReadonlyTarget,
-        this._shouldFilterBreak,
-      );
-      invariant(this._sessionSubscriptions != null);
-      this._sessionSubscriptions.add(() => {
-        if (this._bridgeAdapter != null) {
-          this._bridgeAdapter.dispose();
-          this._bridgeAdapter = null;
-        }
-      });
-    }
+    invariant(this._sessionSubscriptions != null);
+    this._sessionSubscriptions.add(() => {
+      if (this._bridgeAdapter != null) {
+        this._bridgeAdapter.dispose();
+        this._bridgeAdapter = null;
+      }
+    });
   }
 
   _ensureSessionCreated(): void {
@@ -128,28 +80,12 @@ export default class CommandDispatcher {
   }
 
   send(...args: Array<any>): void {
-    if (this._useNewChannel) {
-      this._sendViaNuclideChannel(...args);
-    } else {
-      this._sendViaChromeChannel(...args);
-    }
-  }
-
-  openDevTools(): void {
-    if (this._webview == null) {
-      return;
-    }
-    this._webview.openDevTools();
+    this._sendViaNuclideChannel(...args);
   }
 
   getEventObservable(): Observable<IPCEvent> {
-    if (this._useNewChannel) {
-      invariant(this._bridgeAdapter != null);
-      return this._bridgeAdapter.getEventObservable();
-    } else {
-      invariant(this._webview != null);
-      return Observable.fromEvent(this._webview, 'ipc-message');
-    }
+    invariant(this._bridgeAdapter != null);
+    return this._bridgeAdapter.getEventObservable();
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
@@ -235,10 +171,7 @@ export default class CommandDispatcher {
       case 'debugger.toggle-pause':
         // TODO[jetan]: 'debugger.toggle-pause' needs to implement state management which
         // I haven't think well yet so forward to chrome for now.
-        this._sendViaChromeChannel(
-          'triggerDebuggerAction',
-          'debugger.toggle-pause',
-        );
+        reportError('toggle-pause is not implemented yet.');
         break;
       case 'debugger.step-over':
         this._bridgeAdapter.stepOver();
@@ -256,15 +189,6 @@ export default class CommandDispatcher {
         throw Error(
           `_triggerDebuggerAction: unrecognized actionId: ${actionId}`,
         );
-    }
-  }
-
-  _sendViaChromeChannel(...args: Array<any>): void {
-    const webview = this._webview;
-    if (webview != null) {
-      webview.send('command', ...args);
-    } else {
-      // TODO: log and throw error.
     }
   }
 }

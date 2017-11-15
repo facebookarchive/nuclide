@@ -146,12 +146,11 @@ export default class DebuggerActions {
       this._disposables.add(debuggerInstance.onSessionEnd(handler));
     }
 
-    const socketAddr = await debuggerInstance.getWebsocketAddress();
     endTimerTracking();
 
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_PROCESS_SOCKET,
-      data: socketAddr,
+      data: '',
     });
     // Debugger finished initializing and entered debug mode.
     this.setDebuggerMode(DebuggerMode.RUNNING);
@@ -661,10 +660,6 @@ export default class DebuggerActions {
         message,
       },
     });
-  }
-
-  openDevTools(): void {
-    this._dispatcher.dispatch({actionType: ActionTypes.OPEN_DEV_TOOLS});
   }
 
   receiveExpressionEvaluationResponse(

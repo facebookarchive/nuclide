@@ -51,7 +51,6 @@ export class DebuggerStore {
   _debuggerInstance: ?DebuggerInstanceBase;
   _error: ?string;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
-  _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
   _togglePauseOnException: boolean;
   _togglePauseOnCaughtException: boolean;
@@ -77,7 +76,6 @@ export class DebuggerStore {
     this._debuggerInstance = null;
     this._error = null;
     this._evaluationExpressionProviders = new Set();
-    this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
     this._togglePauseOnException = false;
     this._togglePauseOnCaughtException = false;
@@ -130,10 +128,6 @@ export class DebuggerStore {
 
   getError(): ?string {
     return this._error;
-  }
-
-  getProcessSocket(): ?string {
-    return this._processSocket;
   }
 
   getDebuggerMode(): DebuggerModeType {
@@ -222,9 +216,6 @@ export class DebuggerStore {
 
   _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case ActionTypes.SET_PROCESS_SOCKET:
-        this._processSocket = payload.data;
-        break;
       case ActionTypes.SET_ERROR:
         this._error = payload.data;
         break;

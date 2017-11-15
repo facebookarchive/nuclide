@@ -239,13 +239,6 @@ export default class Bridge {
       case 'notification':
         switch (event.args[0]) {
           case 'ready':
-            if (
-              atom.config.get(
-                'nuclide.nuclide-debugger.openDevToolsOnDebuggerStart',
-              )
-            ) {
-              this.openDevTools();
-            }
             this._sendAllBreakpoints();
             this._syncDebuggerState();
             break;
@@ -522,23 +515,17 @@ export default class Bridge {
 
   // This will be unnecessary after we remove 'ready' event.
   _signalNewChannelReadyIfNeeded(): void {
-    if (this._commandDispatcher.isNewChannel()) {
-      this._handleIpcMessage({
-        channel: 'notification',
-        args: ['ready'],
-      });
-    }
+    this._handleIpcMessage({
+      channel: 'notification',
+      args: ['ready'],
+    });
   }
 
-  setupChromeChannel(url: string): void {
-    this._commandDispatcher.setupChromeChannel(url);
+  setupChromeChannel(): void {
+    this._commandDispatcher.setupChromeChannel();
   }
 
   setupNuclideChannel(debuggerInstance: Object): Promise<void> {
     return this._commandDispatcher.setupNuclideChannel(debuggerInstance);
-  }
-
-  openDevTools(): void {
-    this._commandDispatcher.openDevTools();
   }
 }

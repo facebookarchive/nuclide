@@ -15,12 +15,6 @@
       ]
     },
     "config": {
-      "openDevToolsOnDebuggerStart": {
-        "title": "Developer Only: Open the Dev Tools on debugger start",
-        "type": "boolean",
-        "default": false,
-        "description": "Opens the devtools on debugger start up to help debugging early events."
-      },
       "showDebuggerOnBpSet": {
         "title": "Show debugger on breakpoint set",
         "type": "boolean",

@@ -12,8 +12,6 @@
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ActionTypes} from './DebuggerDispatcher';
 
@@ -37,19 +35,12 @@ export default class DebuggerActionsStore {
           this._bridge.leaveDebugMode();
         } else {
           this._bridge.enterDebugMode();
-          const url = `${nuclideUri.join(
-            __dirname,
-            '../scripts/inspector.html',
-          )}?${data}`;
-          this._bridge.setupChromeChannel(url);
+          this._bridge.setupChromeChannel();
           this._bridge.enableEventsListening();
         }
         break;
       case ActionTypes.TRIGGER_DEBUGGER_ACTION:
         this._triggerAction(payload.data.actionId);
-        break;
-      case ActionTypes.OPEN_DEV_TOOLS:
-        this._bridge.openDevTools();
         break;
       default:
         return;
