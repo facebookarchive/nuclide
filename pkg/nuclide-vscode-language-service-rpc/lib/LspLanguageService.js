@@ -1194,8 +1194,11 @@ export class LspLanguageService {
   }
 
   _fileOpen(fileEvent: FileOpenEvent): void {
-    invariant(this._state === 'Running');
     invariant(this._lspConnection != null);
+    invariant(this._state === 'Running' || this._state === 'Stopping');
+    if (this._state !== 'Running') {
+      return;
+    }
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
@@ -1211,8 +1214,11 @@ export class LspLanguageService {
   }
 
   _fileClose(fileEvent: FileCloseEvent): void {
-    invariant(this._state === 'Running');
     invariant(this._lspConnection != null);
+    invariant(this._state === 'Running' || this._state === 'Stopping');
+    if (this._state !== 'Running') {
+      return;
+    }
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
@@ -1226,8 +1232,11 @@ export class LspLanguageService {
   }
 
   _fileEdit(fileEvent: FileEditEvent): void {
-    invariant(this._state === 'Running');
     invariant(this._lspConnection != null);
+    invariant(this._state === 'Running' || this._state === 'Stopping');
+    if (this._state !== 'Running') {
+      return;
+    }
     const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
     this._snapshotter.snapshot(
       fileEvent.fileVersion.filePath,
@@ -1262,8 +1271,11 @@ export class LspLanguageService {
   }
 
   _fileSave(fileEvent: FileSaveEvent): void {
-    invariant(this._state === 'Running');
     invariant(this._lspConnection != null);
+    invariant(this._state === 'Running' || this._state === 'Stopping');
+    if (this._state !== 'Running') {
+      return;
+    }
     let text;
     switch (this._derivedServerCapabilities.serverWantsDidSave) {
       case 'excludeText':
