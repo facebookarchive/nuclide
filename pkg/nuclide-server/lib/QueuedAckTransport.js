@@ -11,11 +11,11 @@
 
 import type {Observable} from 'rxjs';
 import type {UnreliableTransport} from '../../nuclide-rpc';
+import {default as Deque} from 'double-ended-queue';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
-import Dequeue from 'dequeue';
 const logger = getLogger('nuclide-server');
 import {Emitter} from 'event-kit';
 import {track} from '../../nuclide-analytics';
@@ -40,7 +40,7 @@ export class QueuedAckTransport {
   id: string;
   _isClosed: boolean;
   _transport: ?UnreliableTransport;
-  _messageQueue: Dequeue; // elements are of type QueueItem
+  _messageQueue: Deque<QueueItem>;
   _emitter: Emitter;
   _messages: Subject<string>;
   _lastStateChangeTime: number;
@@ -52,7 +52,7 @@ export class QueuedAckTransport {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
-    this._messageQueue = new Dequeue();
+    this._messageQueue = new Deque();
     this._messages = new Subject();
     this._emitter = new Emitter();
     this._lastStateChangeTime = Date.now();
@@ -166,18 +166,19 @@ export class QueuedAckTransport {
       clearTimeout(this._retryTimerId);
       this._retryTimerId = null;
     }
+
     const transport = this._transport;
     if (transport == null) {
       protocolLogger.trace(`${this.id} sendFirst (but disconnected)`);
       return;
     }
 
-    if (this._messageQueue.length === 0) {
+    const front = this._messageQueue.peekFront();
+    if (front == null) {
       protocolLogger.trace(`${this.id} sendFirst done sending`);
       return;
     }
-
-    const {id, message} = (this._messageQueue.first(): QueueItem);
+    const {id, message} = front;
     const rawMessage = `>${id}:${message}`;
     protocolLogger.trace(`${this.id} sendFirst ${_forLogging(rawMessage)}`);
 
@@ -188,15 +189,6 @@ export class QueuedAckTransport {
     );
     // We've scheduled an automatic retry of sending the message.
     // We won't remove the message from the queue until we get an ack.
-  }
-
-  _dump(): void {
-    const d = new Dequeue();
-    while (this._messageQueue.length > 0) {
-      const {id, message} = (this._messageQueue.shift(): QueueItem);
-      d.push({id, message});
-      logger.error(` * ${id}:${message}`);
-    }
   }
 
   _handleMessage(rawMessage: string): void {
@@ -242,8 +234,9 @@ export class QueuedAckTransport {
     } else {
       // '<id:msg' means the other party has acknowledged receipt
       // It's fine to receive old acknowledgements from now-gone messages
-      if (this._messageQueue.length > 0) {
-        const qId: number = (this._messageQueue.first(): QueueItem).id;
+      const first = this._messageQueue.peekFront();
+      if (first != null) {
+        const qId = first.id;
         if (id === qId) {
           protocolLogger.trace(`${this.id} got expected ack ${id}`);
           this._messageQueue.shift();

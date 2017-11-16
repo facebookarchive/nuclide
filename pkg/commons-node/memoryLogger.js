@@ -9,14 +9,14 @@
  * @format
  */
 
-import Dequeue from 'dequeue';
+import {default as Deque} from 'double-ended-queue';
 import util from 'util';
 
 type LogEntry = {|time: number, text: string|};
 
 export class MemoryLogger {
   _underlyingLogger: ?log4js$Logger;
-  _logs: Dequeue = new Dequeue(); // stores LogEntry elements
+  _logs: Deque<LogEntry> = new Deque();
   _retentionPeriod: number;
 
   constructor(
@@ -28,21 +28,14 @@ export class MemoryLogger {
   }
 
   dispose(): void {
-    this._logs.empty();
+    this._logs.isEmpty();
   }
 
   dump(): string {
-    // We only have a destructive way to enumerate all elements of _log,
-    // so we'll build up a replacement list.
-    const newLogs = new Dequeue();
-    let result = '';
-    while (this._logs.length > 0) {
-      const log: LogEntry = this._logs.shift();
-      result += log.text + '\n';
-      newLogs.push(log);
-    }
-    this._logs = newLogs;
-    return result;
+    return this._logs
+      .toArray()
+      .map(entry => `${entry.text}\n`)
+      .join('');
   }
 
   getUnderlyingLogger(): ?log4js$Logger {
@@ -110,12 +103,14 @@ export class MemoryLogger {
     // push the new entry
     const newLog: LogEntry = {time, text};
     this._logs.push(newLog);
-    // and unshift all expired entries
-    while (
-      this._logs.length > 0 &&
-      (this._logs.first(): LogEntry).time + this._retentionPeriod <= time
-    ) {
-      this._logs.shift();
+    // and remove all expired entries
+    while (true) {
+      const front = this._logs.peekFront();
+      if (front != null && front.time + this._retentionPeriod <= time) {
+        this._logs.shift();
+      } else {
+        break;
+      }
     }
   }
 }
