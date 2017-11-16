@@ -226,9 +226,28 @@ export default class Debugger implements DebuggerInterface {
     ]);
 
     for (const [debuggerBreakpoint, adapterBreakpoint] of paired) {
-      const verified = adapterBreakpoint.verified;
-      if (verified != null) {
-        debuggerBreakpoint.setVerified(verified);
+      // NB the id field of the protocol Breakpoint type is optional and
+      // not all adapters send it (or the breakpoint event). For these
+      // adapters we won't know when an unverified breakpoint becomes
+      // verified, so just assume all breakpoints are verfied, and
+      // send back an explanatory message if the adapter doesn't.
+      const id = adapterBreakpoint.id;
+      if (id != null) {
+        debuggerBreakpoint.setId(id);
+        const verified = adapterBreakpoint.verified;
+        if (verified != null) {
+          debuggerBreakpoint.setVerified(verified);
+        }
+      } else {
+        debuggerBreakpoint.setVerified(true);
+        if (
+          !adapterBreakpoint.verified &&
+          (adapterBreakpoint.message == null ||
+            adapterBreakpoint.message === '')
+        ) {
+          adapterBreakpoint.message =
+            'Could not set this breakpoint. The module may not have been loaded yet.';
+        }
       }
     }
 
@@ -450,6 +469,10 @@ export default class Debugger implements DebuggerInterface {
     session
       .observeTerminateDebugeeEvents()
       .subscribe(this._onTerminatedDebugee.bind(this));
+
+    session
+      .observeBreakpointEvents()
+      .subscribe(this._onBreakpointEvent.bind(this));
   }
 
   async closeSession(): Promise<void> {
@@ -545,6 +568,19 @@ export default class Debugger implements DebuggerInterface {
     this._activeThread = null;
     if (threads.length > 0) {
       this._activeThread = threads[0].id;
+    }
+  }
+
+  _onBreakpointEvent(event: DebugProtocol.BreakpointEvent): void {
+    const {body: {reason, breakpoint: {id, verified}}} = event;
+
+    if (id != null && (reason === 'new' || reason === 'changed')) {
+      try {
+        const breakpoint = this._breakpoints.getBreakpointById(id);
+        breakpoint.setVerified(verified);
+      } catch (error) {
+        this._console.outputLine('Failed to verify breakpoint.');
+      }
     }
   }
 

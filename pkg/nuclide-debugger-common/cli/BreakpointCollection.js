@@ -10,6 +10,7 @@
  */
 
 import {arrayCompact} from 'nuclide-commons/collection';
+
 import Breakpoint from './Breakpoint';
 import SourceBreakpoint from './SourceBreakpoint';
 
@@ -54,6 +55,18 @@ export default class BreakpointCollection {
 
     if (breakpoint == null) {
       throw new Error(`There is no breakpoint #${index}`);
+    }
+
+    return breakpoint;
+  }
+
+  getBreakpointById(id: number): Breakpoint {
+    const breakpoint: ?Breakpoint = Array.from(this._breakpoints.values()).find(
+      _ => _.id === id,
+    );
+
+    if (breakpoint == null) {
+      throw new Error(`There is no breakpoint with id ${id}`);
     }
 
     return breakpoint;
