@@ -180,10 +180,12 @@ export class LogTailer {
     this._start(false);
   }
 
-  observeStatus(
-    cb: (status: 'starting' | 'running' | 'stopped') => void,
-  ): IDisposable {
+  observeStatus(cb: (status: OutputProviderStatus) => void): IDisposable {
     return new UniversalDisposable(this._statuses.subscribe(cb));
+  }
+
+  getStatus(): OutputProviderStatus {
+    return this._statuses.getValue();
   }
 
   /**
