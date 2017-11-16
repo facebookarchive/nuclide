@@ -10,7 +10,7 @@
  */
 
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
-import type {Action, Store} from '../types';
+import type {Action, Store, Tunnel} from '../types';
 
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
@@ -18,16 +18,6 @@ import invariant from 'assert';
 import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {memoize} from 'lodash';
-
-// require fb-sitevar module lazily
-const requireFetchSitevarOnce = memoize(() => {
-  try {
-    // $FlowFB
-    return require('../../../commons-node/fb-sitevar').fetchSitevarOnce;
-  } catch (e) {
-    return null;
-  }
-});
 
 export function openTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -39,19 +29,11 @@ export function openTunnelEpic(
       invariant(action.type === Actions.OPEN_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
 
-      const fetchSitevarOnce = requireFetchSitevarOnce();
-      // if fetchSitevarOnce is null, we assume we're in the
-      // open source build and skip tunnel validation
-      if (fetchSitevarOnce != null) {
-        const allowedPorts: Array<number> = await getAllowedPorts();
-        if (!validateTunnel(tunnel, allowedPorts)) {
-          onOpen(
-            new Error(
-              'Invalid tunnel specification: ' + JSON.stringify(tunnel),
-            ),
-          );
-          return null;
-        }
+      if (!await validateTunnel(tunnel)) {
+        onOpen(
+          new Error('Invalid tunnel specification: ' + JSON.stringify(tunnel)),
+        );
+        return null;
       }
 
       const {from, to} = tunnel;
@@ -118,9 +100,22 @@ function getSocketServiceByHost(host) {
   }
 }
 
-async function getAllowedPorts(): Promise<Array<number>> {
+// require fb-sitevar module lazily
+const requireFetchSitevarOnce = memoize(() => {
+  try {
+    // $FlowFB
+    return require('../../../commons-node/fb-sitevar').fetchSitevarOnce;
+  } catch (e) {
+    return null;
+  }
+});
+
+// returns either a list of allowed ports, or null if not restricted
+async function getAllowedPorts(): Promise<?Array<number>> {
   const fetchSitevarOnce = requireFetchSitevarOnce();
-  invariant(fetchSitevarOnce);
+  if (fetchSitevarOnce == null) {
+    return null;
+  }
   const allowedPorts = await fetchSitevarOnce('NUCLIDE_TUNNEL_ALLOWED_PORTS');
   if (allowedPorts == null) {
     return [];
@@ -128,11 +123,14 @@ async function getAllowedPorts(): Promise<Array<number>> {
   return allowedPorts;
 }
 
-function validateTunnel(tunnel: Object, allowedPorts: Array<number>): boolean {
-  const remote = tunnel.to.host === 'localhost' ? tunnel.from : tunnel.to;
-  if (!allowedPorts.includes(remote.port)) {
-    return false;
-  } else {
+async function validateTunnel(tunnel: Tunnel): Promise<boolean> {
+  if (tunnel.to.host === 'localhost') {
     return true;
   }
+  const allowedPorts = await getAllowedPorts();
+  if (allowedPorts == null) {
+    return true;
+  }
+
+  return allowedPorts.includes(tunnel.to.port);
 }
