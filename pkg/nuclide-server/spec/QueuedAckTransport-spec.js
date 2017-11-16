@@ -10,41 +10,72 @@
  */
 
 import type {UnreliableTransport} from '../../nuclide-rpc';
-import {QueuedAckTransport} from '../lib/QueuedAckTransport';
+import invariant from 'assert';
+import {
+  QueuedAckTransport,
+  frameAck,
+  frameContent,
+  parseMessage,
+  ACK,
+  CONTENT,
+  ACK_BUFFER_TIME,
+  PENDING_MESSAGE_TIMEOUT,
+} from '../lib/QueuedAckTransport';
 import {Emitter} from 'event-kit';
 import {Subject} from 'rxjs';
 
-function makeUnreliableTransport(): UnreliableTransport {
+function makeUnreliableTransport(
+  receiver: Subject<string> = new Subject(),
+): UnreliableTransport {
   let isClosed = false;
-  const messages: Subject<string> = new Subject();
-  const result: any = new Emitter();
-  result.send = jasmine.createSpy('send').andCallFake((data: Object) => {
-    result.emit('send', data);
+  const transport: any = new Emitter();
+  transport.send = jasmine.createSpy('send').andCallFake((data: Object) => {
+    transport.emit('send', data);
     return Promise.resolve(true);
   });
-  result.onClose = jasmine
+  transport.onClose = jasmine
     .createSpy('onClose')
     .andCallFake((callback: () => mixed): IDisposable => {
-      return result.on('close', callback);
+      return transport.on('close', callback);
     });
-  result.onMessage = jasmine.createSpy('onMessage').andReturn(messages);
-  result.close = jasmine.createSpy('close').andCallFake((): void => {
+  transport.onMessage = jasmine.createSpy('onMessage').andReturn(receiver);
+  transport.close = jasmine.createSpy('close').andCallFake((): void => {
     isClosed = true;
-    result.emit('close');
+    transport.emit('close');
   });
-  result.isClosed = (): boolean => {
+  transport.isClosed = (): boolean => {
     return isClosed;
   };
-  result.sendMessage = message => messages.next(message);
-  return result;
+  return transport;
 }
 
+describe('QueuedAckTransport framing', () => {
+  it('roundtrips ack id', () => {
+    const wireMessage = frameAck(53);
+    const parsed = parseMessage(wireMessage);
+    expect(parsed.type).toBe(ACK);
+    expect(parsed.id).toBe(53);
+  });
+  it('roundtrips content', () => {
+    const id = 65536;
+    const message = 'May I ask you a question?';
+    const wireMessage = frameContent(id, message);
+    const parsed = parseMessage(wireMessage);
+    expect(parsed.type).toBe(CONTENT);
+    invariant(parsed.type === 'CONTENT');
+    expect(parsed.id).toBe(id);
+    expect(parsed.message).toBe(message);
+  });
+});
+
 describe('QueuedAckTransport', () => {
+  let receiver: Subject<string>;
   let transport;
   let q;
 
   beforeEach(() => {
-    transport = makeUnreliableTransport();
+    receiver = new Subject();
+    transport = makeUnreliableTransport(receiver);
     q = new QueuedAckTransport('42', transport);
   });
 
@@ -57,7 +88,7 @@ describe('QueuedAckTransport', () => {
   it('send - open', () => {
     const data = JSON.stringify({message: 42});
     q.send(data);
-    expect(transport.send).toHaveBeenCalledWith(`>1:${data}`);
+    expect(transport.send).toHaveBeenCalledWith(frameContent(1, data));
   });
 
   it('close tranport', () => {
@@ -105,7 +136,7 @@ describe('QueuedAckTransport', () => {
     expect(newTransport.onClose).toHaveBeenCalledWith(jasmine.any(Function));
   });
 
-  it('send on reconnect', () => {
+  it('send while disconnected resends on reconnect', () => {
     q.disconnect();
     const data = JSON.stringify({message: 42});
     q.send(data);
@@ -115,7 +146,28 @@ describe('QueuedAckTransport', () => {
 
     expect(q.getState()).toBe('open');
     expect(transport.send).not.toHaveBeenCalled();
-    expect(newTransport.send).toHaveBeenCalledWith(`>1:${data}`);
+    expect(newTransport.send).toHaveBeenCalledWith(frameContent(1, data));
+  });
+
+  it('resend only unacked on reconnect', () => {
+    const data1 = JSON.stringify({message: 42});
+    const data2 = JSON.stringify({message: 97});
+    q.send(data1);
+    q.send(data2);
+    receiver.next(frameAck(1));
+    q.disconnect();
+
+    const newTransport = makeUnreliableTransport(receiver);
+    q.reconnect(newTransport);
+
+    expect(q.getState()).toBe('open');
+    expect(transport.send).toHaveBeenCalled();
+    expect(transport.send.argsForCall).toEqual([
+      [frameContent(1, data1)],
+      [frameContent(2, data2)],
+    ]);
+    expect(newTransport.send).toHaveBeenCalled();
+    expect(newTransport.send.argsForCall).toEqual([[frameContent(2, data2)]]);
   });
 
   it('close', () => {
@@ -142,22 +194,21 @@ describe('QueuedAckTransport', () => {
     const onMessage = jasmine.createSpy('onMessage');
     q.onMessage().subscribe(onMessage);
     const data = JSON.stringify({message: 42});
-    (transport: any).sendMessage(`>1:${data}`);
+    receiver.next(frameContent(1, data));
 
     expect(onMessage).toHaveBeenCalledWith(data);
   });
 
-  // This simulates receiving the first two messages out of order, followed
-  // by the sender retrying the second.  The receiver should process 1,2.
+  // This simulates receiving the first two messages out of order.
+  // The receiver should process 1,2.
   it('onMessage first two out of order', () => {
     const onMessage = jasmine.createSpy('onMessage');
     q.onMessage().subscribe(onMessage);
     const data1 = JSON.stringify({message: 42});
     const data2 = JSON.stringify({message: 43});
 
-    (transport: any).sendMessage(`>2:${data2}`);
-    (transport: any).sendMessage(`>1:${data1}`);
-    (transport: any).sendMessage(`>2:${data2}`);
+    receiver.next(frameContent(2, data2));
+    receiver.next(frameContent(1, data1));
 
     expect(onMessage.argsForCall).toEqual([[data1], [data2]]);
   });
@@ -171,11 +222,12 @@ describe('QueuedAckTransport', () => {
     const data1 = JSON.stringify({message: 42});
     const data2 = JSON.stringify({message: 43});
 
-    (transport: any).sendMessage(`>1:${data1}`);
-    (transport: any).sendMessage(`>2:${data2}`);
-    (transport: any).sendMessage(`>1:${data1}`);
-    (transport: any).sendMessage(`>2:${data2}`);
+    receiver.next(frameContent(1, data1));
+    receiver.next(frameContent(2, data2));
+    receiver.next(frameContent(1, data1));
+    receiver.next(frameContent(2, data2));
 
+    expect(onMessage).toHaveBeenCalled();
     expect(onMessage.argsForCall).toEqual([[data1], [data2]]);
   });
 
@@ -185,8 +237,102 @@ describe('QueuedAckTransport', () => {
     subscription.unsubscribe();
 
     const data = JSON.stringify({message: 42});
-    (transport: any).sendMessage(`>1:${data}`);
+    receiver.next(frameContent(1, data));
 
     expect(onMessage).not.toHaveBeenCalled();
+  });
+
+  it('disconnects if pending send sits too long', () => {
+    const data = JSON.stringify({message: 42});
+    q.send(data);
+
+    advanceClock(PENDING_MESSAGE_TIMEOUT - 1);
+    expect(transport.close).not.toHaveBeenCalled();
+    expect(q.getState()).toBe('open');
+
+    advanceClock(2);
+    expect(transport.close).toHaveBeenCalled();
+    expect(q.getState()).toBe('disconnected');
+  });
+
+  it('disconnects if pending receive sits too long', () => {
+    const onMessage = jasmine.createSpy('onMessage');
+    q.onMessage().subscribe(onMessage);
+    const data = JSON.stringify({message: 42});
+    receiver.next(frameContent(2, data));
+
+    advanceClock(PENDING_MESSAGE_TIMEOUT - 1);
+    expect(transport.close).not.toHaveBeenCalled();
+    expect(q.getState()).toBe('open');
+
+    advanceClock(2);
+    expect(transport.close).toHaveBeenCalled();
+    expect(q.getState()).toBe('disconnected');
+
+    expect(onMessage).not.toHaveBeenCalled();
+  });
+
+  it('does not disconnect if no pending work', () => {
+    const data = JSON.stringify({message: 42});
+    q.send(data);
+    receiver.next(frameAck(1));
+
+    advanceClock(2 * PENDING_MESSAGE_TIMEOUT);
+    expect(transport.close).not.toHaveBeenCalled();
+    expect(q.getState()).toBe('open');
+  });
+
+  it('does not disconnect if we keep making progress', () => {
+    const data1 = JSON.stringify({message: 42});
+    const data2 = JSON.stringify({message: 97});
+    const expectedSends = [];
+    const expectedDeliveries = [];
+    const onMessage = jasmine.createSpy('onMessage');
+    q.onMessage().subscribe(onMessage);
+
+    const check = checkId => {
+      expect(q.getState()).toBe('open', checkId);
+      expect(transport.close).not.toHaveBeenCalled();
+      expect(transport.send.argsForCall).toEqual(expectedSends, checkId);
+      expect(onMessage.argsForCall).toEqual(expectedDeliveries, checkId);
+    };
+
+    q.send(data1);
+    expectedSends.push([frameContent(1, data1)]);
+    check('q.send(data1)');
+
+    advanceClock(PENDING_MESSAGE_TIMEOUT - 1);
+    check('advanceClock after q.send(data1)');
+
+    receiver.next(frameContent(2, data2));
+    check('receiver.next(frameContent(2, data2))');
+
+    receiver.next(frameAck(1));
+    check('receiver.next(frameAck(1))');
+
+    advanceClock(PENDING_MESSAGE_TIMEOUT - 1);
+    check('advanceClock after receiver.next(frameAck(1))');
+
+    q.send(data2);
+    expectedSends.push([frameContent(2, data2)]);
+    check('q.send(data2)');
+
+    receiver.next(frameContent(1, data1));
+    expectedDeliveries.push([data1]);
+    expectedDeliveries.push([data2]);
+    check('receiver.next(frameContent(1, data1))');
+
+    advanceClock(PENDING_MESSAGE_TIMEOUT - 1);
+    // Assuming ACK_BUFFER_TIME has passed, now that we received 2 and then 1,
+    // we should have sent an ack for 2.
+    invariant(PENDING_MESSAGE_TIMEOUT - 1 > ACK_BUFFER_TIME);
+    expectedSends.push([frameAck(2)]);
+    check('advanceClock after receiver.next(frameContent(1, data1))');
+
+    receiver.next(frameAck(2));
+    check('receiver.next(frameAck(2))');
+
+    advanceClock(2 * PENDING_MESSAGE_TIMEOUT);
+    check('advanceClock final');
   });
 });
