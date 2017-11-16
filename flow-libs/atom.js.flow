@@ -754,6 +754,7 @@ type ChangeSelectionRangeEvent = {|
 
 declare class atom$TextEditor extends atom$Model {
   id: number,
+  verticalScrollMargin: number,
 
   // Event Subscription
   onDidChange(callback: () => void): IDisposable,
@@ -840,7 +841,9 @@ declare class atom$TextEditor extends atom$Model {
     },
   ): atom$Point,
   getEofBufferPosition(): atom$Point,
-  getVisibleRowRange(): ?[number, number],
+  getVisibleRowRange(): [number, number],
+  bufferRowForScreenRow(screenRow: number): number,
+  screenRangeForBufferRange(bufferRange: atom$RangeLike): atom$Range,
 
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration,
@@ -972,6 +975,7 @@ declare class atom$TextEditor extends atom$Model {
     position: atom$Point | [?number, ?number],
     options?: {center?: boolean}
   ): void,
+  scrollToScreenRange(screenRange: atom$Range, options?: {clip?: boolean}): void,
   scrollToCursorPosition(
     options?: {center?: boolean}
   ): void,
