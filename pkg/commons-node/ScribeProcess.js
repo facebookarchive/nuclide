@@ -105,7 +105,9 @@ export default class ScribeProcess {
 
     // Obtain a promise to get the child process, but don't start it yet.
     // this._subscription will have control over starting / stopping the process.
-    const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory])
+    const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory], {
+      dontLogInNuclide: true,
+    })
       .do(child => {
         child.stdin.setDefaultEncoding('utf8');
       })
