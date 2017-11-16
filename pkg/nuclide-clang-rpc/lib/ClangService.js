@@ -121,7 +121,13 @@ export function compile(
   contents: string,
   requestSettings: ?ClangRequestSettings,
   defaultFlags?: ?Array<string>,
+  useRTags?: boolean,
 ): ConnectableObservable<?ClangCompileResult> {
+  if (useRTags) {
+    return new RC()
+      .getDiagnostics(src, requestSettings, defaultFlags)
+      .publish();
+  }
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
     const server = serverManager.getClangServer(

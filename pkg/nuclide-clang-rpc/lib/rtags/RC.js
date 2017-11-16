@@ -10,9 +10,16 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {ClangCompletion, ClangRequestSettings} from '../rpc-types';
+import type {
+  ClangCompletion,
+  ClangRequestSettings,
+  ClangCompileResult,
+  ClangDiagnostic,
+  ClangDiagnosticChild,
+} from '../rpc-types';
 
 import {runCommand} from 'nuclide-commons/process';
+import {Range as atom$Range, Point as atom$Point} from 'simple-text-buffer';
 
 type RCCompletionItem = {
   annotation: string,
@@ -28,8 +35,31 @@ type RCCompletion = {
   completions: Array<RCCompletionItem>,
 };
 
+type RCDiagnosticsChild = {
+  column: number,
+  file: string,
+  line: number,
+  message: string,
+  type: string,
+};
+
+type RCDiagnosticsItem = {
+  children?: Array<RCDiagnosticsChild>,
+  column: number,
+  length?: number,
+  line: number,
+  message: string,
+  type: 'fixit' | 'error' | 'warning' | 'skipped',
+};
+
+type RCDiagnostics = {
+  checkStyle: {
+    [file: string]: Array<RCDiagnosticsItem>,
+  },
+};
+
 export class RC {
-  _rcCommand(args: string[], input: string): Observable<string> {
+  _rcCommand(args: string[], input?: string): Observable<string> {
     return runCommand('rc', args, {encoding: 'utf8', input});
   }
 
@@ -65,6 +95,65 @@ export class RC {
         return result.completions.map(item => this._parseRCComletionItem(item));
       })
       .toPromise();
+  }
+
+  getDiagnostics(
+    src: string,
+    requestSettings: ?ClangRequestSettings,
+    defaultFlags?: ?Array<string>,
+  ): Observable<?ClangCompileResult> {
+    return this._rcCommand([
+      '--diagnose',
+      src,
+      '--synchronous-diagnostics',
+      '--json',
+    ]).map(stdout => {
+      const result = (JSON.parse(stdout): RCDiagnostics);
+      const file = Object.keys(result.checkStyle)[0];
+      const items = result.checkStyle[file];
+      if (items == null) {
+        return null;
+      }
+      const diagnostics = items.map(item =>
+        this._parseRCDiagnosticsItem(item, file),
+      );
+      return {diagnostics, accurateFlags: true};
+    });
+  }
+
+  _parseRCDiagnosticsItem(
+    item: RCDiagnosticsItem,
+    file: string,
+  ): ClangDiagnostic {
+    const diagnostic = {
+      location: {
+        file,
+        point: new atom$Point(item.line - 1, item.column - 1),
+      },
+      spelling: item.message,
+      severity: 3, // item.type === 'error' ? 3 : 2,
+      children: [],
+      // (item.children || []).map(child => this._parseRCDiagnosticsChild(child))
+      ranges: null,
+      // {file, range: new atom$Range([item.line - 1, 0], [item.line, 0])},
+    };
+    return diagnostic;
+  }
+
+  _parseRCDiagnosticsChild(child: RCDiagnosticsChild): ClangDiagnosticChild {
+    return {
+      spelling: child.message,
+      location: {
+        file: child.file,
+        point: new atom$Point(child.line - 1, child.column - 1),
+      },
+      ranges: [
+        {
+          file: child.file,
+          range: new atom$Range([child.line - 1, 0], [child.line, 0]),
+        },
+      ],
+    };
   }
 
   _parseRCComletionItem(item: RCCompletionItem): ClangCompletion {
