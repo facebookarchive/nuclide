@@ -14,6 +14,7 @@ import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import passesGK from '../../commons-node/passesGK';
+import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import type {WatchResult} from '../../nuclide-filewatcher-rpc';
@@ -308,6 +309,9 @@ export class ServerConnection {
       servicesConfig,
       // Track calls with a sampling rate of 1/10.
       {trackSampleRate: 10},
+      SERVICE_FRAMEWORK3_PROTOCOL,
+      socket.id,
+      socket.getProtocolLogger(),
     );
 
     this._client = client;

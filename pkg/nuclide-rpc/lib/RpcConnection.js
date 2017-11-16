@@ -21,6 +21,7 @@ import type {
 } from './messages';
 import type {ClassDefinition, FunctionImplementation} from './ServiceRegistry';
 import type {PredefinedTransformer} from './index';
+import type {MemoryLogger} from '../../commons-node/memoryLogger';
 
 import invariant from 'assert';
 import {Observable, ConnectableObservable} from 'rxjs';
@@ -184,6 +185,7 @@ export type RpcConnectionOptions = {
 };
 
 export class RpcConnection<TransportType: Transport> {
+  _connectionId: string;
   _kind: RpcConnectionKind;
   _rpcRequestId: number;
   _rpcResponseId: number;
@@ -204,6 +206,8 @@ export class RpcConnection<TransportType: Transport> {
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
     options: RpcConnectionOptions = {},
+    connectionId: ?string = null,
+    protocolLogger: ?MemoryLogger = null,
   ) {
     this._kind = kind;
     this._transport = transport;
@@ -223,6 +227,19 @@ export class RpcConnection<TransportType: Transport> {
     this._calls = new Map();
     this._lastRequestId = -1;
     this._lastResponseId = -1;
+
+    if (protocolLogger != null) {
+      const prefix = connectionId == null ? '' : `${connectionId} `;
+      this._objectRegistry.onRegisterLocal(id =>
+        protocolLogger.info('%sadding local object %s', prefix, id),
+      );
+      this._objectRegistry.onUnregisterLocal(id =>
+        protocolLogger.info('%sremoving local object %s', prefix, id),
+      );
+      this._objectRegistry.onRegisterRemote(id =>
+        protocolLogger.info('%sadding remote object %s', prefix, id),
+      );
+    }
   }
 
   // Creates a connection on the server side.
@@ -230,8 +247,17 @@ export class RpcConnection<TransportType: Transport> {
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
     options: RpcConnectionOptions = {},
+    connectionId: ?string = null,
+    protocolLogger: ?MemoryLogger = null,
   ): RpcConnection<TransportType> {
-    return new RpcConnection('server', serviceRegistry, transport, options);
+    return new RpcConnection(
+      'server',
+      serviceRegistry,
+      transport,
+      options,
+      connectionId,
+      protocolLogger,
+    );
   }
 
   // Creates a client side connection to a server on another machine.
@@ -241,12 +267,16 @@ export class RpcConnection<TransportType: Transport> {
     services: Array<ConfigEntry>,
     options: RpcConnectionOptions = {},
     protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
+    connectionId: ?string = null,
+    protocolLogger: ?MemoryLogger = null,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
       new ServiceRegistry(predefinedTypes, services, protocol),
       transport,
       options,
+      connectionId,
+      protocolLogger,
     );
   }
 
@@ -256,6 +286,8 @@ export class RpcConnection<TransportType: Transport> {
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
     protocol: string = SERVICE_FRAMEWORK3_PROTOCOL,
+    connectionId: ?string = null,
+    protocolLogger: ?MemoryLogger = null,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
@@ -263,6 +295,9 @@ export class RpcConnection<TransportType: Transport> {
       // Client code always explicitly loads services by name!
       new ServiceRegistry(predefinedTypes, services, protocol, {lazy: true}),
       transport,
+      {},
+      connectionId,
+      protocolLogger,
     );
   }
 

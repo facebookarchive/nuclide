@@ -11,6 +11,7 @@
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import {Emitter} from 'event-kit';
 import type {ServiceRegistry} from './ServiceRegistry';
 import type {RpcContext} from './main';
 
@@ -51,6 +52,7 @@ export class ObjectRegistry {
   _serviceRegistry: ServiceRegistry;
   _services: Map<string, Object>;
   _context: RpcContext;
+  _emitter: Emitter;
 
   constructor(
     kind: RegistryKind,
@@ -67,6 +69,19 @@ export class ObjectRegistry {
     this._serviceRegistry = serviceRegistry;
     this._services = new Map();
     this._context = context;
+    this._emitter = new Emitter();
+  }
+
+  onRegisterLocal(callback: number => void): IDisposable {
+    return this._emitter.on('register-local', callback);
+  }
+
+  onUnregisterLocal(callback: number => void): IDisposable {
+    return this._emitter.on('unregister-local', callback);
+  }
+
+  onRegisterRemote(callback: number => void): IDisposable {
+    return this._emitter.on('register-remote', callback);
   }
 
   getService(serviceName: string): Object {
@@ -120,7 +135,7 @@ export class ObjectRegistry {
     const result = this._isLocalId(id)
       ? this._registrationsById.get(id)
       : this._proxiesById.get(id);
-    invariant(result != null);
+    invariant(result != null, `Unknown registration ${id}`);
     return result;
   }
 
@@ -129,6 +144,7 @@ export class ObjectRegistry {
   }
 
   async disposeObject(remoteId: number): Promise<void> {
+    this._emitter.emit('unregister-local', remoteId);
     const registration = this._getRegistration(remoteId);
     const object = registration.object;
 
@@ -177,6 +193,7 @@ export class ObjectRegistry {
       object,
     };
 
+    this._emitter.emit('register-local', objectId);
     this._registrationsById.set(objectId, registration);
     this._registrationsByObject.set(object, registration);
 
@@ -243,6 +260,7 @@ export class ObjectRegistry {
 
     const id = await idPromise;
     invariant(!this._proxiesById.has(id));
+    this._emitter.emit('register-remote', id);
     this._proxiesById.set(id, {
       interface: interfaceName,
       remoteId: id,

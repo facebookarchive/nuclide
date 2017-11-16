@@ -13,8 +13,11 @@ import type {AgentOptions} from './main';
 import invariant from 'assert';
 import url from 'url';
 import request from 'request';
+import {MemoryLogger} from '../../commons-node/memoryLogger';
 
 const MAX_REQUEST_LENGTH = 1e6;
+
+export const protocolLogger = new MemoryLogger(null);
 
 type HttpResponse = {
   statusCode: number,

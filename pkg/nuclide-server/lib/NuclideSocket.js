@@ -12,6 +12,7 @@
 import type {AgentOptions} from './main';
 import type {Observable} from 'rxjs';
 import type {ReliableTransport} from '../../nuclide-rpc';
+import type {MemoryLogger} from '../../commons-node/memoryLogger';
 
 import url from 'url';
 import WS from 'ws';
@@ -24,6 +25,7 @@ import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';
+import {protocolLogger} from './utils';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-server');
@@ -65,6 +67,7 @@ export class NuclideSocket {
   _emitter: Emitter;
   _transport: ?ReliableTransport;
   _heartbeat: XhrConnectionHeartbeat;
+  _useProtocolLogger: boolean;
 
   constructor(serverUri: string, options: ?AgentOptions) {
     const useAck = options != null && options.useAck;
@@ -76,9 +79,13 @@ export class NuclideSocket {
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
-    const transport = useAck
-      ? new QueuedAckTransport(this.id)
-      : new QueuedTransport(this.id);
+    this._useProtocolLogger = useAck;
+    let transport;
+    if (useAck) {
+      transport = new QueuedAckTransport(this.id);
+    } else {
+      transport = new QueuedTransport(this.id);
+    }
     this._transport = transport;
     transport.onDisconnect(() => {
       if (this.isDisconnected()) {
@@ -102,6 +109,16 @@ export class NuclideSocket {
     });
 
     this._reconnect();
+  }
+
+  // This is intended to be temporary while we are collecting extra
+  // logging to debug QueuedAckTransport.
+  getProtocolLogger(): ?MemoryLogger {
+    if (this._useProtocolLogger) {
+      return protocolLogger;
+    } else {
+      return null;
+    }
   }
 
   isConnected(): boolean {

@@ -28,6 +28,7 @@ import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
+import {protocolLogger} from './utils';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 const connect: connect$module = require('connect');
@@ -318,6 +319,9 @@ export default class NuclideServer {
           useAck
             ? new QueuedAckTransport(clientId, transport)
             : new QueuedTransport(clientId, transport),
+          {},
+          clientId,
+          useAck ? protocolLogger : null,
         );
         this._clients.set(clientId, client);
       } else {
