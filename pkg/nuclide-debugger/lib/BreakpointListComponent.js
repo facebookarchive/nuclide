@@ -161,6 +161,7 @@ export class BreakpointListComponent extends React.Component<Props, State> {
                 title={title}
                 className={classnames(
                   resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
+                  'nuclide-debugger-breakpoint-checkbox',
                 )}
               />
               <span title={title} data-path={path} data-line={line}>
