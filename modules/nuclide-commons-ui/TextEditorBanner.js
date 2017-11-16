@@ -36,13 +36,13 @@ export class TextEditorBanner {
       editorElement instanceof HTMLElement && editorElement.parentNode != null,
     );
 
-    editorElement.parentNode.insertBefore(this._element, this._editorElement);
+    editorElement.parentNode.insertBefore(this._element, editorElement);
     this._editorElement = editorElement;
 
     this._disposables = new UniversalDisposable(
       () => {
         ReactDOM.unmountComponentAtNode(this._element);
-        this._element.remove();
+        this._element.replaceWith(editorElement);
       },
       atom.workspace.observeActiveTextEditor(activeEditor => {
         if (activeEditor == null) {
