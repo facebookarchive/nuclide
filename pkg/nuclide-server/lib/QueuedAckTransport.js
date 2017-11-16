@@ -44,7 +44,7 @@ export class QueuedAckTransport {
   _messages: Subject<string>;
   _lastStateChangeTime: number;
   _id: number = 1;
-  _lastIdHandled: number = -1;
+  _lastIdHandled: number = 0;
   _retryTimerId: ?number;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
@@ -190,10 +190,11 @@ export class QueuedAckTransport {
     if (mode === '>') {
       // '>id:msg' means the other party has sent us this message
       // We only *handle* a message id the first time we receive it
-      if (id > this._lastIdHandled) {
+      const expected = this._lastIdHandled + 1;
+      if (id === expected) {
+        this._lastIdHandled = expected;
         this._messages.next(message);
-      }
-      if (id > this._lastIdHandled + 1 && this._lastIdHandled !== -1) {
+      } else if (id > expected) {
         logger.error(
           `QueuedAckTransport message id mismatch - received ${id}, last handled ${this
             ._lastIdHandled}`,
@@ -204,10 +205,10 @@ export class QueuedAckTransport {
           rawMessage,
         });
       }
-      this._lastIdHandled = id;
-      // But we always send a receipt (which needn't be reliably delivered).
-      const ackMessage = `<${id}:${message}`;
+      // We always send a receipt for the last message handled
+      // (which needn't be reliably delivered).
       if (this._transport != null) {
+        const ackMessage = `<${this._lastIdHandled}:${message}`;
         this._transport.send(ackMessage);
       }
     } else {

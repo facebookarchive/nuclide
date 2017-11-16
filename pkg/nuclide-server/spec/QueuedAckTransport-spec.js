@@ -147,6 +147,38 @@ describe('QueuedAckTransport', () => {
     expect(onMessage).toHaveBeenCalledWith(data);
   });
 
+  // This simulates receiving the first two messages out of order, followed
+  // by the sender retrying the second.  The receiver should process 1,2.
+  it('onMessage first two out of order', () => {
+    const onMessage = jasmine.createSpy('onMessage');
+    q.onMessage().subscribe(onMessage);
+    const data1 = JSON.stringify({message: 42});
+    const data2 = JSON.stringify({message: 43});
+
+    (transport: any).sendMessage(`>2:${data2}`);
+    (transport: any).sendMessage(`>1:${data1}`);
+    (transport: any).sendMessage(`>2:${data2}`);
+
+    expect(onMessage.argsForCall).toEqual([[data1], [data2]]);
+  });
+
+  // This simulates a sender retrying messages and sending a,a,b,b (where a+1=b),
+  // where the middle two messages are reordered so the receiver sees a,b,a,b.
+  // The receiver should still process only a,b
+  it('onMessage retry out of order', () => {
+    const onMessage = jasmine.createSpy('onMessage');
+    q.onMessage().subscribe(onMessage);
+    const data1 = JSON.stringify({message: 42});
+    const data2 = JSON.stringify({message: 43});
+
+    (transport: any).sendMessage(`>1:${data1}`);
+    (transport: any).sendMessage(`>2:${data2}`);
+    (transport: any).sendMessage(`>1:${data1}`);
+    (transport: any).sendMessage(`>2:${data2}`);
+
+    expect(onMessage.argsForCall).toEqual([[data1], [data2]]);
+  });
+
   it('dispose unsubscribes from onMessage', () => {
     const onMessage = jasmine.createSpy('onMessage');
     const subscription = q.onMessage().subscribe(onMessage);
