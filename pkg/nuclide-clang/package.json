@@ -45,6 +45,12 @@
         "type": "boolean",
         "default": "false",
         "description": "Enable diagnostics even while using default flags. May lead to inaccurate results."
+      },
+      "useRTags": {
+        "title": "Use RTags instead of directly using libclang (experimental)",
+        "type": "boolean",
+        "default": "false",
+        "description": "Work in progress"
       }
     }
   },

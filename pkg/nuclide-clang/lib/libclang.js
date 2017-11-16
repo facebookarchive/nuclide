@@ -136,6 +136,7 @@ module.exports = {
       prefix,
       await getClangRequestSettings(src),
       defaultFlags,
+      ((featureConfig.get('nuclide-clang.useRTags'): any): boolean),
     );
   },
 

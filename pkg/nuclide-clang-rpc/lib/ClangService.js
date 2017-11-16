@@ -29,6 +29,7 @@ import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from 'nuclide-commons/fsPromise';
+import {RC} from './rtags/RC';
 
 const serverManager = new ClangServerManager();
 
@@ -146,7 +147,18 @@ export async function getCompletions(
   prefix: string,
   requestSettings: ?ClangRequestSettings,
   defaultFlags?: ?Array<string>,
+  useRTags?: boolean,
 ): Promise<?Array<ClangCompletion>> {
+  if (useRTags) {
+    return new RC().getCompletions(
+      src,
+      contents,
+      line,
+      column,
+      tokenStartColumn,
+      prefix,
+    );
+  }
   const service = await getClangService(
     src,
     contents,
