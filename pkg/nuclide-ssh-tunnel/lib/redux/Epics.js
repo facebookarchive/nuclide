@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import memoize from 'lodash.memoize';
+import {memoize} from 'lodash';
 
 // require fb-sitevar module lazily
 const requireFetchSitevarOnce = memoize(() => {

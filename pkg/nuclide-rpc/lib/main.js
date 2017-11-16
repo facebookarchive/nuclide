@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import memoize from 'lodash.memoize';
+import {memoize} from 'lodash';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import Module from 'module';

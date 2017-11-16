@@ -77,7 +77,7 @@
     "jest-editor-support": "19.0.2",
     "js-yaml": "3.9.1",
     "line-by-line": "0.1.5",
-    "lodash.memoize": "3.0.4",
+    "lodash": "4.17.4",
     "log4js": "1.1.1",
     "lru-cache": "4.0.2",
     "marked": "0.3.6",

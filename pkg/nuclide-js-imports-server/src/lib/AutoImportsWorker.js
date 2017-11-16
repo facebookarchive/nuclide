@@ -10,7 +10,7 @@
  */
 
 import crypto from 'crypto';
-import memoize from 'lodash.memoize';
+import {memoize} from 'lodash';
 import log4js from 'log4js';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
