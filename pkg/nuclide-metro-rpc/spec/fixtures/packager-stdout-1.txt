@@ -1,0 +1,29 @@
+┌────────────────────────────────────────────────────────────────────────────┐
+│  Running packager on port 8081.                                            │
+│                                                                            │
+│  Keep this packager running while developing on any JS projects. Feel      │
+│  free to close this tab and run your own packager instance if you          │
+│  prefer.                                                                   │
+│                                                                            │
+│  https://github.com/facebook/react-native                                  │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+Looking for JS files in
+  /path/to/greatness
+
+[2:08:49 PM] <START> Building Dependency Graph
+[2:08:49 PM] <START> Crawling File System
+[Hot Module Replacement] Server listening on /hot
+
+React packager ready.
+
+[2:08:50 PM] <END>   Crawling File System (886ms)
+[2:08:50 PM] <START> Building in-memory fs for JavaScript
+[2:08:50 PM] <END>   Building in-memory fs for JavaScript (474ms)
+[2:08:50 PM] <START> Building in-memory fs for Assets
+[2:08:51 PM] <END>   Building in-memory fs for Assets (313ms)
+[2:08:51 PM] <START> Building Haste Map
+[2:08:51 PM] <START> Building (deprecated) Asset Map
+[2:08:51 PM] <END>   Building (deprecated) Asset Map (174ms)
+[2:08:51 PM] <END>   Building Haste Map (411ms)
+[2:08:51 PM] <END>   Building Dependency Graph (2101ms)

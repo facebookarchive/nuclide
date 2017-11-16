@@ -75,6 +75,7 @@ import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService';
+import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as PhpDebuggerService from '../../nuclide-debugger-php-rpc';
@@ -164,6 +165,10 @@ export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
 
 export function getMerlinServiceByNuclideUri(uri: NuclideUri): MerlinService {
   return nullthrows(getServiceByNuclideUri('MerlinService', uri));
+}
+
+export function getMetroServiceByNuclideUri(uri: NuclideUri): MetroService {
+  return nullthrows(getServiceByNuclideUri('MetroService', uri));
 }
 
 export function getNativeDebuggerServiceByNuclideUri(

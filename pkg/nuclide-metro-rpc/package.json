@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-metro-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/MetroService.js",
+  "version": "0.0.0",
+  "description": "Interaction with Metro (JavaScript bundler)",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

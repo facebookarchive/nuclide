@@ -1,0 +1,21 @@
+================================================================
+                  React Native Packager Server
+================================================================
+       React Native Dex: https://fburl.com/react-native
+       Packager Support: https://fburl.com/rn-build-infra
+----------------------------------------------------------------
+
+Listening on port 8081.
+
+Looking for JavaScript files in...
+  /path/to/greatness
+
+[11/20/2016, 1:46:36 PM] <START> Starting Facebook Packager Server
+[11/20/2016, 1:46:37 PM]         HMR Server listening on /hot
+[11/20/2016, 1:46:37 PM] <END>   Starting Facebook Packager Server (559ms)
+[11/20/2016, 1:46:37 PM] <START> Initializing Packager
+[11/20/2016, 1:46:37 PM] <START> Building in-memory fs for JavaScript
+[11/20/2016, 1:46:38 PM] <END>   Building in-memory fs for JavaScript (186ms)
+[11/20/2016, 1:46:38 PM] <START> Building Haste Map
+[11/20/2016, 1:46:40 PM] <END>   Building Haste Map (2176ms)
+[11/20/2016, 1:46:40 PM] <END>   Initializing Packager (2457ms)
