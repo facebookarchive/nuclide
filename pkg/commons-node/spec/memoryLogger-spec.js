@@ -26,11 +26,11 @@ describe('memoryLogger', () => {
     logger = new MemoryLogger(underlyingLogger, 5 * 60 * 1000);
   });
 
-  it('logs and formats right', () => {
+  it('logs and formats correctly', () => {
     time = 1000;
     logger.info('msg1');
     time = 2000;
-    logger.warn('msg2');
+    logger.warn('%s%d', 'msg', 2);
     expect(logger.dump()).toBe('00:00:01 INFO - msg1\n00:00:02 WARN - msg2\n');
   });
 

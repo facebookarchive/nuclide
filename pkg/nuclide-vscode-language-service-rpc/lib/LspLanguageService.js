@@ -129,6 +129,7 @@ export class LspLanguageService {
   _fileExtensions: Array<string>;
   _logger: MemoryLogger;
   _snapshotter: SnapshotLogger;
+  _underlyingLogger: log4js$Logger;
   _host: HostServices;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
   _initializationOptions: Object;
@@ -184,6 +185,7 @@ export class LspLanguageService {
   ) {
     this._snapshotter = new SnapshotLogger(additionalLogFilesRetentionPeriod);
     this._logger = new MemoryLogger(logger, additionalLogFilesRetentionPeriod);
+    this._underlyingLogger = logger;
     this._fileCache = fileCache;
     this._masterHost = host;
     this._host = host;
@@ -307,7 +309,7 @@ export class LspLanguageService {
       // dialogs from that connection.
       this._host = await forkHostServices(
         this._masterHost,
-        this._logger.getUnderlyingLogger(),
+        this._underlyingLogger,
       );
       perConnectionDisposables.add(() => {
         this._host.dispose();
@@ -545,7 +547,7 @@ export class LspLanguageService {
         rootUri: convert.localPath_lspUri(this._projectRoot),
         capabilities,
         initializationOptions: this._initializationOptions,
-        trace: this._logger.getUnderlyingLogger().isLevelEnabled('TRACE')
+        trace: this._underlyingLogger.isLevelEnabled('TRACE')
           ? 'verbose'
           : 'off',
       };
@@ -1297,7 +1299,7 @@ export class LspLanguageService {
     return this._diagnosticUpdates
       .switchMap(perConnectionUpdates =>
         ensureInvalidations(
-          this._logger.getUnderlyingLogger(),
+          this._underlyingLogger,
           perConnectionUpdates.map(convert.lspDiagnostics_atomDiagnostics),
         ),
       )

@@ -10,16 +10,17 @@
  */
 
 import Dequeue from 'dequeue';
+import util from 'util';
 
 type LogEntry = {|time: number, text: string|};
 
 export class MemoryLogger {
-  _underlyingLogger: log4js$Logger;
+  _underlyingLogger: ?log4js$Logger;
   _logs: Dequeue = new Dequeue(); // stores LogEntry elements
   _retentionPeriod: number;
 
   constructor(
-    underlyingLogger: log4js$Logger,
+    underlyingLogger: ?log4js$Logger,
     retentionPeriod: number = 5 * 60 * 1000, // retain past five minutes
   ) {
     this._underlyingLogger = underlyingLogger;
@@ -44,27 +45,52 @@ export class MemoryLogger {
     return result;
   }
 
-  getUnderlyingLogger(): log4js$Logger {
+  getUnderlyingLogger(): ?log4js$Logger {
     return this._underlyingLogger;
   }
 
-  trace(message: string) {
-    this._underlyingLogger.trace(message.substring(0, 400));
+  debug(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.debug(message.substring(0, 400));
+    }
+    this._appendAndExpunge('DEBUG', message);
+  }
+
+  trace(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.trace(message.substring(0, 400));
+    }
     this._appendAndExpunge('TRACE', message);
   }
 
-  info(message: string) {
-    this._underlyingLogger.info(message.substring(0, 400));
+  info(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.info(message.substring(0, 400));
+    }
     this._appendAndExpunge('INFO', message);
   }
 
-  warn(message: string) {
-    this._underlyingLogger.warn(message);
+  warn(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.warn(message);
+    }
     this._appendAndExpunge('WARN', message);
   }
 
-  error(message: string) {
-    this._underlyingLogger.error(message);
+  error(format: string, ...values: Array<any>): void {
+    const message = util.format(format, ...values);
+    const underlying = this._underlyingLogger;
+    if (underlying != null) {
+      underlying.error(message);
+    }
     this._appendAndExpunge('ERROR', message);
   }
 
