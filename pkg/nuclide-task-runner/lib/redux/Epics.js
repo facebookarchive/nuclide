@@ -21,6 +21,7 @@ import type {
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
+import {ProcessExitError} from 'nuclide-commons/process';
 import {observableFromTask} from '../../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
@@ -613,10 +614,26 @@ function createTaskObservable(
       );
   })
     .catch(error => {
+      let description;
+      let buttons;
+      if (error instanceof ProcessExitError) {
+        description = formatProcessExitError(error);
+        buttons = [
+          {
+            text: 'Copy command',
+            className: 'icon icon-clippy',
+            onDidClick: () =>
+              atom.clipboard.write(error.command + ' ' + error.args.join(' ')),
+          },
+        ];
+      } else {
+        description = error.message;
+      }
       taskFailedNotification = atom.notifications.addError(
         `The task "${taskMeta.label}" failed`,
         {
-          description: error.message,
+          buttons,
+          description,
           dismissable: true,
         },
       );
@@ -729,4 +746,22 @@ function getTaskRunnerState(
         }),
       ),
   );
+}
+
+function formatProcessExitError(error: ProcessExitError): string {
+  let message = '```\n';
+  message += error.command + ' ' + error.args.join(' ');
+  message += '\n```\n<br />';
+  if (error.stderr !== '') {
+    message += 'Stderr:\n';
+    message += '```\n';
+    message += error.stderr;
+    message += '\n```\n<br />';
+  }
+  if (error.exitCode != null) {
+    message += `Exit code: ${error.exitCode}\n<br />`;
+  } else if (error.signal != null) {
+    message += `Signal: ${error.signal}\n<br />`;
+  }
+  return message;
 }
