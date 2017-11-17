@@ -114,9 +114,9 @@ export class RC {
       if (items == null) {
         return null;
       }
-      const diagnostics = items.map(item =>
-        this._parseRCDiagnosticsItem(item, file),
-      );
+      const diagnostics = items
+        .filter(item => item.type !== 'skipped')
+        .map(item => this._parseRCDiagnosticsItem(item, file));
       return {diagnostics, accurateFlags: true};
     });
   }
