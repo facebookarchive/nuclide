@@ -9,5 +9,4 @@
  * @format
  */
 
-export const CLIENTINFO_CHANNEL = 'clientinfo';
 export const HEARTBEAT_CHANNEL = 'heartbeat';

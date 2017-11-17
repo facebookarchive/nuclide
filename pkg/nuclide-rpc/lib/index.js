@@ -82,7 +82,6 @@ export type ReliableTransport = {
   isClosed(): boolean,
   getState(): 'open' | 'disconnected' | 'closed',
   reconnect(transport: UnreliableTransport): void,
-  getLastStateChangeTime(): number,
   id: string,
 };
 

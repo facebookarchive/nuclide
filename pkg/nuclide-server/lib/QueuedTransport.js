@@ -37,7 +37,6 @@ export class QueuedTransport {
   _messageQueue: Array<string>;
   _emitter: Emitter;
   _messages: Subject<string>;
-  _lastStateChangeTime: number;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
     this.id = clientId;
@@ -46,7 +45,6 @@ export class QueuedTransport {
     this._messageQueue = [];
     this._messages = new Subject();
     this._emitter = new Emitter();
-    this._lastStateChangeTime = Date.now();
 
     if (transport != null) {
       this._connect(transport);
@@ -59,16 +57,11 @@ export class QueuedTransport {
       : this._transport == null ? 'disconnected' : 'open';
   }
 
-  getLastStateChangeTime(): number {
-    return this._lastStateChangeTime;
-  }
-
   _connect(transport: UnreliableTransport): void {
     invariant(!transport.isClosed());
     logger.info('Client #%s connecting with a new socket!', this.id);
     invariant(this._transport == null);
     this._transport = transport;
-    this._lastStateChangeTime = Date.now();
     transport.onMessage().subscribe(message => this._messages.next(message));
     transport.onClose(() => this._onClose(transport));
   }
@@ -87,7 +80,6 @@ export class QueuedTransport {
     }
 
     this._transport = null;
-    this._lastStateChangeTime = Date.now();
     this._emitter.emit('disconnect', transport);
   }
 
@@ -168,7 +160,6 @@ export class QueuedTransport {
     this._disconnect();
     if (!this._isClosed) {
       this._isClosed = true;
-      this._lastStateChangeTime = Date.now();
     }
   }
 

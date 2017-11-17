@@ -18,7 +18,7 @@ import {attachEvent} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
-import {CLIENTINFO_CHANNEL, HEARTBEAT_CHANNEL} from './config';
+import {HEARTBEAT_CHANNEL} from './config';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {HistogramTracker} from '../../nuclide-analytics';
@@ -150,7 +150,6 @@ export default class NuclideServer {
     // ServiceIntegrationTestHelper.
     this._xhrServiceRegistry = {};
     this._setupHeartbeatHandler();
-    this._setupClientInfoHandler();
 
     // Setup error handler.
     this._app.use(
@@ -177,25 +176,6 @@ export default class NuclideServer {
     this._registerService(
       '/' + HEARTBEAT_CHANNEL,
       async () => this._version,
-      'post',
-      true,
-    );
-  }
-
-  _setupClientInfoHandler() {
-    this._registerService(
-      '/' + CLIENTINFO_CHANNEL,
-      async () => {
-        const clients = {};
-        for (const [clientId, client] of this._clients) {
-          const transport = client.getTransport();
-          clients[clientId] = {
-            lastStateChangeTime: transport.getLastStateChangeTime(),
-            state: transport.getState(),
-          };
-        }
-        return JSON.stringify({clients});
-      },
       'post',
       true,
     );

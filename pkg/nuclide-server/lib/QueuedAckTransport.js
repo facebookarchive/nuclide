@@ -62,7 +62,6 @@ export class QueuedAckTransport {
   _pendingReceives: Map<number, string>;
   _emitter: Emitter;
   _messageProcessor: Subject<string>;
-  _lastStateChangeTime: number;
   _lastSendId: number = 0;
   _lastProcessedId: number = 0;
   _pendingMessageTimer: ?number;
@@ -76,7 +75,6 @@ export class QueuedAckTransport {
     this._pendingReceives = new Map();
     this._messageProcessor = new Subject();
     this._emitter = new Emitter();
-    this._lastStateChangeTime = Date.now();
 
     if (transport != null) {
       this._connect(transport);
@@ -88,10 +86,6 @@ export class QueuedAckTransport {
     return this._isClosed
       ? 'closed'
       : this._transport == null ? 'disconnected' : 'open';
-  }
-
-  getLastStateChangeTime(): number {
-    return this._lastStateChangeTime;
   }
 
   onDisconnect(
@@ -110,7 +104,6 @@ export class QueuedAckTransport {
     invariant(this._transport == null, 'connect with existing this._transport');
 
     this._transport = transport;
-    this._lastStateChangeTime = Date.now();
 
     transport.onMessage().subscribe(this._handleMessage.bind(this));
     transport.onClose(() => this._handleTransportClose(transport));
@@ -130,7 +123,6 @@ export class QueuedAckTransport {
       this._transport = null;
       this._cancelPendingMessageTimer();
       this._cancelAckTimer();
-      this._lastStateChangeTime = Date.now();
       this._emitter.emit('disconnect', transport);
     }
     this._checkLeaks();
@@ -271,7 +263,6 @@ export class QueuedAckTransport {
       this._pendingSends.clear();
       this._pendingReceives.clear();
       this._isClosed = true;
-      this._lastStateChangeTime = Date.now();
     } else {
       protocolLogger.trace(`${this.id} close (but already closed)`);
     }
