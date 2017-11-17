@@ -31,7 +31,7 @@ export class StreamTransport {
     this._isClosed = false;
     this._messageLogger = messageLogger;
     this._output = output;
-    this._messages = splitStream(observeStream(input)).do(message => {
+    this._messages = splitStream(observeStream(input), false).do(message => {
       this._messageLogger('receive', message);
     });
   }

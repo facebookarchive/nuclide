@@ -21,7 +21,9 @@ describe('IpcTransports', () => {
         require.resolve('../../commons-node/load-transpiler'),
         require.resolve('./ipc_echo_process'),
       ],
-      {silent: true},
+      {
+        stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
+      },
     );
   });
 

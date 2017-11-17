@@ -9,84 +9,54 @@
  * @format
  */
 
+import fs from 'fs';
 import {getLogger} from 'log4js';
 import {Deferred} from 'nuclide-commons/promise';
 import {getOutputStream} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
+import {StreamTransport} from '../../nuclide-rpc';
 
-// Due to https://github.com/nodejs/node/issues/3145 (fixed in 7.5.0+),
-// Node IPC is currently O(N^2) in the message size.
-// Performance starts degrading significantly after 4096 bytes.
-// We'll break each message into chunks of 4096 bytes and prefix each with a 0/1
-// depending on whether or not the chunk marks the end of a message.
-const CHUNK_SIZE = 4096;
-
-class ChunkedMessageBuffer {
-  _callback: string => mixed;
-  _buffer: string;
-
-  constructor(callback: string => mixed) {
-    this._callback = callback;
-    this._buffer = '';
-  }
-
-  write(data: ?string): void {
-    if (data == null) {
-      this._callback(this._buffer);
-      this._buffer = '';
-    } else {
-      this._buffer += data;
-    }
-  }
-
-  static writeChunks(data: string, callback: mixed => mixed) {
-    for (let i = 0; i < data.length; i += CHUNK_SIZE) {
-      callback(data.substr(i, CHUNK_SIZE));
-    }
-    // IPC preserves object types, so write out a "null" as a sentinel.
-    callback(null);
-  }
-}
+const PIPE_FD = 3;
 
 export class IpcServerTransport {
-  constructor() {}
+  _transport: StreamTransport;
+
+  constructor() {
+    this._transport = new StreamTransport(
+      fs.createWriteStream('', {fd: PIPE_FD}),
+      fs.createReadStream('', {fd: PIPE_FD}),
+    );
+  }
 
   send(message: string): void {
-    ChunkedMessageBuffer.writeChunks(message, data => {
-      // $FlowIgnore
-      process.send(data);
-    });
+    this._transport.send(message);
   }
 
   onMessage(): Observable<string> {
-    return Observable.create(observer => {
-      const buffer = new ChunkedMessageBuffer(data => {
-        observer.next(data);
-      });
-      process.on('message', data => {
-        buffer.write(data);
-      });
-    });
+    return this._transport.onMessage();
   }
 
   close(): void {
-    // $FlowIgnore
-    process.disconnect();
+    this._transport.close();
   }
 
   isClosed(): boolean {
-    return !process.connected;
+    return this._transport.isClosed();
   }
 }
 
 export class IpcClientTransport {
-  _process: Deferred<child_process$ChildProcess>;
+  _transport: Deferred<StreamTransport>;
   _subscription: rxjs$Subscription;
 
   constructor(processStream: Observable<child_process$ChildProcess>) {
-    this._process = new Deferred();
+    this._transport = new Deferred();
     this._subscription = processStream
-      .do(process => this._process.resolve(process))
+      .do(process =>
+        this._transport.resolve(
+          new StreamTransport(process.stdio[PIPE_FD], process.stdio[PIPE_FD]),
+        ),
+      )
       .switchMap(process => getOutputStream(process))
       .subscribe({
         error: err => {
@@ -96,7 +66,7 @@ export class IpcClientTransport {
   }
 
   _handleError(err: Error) {
-    this._process.reject(err);
+    this._transport.reject(err);
     getLogger().fatal('Nuclide RPC process crashed', err);
     atom.notifications.addError('Local RPC process crashed!', {
       description:
@@ -116,35 +86,20 @@ export class IpcClientTransport {
   }
 
   send(message: string): void {
-    this._process.promise.then(process => {
-      ChunkedMessageBuffer.writeChunks(message, data => {
-        // $FlowIgnore
-        process.send(data);
-      });
+    this._transport.promise.then(transport => {
+      transport.send(message);
     });
   }
 
   onMessage(): Observable<string> {
-    return Observable.create(observer => {
-      this._process.promise.then(
-        process => {
-          const buffer = new ChunkedMessageBuffer(data => {
-            observer.next(data);
-          });
-          process.on('message', data => {
-            buffer.write(data);
-          });
-        },
-        err => observer.error(err),
-      );
-      // If the process prematurely errors or completes, we're in deep trouble anyway.
-      // So teardown here isn't extremely important.
-    });
+    return Observable.fromPromise(
+      this._transport.promise,
+    ).switchMap(transport => transport.onMessage());
   }
 
   close() {
     this._subscription.unsubscribe();
-    this._process.reject(Error('Transport closed'));
+    this._transport.reject(Error('Transport closed'));
   }
 
   isClosed(): boolean {

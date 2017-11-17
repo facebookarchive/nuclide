@@ -61,7 +61,7 @@ function createLocalRpcServerClient(): RpcConnection<Transport> {
     ],
     {
       killTreeWhenDone: true,
-      silent: true, // Needed so stdout/stderr are available.
+      stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
     },
   );
   const transport = new IpcClientTransport(localServerProcess);

@@ -17,7 +17,7 @@ invariant(!transport.isClosed());
 
 transport.onMessage().subscribe(message => {
   if (message === 'exit') {
-    transport.close();
+    process.exit(0);
   } else {
     transport.send(message.toUpperCase());
   }
