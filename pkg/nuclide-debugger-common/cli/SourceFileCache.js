@@ -58,7 +58,8 @@ export default class SourceFileCache {
       // have to read into memory first
       new LineByLineReader(path)
         .on('line', line => lines.push(line))
-        .on('end', () => resolve(lines));
+        .on('end', () => resolve(lines))
+        .on('error', e => reject(e));
     });
   }
 

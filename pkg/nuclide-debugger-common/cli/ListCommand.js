@@ -127,11 +127,23 @@ export default class ListCommand implements Command {
   }
 
   async _printSourceLines(ref: SourceReference): Promise<void> {
-    const sourceLines = await this._debugger.getSourceLines(
-      ref.source,
-      ref.line,
-      ListCommand._linesToPrint,
-    );
+    let sourceLines: string[];
+
+    try {
+      sourceLines = await this._debugger.getSourceLines(
+        ref.source,
+        ref.line,
+        ListCommand._linesToPrint,
+      );
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        this._console.outputLine('Source file does not exist.');
+        return;
+      }
+
+      this._console.outputLine('Error reading source file.');
+      return;
+    }
 
     if (ref.source.path != null) {
       this._console.outputLine(`Listing ${ref.source.path}`);
