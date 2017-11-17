@@ -25,7 +25,7 @@ export type CodeActionProvider = {
     editor: atom$TextEditor,
     range: atom$Range,
     diagnostics: Array<DiagnosticMessage>,
-  ): Promise<Array<CodeAction>>,
+  ): Promise<?Array<CodeAction>>,
 };
 
 /**

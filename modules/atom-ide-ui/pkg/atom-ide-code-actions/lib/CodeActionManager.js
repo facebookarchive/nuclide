@@ -14,7 +14,7 @@ import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {arrayFlatten} from 'nuclide-commons/collection';
+import {arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 
 import type {
@@ -89,7 +89,7 @@ export class CodeActionManager {
         provider.getCodeActions(editor, range, diagnostics),
       );
     }
-    return arrayFlatten(await Promise.all(codeActionRequests));
+    return arrayFlatten(arrayCompact(await Promise.all(codeActionRequests)));
   }
 
   createCodeActionFetcher(): CodeActionFetcher {
