@@ -54,6 +54,16 @@ describe('nuclide-commons/observable', () => {
         expect(output).toEqual(['foo\n', 'bar\n', '\n', 'baz\n', 'blar']);
       });
     });
+
+    it('splits streams without the newline', () => {
+      waitsForPromise(async () => {
+        const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
+        const output = await splitStream(Observable.from(input), false)
+          .toArray()
+          .toPromise();
+        expect(output).toEqual(['foo', 'bar', '', 'baz', 'blar']);
+      });
+    });
   });
 
   describe('takeWhileInclusive', () => {

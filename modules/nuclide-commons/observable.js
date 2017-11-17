@@ -32,11 +32,14 @@ import debounce from './debounce';
 
 /**
  * Splits a stream of strings on newlines.
- * Includes the newlines in the resulting stream.
+ * Includes the newlines in the resulting stream (if includeNewlines is true).
  * Sends any non-newline terminated data before closing.
- * Never sends an empty string.
+ * Does not ensure a trailing newline.
  */
-export function splitStream(input: Observable<string>): Observable<string> {
+export function splitStream(
+  input: Observable<string>,
+  includeNewlines?: boolean = true,
+): Observable<string> {
   return Observable.create(observer => {
     let current: string = '';
 
@@ -52,7 +55,11 @@ export function splitStream(input: Observable<string>): Observable<string> {
         const lines = value.split('\n');
         lines[0] = current + lines[0];
         current = lines.pop();
-        lines.forEach(line => observer.next(line + '\n'));
+        if (includeNewlines) {
+          lines.forEach(line => observer.next(line + '\n'));
+        } else {
+          lines.forEach(line => observer.next(line));
+        }
       },
       error => {
         onEnd();
