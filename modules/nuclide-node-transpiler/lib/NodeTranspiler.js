@@ -47,7 +47,11 @@ const BABEL_OPTIONS = {
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('./use-minified-libs-tr')],
     [require.resolve('babel-plugin-idx')],
-    [require.resolve('babel-plugin-lodash')],
+    [require.resolve('babel-plugin-lodash'), {
+      // The babel plugin looks for lodash relative to the CWD.
+      // This must be the path to the root package.json.
+      cwd: path.join(__dirname, '..', '..', '..'),
+    }],
 
     [require.resolve('babel-plugin-transform-async-to-module-method'), {
       module: 'async-to-generator',
