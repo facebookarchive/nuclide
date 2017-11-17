@@ -9,21 +9,29 @@
  * @format
  */
 
-import type {LaunchRequestArguments} from 'vscode-debugprotocol';
+import type {
+  LaunchRequestArguments,
+  AttachRequestArguments,
+} from 'vscode-debugprotocol';
 import type {VSAdapterExecutableInfo} from '../lib/types';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes} from '../../nuclide-debugger-common/lib/constants';
 
+export type StartAction = 'launch' | 'attach';
+
 export type ParsedVSAdapter = {
+  action: StartAction,
   adapterInfo: VSAdapterExecutableInfo,
-  launchArgs: LaunchRequestArguments,
+  launchArgs?: LaunchRequestArguments,
+  attachArgs?: AttachRequestArguments,
 };
 
 type Arguments = {
   _: string[],
   type?: string,
+  attach: boolean,
 };
 
 export default class DebuggerAdapterFactory {
@@ -50,61 +58,101 @@ export default class DebuggerAdapterFactory {
   ]);
 
   adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
-    const launchArgs = args._;
-    let targetType = null;
+    if (args.attach) {
+      return this._parseAttachArguments(args);
+    } else {
+      return this._parseLaunchArguments(args);
+    }
+  }
 
-    // command line target overrides everything
-    if (args.type !== undefined) {
-      targetType = args.type;
-      if (!this._vspServersByTargetType.get(targetType)) {
-        const error =
-          'Invalid target type "' +
-          targetType +
-          '"; valid types are "' +
-          Object.keys(this._vspServersByTargetType).join('", "') +
-          '"';
-        throw new Error(error);
-      }
+  _parseAttachArguments(args: Arguments): ?ParsedVSAdapter {
+    const targetType = this._typeFromCommandLine(args);
+
+    if (targetType == null) {
+      const error =
+        'Could not determine target type. Please use --type to specify it explicitly.';
+      throw Error(error);
     }
 
-    if (targetType == null && launchArgs.length > 0) {
-      const program = nuclideUri.resolve(launchArgs[0]);
+    const adapterPath = this._vspServersByTargetType.get(targetType);
+    invariant(
+      adapterPath != null,
+      'Adapter server table not properly populated in DebuggerAdapterFactory',
+    );
+    return {
+      action: 'attach',
+      adapterInfo: {
+        command: 'node',
+        args: [adapterPath],
+      },
+      attachArgs: {
+        port: 9229,
+      },
+    };
+  }
 
-      if (!targetType) {
-        // $TODO right now this only supports local launch
-        const programUri = nuclideUri.parsePath(program);
+  _parseLaunchArguments(args: Arguments): ?ParsedVSAdapter {
+    const launchArgs = args._;
+    const program = launchArgs[0];
 
-        // $TODO if there is no extension, try looking at the shebang
-        targetType = this._targetTypeByFileExtension.get(programUri.ext);
-        if (targetType === undefined) {
-          const error =
-            'Could not determine target type from filename "' +
-            program +
-            '". Please use --type to specify it explicitly.';
-          throw Error(error);
-        }
+    if (program == null) {
+      throw new Error(
+        '--attach not specified and no program to debug specified on the command line.',
+      );
+    }
+
+    let targetType = this._typeFromCommandLine(args);
+    if (targetType == null) {
+      targetType = this._typeFromProgramName(program);
+    }
+
+    if (targetType == null) {
+      const error =
+        `Could not determine target type from filename "${program}".` +
+        ' Please use --type to specify it explicitly.';
+      throw Error(error);
+    }
+
+    const adapterPath = this._vspServersByTargetType.get(targetType);
+    invariant(
+      adapterPath != null,
+      'Adapter server table not properly populated in DebuggerAdapterFactory',
+    );
+
+    return {
+      action: 'launch',
+      adapterInfo: {
+        command: 'node',
+        args: [adapterPath],
+      },
+      launchArgs: {
+        args: launchArgs.splice(1),
+        program: nuclideUri.resolve(program),
+        noDebug: false,
+        stopOnEntry: true,
+      },
+    };
+  }
+
+  _typeFromCommandLine(args: Arguments): ?string {
+    const type = args.type;
+    if (type != null) {
+      if (!this._vspServersByTargetType.get(type)) {
+        const valid = Array.from(this._vspServersByTargetType.keys()).join(
+          '", "',
+        );
+        const error = `Invalid target type "${type}"; valid types are "${valid}".`;
+        throw new Error(error);
       }
 
-      const adapterPath = this._vspServersByTargetType.get(targetType);
-      invariant(
-        adapterPath != null,
-        'Adapter server table not properly populated in DebuggerAdapterFactory',
-      );
-
-      return {
-        adapterInfo: {
-          command: 'node',
-          args: [adapterPath],
-        },
-        launchArgs: {
-          args: launchArgs.splice(1),
-          program,
-          noDebug: false,
-          stopOnEntry: true,
-        },
-      };
+      return type;
     }
 
     return null;
+  }
+
+  _typeFromProgramName(program: string): ?string {
+    const programUri = nuclideUri.parsePath(program);
+    return this._targetTypeByFileExtension.get(programUri.ext);
   }
 }

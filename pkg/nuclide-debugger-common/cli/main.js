@@ -50,8 +50,10 @@ async function main(): Promise<void> {
 
   try {
     // see if there's session information on the command line
+    const args = yargs.boolean('attach').argv;
+
     const debuggerAdapterFactory = new DebuggerAdapterFactory();
-    const adapter = debuggerAdapterFactory.adapterFromArguments(yargs.argv);
+    const adapter = debuggerAdapterFactory.adapterFromArguments(args);
 
     const logger = buildLogger();
     const debuggerInstance = new Debugger(logger, cli);

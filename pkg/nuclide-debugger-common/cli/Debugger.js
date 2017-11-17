@@ -360,7 +360,23 @@ export default class Debugger implements DebuggerInterface {
     this._launching = true;
     await this.closeSession();
     await this.createSession(adapter.adapterInfo);
-    await this._ensureDebugSession().launch(adapter.launchArgs);
+
+    switch (adapter.action) {
+      case 'launch':
+        const launchArgs = adapter.launchArgs;
+        invariant(launchArgs != null);
+        await this._ensureDebugSession().launch(launchArgs);
+        break;
+
+      case 'attach':
+        const attachArgs = adapter.attachArgs;
+        invariant(attachArgs != null);
+        await this._ensureDebugSession().attach(attachArgs);
+        break;
+
+      default:
+        invariant(false, 'Invalid action passed in adapter init state');
+    }
     await this._cacheThreads();
     this._launching = false;
   }
@@ -397,6 +413,11 @@ export default class Debugger implements DebuggerInterface {
     invariant(this._capabilities != null);
     if (this._capabilities.supportsConfigurationDoneRequest) {
       await session.configurationDone();
+    }
+
+    // On attach, we won't get a stop event, so start the console here.
+    if (this._adapter != null && this._adapter.action === 'attach') {
+      this._console.startInput();
     }
   }
 
