@@ -235,7 +235,10 @@ export function indexDirectory(
           })
           .ignoreElements(),
       );
-    })
+    });
+
+  return Observable.of(cachedUpdates)
+    .concat(workerMessages)
     .map(message => {
       // Inject the main files at this point, since we have a list of all map files.
       // This could be pure but it's just not worth the cost.
@@ -247,8 +250,6 @@ export function indexDirectory(
       });
       return message;
     });
-
-  return Observable.of(cachedUpdates).concat(workerMessages);
 }
 
 const getPackageJson = memoize(async (dir: NuclideUri) => {

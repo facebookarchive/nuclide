@@ -68,10 +68,10 @@ export async function getFileIndex(
       nodeModulesPackageJsonFiles,
       mainFiles,
     ] = await Promise.all([
-      watchmanListFiles(client, root, '*.js').then(fromWatchmanResult),
+      watchmanListFiles(client, root, '*.js'),
       nodeModulesPackageJsonFilesPromise,
       watchmanListFiles(client, root, 'package.json').then(files =>
-        getMainFiles(root, files),
+        getMainFiles(root, files.map(file => file.name)),
       ),
       loadPromise,
     ]);
@@ -107,8 +107,12 @@ function watchmanListFiles(
   client: WatchmanClient,
   root: string,
   pattern: string,
-): Promise<Array<string>> {
-  return client.listFiles(root, getWatchmanExpression(root, pattern));
+): Promise<Array<FileWithHash>> {
+  return client
+    .listFiles(root, getWatchmanExpression(root, pattern))
+    .then((files: Array<any>) =>
+      files.map(data => ({name: data.name, sha1: data['content.sha1hex']})),
+    );
 }
 
 async function getMainFiles(
@@ -141,10 +145,6 @@ async function getMainFiles(
     },
   );
   return new Map(results.filter(Boolean));
-}
-
-function fromWatchmanResult(result: any): Array<FileWithHash> {
-  return result.map(data => ({name: data.name, sha1: data['content.sha1hex']}));
 }
 
 function fromGlobResult(files: Array<string>): Array<FileWithHash> {
