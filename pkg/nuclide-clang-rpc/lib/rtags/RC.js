@@ -9,17 +9,19 @@
  * @format
  */
 
-import type {Observable} from 'rxjs';
 import type {
   ClangCompletion,
-  ClangRequestSettings,
   ClangCompileResult,
   ClangDiagnostic,
   ClangDiagnosticChild,
+  ClangOutlineTree,
+  ClangLocalReferences,
+  ClangCursor,
+  ClangDeclaration,
 } from '../rpc-types';
 
-import {runCommand} from 'nuclide-commons/process';
 import {Range as atom$Range, Point as atom$Point} from 'simple-text-buffer';
+import {rcCommand} from './utils';
 
 type RCCompletionItem = {
   annotation: string,
@@ -58,32 +60,66 @@ type RCDiagnostics = {
   },
 };
 
+function toRTagsLocationFormat(
+  src: string,
+  line: number,
+  column: number,
+): string {
+  return `${src}:${line + 1}:${column + 1}`;
+}
+
 export class RC {
-  _rcCommand(args: string[], input?: string): Observable<string> {
-    return runCommand('rc', args, {encoding: 'utf8', input});
+  _src: string;
+
+  // Make the RPC-exported methods invariant (see ClangProcessService.js).
+  compile: string => Promise<ClangCompileResult>;
+
+  get_completions: (
+    string,
+    number,
+    number,
+    number,
+    string,
+  ) => Promise<?Array<ClangCompletion>>;
+
+  get_declaration: (
+    contents: string,
+    line: number,
+    column: number,
+  ) => Promise<?ClangDeclaration>;
+
+  get_declaration_info: (
+    contents: string,
+    line: number,
+    column: number,
+  ) => Promise<?Array<ClangCursor>>;
+
+  get_outline: (contents: string) => Promise<?Array<ClangOutlineTree>>;
+
+  get_local_references: (
+    contents: string,
+    line: number,
+    column: number,
+  ) => Promise<?ClangLocalReferences>;
+
+  constructor(srcPath: string) {
+    this._src = srcPath;
   }
 
-  _toRtagsLocationFormat(src: string, line: number, column: number): string {
-    return `${src}:${line + 1}:${column + 1}`;
-  }
-
-  getCompletions(
-    src: string,
+  get_completions(
     contents: string,
     line: number,
     column: number,
     tokenStartColumn: number,
     prefix: string,
-    requestSettings: ?ClangRequestSettings,
-    defaultFlags?: ?Array<string>,
   ): Promise<?Array<ClangCompletion>> {
-    return this._rcCommand(
+    return rcCommand(
       [
-        `--current-file=${src}`,
+        `--current-file=${this._src}`,
         '-b',
-        `--unsaved-file=${src}:${contents.length}`,
+        `--unsaved-file=${this._src}:${contents.length}`,
         '--code-complete-at',
-        this._toRtagsLocationFormat(src, line, column),
+        toRTagsLocationFormat(this._src, line, column),
         '--synchronous-completions',
         `--code-complete-prefix=${prefix}`,
         '--json',
@@ -97,28 +133,26 @@ export class RC {
       .toPromise();
   }
 
-  getDiagnostics(
-    src: string,
-    requestSettings: ?ClangRequestSettings,
-    defaultFlags?: ?Array<string>,
-  ): Observable<?ClangCompileResult> {
-    return this._rcCommand([
+  compile(contents: string): Promise<ClangCompileResult> {
+    return rcCommand([
       '--diagnose',
-      src,
+      this._src,
       '--synchronous-diagnostics',
       '--json',
-    ]).map(stdout => {
-      const result = (JSON.parse(stdout): RCDiagnostics);
-      const file = Object.keys(result.checkStyle)[0];
-      const items = result.checkStyle[file];
-      if (items == null) {
-        return null;
-      }
-      const diagnostics = items
-        .filter(item => item.type !== 'skipped')
-        .map(item => this._parseRCDiagnosticsItem(item, file));
-      return {diagnostics, accurateFlags: true};
-    });
+    ])
+      .map(stdout => {
+        const result = (JSON.parse(stdout): RCDiagnostics);
+        const file = Object.keys(result.checkStyle)[0];
+        const items = result.checkStyle[file];
+        if (items == null) {
+          return {diagnostics: []};
+        }
+        const diagnostics = items
+          .filter(item => item.type !== 'skipped')
+          .map(item => this._parseRCDiagnosticsItem(item, file));
+        return {diagnostics, accurateFlags: true};
+      })
+      .toPromise();
   }
 
   _parseRCDiagnosticsItem(
@@ -154,6 +188,34 @@ export class RC {
         },
       ],
     };
+  }
+
+  get_declaration(
+    contents: string,
+    line: number,
+    column: number,
+  ): Promise<?ClangDeclaration> {
+    throw new Error('TODO pelmers');
+  }
+
+  get_declaration_info(
+    contents: string,
+    line: number,
+    column: number,
+  ): Promise<?Array<ClangCursor>> {
+    throw new Error('TODO pelmers');
+  }
+
+  get_outline(contents: string): Promise<?Array<ClangOutlineTree>> {
+    throw new Error('TODO pelmers');
+  }
+
+  get_local_references(
+    contents: string,
+    line: number,
+    column: number,
+  ): Promise<?ClangLocalReferences> {
+    throw new Error('TODO pelmers');
   }
 
   _parseRCComletionItem(item: RCCompletionItem): ClangCompletion {

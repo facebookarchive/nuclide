@@ -29,9 +29,10 @@ import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {RC} from './rtags/RC';
+import RTagsManager from './rtags/RTagsManager';
 
 const serverManager = new ClangServerManager();
+const rtagsManager = new RTagsManager(serverManager.getClangFlagsManager());
 
 // Maps clang's cursor types to the actual declaration types: for a full list see
 // https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td
@@ -89,8 +90,17 @@ async function getClangService(
   contents: string,
   requestSettings: ?ClangRequestSettings,
   defaultFlags: ?Array<string>,
-  blocking?: boolean,
+  blocking: boolean,
+  useRTags?: boolean,
 ): Promise<?ClangProcessService> {
+  if (useRTags) {
+    return rtagsManager.getService(
+      src,
+      contents,
+      requestSettings,
+      defaultFlags,
+    );
+  }
   const server = serverManager.getClangServer(
     src,
     contents,
@@ -124,9 +134,15 @@ export function compile(
   useRTags?: boolean,
 ): ConnectableObservable<?ClangCompileResult> {
   if (useRTags) {
-    return new RC()
-      .getDiagnostics(src, requestSettings, defaultFlags)
-      .publish();
+    return Observable.fromPromise(
+      rtagsManager
+        .getService(src, contents, requestSettings, defaultFlags)
+        .then(service => {
+          if (service) {
+            return service.compile(contents);
+          }
+        }),
+    ).publish();
   }
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
@@ -155,21 +171,13 @@ export async function getCompletions(
   defaultFlags?: ?Array<string>,
   useRTags?: boolean,
 ): Promise<?Array<ClangCompletion>> {
-  if (useRTags) {
-    return new RC().getCompletions(
-      src,
-      contents,
-      line,
-      column,
-      tokenStartColumn,
-      prefix,
-    );
-  }
   const service = await getClangService(
     src,
     contents,
     requestSettings,
     defaultFlags,
+    false,
+    useRTags,
   );
   if (service != null) {
     return service.get_completions(
@@ -195,6 +203,7 @@ export async function getDeclaration(
     contents,
     requestSettings,
     defaultFlags,
+    false,
   );
   if (service != null) {
     return service.get_declaration(contents, line, column);
@@ -217,6 +226,7 @@ export async function getDeclarationInfo(
     contents,
     requestSettings,
     defaultFlags,
+    false,
   );
   if (service != null) {
     return service.get_declaration_info(contents, line, column);
@@ -342,6 +352,7 @@ export function loadFlagsFromCompilationDatabaseAndCacheThem(
  */
 export function resetForSource(src: NuclideUri): void {
   serverManager.reset(src);
+  rtagsManager.reset(src);
 }
 
 /**
@@ -349,8 +360,10 @@ export function resetForSource(src: NuclideUri): void {
  */
 export function reset(): void {
   serverManager.reset();
+  rtagsManager.reset();
 }
 
 export function dispose(): void {
   serverManager.dispose();
+  rtagsManager.reset();
 }

@@ -29,7 +29,7 @@ const SERVER_LIMIT = 20;
 const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
 
 let _getDefaultFlags;
-async function augmentDefaultFlags(
+export async function augmentDefaultFlags(
   src: string,
   flags: Array<string>,
 ): Promise<Array<string>> {
