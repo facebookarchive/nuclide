@@ -420,8 +420,19 @@ export class TerminalView implements PtyClient {
       return true;
     }
 
-    // Skip any key binding that is preserved.
-    return !bindings.some(b => preserved.has(b.command));
+    const result = !bindings.some(b => preserved.has(b.command));
+    // This facilitates debugging keystroke issues.  You can set a breakpoint
+    // in the else block without stopping on modifier keys.
+    if (
+      keystroke === 'alt' ||
+      keystroke === 'shift' ||
+      keystroke === 'ctrl' ||
+      keystroke === 'cmd'
+    ) {
+      return result;
+    } else {
+      return result;
+    }
   }
 
   _createOutputSink(): Sink {
