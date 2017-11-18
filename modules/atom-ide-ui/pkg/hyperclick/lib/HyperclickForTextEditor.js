@@ -200,7 +200,7 @@ export default class HyperclickForTextEditor {
     const lastPosition = this._getMousePositionAsBufferPosition(
       this._lastMouseEvent,
     );
-    if (!this._isInLastSuggestion(lastPosition)) {
+    if (lastPosition == null || !this._isInLastSuggestion(lastPosition)) {
       return;
     }
 
@@ -328,10 +328,17 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _getMousePositionAsBufferPosition(mouseEvent: MouseEvent): atom$Point {
+  _getMousePositionAsBufferPosition(mouseEvent: MouseEvent): ?atom$Point {
     const {component} = this._textEditorView;
     invariant(component);
     const screenPosition = component.screenPositionForMouseEvent(mouseEvent);
+    const screenLine = this._textEditor.lineTextForScreenRow(
+      screenPosition.row,
+    );
+    if (screenPosition.column >= screenLine.length) {
+      // We shouldn't try to fetch suggestions for trailing whitespace.
+      return null;
+    }
     try {
       return this._textEditor.bufferPositionForScreenPosition(screenPosition);
     } catch (error) {

@@ -943,6 +943,7 @@ declare class atom$TextEditor extends atom$Model {
   setSoftTabs(softTabs: boolean): void,
 
   lineTextForBufferRow(bufferRow: number): string,
+  lineTextForScreenRow(screenRow: number): string,
 
   // Grammars
   getGrammar(): atom$Grammar,

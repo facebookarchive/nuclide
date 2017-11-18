@@ -507,6 +507,26 @@ describe('Hyperclick', () => {
           expect(callback.callCount).toBe(0);
         });
       });
+
+      it('ignores <mousemove> when past the end of the line', () => {
+        waitsForPromise(async () => {
+          const provider = {
+            providerName: 'test',
+            async getSuggestion(sourceTextEditor, text, range) {
+              return {range, callback() {}};
+            },
+            priority: 0,
+          };
+          spyOn(provider, 'getSuggestion').andCallThrough();
+          hyperclick.addProvider(provider);
+
+          const outOfRangePosition = new Point(0, 20);
+          dispatch(MouseEvent, 'mousemove', outOfRangePosition, {
+            metaKey: true,
+          });
+          expect(provider.getSuggestion).not.toHaveBeenCalled();
+        });
+      });
     });
 
     describe('adds the `hyperclick` CSS class', () => {
