@@ -76,6 +76,7 @@ export type FlowSettings = {
   lazyServer: boolean,
   ideLazyMode: boolean,
   canUseFlowBin: boolean,
+  pathToFlow: string,
 };
 
 export type {FlowLocNoSource} from './flowOutputTypes';

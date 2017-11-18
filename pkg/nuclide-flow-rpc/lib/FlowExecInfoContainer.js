@@ -66,7 +66,7 @@ export class FlowExecInfoContainer {
     this._versionInfo = versionInfo;
 
     this._canUseFlowBin = Boolean(getConfig('canUseFlowBin'));
-    this._observeSettings();
+    this._pathToFlow = ((getConfig('pathToFlow'): any): string);
   }
 
   dispose() {
@@ -154,21 +154,6 @@ export class FlowExecInfoContainer {
 
   async findFlowConfigDir(localFile: string): Promise<?string> {
     return this._flowConfigDirCache.getConfigDir(localFile);
-  }
-
-  _observeSettings(): void {
-    if (global.atom == null) {
-      this._pathToFlow = 'flow';
-    } else {
-      // $UPFixMe: This should use nuclide-features-config
-      // Does not currently do so because this is an npm module that may run on the server.
-      this._disposables.add(
-        atom.config.observe('nuclide.nuclide-flow.pathToFlow', path => {
-          this._pathToFlow = path;
-          this._flowExecInfoCache.reset();
-        }),
-      );
-    }
   }
 }
 
