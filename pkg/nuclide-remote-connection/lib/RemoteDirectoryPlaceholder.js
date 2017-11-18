@@ -108,7 +108,10 @@ export default class RemoteDirectoryPlaceholder {
     callback(null, []);
   }
 
-  contains(path: string): boolean {
+  contains(path: ?string): boolean {
+    if (path == null) {
+      return false;
+    }
     return nuclideUri.contains(this._uri, path);
   }
 }
