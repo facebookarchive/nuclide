@@ -48,7 +48,7 @@ describe('memoryLogger', () => {
     expect(logger.dump()).toBe(
       '00:01:00 INFO - 1min\n00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n',
     );
-    time = 6 * 60 * 1000;
+    time = 6 * 60 * 1000 + 1;
     logger.info('6min');
     expect(logger.dump()).toBe(
       '00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n00:06:00 INFO - 6min\n',
@@ -60,5 +60,13 @@ describe('memoryLogger', () => {
     time = 1000;
     logger.info('msg1');
     expect(logger.dump()).toBe('');
+  });
+
+  it('limits storage size', () => {
+    time = 0;
+    logger = new MemoryLogger(null, 1000, '00:00:00 INFO - '.length + 10);
+    logger.info('123456789');
+    logger.info('11');
+    expect(logger.dump()).toBe('00:00:00 INFO - 11\n');
   });
 });

@@ -14,17 +14,28 @@ import util from 'util';
 
 type LogEntry = {|time: number, text: string|};
 
+// Retain past five minutes
+const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000;
+
+// ...but only if it is less than 10 MB
+const DEFAULT_RETENTION_SIZE_LIMIT = 10 * 1000 * 1000;
+
 export class MemoryLogger {
   _underlyingLogger: ?log4js$Logger;
   _logs: Deque<LogEntry> = new Deque();
   _retentionPeriod: number;
+  _sizeLimit: number;
+  _size: number;
 
   constructor(
     underlyingLogger: ?log4js$Logger,
-    retentionPeriod: number = 5 * 60 * 1000, // retain past five minutes
+    retentionPeriod: number = DEFAULT_RETENTION_PERIOD_MS,
+    sizeLimit: number = DEFAULT_RETENTION_SIZE_LIMIT,
   ) {
     this._underlyingLogger = underlyingLogger;
     this._retentionPeriod = retentionPeriod;
+    this._sizeLimit = sizeLimit;
+    this._size = 0;
   }
 
   dispose(): void {
@@ -103,14 +114,21 @@ export class MemoryLogger {
     // push the new entry
     const newLog: LogEntry = {time, text};
     this._logs.push(newLog);
+    this._size += text.length;
     // and remove all expired entries
     while (true) {
       const front = this._logs.peekFront();
-      if (front != null && front.time + this._retentionPeriod <= time) {
-        this._logs.shift();
-      } else {
+      if (front == null) {
         break;
       }
+      if (
+        time <= front.time + this._retentionPeriod &&
+        this._size <= this._sizeLimit
+      ) {
+        break;
+      }
+      this._logs.shift();
+      this._size -= front.text.length;
     }
   }
 }
