@@ -22,6 +22,7 @@ import {isPositionInRange} from 'nuclide-commons/range';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
+import {Subject, Observable} from 'rxjs';
 
 import {getLogger} from 'log4js';
 
@@ -37,8 +38,6 @@ export default class HyperclickForTextEditor {
   _textEditorView: atom$TextEditorElement;
   _hyperclick: Hyperclick;
   _lastMouseEvent: ?MouseEvent;
-  _lastPosition: ?atom$Point;
-  _lastSuggestionAtMousePromise: ?Promise<?HyperclickSuggestion>;
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
   _lastWordRange: ?atom$Range;
@@ -51,6 +50,12 @@ export default class HyperclickForTextEditor {
   _loadingTimer: ?number;
   _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
 
+  // A central "event bus" for all fetch events.
+  // TODO: Rx-ify all incoming events to avoid using a subject.
+  _fetchStream: Subject<?MouseEvent>;
+  // Stored for testing.
+  _suggestionStream: Observable<?HyperclickSuggestion>;
+
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(textEditor);
@@ -58,11 +63,7 @@ export default class HyperclickForTextEditor {
     this._hyperclick = hyperclick;
 
     this._lastMouseEvent = null;
-    this._lastPosition = null;
-    // We store the original promise that we use to retrieve the last suggestion
-    // so callers can also await it to know when it's available.
-    this._lastSuggestionAtMousePromise = null;
-    // We store the last suggestion since we must await it immediately anyway.
+    // Cache the most recent suggestion so we can avoid unnecessary fetching.
     this._lastSuggestionAtMouse = null;
     this._navigationMarkers = null;
 
@@ -87,6 +88,8 @@ export default class HyperclickForTextEditor {
     );
 
     this._isDestroyed = false;
+    this._fetchStream = new Subject();
+    this._suggestionStream = this._observeSuggestions().share();
 
     this._subscriptions.add(
       featureConfig.observe(
@@ -100,6 +103,9 @@ export default class HyperclickForTextEditor {
           // For all Flow knows, newValue.split could return any old strings
           this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
         },
+      ),
+      this._suggestionStream.subscribe(suggestion =>
+        this._updateSuggestion(suggestion),
       ),
     );
   }
@@ -166,31 +172,8 @@ export default class HyperclickForTextEditor {
       clientY: mouseEvent.clientY,
     }: any);
 
-    // Don't fetch suggestions if the mouse is still in the same 'word', where
-    // 'word' is defined by the wordRegExp at the current position.
-    //
-    // If the last suggestion had multiple ranges, we have no choice but to
-    // fetch suggestions because the new word might be between those ranges.
-    // This should be ok because it will reuse that last suggestion until the
-    // mouse moves off of it.
-    const lastSuggestionIsNotMultiRange =
-      !this._lastSuggestionAtMouse ||
-      !Array.isArray(this._lastSuggestionAtMouse.range);
-    if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
-      return;
-    }
-    const match = wordAtPosition(
-      this._textEditor,
-      this._getMousePositionAsBufferPosition(),
-    );
-    this._lastWordRange = match != null ? match.range : null;
-
     if (this._isHyperclickEvent(mouseEvent)) {
-      // Clear the suggestion if the mouse moved out of the range.
-      if (!this._isMouseAtLastSuggestion()) {
-        this._clearSuggestion();
-      }
-      this._setSuggestionForLastMouseEvent();
+      this._fetchSuggestion(mouseEvent);
     } else {
       this._clearSuggestion();
     }
@@ -198,10 +181,12 @@ export default class HyperclickForTextEditor {
 
   _onMouseDown(event: Event): void {
     const mouseEvent: MouseEvent = (event: any);
-    const isHyperclickEvent = this._isHyperclickEvent(mouseEvent);
+    if (!this._isHyperclickEvent(mouseEvent)) {
+      return;
+    }
 
     // If hyperclick and multicursor are using the same trigger, prevent multicursor.
-    if (isHyperclickEvent && isMulticursorEvent(mouseEvent)) {
+    if (isMulticursorEvent(mouseEvent)) {
       mouseEvent.stopPropagation();
       if (localStorage.getItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY) !== 'false') {
         localStorage.setItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY, 'false');
@@ -209,15 +194,20 @@ export default class HyperclickForTextEditor {
       }
     }
 
-    if (!isHyperclickEvent || !this._isMouseAtLastSuggestion()) {
+    if (this._lastMouseEvent == null) {
+      return;
+    }
+    const lastPosition = this._getMousePositionAsBufferPosition(
+      this._lastMouseEvent,
+    );
+    if (!this._isInLastSuggestion(lastPosition)) {
       return;
     }
 
     if (this._lastSuggestionAtMouse) {
       const lastSuggestionAtMouse = this._lastSuggestionAtMouse;
       // Move the cursor to the click location to force a navigation-stack push.
-      const newCursorPosition = this._getMousePositionAsBufferPosition();
-      this._textEditor.setCursorBufferPosition(newCursorPosition);
+      this._textEditor.setCursorBufferPosition(lastPosition);
 
       this._confirmSuggestion(lastSuggestionAtMouse);
       // Prevent the <meta-click> event from adding another cursor.
@@ -230,8 +220,8 @@ export default class HyperclickForTextEditor {
   _onKeyDown(event: Event): void {
     const mouseEvent: MouseEvent = (event: any);
     // Show the suggestion at the last known mouse position.
-    if (this._isHyperclickEvent(mouseEvent)) {
-      this._setSuggestionForLastMouseEvent();
+    if (this._isHyperclickEvent(mouseEvent) && this._lastMouseEvent != null) {
+      this._fetchSuggestion(this._lastMouseEvent);
     }
   }
 
@@ -244,82 +234,104 @@ export default class HyperclickForTextEditor {
 
   /**
    * Returns a `Promise` that's resolved when the latest suggestion's available.
+   * (Exposed for testing.)
    */
   getSuggestionAtMouse(): Promise<?HyperclickSuggestion> {
-    return this._lastSuggestionAtMousePromise || Promise.resolve(null);
+    return this._suggestionStream.take(1).toPromise();
   }
 
-  async _setSuggestionForLastMouseEvent(): Promise<void> {
-    if (!this._lastMouseEvent) {
-      return;
-    }
+  _fetchSuggestion(mouseEvent: MouseEvent): void {
+    this._fetchStream.next(mouseEvent);
+  }
 
-    const position = this._getMousePositionAsBufferPosition();
-
-    if (this._lastSuggestionAtMouse != null) {
-      const {range} = this._lastSuggestionAtMouse;
-      if (isPositionInRange(position, range)) {
-        return;
-      }
-    }
-
-    // if we don't have any prior hyperclick position data, or we don't
-    // have any prior suggestion data, or the cursor has moved since the
-    // last suggestion, then refetch hyperclick suggestions. Otherwise,
-    // we might be able to reuse it below.
-    if (
-      !this._lastPosition ||
-      !this._lastSuggestionAtMousePromise ||
-      position.compare(this._lastPosition) !== 0
-    ) {
-      this._setLoading();
-      this._lastPosition = position;
-
-      try {
-        this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(
-          this._textEditor,
-          position,
-        );
-        const promise = this._lastSuggestionAtMousePromise;
-        const result = await promise;
-        // Avoid race conditions where we start fetching for a different location.
-        if (this._lastSuggestionAtMousePromise !== promise) {
-          return;
+  _observeSuggestions(): Observable<?HyperclickSuggestion> {
+    return this._fetchStream
+      .map(mouseEvent => {
+        if (mouseEvent == null) {
+          return null;
         }
-        this._lastSuggestionAtMouse = result;
-      } catch (e) {
-        getLogger('hyperclick').error(
-          'Error getting Hyperclick suggestion:',
-          e,
+        return this._getMousePositionAsBufferPosition(mouseEvent);
+      })
+      .distinctUntilChanged((x, y) => {
+        if (x == null || y == null) {
+          return (x == null) === (y == null);
+        }
+        return x.compare(y) === 0;
+      })
+      .filter(position => {
+        if (position == null) {
+          return true;
+        }
+
+        // Don't fetch suggestions if the mouse is still in the same 'word', where
+        // 'word' is defined by the wordRegExp at the current position.
+        //
+        // If the last suggestion had multiple ranges, we have no choice but to
+        // fetch suggestions because the new word might be between those ranges.
+        // This should be ok because it will reuse that last suggestion until the
+        // mouse moves off of it.
+        if (
+          (this._lastSuggestionAtMouse == null ||
+            !Array.isArray(this._lastSuggestionAtMouse.range)) &&
+          this._isInLastWordRange(position)
+        ) {
+          return false;
+        }
+
+        // Don't refetch if we're already inside the previously emitted suggestion.
+        if (this._isInLastSuggestion(position)) {
+          return false;
+        }
+
+        return true;
+      })
+      .do(position => {
+        if (position == null) {
+          this._lastWordRange = null;
+        } else {
+          const match = wordAtPosition(this._textEditor, position);
+          this._lastWordRange = match != null ? match.range : null;
+        }
+      })
+      .switchMap(position => {
+        if (position == null) {
+          return Observable.of(null);
+        }
+
+        return Observable.using(
+          () => this._showLoading(),
+          () =>
+            Observable.defer(() =>
+              this._hyperclick.getSuggestion(this._textEditor, position),
+            )
+              .startWith(null) // Clear the previous suggestion immediately.
+              .catch(e => {
+                getLogger('hyperclick').error(
+                  'Error getting Hyperclick suggestion:',
+                  e,
+                );
+                return Observable.of(null);
+              }),
         );
-      } finally {
-        this._doneLoading();
-      }
-    }
+      })
+      .distinctUntilChanged();
+  }
 
-    // it's possible that the text editor buffer (and therefore this hyperclick
-    // provider for the editor) has been closed by the user since we
-    // asynchronously queried for suggestions.
-    if (this._isDestroyed) {
-      return;
-    }
-
-    if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
+  _updateSuggestion(suggestion: ?HyperclickSuggestion): void {
+    this._lastSuggestionAtMouse = suggestion;
+    if (suggestion != null) {
       // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
-      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
+      this._updateNavigationMarkers(suggestion.range);
     } else {
       // Remove all the markers if we've finished loading and there's no suggestion.
       this._updateNavigationMarkers(null);
     }
   }
 
-  _getMousePositionAsBufferPosition(): atom$Point {
+  _getMousePositionAsBufferPosition(mouseEvent: MouseEvent): atom$Point {
     const {component} = this._textEditorView;
     invariant(component);
-    invariant(this._lastMouseEvent);
-    const screenPosition = component.screenPositionForMouseEvent(
-      this._lastMouseEvent,
-    );
+    const screenPosition = component.screenPositionForMouseEvent(mouseEvent);
     try {
       return this._textEditor.bufferPositionForScreenPosition(screenPosition);
     } catch (error) {
@@ -335,30 +347,24 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _isMouseAtLastSuggestion(): boolean {
+  _isInLastSuggestion(position: atom$Point): boolean {
     if (!this._lastSuggestionAtMouse) {
       return false;
     }
     const {range} = this._lastSuggestionAtMouse;
-    return isPositionInRange(this._getMousePositionAsBufferPosition(), range);
+    return isPositionInRange(position, range);
   }
 
-  _isMouseAtLastWordRange(): boolean {
+  _isInLastWordRange(position: atom$Point): boolean {
     const lastWordRange = this._lastWordRange;
     if (lastWordRange == null) {
       return false;
     }
-    return isPositionInRange(
-      this._getMousePositionAsBufferPosition(),
-      lastWordRange,
-    );
+    return isPositionInRange(position, lastWordRange);
   }
 
   _clearSuggestion(): void {
-    this._doneLoading();
-    this._lastSuggestionAtMousePromise = null;
-    this._lastSuggestionAtMouse = null;
-    this._updateNavigationMarkers(null);
+    this._fetchStream.next(null);
   }
 
   async _confirmSuggestionAtCursor(): Promise<void> {
@@ -412,21 +418,19 @@ export default class HyperclickForTextEditor {
     );
   }
 
-  _setLoading(): void {
-    this._doneLoading();
-    this._loadingTimer = setTimeout(() => {
-      // Show the loading cursor.
-      this._textEditorView.classList.add('hyperclick-loading');
-      this._loadingTimer = null;
-    }, LOADING_DELAY);
-  }
-
-  _doneLoading(): void {
-    if (this._loadingTimer != null) {
-      clearTimeout(this._loadingTimer);
-      this._loadingTimer = null;
-    }
-    this._textEditorView.classList.remove('hyperclick-loading');
+  // A subscription that encapsulates the cursor loading spinner.
+  // There should only be one subscription active at a given time!
+  _showLoading(): rxjs$Subscription {
+    return Observable.timer(LOADING_DELAY)
+      .switchMap(() =>
+        Observable.create(() => {
+          this._textEditorView.classList.add('hyperclick-loading');
+          return () => {
+            this._textEditorView.classList.remove('hyperclick-loading');
+          };
+        }),
+      )
+      .subscribe();
   }
 
   dispose() {

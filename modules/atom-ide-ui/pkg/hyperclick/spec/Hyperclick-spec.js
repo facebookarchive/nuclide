@@ -388,8 +388,6 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {
             metaKey: true,
           });
-          await hyperclickForTextEditor.getSuggestionAtMouse();
-
           expect(provider.getSuggestionForWord.callCount).toBe(1);
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -467,8 +465,6 @@ describe('Hyperclick', () => {
           );
 
           dispatch(MouseEvent, 'mousemove', new Point(0, 4), {metaKey: true});
-          await hyperclickForTextEditor.getSuggestionAtMouse();
-
           expect(provider.getSuggestion.callCount).toBe(1);
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
