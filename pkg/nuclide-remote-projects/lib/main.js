@@ -357,7 +357,7 @@ function shutdownServersAndRestartNuclide(): void {
       'This will shutdown your Nuclide servers and restart Atom, ' +
       'discarding all unsaved changes. Continue?',
     buttons: {
-      'Shutdown & Restart': async () => {
+      'Shutdown && Restart': async () => {
         try {
           await trackImmediate('nuclide-remote-projects:kill-and-restart');
         } finally {
