@@ -15,6 +15,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getOriginalEnvironment, spawn} from 'nuclide-commons/process';
+import which from 'nuclide-commons/which';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
@@ -62,9 +63,19 @@ async function getServerArgs(src: string) {
     );
   }
 
+  // Jedi only parses Python3 files if we start with Python3.
+  // It's not the end of the world if Python3 isn't available, though.
+  let pythonPath = 'python';
+  if (overrides.pythonPath == null) {
+    const python3Path = await which('python3');
+    if (python3Path != null) {
+      pythonPath = python3Path;
+    }
+  }
+
   return {
     // Default to assuming that python is in system PATH.
-    pythonPath: 'python',
+    pythonPath,
     paths: [],
     ...overrides,
   };

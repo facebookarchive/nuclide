@@ -1,81 +1,78 @@
 [
   {
     "kind": "class",
-    "end": {
-      "column": 0,
-      "line": 24
-    },
     "name": "Test3",
     "start": {
-      "column": 0,
-      "line": 8
+      "line": 8,
+      "column": 0
     },
-    "params": [],
+    "end": {
+      "line": 24,
+      "column": 0
+    },
     "children": [
       {
         "kind": "function",
-        "end": {
-          "column": 4,
-          "line": 13
-        },
         "name": "__init__",
         "start": {
-          "column": 4,
-          "line": 10
+          "line": 10,
+          "column": 4
         },
+        "end": {
+          "line": 12,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self"
-        ],
-        "children": []
+        ]
       },
       {
         "kind": "function",
-        "end": {
-          "column": 4,
-          "line": 17
-        },
         "name": "hello",
         "start": {
-          "column": 4,
-          "line": 14
+          "line": 14,
+          "column": 4
         },
+        "end": {
+          "line": 16,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self",
           "name"
-        ],
-        "children": []
+        ]
       },
       {
         "kind": "function",
-        "end": {
-          "column": 4,
-          "line": 21
-        },
         "name": "hey",
         "start": {
-          "column": 4,
-          "line": 18
+          "line": 18,
+          "column": 4
         },
-        "params": [
-          "self"
-        ],
-        "children": []
+        "end": {
+          "line": 20,
+          "column": 0
+        },
+        "children": [],
+        "params": []
       },
       {
         "kind": "function",
-        "end": {
-          "column": 0,
-          "line": 24
-        },
         "name": "meth",
         "start": {
-          "column": 4,
-          "line": 22
+          "line": 22,
+          "column": 4
         },
-        "params": [
-        ],
-        "children": []
+        "end": {
+          "line": 24,
+          "column": 0
+        },
+        "children": [],
+        "params": []
       }
-    ]
+    ],
+    "params": []
   }
 ]

@@ -17,7 +17,7 @@ export type JediCompletion = {
   type: string,
   text: string,
   description?: string,
-  params?: Array<string>,
+  params: ?Array<string>,
 };
 
 export type JediDefinition = {

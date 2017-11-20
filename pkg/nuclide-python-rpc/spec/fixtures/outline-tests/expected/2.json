@@ -1,50 +1,50 @@
 [
   {
     "kind": "class",
-    "end": {
-      "column": 0,
-      "line": 20
-    },
     "name": "Test2",
     "start": {
-      "column": 0,
-      "line": 9
+      "line": 9,
+      "column": 0
     },
-    "params": [],
+    "end": {
+      "line": 20,
+      "column": 0
+    },
     "children": [
       {
         "kind": "function",
-        "end": {
-          "column": 4,
-          "line": 17
-        },
         "name": "__init__",
         "start": {
-          "column": 4,
-          "line": 13
+          "line": 13,
+          "column": 4
         },
+        "end": {
+          "line": 16,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self"
-        ],
-        "children": []
+        ]
       },
       {
         "kind": "function",
-        "end": {
-          "column": 0,
-          "line": 20
-        },
         "name": "hello",
         "start": {
-          "column": 4,
-          "line": 17
+          "line": 17,
+          "column": 4
         },
+        "end": {
+          "line": 20,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self",
           "name"
-        ],
-        "children": []
+        ]
       }
-    ]
+    ],
+    "params": []
   }
 ]

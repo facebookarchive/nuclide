@@ -102,7 +102,7 @@ describe('PythonService', () => {
       });
     });
 
-    it('classifies methods with @property decorators as properties', () => {
+    it('does not return params for @property methods', () => {
       waitsForPromise(async () => {
         // line 18: a.t
         const response = await getCompletions(
@@ -117,8 +117,8 @@ describe('PythonService', () => {
 
         const completion = response[0];
         expect(completion.text).toEqual('test');
-        expect(completion.type).toEqual('property');
-        expect(completion.params).toBeUndefined();
+        expect(completion.type).toEqual('function');
+        expect(completion.params).toBeFalsy();
       });
     });
 
@@ -158,7 +158,7 @@ describe('PythonService', () => {
         const completion = response[0];
         expect(completion.text).toEqual('Test');
         expect(completion.type).toEqual('class');
-        expect(completion.params).toBeUndefined();
+        expect(completion.params).toBeFalsy();
       });
     });
   });
@@ -214,13 +214,13 @@ describe('PythonService', () => {
         const definition = response.definitions[0];
         expect(definition.name).toEqual('Test');
         // Result should be the class definition itself, not the import statement.
-        expect(definition.path.endsWith('decorated.py')).toBeTruthy();
+        expect(definition.path).toContain('decorated.py');
         expect(definition.position.row).toEqual(9);
         expect(definition.position.column).toEqual(6);
       });
     });
 
-    it('follows imports until the furthest unresolvable import statement', () => {
+    it('does not follow unresolvable imports', () => {
       waitsForPromise(async () => {
         // line 27: b = Test2()
         const response = await getDefinition(
@@ -229,16 +229,7 @@ describe('PythonService', () => {
           bufferOfContents(FILE_CONTENTS),
           new Point(26, 7),
         );
-        invariant(response != null);
-        expect(response.definitions.length).toBeGreaterThan(0);
-
-        const definition = response.definitions[0];
-        expect(definition.name).toEqual('Test2');
-        // Result should be the import statement in decorated.py, since it's not
-        // possible to follow further (the module doesn't exist in this case).
-        expect(definition.path.endsWith('decorated.py')).toBeTruthy();
-        expect(definition.position.row).toEqual(6);
-        expect(definition.position.column).toEqual(19);
+        expect(response).toBe(null);
       });
     });
 
@@ -270,7 +261,7 @@ describe('PythonService', () => {
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 12, 2);
         invariant(response);
 
-        expect(response).toEqual([
+        expect(response).diffJson([
           {
             type: 'statement',
             text: 'potato',
@@ -295,7 +286,7 @@ describe('PythonService', () => {
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 28, 8);
         invariant(response);
 
-        expect(response).toEqual([
+        expect(response).diffJson([
           {
             type: 'module',
             text: 'decorated',
@@ -304,14 +295,14 @@ describe('PythonService', () => {
             column: 0,
           },
           {
-            type: 'import',
+            type: 'module',
             text: 'decorated',
             file: TEST_FILE,
             line: 8,
             column: 5,
           },
           {
-            type: 'import',
+            type: 'module',
             text: 'decorated',
             file: TEST_FILE,
             line: 28,
@@ -334,7 +325,7 @@ describe('PythonService', () => {
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 19, 2);
         invariant(response);
 
-        expect(response).toEqual([
+        expect(response).diffJson([
           {
             type: 'statement',
             text: 'test_parent_name',
@@ -343,7 +334,7 @@ describe('PythonService', () => {
             column: 0,
           },
           {
-            type: 'node',
+            type: 'statement',
             text: 'test_parent_name',
             file: TEST_FILE,
             line: 23,

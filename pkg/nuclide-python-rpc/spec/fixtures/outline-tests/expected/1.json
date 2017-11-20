@@ -1,62 +1,62 @@
 [
   {
-    "start": {
-      "column": 0,
-      "line": 7
-    },
     "kind": "statement",
-    "end": {
-      "column": 5,
-      "line": 7
+    "name": "a",
+    "start": {
+      "line": 7,
+      "column": 0
     },
-    "name": "a"
+    "end": {
+      "line": 7,
+      "column": 5
+    }
   },
   {
     "kind": "class",
-    "end": {
-      "column": 0,
-      "line": 17
-    },
     "name": "Test",
     "start": {
-      "column": 0,
-      "line": 10
+      "line": 10,
+      "column": 0
     },
-    "params": [],
+    "end": {
+      "line": 17,
+      "column": 0
+    },
     "children": [
       {
         "kind": "function",
-        "end": {
-          "column": 4,
-          "line": 15
-        },
         "name": "__init__",
         "start": {
-          "column": 4,
-          "line": 12
+          "line": 12,
+          "column": 4
         },
+        "end": {
+          "line": 14,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self"
-        ],
-        "children": []
+        ]
       },
       {
         "kind": "function",
-        "end": {
-          "column": 0,
-          "line": 17
-        },
         "name": "hello",
         "start": {
-          "column": 4,
-          "line": 15
+          "line": 15,
+          "column": 4
         },
+        "end": {
+          "line": 17,
+          "column": 0
+        },
+        "children": [],
         "params": [
           "self",
           "name"
-        ],
-        "children": []
+        ]
       }
-    ]
+    ],
+    "params": []
   }
 ]

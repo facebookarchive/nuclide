@@ -16,8 +16,7 @@ import traceback
 from logging import FileHandler
 from argparse import ArgumentParser
 import jedi
-from jedi.evaluate.representation import InstanceElement
-from jedi.parser.tree import ImportFrom
+from parso.python.tree import Function, ImportFrom
 import outline
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
@@ -119,10 +118,12 @@ class JediServer:
         # If docstring is not available, attempt to generate a function signature
         # with params.
         if description == '' and self.is_func_or_class(completion):
-            description = '%s(%s)' % (
-                completion.name,
-                ', '.join(p.description for p in completion.params)
-            )
+            params = self._get_params(completion)
+            if params is not None:
+                description = '%s(%s)' % (
+                    completion.name,
+                    ', '.join(self._get_params(completion))
+                )
         return description
 
     def get_completions(self, script):
@@ -136,44 +137,34 @@ class JediServer:
             }
             # Return params if completion has params (thus is a class/function).
             # Don't autocomplete params in the middle of an import from statement.
-            if self.is_func_or_class(completion) and not isinstance(
-                    script._parser.user_stmt(), ImportFrom):
-                result['params'] = [p.description for p in completion.params]
+            if self.is_func_or_class(completion):
+                statement = jedi.parser_utils.get_statement_of_position(
+                    script._get_module_node(), script._pos)
+                if not isinstance(statement, ImportFrom):
+                    result['params'] = self._get_params(completion)
 
-            # Check for decorators on functions.
-            if completion.type == 'function' and not completion.in_builtin_module():
-                definition = completion._name.get_definition()
-                if isinstance(definition, InstanceElement):
-                    for decorator in definition.base_func.get_decorators():
-                        if str(decorator.children[1]) == 'property':
-                            del result['params']
-                            result['type'] = 'property'
-                            break
             results.append(result)
         return results
 
-    def follow_imports(self, definition):
-        # Iteratively follow a definition until a non-import definition is found.
-        result = definition
-        while result.type == 'import':
-            for assignment in definition.goto_assignments():
-                if assignment != result and assignment.module_path:
-                    result = assignment
-                    break
-            # Break out of while if no new result was found.
-            else:
-                break
-
-        return result
+    def _get_params(self, completion):
+        try:
+            names = [p.name for p in completion.params]
+            # Ignore args/kwargs/varargs.
+            return list(filter(
+                lambda x: x != '...' and x != 'args' and x != 'kwargs',
+                names,
+            ))
+        except AttributeError:
+            return None
 
     def get_definitions(self, script):
         results = []
-        definitions = script.goto_assignments()
+        definitions = script.goto_assignments(True)
 
         for definition in definitions:
             if not definition.module_path:
                 continue
-            result = self.serialize_definition(self.follow_imports(definition))
+            result = self.serialize_definition(definition)
             results.append(result)
         return results
 
