@@ -76,6 +76,9 @@ class Activation {
           this._store.dispatch(Actions.closeTunnel(tunnel)),
         );
       },
+      getOpenTunnels: () => {
+        return new Set(this._store.getState().openTunnels.keys());
+      },
       getAvailableServerPort: async nuclideUri => {
         return getSocketServiceByNuclideUri(
           nuclideUri,

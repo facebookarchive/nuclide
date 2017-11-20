@@ -20,6 +20,7 @@ export type SshTunnelService = {
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
   ): IDisposable,
+  getOpenTunnels(): Set<Tunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };
 
