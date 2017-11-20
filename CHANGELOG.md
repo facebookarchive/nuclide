@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.269.0
+
+Hotfix release:
+
+* Prevent the git-diff package from throwing `TypeError: Cannot read property 'length' of undefined` on startup.
+* Prevent Buck build toolbar from disappearing.
+
 ## v0.268.0
 
 ### Highlights
