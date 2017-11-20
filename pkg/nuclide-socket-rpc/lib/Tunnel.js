@@ -68,7 +68,6 @@ export function createTunnel(
       // on data from incoming client
       // write data to the outgoing connection
       socket.on('data', data => {
-        observer.next({type: 'data', clientPort});
         connectionPromise.then(connection => connection.write(data));
       });
 
