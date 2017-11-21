@@ -1,30 +1,40 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
-import humanizeKeystroke from '../commons-node/humanizeKeystroke';
+'use strict';
 
-export function makeToolbarButtonSpec(
-  options: toolbar$ButtonSpec,
-): toolbar$ButtonSpec {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.makeToolbarButtonSpec = makeToolbarButtonSpec;
+
+var _humanizeKeystroke;
+
+function _load_humanizeKeystroke() {
+  return _humanizeKeystroke = _interopRequireDefault(require('../commons-node/humanizeKeystroke'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function makeToolbarButtonSpec(options) {
   const command = options.callback;
   if (typeof command === 'string') {
     const [keyBinding] = atom.keymaps.findKeyBindings({
       command,
-      target: atom.views.getView(atom.workspace),
+      target: atom.views.getView(atom.workspace)
     });
     const tooltipStr = options.tooltip;
     if (keyBinding != null && tooltipStr != null) {
-      const keyString = humanizeKeystroke(keyBinding.keystrokes, null);
+      const keyString = (0, (_humanizeKeystroke || _load_humanizeKeystroke()).default)(keyBinding.keystrokes, null);
       options.tooltip = `${tooltipStr} (${keyString})`;
     }
   }
 
-  return {...options};
-}
+  return Object.assign({}, options);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

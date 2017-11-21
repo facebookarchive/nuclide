@@ -1,73 +1,78 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-import type {ConsoleIO} from './ConsoleIO';
-import type {Command} from './Command';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {DebuggerInterface} from './DebuggerInterface';
-import leftPad from './Format';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type SourceReference = {
-  source: DebugProtocol.Source,
-  line: number,
-};
+var _vscodeDebugprotocol;
 
-export default class ListCommand implements Command {
-  name = 'list';
-  helpText = "[source|@[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
 
-  static _formatError = "Format is 'list [source[:line]]'.";
-  static _linesToPrint = 25;
+var _DebuggerInterface;
 
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
+function _load_DebuggerInterface() {
+  return _DebuggerInterface = require('./DebuggerInterface');
+}
 
-  _source: DebugProtocol.Source = {};
-  _nextLine: number = 1;
-  _sourceIsStackFrame: boolean = false;
-  _stackFrameLine: number = 0;
+var _Format;
 
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
+function _load_Format() {
+  return _Format = _interopRequireDefault(require('./Format'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ListCommand {
+
+  constructor(con, debug) {
+    this.name = 'list';
+    this.helpText = "[source|@[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
+    this._source = {};
+    this._nextLine = 1;
+    this._sourceIsStackFrame = false;
+    this._stackFrameLine = 0;
+
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    let ref: SourceReference;
+  execute(args) {
+    var _this = this;
 
-    switch (args.length) {
-      case 0:
-        if (this._sourceIsEmpty()) {
-          ref = await this._parseSourcePath('@');
-        } else {
-          ref = {
-            source: this._previousSource(),
-            line: this._nextLine,
-          };
-        }
-        break;
+    return (0, _asyncToGenerator.default)(function* () {
+      let ref;
 
-      case 1:
-        ref = await this._parseSourcePath(args[0]);
-        break;
+      switch (args.length) {
+        case 0:
+          if (_this._sourceIsEmpty()) {
+            ref = yield _this._parseSourcePath('@');
+          } else {
+            ref = {
+              source: _this._previousSource(),
+              line: _this._nextLine
+            };
+          }
+          break;
 
-      default:
-        throw new Error(ListCommand._formatError);
-    }
+        case 1:
+          ref = yield _this._parseSourcePath(args[0]);
+          break;
 
-    await this._printSourceLines(ref);
+        default:
+          throw new Error(ListCommand._formatError);
+      }
+
+      yield _this._printSourceLines(ref);
+    })();
   }
 
-  _previousSource(): DebugProtocol.Source {
+  _previousSource() {
     if (this._sourceIsEmpty()) {
       throw new Error('There is no current source file to list.');
     }
@@ -75,96 +80,102 @@ export default class ListCommand implements Command {
     return this._source;
   }
 
-  async _parseSourcePath(sourceRef: string): Promise<SourceReference> {
-    // just line on current source
-    let match = sourceRef.match(/^(\d+)$/);
-    if (match != null) {
-      const [, line] = match;
-      return {
-        source: this._previousSource(),
-        line: parseInt(line, 10),
-      };
-    }
+  _parseSourcePath(sourceRef) {
+    var _this2 = this;
 
-    // source:line (where source may be '@' meaning current stack frame source)
-    match = sourceRef.match(/^([^:]+)(:(\d+))?$/);
-    if (match != null) {
-      const [, sourcePath, , lineStr] = match;
-      let line = lineStr != null ? parseInt(lineStr, 10) : 1;
-
-      let source = {path: sourcePath};
-
-      this._sourceIsStackFrame = sourcePath === '@';
-
-      if (this._sourceIsStackFrame) {
-        const stackFrame = await this._debugger.getCurrentStackFrame();
-        if (stackFrame == null || stackFrame.source == null) {
-          throw new Error(
-            'Source is not available for the current stack frame.',
-          );
-        }
-
-        source = stackFrame.source;
-        this._stackFrameLine = stackFrame.line;
-
-        if (lineStr == null) {
-          // If no line was specified, center around current line in
-          // stack frame
-          line = Math.max(
-            1,
-            this._stackFrameLine - Math.floor(ListCommand._linesToPrint / 2),
-          );
-        }
+    return (0, _asyncToGenerator.default)(function* () {
+      // just line on current source
+      let match = sourceRef.match(/^(\d+)$/);
+      if (match != null) {
+        const [, line] = match;
+        return {
+          source: _this2._previousSource(),
+          line: parseInt(line, 10)
+        };
       }
 
-      return {
-        source,
-        line,
-      };
-    }
+      // source:line (where source may be '@' meaning current stack frame source)
+      match = sourceRef.match(/^([^:]+)(:(\d+))?$/);
+      if (match != null) {
+        const [, sourcePath,, lineStr] = match;
+        let line = lineStr != null ? parseInt(lineStr, 10) : 1;
 
-    throw new Error(ListCommand._formatError);
-  }
+        let source = { path: sourcePath };
 
-  async _printSourceLines(ref: SourceReference): Promise<void> {
-    const sourceLines = await this._debugger.getSourceLines(
-      ref.source,
-      ref.line,
-      ListCommand._linesToPrint,
-    );
+        _this2._sourceIsStackFrame = sourcePath === '@';
 
-    if (ref.source.path != null) {
-      this._console.outputLine(`Listing ${ref.source.path}`);
-    }
+        if (_this2._sourceIsStackFrame) {
+          const stackFrame = yield _this2._debugger.getCurrentStackFrame();
+          if (stackFrame == null || stackFrame.source == null) {
+            throw new Error('Source is not available for the current stack frame.');
+          }
 
-    if (sourceLines.length === 0) {
-      throw new Error(`No source found at line ${ref.line}.`);
-    }
+          source = stackFrame.source;
+          _this2._stackFrameLine = stackFrame.line;
 
-    const maxLineNumber = ref.line + sourceLines.length - 1;
-    const maxLength = String(maxLineNumber).length;
+          if (lineStr == null) {
+            // If no line was specified, center around current line in
+            // stack frame
+            line = Math.max(1, _this2._stackFrameLine - Math.floor(ListCommand._linesToPrint / 2));
+          }
+        }
 
-    let lineNumber = ref.line;
-    for (const sourceLine of sourceLines) {
-      let sep = ' |';
-      if (this._sourceIsStackFrame && lineNumber === this._stackFrameLine) {
-        sep = '=>';
+        return {
+          source,
+          line
+        };
       }
-      this._console.outputLine(
-        `${leftPad(String(lineNumber), maxLength)}${sep}   ${sourceLine}`,
-      );
-      lineNumber++;
-    }
 
-    this._source = ref.source;
-    this._nextLine = ref.line + sourceLines.length;
+      throw new Error(ListCommand._formatError);
+    })();
   }
 
-  _sourceIsEmpty(): boolean {
-    return (
-      this._source.path == null &&
-      (this._source.sourceReference == null ||
-        this._source.sourceReference === 0)
-    );
+  _printSourceLines(ref) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const sourceLines = yield _this3._debugger.getSourceLines(ref.source, ref.line, ListCommand._linesToPrint);
+
+      if (ref.source.path != null) {
+        _this3._console.outputLine(`Listing ${ref.source.path}`);
+      }
+
+      if (sourceLines.length === 0) {
+        throw new Error(`No source found at line ${ref.line}.`);
+      }
+
+      const maxLineNumber = ref.line + sourceLines.length - 1;
+      const maxLength = String(maxLineNumber).length;
+
+      let lineNumber = ref.line;
+      for (const sourceLine of sourceLines) {
+        let sep = ' |';
+        if (_this3._sourceIsStackFrame && lineNumber === _this3._stackFrameLine) {
+          sep = '=>';
+        }
+        _this3._console.outputLine(`${(0, (_Format || _load_Format()).default)(String(lineNumber), maxLength)}${sep}   ${sourceLine}`);
+        lineNumber++;
+      }
+
+      _this3._source = ref.source;
+      _this3._nextLine = ref.line + sourceLines.length;
+    })();
+  }
+
+  _sourceIsEmpty() {
+    return this._source.path == null && (this._source.sourceReference == null || this._source.sourceReference === 0);
   }
 }
+exports.default = ListCommand; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                * 
+                                * @format
+                                */
+
+ListCommand._formatError = "Format is 'list [source[:line]]'.";
+ListCommand._linesToPrint = 25;

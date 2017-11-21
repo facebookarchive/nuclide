@@ -1,71 +1,94 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import LineByLineReader from 'line-by-line';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class SourceFileCache {
-  _files: Map<string, string[]> = new Map();
-  _getSourceByReference: (sourceReference: number) => Promise<string>;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-  constructor(
-    getSourceByReference: (sourceReference: number) => Promise<string>,
-  ) {
+var _lineByLine;
+
+function _load_lineByLine() {
+  return _lineByLine = _interopRequireDefault(require('line-by-line'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class SourceFileCache {
+
+  constructor(getSourceByReference) {
+    this._files = new Map();
+
     this._getSourceByReference = getSourceByReference;
   }
 
-  async getFileDataBySourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
-    const path = `sourceref://${sourceReference}`;
-    let data = this._files.get(path);
+  getFileDataBySourceReference(sourceReference) {
+    var _this = this;
 
-    if (data == null) {
-      data = await this._fillCacheWithSourceReference(sourceReference);
-      this._files.set(path, data);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const path = `sourceref://${sourceReference}`;
+      let data = _this._files.get(path);
 
-    return data;
+      if (data == null) {
+        data = yield _this._fillCacheWithSourceReference(sourceReference);
+        _this._files.set(path, data);
+      }
+
+      return data;
+    })();
   }
 
-  async getFileDataByPath(path: string): Promise<string[]> {
-    let data = this._files.get(path);
+  getFileDataByPath(path) {
+    var _this2 = this;
 
-    if (data == null) {
-      data = await this._fillCacheFromLocalFileSystem(path);
-      this._files.set(path, data);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      let data = _this2._files.get(path);
 
-    return data;
+      if (data == null) {
+        data = yield _this2._fillCacheFromLocalFileSystem(path);
+        _this2._files.set(path, data);
+      }
+
+      return data;
+    })();
   }
 
-  flush(): void {
+  flush() {
     this._files = new Map();
   }
 
-  async _fillCacheFromLocalFileSystem(path: string): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      const lines: string[] = [];
+  _fillCacheFromLocalFileSystem(path) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return new Promise(function (resolve, reject) {
+        const lines = [];
 
-      // LineByLineReader splits the file on the fly so we don't
-      // have to read into memory first
-      new LineByLineReader(path)
-        .on('line', line => lines.push(line))
-        .on('end', () => resolve(lines));
-    });
+        // LineByLineReader splits the file on the fly so we don't
+        // have to read into memory first
+        new (_lineByLine || _load_lineByLine()).default(path).on('line', function (line) {
+          return lines.push(line);
+        }).on('end', function () {
+          return resolve(lines);
+        });
+      });
+    })();
   }
 
-  async _fillCacheWithSourceReference(
-    sourceReference: number,
-  ): Promise<string[]> {
-    const data = await this._getSourceByReference(sourceReference);
-    return data.split(/\n|\r\n|\r/);
+  _fillCacheWithSourceReference(sourceReference) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const data = yield _this3._getSourceByReference(sourceReference);
+      return data.split(/\n|\r\n|\r/);
+    })();
   }
 }
+exports.default = SourceFileCache; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    * @format
+                                    */

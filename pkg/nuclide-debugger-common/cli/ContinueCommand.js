@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _DebuggerInterface;
+
+function _load_DebuggerInterface() {
+  return _DebuggerInterface = require('./DebuggerInterface');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,24 +21,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Command} from './Command';
-import {DebuggerInterface} from './DebuggerInterface';
+class ContinueCommand {
 
-export default class ContinueCommand implements Command {
-  name = 'continue';
-  helpText = 'Continue execution of the target.';
+  constructor(debug) {
+    this.name = 'continue';
+    this.helpText = 'Continue execution of the target.';
 
-  _debugger: DebuggerInterface;
-
-  constructor(debug: DebuggerInterface) {
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
-    await this._debugger.continue();
+  execute() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this._debugger.continue();
+    })();
   }
 }
+exports.default = ContinueCommand;

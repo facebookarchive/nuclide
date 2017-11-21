@@ -1,30 +1,20 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {WebSocketTransport} from './WebSocketTransport';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BigDigClient = undefined;
 
-import {Subject} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
  * client to launch a remote process and communication with its stdin, stdout,
  * and stderr.
  */
-export class BigDigClient {
-  _webSocketTransport: WebSocketTransport;
-  _tagToSubject: Map<string, Subject<string>>;
+class BigDigClient {
 
-  constructor(webSocketTransport: WebSocketTransport) {
+  constructor(webSocketTransport) {
     this._webSocketTransport = webSocketTransport;
     this._tagToSubject = new Map();
 
@@ -50,32 +40,32 @@ export class BigDigClient {
       complete() {
         // eslint-disable-next-line no-console
         console.error('ConnectionWrapper completed()?');
-      },
+      }
     });
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._webSocketTransport.isClosed();
   }
 
-  onClose(callback: () => mixed): IDisposable {
+  onClose(callback) {
     return this._webSocketTransport.onClose(callback);
   }
 
-  sendMessage(tag: string, body: string) {
+  sendMessage(tag, body) {
     this._webSocketTransport.send(`${tag}\0${body}`);
   }
 
-  onMessage(tag: string): Observable<string> {
+  onMessage(tag) {
     let subject = this._tagToSubject.get(tag);
     if (subject == null) {
-      subject = new Subject();
+      subject = new _rxjsBundlesRxMinJs.Subject();
       this._tagToSubject.set(tag, subject);
     }
     return subject.asObservable();
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._webSocketTransport.getAddress();
   }
 
@@ -83,3 +73,14 @@ export class BigDigClient {
     // TODO(mbolin)
   }
 }
+exports.BigDigClient = BigDigClient; /**
+                                      * Copyright (c) 2017-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the BSD-style license found in the
+                                      * LICENSE file in the root directory of this source tree. An additional grant
+                                      * of patent rights can be found in the PATENTS file in the same directory.
+                                      *
+                                      * 
+                                      * @format
+                                      */

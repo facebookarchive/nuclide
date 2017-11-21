@@ -1,3 +1,294 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getConnection = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getClangdLSPServiceByConnection)(connection);
+    const clangdService = yield service.createClangdService({
+      fileNotifier,
+      host,
+      logCategory: 'clangd-language-server',
+      logLevel: 'ALL' // TODO pelmers: change to WARN
+    });
+    if (clangdService) {
+      return new ClangdLSPClient(clangdService);
+    } else {
+      return new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).NullLanguageService();
+    }
+  });
+
+  return function getConnection(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('../../nuclide-clang/lib/libclang');
+}
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Wrapper that queries for clang settings when new files seen.
+class ClangdLSPClient {
+
+  constructor(service) {
+    this._service = service;
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)('clangd-language-server');
+  }
+
+  dispose() {
+    this._service.dispose();
+  }
+
+  ensureServer(path) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(yield _this._service.isFileKnown(path))) {
+        const settings = yield (0, (_libclang || _load_libclang()).getClangRequestSettings)(path);
+        if (settings != null) {
+          if (!(yield _this._service.addClangRequest(settings))) {
+            _this._logger.error('Failure adding settings for ' + path);
+          }
+        }
+      }
+    })();
+  }
+
+  getDiagnostics(fileVersion) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this2.ensureServer(fileVersion.filePath);
+      return _this2._service.getDiagnostics(fileVersion);
+    })();
+  }
+
+  getAutocompleteSuggestions(fileVersion, position, request) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this3.ensureServer(fileVersion.filePath);
+      return _this3._service.getAutocompleteSuggestions(fileVersion, position, request);
+    })();
+  }
+
+  getAdditionalLogFiles(deadline) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this4._service.getAdditionalLogFiles(deadline);
+    })();
+  }
+
+  getDefinition(fileVersion, position) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this5.ensureServer(fileVersion.filePath);
+      return _this5._service.getDefinition(fileVersion, position);
+    })();
+  }
+
+  findReferences(fileVersion, position) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this6.ensureServer(fileVersion.filePath);
+      return _this6._service.findReferences(fileVersion, position);
+    })();
+  }
+
+  getCoverage(filePath) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this7.ensureServer(filePath);
+      return _this7._service.getCoverage(filePath);
+    })();
+  }
+
+  getOutline(fileVersion) {
+    var _this8 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this8.ensureServer(fileVersion.filePath);
+      return _this8._service.getOutline(fileVersion);
+    })();
+  }
+
+  getCodeActions(fileVersion, range, diagnostics) {
+    var _this9 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this9.ensureServer(fileVersion.filePath);
+      return _this9._service.getCodeActions(fileVersion, range, diagnostics);
+    })();
+  }
+
+  highlight(fileVersion, position) {
+    var _this10 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this10.ensureServer(fileVersion.filePath);
+      return _this10.highlight(fileVersion, position);
+    })();
+  }
+
+  formatSource(fileVersion, range, options) {
+    var _this11 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this11.ensureServer(fileVersion.filePath);
+      return _this11._service.formatSource(fileVersion, range, options);
+    })();
+  }
+
+  formatAtPosition(fileVersion, position, triggerCharacter, options) {
+    var _this12 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this12.ensureServer(fileVersion.filePath);
+      return _this12._service.formatAtPosition(fileVersion, position, triggerCharacter, options);
+    })();
+  }
+
+  formatEntireFile(fileVersion, range, options) {
+    var _this13 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this13.ensureServer(fileVersion.filePath);
+      return _this13._service.formatEntireFile(fileVersion, range, options);
+    })();
+  }
+
+  getEvaluationExpression(fileVersion, position) {
+    var _this14 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this14.ensureServer(fileVersion.filePath);
+      return _this14._service.getEvaluationExpression(fileVersion, position);
+    })();
+  }
+
+  getProjectRoot(filePath) {
+    var _this15 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this15.ensureServer(filePath);
+      yield _this15._service.getProjectRoot(filePath);
+    })();
+  }
+
+  isFileInProject(filePath) {
+    var _this16 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this16.ensureServer(filePath);
+      return _this16._service.isFileInProject(filePath);
+    })();
+  }
+
+  observeDiagnostics() {
+    return this._service.observeDiagnostics();
+  }
+
+  typeHint(fileVersion, position) {
+    var _this17 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this17.ensureServer(fileVersion.filePath);
+      return _this17._service.typeHint(fileVersion, position);
+    })();
+  }
+
+  supportsSymbolSearch(directories) {
+    var _this18 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // TODO pelmers: wrap with ensure server
+      return _this18._service.supportsSymbolSearch(directories);
+    })();
+  }
+
+  symbolSearch(query, directories) {
+    var _this19 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this19._service.symbolSearch(query, directories);
+    })();
+  }
+
+  getExpandedSelectionRange(fileVersion, currentSelection) {
+    var _this20 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this20._service.getExpandedSelectionRange(fileVersion, currentSelection);
+    })();
+  }
+
+  getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition) {
+    var _this21 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this21._service.getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition);
+    })();
+  }
+}
+// TODO pelmers: maybe don't import from libclang
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,292 +296,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  FindReferencesReturn,
-  DefinitionQueryResult,
-  Outline,
-  CodeAction,
-} from 'atom-ide-ui';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {ConnectableObservable} from 'rxjs';
-import type {ClangdLanguageService} from '../../nuclide-clangd-lsp-rpc';
-import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  LanguageService,
-  SymbolResult,
-  FileDiagnosticMap,
-  FormatOptions,
-  AutocompleteResult,
-  AutocompleteRequest,
-  FileDiagnosticMessage,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-
-import {getLogger} from 'log4js';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-// TODO pelmers: maybe don't import from libclang
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {
-  registerClangProvider,
-  getClangRequestSettings,
-} from '../../nuclide-clang/lib/libclang';
-import {
-  AtomLanguageService,
-  getHostServices,
-  updateAutocompleteResults,
-  updateAutocompleteFirstResults,
-} from '../../nuclide-language-service';
-import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getClangdLSPServiceByConnection} from '../../nuclide-remote-connection';
-
-// Wrapper that queries for clang settings when new files seen.
-class ClangdLSPClient {
-  _service: ClangdLanguageService;
-  _logger: log4js$Logger;
-
-  constructor(service: ClangdLanguageService) {
-    this._service = service;
-    this._logger = getLogger('clangd-language-server');
-  }
-
-  dispose() {
-    this._service.dispose();
-  }
-
-  async ensureServer(path: string): Promise<void> {
-    if (!await this._service.isFileKnown(path)) {
-      const settings = await getClangRequestSettings(path);
-      if (settings != null) {
-        if (!await this._service.addClangRequest(settings)) {
-          this._logger.error('Failure adding settings for ' + path);
-        }
-      }
-    }
-  }
-
-  async getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getDiagnostics(fileVersion);
-  }
-
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getAutocompleteSuggestions(
-      fileVersion,
-      position,
-      request,
-    );
-  }
-
-  async getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
-    return this._service.getAdditionalLogFiles(deadline);
-  }
-
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getDefinition(fileVersion, position);
-  }
-
-  async findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.findReferences(fileVersion, position);
-  }
-
-  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    await this.ensureServer(filePath);
-    return this._service.getCoverage(filePath);
-  }
-
-  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getOutline(fileVersion);
-  }
-
-  async getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getCodeActions(fileVersion, range, diagnostics);
-  }
-
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this.highlight(fileVersion, position);
-  }
-
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatSource(fileVersion, range, options);
-  }
-
-  async formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatAtPosition(
-      fileVersion,
-      position,
-      triggerCharacter,
-      options,
-    );
-  }
-
-  async formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatEntireFile(fileVersion, range, options);
-  }
-
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getEvaluationExpression(fileVersion, position);
-  }
-
-  async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    await this.ensureServer(filePath);
-    await this._service.getProjectRoot(filePath);
-  }
-
-  async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    await this.ensureServer(filePath);
-    return this._service.isFileInProject(filePath);
-  }
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
-    return this._service.observeDiagnostics();
-  }
-
-  async typeHint(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.typeHint(fileVersion, position);
-  }
-
-  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    // TODO pelmers: wrap with ensure server
-    return this._service.supportsSymbolSearch(directories);
-  }
-
-  async symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
-    return this._service.symbolSearch(query, directories);
-  }
-
-  async getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
-    return this._service.getExpandedSelectionRange(
-      fileVersion,
-      currentSelection,
-    );
-  }
-
-  async getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
-    return this._service.getCollapsedSelectionRange(
-      fileVersion,
-      currentSelection,
-      originalCursorPosition,
-    );
-  }
-}
-
-async function getConnection(connection): Promise<LanguageService> {
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-  const service = getClangdLSPServiceByConnection(connection);
-  const clangdService = await service.createClangdService({
-    fileNotifier,
-    host,
-    logCategory: 'clangd-language-server',
-    logLevel: 'ALL', // TODO pelmers: change to WARN
-  });
-  if (clangdService) {
-    return new ClangdLSPClient(clangdService);
-  } else {
-    return new NullLanguageService();
-  }
-}
-
 class Activation {
-  _languageService: ?AtomLanguageService<LanguageService>;
-  _subscriptions: UniversalDisposable;
 
-  constructor(state: ?mixed) {
-    this._subscriptions = new UniversalDisposable();
-    if (featureConfig.get('nuclide-clangd-lsp.useClangd')) {
+  constructor(state) {
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    if ((_featureConfig || _load_featureConfig()).default.get('nuclide-clangd-lsp.useClangd')) {
       if (!this._subscriptions.disposed) {
         this._subscriptions.add(this.initializeLsp());
       }
     }
   }
 
-  consumeClangConfigurationProvider(
-    provider: ClangConfigurationProvider,
-  ): IDisposable {
-    return registerClangProvider(provider);
+  consumeClangConfigurationProvider(provider) {
+    return (0, (_libclang || _load_libclang()).registerClangProvider)(provider);
   }
 
-  initializeLsp(): IDisposable {
-    const atomConfig: AtomLanguageServiceConfig = {
+  initializeLsp() {
+    const atomConfig = {
       name: 'clangd',
       grammars: ['source.cpp', 'source.c'],
       autocomplete: {
@@ -300,50 +326,45 @@ class Activation {
         disableForSelector: null,
         excludeLowerPriority: false,
         autocompleteCacherConfig: {
-          updateResults: updateAutocompleteResults,
-          updateFirstResults: updateAutocompleteFirstResults,
+          updateResults: (_nuclideLanguageService || _load_nuclideLanguageService()).updateAutocompleteResults,
+          updateFirstResults: (_nuclideLanguageService || _load_nuclideLanguageService()).updateAutocompleteFirstResults
         },
         analyticsEventName: 'clangd.getAutocompleteSuggestions',
-        onDidInsertSuggestionAnalyticsEventName: 'clangd.autocomplete-chosen',
+        onDidInsertSuggestionAnalyticsEventName: 'clangd.autocomplete-chosen'
       },
       definition: {
         version: '0.1.0',
         priority: 1,
-        definitionEventName: 'clangd.getDefinition',
+        definitionEventName: 'clangd.getDefinition'
       },
       diagnostics: {
         version: '0.2.0',
-        analyticsEventName: 'clangd.observe-diagnostics',
+        analyticsEventName: 'clangd.observe-diagnostics'
       },
       codeFormat: {
         version: '0.1.0',
         priority: 1,
         analyticsEventName: 'clangd.formatCode',
         canFormatRanges: true,
-        canFormatAtPosition: false,
+        canFormatAtPosition: false
       },
       codeAction: {
         version: '0.1.0',
         priority: 1,
         analyticsEventName: 'clangd.getActions',
-        applyAnalyticsEventName: 'clangd.applyAction',
-      },
+        applyAnalyticsEventName: 'clangd.applyAction'
+      }
     };
 
-    const languageService = new AtomLanguageService(
-      getConnection,
-      atomConfig,
-      null,
-      getLogger('clangd-language-server'),
-    );
+    const languageService = new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(getConnection, atomConfig, null, (0, (_log4js || _load_log4js()).getLogger)('clangd-language-server'));
     languageService.activate();
     this._languageService = languageService;
     return languageService;
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

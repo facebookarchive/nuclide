@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObjectRegistry = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-rpc');
+
+// All remotable objects have some set of named functions,
+// and they also have a dispose method.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,58 +26,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import type {ServiceRegistry} from './ServiceRegistry';
-import type {RpcContext} from './main';
-
-const logger = getLogger('nuclide-rpc');
-
-type ObjectRegistration = {
-  interface: string,
-  remoteId: number,
-  object: RemoteObject,
-};
-
-// All remotable objects have some set of named functions,
-// and they also have a dispose method.
-export type RemoteObject = {
-  [id: string]: Function,
-  dispose: () => void,
-};
-
-type RegistryKind = 'server' | 'client';
 
 // Handles lifetimes of marshalling wrappers remote objects.
 //
 // Object passed by reference over RPC are assigned an ID.
 // Positive IDs represent objects which live on the server,
 // negative IDs represent objects which live on the client.
-export class ObjectRegistry {
-  // These members handle local objects which have been marshalled remotely.
-  _registrationsById: Map<number, ObjectRegistration>;
-  _registrationsByObject: Map<RemoteObject, ObjectRegistration>;
-  _nextObjectId: number;
-  _subscriptions: Map<number, rxjs$ISubscription>;
-  _delta: number;
-  // These members handle remote objects.
-  _proxiesById: Map<number, ObjectRegistration>;
+class ObjectRegistry {
   // null means the proxy has been disposed.
-  _idsByProxy: Map<Object, ?Promise<number>>;
-  // Maps service name to proxy
-  _serviceRegistry: ServiceRegistry;
-  _services: Map<string, Object>;
-  _context: RpcContext;
 
-  constructor(
-    kind: RegistryKind,
-    serviceRegistry: ServiceRegistry,
-    context: RpcContext,
-  ) {
+  // These members handle local objects which have been marshalled remotely.
+  constructor(kind, serviceRegistry, context) {
     this._delta = kind === 'server' ? 1 : -1;
     this._nextObjectId = this._delta;
     this._registrationsById = new Map();
@@ -68,82 +51,93 @@ export class ObjectRegistry {
     this._services = new Map();
     this._context = context;
   }
+  // Maps service name to proxy
 
-  hasService(serviceName: string): boolean {
+  // These members handle remote objects.
+
+
+  hasService(serviceName) {
     return this._serviceRegistry.hasService(serviceName);
   }
 
-  getService(serviceName: string): Object {
+  getService(serviceName) {
     let service = this._services.get(serviceName);
     if (service == null) {
-      service = this._serviceRegistry
-        .getService(serviceName)
-        .factory(this._context);
+      service = this._serviceRegistry.getService(serviceName).factory(this._context);
       this._services.set(serviceName, service);
     }
     return service;
   }
 
-  unmarshal(
-    id: number,
-    interfaceName?: string,
-    proxyClass?: Function,
-  ): RemoteObject {
+  unmarshal(id, interfaceName, proxyClass) {
     if (this._isLocalId(id)) {
       return this._unmarshalLocalObject(id);
     } else {
-      invariant(proxyClass != null);
-      invariant(interfaceName != null);
+      if (!(proxyClass != null)) {
+        throw new Error('Invariant violation: "proxyClass != null"');
+      }
+
+      if (!(interfaceName != null)) {
+        throw new Error('Invariant violation: "interfaceName != null"');
+      }
+
       return this._unmarshalRemoteObject(id, interfaceName, proxyClass);
     }
   }
 
-  _unmarshalLocalObject(id: number): RemoteObject {
+  _unmarshalLocalObject(id) {
     return this._getRegistration(id).object;
   }
 
-  _unmarshalRemoteObject(
-    remoteId: number,
-    interfaceName: string,
-    proxyClass: Function,
-  ): RemoteObject {
+  _unmarshalRemoteObject(remoteId, interfaceName, proxyClass) {
     const existingProxy = this._proxiesById.get(remoteId);
     if (existingProxy != null) {
       return existingProxy.object;
     }
-    invariant(proxyClass != null);
+
+    if (!(proxyClass != null)) {
+      throw new Error('Invariant violation: "proxyClass != null"');
+    }
 
     // Generate the proxy by manually setting the prototype of the proxy to be the
     // prototype of the remote proxy constructor.
+
+
     const newProxy = Object.create(proxyClass.prototype);
     this.addProxy(newProxy, interfaceName, Promise.resolve(remoteId));
     return newProxy;
   }
 
-  _getRegistration(id: number): ObjectRegistration {
-    const result = this._isLocalId(id)
-      ? this._registrationsById.get(id)
-      : this._proxiesById.get(id);
-    invariant(result != null);
+  _getRegistration(id) {
+    const result = this._isLocalId(id) ? this._registrationsById.get(id) : this._proxiesById.get(id);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
 
-  getInterface(id: number): string {
+  getInterface(id) {
     return this._getRegistration(id).interface;
   }
 
-  async disposeObject(remoteId: number): Promise<void> {
-    const registration = this._getRegistration(remoteId);
-    const object = registration.object;
+  disposeObject(remoteId) {
+    var _this = this;
 
-    this._registrationsById.delete(remoteId);
-    this._registrationsByObject.delete(object);
+    return (0, _asyncToGenerator.default)(function* () {
+      const registration = _this._getRegistration(remoteId);
+      const object = registration.object;
 
-    // Call the object's local dispose function.
-    await object.dispose();
+      _this._registrationsById.delete(remoteId);
+      _this._registrationsByObject.delete(object);
+
+      // Call the object's local dispose function.
+      yield object.dispose();
+    })();
   }
 
-  disposeSubscription(id: number): void {
+  disposeSubscription(id) {
     const subscription = this.removeSubscription(id);
     if (subscription != null) {
       subscription.unsubscribe();
@@ -151,7 +145,7 @@ export class ObjectRegistry {
   }
 
   // Put the object in the registry.
-  marshal(interfaceName: string, object: Object): Promise<number> | number {
+  marshal(interfaceName, object) {
     if (this._isRemoteObject(object)) {
       return this._marshalRemoteObject(object);
     } else {
@@ -159,16 +153,23 @@ export class ObjectRegistry {
     }
   }
 
-  _marshalRemoteObject(proxy: Object): Promise<number> {
+  _marshalRemoteObject(proxy) {
     const result = this._idsByProxy.get(proxy);
-    invariant(result != null);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
 
-  _marshalLocalObject(interfaceName: string, object: Object): number {
+  _marshalLocalObject(interfaceName, object) {
     const existingRegistration = this._registrationsByObject.get(object);
     if (existingRegistration != null) {
-      invariant(existingRegistration.interface === interfaceName);
+      if (!(existingRegistration.interface === interfaceName)) {
+        throw new Error('Invariant violation: "existingRegistration.interface === interfaceName"');
+      }
+
       return existingRegistration.remoteId;
     }
 
@@ -178,7 +179,7 @@ export class ObjectRegistry {
     const registration = {
       interface: interfaceName,
       remoteId: objectId,
-      object,
+      object
     };
 
     this._registrationsById.set(objectId, registration);
@@ -187,11 +188,11 @@ export class ObjectRegistry {
     return objectId;
   }
 
-  addSubscription(id: number, subscription: rxjs$ISubscription): void {
+  addSubscription(id, subscription) {
     this._subscriptions.set(id, subscription);
   }
 
-  removeSubscription(id: number): ?rxjs$ISubscription {
+  removeSubscription(id) {
     const subscription = this._subscriptions.get(id);
     if (subscription != null) {
       this._subscriptions.delete(id);
@@ -200,69 +201,92 @@ export class ObjectRegistry {
   }
 
   // Disposes all object in the registry
-  async dispose(): Promise<void> {
-    const ids = Array.from(this._registrationsById.keys());
-    logger.info(`Disposing ${ids.length} registrations`);
+  dispose() {
+    var _this2 = this;
 
-    await Promise.all(
-      ids.map(async id => {
+    return (0, _asyncToGenerator.default)(function* () {
+      const ids = Array.from(_this2._registrationsById.keys());
+      logger.info(`Disposing ${ids.length} registrations`);
+
+      yield Promise.all(ids.map((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (id) {
+          try {
+            yield _this2.disposeObject(id);
+          } catch (e) {
+            logger.error('Error disposing marshalled object.', e);
+          }
+        });
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      })()));
+
+      const subscriptions = Array.from(_this2._subscriptions.keys());
+      logger.info(`Disposing ${subscriptions.length} subscriptions`);
+      for (const id of subscriptions) {
         try {
-          await this.disposeObject(id);
+          _this2.disposeSubscription(id);
         } catch (e) {
-          logger.error('Error disposing marshalled object.', e);
+          logger.error('Error disposing subscription', e);
         }
-      }),
-    );
-
-    const subscriptions = Array.from(this._subscriptions.keys());
-    logger.info(`Disposing ${subscriptions.length} subscriptions`);
-    for (const id of subscriptions) {
-      try {
-        this.disposeSubscription(id);
-      } catch (e) {
-        logger.error('Error disposing subscription', e);
       }
-    }
+    })();
   }
 
   // Returns null if the object is already disposed.
-  async disposeProxy(proxy: Object): Promise<?number> {
-    invariant(this._idsByProxy.has(proxy));
-    const objectId = this._idsByProxy.get(proxy);
-    if (objectId != null) {
-      this._idsByProxy.set(proxy, null);
-      return objectId;
-    } else {
-      return null;
-    }
+  disposeProxy(proxy) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!_this3._idsByProxy.has(proxy)) {
+        throw new Error('Invariant violation: "this._idsByProxy.has(proxy)"');
+      }
+
+      const objectId = _this3._idsByProxy.get(proxy);
+      if (objectId != null) {
+        _this3._idsByProxy.set(proxy, null);
+        return objectId;
+      } else {
+        return null;
+      }
+    })();
   }
 
-  async addProxy(
-    proxy: Object,
-    interfaceName: string,
-    idPromise: Promise<number>,
-  ): Promise<void> {
-    invariant(!this._idsByProxy.has(proxy));
-    this._idsByProxy.set(proxy, idPromise);
+  addProxy(proxy, interfaceName, idPromise) {
+    var _this4 = this;
 
-    const id = await idPromise;
-    invariant(!this._proxiesById.has(id));
-    this._proxiesById.set(id, {
-      interface: interfaceName,
-      remoteId: id,
-      object: proxy,
-    });
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!!_this4._idsByProxy.has(proxy)) {
+        throw new Error('Invariant violation: "!this._idsByProxy.has(proxy)"');
+      }
+
+      _this4._idsByProxy.set(proxy, idPromise);
+
+      const id = yield idPromise;
+
+      if (!!_this4._proxiesById.has(id)) {
+        throw new Error('Invariant violation: "!this._proxiesById.has(id)"');
+      }
+
+      _this4._proxiesById.set(id, {
+        interface: interfaceName,
+        remoteId: id,
+        object: proxy
+      });
+    })();
   }
 
-  isRegistered(object: Object): boolean {
+  isRegistered(object) {
     return this._registrationsByObject.has(object);
   }
 
-  _isRemoteObject(object: Object): boolean {
+  _isRemoteObject(object) {
     return this._idsByProxy.has(object);
   }
 
-  _isLocalId(id: number): boolean {
+  _isLocalId(id) {
     return id * this._delta > 0;
   }
 }
+exports.ObjectRegistry = ObjectRegistry;
