@@ -32,7 +32,7 @@ type ManagedRoot = {
   files: Set<string>,
   watchFile: string,
   rootDir: string,
-  tempCommandsDir: ?string,
+  tempCommandsDir: string,
 };
 
 function disposeManagedRoot(managedRoot: ?ManagedRoot): void {
@@ -45,7 +45,7 @@ function disposeManagedRoot(managedRoot: ?ManagedRoot): void {
   }
 }
 
-export default class ClangdLanguageServer extends MultiProjectLanguageService<
+export default class CqueryLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
 > {
   // Maps clang settings => settings metadata with same key as _processes field.
@@ -61,8 +61,9 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
 
     this._resources = new UniversalDisposable();
 
+    this._logger = logger;
     const server = this; // Access class scope within closure.
-    async function clangdServiceFactory(
+    async function cqueryServiceFactory(
       compileCommandsPath: string,
     ): Promise<?LspLanguageService> {
       const managedRoot = await server._managedRoots.get(compileCommandsPath);
@@ -71,18 +72,16 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
         return null;
       }
       const {rootDir, tempCommandsDir} = managedRoot;
-      const args = [
-        '-enable-snippets',
-        // TODO pelmers For debugging:
-        // '-debug',
-        // '-input-mirror-file',
-        // '/Users/pelmers/clangd.log',
-        // '-run-synchronously',
-      ];
-      if (tempCommandsDir != null) {
-        args.push('-compile-commands-dir', tempCommandsDir);
-      }
+      const args = ['--language-server'];
       await server.hasObservedDiagnostics();
+      const initializationOptions = {
+        // TODO pelmers: expose some of these in the atom config
+        compileCommandsDirectory: tempCommandsDir,
+        ...server._getInitializationOptions(),
+        cacheDirectory: nuclideUri.join(tempCommandsDir, 'cquery_cache'),
+        clientVersion: 3,
+      };
+
       const lsp = new LspLanguageService(
         logger,
         fileCache,
@@ -92,8 +91,8 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
         args,
         {}, // spawnOptions
         rootDir,
-        ['.cpp', '.h', '.hpp'],
-        {},
+        ['.cpp', '.h', '.hpp', '.cc'],
+        initializationOptions,
         5 * 60 * 1000, // 5 minutes
       );
 
@@ -101,7 +100,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       return lsp;
     }
 
-    this._processes = new Cache(clangdServiceFactory, value => {
+    this._processes = new Cache(cqueryServiceFactory, value => {
       value.then(service => {
         if (service != null) {
           service.dispose();
@@ -166,6 +165,29 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     );
   }
 
+  _getInitializationOptions(): Object {
+    return {
+      indexWhitelist: [],
+      indexBlacklist: [],
+      extraClangArguments: [],
+      resourceDirectory: '',
+      maxWorkspaceSearchResults: 1000,
+      indexerCount: 0,
+      enableIndexing: true,
+      enableCacheWrite: true,
+      enableCacheRead: true,
+      includeCompletionMaximumPathLength: 37,
+      includeCompletionWhitelistLiteralEnding: ['.h', '.hpp', '.hh'],
+      includeCompletionWhitelist: [],
+      includeCompletionBlacklist: [],
+      showDocumentLinksOnIncludes: true,
+      diagnosticsOnParse: true,
+      diagnosticsOnCodeCompletion: true,
+      codeLensOnLocalVariables: false,
+      enableSnippetInsertion: true,
+    };
+  }
+
   async _setupManagedRoot(
     file: string,
     flagsFile: string,
@@ -175,11 +197,11 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     // Add the files of this database to the managed map.
     const contents = await fs.readFile(file);
     // Create a temporary directory with only compile_commands.json because
-    // clangd requires the name of a directory containing a
+    // cquery requires the name of a directory containing a
     // compile_commands.json, which is not always what we are provided here.
     const tmpDir = nuclideUri.join(
       os.tmpdir(),
-      'nuclide-clangd-lsp-' + Math.random().toString(),
+      'nuclide-cquery-lsp-' + Math.random().toString(),
     );
     if (!await fs.mkdirp(tmpDir)) {
       throw new Error(`Failed to create temporary directory at ${tmpDir}`);

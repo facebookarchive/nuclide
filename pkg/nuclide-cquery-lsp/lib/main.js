@@ -19,7 +19,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
-import type {ClangdLanguageService} from '../../nuclide-clangd-lsp-rpc';
+import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
@@ -56,16 +56,16 @@ import {
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getClangdLSPServiceByConnection} from '../../nuclide-remote-connection';
+import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
 
 // Wrapper that queries for clang settings when new files seen.
-class ClangdLSPClient {
-  _service: ClangdLanguageService;
+class CqueryLSPClient {
+  _service: CqueryLanguageService;
   _logger: log4js$Logger;
 
-  constructor(service: ClangdLanguageService) {
+  constructor(service: CqueryLanguageService) {
     this._service = service;
-    this._logger = getLogger('clangd-language-server');
+    this._logger = getLogger('cquery-language-server');
   }
 
   dispose() {
@@ -147,7 +147,7 @@ class ClangdLSPClient {
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
     await this.ensureServer(fileVersion.filePath);
-    return this.highlight(fileVersion, position);
+    return this._service.highlight(fileVersion, position);
   }
 
   async formatSource(
@@ -256,15 +256,15 @@ async function getConnection(connection): Promise<LanguageService> {
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
-  const service = getClangdLSPServiceByConnection(connection);
-  const clangdService = await service.createClangdService({
+  const service = getCqueryLSPServiceByConnection(connection);
+  const cqueryService = await service.createCqueryService({
     fileNotifier,
     host,
-    logCategory: 'clangd-language-server',
+    logCategory: 'cquery-language-server',
     logLevel: 'ALL', // TODO pelmers: change to WARN
   });
-  if (clangdService) {
-    return new ClangdLSPClient(clangdService);
+  if (cqueryService) {
+    return new CqueryLSPClient(cqueryService);
   } else {
     return new NullLanguageService();
   }
@@ -276,7 +276,7 @@ class Activation {
 
   constructor(state: ?mixed) {
     this._subscriptions = new UniversalDisposable();
-    if (featureConfig.get('nuclide-clangd-lsp.useClangd')) {
+    if (featureConfig.get('nuclide-cquery-lsp.use-cquery')) {
       if (!this._subscriptions.disposed) {
         this._subscriptions.add(this.initializeLsp());
       }
@@ -291,7 +291,7 @@ class Activation {
 
   initializeLsp(): IDisposable {
     const atomConfig: AtomLanguageServiceConfig = {
-      name: 'clangd',
+      name: 'cquery',
       grammars: ['source.cpp', 'source.c'],
       autocomplete: {
         version: '2.0.0',
@@ -303,30 +303,30 @@ class Activation {
           updateResults: updateAutocompleteResults,
           updateFirstResults: updateAutocompleteFirstResults,
         },
-        analyticsEventName: 'clangd.getAutocompleteSuggestions',
-        onDidInsertSuggestionAnalyticsEventName: 'clangd.autocomplete-chosen',
+        analyticsEventName: 'cquery.getAutocompleteSuggestions',
+        onDidInsertSuggestionAnalyticsEventName: 'cquery.autocomplete-chosen',
       },
       definition: {
         version: '0.1.0',
         priority: 1,
-        definitionEventName: 'clangd.getDefinition',
+        definitionEventName: 'cquery.getDefinition',
       },
       diagnostics: {
         version: '0.2.0',
-        analyticsEventName: 'clangd.observe-diagnostics',
+        analyticsEventName: 'cquery.observe-diagnostics',
       },
       codeFormat: {
         version: '0.1.0',
         priority: 1,
-        analyticsEventName: 'clangd.formatCode',
+        analyticsEventName: 'cquery.formatCode',
         canFormatRanges: true,
         canFormatAtPosition: false,
       },
       codeAction: {
         version: '0.1.0',
         priority: 1,
-        analyticsEventName: 'clangd.getActions',
-        applyAnalyticsEventName: 'clangd.applyAction',
+        analyticsEventName: 'cquery.getActions',
+        applyAnalyticsEventName: 'cquery.applyAction',
       },
     };
 
@@ -334,7 +334,7 @@ class Activation {
       getConnection,
       atomConfig,
       null,
-      getLogger('clangd-language-server'),
+      getLogger('cquery-language-server'),
     );
     languageService.activate();
     this._languageService = languageService;

@@ -46,9 +46,9 @@ import invariant from 'assert';
 import which from 'nuclide-commons/which';
 import {getLogger} from 'log4js';
 import {FileCache} from '../../nuclide-open-files-rpc';
-import ClangdLanguageServer from './ClangdLanguageServer';
+import CqueryLanguageServer from './CqueryLanguageServer';
 
-export interface ClangdLanguageService extends LanguageService {
+export interface CqueryLanguageService extends LanguageService {
   isFileKnown(filePath: NuclideUri): Promise<boolean>,
   addClangRequest(clangRequest: ClangRequestSettings): Promise<boolean>,
   // Below copied from LanguageService
@@ -151,14 +151,14 @@ export interface ClangdLanguageService extends LanguageService {
  *
  * TODO: Document all of the fields below.
  */
-export async function createClangdService(params: {|
+export async function createCqueryService(params: {|
   fileNotifier: FileNotifier,
   host: HostServices,
   logCategory: string,
   logLevel: LogLevel,
-|}): Promise<?ClangdLanguageService> {
-  const command = 'clangd';
-  const languageId = 'clangd';
+|}): Promise<?CqueryLanguageService> {
+  const command = 'cquery';
+  const languageId = 'cquery';
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
 
@@ -172,9 +172,9 @@ export async function createClangdService(params: {|
   const fileCache = params.fileNotifier;
   invariant(fileCache instanceof FileCache);
 
-  return new ClangdLanguageServer(
-    'clangd', // id
-    'clangd', // command
+  return new CqueryLanguageServer(
+    'cquery', // id
+    command, // command
     logger,
     fileCache,
     params.host,

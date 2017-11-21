@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-clangd-lsp-rpc",
+  "name": "nuclide-cquery-lsp-rpc",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Service for clangd interaction.",
+  "description": "Service for cquery interaction.",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

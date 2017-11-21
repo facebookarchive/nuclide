@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-clangd-lsp",
+  "name": "nuclide-cquery-lsp",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Client for the clangd LSP",
+  "description": "Client for the cquery LSP",
   "private": true,
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
@@ -12,15 +12,15 @@
     "configMetadata": {
       "pathComponents": [
         "Language",
-        "Clangd"
+        "Cquery"
       ]
     },
     "config": {
-      "useClangd": {
-        "title": "Use clangd instead of libclang (experimental)",
+      "use-cquery": {
+        "title": "Use cquery instead of libclang (experimental)",
         "type": "boolean",
         "default": "false",
-        "description": "Still in early development. You need clangd in your PATH and a restart is required"
+        "description": "Still in early development. You need cquery in your PATH and a restart is required"
       }
     }
   },

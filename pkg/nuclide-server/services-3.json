@@ -121,8 +121,8 @@
     "name": "VSCodeLanguageService"
   },
   {
-    "implementation": "../nuclide-clangd-lsp-rpc/lib/main.js",
-    "name": "ClangdLSPService"
+    "implementation": "../nuclide-cquery-lsp-rpc/lib/main.js",
+    "name": "CqueryLSPService"
   },
   {
     "implementation": "../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService.js",

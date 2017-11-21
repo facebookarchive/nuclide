@@ -71,7 +71,7 @@ export function activate() {
       },
     ),
   );
-  if (featureConfig.get('nuclide-clangd-lsp.useClangd')) {
+  if (featureConfig.get('nuclide-cquery-lsp.use-cquery')) {
     const deactivateSelf = () => {
       if (atom.packages.isPackageActive(PACKAGE_NAME)) {
         atom.packages.deactivatePackage(PACKAGE_NAME);
