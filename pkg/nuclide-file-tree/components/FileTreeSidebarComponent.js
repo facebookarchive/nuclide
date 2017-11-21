@@ -79,7 +79,6 @@ type State = {|
     Map<NuclideUri, FileChangeStatusValue>,
   >,
   isCalculatingChanges: boolean,
-  areStackChangesEnabled: boolean,
   path: string,
   title: string,
   isFileTreeHovered: boolean,
@@ -126,7 +125,6 @@ export default class FileTreeSidebarComponent extends React.Component<
       activeUri: null,
       uncommittedFileChanges: new Map(),
       isCalculatingChanges: false,
-      areStackChangesEnabled: false,
       path: 'No Current Working Directory',
       title: 'File Tree',
       isFileTreeHovered: false,
@@ -170,11 +168,6 @@ export default class FileTreeSidebarComponent extends React.Component<
         .let(toggle(this._showOpenConfigValues))
         .subscribe(() => this._setModifiedUris()),
       this._monitorActiveUri(),
-      Observable.fromPromise(
-        FileTreeHelpers.areStackChangesEnabled(),
-      ).subscribe(areStackChangesEnabled =>
-        this.setState({areStackChangesEnabled}),
-      ),
       this._showOpenConfigValues.subscribe(showOpenFiles =>
         this.setState({showOpenFiles}),
       ),
@@ -323,25 +316,22 @@ export default class FileTreeSidebarComponent extends React.Component<
         </div>
       );
 
-      if (!this.state.areStackChangesEnabled) {
-        uncommittedChangesHeadline = 'UNCOMMITTED CHANGES';
-      } else {
-        const showDropdown = Array.from(
-          this.state.uncommittedFileChanges.keys(),
-        ).some(path => {
-          const repo = repositoryForPath(path);
-          return repo != null && repo.getType() === 'hg';
-        });
+      const showDropdown = Array.from(
+        this.state.uncommittedFileChanges.keys(),
+      ).some(path => {
+        const repo = repositoryForPath(path);
+        return repo != null && repo.getType() === 'hg';
+      });
 
-        const dropdownIcon = !showDropdown ? null : (
-          <Icon
-            icon="triangle-down"
-            className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
-            onClick={this._handleUncommittedChangesKindDownArrow}
-          />
-        );
+      const dropdownIcon = !showDropdown ? null : (
+        <Icon
+          icon="triangle-down"
+          className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+          onClick={this._handleUncommittedChangesKindDownArrow}
+        />
+      );
 
-        const dropdownTooltip = `<div style="text-align: left;">
+      const dropdownTooltip = `<div style="text-align: left;">
 This section shows the file changes you've made:<br />
 <br />
 <b>UNCOMMITTED</b><br />
@@ -354,27 +344,26 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
-        const calculatingChangesSpinner = !this.state
-          .isCalculatingChanges ? null : (
-          <span className="nuclide-file-tree-spinner">
-            &nbsp;
-            <LoadingSpinner
-              className="inline-block"
-              size={LoadingSpinnerSizes.EXTRA_SMALL}
-            />
-          </span>
-        );
+      const calculatingChangesSpinner = !this.state
+        .isCalculatingChanges ? null : (
+        <span className="nuclide-file-tree-spinner">
+          &nbsp;
+          <LoadingSpinner
+            className="inline-block"
+            size={LoadingSpinnerSizes.EXTRA_SMALL}
+          />
+        </span>
+      );
 
-        uncommittedChangesHeadline = (
-          <span ref={addTooltip({title: dropdownTooltip})}>
-            <span className="nuclide-dropdown-label-text-wrapper">
-              {this.state.showUncommittedChangesKind.toUpperCase()}
-            </span>
-            {dropdownIcon}
-            {calculatingChangesSpinner}
+      uncommittedChangesHeadline = (
+        <span ref={addTooltip({title: dropdownTooltip})}>
+          <span className="nuclide-dropdown-label-text-wrapper">
+            {this.state.showUncommittedChangesKind.toUpperCase()}
           </span>
-        );
-      }
+          {dropdownIcon}
+          {calculatingChangesSpinner}
+        </span>
+      );
 
       uncommittedChangesSection = (
         <Section

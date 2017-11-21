@@ -31,7 +31,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
-import passesGK from '../../commons-node/passesGK';
 import invariant from 'assert';
 import crypto from 'crypto';
 import os from 'os';
@@ -247,10 +246,6 @@ function updatePathInOpenedEditors(
   });
 }
 
-function areStackChangesEnabled(): Promise<boolean> {
-  return passesGK('nuclide_file_tree_stack_changes');
-}
-
 function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
   if (
     (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
@@ -287,6 +282,5 @@ export default {
   buildHashKey,
   observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
-  areStackChangesEnabled,
   getSelectionMode,
 };
