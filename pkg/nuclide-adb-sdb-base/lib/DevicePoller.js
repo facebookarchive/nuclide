@@ -14,6 +14,8 @@ import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
+import {arrayEqual} from 'nuclide-commons/collection';
+import shallowEqual from 'shallowequal';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -60,6 +62,17 @@ class DevicePoller {
             .do(() => {
               fetching = false;
             });
+        })
+        .distinctUntilChanged((a, b) => {
+          if (a.isError && b.isError) {
+            return a.error.message === b.error.message;
+          } else if (a.isPending && b.isPending) {
+            return true;
+          } else if (!a.isError && !b.isError && !a.isPending && !b.isPending) {
+            return arrayEqual(a.value, b.value, shallowEqual);
+          } else {
+            return false;
+          }
         })
         .publishReplay(1)
         .refCount(),
