@@ -1246,8 +1246,12 @@ export class LspLanguageService {
     let contentChange: TextDocumentContentChangeEvent;
     switch (this._derivedServerCapabilities.serverWantsChange) {
       case 'incremental':
+        const atomRange = fileEvent.oldRange;
         contentChange = {
-          range: convert.atomRange_lspRange(fileEvent.oldRange),
+          range: convert.atomRange_lspRange(atomRange),
+          rangeLength:
+            buffer.characterIndexForPosition(atomRange.end) -
+            buffer.characterIndexForPosition(atomRange.start),
           text: fileEvent.newText,
         };
         break;
