@@ -196,7 +196,7 @@ class CqueryLSPClient {
 
   async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     await this.ensureServer(filePath);
-    await this._service.getProjectRoot(filePath);
+    return this._service.getProjectRoot(filePath);
   }
 
   async isFileInProject(filePath: NuclideUri): Promise<boolean> {
