@@ -57,11 +57,12 @@ type Props = {
   // Normally, a dropdown is styled like a button. This prop allows you to avoid that.
   isFlat: boolean,
 
-  title: string,
   value: any,
   // If provided, this will be rendered as the label if the value is null.
   // Otherwise, we'll display the first option as selected by default.
   placeholder?: string,
+  // If provided, this string will always be used as the label
+  label?: string,
   buttonComponent?: React.ComponentType<any>,
   options: $ReadOnlyArray<Option>,
   onChange?: (value: any) => mixed,
@@ -84,17 +85,22 @@ export class Dropdown extends React.Component<Props> {
   };
 
   render(): React.Node {
-    const selectedOption = this._findSelectedOption(this.props.options);
-
-    let selectedLabel;
-    if (selectedOption == null) {
-      if (this.props.placeholder != null) {
-        selectedLabel = this.props.placeholder;
-      } else {
-        selectedLabel = this._renderSelectedLabel(this.props.options[0]);
-      }
+    const {label: providedLabel, options, placeholder} = this.props;
+    let label;
+    if (providedLabel != null) {
+      label = providedLabel;
     } else {
-      selectedLabel = this._renderSelectedLabel(selectedOption);
+      const selectedOption = this._findSelectedOption(options);
+
+      if (selectedOption == null) {
+        if (placeholder != null) {
+          label = placeholder;
+        } else {
+          label = this._renderSelectedLabel(options[0]);
+        }
+      } else {
+        label = this._renderSelectedLabel(selectedOption);
+      }
     }
 
     return (
@@ -102,12 +108,11 @@ export class Dropdown extends React.Component<Props> {
         className={this.props.className}
         disabled={this.props.disabled}
         isFlat={this.props.isFlat}
-        title={this.props.title}
         buttonComponent={this.props.buttonComponent}
         onExpand={this._handleDropdownClick}
         size={this.props.size}
         tooltip={this.props.tooltip}>
-        {selectedLabel}
+        {label}
       </DropdownButton>
     );
   }
@@ -200,9 +205,6 @@ type DropdownButtonProps = {
   className: string,
   disabled?: boolean,
   isFlat?: boolean,
-  // TODO: remove disable
-  // eslint-disable-next-line react/no-unused-prop-types
-  title?: string,
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
   onExpand?: (event: SyntheticMouseEvent<>) => void,
