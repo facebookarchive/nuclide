@@ -14,7 +14,6 @@ import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 
 import fs from 'nuclide-commons/fsPromise';
-import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {
@@ -32,18 +31,8 @@ type ManagedRoot = {
   files: Set<string>,
   watchFile: string,
   rootDir: string,
-  tempCommandsDir: string,
+  compilationDatabaseDir: string,
 };
-
-function disposeManagedRoot(managedRoot: ?ManagedRoot): void {
-  if (!managedRoot) {
-    return;
-  }
-  const {tempCommandsDir} = managedRoot;
-  if (tempCommandsDir != null) {
-    fs.rimraf(tempCommandsDir);
-  }
-}
 
 export default class CqueryLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
@@ -71,14 +60,14 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       if (!managedRoot) {
         return null;
       }
-      const {rootDir, tempCommandsDir} = managedRoot;
+      const {rootDir, compilationDatabaseDir} = managedRoot;
       const args = ['--language-server'];
       await server.hasObservedDiagnostics();
       const initializationOptions = {
         // TODO pelmers: expose some of these in the atom config
-        compileCommandsDirectory: tempCommandsDir,
         ...server._getInitializationOptions(),
-        cacheDirectory: nuclideUri.join(tempCommandsDir, 'cquery_cache'),
+        compilationDatabaseDirectory: compilationDatabaseDir,
+        cacheDirectory: nuclideUri.join(compilationDatabaseDir, 'cquery_cache'),
         clientVersion: 3,
       };
 
@@ -112,17 +101,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
     this._resources.add(host, this._processes);
 
-    this._resources.add(
-      () => {
-        this._closeProcesses();
-      },
-      () => {
-        // Delete temporary directories.
-        for (const managedRoot of this._managedRoots.values()) {
-          managedRoot.then(disposeManagedRoot);
-        }
-      },
-    );
+    this._resources.add(() => this._closeProcesses());
     // Remove fileCache when the remote connection shuts down
     this._resources.add(
       fileCache
@@ -150,10 +129,6 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
               this._logger.info('Watch file saved, invalidating ' + key);
               this._processes.delete(key);
               this._managedRoots.delete(key);
-              const managedRoot = this._managedRoots.get(key);
-              if (managedRoot) {
-                managedRoot.then(disposeManagedRoot);
-              }
             }
           },
           undefined, // error
@@ -166,6 +141,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   }
 
   _getInitializationOptions(): Object {
+    // Copied from the corresponding vs-code plugin
     return {
       indexWhitelist: [],
       indexBlacklist: [],
@@ -189,35 +165,19 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   }
 
   async _setupManagedRoot(
-    file: string,
+    dbFile: string,
     flagsFile: string,
+    rootDir: string,
   ): Promise<ManagedRoot> {
-    const rootDir = nuclideUri.dirname(flagsFile);
-    // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
     // Add the files of this database to the managed map.
-    const contents = await fs.readFile(file);
-    // Create a temporary directory with only compile_commands.json because
-    // cquery requires the name of a directory containing a
-    // compile_commands.json, which is not always what we are provided here.
-    const tmpDir = nuclideUri.join(
-      os.tmpdir(),
-      'nuclide-cquery-lsp-' + Math.random().toString(),
-    );
-    if (!await fs.mkdirp(tmpDir)) {
-      throw new Error(`Failed to create temporary directory at ${tmpDir}`);
-    }
-    const tmpCommandsPath = nuclideUri.join(tmpDir, COMPILATION_DATABASE_FILE);
-    await fs.writeFile(tmpCommandsPath, contents);
-    this._logger.info(
-      'Copied commands from ' + file + ' to ' + tmpCommandsPath,
-    );
+    const contents = await fs.readFile(dbFile);
     // Trigger the factory to construct the server.
-    this._processes.get(file);
+    this._processes.get(dbFile);
     return {
       rootDir,
       watchFile: flagsFile,
       files: new Set(JSON.parse(contents.toString()).map(entry => entry.file)),
-      tempCommandsDir: tmpDir,
+      compilationDatabaseDir: nuclideUri.dirname(dbFile),
     };
   }
 
@@ -234,7 +194,16 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       return false;
     }
     if (!this._managedRoots.has(file)) {
-      this._managedRoots.set(file, this._setupManagedRoot(file, flagsFile));
+      this._managedRoots.set(
+        file,
+        this._setupManagedRoot(
+          file,
+          flagsFile,
+          clangRequest.projectRoot != null
+            ? clangRequest.projectRoot
+            : nuclideUri.dirname(flagsFile),
+        ),
+      );
     }
     return true;
   }
