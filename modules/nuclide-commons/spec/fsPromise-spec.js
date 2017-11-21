@@ -167,7 +167,18 @@ describe('fsPromise test suite', () => {
           "I'm a little teapot.\n",
         );
         // eslint-disable-next-line no-bitwise
-        expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(0o644);
+        expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(
+          // eslint-disable-next-line no-bitwise
+          0o666 & ~process.umask(),
+        );
+      });
+    });
+
+    it('calls mkdirp', () => {
+      waitsForPromise(async () => {
+        const subPath = nuclideUri.join(pathToWriteFile, 'test');
+        await fsPromise.writeFileAtomic(subPath, 'test1234\n');
+        expect(fs.readFileSync(subPath).toString()).toEqual('test1234\n');
       });
     });
 
@@ -184,7 +195,7 @@ describe('fsPromise test suite', () => {
       });
     });
 
-    it('returns 500 if file cannot be written', () => {
+    it('errors if file cannot be written', () => {
       waitsForPromise(async () => {
         let err;
         try {
@@ -196,7 +207,6 @@ describe('fsPromise test suite', () => {
           err = e;
         }
         invariant(err != null, 'Expected an error');
-        expect(err.code).toBe('ENOENT');
       });
     });
   });
