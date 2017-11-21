@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AvailableRefactoring} from '..';
+import type {AvailableRefactoring, RefactorProvider} from '..';
 
 import type {
   ConfirmAction,
@@ -17,7 +17,7 @@ import type {
   GotRefactoringsAction,
   OpenAction,
   PickedRefactorAction,
-  PickPhase,
+  InlinePickedRefactorAction,
   ProgressAction,
   RefactorAction,
   RefactoringPhase,
@@ -50,6 +50,8 @@ export default function refactorReducers(
       return close(state);
     case 'picked-refactor':
       return pickedRefactor(state, action);
+    case 'inline-picked-refactor':
+      return inlinePickedRefactor(state, action);
     case 'execute':
       return executeRefactor(state, action);
     case 'confirm':
@@ -109,16 +111,37 @@ function pickedRefactor(
   invariant(state.type === 'open');
   invariant(state.phase.type === 'pick');
 
+  const {refactoring} = action.payload;
+  const {provider, editor, originalPoint} = state.phase;
+
   return {
     type: 'open',
     ui: state.ui,
-    phase: getRefactoringPhase(action.payload.refactoring, state.phase),
+    phase: getRefactoringPhase(refactoring, provider, editor, originalPoint),
+  };
+}
+
+function inlinePickedRefactor(
+  state: RefactorState,
+  action: InlinePickedRefactorAction,
+): RefactorState {
+  const {provider, editor, originalPoint, refactoring} = action.payload;
+
+  invariant(state.type === 'closed');
+  invariant(refactoring.kind === 'freeform');
+
+  return {
+    type: 'open',
+    ui: 'generic',
+    phase: getRefactoringPhase(refactoring, provider, editor, originalPoint),
   };
 }
 
 function getRefactoringPhase(
   refactoring: AvailableRefactoring,
-  {provider, editor, originalPoint}: PickPhase,
+  provider: RefactorProvider,
+  editor: atom$TextEditor,
+  originalPoint: atom$Point,
 ): RefactoringPhase {
   switch (refactoring.kind) {
     case 'rename':

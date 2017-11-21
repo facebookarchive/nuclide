@@ -19,7 +19,7 @@ export interface CodeAction {
 }
 
 export type CodeActionProvider = {
-  grammarScopes: Array<string>,
+  +grammarScopes?: Array<string>,
   priority: number,
   getCodeActions(
     editor: atom$TextEditor,

@@ -16,6 +16,13 @@
       }
     }
   },
+  "providedServices": {
+    "code-actions": {
+      "versions": {
+        "0.1.0": "provideCodeActions"
+      }
+    }
+  },
   "activationHooks": [
     "nuclide_refactoring:gk:nuclide"
   ]

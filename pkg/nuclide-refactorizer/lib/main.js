@@ -14,6 +14,7 @@
  */
 
 import type {Observable} from 'rxjs';
+import type {CodeActionProvider} from 'atom-ide-ui';
 import type {
   AvailableRefactoring,
   FreeformRefactoring,
@@ -32,6 +33,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import observeGrammarForTextEditors from '../../commons-atom/observe-grammar-for-text-editors';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import passesGK from '../../commons-node/passesGK';
 
 import * as Actions from './refactorActions';
 import {getStore} from './refactorStore';
@@ -182,6 +184,52 @@ class Activation {
       this._providerRegistry.removeProvider(provider);
       this._checkAllEditorContextMenus();
     });
+  }
+
+  provideCodeActions(): CodeActionProvider {
+    const store = this._store;
+    const providerRegistry = this._providerRegistry;
+    return {
+      priority: 1,
+      async getCodeActions(editor, range, diagnostics) {
+        const provider = providerRegistry.getProviderForEditor(editor);
+        if (
+          provider == null ||
+          !await passesGK('nuclide_refactorizer_code_actions')
+        ) {
+          return [];
+        }
+
+        const refactors = await provider.refactoringsAtPoint(
+          editor,
+          range.start,
+        );
+
+        return refactors
+          .filter(refactor => {
+            return refactor.kind === 'freeform' && !refactor.disabled;
+          })
+          .map(refactor => {
+            invariant(refactor.kind === 'freeform');
+            return {
+              async apply() {
+                return store.dispatch(
+                  Actions.inlinePickedRefactor(
+                    editor,
+                    range.start,
+                    provider,
+                    refactor,
+                  ),
+                );
+              },
+              async getTitle() {
+                return refactor.name;
+              },
+              dispose() {},
+            };
+          });
+      },
+    };
   }
 }
 
