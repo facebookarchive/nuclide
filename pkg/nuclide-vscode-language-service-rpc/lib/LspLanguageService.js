@@ -62,6 +62,7 @@ import type {
   UncoveredRange,
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
+  Command,
 } from './protocol';
 import type {
   JsonRpcConnection,
@@ -1698,7 +1699,11 @@ export class LspLanguageService {
       this._logLspException(e);
       return [];
     }
-    return response.map(command => {
+    return this._convertCommands_CodeActions(response);
+  }
+
+  _convertCommands_CodeActions(commands: Array<Command>): Array<CodeAction> {
+    return commands.map(command => {
       // This function, which will be called when the CodeAction is applied
       // by the user, returns Promise<void>. If the Promise is fulfilled, then
       // the CodeAction was successful. If unsuccessful, the Promise will be rejected
