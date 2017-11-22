@@ -18,6 +18,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DeviceTask} from '../DeviceTask';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import * as React from 'react';
+import {AppInfoTable} from './AppInfoTable';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
@@ -77,7 +78,7 @@ export class DevicePanel extends React.Component<Props> {
         appInfoTables.value.entries(),
       ).map(([processName, appInfoRows]) => (
         <div className="block" key={processName}>
-          {processName}
+          <AppInfoTable title={processName} rows={appInfoRows} />
         </div>
       ));
     }
