@@ -38,7 +38,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   CqueryLanguageClient,
 > {
   // Maps clang settings => settings metadata with same key as _processes field.
-  _managedRoots: Map<string, Promise<ManagedRoot>>;
+  _managedRoots: Map<string, Promise<ManagedRoot>> = new Map();
+
   constructor(
     languageId: string,
     command: string,
@@ -53,9 +54,9 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._logger = logger;
     const server = this; // Access class scope within closure.
     async function cqueryServiceFactory(
-      compileCommandsPath: string,
+      managedRootKey: string,
     ): Promise<?CqueryLanguageClient> {
-      const managedRoot = await server._managedRoots.get(compileCommandsPath);
+      const managedRoot = await server._managedRoots.get(managedRootKey);
       // Only proceed if we added the compile commands via addClangRequest
       if (!managedRoot) {
         return null;
@@ -97,47 +98,48 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       });
     });
 
-    this._managedRoots = new Map();
-
-    this._resources.add(host, this._processes);
-
-    this._resources.add(() => this._closeProcesses());
-    // Remove fileCache when the remote connection shuts down
     this._resources.add(
-      fileCache
-        .observeFileEvents()
-        .filter(event => event.kind === 'save')
-        .switchMap(({fileVersion: {filePath}}) =>
-          Observable.fromPromise(
-            Promise.all(
-              Array.from(
-                this._managedRoots.entries(),
-              ).map(([key, valPromise]) =>
-                valPromise.then(value => ({key, value})),
-              ),
-            ).then(entries =>
-              // Keep only the roots that are watching the saved file.
-              entries
-                .filter(({value}) => value.watchFile === filePath)
-                .map(({key}) => key),
-            ),
-          ),
-        )
-        .subscribe(
-          keys => {
-            for (const key of keys) {
-              this._logger.info('Watch file saved, invalidating ' + key);
-              this._processes.delete(key);
-              this._managedRoots.delete(key);
-            }
-          },
-          undefined, // error
-          () => {
-            this._logger.info('fileCache shutting down.');
-            this._closeProcesses();
-          },
-        ),
+      host,
+      this._processes,
+      () => this._closeProcesses(),
+      // Remove fileCache when the remote connection shuts down
+      this._observeFileSaveEvents(fileCache).subscribe(
+        keys => this._invalidateManagedRootKeys(keys),
+        undefined, // error
+        () => {
+          this._logger.info('fileCache shutting down.');
+          this._closeProcesses();
+        },
+      ),
     );
+  }
+
+  _observeFileSaveEvents(fileCache: FileCache): Observable<Array<string>> {
+    return fileCache
+      .observeFileEvents()
+      .filter(event => event.kind === 'save')
+      .switchMap(({fileVersion: {filePath}}) =>
+        Observable.fromPromise(
+          Promise.all(
+            Array.from(this._managedRoots.entries()).map(([key, valPromise]) =>
+              valPromise.then(value => ({key, value})),
+            ),
+          ).then(entries =>
+            // Keep only the roots that are watching the saved file.
+            entries
+              .filter(({value}) => value.watchFile === filePath)
+              .map(({key}) => key),
+          ),
+        ),
+      );
+  }
+
+  _invalidateManagedRootKeys(keys: Array<string>): void {
+    for (const key of keys) {
+      this._logger.info('Watch file saved, invalidating ' + key);
+      this._processes.delete(key);
+      this._managedRoots.delete(key);
+    }
   }
 
   _getInitializationOptions(): Object {
@@ -185,19 +187,20 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     // Start new server for compile commands path and add to managed list.
     // Return whether successful.
     const database = clangRequest.compilationDatabase;
-    if (!database) {
+    if (database == null) {
       return false;
     }
-    // file = compile commands, flags file = build target
-    const {file, flagsFile} = database;
-    if (file == null || flagsFile == null) {
+    const {flagsFile} = database;
+    const dbFile = database.file;
+    if (dbFile == null || flagsFile == null) {
       return false;
     }
-    if (!this._managedRoots.has(file)) {
+
+    if (!this._managedRoots.has(dbFile)) {
       this._managedRoots.set(
-        file,
+        dbFile,
         this._setupManagedRoot(
-          file,
+          dbFile,
           flagsFile,
           clangRequest.projectRoot != null
             ? clangRequest.projectRoot
@@ -211,49 +214,72 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   async isFileKnown(filePath: NuclideUri): Promise<boolean> {
     // TODO pelmers: header files are always false here, but we could borrow
     // ClangFlagsManager._findSourceFileForHeaderFromCompilationDatabase
-    return this.getClangRequestSettingsForFile(filePath) != null;
+    return this._getCompilationDbForFile(filePath) != null;
   }
 
-  async getClangRequestSettingsForFile(filePath: NuclideUri): Promise<?string> {
+  async _findExistingManagedRootForFile(
+    filePath: NuclideUri,
+  ): Promise<?ManagedRoot> {
     const absPath = nuclideUri.getPath(filePath);
-    this._logger.info('checking for ' + absPath);
-    const resolvedRoots = await Promise.all(
-      Array.from(this._managedRoots.entries()).map(([k, vPromise]) =>
-        vPromise.then(v => [k, v]),
-      ),
-    );
-    for (const [commandsPath, managedRoot] of resolvedRoots) {
-      if (managedRoot.files.has(absPath)) {
-        return commandsPath;
-      }
-    }
-    // Search up through file tree for manually provided compile_commands.json
-    // Similar to ClangFlagsManager._getDBFlagsAndDirForSrc
+    const resolvedRoots = await Promise.all(this._managedRoots.values());
+    return resolvedRoots.find(managedRoot => managedRoot.files.has(absPath));
+  }
+
+  async _findClosestCompilationDb(filePath: NuclideUri): Promise<?string> {
     const dbDir = await fs.findNearestFile(
       COMPILATION_DATABASE_FILE,
       nuclideUri.dirname(filePath),
     );
-    if (dbDir != null) {
-      const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-      const compilationDatabase = {
-        file: dbFile,
-        flagsFile: dbFile,
-        libclangPath: null,
-      };
+    return dbDir == null
+      ? null
+      : nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
+  }
+
+  _createFallbackClangRequestSettingsFromDbFile(
+    dbFile: string,
+    projectRoot: string,
+  ): ClangRequestSettings {
+    const compilationDatabase = {
+      file: dbFile,
+      flagsFile: dbFile,
+      libclangPath: null,
+    };
+    return {projectRoot, compilationDatabase};
+  }
+
+  async _findAndRegisterFallbackDbFile(filePath: NuclideUri): Promise<?string> {
+    const dbFile = await this._findClosestCompilationDb(filePath);
+    if (dbFile != null) {
       if (
-        await this.addClangRequest({projectRoot: dbDir, compilationDatabase})
+        await this.addClangRequest(
+          this._createFallbackClangRequestSettingsFromDbFile(
+            dbFile,
+            nuclideUri.dirname(dbFile),
+          ),
+        )
       ) {
         return dbFile;
       }
     }
-
     return null;
+  }
+
+  async _getCompilationDbForFile(filePath: NuclideUri): Promise<?string> {
+    const resolvedRoot = await this._findExistingManagedRootForFile(filePath);
+    return resolvedRoot != null
+      ? nuclideUri.join(
+          resolvedRoot.compilationDatabaseDir,
+          COMPILATION_DATABASE_FILE,
+        )
+      : this._findAndRegisterFallbackDbFile(filePath);
   }
 
   async getLanguageServiceForFile(
     filePath: NuclideUri,
   ): Promise<?CqueryLanguageClient> {
-    const commandsPath = await this.getClangRequestSettingsForFile(filePath);
+    // TODO(wallace): instead of using the db file, we should include the
+    // request settings from the client
+    const commandsPath = await this._getCompilationDbForFile(filePath);
     if (commandsPath != null) {
       this._logger.info('Found existing service for ' + filePath);
       this._logger.info('Key: ' + commandsPath);
@@ -264,9 +290,6 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       }
       return result;
     }
-    this._logger.info(
-      ' if path is reasonable then i should have created server for it already?',
-    );
     return null;
   }
 }
