@@ -315,13 +315,6 @@ class Activation {
         version: '0.2.0',
         analyticsEventName: 'cquery.observe-diagnostics',
       },
-      codeFormat: {
-        version: '0.1.0',
-        priority: 1,
-        analyticsEventName: 'cquery.formatCode',
-        canFormatRanges: true,
-        canFormatAtPosition: false,
-      },
       codeAction: {
         version: '0.1.0',
         priority: 1,

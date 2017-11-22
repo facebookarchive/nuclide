@@ -11,12 +11,5 @@
   "scripts": {
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
-  "consumedServices": {
-    "nuclide.clang.configuration": {
-      "versions": {
-        "0.0.0": "consumeClangConfigurationProvider"
-      }
-    }
-  },
   "private": true
 }
