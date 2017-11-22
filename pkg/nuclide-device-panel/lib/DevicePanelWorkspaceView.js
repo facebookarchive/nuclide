@@ -72,6 +72,7 @@ export class DevicePanelWorkspaceView {
       deviceType: state.deviceType,
       device: state.device,
       infoTables: state.infoTables,
+      appInfoTables: state.appInfoTables,
       processes: state.processes,
       deviceTasks: state.deviceTasks,
       processTasks: state.processTasks,

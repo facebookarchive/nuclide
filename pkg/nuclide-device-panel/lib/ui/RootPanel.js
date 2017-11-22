@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessTask} from '../types';
+import type {Device, Process, ProcessTask, AppInfoRow} from '../types';
 import type {Expected} from '../../../commons-node/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Props as TaskButtonPropsType} from './TaskButton';
@@ -40,6 +40,7 @@ export type Props = {|
   deviceTasks: DeviceTask[],
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
+  appInfoTables: Expected<Map<string, Set<AppInfoRow>>>,
   processes: Expected<Process[]>,
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
@@ -112,6 +113,7 @@ export class RootPanel extends React.Component<Props> {
         <div className="block">
           <DevicePanel
             infoTables={this.props.infoTables}
+            appInfoTables={this.props.appInfoTables}
             processes={this.props.processes}
             processTasks={this.props.processTasks}
             deviceTasks={this.props.deviceTasks}

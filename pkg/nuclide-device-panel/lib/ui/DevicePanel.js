@@ -10,7 +10,7 @@
  */
 
 import type {Expected} from '../../../commons-node/expected';
-import type {Process, ProcessTask} from '../types';
+import type {Process, ProcessTask, AppInfoRow} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
 import type {TaskEvent} from 'nuclide-commons/process';
 
@@ -27,6 +27,7 @@ type Props = {|
   toggleProcessPolling: (isActive: boolean) => void,
   goToRootPanel: () => void,
   infoTables: Expected<Map<string, Map<string, string>>>,
+  appInfoTables: Expected<Map<string, Set<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
@@ -52,6 +53,31 @@ export class DevicePanel extends React.Component<Props> {
       ).map(([title, infoTable]) => (
         <div className="block" key={title}>
           <InfoTable title={title} table={infoTable} />
+        </div>
+      ));
+    }
+  }
+
+  _createAppInfoTables(): React.Element<any>[] {
+    const appInfoTables = this.props.appInfoTables;
+
+    if (appInfoTables.isError) {
+      return [
+        <div className="block" key="infoTableError">
+          {
+            // $FlowFixMe
+            appInfoTables.error
+          }
+        </div>,
+      ];
+    } else if (appInfoTables.isPending) {
+      return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
+    } else {
+      return Array.from(
+        appInfoTables.value.entries(),
+      ).map(([processName, appInfoRows]) => (
+        <div className="block" key={processName}>
+          {processName}
         </div>
       ));
     }
@@ -133,6 +159,7 @@ export class DevicePanel extends React.Component<Props> {
         {this._getStatus()}
         {this._getTasks()}
         {this._createInfoTables()}
+        {this._createAppInfoTables()}
         {this._createProcessTable()}
       </div>
     );
