@@ -22,8 +22,8 @@ import {
 } from '../../nuclide-language-service-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {Cache} from 'nuclide-commons/cache';
+import {CqueryLanguageClient} from './CqueryLanguageClient';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
@@ -35,7 +35,7 @@ type ManagedRoot = {
 };
 
 export default class CqueryLanguageServer extends MultiProjectLanguageService<
-  LspLanguageService,
+  CqueryLanguageClient,
 > {
   // Maps clang settings => settings metadata with same key as _processes field.
   _managedRoots: Map<string, Promise<ManagedRoot>>;
@@ -54,7 +54,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     const server = this; // Access class scope within closure.
     async function cqueryServiceFactory(
       compileCommandsPath: string,
-    ): Promise<?LspLanguageService> {
+    ): Promise<?CqueryLanguageClient> {
       const managedRoot = await server._managedRoots.get(compileCommandsPath);
       // Only proceed if we added the compile commands via addClangRequest
       if (!managedRoot) {
@@ -71,7 +71,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
         clientVersion: 3,
       };
 
-      const lsp = new LspLanguageService(
+      const lsp = new CqueryLanguageClient(
         logger,
         fileCache,
         await forkHostServices(host, logger),
@@ -252,7 +252,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
   async getLanguageServiceForFile(
     filePath: NuclideUri,
-  ): Promise<?LspLanguageService> {
+  ): Promise<?CqueryLanguageClient> {
     const commandsPath = await this.getClangRequestSettingsForFile(filePath);
     if (commandsPath != null) {
       this._logger.info('Found existing service for ' + filePath);
