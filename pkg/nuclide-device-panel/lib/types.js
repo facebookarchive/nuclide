@@ -87,6 +87,7 @@ export interface DeviceAppInfoProvider {
   getName(): string,
   getType(): string,
   getProcessName(): string,
+  getAppName(): string,
 }
 
 export type DeviceAction = {
@@ -158,7 +159,7 @@ export type ProcessTask = {
 };
 
 export type AppInfoRow = {
-  processName: string,
+  appName: string,
   name: string,
   value: string,
 };

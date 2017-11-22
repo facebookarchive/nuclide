@@ -186,7 +186,7 @@ export function setAppInfoEpic(
         .filter(provider => runningProcessNames.has(provider.getProcessName()))
         .map(provider => {
           return provider.observe(state.host, device).map(value => ({
-            processName: provider.getProcessName(),
+            appName: provider.getAppName(),
             name: provider.getName(),
             value,
           }));
@@ -196,10 +196,10 @@ export function setAppInfoEpic(
       .map(appInfoItems => {
         const appInfoTables = new Map();
         appInfoItems.forEach(item => {
-          let itemSet = appInfoTables.get(item.processName);
+          let itemSet = appInfoTables.get(item.appName);
           if (itemSet == null) {
             itemSet = new Set();
-            appInfoTables.set(item.processName, itemSet);
+            appInfoTables.set(item.appName, itemSet);
           }
           itemSet.add(item);
         });

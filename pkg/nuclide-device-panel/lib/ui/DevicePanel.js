@@ -76,9 +76,9 @@ export class DevicePanel extends React.Component<Props> {
     } else {
       return Array.from(
         appInfoTables.value.entries(),
-      ).map(([processName, appInfoRows]) => (
-        <div className="block" key={processName}>
-          <AppInfoTable title={processName} rows={appInfoRows} />
+      ).map(([appName, appInfoRows]) => (
+        <div className="block" key={appName}>
+          <AppInfoTable title={appName} rows={appInfoRows} />
         </div>
       ));
     }
