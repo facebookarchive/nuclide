@@ -33,6 +33,7 @@ export type DevicePanelServiceApi = {
     provider: DeviceTypeTaskProvider,
   ) => IDisposable,
   registerDeviceActionProvider: (provider: DeviceActionProvider) => IDisposable,
+  registerAppInfoProvider: (provider: DeviceAppInfoProvider) => IDisposable,
 };
 
 export interface DeviceListProvider {
@@ -81,6 +82,13 @@ export interface DeviceProcessTaskProvider {
   getName(): string,
 }
 
+export interface DeviceAppInfoProvider {
+  observe(host: NuclideUri, device: DeviceIdType): Observable<string>,
+  getName(): string,
+  getType(): string,
+  getProcessName(): string,
+}
+
 export type DeviceAction = {
   name: string,
   callback: (device: Device) => void,
@@ -102,6 +110,7 @@ export type AppState = {
   deviceTypes: string[],
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
+  appInfoTables: Expected<Map<string, Set<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
@@ -146,6 +155,12 @@ export type ProcessTask = {
   run: (proc: Process) => Promise<void>,
   isSupported: (proc: Process) => boolean,
   name: string,
+};
+
+export type AppInfoRow = {
+  processName: string,
+  name: string,
+  value: string,
 };
 
 //
@@ -201,6 +216,13 @@ export type SetInfoTablesAction = {
   },
 };
 
+export type SetAppInfoTablesAction = {
+  type: 'SET_APP_INFO_TABLES',
+  payload: {
+    appInfoTables: Map<string, Set<AppInfoRow>>,
+  },
+};
+
 export type SetProcessesAction = {
   type: 'SET_PROCESSES',
   payload: {
@@ -252,6 +274,7 @@ export type Action =
   | SetDeviceTypeAction
   | SetDeviceTypesAction
   | SetInfoTablesAction
+  | SetAppInfoTablesAction
   | SetProcessesAction
   | SetProcessTasksAction
   | SetDeviceTasksAction

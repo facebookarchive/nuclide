@@ -139,6 +139,9 @@ class Activation {
       registerDeviceActionProvider: this._createProviderRegistration(
         providers.deviceAction,
       ),
+      registerAppInfoProvider: this._createProviderRegistration(
+        providers.appInfo,
+      ),
     };
   }
 }

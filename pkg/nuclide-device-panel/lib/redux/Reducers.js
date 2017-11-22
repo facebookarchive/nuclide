@@ -76,6 +76,13 @@ export function app(state: AppState, action: Action): AppState {
         infoTables: Expect.value(infoTables),
       };
 
+    case Actions.SET_APP_INFO_TABLES:
+      const {appInfoTables} = action.payload;
+      return {
+        ...state,
+        appInfoTables: Expect.value(appInfoTables),
+      };
+
     case Actions.SET_PROCESSES:
       const {processes} = action.payload;
       return {

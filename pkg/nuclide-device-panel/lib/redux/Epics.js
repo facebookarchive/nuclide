@@ -158,11 +158,53 @@ export function setProcessesEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.SET_PROCESSES).switchMap(action => {
-    invariant(action.type === Actions.SET_PROCESSES);
     const state = store.getState();
     return getProcessTasks(state).switchMap(processTasks =>
       Observable.of(Actions.setProcessTasks(processTasks)),
     );
+  });
+}
+
+export function setAppInfoEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_PROCESSES).switchMap(action => {
+    const state = store.getState();
+    const device = state.device;
+    if (device == null) {
+      return Observable.empty();
+    }
+
+    const runningProcessNames = new Set();
+    state.processes
+      .getOrDefault([])
+      .forEach(process => runningProcessNames.add(process.name));
+    return Observable.merge(
+      ...Array.from(getProviders().appInfo)
+        .filter(provider => provider.getType() === state.deviceType)
+        .filter(provider => runningProcessNames.has(provider.getProcessName()))
+        .map(provider => {
+          return provider.observe(state.host, device).map(value => ({
+            processName: provider.getProcessName(),
+            name: provider.getName(),
+            value,
+          }));
+        }),
+    )
+      .toArray()
+      .map(appInfoItems => {
+        const appInfoTables = new Map();
+        appInfoItems.forEach(item => {
+          let itemSet = appInfoTables.get(item.processName);
+          if (itemSet == null) {
+            itemSet = new Set();
+            appInfoTables.set(item.processName, itemSet);
+          }
+          itemSet.add(item);
+        });
+        return Actions.setAppInfoTables(appInfoTables);
+      });
   });
 }
 

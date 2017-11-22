@@ -19,6 +19,7 @@ import type {
   SetHostsAction,
   SetHostAction,
   SetInfoTablesAction,
+  SetAppInfoTablesAction,
   SetProcessesAction,
   SetProcessTasksAction,
   SetDeviceTypeTasksAction,
@@ -27,6 +28,7 @@ import type {
   Device,
   Process,
   ProcessTask,
+  AppInfoRow,
 } from '../types';
 import type {Expected} from '../../../commons-node/expected';
 
@@ -40,6 +42,7 @@ export const SET_DEVICE_TASKS = 'SET_DEVICE_TASKS';
 export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
+export const SET_APP_INFO_TABLES = 'SET_APP_INFO_TABLES';
 export const SET_PROCESSES = 'SET_PROCESSES';
 export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
 export const TOGGLE_DEVICE_POLLING = 'TOGGLE_DEVICE_POLLING';
@@ -70,6 +73,15 @@ export function setInfoTables(
   return {
     type: SET_INFO_TABLES,
     payload: {infoTables},
+  };
+}
+
+export function setAppInfoTables(
+  appInfoTables: Map<string, Set<AppInfoRow>>,
+): SetAppInfoTablesAction {
+  return {
+    type: SET_APP_INFO_TABLES,
+    payload: {appInfoTables},
   };
 }
 
