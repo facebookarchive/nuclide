@@ -14,7 +14,7 @@ import addTooltip from './addTooltip';
 import classnames from 'classnames';
 import * as React from 'react';
 
-type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
+export type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
 type Props = {
   className?: string,
   /** The size of the LoadingSpinner. Defaults to MEDIUM. */
