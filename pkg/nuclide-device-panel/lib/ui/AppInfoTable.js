@@ -11,6 +11,7 @@
 
 import type {AppInfoRow} from '../types';
 
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 
@@ -19,10 +20,13 @@ type Props = {
   rows: Set<AppInfoRow>,
 };
 
+const MAX_ERROR_LINE_LENGTH = 80;
+const MAX_NUMBER_ERROR_LINES = 10;
+
 export class AppInfoTable extends React.Component<Props> {
   render(): React.Node {
     const rows = Array.from(this.props.rows.entries()).map(([row]) => ({
-      data: {property: row.name, value: row.value},
+      data: {property: row.name, rowData: row},
     }));
     const columns = [
       {
@@ -31,7 +35,8 @@ export class AppInfoTable extends React.Component<Props> {
         width: 0.4,
       },
       {
-        key: 'value',
+        component: AppInfoValueCell,
+        key: 'rowData',
         title: 'Value',
         width: 0.6,
       },
@@ -50,5 +55,38 @@ export class AppInfoTable extends React.Component<Props> {
         />
       </div>
     );
+  }
+}
+
+class AppInfoValueCell extends React.Component<Object> {
+  _prepareErrorMessage(error: string): string {
+    return error
+      .split(/\n/g)
+      .filter(line => line.length > 0)
+      .map(line => line.slice(0, MAX_ERROR_LINE_LENGTH))
+      .slice(0, MAX_NUMBER_ERROR_LINES)
+      .join('<br>');
+  }
+
+  _renderError(error: string): React.Node {
+    return (
+      <span
+        className="icon icon-alert"
+        ref={addTooltip({
+          title: this._prepareErrorMessage(error),
+          delay: 0,
+        })}
+      />
+    );
+  }
+
+  render(): React.Node {
+    const data = this.props.data;
+
+    if (data.isError) {
+      return this._renderError(data.value);
+    }
+
+    return data.value;
   }
 }

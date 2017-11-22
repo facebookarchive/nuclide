@@ -162,6 +162,7 @@ export type AppInfoRow = {
   appName: string,
   name: string,
   value: string,
+  isError?: boolean,
 };
 
 //

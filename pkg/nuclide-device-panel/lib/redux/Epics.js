@@ -185,11 +185,21 @@ export function setAppInfoEpic(
         .filter(provider => provider.getType() === state.deviceType)
         .filter(provider => runningProcessNames.has(provider.getProcessName()))
         .map(provider => {
-          return provider.observe(state.host, device).map(value => ({
-            appName: provider.getAppName(),
-            name: provider.getName(),
-            value,
-          }));
+          return provider
+            .observe(state.host, device)
+            .map(value => ({
+              appName: provider.getAppName(),
+              name: provider.getName(),
+              value,
+            }))
+            .catch(error =>
+              Observable.of({
+                appName: provider.getAppName(),
+                name: provider.getName(),
+                value: error.message,
+                isError: true,
+              }),
+            );
         }),
     )
       .toArray()
