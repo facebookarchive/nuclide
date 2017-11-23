@@ -1031,6 +1031,8 @@ declare class atom$TextEditorComponent {
     linesClientRect?: {top: number, left: number, bottom: number, right: number},
   ): {top: number, left: number, bottom: number, right: number},
   invalidateBlockDecorationDimensions(decoration: atom$Decoration): void,
+  element: atom$TextEditorElement,
+  didFocus(): void,
 }
 
 /**
