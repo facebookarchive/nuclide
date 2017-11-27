@@ -15,6 +15,7 @@ import type {
 } from 'vscode-debugprotocol';
 import type {VSAdapterExecutableInfo} from '../lib/types';
 import type {StartAction} from './VSPOptionsData';
+import type {CustomArgumentType} from './VSPOptionsParser';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -40,6 +41,7 @@ type AdapterData = {
   serverScript: string,
   packagePath: string,
   type: string,
+  customArguments: Map<string, CustomArgumentType>,
 };
 
 export default class DebuggerAdapterFactory {
@@ -57,6 +59,7 @@ export default class DebuggerAdapterFactory {
           '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger',
         ),
         type: 'python',
+        customArguments: new Map(),
       },
     ],
     [
@@ -72,6 +75,16 @@ export default class DebuggerAdapterFactory {
           '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2',
         ),
         type: 'node2',
+        customArguments: new Map([
+          [
+            'sourceMapPathOverrides',
+            {
+              typeDescription: 'source-pattern replace-pattern ...',
+              parseType: 'array',
+              parser: _parseNodeSourceMapPathOverrides,
+            },
+          ],
+        ]),
       },
     ],
   ]);
@@ -128,6 +141,7 @@ export default class DebuggerAdapterFactory {
       adapter.type,
       action,
       this._excludeOptions,
+      adapter.customArguments,
     );
   }
 
@@ -152,6 +166,7 @@ export default class DebuggerAdapterFactory {
       'attach',
       this._excludeOptions,
       this._includeOptions,
+      adapter.customArguments,
     );
 
     return {
@@ -198,6 +213,7 @@ export default class DebuggerAdapterFactory {
       'launch',
       this._excludeOptions,
       this._includeOptions,
+      adapter.customArguments,
     );
 
     // Overrides
@@ -238,4 +254,23 @@ export default class DebuggerAdapterFactory {
     const programUri = nuclideUri.parsePath(program);
     return this._targetTypeByFileExtension.get(programUri.ext);
   }
+}
+
+function _parseNodeSourceMapPathOverrides(
+  entries: string[],
+): {[string]: string} {
+  if (entries.length % 2 !== 0) {
+    throw new Error(
+      'Source map path overrides must be a list of pattern pairs.',
+    );
+  }
+
+  const result = {};
+
+  while (entries.length !== 0) {
+    result[entries[0]] = entries[1];
+    entries.splice(0, 2);
+  }
+
+  return result;
 }

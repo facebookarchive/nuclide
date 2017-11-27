@@ -13,6 +13,7 @@ import type {
   StartAction,
   AdapterProperty,
   AdapterPropertyMap,
+  AdapterPropertyType,
 } from './VSPOptionsData';
 
 import idx from 'idx';
@@ -20,6 +21,14 @@ import invariant from 'assert';
 import {mapFilter, mapTransform} from 'nuclide-commons/collection';
 import VSPOptionsData from './VSPOptionsData';
 import yargs from 'yargs';
+
+export type CustomArgumentType = {
+  typeDescription: string,
+  parseType: AdapterPropertyType,
+  parser: any => any,
+};
+
+export type CustomArgumentMap = Map<string, CustomArgumentType>;
 
 export default class VSPOptionsParser {
   _optionsData: VSPOptionsData;
@@ -36,7 +45,10 @@ export default class VSPOptionsParser {
     type: string,
     action: StartAction,
     exclude: Set<string>,
+    customArguments: CustomArgumentMap,
   ): void {
+    const custom = customArguments == null ? new Map() : customArguments;
+
     const properties: Map<
       string,
       AdapterProperty,
@@ -49,19 +61,27 @@ export default class VSPOptionsParser {
     for (const optionKey of optionKeys) {
       const property = properties.get(optionKey);
       if (property != null) {
-        this._printHelpFor(optionKey, property);
+        this._printHelpFor(optionKey, property, custom);
       }
     }
   }
 
-  _printHelpFor(optionKey: string, property: AdapterProperty): void {
+  _printHelpFor(
+    optionKey: string,
+    property: AdapterProperty,
+    customArguments: CustomArgumentMap,
+  ): void {
     const description = property.description;
     if (description != null && description !== '') {
       let spec = '';
       const validValues = property.enum;
       let type = property.type;
+      const custom = customArguments.get(optionKey);
+
       if (validValues != null) {
         spec = validValues.map(_ => `'${_.toString()}'`).join('|');
+      } else if (custom != null) {
+        spec = custom.typeDescription;
       } else if (type != null) {
         if (!Array.isArray(type)) {
           type = [type];
@@ -114,6 +134,7 @@ export default class VSPOptionsParser {
     action: StartAction,
     exclude: Set<string>,
     includeDefaults: Set<string>,
+    customArguments: CustomArgumentMap,
   ): Map<string, any> {
     const propertyMap = this._optionsData.adapterPropertiesForAction(
       type,
@@ -126,15 +147,23 @@ export default class VSPOptionsParser {
     );
     args = mapTransform(args, (prop, name) => [name, prop.default]);
 
-    const parser = this._yargsFromPropertyMap(propertyMap);
+    const parser = this._yargsFromPropertyMap(propertyMap, customArguments);
 
-    this._applyCommandLineToArgs(args, parser.argv, propertyMap);
+    this._applyCommandLineToArgs(
+      args,
+      parser.argv,
+      propertyMap,
+      customArguments,
+    );
 
     return args;
   }
 
   // $TODO better flow typing for yargs
-  _yargsFromPropertyMap(propertyMap: AdapterPropertyMap): Object {
+  _yargsFromPropertyMap(
+    propertyMap: AdapterPropertyMap,
+    customArguments: CustomArgumentMap,
+  ): Object {
     let parser = yargs;
 
     for (const [name, prop] of propertyMap) {
@@ -146,7 +175,9 @@ export default class VSPOptionsParser {
         continue;
       }
 
-      const propType = prop.type;
+      const custom = customArguments.get(name);
+      const propType = custom != null ? custom.parseType : prop.type;
+
       if (propType == null) {
         // if enums and type are both missing, then the prop is busted.
         continue;
@@ -178,6 +209,7 @@ export default class VSPOptionsParser {
     args: Map<string, any>,
     commandLine: {[string]: any},
     propertyMap: AdapterPropertyMap,
+    customArguments: CustomArgumentMap,
   ) {
     for (const [name, prop] of propertyMap) {
       const value = commandLine[name];
@@ -189,6 +221,13 @@ export default class VSPOptionsParser {
       if (Array.isArray(validValues)) {
         // yargs will have already validated the value.
         args.set(name, value);
+        continue;
+      }
+
+      const custom = customArguments.get(name);
+      if (custom != null) {
+        const customValue = custom.parser(value);
+        args.set(name, customValue);
         continue;
       }
 

@@ -8,4 +8,4 @@
 
 HERE=$(cd $(dirname $0) ; pwd -P)
 NODE=$(${HERE}/../commons-node/fb-node-run.sh | sed -E 's/^export PATH="(.*):.*/\1/')
-${NODE}/node ${HERE}/cli $@
+${NODE}/node ${HERE}/cli "$@"
