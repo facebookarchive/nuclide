@@ -9,14 +9,18 @@
  * @format
  */
 
+import fs from 'fs';
+import fsPromise from 'nuclide-commons/fsPromise';
 import * as ptyFactory from 'nuclide-prebuilt-libs/pty';
 
+import os from 'os';
 import {getOriginalEnvironment} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {objectFromMap} from 'nuclide-commons/collection';
 import performanceNow from 'nuclide-commons/performanceNow';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
+import {runCommand} from 'nuclide-commons/process';
 
 import {readConfig} from './shellConfig';
 
@@ -46,11 +50,26 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
       return config.command;
     }
   } catch (error) {
-    client.onOutput(
-      `Error reading ~/.nuclide-terminal.json:\r\n${error}\r\nStarting default '/bin/bash --login -i'\r\n`,
-    );
+    client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
   }
 
+  try {
+    const defaultShellCommand = await getDefaultShellCommand();
+    if (defaultShellCommand != null) {
+      return defaultShellCommand;
+    }
+  } catch (error) {
+    client.onOutput(`Error getting default shell:\r\n${error}\r\n`);
+  }
+
+  // If no command and no local settings, default to /bin/bash
+  return {
+    file: '/bin/bash',
+    args: [],
+  };
+}
+
+async function getDefaultShellCommand(): Promise<?Command> {
   if (process.platform === 'win32') {
     return {
       file: 'cmd.exe',
@@ -58,10 +77,43 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
     };
   }
 
-  // If no command and no local settings, default to /bin/bash --login -i.
+  const userInfo = os.userInfo();
+  const username = userInfo.username;
+  let defaultShell = null;
+  if (process.platform === 'darwin') {
+    const homedir = userInfo.homedir;
+    const output = await runCommand('dscl', [
+      '.',
+      '-read',
+      homedir,
+      'UserShell',
+    ]).toPromise();
+    // Expected output looks like:
+    //   UserShell: /bin/bash
+    const prefix = 'UserShell: ';
+    if (output != null && output.startsWith(prefix)) {
+      defaultShell = output.substring(prefix.length).trim();
+    }
+  } else if (process.platform === 'linux') {
+    const output = await runCommand('getent', ['passwd', username]).toPromise();
+    // Expected output looks like:
+    //   userid:*:1000:1000:Full Name:/home/userid:/bin/bash
+    defaultShell = output.substring(output.lastIndexOf(':') + 1).trim();
+  }
+  if (defaultShell == null || defaultShell === '') {
+    return null;
+  }
+
+  // Sanity check that the file exists and is executable
+  const stat = await fsPromise.stat(defaultShell);
+  // eslint-disable-next-line no-bitwise
+  if ((stat.mode & fs.constants.S_IXOTH) === 0) {
+    return null;
+  }
+
   return {
-    file: '/bin/bash',
-    args: ['--login', '-i'],
+    file: defaultShell,
+    args: [],
   };
 }
 
