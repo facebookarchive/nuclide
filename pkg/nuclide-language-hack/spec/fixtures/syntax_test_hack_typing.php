@@ -144,3 +144,28 @@ class Something {
     //                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function.arguments.php
   }
 }
+
+function f(int $x, dict<int, ?int> $y): void {
+  //               ^^^^ support.class.php
+}
+
+function f((bool, int, ?int) $y): void {
+  //        ^^^^ storage.type.php
+  //                         ^ punctuation.definition.variable
+  //                          ^ variable.other.php
+}
+
+function f(int $x, (int, ?int) $y): void {
+  //                ^^^ storage.type.php
+  //                      ^^^ storage.type.php
+  //                           ^ punctuation.definition.variable
+  //                            ^ variable.other.php
+}
+
+function f(int $x, dict<int, (int, ?int)> $y): void {
+  //               ^^^^ support.class.php
+  //                          ^^^ storage.type.php
+  //                                ^^^ storage.type.php
+  //                                      ^ punctuation.definition.variable
+  //                                       ^ variable.other.php
+}

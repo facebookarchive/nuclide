@@ -343,20 +343,45 @@
         'name': 'storage.type.php'
       }
       {
-        'begin': 'shape\\('
+        'begin': '([A-Za-z_][A-Za-z0-9_]*)<'
+        'beginCaptures':
+          '1':
+            'name': 'support.class.php'
+        'end': '>'
+        'patterns': [
+          {
+            'include': '#type-annotation'
+          }
+        ]
+      }
+      {
+        'begin': '(?=shape\\()'
         'end': '\\)'
         'name': 'storage.type.shape.php'
         'patterns': [
           {
-            'include': '#strings'
+            'begin': '(shape\\()'
+            'end': '(=>)'
+            'endCaptures':
+              '1': 'keyword.operator.key.php'
+            'patterns':[
+              {
+                'include': '#strings'
+              }
+              {
+                'include': '#constants'
+              }
+            ]
           }
           {
-            'include': '#constants'
+            'include': '#type-annotation'
           }
-          {
-            'match': '=>'
-            'name': 'keyword.operator.key.php'
-          }
+        ]
+      }
+      {
+        'begin': '\\('
+        'end': '\\)'
+        'patterns': [
           {
             'include': '#type-annotation'
           }
