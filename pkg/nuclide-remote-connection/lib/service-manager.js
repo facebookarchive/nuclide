@@ -18,11 +18,15 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
+import {isGkEnabled} from '../../commons-node/passesGK';
+import {track} from '../../nuclide-analytics';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
 import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';
 
-const useLocalRpc = Boolean(featureConfig.get('useLocalRpc'));
+const useLocalRpc = Boolean(
+  featureConfig.get('useLocalRpc') || isGkEnabled('nuclide_local_rpc'),
+);
 let localRpcClient: ?RpcConnection<Transport> = null;
 
 // Creates a local RPC client that connects to a separate process.
@@ -52,6 +56,7 @@ export function getlocalService(serviceName: string): Object {
   if (useLocalRpc) {
     if (localRpcClient == null) {
       localRpcClient = createLocalRpcClient();
+      track('use-local-rpc');
     }
     return localRpcClient.getService(serviceName);
   } else {

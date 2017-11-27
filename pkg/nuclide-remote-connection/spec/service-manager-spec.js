@@ -14,7 +14,9 @@ import {getInfoServiceByNuclideUri} from '..';
 
 describe('setUseLocalRpc', () => {
   beforeEach(() => {
-    atom.config.set('nuclide.useLocalRpc', true);
+    spyOn(require('../../commons-node/passesGK'), 'isGkEnabled').andReturn(
+      true,
+    );
   });
 
   it('successfully starts up a local RPC server', () => {
