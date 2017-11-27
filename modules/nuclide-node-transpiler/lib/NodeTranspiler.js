@@ -84,13 +84,13 @@ const BABEL_OPTIONS = {
   ],
 };
 
-const {COVERAGE_DIR} = process.env;
+const {COVERAGE_DIR, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS} = process.env;
 if (COVERAGE_DIR) {
   BABEL_OPTIONS.plugins.push(
     [require.resolve('babel-plugin-istanbul')]
   );
   BABEL_OPTIONS.sourceMap = 'inline';
-} else if (__DEV__ && global.atom) {
+} else if ((__DEV__ && global.atom) || NUCLIDE_TRANSPILE_WITH_SOURCEMAPS) {
   // If running in Atom & is in active development,
   // We'd inline source maps to be used when debugging.
   BABEL_OPTIONS.sourceMap = 'inline';
@@ -207,11 +207,18 @@ class NodeTranspiler {
 
   _getCacheFilename(src, filename) {
     if (!this._cacheDir) {
-      this._cacheDir = path.join(
-        os.tmpdir(),
-        'nuclide-node-transpiler',
-        this.getConfigDigest()
-      );
+      // Give the ability to put the cache directory somewhere discoverable,
+      // so debuggers can find the sourcemaps there.
+      this._cacheDir = process.env.NUCLIDE_TRANSPILER_CACHE_DIR;
+      if (this._cacheDir == null) {
+        this._cacheDir = path.join(
+          os.tmpdir(),
+          'nuclide-node-transpiler'
+        );
+      }
+
+      const digest = this.getConfigDigest();
+      this._cacheDir = path.join(this._cacheDir, digest);
     }
     const fileDigest = this.getFileDigest(src, filename);
     const cacheFilename = path.join(this._cacheDir, fileDigest + '.js');
