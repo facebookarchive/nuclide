@@ -78,6 +78,7 @@ function useRTags(): boolean {
 
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
+  getDefaultFlags,
   getClangRequestSettings,
   registerClangProvider(provider: ClangConfigurationProvider): Disposable {
     clangProviders.add(provider);
