@@ -41,6 +41,30 @@ function buildLogger(): log4js$Logger {
   return logger;
 }
 
+const _help: string[] = [
+  'fbdb [options] [program [program-arguments]]',
+  '  The debugger may be launched in either "launch" or "attach" mode. "launch"',
+  '  starts a local program; "attach" attaches to an already running program',
+  '  which may be remote. There are options which are specific to the mode and',
+  '  type of program being debugged; to see them, specify the --type and mode',
+  '  options along with --help.',
+  '',
+  '--help:',
+  '  Show this help.',
+  '--attach:',
+  '  Attach the debugger to a running process.',
+  '--type python|node:',
+  '  Specify the type of program to debug. Required with --attach',
+  '',
+  '[program]: If not attaching, the program to launch. Normally the type of',
+  '           program can be inferred from the file extension.',
+  '',
+];
+
+function showHelp(): void {
+  _help.forEach(_ => process.stdout.write(_ + '\n'));
+}
+
 async function main(): Promise<void> {
   const dispatcher = new CommandDispatcher();
   const cli = new CommandLine(dispatcher);
@@ -50,9 +74,15 @@ async function main(): Promise<void> {
 
   try {
     // see if there's session information on the command line
-    const args = yargs.boolean('attach').argv;
-
+    const args = yargs.boolean('attach').boolean('help').argv;
     const debuggerAdapterFactory = new DebuggerAdapterFactory();
+
+    if (args.help) {
+      showHelp();
+      await debuggerAdapterFactory.showContextSensitiveHelp(args);
+      process.exit(0);
+    }
+
     const adapter = debuggerAdapterFactory.adapterFromArguments(args);
 
     const logger = buildLogger();

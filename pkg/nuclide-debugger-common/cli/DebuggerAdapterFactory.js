@@ -14,12 +14,13 @@ import type {
   AttachRequestArguments,
 } from 'vscode-debugprotocol';
 import type {VSAdapterExecutableInfo} from '../lib/types';
+import type {StartAction} from './VSPOptionsData';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {objectFromMap} from 'nuclide-commons/collection';
 import {VsAdapterTypes} from '../../nuclide-debugger-common/lib/constants';
-
-export type StartAction = 'launch' | 'attach';
+import VSPOptionsParser from './VSPOptionsParser';
 
 export type ParsedVSAdapter = {
   action: StartAction,
@@ -34,21 +35,44 @@ type Arguments = {
   attach: boolean,
 };
 
+type AdapterData = {
+  interpreter: string,
+  serverScript: string,
+  packagePath: string,
+  type: string,
+};
+
 export default class DebuggerAdapterFactory {
-  _vspServersByTargetType: Map<string, string> = new Map([
+  _vspServersByTargetType: Map<string, AdapterData> = new Map([
     [
       VsAdapterTypes.PYTHON,
-      nuclideUri.join(
-        __dirname,
-        '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
-      ),
+      {
+        interpreter: 'node',
+        serverScript: nuclideUri.join(
+          __dirname,
+          '../../fb-debugger-vscode-adapter/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+        ),
+        packagePath: nuclideUri.join(
+          __dirname,
+          '../../fb-debugger-vscode-adapter/VendorLib/vs-py-debugger',
+        ),
+        type: 'python',
+      },
     ],
     [
       VsAdapterTypes.NODE,
-      nuclideUri.join(
-        __dirname,
-        '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
-      ),
+      {
+        interpreter: 'node',
+        serverScript: nuclideUri.join(
+          __dirname,
+          '../../fb-debugger-vscode-adapter/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+        ),
+        packagePath: nuclideUri.join(
+          __dirname,
+          '../../fb-debugger-vscode-adapter/VendorLib/vscode-node-debug2',
+        ),
+        type: 'node2',
+      },
     ],
   ]);
 
@@ -57,12 +81,54 @@ export default class DebuggerAdapterFactory {
     ['.js', VsAdapterTypes.NODE],
   ]);
 
+  // These are options which are either managed by the debugger or don't
+  // make sense to expose via the command line (such as being for debugging
+  // the adapter itself.)
+  _excludeOptions: Set<string> = new Set([
+    'args',
+    'console',
+    'diagnosticLogging',
+    'externalConsole',
+    'noDebug',
+    'outputCapture',
+    'program',
+    'restart',
+    'trace',
+    'verboseDiagnosticLogging',
+  ]);
+
+  // These are options that we want to include the defaults for explicitly,
+  // if they exist
+  _includeOptions: Set<string> = new Set(['address', 'port']);
+
   adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
     if (args.attach) {
       return this._parseAttachArguments(args);
     } else {
       return this._parseLaunchArguments(args);
     }
+  }
+
+  showContextSensitiveHelp(args: Arguments): void {
+    const targetType = this._typeFromCommandLine(args);
+    if (targetType == null) {
+      return;
+    }
+
+    const adapter = this._vspServersByTargetType.get(targetType);
+    invariant(
+      adapter != null,
+      'Adapter server table not properly populated in DebuggerAdapterFactory',
+    );
+
+    const optionsParser = new VSPOptionsParser(adapter.packagePath);
+    const action: StartAction = args.attach ? 'attach' : 'launch';
+
+    optionsParser.showCommandLineHelp(
+      adapter.type,
+      action,
+      this._excludeOptions,
+    );
   }
 
   _parseAttachArguments(args: Arguments): ?ParsedVSAdapter {
@@ -74,20 +140,27 @@ export default class DebuggerAdapterFactory {
       throw Error(error);
     }
 
-    const adapterPath = this._vspServersByTargetType.get(targetType);
+    const adapter = this._vspServersByTargetType.get(targetType);
     invariant(
-      adapterPath != null,
+      adapter != null,
       'Adapter server table not properly populated in DebuggerAdapterFactory',
     );
+
+    const parser = new VSPOptionsParser(adapter.packagePath);
+    const commandLineArgs = parser.parseCommandLine(
+      adapter.type,
+      'attach',
+      this._excludeOptions,
+      this._includeOptions,
+    );
+
     return {
       action: 'attach',
       adapterInfo: {
-        command: 'node',
-        args: [adapterPath],
+        command: adapter.interpreter,
+        args: [adapter.serverScript],
       },
-      attachArgs: {
-        port: 9229,
-      },
+      attachArgs: objectFromMap(commandLineArgs),
     };
   }
 
@@ -113,24 +186,34 @@ export default class DebuggerAdapterFactory {
       throw Error(error);
     }
 
-    const adapterPath = this._vspServersByTargetType.get(targetType);
+    const adapter = this._vspServersByTargetType.get(targetType);
     invariant(
-      adapterPath != null,
+      adapter != null,
       'Adapter server table not properly populated in DebuggerAdapterFactory',
     );
+
+    const parser = new VSPOptionsParser(adapter.packagePath);
+    const commandLineArgs = parser.parseCommandLine(
+      adapter.type,
+      'launch',
+      this._excludeOptions,
+      this._includeOptions,
+    );
+
+    // Overrides
+    commandLineArgs.set('args', launchArgs.splice(1));
+    commandLineArgs.set('program', nuclideUri.resolve(program));
+    commandLineArgs.set('noDebug', false);
+    commandLineArgs.set('stopOnEntry', true);
+    commandLineArgs.set('cwd', nuclideUri.resolve('.'));
 
     return {
       action: 'launch',
       adapterInfo: {
-        command: 'node',
-        args: [adapterPath],
+        command: adapter.interpreter,
+        args: [adapter.serverScript],
       },
-      launchArgs: {
-        args: launchArgs.splice(1),
-        program: nuclideUri.resolve(program),
-        noDebug: false,
-        stopOnEntry: true,
-      },
+      launchArgs: objectFromMap(commandLineArgs),
     };
   }
 
