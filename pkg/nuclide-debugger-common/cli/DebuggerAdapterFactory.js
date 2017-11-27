@@ -50,11 +50,11 @@ export default class DebuggerAdapterFactory {
         interpreter: 'node',
         serverScript: nuclideUri.join(
           __dirname,
-          '../../fb-debugger-vscode-adapter/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+          '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
         ),
         packagePath: nuclideUri.join(
           __dirname,
-          '../../fb-debugger-vscode-adapter/VendorLib/vs-py-debugger',
+          '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger',
         ),
         type: 'python',
       },
@@ -65,11 +65,11 @@ export default class DebuggerAdapterFactory {
         interpreter: 'node',
         serverScript: nuclideUri.join(
           __dirname,
-          '../../fb-debugger-vscode-adapter/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+          '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
         ),
         packagePath: nuclideUri.join(
           __dirname,
-          '../../fb-debugger-vscode-adapter/VendorLib/vscode-node-debug2',
+          '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2',
         ),
         type: 'node2',
       },
