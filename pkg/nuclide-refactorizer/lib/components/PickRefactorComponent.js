@@ -10,32 +10,43 @@
  */
 
 import type {Store, PickPhase} from '../types';
-
 import type {AvailableRefactoring} from '../..';
 
 import * as React from 'react';
-
-import {Button} from 'nuclide-commons-ui/Button';
-
 import * as Actions from '../refactorActions';
+import {Button} from 'nuclide-commons-ui/Button';
+import classNames from 'classnames';
 
-export class PickRefactorComponent extends React.Component<{
-  pickPhase: PickPhase,
-  store: Store,
-}> {
+type State = {
+  selectedRefactoring: ?AvailableRefactoring,
+};
+
+export class PickRefactorComponent extends React.Component<
+  {
+    pickPhase: PickPhase,
+    store: Store,
+  },
+  State,
+> {
+  state: State = {
+    selectedRefactoring: null,
+  };
+
   render(): React.Node {
     const {availableRefactorings} = this.props.pickPhase;
     if (availableRefactorings.length === 0) {
       return <div>No refactorings available at this location</div>;
     }
 
-    const elements = availableRefactorings.map((r, i) => (
-      <div key={i} className="nuclide-refactorizer-refactor-option">
-        {this._renderRefactorOption(r)}
+    const elements = availableRefactorings.map(r =>
+      this._renderRefactorOption(r),
+    );
+
+    return (
+      <div className="select-list nuclide-refactorizer-pick-refactor">
+        <ol className="list-group">{elements}</ol>
       </div>
-    ));
-    // Class used to identify this element in integration tests
-    return <div className="nuclide-refactorizer-pick-refactor">{elements}</div>;
+    );
   }
 
   _pickRefactor(refactoring: AvailableRefactoring): void {
@@ -55,34 +66,64 @@ export class PickRefactorComponent extends React.Component<{
     this.props.store.dispatch(Actions.pickedRefactor(refactoring));
   }
 
-  _renderRefactorOption(refactoring: AvailableRefactoring): React.Element<any> {
+  _select(selectedRefactoring: AvailableRefactoring): void {
+    this.setState({
+      selectedRefactoring,
+    });
+  }
+
+  _renderRefactorOption(refactoring: AvailableRefactoring): React.Node {
     switch (refactoring.kind) {
       case 'rename':
         return (
-          <Button
-            // Used to identify this element in integration tests
-            className="nuclide-refactorizer-pick-rename"
-            onClick={() => {
-              this._pickRefactor(refactoring);
-            }}>
-            Rename
-          </Button>
-        );
-      case 'freeform':
-        // TODO: Make sure the buttons are aligned.
-        return (
-          <div>
+          <li>
             <Button
-              className="nuclide-refactorizer-button"
+              // Used to identify this element in integration tests
+              className="nuclide-refactorizer-pick-rename"
               onClick={() => {
                 this._pickRefactor(refactoring);
-              }}
-              disabled={refactoring.disabled}>
-              {refactoring.name}
+              }}>
+              Rename
             </Button>
-            {refactoring.description}
-          </div>
+          </li>
         );
+      case 'freeform':
+        const selectable = !refactoring.disabled;
+        const selected =
+          selectable && refactoring === this.state.selectedRefactoring;
+        const props = {};
+        props.className = classNames('two-lines', {
+          'nuclide-refactorizer-selectable': selectable,
+          'nuclide-refactorizer-selected': selected,
+          'nuclide-refactorizer-unselectable': !selectable,
+        });
+        props.onMouseEnter = () => this._select(refactoring);
+        if (!refactoring.disabled) {
+          props.onClick = () => {
+            this._pickRefactor(refactoring);
+          };
+        }
+        const refactoringOption = (
+          <li {...props}>
+            <div
+              className={classNames({
+                'nuclide-refactorizer-selectable-text': selectable,
+                'nuclide-refactorizer-selected-text': selected,
+                'nuclide-refactorizer-unselectable-text': !selectable,
+              })}>
+              {refactoring.name}
+            </div>
+            <div
+              className={classNames('text-smaller', {
+                'nuclide-refactorizer-selectable-text': selectable,
+                'nuclide-refactorizer-selected-text': selected,
+                'nuclide-refactorizer-unselectable-text': !selectable,
+              })}>
+              {refactoring.description}
+            </div>
+          </li>
+        );
+        return refactoringOption;
       default:
         (refactoring.kind: empty);
         throw new Error(`Unknown refactoring kind ${refactoring.kind}`);
