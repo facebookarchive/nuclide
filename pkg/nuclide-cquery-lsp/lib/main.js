@@ -21,6 +21,7 @@ import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
+import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {
@@ -44,10 +45,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 // TODO pelmers: maybe don't import from libclang
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {
-  registerClangProvider,
-  getClangRequestSettings,
-} from '../../nuclide-clang/lib/libclang';
+import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
 import {
   AtomLanguageService,
   getHostServices,
@@ -57,6 +55,7 @@ import {
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
+import {getCqueryProject} from './CqueryProjectConfig';
 
 // Wrapper that queries for clang settings when new files seen.
 class CqueryLSPClient {
@@ -72,20 +71,16 @@ class CqueryLSPClient {
     this._service.dispose();
   }
 
-  async ensureServer(path: string): Promise<void> {
-    if (!await this._service.isFileKnown(path)) {
-      const settings = await getClangRequestSettings(path);
-      if (settings != null) {
-        if (!await this._service.addClangRequest(settings)) {
-          this._logger.error('Failure adding settings for ' + path);
-        }
-      }
-    }
+  async ensureProject(file: string): Promise<?CqueryProject> {
+    const project = await getCqueryProject(file);
+    return this._service
+      .registerFile(file, project)
+      .then(() => project, () => null);
   }
 
   async getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getDiagnostics(fileVersion);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null ? null : this._service.getDiagnostics(fileVersion);
   }
 
   async getAutocompleteSuggestions(
@@ -93,12 +88,14 @@ class CqueryLSPClient {
     position: atom$Point,
     request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getAutocompleteSuggestions(
-      fileVersion,
-      position,
-      request,
-    );
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.getAutocompleteSuggestions(
+          fileVersion,
+          position,
+          request,
+        );
   }
 
   async getAdditionalLogFiles(
@@ -111,26 +108,30 @@ class CqueryLSPClient {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getDefinition(fileVersion, position);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.getDefinition(fileVersion, position);
   }
 
   async findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.findReferences(fileVersion, position);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.findReferences(fileVersion, position);
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    await this.ensureServer(filePath);
-    return this._service.getCoverage(filePath);
+    const project = await this.ensureProject(filePath);
+    return project == null ? null : this._service.getCoverage(filePath);
   }
 
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getOutline(fileVersion);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null ? null : this._service.getOutline(fileVersion);
   }
 
   async getCodeActions(
@@ -138,16 +139,20 @@ class CqueryLSPClient {
     range: atom$Range,
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getCodeActions(fileVersion, range, diagnostics);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? []
+      : this._service.getCodeActions(fileVersion, range, diagnostics);
   }
 
   async highlight(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.highlight(fileVersion, position);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.highlight(fileVersion, position);
   }
 
   async formatSource(
@@ -155,8 +160,10 @@ class CqueryLSPClient {
     range: atom$Range,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatSource(fileVersion, range, options);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.formatSource(fileVersion, range, options);
   }
 
   async formatAtPosition(
@@ -165,13 +172,15 @@ class CqueryLSPClient {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatAtPosition(
-      fileVersion,
-      position,
-      triggerCharacter,
-      options,
-    );
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.formatAtPosition(
+          fileVersion,
+          position,
+          triggerCharacter,
+          options,
+        );
   }
 
   async formatEntireFile(
@@ -182,26 +191,30 @@ class CqueryLSPClient {
     newCursor?: number,
     formatted: string,
   }> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.formatEntireFile(fileVersion, range, options);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.formatEntireFile(fileVersion, range, options);
   }
 
   async getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.getEvaluationExpression(fileVersion, position);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.getEvaluationExpression(fileVersion, position);
   }
 
   async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    await this.ensureServer(filePath);
-    return this._service.getProjectRoot(filePath);
+    const project = await this.ensureProject(filePath);
+    return project == null ? null : this._service.getProjectRoot(filePath);
   }
 
   async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    await this.ensureServer(filePath);
-    return this._service.isFileInProject(filePath);
+    const project = await this.ensureProject(filePath);
+    return project != null;
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
@@ -212,8 +225,10 @@ class CqueryLSPClient {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    await this.ensureServer(fileVersion.filePath);
-    return this._service.typeHint(fileVersion, position);
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.typeHint(fileVersion, position);
   }
 
   async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
@@ -263,7 +278,7 @@ async function getConnection(connection): Promise<LanguageService> {
     logCategory: 'cquery-language-server',
     logLevel: 'ALL', // TODO pelmers: change to WARN
   });
-  if (cqueryService) {
+  if (cqueryService != null) {
     return new CqueryLSPClient(cqueryService);
   } else {
     return new NullLanguageService();

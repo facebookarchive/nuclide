@@ -241,6 +241,12 @@ export function getCqueryLSPServiceByConnection(
   return nullthrows(getServiceByConnection('CqueryLSPService', connection));
 }
 
+export function getCqueryLSPServiceByNuclideUri(
+  uri: NuclideUri,
+): CqueryLSPService {
+  return nullthrows(getServiceByNuclideUri('CqueryLSPService', uri));
+}
+
 export function getVSCodeDebuggerAdapterServiceByNuclideUri(
   uri: NuclideUri,
 ): VSCodeDebuggerAdapterService {

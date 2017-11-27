@@ -9,10 +9,10 @@
  * @format
  */
 
-export type CqueryProjectConfig =
+export type CqueryProject =
   | {
       hasCompilationDb: true,
-      compilationDb: string,
+      compilationDbDir: string,
       flagsFile: string,
       projectRoot: string,
     }
@@ -21,3 +21,5 @@ export type CqueryProjectConfig =
       defaultFlags: ?Array<string>,
       projectRoot: string,
     };
+
+export type CqueryProjectKey = string;

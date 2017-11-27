@@ -19,7 +19,6 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
-import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
@@ -41,16 +40,17 @@ import type {
 import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {CqueryProject} from './types';
 
 import invariant from 'assert';
 import which from 'nuclide-commons/which';
 import {getLogger} from 'log4js';
 import {FileCache} from '../../nuclide-open-files-rpc';
+import {findCompilationDbDir as _findCompilationDbDir} from './CompilationDatabaseFinder';
 import CqueryLanguageServer from './CqueryLanguageServer';
 
 export interface CqueryLanguageService extends LanguageService {
-  isFileKnown(filePath: NuclideUri): Promise<boolean>,
-  addClangRequest(clangRequest: ClangRequestSettings): Promise<boolean>,
+  registerFile(file: NuclideUri, project: CqueryProject): Promise<void>,
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>,
@@ -144,6 +144,10 @@ export interface CqueryLanguageService extends LanguageService {
   ): Promise<?atom$Range>,
 
   dispose(): void,
+}
+
+export function findCompilationDbDir(source: NuclideUri): Promise<?NuclideUri> {
+  return _findCompilationDbDir(source);
 }
 
 /**
