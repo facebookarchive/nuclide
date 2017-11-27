@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## v0.270.0
+
+### Highlights
+
+* Node, Python, and React Native debuggers now included in the open source version of Nuclide.
+* Updated Python language services to use Jedi v0.11 - Python3 files should now have better language support.
+
+### General
+
+* Integrated terminal now detects and launches the default shell on Linux and Mac by default rather than hardcoding /bin/bash.  If it exists, configuration in ~/.nuclide-terminal.json still overrides this.
+* The path to Flow setting now affects remote projects.
+* Improved changed-files list ui so that diff/revert actions are always visible on hover.
+* Fixed tuple and generic parsing in Hack grammar.
+
 ## v0.269.0
 
 Hotfix release:
