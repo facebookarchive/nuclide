@@ -55,7 +55,7 @@ import {
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
-import {getCqueryProject} from './CqueryProjectConfig';
+import {determineCqueryProject} from './CqueryProject';
 
 // Wrapper that queries for clang settings when new files seen.
 class CqueryLSPClient {
@@ -72,9 +72,9 @@ class CqueryLSPClient {
   }
 
   async ensureProject(file: string): Promise<?CqueryProject> {
-    const project = await getCqueryProject(file);
+    const project = await determineCqueryProject(file);
     return this._service
-      .registerFile(file, project)
+      .associateFileWithProject(file, project)
       .then(() => project, () => null);
   }
 
@@ -271,31 +271,34 @@ async function getConnection(connection): Promise<LanguageService> {
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
-  const service = getCqueryLSPServiceByConnection(connection);
-  const cqueryService = await service.createCqueryService({
+  const cqueryService = await getCqueryLSPServiceByConnection(
+    connection,
+  ).createCqueryService({
     fileNotifier,
     host,
     logCategory: 'cquery-language-server',
     logLevel: 'ALL', // TODO pelmers: change to WARN
   });
-  if (cqueryService != null) {
-    return new CqueryLSPClient(cqueryService);
-  } else {
-    return new NullLanguageService();
-  }
+  return cqueryService != null
+    ? new CqueryLSPClient(cqueryService)
+    : new NullLanguageService();
 }
 
 class Activation {
   _languageService: ?AtomLanguageService<LanguageService>;
-  _subscriptions: UniversalDisposable;
+  _subscriptions = new UniversalDisposable();
 
   constructor(state: ?mixed) {
-    this._subscriptions = new UniversalDisposable();
-    if (featureConfig.get('nuclide-cquery-lsp.use-cquery')) {
-      if (!this._subscriptions.disposed) {
-        this._subscriptions.add(this.initializeLsp());
-      }
+    if (this._canInitializeLsp()) {
+      this._subscriptions.add(this.initializeLsp());
     }
+  }
+
+  _canInitializeLsp(): boolean {
+    return (
+      featureConfig.get('nuclide-cquery-lsp.use-cquery') === true &&
+      !this._subscriptions.disposed
+    );
   }
 
   consumeClangConfigurationProvider(

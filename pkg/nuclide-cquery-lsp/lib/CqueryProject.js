@@ -20,24 +20,24 @@ import {
 } from '../../nuclide-clang/lib/libclang';
 import {COMPILATION_DATABASE_FILE} from '../../nuclide-cquery-lsp-rpc/lib/CqueryLanguageServer';
 import {getCqueryLSPServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {secondIfFirstIsNull} from './utils';
 
-type PartialCqueryProjectConfig =
+type RootlessCqueryProject =
   | {|hasCompilationDb: true, compilationDbDir: string, flagsFile: string|}
   | {|hasCompilationDb: false, defaultFlags: ?Array<string>|};
+
+function getProjectRootFromAtom(path: string): string {
+  const atomProjectPath = atom.project.relativizePath(path)[0];
+  return atomProjectPath != null ? atomProjectPath : nuclideUri.dirname(path);
+}
 
 function getProjectRootFromClangRequestSettingsOrAtom(
   settings: ?ClangRequestSettings,
   path: string,
 ): string {
-  if (settings != null && settings.projectRoot != null) {
-    return settings.projectRoot;
-  }
-  const atomProjectPath = atom.project.relativizePath(path)[0];
-  return atomProjectPath != null ? atomProjectPath : nuclideUri.dirname(path);
-}
-
-function secondIfFirstIsNull<T>(first: ?T, second: T): T {
-  return first != null ? first : second;
+  return settings != null && settings.projectRoot != null
+    ? settings.projectRoot
+    : getProjectRootFromAtom(path);
 }
 
 function getCompilationDbDirFromSettings(
@@ -56,35 +56,46 @@ function getFlagsFileFromSettings(settings: ?ClangRequestSettings): ?string {
     : null;
 }
 
+function findNearestCompilationDbDir(file: string): Promise<?string> {
+  return getCqueryLSPServiceByNuclideUri(file).findNearestCompilationDbDir(
+    file,
+  );
+}
+
+function getCompilationDbFile(compilationDbDir: string): string {
+  return nuclideUri.join(compilationDbDir, COMPILATION_DATABASE_FILE);
+}
+
 async function getCompilationDbAndFlagsFile(
   settings: ?ClangRequestSettings,
-  source: string,
-): Promise<PartialCqueryProjectConfig> {
-  const compilationDbDir = secondIfFirstIsNull(
+  file: string,
+): Promise<RootlessCqueryProject> {
+  const compilationDbDir = await secondIfFirstIsNull(
     getCompilationDbDirFromSettings(settings),
-    await getCqueryLSPServiceByNuclideUri(source).findCompilationDbDir(source),
+    async () => findNearestCompilationDbDir(file),
   );
   if (compilationDbDir == null) {
     return {hasCompilationDb: false, defaultFlags: getDefaultFlags()};
   }
-  const flagsFile = secondIfFirstIsNull(
-    getFlagsFileFromSettings(settings),
-    nuclideUri.join(compilationDbDir, COMPILATION_DATABASE_FILE),
-  );
   return {
     hasCompilationDb: true,
     compilationDbDir,
-    flagsFile,
+    flagsFile: await secondIfFirstIsNull(
+      getFlagsFileFromSettings(settings),
+      async () => getCompilationDbFile(compilationDbDir),
+    ),
   };
 }
 
-export async function getCqueryProject(path: string): Promise<CqueryProject> {
+export async function determineCqueryProject(
+  path: string,
+): Promise<CqueryProject> {
   const settings = await getClangRequestSettings(path);
-  const projectRoot = getProjectRootFromClangRequestSettingsOrAtom(
+  const compilationDbAndFlags = await getCompilationDbAndFlagsFile(
     settings,
     path,
   );
-  const compilationDbAndFlags = await getCompilationDbAndFlagsFile(
+  const projectRoot = getProjectRootFromClangRequestSettingsOrAtom(
     settings,
     path,
   );

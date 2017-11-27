@@ -46,11 +46,14 @@ import invariant from 'assert';
 import which from 'nuclide-commons/which';
 import {getLogger} from 'log4js';
 import {FileCache} from '../../nuclide-open-files-rpc';
-import {findCompilationDbDir as _findCompilationDbDir} from './CompilationDatabaseFinder';
+import {findNearestCompilationDbDir as _findNearestCompilationDbDir} from './CompilationDatabaseFinder';
 import CqueryLanguageServer from './CqueryLanguageServer';
 
 export interface CqueryLanguageService extends LanguageService {
-  registerFile(file: NuclideUri, project: CqueryProject): Promise<void>,
+  associateFileWithProject(
+    file: NuclideUri,
+    project: CqueryProject,
+  ): Promise<void>,
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>,
@@ -146,8 +149,31 @@ export interface CqueryLanguageService extends LanguageService {
   dispose(): void,
 }
 
-export function findCompilationDbDir(source: NuclideUri): Promise<?NuclideUri> {
-  return _findCompilationDbDir(source);
+export function findNearestCompilationDbDir(
+  source: NuclideUri,
+): Promise<?NuclideUri> {
+  return _findNearestCompilationDbDir(source);
+}
+
+async function ensureCommandExists(
+  command: string,
+  logger: log4js$Logger,
+  host: HostServices,
+  languageId: string,
+): Promise<boolean> {
+  if ((await which(command)) == null) {
+    const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
+    logger.warn(message);
+    host.consoleNotification(languageId, 'warning', message);
+    return false;
+  }
+  return true;
+}
+
+function createLogger(logCategory: string, logLevel: LogLevel): log4js$Logger {
+  const logger = getLogger(logCategory);
+  logger.setLevel(logLevel);
+  return logger;
 }
 
 /**
@@ -163,13 +189,9 @@ export async function createCqueryService(params: {|
 |}): Promise<?CqueryLanguageService> {
   const command = 'cquery';
   const languageId = 'cquery';
-  const logger = getLogger(params.logCategory);
-  logger.setLevel(params.logLevel);
+  const logger = createLogger(params.logCategory, params.logLevel);
 
-  if ((await which(command)) == null) {
-    const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
-    logger.warn(message);
-    params.host.consoleNotification(languageId, 'warning', message);
+  if (!await ensureCommandExists(command, logger, params.host, languageId)) {
     return null;
   }
 

@@ -13,15 +13,15 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {CqueryProject, CqueryProjectKey} from './types';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
 import {
   MultiProjectLanguageService,
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {Cache} from 'nuclide-commons/cache';
+import {getInitializationOptions} from './CqueryInitialization';
+import {CqueryInvalidator} from './CqueryInvalidator';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import {CqueryProjectManager} from './CqueryProjectManager';
 import type {CqueryLanguageService} from '..';
@@ -38,7 +38,6 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   _host: HostServices;
   _languageId: string;
   _disposables = new UniversalDisposable();
-  __logger: log4js$Logger;
 
   constructor(
     languageId: string,
@@ -53,7 +52,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._command = command;
     this._host = host;
     this._languageId = languageId;
-    this.__logger = logger;
+    this._logger = logger;
 
     this._processes = new Cache(
       (projectKey: CqueryProjectKey) =>
@@ -74,16 +73,13 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._disposables.add(
       this._host,
       this._processes,
+      new CqueryInvalidator(
+        this._fileCache,
+        this._projectManager,
+        this._logger,
+        this._processes,
+      ).subscribe(),
       () => this._closeProcesses(),
-      // Remove fileCache when the remote connection shuts down
-      this._observeFileSaveEvents(this._fileCache).subscribe(
-        projects => this._invalidateProjects(projects),
-        undefined, // error
-        () => {
-          this.__logger.info('fileCache shutting down.');
-          this._closeProcesses();
-        },
-      ),
     );
   }
 
@@ -96,28 +92,24 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     projectKey: CqueryProjectKey,
   ): Promise<?CqueryLanguageClient> {
     const project = await this._projectManager.getProjectFromKey(projectKey);
+    // TODO(wallace): handle the case when there is no compilation db
     if (project == null || !project.hasCompilationDb) {
       return null;
     }
     const {projectRoot, compilationDbDir} = project;
     await this.hasObservedDiagnostics();
-    const initializationOptions = {
-      ...this._getInitializationOptions(),
-      compilationDatabaseDirectory: compilationDbDir,
-      cacheDirectory: nuclideUri.join(compilationDbDir, 'cquery_cache'),
-    };
 
     const lsp = new CqueryLanguageClient(
-      this.__logger,
+      this._logger,
       this._fileCache,
-      await forkHostServices(this._host, this.__logger),
+      await forkHostServices(this._host, this._logger),
       this._languageId,
       this._command,
       ['--language-server'], // args
       {}, // spawnOptions
       projectRoot,
       ['.cpp', '.h', '.hpp', '.cc'],
-      initializationOptions,
+      getInitializationOptions(compilationDbDir),
       5 * 60 * 1000, // 5 minutes
     );
 
@@ -125,58 +117,11 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     return lsp;
   }
 
-  _observeFileSaveEvents(
-    fileCache: FileCache,
-  ): Observable<Array<CqueryProject>> {
-    return fileCache
-      .observeFileEvents()
-      .filter(event => event.kind === 'save')
-      .map(({fileVersion: {filePath}}) =>
-        this._projectManager
-          .getAllProjects()
-          .filter(
-            project =>
-              project.hasCompilationDb && project.flagsFile === filePath,
-          ),
-      );
-  }
-
-  _invalidateProjects(projects: Array<CqueryProject>): void {
-    for (const project of projects) {
-      this.__logger.info('Watch file saved, invalidating: ', project);
-      this._processes.delete(this._projectManager.getProjectKey(project));
-      this._projectManager.delete(project);
-    }
-  }
-
-  // TODO pelmers: expose some of these in the atom config
-  _getInitializationOptions(): Object {
-    // Copied from the corresponding vs-code plugin
-    return {
-      indexWhitelist: [],
-      indexBlacklist: [],
-      extraClangArguments: [],
-      resourceDirectory: '',
-      maxWorkspaceSearchResults: 1000,
-      indexerCount: 0,
-      enableIndexing: true,
-      enableCacheWrite: true,
-      enableCacheRead: true,
-      includeCompletionMaximumPathLength: 37,
-      includeCompletionWhitelistLiteralEnding: ['.h', '.hpp', '.hh'],
-      includeCompletionWhitelist: [],
-      includeCompletionBlacklist: [],
-      showDocumentLinksOnIncludes: true,
-      diagnosticsOnParse: true,
-      diagnosticsOnCodeCompletion: true,
-      codeLensOnLocalVariables: false,
-      enableSnippetInsertion: true,
-      clientVersion: 3,
-    };
-  }
-
-  async registerFile(file: NuclideUri, project: CqueryProject): Promise<void> {
-    this._projectManager.registerFile(file, project);
+  async associateFileWithProject(
+    file: NuclideUri,
+    project: CqueryProject,
+  ): Promise<void> {
+    this._projectManager.associateFileWithProject(file, project);
     this._processes.get(this._projectManager.getProjectKey(project));
   }
 
@@ -184,19 +129,25 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     file: string,
   ): Promise<?CqueryLanguageClient> {
     const project = await this._projectManager.getProjectForFile(file);
-    if (project != null) {
-      const key = this._projectManager.getProjectKey(project);
-      this.__logger.info('Found existing service for ', project);
-      const result = this._processes.get(key);
-      if (result != null) {
-        if ((await result) == null) {
-          // Delete so we retry next time.
-          this._processes.delete(key);
-        } else {
-          return result;
-        }
-      }
+    return project == null ? null : this._getLanguageServiceForProject(project);
+  }
+
+  async _getLanguageServiceForProject(
+    project: CqueryProject,
+  ): Promise<?CqueryLanguageClient> {
+    const key = this._projectManager.getProjectKey(project);
+    const client = this._processes.get(key);
+    if (client == null) {
+      this._logger.warn("Didn't find language service for ", project);
+      return null;
     }
-    return null;
+    if ((await client) == null) {
+      this._logger.warn('Found invalid language service for ', project);
+      this._processes.delete(key); // Delete so we retry next time.
+      return null;
+    } else {
+      this._logger.info('Found existing language service for ', project);
+      return client;
+    }
   }
 }

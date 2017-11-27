@@ -15,7 +15,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {COMPILATION_DATABASE_FILE} from './CqueryLanguageServer';
 import fs from 'nuclide-commons/fsPromise';
 
-export async function findCompilationDbDir(
+export async function findNearestCompilationDbDir(
   source: NuclideUri,
 ): Promise<?NuclideUri> {
   return fs.findNearestFile(

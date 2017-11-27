@@ -13,6 +13,9 @@ import type {CqueryProject, CqueryProjectKey} from './types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 
+/**
+ * Manages the existing projects and the files associated with them
+ */
 export class CqueryProjectManager {
   _keyToProject: Map<CqueryProjectKey, CqueryProject> = new Map();
   _fileToProjectKey: Map<string, CqueryProjectKey> = new Map();
@@ -21,7 +24,10 @@ export class CqueryProjectManager {
     return JSON.stringify(project);
   }
 
-  async registerFile(file: string, project: CqueryProject): Promise<void> {
+  async associateFileWithProject(
+    file: string,
+    project: CqueryProject,
+  ): Promise<void> {
     const key = this.getProjectKey(project);
     this._keyToProject.set(key, project);
     this._fileToProjectKey.set(await fsPromise.realpath(file), key);
@@ -47,5 +53,6 @@ export class CqueryProjectManager {
         this._fileToProjectKey.delete(file);
       }
     }
+    this._keyToProject.delete(key);
   }
 }
