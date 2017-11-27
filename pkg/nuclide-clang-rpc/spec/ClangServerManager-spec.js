@@ -23,6 +23,10 @@ describe('ClangServerManager', () => {
     );
   });
 
+  afterEach(() => {
+    serverManager.dispose();
+  });
+
   it('uses flags from manager if available', () => {
     waitsForPromise(async () => {
       serverManager._flagsManager.getFlagsForSrc.andReturn(
