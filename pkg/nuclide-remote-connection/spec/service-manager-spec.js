@@ -11,12 +11,13 @@
 
 import {getVersion} from '../../nuclide-version';
 import {getInfoServiceByNuclideUri} from '..';
-import {setUseLocalRpc} from '../lib/service-manager';
 
 describe('setUseLocalRpc', () => {
-  it('successfully starts up a local RPC server', () => {
-    setUseLocalRpc(true, true);
+  beforeEach(() => {
+    atom.config.set('nuclide.useLocalRpc', true);
+  });
 
+  it('successfully starts up a local RPC server', () => {
     waitsForPromise(async () => {
       const infoService = getInfoServiceByNuclideUri('');
       const version = await infoService.getServerVersion();

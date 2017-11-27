@@ -16,41 +16,17 @@ import {IpcClientTransport} from './IpcTransports';
 import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork} from 'nuclide-commons/process';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {
-  LoopbackTransports,
-  ServiceRegistry,
-  RpcConnection,
-} from '../../nuclide-rpc';
-import {isRunningInTest} from '../../commons-node/system-info';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
+import {RpcConnection} from '../../nuclide-rpc';
 import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';
 
+const useLocalRpc = Boolean(featureConfig.get('useLocalRpc'));
 let localRpcClient: ?RpcConnection<Transport> = null;
-let knownLocalRpc = false;
 
-// Creates a local RPC client that we can use to ensure that
-// local service calls have the same behavior as remote RPC calls.
+// Creates a local RPC client that connects to a separate process.
 function createLocalRpcClient(): RpcConnection<Transport> {
-  const localTransports = new LoopbackTransports();
-  const serviceRegistry = new ServiceRegistry(
-    getServerSideMarshalers,
-    servicesConfig,
-  );
-  const localClientConnection = RpcConnection.createServer(
-    serviceRegistry,
-    localTransports.serverTransport,
-  );
-  invariant(localClientConnection != null); // silence lint...
-  return RpcConnection.createLocal(
-    localTransports.clientTransport,
-    getAtomSideLoopbackMarshalers,
-    servicesConfig,
-  );
-}
-
-function createLocalRpcServerClient(): RpcConnection<Transport> {
   // We cannot synchronously spawn the process here due to the shell environment.
   // process.js will wait for Atom's shell environment to become ready.
   const localServerProcess = fork(
@@ -72,24 +48,11 @@ function createLocalRpcServerClient(): RpcConnection<Transport> {
   );
 }
 
-export function setUseLocalRpc(value: boolean, server: boolean): void {
-  invariant(!knownLocalRpc, 'setUseLocalRpc must be called exactly once');
-  knownLocalRpc = true;
-  if (value) {
-    if (server) {
-      localRpcClient = createLocalRpcServerClient();
-    } else {
+export function getlocalService(serviceName: string): Object {
+  if (useLocalRpc) {
+    if (localRpcClient == null) {
       localRpcClient = createLocalRpcClient();
     }
-  }
-}
-
-export function getlocalService(serviceName: string): Object {
-  invariant(
-    knownLocalRpc || isRunningInTest(),
-    'Must call setUseLocalRpc before getService',
-  );
-  if (localRpcClient != null) {
     return localRpcClient.getService(serviceName);
   } else {
     const [serviceConfig] = servicesConfig.filter(
