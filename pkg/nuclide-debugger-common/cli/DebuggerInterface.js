@@ -50,4 +50,7 @@ export interface DebuggerInterface {
     length: number,
   ): Promise<string[]>,
   relaunch(): Promise<void>,
+  evaluateExpression(
+    expression: string,
+  ): Promise<DebugProtocol.EvaluateResponse>,
 }

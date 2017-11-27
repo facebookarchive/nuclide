@@ -37,6 +37,7 @@ import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
 import ListCommand from './ListCommand';
 import RestartCommand from './RestartCommand';
+import PrintCommand from './PrintCommand';
 
 import invariant from 'assert';
 import VsDebugSession from '../lib/VsDebugSession';
@@ -72,6 +73,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new ContinueCommand(this));
     dispatcher.registerCommand(new ListCommand(this._console, this));
     dispatcher.registerCommand(new RestartCommand(this));
+    dispatcher.registerCommand(new PrintCommand(this._console, this));
   }
 
   getThreads(): Map<number, Thread> {
@@ -379,6 +381,21 @@ export default class Debugger implements DebuggerInterface {
     }
     await this._cacheThreads();
     this._launching = false;
+  }
+
+  async evaluateExpression(
+    expression: string,
+  ): Promise<DebugProtocol.EvaluateResponse> {
+    const session = this._ensureDebugSession();
+
+    let args = {expression, context: 'repl'};
+
+    const frame = await this.getCurrentStackFrame();
+    if (frame != null) {
+      args = {...args, frameId: frame.id};
+    }
+
+    return session.evaluate(args);
   }
 
   async createSession(adapterInfo: VSAdapterExecutableInfo): Promise<void> {
