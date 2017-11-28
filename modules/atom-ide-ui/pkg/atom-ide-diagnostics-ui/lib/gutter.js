@@ -203,7 +203,7 @@ function createGutterItem(
   messages.forEach(msg => messageGroups.add(GroupUtils.getGroup(msg)));
   const group = GroupUtils.getHighestPriorityGroup(messageGroups);
 
-  const item = document.createElement('a');
+  const item = document.createElement('span');
   const groupClassName = GUTTER_CSS_GROUPS[group];
   item.className = `diagnostics-gutter-ui-item ${groupClassName || ''}`;
 
@@ -282,7 +282,6 @@ function showPopupFor(
   // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
-  // Move it down vertically so it does not end up under the mouse pointer.
   const {top, left} = item.getBoundingClientRect();
 
   const trackedFixer = (...args) => {
