@@ -1,3 +1,97 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.graphqlLanguageService = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let connectionToGraphQLService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const graphqlService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(GRAPHQL_SERVICE_NAME, connection);
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
+    const graphqlCommand = 'graphql-language-service/bin/graphql.js';
+    const options = {
+      env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: '1' })
+    };
+
+    const lspService = yield graphqlService.initializeLsp(graphqlCommand, ['server', '--method', 'stream'], options, ['.graphqlconfig'], ['.js', '.graphql'], 'INFO', fileNotifier, host);
+    return lspService || new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).NullLanguageService();
+  });
+
+  return function connectionToGraphQLService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let createLanguageService = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    const diagnosticsConfig = {
+      version: '0.2.0',
+      analyticsEventName: 'graphql.observe-diagnostics'
+    };
+
+    const definitionConfig = {
+      version: '0.1.0',
+      priority: 1,
+      definitionEventName: 'graphql.definition'
+    };
+
+    const autocompleteConfig = {
+      version: '2.0.0',
+      inclusionPriority: 1,
+      suggestionPriority: 3,
+      excludeLowerPriority: false,
+      analyticsEventName: 'graphql.getAutocompleteSuggestions',
+      disableForSelector: null,
+      autocompleteCacherConfig: null,
+      onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen'
+    };
+
+    const atomConfig = {
+      name: 'GraphQL',
+      grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
+      diagnostics: diagnosticsConfig,
+      definition: definitionConfig,
+      autocomplete: autocompleteConfig
+    };
+    return new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectionToGraphQLService, atomConfig);
+  });
+
+  return function createLanguageService() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+exports.resetGraphQLLanguageService = resetGraphQLLanguageService;
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,94 +99,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
-
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
-
 const GRAPHQL_SERVICE_NAME = 'GraphQLService';
 
-async function connectionToGraphQLService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const graphqlService: GraphQLService = getServiceByConnection(
-    GRAPHQL_SERVICE_NAME,
-    connection,
-  );
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-  const graphqlCommand = 'graphql-language-service/bin/graphql.js';
-  const options = {
-    env: {...process.env, ELECTRON_RUN_AS_NODE: '1'},
-  };
+let graphqlLanguageService = exports.graphqlLanguageService = createLanguageService();
 
-  const lspService = await graphqlService.initializeLsp(
-    graphqlCommand,
-    ['server', '--method', 'stream'],
-    options,
-    ['.graphqlconfig'],
-    ['.js', '.graphql'],
-    'INFO',
-    fileNotifier,
-    host,
-  );
-  return lspService || new NullLanguageService();
-}
-
-async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>,
-> {
-  const diagnosticsConfig = {
-    version: '0.2.0',
-    analyticsEventName: 'graphql.observe-diagnostics',
-  };
-
-  const definitionConfig = {
-    version: '0.1.0',
-    priority: 1,
-    definitionEventName: 'graphql.definition',
-  };
-
-  const autocompleteConfig = {
-    version: '2.0.0',
-    inclusionPriority: 1,
-    suggestionPriority: 3,
-    excludeLowerPriority: false,
-    analyticsEventName: 'graphql.getAutocompleteSuggestions',
-    disableForSelector: null,
-    autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
-  };
-
-  const atomConfig: AtomLanguageServiceConfig = {
-    name: 'GraphQL',
-    grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
-    diagnostics: diagnosticsConfig,
-    definition: definitionConfig,
-    autocomplete: autocompleteConfig,
-  };
-  return new AtomLanguageService(connectionToGraphQLService, atomConfig);
-}
-
-export let graphqlLanguageService: Promise<
-  AtomLanguageService<LanguageService>,
-> = createLanguageService();
-
-export function resetGraphQLLanguageService(): void {
+function resetGraphQLLanguageService() {
   graphqlLanguageService.then(value => value.dispose());
-  graphqlLanguageService = createLanguageService();
+  exports.graphqlLanguageService = graphqlLanguageService = createLanguageService();
 }

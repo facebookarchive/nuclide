@@ -1,135 +1,110 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
-
-import type {
-  ApplyAction,
-  CloseAction,
-  ConfirmAction,
-  ErrorAction,
-  ErrorSource,
-  ExecuteAction,
-  GotRefactoringsAction,
-  InlinePickedRefactorAction,
-  OpenAction,
-  ProgressAction,
-  PickedRefactorAction,
-  RefactorUI,
-} from './types';
-
-import type {RefactorEditResponse} from './rpc-types';
-
-export function open(ui: RefactorUI): OpenAction {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.open = open;
+exports.gotRefactorings = gotRefactorings;
+exports.error = error;
+exports.pickedRefactor = pickedRefactor;
+exports.inlinePickedRefactor = inlinePickedRefactor;
+exports.execute = execute;
+exports.confirm = confirm;
+exports.apply = apply;
+exports.progress = progress;
+exports.close = close;
+function open(ui) {
   return {
     type: 'open',
-    ui,
+    ui
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function gotRefactorings(
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  provider: RefactorProvider,
-  availableRefactorings: Array<AvailableRefactoring>,
-): GotRefactoringsAction {
+function gotRefactorings(editor, originalPoint, provider, availableRefactorings) {
   return {
     type: 'got-refactorings',
     payload: {
       editor,
       originalPoint,
       provider,
-      availableRefactorings,
-    },
+      availableRefactorings
+    }
   };
 }
 
-export function error(source: ErrorSource, err: Error): ErrorAction {
+function error(source, err) {
   return {
     type: 'error',
     payload: {
       source,
-      error: err,
-    },
+      error: err
+    }
   };
 }
 
-export function pickedRefactor(
-  refactoring: AvailableRefactoring,
-): PickedRefactorAction {
+function pickedRefactor(refactoring) {
   return {
     type: 'picked-refactor',
     payload: {
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function inlinePickedRefactor(
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  provider: RefactorProvider,
-  refactoring: AvailableRefactoring,
-): InlinePickedRefactorAction {
+function inlinePickedRefactor(editor, originalPoint, provider, refactoring) {
   return {
     type: 'inline-picked-refactor',
     payload: {
       originalPoint,
       editor,
       provider,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function execute(
-  provider: RefactorProvider,
-  refactoring: RefactorRequest,
-): ExecuteAction {
+function execute(provider, refactoring) {
   return {
     type: 'execute',
     payload: {
       provider,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function confirm(response: RefactorEditResponse): ConfirmAction {
+function confirm(response) {
   return {
     type: 'confirm',
-    payload: {response},
+    payload: { response }
   };
 }
 
-export function apply(response: RefactorEditResponse): ApplyAction {
+function apply(response) {
   return {
     type: 'apply',
-    payload: {response},
+    payload: { response }
   };
 }
 
-export function progress(
-  message: string,
-  value: number,
-  max: number,
-): ProgressAction {
+function progress(message, value, max) {
   return {
     type: 'progress',
-    payload: {message, value, max},
+    payload: { message, value, max }
   };
 }
 
-export function close(): CloseAction {
+function close() {
   return {
-    type: 'close',
+    type: 'close'
   };
 }

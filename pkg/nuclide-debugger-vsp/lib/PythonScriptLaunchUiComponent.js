@@ -1,107 +1,148 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
-import {shellParse} from 'nuclide-commons/string';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
-import {track} from '../../nuclide-analytics';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService, getPythonScriptLaunchProcessInfo} from './utils';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-function getActiveScriptPath(): string {
-  const center = atom.workspace.getCenter
-    ? atom.workspace.getCenter()
-    : atom.workspace;
-  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
-  if (
-    activeEditor == null ||
-    !activeEditor.getPath() ||
-    !nullthrows(activeEditor.getPath()).endsWith('.py')
-  ) {
-    return '';
-  }
-  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
+var _react = _interopRequireWildcard(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
 }
 
-type Props = {|
-  +targetUri: NuclideUri,
-  +configIsValidChanged: (valid: boolean) => void,
-|};
+var _nuclideUri;
 
-type State = {
-  scriptPath: string,
-  pythonPath: string,
-  args: string,
-  environmentVariables: string,
-  workingDirectory: string,
-};
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-export default class PythonScriptLaunchUiComponent extends React.Component<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
+var _nullthrows;
 
-  constructor(props: Props) {
-    super(props);
-    this._disposables = new UniversalDisposable();
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getActiveScriptPath() {
+  const center = atom.workspace.getCenter ? atom.workspace.getCenter() : atom.workspace;
+  const activeEditor = center.getActiveTextEditor();
+  if (activeEditor == null || !activeEditor.getPath() || !(0, (_nullthrows || _load_nullthrows()).default)(activeEditor.getPath()).endsWith('.py')) {
+    return '';
+  }
+  return (_nuclideUri || _load_nuclideUri()).default.getPath((0, (_nullthrows || _load_nullthrows()).default)(activeEditor.getPath()));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+class PythonScriptLaunchUiComponent extends _react.Component {
+
+  constructor(props) {
+    var _this;
+
+    _this = super(props);
+    this._handleLaunchButtonClick = (0, _asyncToGenerator.default)(function* () {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-python-debugger-launch-from-dialog');
+      const pythonPath = _this.refs.pythonPath.getText().trim();
+      const scriptPath = _this.refs.scriptPath.getText().trim();
+      const args = (0, (_string || _load_string()).shellParse)(_this.refs.args.getText());
+      const workingDirectory = _this.refs.workingDirectory.getText().trim();
+      const environmentVariables = {};
+      (0, (_string || _load_string()).shellParse)(_this.refs.environmentVariables.getText()).forEach(function (variable) {
+        const [key, value] = variable.split('=');
+        environmentVariables[key] = value;
+      });
+
+      const { hostname } = (_nuclideUri || _load_nuclideUri()).default.parse(_this.props.targetUri);
+      const scriptUri = hostname != null ? (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, scriptPath) : scriptPath;
+
+      const launchInfo = yield (0, (_utils || _load_utils()).getPythonScriptLaunchProcessInfo)(scriptUri, pythonPath, args, workingDirectory, environmentVariables);
+
+      const debuggerService = yield (0, (_utils || _load_utils()).getDebuggerService)();
+      debuggerService.startDebugging(launchInfo);
+
+      (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).serializeDebuggerConfig)(..._this._getSerializationArgs(), {
+        pythonPath: _this.state.pythonPath,
+        scriptPath: _this.state.scriptPath,
+        args: _this.state.args,
+        environmentVariables: _this.state.environmentVariables,
+        workingDirectory: _this.state.workingDirectory
+      });
+    });
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       scriptPath: '',
       pythonPath: '',
       args: '',
       environmentVariables: '',
-      workingDirectory: '',
+      workingDirectory: ''
     };
   }
 
   _getSerializationArgs() {
-    return [
-      nuclideUri.isRemote(this.props.targetUri)
-        ? nuclideUri.getHostname(this.props.targetUri)
-        : 'local',
-      'launch',
-      'python',
-    ];
+    return [(_nuclideUri || _load_nuclideUri()).default.isRemote(this.props.targetUri) ? (_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri) : 'local', 'launch', 'python'];
   }
 
-  setState(newState: Object): void {
+  setState(newState) {
     super.setState(newState);
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
   }
 
-  componentDidMount(): void {
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        const scriptPath = savedSettings.scriptPath || getActiveScriptPath();
-        const workingDirectory =
-          savedSettings.workingDirectory ||
-          (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
-        this.setState({
-          scriptPath,
-          pythonPath: savedSettings.pythonPath || '',
-          args: savedSettings.args || '',
-          environmentVariables: savedSettings.environmentVariables || '',
-          workingDirectory,
-        });
-      },
-    );
+  componentDidMount() {
+    (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).deserializeDebuggerConfig)(...this._getSerializationArgs(), (transientSettings, savedSettings) => {
+      const scriptPath = savedSettings.scriptPath || getActiveScriptPath();
+      const workingDirectory = savedSettings.workingDirectory || (scriptPath.length > 0 ? (_nuclideUri || _load_nuclideUri()).default.dirname(scriptPath) : '');
+      this.setState({
+        scriptPath,
+        pythonPath: savedSettings.pythonPath || '',
+        args: savedSettings.args || '',
+        environmentVariables: savedSettings.environmentVariables || '',
+        workingDirectory
+      });
+    });
 
     const scriptPathInput = this.refs.scriptPath;
     if (scriptPathInput != null) {
@@ -109,118 +150,105 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
     }
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleLaunchButtonClick();
-          }
-        },
-      }),
-    );
+    this._disposables.add(atom.commands.add('atom-workspace', {
+      'core:confirm': () => {
+        if (this._debugButtonShouldEnable()) {
+          this._handleLaunchButtonClick();
+        }
+      }
+    }));
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _debugButtonShouldEnable(): boolean {
-    const {scriptPath, pythonPath} = this.state;
+  _debugButtonShouldEnable() {
+    const { scriptPath, pythonPath } = this.state;
     return scriptPath.length > 0 && pythonPath.length > 0;
   }
 
-  render(): React.Node {
-    const nuclidePythonDebuggerDexUri =
-      'https://our.intern.facebook.com/intern/dex/python-and-fbcode/debugging/#nuclide';
-    return (
-      <div className="block">
-        <p>
-          This is intended to debug python script files.
-          <br />
-          To debug buck targets, you should{' '}
-          <a href={nuclidePythonDebuggerDexUri}>
-            use the buck toolbar instead
-          </a>.
-        </p>
-        <label>Script Path: </label>
-        <AtomInput
-          ref="scriptPath"
-          tabIndex="12"
-          placeholderText="Input the script path you want to launch"
-          value={this.state.scriptPath}
-          onDidChange={value => this.setState({scriptPath: value})}
-        />
-        <label>Python Path: </label>
-        <AtomInput
-          ref="pythonPath"
-          tabIndex="11"
-          placeholderText="Input python executable path (e.g. /usr/bin/python)"
-          value={this.state.pythonPath}
-          onDidChange={value => this.setState({pythonPath: value})}
-        />
-        <label>Arguments: </label>
-        <AtomInput
-          ref="args"
-          tabIndex="13"
-          placeholderText="Arguments to the executable"
-          value={this.state.args}
-          onDidChange={value => this.setState({args: value})}
-        />
-        <label>Environment Variables: </label>
-        <AtomInput
-          ref="environmentVariables"
-          tabIndex="14"
-          placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
-          value={this.state.environmentVariables}
-          onDidChange={value => this.setState({environmentVariables: value})}
-        />
-        <label>Working directory: </label>
-        <AtomInput
-          ref="workingDirectory"
-          tabIndex="15"
-          placeholderText="Working directory for the launched executable"
-          value={this.state.workingDirectory}
-          onDidChange={value => this.setState({workingDirectory: value})}
-        />
-      </div>
+  render() {
+    const nuclidePythonDebuggerDexUri = 'https://our.intern.facebook.com/intern/dex/python-and-fbcode/debugging/#nuclide';
+    return _react.createElement(
+      'div',
+      { className: 'block' },
+      _react.createElement(
+        'p',
+        null,
+        'This is intended to debug python script files.',
+        _react.createElement('br', null),
+        'To debug buck targets, you should',
+        ' ',
+        _react.createElement(
+          'a',
+          { href: nuclidePythonDebuggerDexUri },
+          'use the buck toolbar instead'
+        ),
+        '.'
+      ),
+      _react.createElement(
+        'label',
+        null,
+        'Script Path: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'scriptPath',
+        tabIndex: '12',
+        placeholderText: 'Input the script path you want to launch',
+        value: this.state.scriptPath,
+        onDidChange: value => this.setState({ scriptPath: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Python Path: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'pythonPath',
+        tabIndex: '11',
+        placeholderText: 'Input python executable path (e.g. /usr/bin/python)',
+        value: this.state.pythonPath,
+        onDidChange: value => this.setState({ pythonPath: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Arguments: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'args',
+        tabIndex: '13',
+        placeholderText: 'Arguments to the executable',
+        value: this.state.args,
+        onDidChange: value => this.setState({ args: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Environment Variables: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'environmentVariables',
+        tabIndex: '14',
+        placeholderText: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
+        value: this.state.environmentVariables,
+        onDidChange: value => this.setState({ environmentVariables: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Working directory: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'workingDirectory',
+        tabIndex: '15',
+        placeholderText: 'Working directory for the launched executable',
+        value: this.state.workingDirectory,
+        onDidChange: value => this.setState({ workingDirectory: value })
+      })
     );
   }
 
-  _handleLaunchButtonClick = async (): Promise<void> => {
-    track('fb-python-debugger-launch-from-dialog');
-    const pythonPath = this.refs.pythonPath.getText().trim();
-    const scriptPath = this.refs.scriptPath.getText().trim();
-    const args = shellParse(this.refs.args.getText());
-    const workingDirectory = this.refs.workingDirectory.getText().trim();
-    const environmentVariables = {};
-    shellParse(this.refs.environmentVariables.getText()).forEach(variable => {
-      const [key, value] = variable.split('=');
-      environmentVariables[key] = value;
-    });
-
-    const {hostname} = nuclideUri.parse(this.props.targetUri);
-    const scriptUri =
-      hostname != null
-        ? nuclideUri.createRemoteUri(hostname, scriptPath)
-        : scriptPath;
-
-    const launchInfo = await getPythonScriptLaunchProcessInfo(
-      scriptUri,
-      pythonPath,
-      args,
-      workingDirectory,
-      environmentVariables,
-    );
-
-    const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(launchInfo);
-
-    serializeDebuggerConfig(...this._getSerializationArgs(), {
-      pythonPath: this.state.pythonPath,
-      scriptPath: this.state.scriptPath,
-      args: this.state.args,
-      environmentVariables: this.state.environmentVariables,
-      workingDirectory: this.state.workingDirectory,
-    });
-  };
 }
+exports.default = PythonScriptLaunchUiComponent;

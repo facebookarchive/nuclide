@@ -1,45 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {UnreliableTransport} from '../../nuclide-rpc';
-import {default as Deque} from 'double-ended-queue';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueuedAckTransport = exports.ACK = exports.CONTENT = exports.PENDING_MESSAGE_TIMEOUT = exports.ACK_BUFFER_TIME = undefined;
+exports.frameContent = frameContent;
+exports.frameAck = frameAck;
+exports.parseMessage = parseMessage;
 
-import invariant from 'assert';
-import {Subject} from 'rxjs';
-import {getLogger} from 'log4js';
-const logger = getLogger('nuclide-server');
-import {Emitter} from 'event-kit';
-import {protocolLogger} from './utils';
+var _doubleEndedQueue;
 
-export const ACK_BUFFER_TIME = 100;
-export const PENDING_MESSAGE_TIMEOUT = 30 * 1000;
-export const CONTENT = 'CONTENT';
-export const ACK = 'ACK';
+function _load_doubleEndedQueue() {
+  return _doubleEndedQueue = _interopRequireDefault(require('double-ended-queue'));
+}
 
-type ParsedMessage =
-  | {
-      type: 'CONTENT',
-      id: number,
-      message: string,
-    }
-  | {
-      type: 'ACK',
-      id: number,
-    };
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-type PendingSend = {
-  id: number,
-  wireMessage: string,
-};
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-server'); /**
+                                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                                              * All rights reserved.
+                                                                              *
+                                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                                              * the root directory of this source tree.
+                                                                              *
+                                                                              * 
+                                                                              * @format
+                                                                              */
+
+const ACK_BUFFER_TIME = exports.ACK_BUFFER_TIME = 100;
+const PENDING_MESSAGE_TIMEOUT = exports.PENDING_MESSAGE_TIMEOUT = 30 * 1000;
+const CONTENT = exports.CONTENT = 'CONTENT';
+const ACK = exports.ACK = 'ACK';
 
 // Adapter to make an UnreliableTransport a reliable Transport
 // by queuing messages and removing from the queue only after
@@ -54,54 +65,48 @@ type PendingSend = {
 // While disconnected, reconnect can be called to return to the open state.
 // close() closes the underlying transport and transitions to closed state.
 // Once closed, reconnect may not be called and no other events will be emitted.
-export class QueuedAckTransport {
-  id: string;
-  _isClosed: boolean;
-  _transport: ?UnreliableTransport;
-  _pendingSends: Deque<PendingSend>;
-  _pendingReceives: Map<number, string>;
-  _emitter: Emitter;
-  _messageProcessor: Subject<string>;
-  _lastSendId: number = 0;
-  _lastProcessedId: number = 0;
-  _pendingMessageTimer: ?number;
-  _ackTimer: ?number;
+class QueuedAckTransport {
 
-  constructor(clientId: string, transport: ?UnreliableTransport) {
+  constructor(clientId, transport) {
+    this._lastSendId = 0;
+    this._lastProcessedId = 0;
+
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
-    this._pendingSends = new Deque();
+    this._pendingSends = new (_doubleEndedQueue || _load_doubleEndedQueue()).default();
     this._pendingReceives = new Map();
-    this._messageProcessor = new Subject();
-    this._emitter = new Emitter();
+    this._messageProcessor = new _rxjsBundlesRxMinJs.Subject();
+    this._emitter = new (_eventKit || _load_eventKit()).Emitter();
 
     if (transport != null) {
       this._connect(transport);
     }
   }
 
-  getState(): 'open' | 'disconnected' | 'closed' {
+  getState() {
     this._checkLeaks();
-    return this._isClosed
-      ? 'closed'
-      : this._transport == null ? 'disconnected' : 'open';
+    return this._isClosed ? 'closed' : this._transport == null ? 'disconnected' : 'open';
   }
 
-  onDisconnect(
-    callback: (transport: UnreliableTransport) => mixed,
-  ): IDisposable {
+  onDisconnect(callback) {
     return this._emitter.on('disconnect', callback);
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     return this._messageProcessor;
   }
 
-  _connect(transport: UnreliableTransport): void {
+  _connect(transport) {
     logInfo(`${this.id} connect`);
-    invariant(!transport.isClosed(), 'connect with closed transport');
-    invariant(this._transport == null, 'connect with existing this._transport');
+
+    if (!!transport.isClosed()) {
+      throw new Error('connect with closed transport');
+    }
+
+    if (!(this._transport == null)) {
+      throw new Error('connect with existing this._transport');
+    }
 
     this._transport = transport;
 
@@ -109,8 +114,10 @@ export class QueuedAckTransport {
     transport.onClose(() => this._handleTransportClose(transport));
   }
 
-  _handleTransportClose(transport: UnreliableTransport): void {
-    invariant(transport.isClosed(), 'handleTransportClose transport is closed');
+  _handleTransportClose(transport) {
+    if (!transport.isClosed()) {
+      throw new Error('handleTransportClose transport is closed');
+    }
 
     if (this._isClosed) {
       // This happens when close() is called and we have an open transport.
@@ -128,17 +135,18 @@ export class QueuedAckTransport {
     this._checkLeaks();
   }
 
-  reconnect(transport: UnreliableTransport): void {
+  reconnect(transport) {
     if (this._isClosed) {
       logInfo(`${this.id} reconnect (but already closed)`);
       this._checkLeaks();
       return;
     }
-    invariant(!transport.isClosed(), 'reconnect with closed transport');
-    logInfo(
-      `${this.id} reconnect (${this._pendingSends.length} sends, ${this
-        ._pendingReceives.size} receives)`,
-    );
+
+    if (!!transport.isClosed()) {
+      throw new Error('reconnect with closed transport');
+    }
+
+    logInfo(`${this.id} reconnect (${this._pendingSends.length} sends, ${this._pendingReceives.size} receives)`);
 
     if (this._transport != null) {
       this._transport.close();
@@ -148,48 +156,49 @@ export class QueuedAckTransport {
     this._checkLeaks();
   }
 
-  disconnect(caller: string = 'external'): void {
-    protocolLogger.trace(
-      `${this.id} disconnect (caller=${caller}, state=${this.getState()}))`,
-    );
+  disconnect(caller = 'external') {
+    (_utils || _load_utils()).protocolLogger.trace(`${this.id} disconnect (caller=${caller}, state=${this.getState()}))`);
     const transport = this._transport;
     if (transport != null) {
-      invariant(!this._isClosed);
+      if (!!this._isClosed) {
+        throw new Error('Invariant violation: "!this._isClosed"');
+      }
+
       transport.close();
     }
-    invariant(this._transport == null);
+
+    if (!(this._transport == null)) {
+      throw new Error('Invariant violation: "this._transport == null"');
+    }
+
     this._checkLeaks();
   }
 
-  send(message: string): void {
+  send(message) {
     if (this._isClosed) {
-      protocolLogger.trace(`${this.id} send (but already closed) '${message}'`);
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} send (but already closed) '${message}'`);
       this._checkLeaks();
       return;
     }
 
     const id = ++this._lastSendId;
     const wireMessage = frameContent(id, message);
-    this._pendingSends.enqueue({id, wireMessage});
+    this._pendingSends.enqueue({ id, wireMessage });
     this._transportSend(wireMessage);
     this._maybeStartPendingMessageTimer();
     this._checkLeaks();
   }
 
-  _resendQueue(): void {
+  _resendQueue() {
     logInfo(`${this.id} resendQueue`);
     this._sendAck();
-    this._pendingSends
-      .toArray()
-      .forEach(x => this._transportSend(x.wireMessage), this);
+    this._pendingSends.toArray().forEach(x => this._transportSend(x.wireMessage), this);
     this._maybeStartPendingMessageTimer();
   }
 
-  _handleMessage(wireMessage: string): void {
+  _handleMessage(wireMessage) {
     if (this._isClosed) {
-      protocolLogger.trace(
-        `${this.id} receive (but already closed) '${wireMessage}'`,
-      );
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} receive (but already closed) '${wireMessage}'`);
       this._checkLeaks();
       return;
     }
@@ -198,51 +207,53 @@ export class QueuedAckTransport {
     let progress = 0;
 
     switch (parsed.type) {
-      case CONTENT: {
-        protocolLogger.trace(`${this.id} received ${_forLogging(wireMessage)}`);
-        const pending = this._pendingReceives;
-        // If this is a repeat of an old message, don't add it, since we
-        // only remove messages when we process them.
-        if (parsed.id > this._lastProcessedId) {
-          pending.set(parsed.id, parsed.message);
-        }
-        while (true) {
-          const id = this._lastProcessedId + 1;
-          const message = pending.get(id);
-          if (message == null) {
-            break;
+      case CONTENT:
+        {
+          (_utils || _load_utils()).protocolLogger.trace(`${this.id} received ${_forLogging(wireMessage)}`);
+          const pending = this._pendingReceives;
+          // If this is a repeat of an old message, don't add it, since we
+          // only remove messages when we process them.
+          if (parsed.id > this._lastProcessedId) {
+            pending.set(parsed.id, parsed.message);
           }
-          this._messageProcessor.next(message);
-          pending.delete(id);
-          this._lastProcessedId = id;
-          progress++;
+          while (true) {
+            const id = this._lastProcessedId + 1;
+            const message = pending.get(id);
+            if (message == null) {
+              break;
+            }
+            this._messageProcessor.next(message);
+            pending.delete(id);
+            this._lastProcessedId = id;
+            progress++;
+          }
+          if (progress !== 1) {
+            (_utils || _load_utils()).protocolLogger.trace(`${this.id} processed ${progress} messages`);
+          }
+          this._ensureAckTimer();
+          break;
         }
-        if (progress !== 1) {
-          protocolLogger.trace(`${this.id} processed ${progress} messages`);
-        }
-        this._ensureAckTimer();
-        break;
-      }
 
-      case ACK: {
-        const pending = this._pendingSends;
-        const id = parsed.id;
-        invariant(id <= this._lastSendId);
-        while (true) {
-          const front = pending.peekFront();
-          if (front == null || front.id > id) {
-            break;
+      case ACK:
+        {
+          const pending = this._pendingSends;
+          const id = parsed.id;
+
+          if (!(id <= this._lastSendId)) {
+            throw new Error('Invariant violation: "id <= this._lastSendId"');
           }
-          pending.dequeue();
-          progress++;
+
+          while (true) {
+            const front = pending.peekFront();
+            if (front == null || front.id > id) {
+              break;
+            }
+            pending.dequeue();
+            progress++;
+          }
+          (_utils || _load_utils()).protocolLogger.trace(`${this.id} received ack ${wireMessage} (cleared ${progress} messages, last sent ${this._lastSendId})`);
+          break;
         }
-        protocolLogger.trace(
-          `${this
-            .id} received ack ${wireMessage} (cleared ${progress} messages, last sent ${this
-            ._lastSendId})`,
-        );
-        break;
-      }
     }
 
     // Note that this only restarts the timer if (a) we still have something
@@ -256,38 +267,38 @@ export class QueuedAckTransport {
     this._checkLeaks();
   }
 
-  close(): void {
+  close() {
     if (!this._isClosed) {
-      protocolLogger.trace(`${this.id} close`);
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} close`);
       this.disconnect('close');
       this._pendingSends.clear();
       this._pendingReceives.clear();
       this._isClosed = true;
     } else {
-      protocolLogger.trace(`${this.id} close (but already closed)`);
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} close (but already closed)`);
     }
     this._checkLeaks();
   }
 
-  isClosed(): boolean {
+  isClosed() {
     this._checkLeaks();
     return this._isClosed;
   }
 
-  _ensureAckTimer(): void {
+  _ensureAckTimer() {
     if (!this._isClosed && this._transport != null && this._ackTimer == null) {
       this._ackTimer = setTimeout(this._sendAck.bind(this), ACK_BUFFER_TIME);
     }
   }
 
-  _cancelAckTimer(): void {
+  _cancelAckTimer() {
     if (this._ackTimer != null) {
       clearTimeout(this._ackTimer);
       this._ackTimer = null;
     }
   }
 
-  _sendAck(): void {
+  _sendAck() {
     this._cancelAckTimer();
     if (this._lastProcessedId > 0) {
       this._transportSend(frameAck(this._lastProcessedId));
@@ -297,107 +308,126 @@ export class QueuedAckTransport {
   // If we have a pending send or receive and wait a while without
   // an ack or processing a message, disconnect.  This should trigger
   // NuclideSocket on the client to attempt to reconnect.
-  _maybeStartPendingMessageTimer(): void {
+  _maybeStartPendingMessageTimer() {
     if (this._pendingMessageTimer == null && this._wantsPendingMessageTimer()) {
-      this._pendingMessageTimer = setTimeout(
-        this._handlePendingMessageTimeout.bind(this),
-        PENDING_MESSAGE_TIMEOUT,
-      );
+      this._pendingMessageTimer = setTimeout(this._handlePendingMessageTimeout.bind(this), PENDING_MESSAGE_TIMEOUT);
     }
   }
 
-  _cancelPendingMessageTimer(): void {
+  _cancelPendingMessageTimer() {
     if (this._pendingMessageTimer != null) {
       clearTimeout(this._pendingMessageTimer);
       this._pendingMessageTimer = null;
     }
   }
 
-  _handlePendingMessageTimeout(): void {
-    invariant(!this._isClosed, 'isClosed');
-    invariant(this._transport != null, 'transport');
-    invariant(this._hasPendingMessage(), 'hasPendingMessage');
+  _handlePendingMessageTimeout() {
+    if (!!this._isClosed) {
+      throw new Error('isClosed');
+    }
+
+    if (!(this._transport != null)) {
+      throw new Error('transport');
+    }
+
+    if (!this._hasPendingMessage()) {
+      throw new Error('hasPendingMessage');
+    }
+
     this.disconnect('timeout');
   }
 
-  _wantsPendingMessageTimer(): boolean {
-    return (
-      !this._isClosed && this._transport != null && this._hasPendingMessage()
-    );
+  _wantsPendingMessageTimer() {
+    return !this._isClosed && this._transport != null && this._hasPendingMessage();
   }
 
-  _hasPendingMessage(): boolean {
+  _hasPendingMessage() {
     return !this._pendingSends.isEmpty() || this._pendingReceives.size > 0;
   }
 
-  _transportSend(wireMessage: string): void {
+  _transportSend(wireMessage) {
     const transport = this._transport;
     const summary = _forLogging(wireMessage);
     if (transport != null) {
-      protocolLogger.trace(`${this.id} transport send ${summary}`);
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} transport send ${summary}`);
       transport.send(wireMessage);
     } else {
-      protocolLogger.trace(
-        `${this.id} transport send (but disconnected) ${summary}`,
-      );
+      (_utils || _load_utils()).protocolLogger.trace(`${this.id} transport send (but disconnected) ${summary}`);
     }
   }
 
-  _checkLeaks(): void {
+  _checkLeaks() {
     if (this._isClosed) {
-      invariant(this._pendingSends.isEmpty(), 'pendingSends');
-      invariant(this._pendingReceives.size === 0, 'pendingReceives');
-      invariant(this._transport == null, 'transport');
+      if (!this._pendingSends.isEmpty()) {
+        throw new Error('pendingSends');
+      }
+
+      if (!(this._pendingReceives.size === 0)) {
+        throw new Error('pendingReceives');
+      }
+
+      if (!(this._transport == null)) {
+        throw new Error('transport');
+      }
     }
     if (this._transport == null) {
-      invariant(this._ackTimer == null, 'ackTimer');
-      invariant(this._pendingMessageTimer == null, 'pendingMessageTimer');
+      if (!(this._ackTimer == null)) {
+        throw new Error('ackTimer');
+      }
+
+      if (!(this._pendingMessageTimer == null)) {
+        throw new Error('pendingMessageTimer');
+      }
     }
   }
 }
 
-// exported for testing
-export function frameContent(id: number, message: string): string {
+exports.QueuedAckTransport = QueuedAckTransport; // exported for testing
+
+function frameContent(id, message) {
   return `>${id}:${message}`;
 }
 
 // exported for testing
-export function frameAck(id: number): string {
+function frameAck(id) {
   return `<${id}:`;
 }
 
 // exported for testing
-export function parseMessage(wireMessage: string): ParsedMessage {
+function parseMessage(wireMessage) {
   const iColon = wireMessage.indexOf(':');
-  invariant(iColon !== -1);
+
+  if (!(iColon !== -1)) {
+    throw new Error('Invariant violation: "iColon !== -1"');
+  }
+
   const mode = wireMessage[0];
   const id = Number(wireMessage.substring(1, iColon));
   const message = wireMessage.substring(iColon + 1);
   if (mode === '>') {
-    return {type: CONTENT, id, message};
+    return { type: CONTENT, id, message };
   } else if (mode === '<') {
-    return {type: ACK, id};
+    return { type: ACK, id };
   } else {
-    invariant(false, `Unrecognized mode in wire message '${wireMessage}'`);
+    if (!false) {
+      throw new Error(`Unrecognized mode in wire message '${wireMessage}'`);
+    }
   }
 }
 
 const MAX_RAW_LOG = 256;
 const PROTOCOL_COMMON = '"protocol":"service_framework3_rpc"';
-function _forLogging(message: string): string {
+function _forLogging(message) {
   const truncated = message.substr(0, MAX_RAW_LOG);
   const noUserInput = removeUserInput(truncated);
   const noProtocol = noUserInput.replace(PROTOCOL_COMMON, '..');
-  const ellipsed =
-    message.length > MAX_RAW_LOG && !noProtocol.endsWith('..')
-      ? noProtocol + '..'
-      : noProtocol;
+  const ellipsed = message.length > MAX_RAW_LOG && !noProtocol.endsWith('..') ? noProtocol + '..' : noProtocol;
   return JSON.stringify(ellipsed);
 }
 
 const WRITE_INPUT = '"method":"writeInput"';
 const WRITE_INPUT_DATA_PREFIX = '"args":{"data":';
-function removeUserInput(message: string): string {
+function removeUserInput(message) {
   const methodIndex = message.indexOf(WRITE_INPUT);
   if (methodIndex < 0) {
     return message;
@@ -408,20 +438,17 @@ function removeUserInput(message: string): string {
     return message;
   }
 
-  return (
-    message.substring(0, argsIndex + WRITE_INPUT_DATA_PREFIX.length) +
-    '<omitted user input>..'
-  );
+  return message.substring(0, argsIndex + WRITE_INPUT_DATA_PREFIX.length) + '<omitted user input>..';
 }
 
 // Helper functions to log sufficiently interesting logs to both
 // logger (disk) and protocolLogger (circular in-memory).
-function logError(format: string, ...args: Array<any>): void {
+function logError(format, ...args) {
   logger.error(format, ...args);
-  protocolLogger.error(format, ...args);
+  (_utils || _load_utils()).protocolLogger.error(format, ...args);
 }
 
-function logInfo(format: string, ...args: Array<any>): void {
+function logInfo(format, ...args) {
   logger.info(format, ...args);
-  protocolLogger.info(format, ...args);
+  (_utils || _load_utils()).protocolLogger.info(format, ...args);
 }

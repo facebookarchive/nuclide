@@ -1,37 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DispatcherInterface} from './DispatcherInterface';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class HelpCommand implements Command {
-  name = 'help';
-  helpText = 'Give help about the debugger command set.';
-  _console: ConsoleIO;
-  _dispatcher: DispatcherInterface;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-  constructor(con: ConsoleIO, dispatcher: DispatcherInterface) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class HelpCommand {
+
+  constructor(con, dispatcher) {
+    this.name = 'help';
+    this.helpText = 'Give help about the debugger command set.';
+
     this._console = con;
     this._dispatcher = dispatcher;
   }
 
-  async execute(): Promise<void> {
-    this._displayHelp();
+  execute() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._displayHelp();
+    })();
   }
 
-  _displayHelp(): void {
+  _displayHelp() {
     const commands = this._dispatcher.getCommands();
     const commandDict = {};
-    commands.forEach(x => (commandDict[x.name] = x));
+    commands.forEach(x => commandDict[x.name] = x);
 
     const commandNames = commands.map(x => x.name).sort();
 
@@ -40,3 +38,13 @@ export default class HelpCommand implements Command {
     });
   }
 }
+exports.default = HelpCommand; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                * 
+                                * @format
+                                */

@@ -1,3 +1,78 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('nuclide-commons/debounce'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _FilteredMessagesReminder;
+
+function _load_FilteredMessagesReminder() {
+  return _FilteredMessagesReminder = _interopRequireDefault(require('./FilteredMessagesReminder'));
+}
+
+var _OutputTable;
+
+function _load_OutputTable() {
+  return _OutputTable = _interopRequireDefault(require('./OutputTable'));
+}
+
+var _ConsoleHeader;
+
+function _load_ConsoleHeader() {
+  return _ConsoleHeader = _interopRequireDefault(require('./ConsoleHeader'));
+}
+
+var _InputArea;
+
+function _load_InputArea() {
+  return _InputArea = _interopRequireDefault(require('./InputArea'));
+}
+
+var _PromptButton;
+
+function _load_PromptButton() {
+  return _PromptButton = _interopRequireDefault(require('./PromptButton'));
+}
+
+var _NewMessagesNotification;
+
+function _load_NewMessagesNotification() {
+  return _NewMessagesNotification = _interopRequireDefault(require('./NewMessagesNotification'));
+}
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _recordsChanged;
+
+function _load_recordsChanged() {
+  return _recordsChanged = _interopRequireDefault(require('../recordsChanged'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Maximum time (ms) for the console to try scrolling to the bottom.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,88 +80,85 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  DisplayableRecord,
-  Executor,
-  OutputProvider,
-  RecordHeightChangeHandler,
-  Source,
-  WatchEditorFunction,
-} from '../types';
-import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import debounce from 'nuclide-commons/debounce';
-import * as React from 'react';
-import {Observable} from 'rxjs';
-import FilteredMessagesReminder from './FilteredMessagesReminder';
-import OutputTable from './OutputTable';
-import ConsoleHeader from './ConsoleHeader';
-import InputArea from './InputArea';
-import PromptButton from './PromptButton';
-import NewMessagesNotification from './NewMessagesNotification';
-import invariant from 'assert';
-import shallowEqual from 'shallowequal';
-import recordsChanged from '../recordsChanged';
-
-type Props = {
-  displayableRecords: Array<DisplayableRecord>,
-  history: Array<string>,
-  clearRecords: () => void,
-  createPaste: ?() => Promise<void>,
-  watchEditor: ?WatchEditorFunction,
-  execute: (code: string) => void,
-  currentExecutor: ?Executor,
-  executors: Map<string, Executor>,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  selectedSourceIds: Array<string>,
-  selectExecutor: (executorId: string) => void,
-  selectSources: (sourceIds: Array<string>) => void,
-  sources: Array<Source>,
-  updateFilter: (change: RegExpFilterChange) => void,
-  getProvider: (id: string) => ?OutputProvider,
-  onDisplayableRecordHeightChange: RecordHeightChangeHandler,
-  filteredRecordCount: number,
-  filterText: string,
-  resetAllFilters: () => void,
-};
-
-type State = {
-  unseenMessages: boolean,
-};
-
-// Maximum time (ms) for the console to try scrolling to the bottom.
 const MAXIMUM_SCROLLING_TIME = 3000;
 
-export default class Console extends React.Component<Props, State> {
-  _disposables: UniversalDisposable;
-  _isScrolledNearBottom: boolean;
+class Console extends _react.Component {
+
+  constructor(props) {
+    super(props);
+
+    this._getExecutor = id => {
+      return this.props.executors.get(id);
+    };
+
+    this._getProvider = id => {
+      return this.props.getProvider(id);
+    };
+
+    this._executePrompt = code => {
+      this.props.execute(code);
+      // Makes the console to scroll to the bottom.
+      this._isScrolledNearBottom = true;
+    };
+
+    this._handleScroll = (offsetHeight, scrollHeight, scrollTop) => {
+      this._handleScrollEnd(offsetHeight, scrollHeight, scrollTop);
+    };
+
+    this._handleOutputTable = ref => {
+      this._outputTable = ref;
+    };
+
+    this._scrollToBottom = () => {
+      if (!this._outputTable) {
+        return;
+      }
+
+      this._outputTable.scrollToBottom();
+
+      this.setState({ unseenMessages: false });
+    };
+
+    this._startScrollToBottom = () => {
+      if (!this._isScrollingToBottom) {
+        this._isScrollingToBottom = true;
+
+        this._scrollingThrottle = _rxjsBundlesRxMinJs.Observable.timer(MAXIMUM_SCROLLING_TIME).subscribe(() => {
+          this._isScrollingToBottom = false;
+        });
+      }
+
+      this._scrollToBottom();
+    };
+
+    this._stopScrollToBottom = () => {
+      this._isScrollingToBottom = false;
+      this._scrollingThrottle.unsubscribe();
+    };
+
+    this._shouldScrollToBottom = () => {
+      return this._isScrolledNearBottom || this._isScrollingToBottom;
+    };
+
+    this.state = {
+      unseenMessages: false
+    };
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._isScrolledNearBottom = true;
+    this._isScrollingToBottom = false;
+    this._handleScrollEnd = (0, (_debounce || _load_debounce()).default)(this._handleScrollEnd, 100);
+  }
 
   // Used when _scrollToBottom is called. The console optimizes message loading
   // so scrolling to the bottom once doesn't always scroll to the bottom since
   // more messages can be loaded after.
-  _isScrollingToBottom: boolean;
-  _scrollingThrottle: rxjs$Subscription;
 
-  _outputTable: ?OutputTable;
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      unseenMessages: false,
-    };
-    this._disposables = new UniversalDisposable();
-    this._isScrolledNearBottom = true;
-    this._isScrollingToBottom = false;
-    (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
-  }
-
-  componentDidMount(): void {
+  componentDidMount() {
     // Wait for `<OutputTable />` to render itself via react-virtualized before scrolling and
     // re-measuring; Otherwise, the scrolled location will be inaccurate, preventing the Console
     // from auto-scrolling.
@@ -98,172 +170,123 @@ export default class Console extends React.Component<Props, State> {
     });
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  componentDidUpdate(prevProps: Props): void {
+  componentDidUpdate(prevProps) {
     // If records are added while we're scrolled to the bottom (or very very close, at least),
     // automatically scroll.
-    if (
-      this._isScrolledNearBottom &&
-      recordsChanged(
-        prevProps.displayableRecords,
-        this.props.displayableRecords,
-      )
-    ) {
+    if (this._isScrolledNearBottom && (0, (_recordsChanged || _load_recordsChanged()).default)(prevProps.displayableRecords, this.props.displayableRecords)) {
       this._startScrollToBottom();
     }
   }
 
-  _renderPromptButton(): React.Element<any> {
-    invariant(this.props.currentExecutor != null);
-    const {currentExecutor} = this.props;
+  _renderPromptButton() {
+    if (!(this.props.currentExecutor != null)) {
+      throw new Error('Invariant violation: "this.props.currentExecutor != null"');
+    }
+
+    const { currentExecutor } = this.props;
     const options = Array.from(this.props.executors.values()).map(executor => ({
       id: executor.id,
-      label: executor.name,
+      label: executor.name
     }));
-    return (
-      <PromptButton
-        value={currentExecutor.id}
-        onChange={this.props.selectExecutor}
-        options={options}
-        children={currentExecutor.name}
-      />
-    );
+    return _react.createElement((_PromptButton || _load_PromptButton()).default, {
+      value: currentExecutor.id,
+      onChange: this.props.selectExecutor,
+      options: options,
+      children: currentExecutor.name
+    });
   }
 
-  _isScrolledToBottom(
-    offsetHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  ): boolean {
+  _isScrolledToBottom(offsetHeight, scrollHeight, scrollTop) {
     return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  componentWillReceiveProps(nextProps) {
     // If the messages were cleared, hide the notification.
     if (nextProps.displayableRecords.length === 0) {
       this._isScrolledNearBottom = true;
-      this.setState({unseenMessages: false});
+      this.setState({ unseenMessages: false });
     } else if (
-      // If we receive new messages after we've scrolled away from the bottom, show the "new
-      // messages" notification.
-      !this._isScrolledNearBottom &&
-      recordsChanged(
-        this.props.displayableRecords,
-        nextProps.displayableRecords,
-      )
-    ) {
-      this.setState({unseenMessages: true});
+    // If we receive new messages after we've scrolled away from the bottom, show the "new
+    // messages" notification.
+    !this._isScrolledNearBottom && (0, (_recordsChanged || _load_recordsChanged()).default)(this.props.displayableRecords, nextProps.displayableRecords)) {
+      this.setState({ unseenMessages: true });
     }
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-    return (
-      !shallowEqual(this.props, nextProps) ||
-      !shallowEqual(this.state, nextState)
+  shouldComponentUpdate(nextProps, nextState) {
+    return !(0, (_shallowequal || _load_shallowequal()).default)(this.props, nextProps) || !(0, (_shallowequal || _load_shallowequal()).default)(this.state, nextState);
+  }
+
+  render() {
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-console' },
+      _react.createElement((_ConsoleHeader || _load_ConsoleHeader()).default, {
+        clear: this.props.clearRecords,
+        createPaste: this.props.createPaste,
+        invalidFilterInput: this.props.invalidFilterInput,
+        enableRegExpFilter: this.props.enableRegExpFilter,
+        filterText: this.props.filterText,
+        selectedSourceIds: this.props.selectedSourceIds,
+        sources: this.props.sources,
+        onFilterChange: this.props.updateFilter,
+        onSelectedSourcesChange: this.props.selectSources
+      }),
+      _react.createElement(
+        'div',
+        { className: 'nuclide-console-body' },
+        _react.createElement(
+          'div',
+          { className: 'nuclide-console-scroll-pane-wrapper' },
+          _react.createElement((_FilteredMessagesReminder || _load_FilteredMessagesReminder()).default, {
+            filteredRecordCount: this.props.filteredRecordCount,
+            onReset: this.props.resetAllFilters
+          }),
+          _react.createElement((_OutputTable || _load_OutputTable()).default
+          // $FlowFixMe(>=0.53.0) Flow suppress
+          , { ref: this._handleOutputTable,
+            displayableRecords: this.props.displayableRecords,
+            showSourceLabels: this.props.selectedSourceIds.length > 1,
+            getExecutor: this._getExecutor,
+            getProvider: this._getProvider,
+            onScroll: this._handleScroll,
+            onDisplayableRecordHeightChange: this.props.onDisplayableRecordHeightChange,
+            shouldScrollToBottom: this._shouldScrollToBottom
+          }),
+          _react.createElement((_NewMessagesNotification || _load_NewMessagesNotification()).default, {
+            visible: this.state.unseenMessages,
+            onClick: this._startScrollToBottom
+          })
+        ),
+        this._renderPrompt()
+      )
     );
   }
 
-  _getExecutor = (id: string): ?Executor => {
-    return this.props.executors.get(id);
-  };
-
-  _getProvider = (id: string): ?OutputProvider => {
-    return this.props.getProvider(id);
-  };
-
-  render(): React.Node {
-    return (
-      <div className="nuclide-console">
-        <ConsoleHeader
-          clear={this.props.clearRecords}
-          createPaste={this.props.createPaste}
-          invalidFilterInput={this.props.invalidFilterInput}
-          enableRegExpFilter={this.props.enableRegExpFilter}
-          filterText={this.props.filterText}
-          selectedSourceIds={this.props.selectedSourceIds}
-          sources={this.props.sources}
-          onFilterChange={this.props.updateFilter}
-          onSelectedSourcesChange={this.props.selectSources}
-        />
-        {/*
-          We need an extra wrapper element here in order to have the new messages notification stick
-          to the bottom of the scrollable area (and not scroll with it).
-        */}
-        <div className="nuclide-console-body">
-          <div className="nuclide-console-scroll-pane-wrapper">
-            <FilteredMessagesReminder
-              filteredRecordCount={this.props.filteredRecordCount}
-              onReset={this.props.resetAllFilters}
-            />
-            <OutputTable
-              // $FlowFixMe(>=0.53.0) Flow suppress
-              ref={this._handleOutputTable}
-              displayableRecords={this.props.displayableRecords}
-              showSourceLabels={this.props.selectedSourceIds.length > 1}
-              getExecutor={this._getExecutor}
-              getProvider={this._getProvider}
-              onScroll={this._handleScroll}
-              onDisplayableRecordHeightChange={
-                this.props.onDisplayableRecordHeightChange
-              }
-              shouldScrollToBottom={this._shouldScrollToBottom}
-            />
-            <NewMessagesNotification
-              visible={this.state.unseenMessages}
-              onClick={this._startScrollToBottom}
-            />
-          </div>
-          {this._renderPrompt()}
-        </div>
-      </div>
-    );
-  }
-
-  _renderPrompt(): ?React.Element<any> {
-    const {currentExecutor} = this.props;
+  _renderPrompt() {
+    const { currentExecutor } = this.props;
     if (currentExecutor == null) {
       return;
     }
-    return (
-      <div className="nuclide-console-prompt">
-        {this._renderPromptButton()}
-        <InputArea
-          scopeName={currentExecutor.scopeName}
-          onSubmit={this._executePrompt}
-          history={this.props.history}
-          watchEditor={this.props.watchEditor}
-        />
-      </div>
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-console-prompt' },
+      this._renderPromptButton(),
+      _react.createElement((_InputArea || _load_InputArea()).default, {
+        scopeName: currentExecutor.scopeName,
+        onSubmit: this._executePrompt,
+        history: this.props.history,
+        watchEditor: this.props.watchEditor
+      })
     );
   }
 
-  _executePrompt = (code: string): void => {
-    this.props.execute(code);
-    // Makes the console to scroll to the bottom.
-    this._isScrolledNearBottom = true;
-  };
-
-  _handleScroll = (
-    offsetHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  ): void => {
-    this._handleScrollEnd(offsetHeight, scrollHeight, scrollTop);
-  };
-
-  _handleScrollEnd(
-    offsetHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  ): void {
-    const isScrolledToBottom = this._isScrolledToBottom(
-      offsetHeight,
-      scrollHeight,
-      scrollTop,
-    );
+  _handleScrollEnd(offsetHeight, scrollHeight, scrollTop) {
+    const isScrolledToBottom = this._isScrolledToBottom(offsetHeight, scrollHeight, scrollTop);
 
     if (this._isScrollingToBottom && !isScrolledToBottom) {
       this._scrollToBottom();
@@ -271,46 +294,10 @@ export default class Console extends React.Component<Props, State> {
       this._isScrolledNearBottom = isScrolledToBottom;
       this._stopScrollToBottom();
       this.setState({
-        unseenMessages:
-          this.state.unseenMessages && !this._isScrolledNearBottom,
+        unseenMessages: this.state.unseenMessages && !this._isScrolledNearBottom
       });
     }
   }
 
-  _handleOutputTable = (ref: OutputTable): void => {
-    this._outputTable = ref;
-  };
-
-  _scrollToBottom = (): void => {
-    if (!this._outputTable) {
-      return;
-    }
-
-    this._outputTable.scrollToBottom();
-
-    this.setState({unseenMessages: false});
-  };
-
-  _startScrollToBottom = (): void => {
-    if (!this._isScrollingToBottom) {
-      this._isScrollingToBottom = true;
-
-      this._scrollingThrottle = Observable.timer(
-        MAXIMUM_SCROLLING_TIME,
-      ).subscribe(() => {
-        this._isScrollingToBottom = false;
-      });
-    }
-
-    this._scrollToBottom();
-  };
-
-  _stopScrollToBottom = (): void => {
-    this._isScrollingToBottom = false;
-    this._scrollingThrottle.unsubscribe();
-  };
-
-  _shouldScrollToBottom = (): boolean => {
-    return this._isScrolledNearBottom || this._isScrollingToBottom;
-  };
 }
+exports.default = Console;

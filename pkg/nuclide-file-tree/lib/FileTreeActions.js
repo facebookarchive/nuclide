@@ -1,3 +1,100 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _FileTreeDispatcher;
+
+function _load_FileTreeDispatcher() {
+  return _FileTreeDispatcher = _interopRequireDefault(require('./FileTreeDispatcher'));
+}
+
+var _FileTreeDispatcher2;
+
+function _load_FileTreeDispatcher2() {
+  return _FileTreeDispatcher2 = require('./FileTreeDispatcher');
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('./FileTreeHelpers'));
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('./FileTreeStore');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideVcsBase;
+
+function _load_nuclideVcsBase() {
+  return _nuclideVcsBase = require('../../nuclide-vcs-base');
+}
+
+var _nuclideHgRpc;
+
+function _load_nuclideHgRpc() {
+  return _nuclideHgRpc = require('../../nuclide-hg-rpc');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// $FlowFixMe(>=0.53.0) Flow suppress
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,46 +102,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
-import FileTreeHelpers from './FileTreeHelpers';
-import {FileTreeStore} from './FileTreeStore';
-import Immutable from 'immutable';
-import {track} from '../../nuclide-analytics';
-import {repositoryForPath} from '../../nuclide-vcs-base';
-import {hgConstants} from '../../nuclide-hg-rpc';
-import {getLogger} from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {Observable} from 'rxjs';
-import {objectFromMap} from 'nuclide-commons/collection';
-import {fastDebounce} from 'nuclide-commons/observable';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-// $FlowFixMe(>=0.53.0) Flow suppress
-import type React from 'react';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
-import type {WorkingSet} from '../../nuclide-working-sets-common';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-let instance: ?FileTreeActions;
+let instance;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-export default class FileTreeActions {
-  _dispatcher: FileTreeDispatcher;
-  _store: FileTreeStore;
-  _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
+class FileTreeActions {
 
-  static getInstance(): FileTreeActions {
+  static getInstance() {
     if (!instance) {
       instance = new FileTreeActions();
     }
@@ -52,206 +123,202 @@ export default class FileTreeActions {
   }
 
   constructor() {
-    this._dispatcher = FileTreeDispatcher.getInstance();
-    this._store = FileTreeStore.getInstance();
-    this._disposableForRepository = new Immutable.Map();
+    this._dispatcher = (_FileTreeDispatcher || _load_FileTreeDispatcher()).default.getInstance();
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
+    this._disposableForRepository = new (_immutable || _load_immutable()).default.Map();
   }
 
-  setCwd(rootKey: ?string): void {
+  setCwd(rootKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_CWD,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_CWD,
+      rootKey
+    });
+  }
+
+  setRootKeys(rootKeys) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_ROOT_KEYS,
+      rootKeys
+    });
+  }
+
+  clearFilter() {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_FILTER
+    });
+  }
+
+  addExtraProjectSelectionContent(content) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
+      content
+    });
+  }
+
+  removeExtraProjectSelectionContent(content) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
+      content
+    });
+  }
+
+  expandNode(rootKey, nodeKey) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.EXPAND_NODE,
       rootKey,
+      nodeKey
     });
   }
 
-  setRootKeys(rootKeys: Array<string>): void {
+  expandNodeDeep(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_ROOT_KEYS,
-      rootKeys,
-    });
-  }
-
-  clearFilter(): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.CLEAR_FILTER,
-    });
-  }
-
-  addExtraProjectSelectionContent(content: React.Element<any>): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT,
-      content,
-    });
-  }
-
-  removeExtraProjectSelectionContent(content: React.Element<any>): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT,
-      content,
-    });
-  }
-
-  expandNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.EXPAND_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.EXPAND_NODE_DEEP,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  expandNodeDeep(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.EXPAND_NODE_DEEP,
-      rootKey,
-      nodeKey,
-    });
-  }
-
-  deleteSelectedNodes(): void {
-    this._dispatcher.dispatch({actionType: ActionTypes.DELETE_SELECTED_NODES});
+  deleteSelectedNodes() {
+    this._dispatcher.dispatch({ actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.DELETE_SELECTED_NODES });
   }
 
   // Makes sure a specific child exists for a given node. If it does not exist, temporarily
   // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
   // in a tree.
-  ensureChildNode(nodeKey: string): void {
+  ensureChildNode(nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.ENSURE_CHILD_NODE,
-      nodeKey,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ENSURE_CHILD_NODE,
+      nodeKey
     });
   }
 
-  collapseNode(rootKey: string, nodeKey: string): void {
+  collapseNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.COLLAPSE_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.COLLAPSE_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  collapseNodeDeep(rootKey: string, nodeKey: string): void {
+  collapseNodeDeep(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.COLLAPSE_NODE_DEEP,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.COLLAPSE_NODE_DEEP,
       rootKey,
+      nodeKey
+    });
+  }
+
+  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
+      excludeVcsIgnoredPaths
+    });
+  }
+
+  setHideIgnoredNames(hideIgnoredNames) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_HIDE_IGNORED_NAMES,
+      hideIgnoredNames
+    });
+  }
+
+  setIsCalculatingChanges(isCalculatingChanges) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_IS_CALCULATING_CHANGES,
+      isCalculatingChanges
+    });
+  }
+
+  setIgnoredNames(ignoredNames) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_IGNORED_NAMES,
+      ignoredNames
+    });
+  }
+
+  setTrackedNode(rootKey, nodeKey) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_TRACKED_NODE,
       nodeKey,
+      rootKey
     });
   }
 
-  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+  clearTrackedNode() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
-      excludeVcsIgnoredPaths,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_TRACKED_NODE
     });
   }
 
-  setHideIgnoredNames(hideIgnoredNames: boolean): void {
+  clearTrackedNodeIfNotLoading() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_HIDE_IGNORED_NAMES,
-      hideIgnoredNames,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING
     });
   }
 
-  setIsCalculatingChanges(isCalculatingChanges: boolean): void {
+  startReorderDrag(draggedRootKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_IS_CALCULATING_CHANGES,
-      isCalculatingChanges,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.START_REORDER_DRAG,
+      draggedRootKey
     });
   }
 
-  setIgnoredNames(ignoredNames: Array<string>): void {
+  endReorderDrag() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_IGNORED_NAMES,
-      ignoredNames,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.END_REORDER_DRAG
     });
   }
 
-  setTrackedNode(rootKey: string, nodeKey: string): void {
+  reorderDragInto(dragTargetNodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_TRACKED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REORDER_DRAG_INTO,
+      dragTargetNodeKey
+    });
+  }
+
+  reorderRoots() {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REORDER_ROOTS
+    });
+  }
+
+  moveToNode(rootKey, nodeKey) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_TO_NODE,
       nodeKey,
-      rootKey,
+      rootKey
     });
   }
 
-  clearTrackedNode(): void {
+  setUsePreviewTabs(usePreviewTabs) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.CLEAR_TRACKED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_USE_PREVIEW_TABS,
+      usePreviewTabs
     });
   }
 
-  clearTrackedNodeIfNotLoading(): void {
+  setFocusEditorOnFileSelection(focusEditorOnFileSelection) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
+      focusEditorOnFileSelection
     });
   }
 
-  startReorderDrag(draggedRootKey: string): void {
+  setUsePrefixNav(usePrefixNav) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.START_REORDER_DRAG,
-      draggedRootKey,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_USE_PREFIX_NAV,
+      usePrefixNav
     });
   }
 
-  endReorderDrag(): void {
+  setAutoExpandSingleChild(autoExpandSingleChild) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.END_REORDER_DRAG,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
+      autoExpandSingleChild
     });
   }
 
-  reorderDragInto(dragTargetNodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.REORDER_DRAG_INTO,
-      dragTargetNodeKey,
-    });
-  }
-
-  reorderRoots(): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.REORDER_ROOTS,
-    });
-  }
-
-  moveToNode(rootKey: string, nodeKey: string): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.MOVE_TO_NODE,
-      nodeKey,
-      rootKey,
-    });
-  }
-
-  setUsePreviewTabs(usePreviewTabs: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_USE_PREVIEW_TABS,
-      usePreviewTabs,
-    });
-  }
-
-  setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
-      focusEditorOnFileSelection,
-    });
-  }
-
-  setUsePrefixNav(usePrefixNav: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_USE_PREFIX_NAV,
-      usePrefixNav,
-    });
-  }
-
-  setAutoExpandSingleChild(autoExpandSingleChild: boolean): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
-      autoExpandSingleChild,
-    });
-  }
-
-  confirmNode(
-    rootKey: string,
-    nodeKey: string,
-    pending: boolean = false,
-  ): void {
+  confirmNode(rootKey, nodeKey, pending = false) {
     const node = this._store.getNode(rootKey, nodeKey);
     if (node == null) {
       return;
@@ -259,26 +326,25 @@ export default class FileTreeActions {
     if (node.isContainer) {
       if (node.isExpanded) {
         this._dispatcher.dispatch({
-          actionType: ActionTypes.COLLAPSE_NODE,
+          actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.COLLAPSE_NODE,
           nodeKey,
-          rootKey,
+          rootKey
         });
       } else {
         this._dispatcher.dispatch({
-          actionType: ActionTypes.EXPAND_NODE,
+          actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.EXPAND_NODE,
           nodeKey,
-          rootKey,
+          rootKey
         });
       }
     } else {
-      track('file-tree-open-file', {uri: nodeKey});
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-tree-open-file', { uri: nodeKey });
       // goToLocation doesn't support pending panes
       // eslint-disable-next-line rulesdir/atom-apis
-      atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
-        activatePane:
-          (pending && node.conf.focusEditorOnFileSelection) || !pending,
+      atom.workspace.open((_FileTreeHelpers || _load_FileTreeHelpers()).default.keyToPath(nodeKey), {
+        activatePane: pending && node.conf.focusEditorOnFileSelection || !pending,
         searchAllPanes: true,
-        pending,
+        pending
       });
     }
   }
@@ -290,299 +356,283 @@ export default class FileTreeActions {
     }
   }
 
-  openSelectedEntrySplit(
-    nodeKey: string,
-    orientation: atom$PaneSplitOrientation,
-    side: atom$PaneSplitSide,
-  ): void {
+  openSelectedEntrySplit(nodeKey, orientation, side) {
     const pane = atom.workspace.getCenter().getActivePane();
-    atom.workspace.openURIInPane(
-      FileTreeHelpers.keyToPath(nodeKey),
-      pane.split(orientation, side),
-    );
+    atom.workspace.openURIInPane((_FileTreeHelpers || _load_FileTreeHelpers()).default.keyToPath(nodeKey), pane.split(orientation, side));
   }
 
-  setVcsStatuses(
-    rootKey: string,
-    vcsStatuses: {[path: string]: StatusCodeNumberValue},
-  ): void {
+  setVcsStatuses(rootKey, vcsStatuses) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_VCS_STATUSES,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_VCS_STATUSES,
       rootKey,
-      vcsStatuses,
+      vcsStatuses
     });
   }
 
-  invalidateRemovedFolder(): void {
+  invalidateRemovedFolder() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.INVALIDATE_REMOVED_FOLDER,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.INVALIDATE_REMOVED_FOLDER
     });
   }
 
   /**
    * Updates the root repositories to match the provided directories.
    */
-  async updateRepositories(
-    rootDirectories: Array<atom$Directory>,
-  ): Promise<void> {
-    const rootKeys = rootDirectories.map(directory =>
-      FileTreeHelpers.dirPathToKey(directory.getPath()),
-    );
-    const rootRepos: Array<?atom$Repository> = await Promise.all(
+  updateRepositories(rootDirectories) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rootKeys = rootDirectories.map(function (directory) {
+        return (_FileTreeHelpers || _load_FileTreeHelpers()).default.dirPathToKey(directory.getPath());
+      });
+      const rootRepos = yield Promise.all(
       // $FlowFixMe(>=0.55.0) Flow suppress
-      rootDirectories.map(directory => repositoryForPath(directory.getPath())),
-    );
+      rootDirectories.map(function (directory) {
+        return (0, (_nuclideVcsBase || _load_nuclideVcsBase()).repositoryForPath)(directory.getPath());
+      }));
 
-    // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
-    // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
-    // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
-    // created.
+      // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
+      // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
+      // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
+      // created.
 
-    // Group all of the root keys by their repository, excluding any that don't belong to a
-    // repository.
-    const rootKeysForRepository = Immutable.List(rootKeys)
-      .groupBy((rootKey, index) => rootRepos[index])
-      .filter((v, k) => k != null)
-      .map(v => new Immutable.Set(v));
+      // Group all of the root keys by their repository, excluding any that don't belong to a
+      // repository.
+      const rootKeysForRepository = (_immutable || _load_immutable()).default.List(rootKeys).groupBy(function (rootKey, index) {
+        return rootRepos[index];
+      }).filter(function (v, k) {
+        return k != null;
+      }).map(function (v) {
+        return new (_immutable || _load_immutable()).default.Set(v);
+      });
 
-    const prevRepos = this._store.getRepositories();
+      const prevRepos = _this._store.getRepositories();
 
-    // Let the store know we have some new repos!
-    const nextRepos: Immutable.Set<atom$Repository> = new Immutable.Set(
-      rootKeysForRepository.keys(),
-    );
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_REPOSITORIES,
-      repositories: nextRepos,
-    });
+      // Let the store know we have some new repos!
+      const nextRepos = new (_immutable || _load_immutable()).default.Set(rootKeysForRepository.keys());
+      _this._dispatcher.dispatch({
+        actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_REPOSITORIES,
+        repositories: nextRepos
+      });
 
-    const removedRepos = prevRepos.subtract(nextRepos);
-    const addedRepos = nextRepos.subtract(prevRepos);
+      const removedRepos = prevRepos.subtract(nextRepos);
+      const addedRepos = nextRepos.subtract(prevRepos);
 
-    // TODO: Rewrite `_repositoryAdded` to return the subscription instead of adding it to a map as
-    //       a side effect. The map can be created here with something like
-    //       `subscriptions = Immutable.Map(repos).map(this._repositoryAdded)`. Since
-    //       `_repositoryAdded` will no longer be about side effects, it should then be renamed.
-    //       `_repositoryRemoved` could probably be inlined here. That would leave this function as
-    //       the only one doing side-effects.
+      // TODO: Rewrite `_repositoryAdded` to return the subscription instead of adding it to a map as
+      //       a side effect. The map can be created here with something like
+      //       `subscriptions = Immutable.Map(repos).map(this._repositoryAdded)`. Since
+      //       `_repositoryAdded` will no longer be about side effects, it should then be renamed.
+      //       `_repositoryRemoved` could probably be inlined here. That would leave this function as
+      //       the only one doing side-effects.
 
-    // Unsubscribe from removedRepos.
-    removedRepos.forEach(repo => this._repositoryRemoved(repo));
+      // Unsubscribe from removedRepos.
+      removedRepos.forEach(function (repo) {
+        return _this._repositoryRemoved(repo);
+      });
 
-    // Create subscriptions for addedRepos.
-    addedRepos.forEach(repo =>
-      this._repositoryAdded(repo, rootKeysForRepository),
-    );
+      // Create subscriptions for addedRepos.
+      addedRepos.forEach(function (repo) {
+        return _this._repositoryAdded(repo, rootKeysForRepository);
+      });
+    })();
   }
 
-  updateWorkingSet(workingSet: WorkingSet): void {
+  updateWorkingSet(workingSet) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_WORKING_SET,
-      workingSet,
-    });
-  }
-
-  updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_OPEN_FILES_WORKING_SET,
-      openFilesWorkingSet,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_WORKING_SET,
+      workingSet
     });
   }
 
-  updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+  updateOpenFilesWorkingSet(openFilesWorkingSet) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_WORKING_SETS_STORE,
-      workingSetsStore,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_OPEN_FILES_WORKING_SET,
+      openFilesWorkingSet
     });
   }
 
-  startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
+  updateWorkingSetsStore(workingSetsStore) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.START_EDITING_WORKING_SET,
-      editedWorkingSet,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_WORKING_SETS_STORE,
+      workingSetsStore
     });
   }
 
-  finishEditingWorkingSet(): void {
+  startEditingWorkingSet(editedWorkingSet) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.FINISH_EDITING_WORKING_SET,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.START_EDITING_WORKING_SET,
+      editedWorkingSet
     });
   }
 
-  checkNode(rootKey: string, nodeKey: string): void {
+  finishEditingWorkingSet() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.CHECK_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.FINISH_EDITING_WORKING_SET
+    });
+  }
+
+  checkNode(rootKey, nodeKey) {
+    this._dispatcher.dispatch({
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CHECK_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  uncheckNode(rootKey: string, nodeKey: string): void {
+  uncheckNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UNCHECK_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNCHECK_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  setDragHoveredNode(rootKey: string, nodeKey: string): void {
+  setDragHoveredNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_DRAG_HOVERED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_DRAG_HOVERED_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  setSelectedNode(rootKey: string, nodeKey: string): void {
+  setSelectedNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_SELECTED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_SELECTED_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  setFocusedNode(rootKey: string, nodeKey: string): void {
+  setFocusedNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_FOCUSED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_FOCUSED_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  addSelectedNode(rootKey: string, nodeKey: string): void {
+  addSelectedNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.ADD_SELECTED_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ADD_SELECTED_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  unselectNode(rootKey: string, nodeKey: string): void {
+  unselectNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UNSELECT_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNSELECT_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  rangeSelectToNode(rootKey: string, nodeKey: string): void {
+  rangeSelectToNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_TO_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_TO_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  rangeSelectUp(): void {
+  rangeSelectUp() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_UP,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_UP
     });
   }
 
-  rangeSelectDown(): void {
+  rangeSelectDown() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.RANGE_SELECT_DOWN,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_DOWN
     });
   }
 
-  unhoverNode(rootKey: string, nodeKey: string): void {
+  unhoverNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.UNHOVER_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNHOVER_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  moveSelectionUp(): void {
+  moveSelectionUp() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_UP,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_UP
     });
   }
 
-  moveSelectionDown(): void {
+  moveSelectionDown() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_DOWN,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_DOWN
     });
   }
 
-  moveSelectionToTop(): void {
+  moveSelectionToTop() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_TO_TOP,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_TO_TOP
     });
   }
 
-  moveSelectionToBottom(): void {
+  moveSelectionToBottom() {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.MOVE_SELECTION_TO_BOTTOM,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_TO_BOTTOM
     });
   }
 
-  setOpenFilesExpanded(openFilesExpanded: boolean): void {
+  setOpenFilesExpanded(openFilesExpanded) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_OPEN_FILES_EXPANDED,
-      openFilesExpanded,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_OPEN_FILES_EXPANDED,
+      openFilesExpanded
     });
   }
 
-  setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
+  setUncommittedChangesExpanded(uncommittedChangesExpanded) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
-      uncommittedChangesExpanded,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
+      uncommittedChangesExpanded
     });
   }
 
-  setFoldersExpanded(foldersExpanded: boolean): void {
+  setFoldersExpanded(foldersExpanded) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_FOLDERS_EXPANDED,
-      foldersExpanded,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_FOLDERS_EXPANDED,
+      foldersExpanded
     });
   }
 
-  setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  setTargetNode(rootKey, nodeKey) {
     this._dispatcher.dispatch({
-      actionType: ActionTypes.SET_TARGET_NODE,
+      actionType: (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_TARGET_NODE,
       rootKey,
-      nodeKey,
+      nodeKey
     });
   }
 
-  async _repositoryAdded(
-    repo: atom$GitRepository | HgRepositoryClient,
-    rootKeysForRepository: Immutable.Map<
-      atom$Repository,
-      Immutable.Set<string>,
-    >,
-  ): Promise<void> {
-    // We support HgRepositoryClient and GitRepositoryAsync objects.
+  _repositoryAdded(repo, rootKeysForRepository) {
+    var _this2 = this;
 
-    // Observe the repository so that the VCS statuses are kept up to date.
-    // This observer should fire off an initial value after we subscribe to it,
-    // and subsequent values after any changes to the repository.
-    let vcsChanges: Observable<{
-      [filePath: NuclideUri]: StatusCodeNumberValue,
-    }> = Observable.empty();
-    let vcsCalculating: Observable<boolean> = Observable.of(false);
+    return (0, _asyncToGenerator.default)(function* () {
+      // We support HgRepositoryClient and GitRepositoryAsync objects.
 
-    if (repo.isDestroyed()) {
-      // Don't observe anything on a destroyed repo.
-    } else if (repo.getType() === 'git') {
-      // Different repo types emit different events at individual and refresh updates.
-      // Hence, the need to debounce and listen to both change types.
-      vcsChanges = Observable.merge(
-        observableFromSubscribeFunction(repo.onDidChangeStatus.bind(repo)),
-        observableFromSubscribeFunction(repo.onDidChangeStatuses.bind(repo)),
-      )
-        .let(fastDebounce(1000))
-        .startWith(null)
-        .map(_ => this._getCachedPathStatuses(repo));
-    } else if (repo.getType() === 'hg') {
-      // We special-case the HgRepository because it offers up the
-      // required observable directly, and because it actually allows us to pick
-      // between two different observables.
-      const hgRepo: HgRepositoryClient = (repo: any);
+      // Observe the repository so that the VCS statuses are kept up to date.
+      // This observer should fire off an initial value after we subscribe to it,
+      let vcsChanges = _rxjsBundlesRxMinJs.Observable.empty();
+      let vcsCalculating = _rxjsBundlesRxMinJs.Observable.of(false);
 
-      const hgChanges = FileTreeHelpers.observeUncommittedChangesKindConfigKey()
-        .map(kind => {
+      if (repo.isDestroyed()) {
+        // Don't observe anything on a destroyed repo.
+      } else if (repo.getType() === 'git') {
+        // Different repo types emit different events at individual and refresh updates.
+        // Hence, the need to debounce and listen to both change types.
+        vcsChanges = _rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(repo.onDidChangeStatus.bind(repo)), (0, (_event || _load_event()).observableFromSubscribeFunction)(repo.onDidChangeStatuses.bind(repo))).let((0, (_observable || _load_observable()).fastDebounce)(1000)).startWith(null).map(function (_) {
+          return _this2._getCachedPathStatuses(repo);
+        });
+      } else if (repo.getType() === 'hg') {
+        // We special-case the HgRepository because it offers up the
+        // required observable directly, and because it actually allows us to pick
+        const hgRepo = repo;
+
+        const hgChanges = (_FileTreeHelpers || _load_FileTreeHelpers()).default.observeUncommittedChangesKindConfigKey().map(function (kind) {
           switch (kind) {
             case 'Uncommitted changes':
               return hgRepo.observeUncommittedStatusChanges();
@@ -591,56 +641,51 @@ export default class FileTreeActions {
             case 'Stack changes':
               return hgRepo.observeStackStatusChanges();
             default:
-              (kind: empty);
-              const error = Observable.throw(
-                new Error('Unrecognized ShowUncommittedChangesKind config'),
-              );
-              return {statusChanges: error, isCalculatingChanges: error};
+              kind;
+              const error = _rxjsBundlesRxMinJs.Observable.throw(new Error('Unrecognized ShowUncommittedChangesKind config'));
+              return { statusChanges: error, isCalculatingChanges: error };
           }
-        })
-        .share();
+        }).share();
 
-      vcsChanges = hgChanges.switchMap(c => c.statusChanges).map(objectFromMap);
-      vcsCalculating = hgChanges.switchMap(c => c.isCalculatingChanges);
-    }
-
-    const subscription = vcsChanges.subscribe(statusCodeForPath => {
-      for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
-        this.setVcsStatuses(rootKeyForRepo, statusCodeForPath);
+        vcsChanges = hgChanges.switchMap(function (c) {
+          return c.statusChanges;
+        }).map((_collection || _load_collection()).objectFromMap);
+        vcsCalculating = hgChanges.switchMap(function (c) {
+          return c.isCalculatingChanges;
+        });
       }
-    });
 
-    const subscriptionCalculating = vcsCalculating.subscribe(
-      isCalculatingChanges => {
-        this.setIsCalculatingChanges(isCalculatingChanges);
-      },
-    );
+      const subscription = vcsChanges.subscribe(function (statusCodeForPath) {
+        for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
+          _this2.setVcsStatuses(rootKeyForRepo, statusCodeForPath);
+        }
+      });
 
-    this._disposableForRepository = this._disposableForRepository.set(
-      repo,
-      new UniversalDisposable(subscription, subscriptionCalculating),
-    );
+      const subscriptionCalculating = vcsCalculating.subscribe(function (isCalculatingChanges) {
+        _this2.setIsCalculatingChanges(isCalculatingChanges);
+      });
+
+      _this2._disposableForRepository = _this2._disposableForRepository.set(repo, new (_UniversalDisposable || _load_UniversalDisposable()).default(subscription, subscriptionCalculating));
+    })();
   }
 
   /**
    * Fetches a consistent object map from absolute file paths to
    * their corresponding `StatusCodeNumber` for easy representation with the file tree.
    */
-  _getCachedPathStatuses(
-    repo: atom$GitRepository | HgRepositoryClient,
-  ): {[filePath: NuclideUri]: StatusCodeNumberValue} {
+  _getCachedPathStatuses(repo) {
     let relativeCodePaths;
     if (repo.getType() === 'hg') {
-      const hgRepo: HgRepositoryClient = (repo: any);
+      const hgRepo = repo;
       // `hg` already comes from `HgRepositoryClient` in `StatusCodeNumber` format.
       relativeCodePaths = hgRepo.getCachedPathStatuses();
     } else if (repo.getType() === 'git') {
-      const gitRepo: atom$GitRepository = (repo: any);
-      const {statuses} = gitRepo;
+      const gitRepo = repo;
+      const { statuses } = gitRepo;
       const internalGitRepo = gitRepo.getRepo();
       relativeCodePaths = {};
       // Transform `git` bit numbers to `StatusCodeNumber` format.
-      const {StatusCodeNumber} = hgConstants;
+      const { StatusCodeNumber } = (_nuclideHgRpc || _load_nuclideHgRpc()).hgConstants;
       for (const relativePath in statuses) {
         const gitStatusNumber = statuses[relativePath];
         let statusCode;
@@ -655,9 +700,7 @@ export default class FileTreeActions {
         } else if (internalGitRepo.isStatusDeleted(gitStatusNumber)) {
           statusCode = StatusCodeNumber.REMOVED;
         } else {
-          getLogger('nuclide-file-tree').warn(
-            `Unrecognized git status number ${gitStatusNumber}`,
-          );
+          (0, (_log4js || _load_log4js()).getLogger)('nuclide-file-tree').warn(`Unrecognized git status number ${gitStatusNumber}`);
           statusCode = StatusCodeNumber.MODIFIED;
         }
         relativeCodePaths[relativePath] = statusCode;
@@ -668,13 +711,13 @@ export default class FileTreeActions {
     const repoRoot = repo.getWorkingDirectory();
     const absoluteCodePaths = {};
     for (const relativePath in relativeCodePaths) {
-      const absolutePath = nuclideUri.join(repoRoot, relativePath);
+      const absolutePath = (_nuclideUri || _load_nuclideUri()).default.join(repoRoot, relativePath);
       absoluteCodePaths[absolutePath] = relativeCodePaths[relativePath];
     }
     return absoluteCodePaths;
   }
 
-  _repositoryRemoved(repo: atom$Repository) {
+  _repositoryRemoved(repo) {
     const disposable = this._disposableForRepository.get(repo);
     if (disposable == null) {
       // There is a small chance that the add/remove of the Repository could happen so quickly that
@@ -688,3 +731,4 @@ export default class FileTreeActions {
     disposable.dispose();
   }
 }
+exports.default = FileTreeActions;

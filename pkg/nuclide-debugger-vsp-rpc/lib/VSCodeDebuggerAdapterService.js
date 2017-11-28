@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.VSCodeDebuggerAdapterService = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../../nuclide-debugger-common');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,80 +22,59 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AtomNotification,
-  DebuggerConfigAction,
-} from '../../nuclide-debugger-base/lib/types';
-import type {ConnectableObservable} from 'rxjs';
-import type {
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from '../../nuclide-debugger-common/lib/types';
+class VSCodeDebuggerAdapterService extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerRpcServiceBase {
 
-import {
-  DebuggerRpcServiceBase,
-  VsDebugSessionTranslator,
-} from '../../nuclide-debugger-common';
-
-export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
-  _translator: ?VsDebugSessionTranslator;
-  _adapterType: VsAdapterType;
-
-  constructor(adapterType: VsAdapterType) {
+  constructor(adapterType) {
     super(adapterType);
     this._adapterType = adapterType;
   }
 
-  async debug(
-    adapter: VSAdapterExecutableInfo,
-    debugMode: DebuggerConfigAction,
-    args: Object,
-  ): Promise<string> {
-    const translator = (this._translator = new VsDebugSessionTranslator(
-      this._adapterType,
-      adapter,
-      debugMode,
-      args,
-      this.getClientCallback(),
-      this.getLogger(),
-    ));
-    this.getSubscriptions().add(
-      translator,
-      translator.observeSessionEnd().subscribe(this.dispose.bind(this)),
-      () => (this._translator = null),
-    );
-    // Start the session, but don't wait for its initialization sequence.
-    await translator.initilize();
-    return `${this._adapterType} debugger launched`;
+  debug(adapter, debugMode, args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const translator = _this._translator = new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsDebugSessionTranslator(_this._adapterType, adapter, debugMode, args, _this.getClientCallback(), _this.getLogger());
+      _this.getSubscriptions().add(translator, translator.observeSessionEnd().subscribe(_this.dispose.bind(_this)), function () {
+        return _this._translator = null;
+      });
+      // Start the session, but don't wait for its initialization sequence.
+      yield translator.initilize();
+      return `${_this._adapterType} debugger launched`;
+    })();
   }
 
-  async sendCommand(message: string): Promise<void> {
-    if (this._translator == null) {
-      this.getLogger().info(`No active session / translator: ${message}`);
-    } else {
-      this._translator.processCommand(JSON.parse(message));
-    }
+  sendCommand(message) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this2._translator == null) {
+        _this2.getLogger().info(`No active session / translator: ${message}`);
+      } else {
+        _this2._translator.processCommand(JSON.parse(message));
+      }
+    })();
   }
 
   // Explicit override of service APIs for framrwork parser.
 
-  getOutputWindowObservable(): ConnectableObservable<string> {
+  getOutputWindowObservable() {
     return super.getOutputWindowObservable();
   }
 
-  getAtomNotificationObservable(): ConnectableObservable<AtomNotification> {
+  getAtomNotificationObservable() {
     return super.getAtomNotificationObservable();
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
+  getServerMessageObservable() {
     return super.getServerMessageObservable();
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     return super.dispose();
   }
 }
+exports.VSCodeDebuggerAdapterService = VSCodeDebuggerAdapterService;

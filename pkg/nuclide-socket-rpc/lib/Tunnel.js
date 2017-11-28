@@ -1,135 +1,139 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getLogger} from 'log4js';
-import {ConnectableObservable, Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteSocket = undefined;
 
-import net from 'net';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {Connection, ConnectionFactory} from './Connection';
-import type {SocketEvent, TunnelDescriptor, IRemoteSocket} from './types.js';
+exports.createTunnel = createTunnel;
 
-export function createTunnel(
-  td: TunnelDescriptor,
-  cf: ConnectionFactory,
-): ConnectableObservable<SocketEvent> {
-  return Observable.create(observer => {
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _net = _interopRequireDefault(require('net'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createTunnel(td, cf) {
+  var _this = this;
+
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     const descriptor = td;
     trace(`Tunnel: creating tunnel -- ${tunnelDescription(descriptor)}`);
 
-    const {port, family} = descriptor.from;
-    const connections: Map<number, Promise<Connection>> = new Map();
+    const { port, family } = descriptor.from;
+    const connections = new Map();
 
     // set up server to start listening for connections
     // on client_connected
-    const listener: net.Server = net.createServer(async socket => {
-      const clientPort = socket.remotePort;
+    const listener = _net.default.createServer((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (socket) {
+        const clientPort = socket.remotePort;
 
-      trace('Tunnel: client connected on remote port ' + clientPort);
-      observer.next({type: 'client_connected', clientPort});
+        trace('Tunnel: client connected on remote port ' + clientPort);
+        observer.next({ type: 'client_connected', clientPort });
 
-      // create outgoing connection using connection factory
-      const connectionPromise = cf.createConnection(
-        td.to,
-        new RemoteSocket(socket),
-      );
+        // create outgoing connection using connection factory
+        const connectionPromise = cf.createConnection(td.to, new RemoteSocket(socket));
 
-      connections.set(clientPort, connectionPromise);
+        connections.set(clientPort, connectionPromise);
 
-      // set up socket listeners
-      socket.on('timeout', () => {
-        trace(`Tunnel: timeout (port: ${clientPort}, ${this.toString()})`);
-      });
-
-      socket.on('end', () => {
-        trace(
-          `Tunnel: end (port: ${clientPort}, ${tunnelDescription(descriptor)})`,
-        );
-      });
-
-      socket.on('error', err => {
-        trace(
-          `Tunnel: error (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
-        );
-        trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
-        socket.destroy(err);
-      });
-
-      // on data from incoming client
-      // write data to the outgoing connection
-      socket.on('data', data => {
-        connectionPromise.then(connection => connection.write(data));
-      });
-
-      socket.on('close', () => {
-        // on client_disconnect remove and dispose the connection
-        trace(
-          `Tunnel: close (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
-        );
-        connectionPromise.then(connection => {
-          connection.dispose();
-          connections.delete(clientPort);
+        // set up socket listeners
+        socket.on('timeout', function () {
+          trace(`Tunnel: timeout (port: ${clientPort}, ${_this.toString()})`);
         });
-        observer.next({type: 'client_disconnected', clientPort});
+
+        socket.on('end', function () {
+          trace(`Tunnel: end (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+        });
+
+        socket.on('error', function (err) {
+          trace(`Tunnel: error (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+          trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
+          socket.destroy(err);
+        });
+
+        // on data from incoming client
+        // write data to the outgoing connection
+        socket.on('data', function (data) {
+          connectionPromise.then(function (connection) {
+            return connection.write(data);
+          });
+        });
+
+        socket.on('close', function () {
+          // on client_disconnect remove and dispose the connection
+          trace(`Tunnel: close (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+          connectionPromise.then(function (connection) {
+            connection.dispose();
+            connections.delete(clientPort);
+          });
+          observer.next({ type: 'client_disconnected', clientPort });
+        });
       });
-    });
+
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })());
 
     listener.on('error', err => {
       observer.error(err);
     });
 
-    listener.listen({host: family === 6 ? '::' : '0.0.0.0', port}, () => {
+    listener.listen({ host: family === 6 ? '::' : '0.0.0.0', port }, () => {
       trace('Tunnel: server listening on port ' + port);
-      observer.next({type: 'server_started'});
+      observer.next({ type: 'server_started' });
     });
 
     return () => {
       trace('Tunnel: shutting down tunnel');
-      connections.forEach(connectionPromise =>
-        connectionPromise.then(conn => {
-          conn.dispose();
-        }),
-      );
+      connections.forEach(connectionPromise => connectionPromise.then(conn => {
+        conn.dispose();
+      }));
       connections.clear();
       cf.dispose();
       listener.close();
     };
   }).publish();
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function tunnelDescription(tunnel) {
+  return `${tunnel.from.host}:${tunnel.from.port}->${tunnel.to.host}:${tunnel.to.port}`;
 }
 
-function tunnelDescription(tunnel: TunnelDescriptor) {
-  return `${tunnel.from.host}:${tunnel.from.port}->${tunnel.to.host}:${tunnel.to
-    .port}`;
-}
+class RemoteSocket {
 
-export class RemoteSocket implements IRemoteSocket {
-  _socket: net.Socket;
-
-  constructor(socket: net.Socket) {
+  constructor(socket) {
     this._socket = socket;
   }
 
-  write(data: Buffer) {
+  write(data) {
     this._socket.write(data);
   }
 
-  dispose(): void {
+  dispose() {
     this._socket.end();
   }
 }
 
-function trace(message: string) {
-  getLogger('SocketService').trace(message);
+exports.RemoteSocket = RemoteSocket;
+function trace(message) {
+  (0, (_log4js || _load_log4js()).getLogger)('SocketService').trace(message);
 }

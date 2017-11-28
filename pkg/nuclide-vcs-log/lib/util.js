@@ -1,3 +1,9 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.shortNameForAuthor = shortNameForAuthor;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +11,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -21,7 +27,7 @@ const HG_EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\b/;
  * return the beginning part of the email, iff an email is present.
  * The examples above would become 'foo'.
  */
-export function shortNameForAuthor(blameName: string): string {
+function shortNameForAuthor(blameName) {
   const match = blameName.match(HG_EMAIL_REGEX);
   // Index 0 will be the whole email. Index 1 is the capture group.
   return match ? match[1] : blameName;

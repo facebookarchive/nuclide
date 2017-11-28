@@ -1,80 +1,169 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
-/* global HTMLElement */
+'use strict';
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-import invariant from 'assert';
-import {List} from 'react-virtualized';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.VirtualizedFileTree = undefined;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _react = _interopRequireWildcard(require('react'));
 
-import {FileTreeStore} from '../lib/FileTreeStore';
-import FileTreeActions from '../lib/FileTreeActions';
-import {FileTreeEntryComponent} from './FileTreeEntryComponent';
-import {ProjectSelection} from './ProjectSelection';
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactVirtualized;
+
+function _load_reactVirtualized() {
+  return _reactVirtualized = require('react-virtualized');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('../lib/FileTreeStore');
+}
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
+
+var _FileTreeEntryComponent;
+
+function _load_FileTreeEntryComponent() {
+  return _FileTreeEntryComponent = require('./FileTreeEntryComponent');
+}
+
+var _ProjectSelection;
+
+function _load_ProjectSelection() {
+  return _ProjectSelection = require('./ProjectSelection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // flowlint-next-line untyped-type-import:off
-import type Immutable from 'immutable';
-import type {FileTreeNode} from '../lib/FileTreeNode';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+const BUFFER_ELEMENTS = 10; /**
+                             * Copyright (c) 2015-present, Facebook, Inc.
+                             * All rights reserved.
+                             *
+                             * This source code is licensed under the license found in the LICENSE file in
+                             * the root directory of this source tree.
+                             *
+                             * 
+                             * @format
+                             */
+/* global HTMLElement */
 
-type State = {|
-  trackedIndex: ?number,
-  isEditingWorkingSet: boolean,
-  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
-  shownNodes: number,
-  selectedNodes: Immutable.Set<FileTreeNode>,
-  focusedNodes: Immutable.Set<FileTreeNode>,
-  rootHeight: ?number,
-  nodeHeight: ?number,
-  footerHeight: ?number,
-|};
-
-type Props = {|
-  onMouseEnter: (event: SyntheticMouseEvent<>) => mixed,
-  onMouseLeave: (event: SyntheticMouseEvent<>) => mixed,
-  onScroll: (scrollTop: number) => mixed,
-  height: number,
-  width: number,
-  initialScrollTop: number,
-|};
-
-type RowType = 'root' | 'node' | 'footer';
-
-const BUFFER_ELEMENTS = 10;
 const DEFAULT_ROOT_HEIGHT = 30;
 const DEFAULT_NODE_HEIGHT = 24;
 const DEFAULT_FOOTER_HEIGHT = 74;
 
-export class VirtualizedFileTree extends React.Component<Props, State> {
-  _store: FileTreeStore;
-  _disposables: UniversalDisposable;
-  _actions: FileTreeActions;
-  _getNodeByIndex: (index: number) => ?FileTreeNode;
+class VirtualizedFileTree extends _react.Component {
 
-  _listRef: ?List;
-  _rootRef: ?FileTreeEntryComponent;
-  _nodeRef: ?FileTreeEntryComponent;
-  _footerRef: ?ProjectSelection;
-
-  _indexOfFirstRowInView: number;
-  _indexOfLastRowInView: number;
-  _nextScrollingIsProgrammatic: boolean;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._store = FileTreeStore.getInstance();
-    this._actions = FileTreeActions.getInstance();
+
+    this._setListRef = node => {
+      this._listRef = node;
+    };
+
+    this._setRootRef = node => {
+      this._rootRef = node;
+    };
+
+    this._setNodeRef = node => {
+      this._nodeRef = node;
+    };
+
+    this._setFooterRef = node => {
+      this._footerRef = node;
+    };
+
+    this._rowHeight = args => {
+      const { index } = args;
+      const rowType = this._rowTypeMapper(index);
+
+      switch (rowType) {
+        case 'root':
+          return this.state.rootHeight == null ? DEFAULT_ROOT_HEIGHT : this.state.rootHeight;
+        case 'node':
+          return this.state.nodeHeight == null ? DEFAULT_NODE_HEIGHT : this.state.nodeHeight;
+        default:
+          return this.state.footerHeight == null ? DEFAULT_FOOTER_HEIGHT : this.state.footerHeight;
+      }
+    };
+
+    this._handleScroll = args => {
+      const { scrollTop } = args;
+      if (!this._nextScrollingIsProgrammatic && this.state.trackedIndex != null) {
+        this._actions.clearTrackedNode();
+      }
+      this._nextScrollingIsProgrammatic = false;
+      this.props.onScroll(scrollTop);
+    };
+
+    this._rowRenderer = args => {
+      const { index, key, style } = args;
+
+      if (index === this.state.shownNodes) {
+        // The footer
+        return _react.createElement(
+          'div',
+          { key: key, style: style },
+          _react.createElement((_ProjectSelection || _load_ProjectSelection()).ProjectSelection, {
+            ref: this._setFooterRef,
+            remeasureHeight: this._clearFooterHeight
+          })
+        );
+      } else {
+        const node = this._getNodeByIndex(index);
+        if (node == null) {
+          return null;
+        }
+
+        return _react.createElement(
+          'div',
+          { key: key, style: style },
+          _react.createElement((_FileTreeEntryComponent || _load_FileTreeEntryComponent()).FileTreeEntryComponent, {
+            ref: node.isRoot ? this._setRootRef : this._setNodeRef,
+            node: node,
+            selectedNodes: this.state.selectedNodes,
+            focusedNodes: this.state.focusedNodes
+          })
+        );
+      }
+    };
+
+    this._onRowsRendered = args => {
+      const { startIndex, stopIndex } = args;
+      this._indexOfFirstRowInView = startIndex;
+      this._indexOfLastRowInView = stopIndex;
+
+      if (this.state.trackedIndex != null && this.state.trackedIndex >= startIndex && this.state.trackedIndex <= stopIndex) {
+        this._actions.clearTrackedNodeIfNotLoading();
+      }
+    };
+
+    this._clearFooterHeight = () => {
+      this.setState({ footerHeight: null });
+    };
+
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
+    this._actions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance();
     this._getNodeByIndex = this._buildGetNodeByIndex(this._store.roots);
 
     const shownNodes = countShownNodes(this._store.roots);
@@ -87,26 +176,24 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       focusedNodes: this._store.selectionManager.focusedNodes(),
       rootHeight: null,
       nodeHeight: null,
-      footerHeight: null,
+      footerHeight: null
     };
 
     this._indexOfFirstRowInView = 0;
     this._indexOfLastRowInView = 0;
     this._nextScrollingIsProgrammatic = false;
 
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._processStoreUpdate();
-    this._disposables.add(
-      this._store.subscribe(() => this._processStoreUpdate()),
-    );
+    this._disposables.add(this._store.subscribe(() => this._processStoreUpdate()));
 
     this._remeasureHeights();
   }
 
-  componentWillUpdate(nextProps: Props, nextState: State): void {
+  componentWillUpdate(nextProps, nextState) {
     if (this.state.shownNodes !== nextState.shownNodes) {
       // Some folder was expanded/collaplsed or roots were modified.
       // In some themes the height of a root node is different from the height of plain node
@@ -118,22 +205,25 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._remeasureHeights();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _remeasureHeights(): void {
+  _remeasureHeights() {
     let heightUpdated = false;
     const newState = {};
 
     if (this.state.rootHeight == null && this._rootRef != null) {
-      const rootNode = ReactDOM.findDOMNode(this._rootRef);
+      const rootNode = _reactDom.default.findDOMNode(this._rootRef);
       if (rootNode != null) {
-        invariant(rootNode instanceof HTMLElement);
+        if (!(rootNode instanceof HTMLElement)) {
+          throw new Error('Invariant violation: "rootNode instanceof HTMLElement"');
+        }
+
         const rootHeight = rootNode.clientHeight;
         if (rootHeight > 0) {
           newState.rootHeight = rootHeight;
@@ -143,9 +233,12 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
 
     if (this.state.nodeHeight == null && this._nodeRef != null) {
-      const node = ReactDOM.findDOMNode(this._nodeRef);
+      const node = _reactDom.default.findDOMNode(this._nodeRef);
       if (node != null) {
-        invariant(node instanceof HTMLElement);
+        if (!(node instanceof HTMLElement)) {
+          throw new Error('Invariant violation: "node instanceof HTMLElement"');
+        }
+
         const nodeHeight = node.clientHeight;
         if (nodeHeight > 0) {
           newState.nodeHeight = nodeHeight;
@@ -155,9 +248,12 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
 
     if (this.state.footerHeight == null && this._footerRef != null) {
-      const footer = ReactDOM.findDOMNode(this._footerRef);
+      const footer = _reactDom.default.findDOMNode(this._footerRef);
       if (footer != null) {
-        invariant(footer instanceof HTMLElement);
+        if (!(footer instanceof HTMLElement)) {
+          throw new Error('Invariant violation: "footer instanceof HTMLElement"');
+        }
+
         const footerHeight = footer.clientHeight;
         if (footerHeight > 0) {
           newState.footerHeight = footerHeight;
@@ -174,7 +270,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     }
   }
 
-  _processStoreUpdate(): void {
+  _processStoreUpdate() {
     const isEditingWorkingSet = this._store.isEditingWorkingSet();
     const roots = this._store.roots;
     const shownNodes = countShownNodes(roots);
@@ -188,16 +284,16 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       roots,
       shownNodes,
       selectedNodes,
-      focusedNodes,
+      focusedNodes
     });
   }
 
-  render(): React.Node {
+  render() {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
       'tree-view': true,
-      'nuclide-file-tree-editing-working-set': this.state.isEditingWorkingSet,
+      'nuclide-file-tree-editing-working-set': this.state.isEditingWorkingSet
     };
 
     let trackedIndex = undefined;
@@ -206,10 +302,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
     if (this.state.trackedIndex != null) {
       trackedIndex = this.state.trackedIndex;
-      if (
-        trackedIndex <= this._indexOfFirstRowInView ||
-        trackedIndex >= this._indexOfLastRowInView
-      ) {
+      if (trackedIndex <= this._indexOfFirstRowInView || trackedIndex >= this._indexOfLastRowInView) {
         scrollToAlignment = 'center';
         willBeActivelyScrolling = true;
       }
@@ -223,107 +316,59 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
     this._nextScrollingIsProgrammatic = willBeActivelyScrolling;
 
-    return (
-      <div
-        className={classnames(
-          'list-tree has-collapsable-children file-tree-scroller',
-          classes,
-        )}
-        tabIndex={0}
-        onMouseEnter={this.props.onMouseEnter}
-        onMouseLeave={this.props.onMouseLeave}>
-        <List
-          height={this.props.height}
-          width={this.props.width}
-          ref={this._setListRef}
-          rowCount={this.state.shownNodes + 1}
-          rowRenderer={this._rowRenderer}
-          rowHeight={this._rowHeight}
-          scrollToIndex={trackedIndex}
-          scrollTop={scrollTop}
-          scrollToAlignment={scrollToAlignment}
-          overscanRowCount={BUFFER_ELEMENTS}
-          onScroll={this._handleScroll}
-          rootHeight={this.state.rootHeight}
-          nodeHeight={this.state.nodeHeight}
-          footerHeight={this.state.footerHeight}
-          onRowsRendered={this._onRowsRendered}
-          tabIndex={null}
-          containerStyle={{'overflow-x': 'scroll'}}
-          /* This is a workaround. React doesn't detect that a change in this component's state
-            should affect the properties of this List's children. Maybe it's an interop problem
-            with react-virtualized.
-            To workaround this, we add the properties below as properties
-            of the List element itself
-            List does not use them, but they will give a hint to React that the component
-            should be updated, and this will cause it to rerender its children.
-          */
-          roots={this.state.roots}
-          selectedNodes={this.state.selectedNodes}
-          focusedNodes={this.state.focusedNodes}
-        />
-      </div>
+    return _react.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)('list-tree has-collapsable-children file-tree-scroller', classes),
+        tabIndex: 0,
+        onMouseEnter: this.props.onMouseEnter,
+        onMouseLeave: this.props.onMouseLeave },
+      _react.createElement((_reactVirtualized || _load_reactVirtualized()).List, {
+        height: this.props.height,
+        width: this.props.width,
+        ref: this._setListRef,
+        rowCount: this.state.shownNodes + 1,
+        rowRenderer: this._rowRenderer,
+        rowHeight: this._rowHeight,
+        scrollToIndex: trackedIndex,
+        scrollTop: scrollTop,
+        scrollToAlignment: scrollToAlignment,
+        overscanRowCount: BUFFER_ELEMENTS,
+        onScroll: this._handleScroll,
+        rootHeight: this.state.rootHeight,
+        nodeHeight: this.state.nodeHeight,
+        footerHeight: this.state.footerHeight,
+        onRowsRendered: this._onRowsRendered,
+        tabIndex: null,
+        containerStyle: { 'overflow-x': 'scroll' }
+        /* This is a workaround. React doesn't detect that a change in this component's state
+          should affect the properties of this List's children. Maybe it's an interop problem
+          with react-virtualized.
+          To workaround this, we add the properties below as properties
+          of the List element itself
+          List does not use them, but they will give a hint to React that the component
+          should be updated, and this will cause it to rerender its children.
+        */
+        , roots: this.state.roots,
+        selectedNodes: this.state.selectedNodes,
+        focusedNodes: this.state.focusedNodes
+      })
     );
   }
 
-  _setListRef = (node: ?React$ElementRef<List>): void => {
-    this._listRef = node;
-  };
+  // $FlowFixMe -- flow does not recognize FileTreeEntryComponent as React component
+
 
   // $FlowFixMe -- flow does not recognize FileTreeEntryComponent as React component
-  _setRootRef = (node: ?React$ElementRef<FileTreeEntryComponent>): void => {
-    this._rootRef = node;
-  };
 
-  // $FlowFixMe -- flow does not recognize FileTreeEntryComponent as React component
-  _setNodeRef = (node: ?React$ElementRef<FileTreeEntryComponent>): void => {
-    this._nodeRef = node;
-  };
 
   // $FlowFixMe -- flow does not recognize ProjectSelection as React component
-  _setFooterRef = (node: ?React$ElementRef<ProjectSelection>): void => {
-    this._footerRef = node;
-  };
 
-  _rowHeight = (args: {index: number}): number => {
-    const {index} = args;
-    const rowType = this._rowTypeMapper(index);
 
-    switch (rowType) {
-      case 'root':
-        return this.state.rootHeight == null
-          ? DEFAULT_ROOT_HEIGHT
-          : this.state.rootHeight;
-      case 'node':
-        return this.state.nodeHeight == null
-          ? DEFAULT_NODE_HEIGHT
-          : this.state.nodeHeight;
-      default:
-        return this.state.footerHeight == null
-          ? DEFAULT_FOOTER_HEIGHT
-          : this.state.footerHeight;
-    }
-  };
-
-  _handleScroll = (args: {
-    clientHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  }): void => {
-    const {scrollTop} = args;
-    if (!this._nextScrollingIsProgrammatic && this.state.trackedIndex != null) {
-      this._actions.clearTrackedNode();
-    }
-    this._nextScrollingIsProgrammatic = false;
-    this.props.onScroll(scrollTop);
-  };
-
-  _buildGetNodeByIndex(
-    roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
-  ): (index: number) => ?FileTreeNode {
+  _buildGetNodeByIndex(roots) {
     let prevRoots = roots;
     let prevIndexQuery = -1;
-    let prevNode: ?FileTreeNode = null;
+    let prevNode = null;
 
     const fallbackGetByIndex = index => {
       prevRoots = this.state.roots;
@@ -360,68 +405,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     };
   }
 
-  _rowRenderer = (args: {
-    index: number,
-    isScrolling: boolean,
-    key: string,
-    parent: mixed,
-    style: Object,
-  }): ?React$Node => {
-    const {index, key, style} = args;
-
-    if (index === this.state.shownNodes) {
-      // The footer
-      return (
-        <div key={key} style={style}>
-          <ProjectSelection
-            ref={this._setFooterRef}
-            remeasureHeight={this._clearFooterHeight}
-          />
-        </div>
-      );
-    } else {
-      const node = this._getNodeByIndex(index);
-      if (node == null) {
-        return null;
-      }
-
-      return (
-        <div key={key} style={style}>
-          <FileTreeEntryComponent
-            ref={node.isRoot ? this._setRootRef : this._setNodeRef}
-            node={node}
-            selectedNodes={this.state.selectedNodes}
-            focusedNodes={this.state.focusedNodes}
-          />
-        </div>
-      );
-    }
-  };
-
-  _onRowsRendered = (args: {
-    overscanStartIndex: number,
-    overscanStopIndex: number,
-    startIndex: number,
-    stopIndex: number,
-  }): void => {
-    const {startIndex, stopIndex} = args;
-    this._indexOfFirstRowInView = startIndex;
-    this._indexOfLastRowInView = stopIndex;
-
-    if (
-      this.state.trackedIndex != null &&
-      this.state.trackedIndex >= startIndex &&
-      this.state.trackedIndex <= stopIndex
-    ) {
-      this._actions.clearTrackedNodeIfNotLoading();
-    }
-  };
-
-  _clearFooterHeight = (): void => {
-    this.setState({footerHeight: null});
-  };
-
-  _rowTypeMapper(rowIndex: number): RowType {
+  _rowTypeMapper(rowIndex) {
     if (rowIndex === this.state.shownNodes) {
       return 'footer';
     }
@@ -435,10 +419,8 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 }
 
-function findIndexOfTheTrackedNode(
-  store: FileTreeStore,
-  shownNodes: number,
-): ?number {
+exports.VirtualizedFileTree = VirtualizedFileTree;
+function findIndexOfTheTrackedNode(store, shownNodes) {
   const trackedNode = store.getTrackedNode();
   if (trackedNode == null) {
     return null;
@@ -453,8 +435,6 @@ function findIndexOfTheTrackedNode(
   return inTreeTrackedNode;
 }
 
-function countShownNodes(
-  roots: Immutable.OrderedMap<mixed, FileTreeNode>,
-): number {
+function countShownNodes(roots) {
   return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 }

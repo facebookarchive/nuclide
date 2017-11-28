@@ -1,18 +1,20 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getInitializationOptions = getInitializationOptions;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // TODO pelmers: expose some of these in the atom config
-function staticInitializationOptions(): Object {
+function staticInitializationOptions() {
   // Copied from the corresponding vs-code plugin
   return {
     indexWhitelist: [],
@@ -33,14 +35,22 @@ function staticInitializationOptions(): Object {
     diagnosticsOnCodeCompletion: true,
     codeLensOnLocalVariables: false,
     enableSnippetInsertion: true,
-    clientVersion: 3,
+    clientVersion: 3
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function getInitializationOptions(compilationDbDir: string): Object {
-  return {
-    ...staticInitializationOptions(),
+function getInitializationOptions(compilationDbDir) {
+  return Object.assign({}, staticInitializationOptions(), {
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: nuclideUri.join(compilationDbDir, 'cquery_cache'),
-  };
+    cacheDirectory: (_nuclideUri || _load_nuclideUri()).default.join(compilationDbDir, 'cquery_cache')
+  });
 }

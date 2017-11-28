@@ -1,3 +1,59 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _PythonLaunchAttachProvider;
+
+function _load_PythonLaunchAttachProvider() {
+  return _PythonLaunchAttachProvider = _interopRequireDefault(require('./PythonLaunchAttachProvider'));
+}
+
+var _NodeLaunchAttachProvider;
+
+function _load_NodeLaunchAttachProvider() {
+  return _NodeLaunchAttachProvider = _interopRequireDefault(require('./NodeLaunchAttachProvider'));
+}
+
+var _ReactNativeLaunchAttachProvider;
+
+function _load_ReactNativeLaunchAttachProvider() {
+  return _ReactNativeLaunchAttachProvider = _interopRequireDefault(require('./ReactNativeLaunchAttachProvider'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _path = _interopRequireDefault(require('path'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,90 +61,65 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import passesGK from '../../commons-node/passesGK';
-import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
-import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
-import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {listenToRemoteDebugCommands} from './utils';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
-import path from 'path';
-
 class Activation {
-  _subscriptions: UniversalDisposable;
 
   constructor() {
-    this._subscriptions = new UniversalDisposable(
-      listenToRemoteDebugCommands(),
-    );
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_utils || _load_utils()).listenToRemoteDebugCommands)());
 
     this._registerPythonDebugProvider();
     this._registerNodeDebugProvider();
     this._registerReactNativeDebugProvider();
   }
 
-  _registerPythonDebugProvider(): void {
+  _registerPythonDebugProvider() {
     this._registerDebugProvider({
       name: 'Python',
       getLaunchAttachProvider: connection => {
-        return new PythonLaunchAttachProvider(connection);
-      },
+        return new (_PythonLaunchAttachProvider || _load_PythonLaunchAttachProvider()).default(connection);
+      }
     });
   }
 
-  _registerNodeDebugProvider(): void {
+  _registerNodeDebugProvider() {
     this._registerDebugProvider({
       name: 'Node',
       getLaunchAttachProvider: connection => {
-        return new NodeLaunchAttachProvider(connection);
-      },
+        return new (_NodeLaunchAttachProvider || _load_NodeLaunchAttachProvider()).default(connection);
+      }
     });
   }
 
-  _registerDebugProvider(provider: NuclideDebuggerProvider): void {
-    this._subscriptions.add(
-      atom.packages.serviceHub.provide(
-        'nuclide-debugger.provider',
-        '0.0.0',
-        provider,
-      ),
-    );
+  _registerDebugProvider(provider) {
+    this._subscriptions.add(atom.packages.serviceHub.provide('nuclide-debugger.provider', '0.0.0', provider));
   }
 
-  async _registerReactNativeDebugProvider(): Promise<void> {
-    const isOpenSource = !fsPromise.exists(path.join(__dirname, 'fb-node.js'));
-    if (
-      !await passesGK('nuclide_debugger_reactnative') &&
-      !await isOpenSource
-    ) {
-      return;
-    }
-    const provider: NuclideDebuggerProvider = {
-      name: 'React Native',
-      getLaunchAttachProvider: connection => {
-        return new ReactNativeLaunchAttachProvider(connection);
-      },
-    };
-    this._subscriptions.add(
-      atom.packages.serviceHub.provide(
-        'nuclide-debugger.provider',
-        '0.0.0',
-        provider,
-      ),
-    );
+  _registerReactNativeDebugProvider() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const isOpenSource = !(_fsPromise || _load_fsPromise()).default.exists(_path.default.join(__dirname, 'fb-node.js'));
+      if (!(yield (0, (_passesGK || _load_passesGK()).default)('nuclide_debugger_reactnative')) && !(yield isOpenSource)) {
+        return;
+      }
+      const provider = {
+        name: 'React Native',
+        getLaunchAttachProvider: function (connection) {
+          return new (_ReactNativeLaunchAttachProvider || _load_ReactNativeLaunchAttachProvider()).default(connection);
+        }
+      };
+      _this._subscriptions.add(atom.packages.serviceHub.provide('nuclide-debugger.provider', '0.0.0', provider));
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 
-createPackage(module.exports, Activation);
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

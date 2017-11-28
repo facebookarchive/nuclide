@@ -1,87 +1,96 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type ClangFlagsManager from '../ClangFlagsManager';
-import type {ClangRequestSettings} from '../rpc-types';
-import typeof * as ClangProcessService from '../ClangProcessService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {augmentDefaultFlags} from '../ClangServerManager';
-import {RC} from './RC';
-import {rcCommand} from './utils';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-function rcCompileCommand(
-  src: string,
-  flags: Array<string>,
-): Observable<string> {
-  return rcCommand(['--compile', `${flags.concat([src]).join(' ')}`]);
+var _ClangServerManager;
+
+function _load_ClangServerManager() {
+  return _ClangServerManager = require('../ClangServerManager');
 }
 
-export default class RTagsManager {
-  _flagsManager: ClangFlagsManager;
-  _compilationDatabases: Set<string>; // string because we only use .file
+var _RC;
 
-  constructor(flagsManager: ClangFlagsManager) {
+function _load_RC() {
+  return _RC = require('./RC');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function rcCompileCommand(src, flags) {
+  return (0, (_utils || _load_utils()).rcCommand)(['--compile', `${flags.concat([src]).join(' ')}`]);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+class RTagsManager {
+  // string because we only use .file
+
+  constructor(flagsManager) {
     this._flagsManager = flagsManager;
     this._compilationDatabases = new Set();
     // TODO pelmers: lazily initialize the 'rdm' process on first getService.
   }
 
-  async _fallbackGetService(
-    src: string,
-    defaultFlags: ?Array<string>,
-  ): Promise<?ClangProcessService> {
-    if (defaultFlags != null) {
-      await rcCompileCommand(
-        src,
-        await augmentDefaultFlags(src, defaultFlags),
-      ).toPromise();
-      return new RC(src);
-    } else {
-      return null;
-    }
-  }
-
-  async getService(
-    src: string,
-    contents: string,
-    _requestSettings: ?ClangRequestSettings,
-    defaultFlags?: ?Array<string>,
-  ): Promise<?ClangProcessService> {
-    const requestSettings = _requestSettings || {
-      compilationDatabase: null,
-      projectRoot: null,
-    };
-    // First try to ensure the compilation database is loaded.
-    const file = await this._flagsManager.getDatabaseForSrc(src);
-    if (file != null) {
-      if (!this._compilationDatabases.has(file)) {
-        this._compilationDatabases.add(file);
-        await rcCommand(['--load-compile-commands', file]).toPromise();
+  _fallbackGetService(src, defaultFlags) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (defaultFlags != null) {
+        yield rcCompileCommand(src, (yield (0, (_ClangServerManager || _load_ClangServerManager()).augmentDefaultFlags)(src, defaultFlags))).toPromise();
+        return new (_RC || _load_RC()).RC(src);
+      } else {
+        return null;
       }
-      return new RC(src);
-    }
-    // Otherwise the file may be new/a header, ask for compilation flags.
-    const flags = await this._flagsManager.getFlagsForSrc(src, requestSettings);
-    if (flags && flags.flags) {
-      await rcCompileCommand(src, flags.flags).toPromise();
-      return new RC(src);
-    }
-    return this._fallbackGetService(src, defaultFlags);
+    })();
   }
 
-  reset(src?: string): void {
+  getService(src, contents, _requestSettings, defaultFlags) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const requestSettings = _requestSettings || {
+        compilationDatabase: null,
+        projectRoot: null
+      };
+      // First try to ensure the compilation database is loaded.
+      const file = yield _this._flagsManager.getDatabaseForSrc(src);
+      if (file != null) {
+        if (!_this._compilationDatabases.has(file)) {
+          _this._compilationDatabases.add(file);
+          yield (0, (_utils || _load_utils()).rcCommand)(['--load-compile-commands', file]).toPromise();
+        }
+        return new (_RC || _load_RC()).RC(src);
+      }
+      // Otherwise the file may be new/a header, ask for compilation flags.
+      const flags = yield _this._flagsManager.getFlagsForSrc(src, requestSettings);
+      if (flags && flags.flags) {
+        yield rcCompileCommand(src, flags.flags).toPromise();
+        return new (_RC || _load_RC()).RC(src);
+      }
+      return _this._fallbackGetService(src, defaultFlags);
+    })();
+  }
+
+  reset(src) {
     this._compilationDatabases.clear();
     if (src == null) {
-      rcCommand(['--clear']);
+      (0, (_utils || _load_utils()).rcCommand)(['--clear']);
     }
   }
 }
+exports.default = RTagsManager;
