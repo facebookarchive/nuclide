@@ -315,10 +315,18 @@ export class LinterAdapter {
     lastUpdate: ?DiagnosticProviderUpdate,
   ): void {
     if (lastUpdate != null) {
-      this._invalidations.next({
-        scope: 'file',
-        filePaths: Array.from(lastUpdate.keys()),
-      });
+      let filesToInvalidate = Array.from(lastUpdate.keys());
+      if (update != null) {
+        // Only invalidate files which will not have their messages explicitly
+        // set by this update.
+        filesToInvalidate = filesToInvalidate.filter(file => !update.has(file));
+      }
+      if (filesToInvalidate.length !== 0) {
+        this._invalidations.next({
+          scope: 'file',
+          filePaths: filesToInvalidate,
+        });
+      }
     }
     if (update != null) {
       this._updates.next(update);

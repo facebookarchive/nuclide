@@ -168,6 +168,10 @@ describe('LinterAdapter', () => {
     shouldNotInvalidate(undefined);
   });
 
+  it('should not invalidate files included in an update', () => {
+    shouldNotInvalidate([{type: 'Error', filePath: 'foo'}]);
+  });
+
   it('should not reorder results', () => {
     let numMessages = 0;
     let lastMessage = null;
