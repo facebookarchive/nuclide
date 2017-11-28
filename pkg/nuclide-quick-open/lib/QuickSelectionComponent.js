@@ -244,10 +244,9 @@ export default class QuickSelectionComponent extends React.Component<
       ),
       // The text editor often changes during dispatches, so wait until the next tick.
       observableFromSubscribeFunction(cb =>
-        this._getTextEditor()
-          .getBuffer()
-          .onDidChangeText(cb),
+        this.refs.queryInput.onDidChange(cb),
       )
+        .startWith(null)
         .let(throttle(microtask, {leading: false}))
         .subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(cb =>
@@ -266,8 +265,6 @@ export default class QuickSelectionComponent extends React.Component<
         .subscribe(this._handleResultsChange),
     );
 
-    // TODO: Find a better way to trigger an update.
-    this._getTextEditor().setText(this.refs.queryInput.getText());
     this._getTextEditor().selectAll();
   }
 
