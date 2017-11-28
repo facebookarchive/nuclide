@@ -11,13 +11,13 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService, Message} from '../../nuclide-console/lib/types';
+import type {OutputService} from '../../nuclide-console/lib/types';
 import type {MetroAtomService, TunnelBehavior} from './types';
 
 import invariant from 'assert';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -36,13 +36,11 @@ const logger = getLogger('Metro');
 class Activation {
   _logTailer: LogTailer;
   _projectRootPath: BehaviorSubject<?NuclideUri>;
-  _customMessages: Subject<Message>;
   _disposables: UniversalDisposable;
-  _closeCurrentTunnel: ?UniversalDisposable;
+  _currentTunnelDisposable: ?UniversalDisposable;
 
   constructor(serializedState: ?Object) {
     this._projectRootPath = new BehaviorSubject(null);
-    this._customMessages = new Subject();
     const metroEvents = Observable.defer(() => {
       const path = this._projectRootPath.getValue();
       if (path == null) {
@@ -137,14 +135,10 @@ class Activation {
     logger.trace('hotkey register success: ' + String(success));
     const projectRoot = this._projectRootPath.getValue();
     invariant(projectRoot != null);
-    const tunnelResult = await openTunnel(projectRoot, tunnelBehavior);
-    if (tunnelResult.wasNeeded) {
-      this._closeCurrentTunnel = tunnelResult.closeTunnel;
-      this._customMessages.next({
-        text: 'Tunnel to port 8081 opened.',
-        level: 'info',
-      });
-    }
+    this._currentTunnelDisposable = await openTunnel(
+      projectRoot,
+      tunnelBehavior,
+    );
   }
 
   stop(): void {
@@ -152,9 +146,9 @@ class Activation {
     invariant(remote != null);
     logger.trace('unregistering global reload hotkey');
     remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
-    if (this._closeCurrentTunnel != null) {
-      this._closeCurrentTunnel.dispose();
-      this._closeCurrentTunnel = null;
+    if (this._currentTunnelDisposable != null) {
+      this._currentTunnelDisposable.dispose();
+      this._currentTunnelDisposable = null;
     }
     this._logTailer.stop();
   }
@@ -229,7 +223,7 @@ class Activation {
     this._disposables.add(
       api.registerOutputProvider({
         id: 'Metro',
-        messages: this._logTailer.getMessages().merge(this._customMessages),
+        messages: this._logTailer.getMessages(),
         observeStatus: cb => this._logTailer.observeStatus(cb),
         start: () => {
           this.start('ask_about_tunnel');

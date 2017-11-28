@@ -20,18 +20,12 @@ import type {TunnelBehavior} from './types';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-export type TunnelResult = {
-  wasNeeded: boolean,
-  // Present if a tunnel was opened.
-  closeTunnel?: UniversalDisposable,
-};
-
 export async function openTunnel(
   serviceUri: NuclideUri,
   behavior: TunnelBehavior,
-): Promise<TunnelResult> {
+): Promise<?UniversalDisposable> {
   if (!nuclideUri.isRemote(serviceUri) || behavior === 'do_not_open_tunnel') {
-    return {wasNeeded: false};
+    return null;
   }
   const tunnelService: ?SshTunnelService = await consumeFirstProvider(
     'nuclide.ssh-tunnel',
@@ -58,23 +52,23 @@ export async function openTunnel(
             'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
         );
       }
-      return {wasNeeded: false};
+      return null;
     }
   }
   if (behavior === 'ask_about_tunnel') {
     return _askToRequestTunnel(tunnelService, desired);
   } else {
-    const closeTunnel = await _requestTunnelFromService(tunnelService, desired);
-    return {wasNeeded: true, closeTunnel};
+    const disposable = await _requestTunnelFromService(tunnelService, desired);
+    return disposable;
   }
 }
 
 function _askToRequestTunnel(
   service: SshTunnelService,
   tunnel: Tunnel,
-): Promise<TunnelResult> {
+): Promise<?UniversalDisposable> {
   return new Promise(resolve => {
-    let result;
+    let disposable = null;
     const notification = atom.notifications.addSuccess(
       'Open tunnel?\n\nOpen a new tunnel so Metro becomes available at `localhost:8081`?',
       {
@@ -84,11 +78,7 @@ function _askToRequestTunnel(
           {
             text: 'Open tunnel',
             onDidClick: async () => {
-              const closeTunnel = await _requestTunnelFromService(
-                service,
-                tunnel,
-              );
-              result = {wasNeeded: true, closeTunnel};
+              disposable = await _requestTunnelFromService(service, tunnel);
               notification.dismiss();
             },
           },
@@ -99,12 +89,7 @@ function _askToRequestTunnel(
         ],
       },
     );
-    notification.onDidDismiss(() => {
-      if (result === undefined) {
-        result = {wasNeeded: false};
-      }
-      resolve(result);
-    });
+    notification.onDidDismiss(() => resolve(disposable));
   });
 }
 
