@@ -62,9 +62,7 @@ export class BufferSubscription {
     const subscriptions = new UniversalDisposable();
 
     subscriptions.add(
-      // TODO: (hansonw) T22837054 Use buffer.onDidChangeText here.
-      buffer.onDidChange(async (event: atom$TextEditEvent) => {
-        this._changeCount++;
+      buffer.onDidChangeText(async (event: atom$AggregatedTextEditEvent) => {
         if (this._notifier == null) {
           return;
         }
@@ -73,25 +71,30 @@ export class BufferSubscription {
         // to avoid race conditions
         const filePath = this._buffer.getPath();
         invariant(filePath != null);
-        const version = this._changeCount;
 
         invariant(this._notifier != null);
         const notifier = await this._notifier;
         if (this._sentOpen) {
-          this.sendEvent({
-            kind: FileEventKind.EDIT,
-            fileVersion: {
-              notifier,
-              filePath,
-              version,
-            },
-            oldRange: event.oldRange,
-            newRange: event.newRange,
-            oldText: event.oldText,
-            newText: event.newText,
-          });
+          let version = this._changeCount;
+          for (const edit of event.changes) {
+            version++;
+            this.sendEvent({
+              kind: FileEventKind.EDIT,
+              fileVersion: {
+                notifier,
+                filePath,
+                version,
+              },
+              oldRange: edit.oldRange,
+              newRange: edit.newRange,
+              oldText: edit.oldText,
+              newText: edit.newText,
+            });
+          }
+          this._changeCount = version;
         } else {
-          this._sendOpenByNotifier(notifier, version);
+          this._changeCount += event.changes.length;
+          this._sendOpenByNotifier(notifier, this._changeCount);
         }
       }),
     );
