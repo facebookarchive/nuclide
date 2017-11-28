@@ -9,17 +9,20 @@
  * @format
  */
 
+export type CqueryProjectWithCompilationDb = {
+  hasCompilationDb: true,
+  compilationDbDir: string,
+  flagsFile: string,
+  projectRoot: string,
+};
+export type CqueryProjectWithoutCompilationDb = {
+  hasCompilationDb: false,
+  defaultFlags: ?Array<string>,
+  projectRoot: string,
+};
+
 export type CqueryProject =
-  | {
-      hasCompilationDb: true,
-      compilationDbDir: string,
-      flagsFile: string,
-      projectRoot: string,
-    }
-  | {
-      hasCompilationDb: false,
-      defaultFlags: ?Array<string>,
-      projectRoot: string,
-    };
+  | CqueryProjectWithCompilationDb
+  | CqueryProjectWithoutCompilationDb;
 
 export type CqueryProjectKey = string;

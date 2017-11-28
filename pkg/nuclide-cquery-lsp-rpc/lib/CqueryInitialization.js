@@ -9,7 +9,11 @@
  * @format
  */
 
+import type {CqueryProject} from './types';
+
 import nuclideUri from 'nuclide-commons/nuclideUri';
+
+const CQUERY_CACHE_DIR = 'cquery_cache';
 
 // TODO pelmers: expose some of these in the atom config
 function staticInitializationOptions(): Object {
@@ -37,10 +41,41 @@ function staticInitializationOptions(): Object {
   };
 }
 
-export function getInitializationOptions(compilationDbDir: string): Object {
+export async function getInitializationOptions(
+  project: CqueryProject,
+): Promise<?Object> {
+  if (project.hasCompilationDb) {
+    return getInitializationOptionsWithCompilationDb(
+      project.projectRoot,
+      project.compilationDbDir,
+    );
+  } else if (project.defaultFlags != null) {
+    return getInitializationOptionsWithoutCompilationDb(
+      project.projectRoot,
+      project.defaultFlags,
+    );
+  }
+  return null;
+}
+
+async function getInitializationOptionsWithCompilationDb(
+  projectRoot: string,
+  compilationDbDir: string,
+): Promise<Object> {
   return {
     ...staticInitializationOptions(),
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: nuclideUri.join(compilationDbDir, 'cquery_cache'),
+    cacheDirectory: nuclideUri.join(compilationDbDir, CQUERY_CACHE_DIR),
+  };
+}
+
+async function getInitializationOptionsWithoutCompilationDb(
+  projectRoot: string,
+  defaultFlags: string[],
+): Promise<Object> {
+  return {
+    ...staticInitializationOptions(),
+    extraClangArguments: defaultFlags,
+    cacheDirectory: nuclideUri.join(projectRoot, CQUERY_CACHE_DIR),
   };
 }

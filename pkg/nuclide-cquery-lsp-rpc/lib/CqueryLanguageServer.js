@@ -92,24 +92,34 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     projectKey: CqueryProjectKey,
   ): Promise<?CqueryLanguageClient> {
     const project = await this._projectManager.getProjectFromKey(projectKey);
-    // TODO(wallace): handle the case when there is no compilation db
-    if (project == null || !project.hasCompilationDb) {
+    if (project == null) {
       return null;
     }
-    const {projectRoot, compilationDbDir} = project;
-    await this.hasObservedDiagnostics();
+
+    const initalizationOptions = await getInitializationOptions(project);
+    if (initalizationOptions == null) {
+      return null;
+    }
+    this._logger.info(
+      `Using cache dir: ${initalizationOptions.cacheDirectory}`,
+    );
+
+    const [, host] = await Promise.all([
+      this.hasObservedDiagnostics(),
+      forkHostServices(this._host, this._logger),
+    ]);
 
     const lsp = new CqueryLanguageClient(
       this._logger,
       this._fileCache,
-      await forkHostServices(this._host, this._logger),
+      host,
       this._languageId,
       this._command,
       ['--language-server'], // args
       {}, // spawnOptions
-      projectRoot,
+      project.projectRoot,
       ['.cpp', '.h', '.hpp', '.cc'],
-      getInitializationOptions(compilationDbDir),
+      initalizationOptions,
       5 * 60 * 1000, // 5 minutes
     );
 
