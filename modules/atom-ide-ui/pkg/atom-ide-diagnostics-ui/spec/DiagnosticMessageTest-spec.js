@@ -62,4 +62,14 @@ describe('DiagnosticsMessageText', () => {
       {isUrl: false, text: '.'},
     ]);
   });
+
+  it('should handle URLs that include escaped characters', () => {
+    expect(
+      separateUrls('https://example.com/give%20me%20some%20space/'),
+    ).toEqual([
+      {isUrl: false, text: ''},
+      {isUrl: true, url: 'https://example.com/give%20me%20some%20space/'},
+      {isUrl: false, text: ''},
+    ]);
+  });
 });
