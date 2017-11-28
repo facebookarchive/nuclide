@@ -191,6 +191,8 @@ export function setAppInfoEpic(
               appName: provider.getAppName(),
               name: provider.getName(),
               value,
+              canUpdate: provider.canUpdate(),
+              update: provider.update,
             }))
             .catch(error =>
               Observable.of({

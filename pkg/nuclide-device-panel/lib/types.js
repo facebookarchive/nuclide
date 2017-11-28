@@ -88,6 +88,8 @@ export interface DeviceAppInfoProvider {
   getType(): string,
   getProcessName(): string,
   getAppName(): string,
+  canUpdate(): boolean,
+  update(value: string): Promise<void>,
 }
 
 export type DeviceAction = {
