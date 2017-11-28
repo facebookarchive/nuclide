@@ -49,6 +49,7 @@ export async function getStartCommandFromBuck(
   }
   return {
     cwd: buckProjectRoot,
+    args: ['--disable-global-hotkey'],
     command: section.server,
   };
 }

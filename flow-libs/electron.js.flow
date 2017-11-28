@@ -447,7 +447,12 @@ type electron$dialogMessageBoxOptions = {
  * https://github.com/electron/electron/blob/master/docs/api/global-shortcut.md
  */
 
-type electron$globalShortcut = {};
+type electron$globalShortcut = {
+  register: (string, () => void) => boolean,
+  isRegistered: (string) => boolean,
+  unregister: (string) => void,
+  unregisterAll: () => void,
+};
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/ipc-main.md

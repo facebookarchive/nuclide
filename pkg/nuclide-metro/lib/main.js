@@ -25,7 +25,12 @@ import {
   METRO_PORT_BUSY_ERROR,
 } from '../../nuclide-metro-rpc/lib/types';
 import {getMetroServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getLogger} from 'log4js';
+
 import electron from 'electron';
+
+const GLOBAL_RELOAD_HOTKEY = 'CmdOrCtrl+Alt+R';
+const logger = getLogger('Metro');
 
 // Manages starting Metro for the current working root and integrating it into Console.
 // Use this service instead of starting Metro via nuclide-metro-rpc yourself.
@@ -92,8 +97,8 @@ class Activation {
     );
   }
 
-  start(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  async start(): Promise<void> {
+    await new Promise((resolve, reject) => {
       this._logTailer.start({
         onRunning: error => {
           if (error != null) {
@@ -123,9 +128,22 @@ class Activation {
         },
       });
     });
+    // now that the logTailer has started, start the global reload hotkey
+    const remote = electron.remote;
+    invariant(remote != null);
+    logger.trace('adding global reload hotkey (' + GLOBAL_RELOAD_HOTKEY + ')');
+    const success = remote.globalShortcut.register(GLOBAL_RELOAD_HOTKEY, () => {
+      logger.trace('reloading the app via the global reload hotkey');
+      this.reloadApp();
+    });
+    logger.trace('hotkey register success: ' + String(success));
   }
 
   stop(): void {
+    const remote = electron.remote;
+    invariant(remote != null);
+    logger.trace('unregistering global reload hotkey');
+    remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
     this._logTailer.stop();
   }
 
@@ -134,6 +152,7 @@ class Activation {
   }
 
   reloadApp(): void {
+    logger.trace('reloadApp called');
     const path = this._projectRootPath.getValue();
     if (path == null) {
       return;
