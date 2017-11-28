@@ -65,6 +65,10 @@ function raiseNativeNotification(
     new Notification(title, {
       body,
       icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
+      onclick: () => {
+        // Windows does not properly bring the window into focus.
+        remote.getCurrentWindow().show();
+      },
     });
   };
 

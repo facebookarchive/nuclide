@@ -30,6 +30,7 @@ declare class Notification {
     message: string,
     options?: NotificationOptions,
   ): void,
+  onclick: () => void,
 }
 
 // T9254051 - Fix flow http/https definitions.
