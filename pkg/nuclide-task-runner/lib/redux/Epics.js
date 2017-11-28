@@ -735,16 +735,35 @@ function getTaskRunnerState(
   taskRunner: TaskRunner,
   projectRoot: ?Directory,
 ): Observable<{taskRunner: TaskRunner, taskRunnerState: TaskRunnerState}> {
-  return Observable.create(
-    observer =>
-      new UniversalDisposable(
-        taskRunner.setProjectRoot(projectRoot, (enabled, tasks) => {
-          observer.next({
-            taskRunner,
-            taskRunnerState: {enabled, tasks: enabled ? tasks : []},
-          });
-        }),
-      ),
+  return (
+    Observable.create(
+      observer =>
+        new UniversalDisposable(
+          taskRunner.setProjectRoot(projectRoot, (enabled, tasks) => {
+            observer.next({
+              taskRunner,
+              taskRunnerState: {enabled, tasks: enabled ? tasks : []},
+            });
+          }),
+        ),
+    )
+      // We need the initial state to return within reasonable time, otherwise the toolbar hangs.
+      // We don't want to start with all runners disabled because it causes UI jumps
+      // when a preferred runner gets enabled after a non-preferred one.
+      .race(
+        Observable.timer(5000).switchMap(() =>
+          Observable.throw('Enabling timed out'),
+        ),
+      )
+      .catch(error => {
+        getLogger('nuclide-task-runner').error(
+          `Disabling ${taskRunner.name} task runner, because setProjectRoot failed.\n\n${error}`,
+        );
+        return Observable.of({
+          taskRunner,
+          taskRunnerState: {enabled: false, tasks: []},
+        });
+      })
   );
 }
 
