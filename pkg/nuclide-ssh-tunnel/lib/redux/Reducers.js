@@ -30,6 +30,9 @@ export function openTunnels(
     case Actions.CLOSE_TUNNEL:
       const toClose = action.payload.tunnel;
       const openTunnel = state.get(toClose);
+      if (openTunnel == null) {
+        return state;
+      }
       openTunnel.close(action.payload.error);
       return state.delete(toClose);
     case Actions.SET_TUNNEL_STATE:
