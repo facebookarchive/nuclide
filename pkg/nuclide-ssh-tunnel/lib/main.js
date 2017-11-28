@@ -25,7 +25,6 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
-import {Disposable} from 'atom';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -72,7 +71,7 @@ class Activation {
     return {
       openTunnel: (tunnel, onOpen, onClose) => {
         this._store.dispatch(Actions.openTunnel(tunnel, onOpen, onClose));
-        return new Disposable(() =>
+        return new UniversalDisposable(() =>
           this._store.dispatch(Actions.closeTunnel(tunnel)),
         );
       },

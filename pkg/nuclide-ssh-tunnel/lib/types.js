@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {Directory} from '../../nuclide-remote-connection';
 
 import Immutable from 'immutable';
@@ -19,7 +20,7 @@ export type SshTunnelService = {
     tunnel: Tunnel,
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
-  ): IDisposable,
+  ): UniversalDisposable,
   getOpenTunnels(): Set<Tunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };

@@ -11,12 +11,13 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
+import type {OutputService, Message} from '../../nuclide-console/lib/types';
+import type {MetroAtomService, TunnelBehavior} from './types';
 
 import invariant from 'assert';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -26,25 +27,22 @@ import {
 } from '../../nuclide-metro-rpc/lib/types';
 import {getMetroServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
-
 import electron from 'electron';
+import {openTunnel} from './openTunnel';
 
 const GLOBAL_RELOAD_HOTKEY = 'CmdOrCtrl+Alt+R';
 const logger = getLogger('Metro');
 
-// Manages starting Metro for the current working root and integrating it into Console.
-// Use this service instead of starting Metro via nuclide-metro-rpc yourself.
-export type MetroAtomService = {
-  start(): Promise<void>,
-};
-
 class Activation {
   _logTailer: LogTailer;
   _projectRootPath: BehaviorSubject<?NuclideUri>;
+  _customMessages: Subject<Message>;
   _disposables: UniversalDisposable;
+  _closeCurrentTunnel: ?UniversalDisposable;
 
   constructor(serializedState: ?Object) {
     this._projectRootPath = new BehaviorSubject(null);
+    this._customMessages = new Subject();
     const metroEvents = Observable.defer(() => {
       const path = this._projectRootPath.getValue();
       if (path == null) {
@@ -88,7 +86,7 @@ class Activation {
     this._disposables = new UniversalDisposable(
       atom.commands.add('atom-workspace', {
         // Ideally based on CWD, the commands can be disabled and the UI would explain why.
-        'nuclide-metro:start': () => this.start(),
+        'nuclide-metro:start': () => this.start('ask_about_tunnel'),
         'nuclide-metro:stop': () => this.stop(),
         'nuclide-metro:restart': () => this.restart(),
         'nuclide-metro:reload-app': () => this.reloadApp(),
@@ -97,7 +95,7 @@ class Activation {
     );
   }
 
-  async start(): Promise<void> {
+  async start(tunnelBehavior: TunnelBehavior): Promise<void> {
     await new Promise((resolve, reject) => {
       this._logTailer.start({
         onRunning: error => {
@@ -137,6 +135,16 @@ class Activation {
       this.reloadApp();
     });
     logger.trace('hotkey register success: ' + String(success));
+    const projectRoot = this._projectRootPath.getValue();
+    invariant(projectRoot != null);
+    const tunnelResult = await openTunnel(projectRoot, tunnelBehavior);
+    if (tunnelResult.wasNeeded) {
+      this._closeCurrentTunnel = tunnelResult.closeTunnel;
+      this._customMessages.next({
+        text: 'Tunnel to port 8081 opened.',
+        level: 'info',
+      });
+    }
   }
 
   stop(): void {
@@ -144,6 +152,10 @@ class Activation {
     invariant(remote != null);
     logger.trace('unregistering global reload hotkey');
     remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
+    if (this._closeCurrentTunnel != null) {
+      this._closeCurrentTunnel.dispose();
+      this._closeCurrentTunnel = null;
+    }
     this._logTailer.stop();
   }
 
@@ -167,7 +179,7 @@ class Activation {
 
   provideMetroAtomService(): MetroAtomService {
     return {
-      start: () => this.start(),
+      start: tunnelBehavior => this.start(tunnelBehavior),
     };
   }
 
@@ -198,7 +210,7 @@ class Activation {
                 {
                   text: 'Start at this new working root',
                   onDidClick: () => {
-                    this.start();
+                    this.start('ask_about_tunnel');
                     notification.dismiss();
                   },
                 },
@@ -217,10 +229,10 @@ class Activation {
     this._disposables.add(
       api.registerOutputProvider({
         id: 'Metro',
-        messages: this._logTailer.getMessages(),
+        messages: this._logTailer.getMessages().merge(this._customMessages),
         observeStatus: cb => this._logTailer.observeStatus(cb),
         start: () => {
-          this.start();
+          this.start('ask_about_tunnel');
         },
         stop: () => {
           this.stop();
