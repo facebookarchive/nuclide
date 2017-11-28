@@ -25,6 +25,11 @@
       "versions": {
         "0.0.0": "consumeCurrentWorkingDirectory"
       }
+    },
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
     }
   },
   "activationHooks": [

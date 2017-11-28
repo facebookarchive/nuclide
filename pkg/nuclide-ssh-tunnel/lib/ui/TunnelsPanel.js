@@ -71,7 +71,19 @@ export class TunnelsPanel {
           if (this._store.getState().status === 'opening') {
             return;
           }
-          this._store.dispatch(Actions.openTunnel(tunnel, () => {}, () => {}));
+          this._store.dispatch(
+            Actions.openTunnel(
+              tunnel,
+              // onOpen
+              error => {
+                if (error != null) {
+                  atom.notifications.addError(error.message);
+                }
+              },
+              // onClose
+              () => {},
+            ),
+          );
         },
         closeTunnel: tunnel =>
           this._store.dispatch(Actions.closeTunnel(tunnel)),

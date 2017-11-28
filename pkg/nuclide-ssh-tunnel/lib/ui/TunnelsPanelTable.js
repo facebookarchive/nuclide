@@ -10,7 +10,7 @@
  */
 import type {OpenTunnel, Tunnel} from '../types';
 
-import {shortenHostname} from '../shortenHostname';
+import {shortenHostname} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';

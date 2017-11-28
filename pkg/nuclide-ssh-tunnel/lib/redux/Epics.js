@@ -18,6 +18,7 @@ import invariant from 'assert';
 import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {memoize} from 'lodash';
+import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 
 export function openTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -28,20 +29,7 @@ export function openTunnelEpic(
     .switchMap(async action => {
       invariant(action.type === Actions.OPEN_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
-
-      if (!await validateTunnel(tunnel)) {
-        onOpen(
-          new Error('Invalid tunnel specification: ' + JSON.stringify(tunnel)),
-        );
-        return null;
-      }
-
       const {from, to} = tunnel;
-      const fromService = getSocketServiceByHost(from.host);
-      const toService = getSocketServiceByHost(to.host);
-      let clientCount = 0;
-
-      const connectionFactory = await toService.getConnectionFactory();
       const tunnelDescriptor = {
         from: {
           host: from.host,
@@ -54,7 +42,24 @@ export function openTunnelEpic(
           family: to.family || 6,
         },
       };
+      const friendlyString = `${tunnelDescription(
+        tunnelDescriptor,
+      )} (${tunnel.description})`;
 
+      if (!await validateTunnel(tunnel)) {
+        onOpen(
+          new Error(
+            `Trying to open a tunnel on a non-whitelisted port: ${to.port}\n\n` +
+              'Contact the Nuclide team if you would like this port to be available.',
+          ),
+        );
+        return null;
+      }
+
+      const fromService = getSocketServiceByHost(from.host);
+      const toService = getSocketServiceByHost(to.host);
+      let clientCount = 0;
+      const connectionFactory = await toService.getConnectionFactory();
       const events = fromService.createTunnel(
         tunnelDescriptor,
         connectionFactory,
@@ -77,8 +82,26 @@ export function openTunnelEpic(
         },
       });
 
+      store.getState().consoleOutput.next({
+        text: `Opened tunnel: ${friendlyString}`,
+        level: 'info',
+      });
+
       return Actions.addOpenTunnel(tunnel, error => {
         subscription.unsubscribe();
+        let message;
+        if (error == null) {
+          message = {
+            text: `Closed tunnel: ${friendlyString}`,
+            level: 'info',
+          };
+        } else {
+          message = {
+            text: `Tunnel error: ${friendlyString}\n${error.message}`,
+            level: 'error',
+          };
+        }
+        store.getState().consoleOutput.next(message);
         onClose(error);
       });
     })

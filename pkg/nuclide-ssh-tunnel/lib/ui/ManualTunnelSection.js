@@ -18,7 +18,7 @@ import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Section} from '../../../nuclide-ui/Section';
-import {shortenHostname} from '../shortenHostname';
+import {shortenHostname} from '../../../nuclide-socket-rpc/lib/Tunnel';
 
 type Props = {
   openTunnel(tunnel: Tunnel): void,

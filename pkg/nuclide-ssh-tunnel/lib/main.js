@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {OutputService} from '../../nuclide-console/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {SshTunnelService, Store} from './types';
 
@@ -101,6 +102,15 @@ class Activation {
     this._disposables.add(
       api.observeCwd(directory => {
         this._store.dispatch(Actions.setCurrentWorkingDirectory(directory));
+      }),
+    );
+  }
+
+  consumeOutputService(api: OutputService): void {
+    this._disposables.add(
+      api.registerOutputProvider({
+        id: 'SSH tunnels',
+        messages: this._store.getState().consoleOutput,
       }),
     );
   }

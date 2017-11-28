@@ -109,9 +109,23 @@ export function createTunnel(
   }).publish();
 }
 
-function tunnelDescription(tunnel: TunnelDescriptor) {
-  return `${tunnel.from.host}:${tunnel.from.port}->${tunnel.to.host}:${tunnel.to
-    .port}`;
+export function tunnelDescription(tunnel: TunnelDescriptor) {
+  return `${shortenHostname(tunnel.from.host)}:${tunnel.from
+    .port}->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
+}
+
+export function shortenHostname(host: string): string {
+  let result = host;
+  if (result.endsWith('.facebook.com')) {
+    result = result.slice(0, host.length - '.facebook.com'.length);
+  }
+  if (result.startsWith('our.')) {
+    result = result.slice('our.'.length, result.length);
+  }
+  if (result.startsWith('twsvcscm.')) {
+    result = result.slice('twsvcscm.'.length, result.length);
+  }
+  return result;
 }
 
 export class RemoteSocket implements IRemoteSocket {

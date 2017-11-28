@@ -9,12 +9,14 @@
  * @format
  */
 
+import type {Message} from '../../../nuclide-console/lib/types';
 import type {Action, Tunnel, OpenTunnel} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
 import * as Actions from './Actions';
 import Immutable from 'immutable';
 import invariant from 'assert';
+import {Subject} from 'rxjs';
 
 export function openTunnels(
   state: Immutable.Map<Tunnel, OpenTunnel> = new Immutable.Map(),
@@ -56,4 +58,11 @@ export function currentWorkingDirectory(
     default:
       return state;
   }
+}
+
+export function consoleOutput(
+  state: Subject<Message> = new Subject(),
+  action: Action,
+) {
+  return state;
 }
