@@ -17,7 +17,7 @@ import {
   getFileVersionOfBuffer,
   getNotifierByConnection,
 } from '../lib/main';
-import {TextBuffer} from 'atom';
+import {Point, TextBuffer} from 'atom';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {Subject} from 'rxjs';
 
@@ -185,6 +185,69 @@ describe('nuclide-open-files', () => {
             kind: 'close',
             filePath: 'f1',
             changeCount: 2,
+          },
+        ]);
+      });
+    });
+
+    it('edit with multiple edits', () => {
+      const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
+      runs(() => {
+        atom.project.addBuffer(buffer);
+      });
+      waitsFor(() => eventCount >= 1);
+
+      runs(() => {
+        buffer.transact(() => {
+          buffer.insert(new Point(0, 0), 'a');
+          buffer.append('b');
+        });
+        buffer.destroy();
+      });
+      waitsFor(() => eventCount >= 4);
+
+      waitsForPromise(async () => {
+        expect(await finishEvents()).toEqual([
+          {
+            kind: 'open',
+            filePath: 'f1',
+            changeCount: 1,
+            contents: 'contents1',
+          },
+          {
+            kind: 'edit',
+            filePath: 'f1',
+            changeCount: 2,
+            oldRange: {
+              start: {row: 0, column: 9},
+              end: {row: 0, column: 9},
+            },
+            oldText: '',
+            newRange: {
+              start: {row: 0, column: 10},
+              end: {row: 0, column: 11},
+            },
+            newText: 'b',
+          },
+          {
+            kind: 'edit',
+            filePath: 'f1',
+            changeCount: 3,
+            oldRange: {
+              start: {row: 0, column: 0},
+              end: {row: 0, column: 0},
+            },
+            oldText: '',
+            newRange: {
+              start: {row: 0, column: 0},
+              end: {row: 0, column: 1},
+            },
+            newText: 'a',
+          },
+          {
+            kind: 'close',
+            filePath: 'f1',
+            changeCount: 3,
           },
         ]);
       });

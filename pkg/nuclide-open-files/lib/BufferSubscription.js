@@ -63,6 +63,9 @@ export class BufferSubscription {
 
     subscriptions.add(
       buffer.onDidChangeText(async (event: atom$AggregatedTextEditEvent) => {
+        // It's important that we increment the change count *before* waiting on the notifier.
+        // This makes sure that any users who use `getVersion` in between obtain the correct version.
+        this._changeCount += event.changes.length;
         if (this._notifier == null) {
           return;
         }
@@ -71,19 +74,21 @@ export class BufferSubscription {
         // to avoid race conditions
         const filePath = this._buffer.getPath();
         invariant(filePath != null);
+        const version = this._changeCount;
 
         invariant(this._notifier != null);
         const notifier = await this._notifier;
         if (this._sentOpen) {
-          let version = this._changeCount;
-          for (const edit of event.changes) {
-            version++;
+          // Changes must be sent in reverse order to ensure that they are applied cleanly.
+          // (Atom ensures that they are sent over in increasing lexicographic order).
+          for (let i = event.changes.length - 1; i >= 0; i--) {
+            const edit = event.changes[i];
             this.sendEvent({
               kind: FileEventKind.EDIT,
               fileVersion: {
                 notifier,
                 filePath,
-                version,
+                version: version - i,
               },
               oldRange: edit.oldRange,
               newRange: edit.newRange,
@@ -91,10 +96,8 @@ export class BufferSubscription {
               newText: edit.newText,
             });
           }
-          this._changeCount = version;
         } else {
-          this._changeCount += event.changes.length;
-          this._sendOpenByNotifier(notifier, this._changeCount);
+          this._sendOpenByNotifier(notifier, version);
         }
       }),
     );
