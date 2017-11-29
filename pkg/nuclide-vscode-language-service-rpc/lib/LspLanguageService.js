@@ -1249,6 +1249,7 @@ export class LspLanguageService {
       case 'incremental':
         contentChange = {
           range: convert.atomRange_lspRange(fileEvent.oldRange),
+          rangeLength: fileEvent.oldText.length,
           text: fileEvent.newText,
         };
         break;
