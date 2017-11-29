@@ -350,6 +350,11 @@ def get_option_parser():
         type=str,
         help='Save json format output into a file, only for `start` command',
         default=None)
+    parser.add_option(
+        '--version',
+        type=str,
+        help='Client Nuclide version. (May be used at some later point).',
+        default=None)
     return parser
 
 

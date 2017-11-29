@@ -19,9 +19,11 @@ import invariant from 'assert';
 import {RemoteConnection} from './RemoteConnection';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {sleep} from 'nuclide-commons/promise';
+import {shellQuote} from 'nuclide-commons/string';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from 'log4js';
 import {readFile as readRemoteFile} from './RemoteCommand';
+import {getVersion} from '../../nuclide-version';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -403,13 +405,20 @@ export class SshHandshake {
 
   _startRemoteServer(): Promise<boolean> {
     return new Promise((resolve, reject) => {
+      const command = this._config.remoteServerCommand;
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
-      // TODO: escape any single quotes
-      // TODO: the timeout value shall be configurable using .json file too (t6904691).
-      const cmd =
-        `${this._config.remoteServerCommand} --workspace=${this._config.cwd}` +
-        ` --common-name=${this._config
-          .host} --json-output-file=${remoteTempFile} -t 60`;
+      const flags = [
+        `--workspace=${this._config.cwd}`,
+        `--common-name=${this._config.host}`,
+        `--json-output-file=${remoteTempFile}`,
+        '--timeout=60',
+      ];
+      // Append the client version if not already provided.
+      if (!command.includes('--version=')) {
+        flags.push(`--version=${getVersion()}`);
+      }
+      // We'll take the user-provided command literally.
+      const cmd = command + ' ' + shellQuote(flags);
 
       this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
         if (err) {
