@@ -127,6 +127,19 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     return lsp;
   }
 
+  async freshenIndexForFile(file: NuclideUri): Promise<void> {
+    const cqueryProcess = await this.getLanguageServiceForFile(file);
+    if (cqueryProcess) {
+      cqueryProcess.freshenIndex();
+    } else {
+      this._host.consoleNotification(
+        this._languageId,
+        'warning',
+        'Could not freshen: no cquery index found for ' + file,
+      );
+    }
+  }
+
   async associateFileWithProject(
     file: NuclideUri,
     project: CqueryProject,

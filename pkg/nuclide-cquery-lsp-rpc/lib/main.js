@@ -50,6 +50,7 @@ import {findNearestCompilationDbDir as _findNearestCompilationDbDir} from './Com
 import CqueryLanguageServer from './CqueryLanguageServer';
 
 export interface CqueryLanguageService extends LanguageService {
+  freshenIndexForFile(file: NuclideUri): Promise<void>,
   associateFileWithProject(
     file: NuclideUri,
     project: CqueryProject,

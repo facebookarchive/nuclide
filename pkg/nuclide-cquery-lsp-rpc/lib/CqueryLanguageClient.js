@@ -141,4 +141,11 @@ export class CqueryLanguageClient extends LspLanguageService {
       ]),
     );
   }
+
+  async freshenIndex(): Promise<void> {
+    // identical to vscode extension, https://git.io/vbUbQ
+    this._lspConnection._jsonRpcConnection.sendNotification(
+      '$cquery/freshenIndex',
+    );
+  }
 }

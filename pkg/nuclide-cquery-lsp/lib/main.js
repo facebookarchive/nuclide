@@ -61,14 +61,28 @@ import {determineCqueryProject} from './CqueryProject';
 class CqueryLSPClient {
   _service: CqueryLanguageService;
   _logger: log4js$Logger;
+  _subscriptions = new UniversalDisposable();
 
   constructor(service: CqueryLanguageService) {
     this._service = service;
     this._logger = getLogger('cquery-language-server');
+    this._subscriptions.add(service, this._addCommands());
   }
 
   dispose() {
-    this._service.dispose();
+    this._subscriptions.dispose();
+  }
+
+  _addCommands(): IDisposable {
+    return atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        const path = editor.getPath();
+        if (this._service && path != null) {
+          this._service.freshenIndexForFile(path);
+        }
+      }
+    });
   }
 
   async ensureProject(file: string): Promise<?CqueryProject> {
