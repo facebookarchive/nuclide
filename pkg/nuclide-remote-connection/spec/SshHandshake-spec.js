@@ -129,11 +129,13 @@ describe('SshHandshake', () => {
       const sshConnection: any = new MockSshConnection();
       const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
       const config: SshConnectionConfiguration = ({
+        host: 'testhost',
         password: 'test',
         authMethod: 'PASSWORD',
       }: any);
 
       sshHandshake.connect(config);
+      sshConnection.config = config;
       sshConnection.emit('error', mockError);
 
       expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
@@ -146,6 +148,7 @@ describe('SshHandshake', () => {
       args[4](['test2']);
 
       expect(sshConnection.connect.callCount).toBe(1);
+      expect(sshConnection.connect.calls[0].args[0].host).toBe('testhost');
       expect(sshConnection.connect.calls[0].args[0].password).toBe('test2');
 
       sshConnection.emit('error', mockError);

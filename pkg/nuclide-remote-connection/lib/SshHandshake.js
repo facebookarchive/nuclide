@@ -205,7 +205,8 @@ export class SshHandshake {
         ],
         ([password]) => {
           this._connection.connect({
-            host: config.host,
+            // Use the correctly resolved hostname.
+            host: this._connection.config.host,
             port: config.sshPort,
             username: config.username,
             password,
