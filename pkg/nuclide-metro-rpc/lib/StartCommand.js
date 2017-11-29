@@ -14,7 +14,6 @@ import type {MetroStartCommand} from './types';
 
 import {getRootForPath as getBuckRootForPath} from '../../nuclide-buck-rpc';
 import fsPromise from 'nuclide-commons/fsPromise';
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ini from 'ini';
 
@@ -112,7 +111,7 @@ async function getStartCommandFromReactNative(
 }
 
 async function getCommandForCli(
-  pathToReactNative: string,
+  pathToReactNative: NuclideUri,
 ): Promise<?CommandWithoutProjectRoot> {
   const cliPath = nuclideUri.join(pathToReactNative, 'local-cli', 'cli.js');
   const cliExists = await fsPromise.exists(cliPath);
@@ -120,10 +119,7 @@ async function getCommandForCli(
     return null;
   }
   return {
-    command: ((featureConfig.get(
-      // TODO: (stepanhruda) T23501663 How to handle remote vs local configs? Also change after the package is moved.
-      'nuclide-react-native.pathToNode',
-    ): any): string),
+    command: 'node',
     args: [cliPath, 'start'],
   };
 }
