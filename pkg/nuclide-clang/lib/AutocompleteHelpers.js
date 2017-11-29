@@ -23,7 +23,7 @@ const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
 const VALID_EMPTY_SUFFIX = /(->|\.|::|\()$/;
 
-export const ClangCursorToAutocompletionTypes = Object.freeze({
+const ClangCursorToAutocompletionTypes = Object.freeze({
   STRUCT_DECL: 'class',
   UNION_DECL: 'class',
   CLASS_DECL: 'class',

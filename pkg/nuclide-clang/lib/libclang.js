@@ -72,10 +72,6 @@ async function getClangRequestSettings(
 
 const clangServices = new WeakSet();
 
-function useRTags(): boolean {
-  return ((featureConfig.get('nuclide-clang.useRTags'): any): boolean);
-}
-
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
   getDefaultFlags,
@@ -110,13 +106,7 @@ module.exports = {
     }
 
     return service
-      .compile(
-        src,
-        contents,
-        await getClangRequestSettings(src),
-        defaultFlags,
-        useRTags(),
-      )
+      .compile(src, contents, await getClangRequestSettings(src), defaultFlags)
       .refCount()
       .toPromise();
   },
@@ -147,7 +137,6 @@ module.exports = {
       prefix,
       await getClangRequestSettings(src),
       defaultFlags,
-      useRTags(),
     );
   },
 

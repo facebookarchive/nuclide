@@ -98,8 +98,6 @@ export default class ClangFlagsManager {
       ]),
   });
 
-  _pathToDatabase: Cache<string, Promise<?string>> = new Cache();
-
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
   constructor() {
@@ -109,14 +107,13 @@ export default class ClangFlagsManager {
 
   reset() {
     this._pathToFlags.clear();
-    this._pathToDatabase.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._clangProjectFlags.clear();
   }
 
   /**
-   * @return a list of flag strings or null if nothing is known
+   * @return a space-delimited string of flags or null if nothing is known
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
@@ -142,30 +139,6 @@ export default class ClangFlagsManager {
       }
     }
     return data;
-  }
-
-  /**
-   * @return a path to the compilation database that contains the compile
-   *         command for src file if we know of such a compilation database.
-   */
-  getDatabaseForSrc(src: string): Promise<?string> {
-    return this._pathToDatabase.getOrCreate(src, async () => {
-      const parsedDBs = await Promise.all(
-        Array.from(
-          this._compilationDatabases.store.entries(),
-        ).map(([db, filesPromise]) =>
-          filesPromise.then(fileFlags => ({
-            db,
-            files: fileFlags.keys(),
-          })),
-        ),
-      );
-      for (const {db, files} of parsedDBs) {
-        if (new Set(files).has(src)) {
-          return ((db: any): string);
-        }
-      }
-    });
   }
 
   _getFlagsForSrcCached(
@@ -499,8 +472,6 @@ export default class ClangFlagsManager {
     } catch (e) {
       logger.error(`Error reading compilation flags from ${dbFile}`, e);
     }
-    // Loading another compilation database invalidates this cache.
-    this._pathToDatabase.clear();
     return flags;
   }
 

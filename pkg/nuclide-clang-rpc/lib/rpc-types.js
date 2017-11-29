@@ -28,34 +28,30 @@ export type ClangSourceRange = {
   range: atom$Range,
 };
 
-export type ClangDiagnosticChild = {
-  spelling: string,
-  location: ClangLocation,
-  ranges: Array<ClangSourceRange>,
-};
-
-export type ClangDiagnostic = {
-  spelling: string,
-  severity: number,
-  location: ClangLocation,
-  ranges: ?Array<ClangSourceRange>,
-  fixits?: Array<{
-    range: ClangSourceRange,
-    value: string,
-  }>,
-  // Diagnostics often have children. This happens for errors like bad function args.
-  // Clang emits one diagnostic saying "matching invocation of function f not found"
-  // with one or more child diagnostics listing the reasons.
-  // (e.g. mismatched types, wrong number of arguments)
-  //
-  // These technically contain all the fields listed above, but we don't really have a good
-  // use for them so they are omitted.
-  // In theory, these can also have child diagnostics! Unclear if this ever occurs in practice.
-  children?: Array<ClangDiagnosticChild>,
-};
-
 export type ClangCompileResult = {
-  diagnostics: Array<ClangDiagnostic>,
+  diagnostics: Array<{
+    spelling: string,
+    severity: number,
+    location: ClangLocation,
+    ranges: ?Array<ClangSourceRange>,
+    fixits?: Array<{
+      range: ClangSourceRange,
+      value: string,
+    }>,
+    // Diagnostics often have children. This happens for errors like bad function args.
+    // Clang emits one diagnostic saying "matching invocation of function f not found"
+    // with one or more child diagnostics listing the reasons.
+    // (e.g. mismatched types, wrong number of arguments)
+    //
+    // These technically contain all the fields listed above, but we don't really have a good
+    // use for them so they are omitted.
+    // In theory, these can also have child diagnostics! Unclear if this ever occurs in practice.
+    children?: Array<{
+      spelling: string,
+      location: ClangLocation,
+      ranges: Array<ClangSourceRange>,
+    }>,
+  }>,
   // If defaultFlags was provided and used, this will be set to true.
   // `diagnostics` is likely to be inaccurate if this was the case.
   accurateFlags?: boolean,
