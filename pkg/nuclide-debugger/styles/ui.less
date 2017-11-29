@@ -174,6 +174,39 @@
   overflow: visible;
 }
 
+.nuclide-debugger-scopes-view-controls {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: @background-color-highlight;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.nuclide-debugger-scopes-view-edit-control {
+  cursor: pointer;
+  color: @text-color-highlight;
+}
+
+.nuclide-debugger-scopes-view-edit-control::before {
+  margin-right: 0px;
+  text-align: center;
+}
+
+.nuclide-debugger-scopes-view-edit-control:hover {
+  opacity: 1;
+  color: @text-color-highlight;
+}
+
+.nuclide-debugger-scope:hover {
+  background-color: @background-color-highlight;
+  .nuclide-debugger-scopes-view-controls {
+    opacity: 1;
+    color: fade(@text-color-highlight, 50%);
+  }
+}
+
 .nuclide-debugger-watch-expression-controls {
   opacity: 0;
   position: absolute;

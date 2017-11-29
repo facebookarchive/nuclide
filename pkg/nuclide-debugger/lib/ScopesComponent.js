@@ -85,7 +85,9 @@ export class ScopesComponent extends React.Component<Props> {
     const {name, value} = binding;
 
     return (
-      <div className="nuclide-debugger-expression-value-row" key={index}>
+      <div
+        className="nuclide-debugger-expression-value-row nuclide-debugger-scope"
+        key={index}>
         <div className="nuclide-debugger-expression-value-content">
           <LazyNestedValueComponent
             expression={name}

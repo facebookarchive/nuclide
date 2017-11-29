@@ -17,9 +17,11 @@ import type {
 import type {Observable} from 'rxjs';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import * as React from 'react';
 import invariant from 'assert';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {track} from '../nuclide-analytics';
 import {highlightOnUpdate} from './highlightOnUpdate';
 import {STRING_REGEX} from './SimpleValueComponent';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
@@ -28,8 +30,9 @@ import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 import classnames from 'classnames';
 
-const SPINNER_DELAY = 100; /* ms */
+const EDIT_VALUE_FROM_ICON = 'edit-value-from-icon';
 const NOT_AVAILABLE_MESSAGE = '<not available>';
+const SPINNER_DELAY = 100; /* ms */
 
 function isObjectValue(result: EvaluationResult): boolean {
   return result.objectId != null;
@@ -166,7 +169,7 @@ class ValueComponent extends React.Component<
     );
   }
 
-  _showSetVariableDisplay = (_: SyntheticMouseEvent<>): void => {
+  _showSetVariableDisplay = (): void => {
     const {isRoot, setVariable} = this.props;
     if (isRoot && setVariable) {
       this.setState({isBeingEdited: true});
@@ -296,6 +299,22 @@ class ValueComponent extends React.Component<
     );
   }
 
+  _renderEditableScopeView(): ?React.Element<any> {
+    const {isRoot, setVariable} = this.props;
+    return isRoot && setVariable && !this.state.isBeingEdited ? (
+      <div className="nuclide-debugger-scopes-view-controls">
+        <Icon
+          icon="pencil"
+          className="nuclide-debugger-scopes-view-edit-control"
+          onClick={_ => {
+            track(EDIT_VALUE_FROM_ICON);
+            this._showSetVariableDisplay();
+          }}
+        />
+      </div>
+    ) : null;
+  }
+
   render(): React.Node {
     const {
       evaluationResult,
@@ -324,6 +343,7 @@ class ValueComponent extends React.Component<
             evaluationResult={evaluationResult}
             simpleValueComponent={SimpleValueComponent}
           />
+          {this._renderEditableScopeView()}
         </div>
       );
       return isRoot ? (
@@ -392,6 +412,7 @@ class ValueComponent extends React.Component<
           title={title}>
           {childListElement}
         </NestedTreeItem>
+        {this._renderEditableScopeView()}
       </TreeList>
     );
   }
