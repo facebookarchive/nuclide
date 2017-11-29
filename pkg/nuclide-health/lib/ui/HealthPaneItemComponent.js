@@ -26,6 +26,9 @@ type Props = {
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
+  attachedDomNodes: ?number,
+  domNodes: ?number,
+  domListeners: ?number,
   childProcessesTree: ?ChildProcessInfo,
 };
 

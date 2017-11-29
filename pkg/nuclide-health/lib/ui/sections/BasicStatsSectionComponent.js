@@ -22,6 +22,9 @@ type Props = {
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
+  attachedDomNodes: ?number,
+  domNodes: ?number,
+  domListeners: ?number,
 };
 
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
@@ -57,6 +60,27 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
         name: 'Event loop',
         value: `${this.props.activeRequests}`,
       },
+      {
+        name: 'Attached DOM Nodes',
+        value: `${this.props.attachedDomNodes != null
+          ? this.props.attachedDomNodes
+          : 'N/A - are your devtools open?'}`,
+        disableJewel: true,
+      },
+      {
+        name: 'Retained DOM Nodes',
+        value: `${this.props.domNodes != null
+          ? this.props.domNodes
+          : 'N/A - are your devtools open?'}`,
+        disableJewel: true,
+      },
+      {
+        name: 'DOM Listeners',
+        value: `${this.props.domListeners != null
+          ? this.props.domListeners
+          : 'N/A - are your devtools open?'}`,
+        disableJewel: true,
+      },
     ];
 
     const updateToolbarJewel = this.updateToolbarJewel;
@@ -86,11 +110,13 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
                 <th>{stat.name}</th>
                 <td>{stat.value}</td>
                 <td className="text-right">
-                  <Button
-                    size={ButtonSizes.EXTRA_SMALL}
-                    onClick={updateToolbarJewel.bind(this, jewelValue)}>
-                    {jewelLabel}
-                  </Button>
+                  {!stat.disableJewel && (
+                    <Button
+                      size={ButtonSizes.EXTRA_SMALL}
+                      onClick={updateToolbarJewel.bind(this, jewelValue)}>
+                      {jewelLabel}
+                    </Button>
+                  )}
                 </td>
               </tr>
             );

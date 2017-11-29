@@ -31,6 +31,7 @@ export default class HealthPaneItem extends React.Component<
     super(props);
     this.state = {
       stats: null,
+      domCounters: null,
       childProcessesTree: null,
     };
   }
@@ -73,6 +74,7 @@ export default class HealthPaneItem extends React.Component<
       updateToolbarJewel,
       childProcessesTree,
       stats,
+      domCounters,
     } = this.state;
 
     if (stats == null) {
@@ -94,6 +96,9 @@ export default class HealthPaneItem extends React.Component<
           activeHandles={stats.activeHandles}
           activeRequests={stats.activeRequests}
           activeHandlesByType={stats.activeHandlesByType}
+          attachedDomNodes={domCounters && domCounters.attachedNodes}
+          domNodes={domCounters && domCounters.nodes}
+          domListeners={domCounters && domCounters.jsEventListeners}
           childProcessesTree={childProcessesTree}
         />
       </div>

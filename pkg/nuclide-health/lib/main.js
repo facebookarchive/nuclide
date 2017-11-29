@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {DOMCounters} from './getDOMCounters';
 import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
@@ -30,6 +31,7 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';
 import getChildProcessesTree from './getChildProcessesTree';
 import getStats from './getStats';
+import getDOMCounters from './getDOMCounters';
 import trackStalls from './trackStalls';
 import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
@@ -75,14 +77,25 @@ class Activation {
         .share(),
     );
 
+    // These aren't really aggregated because they're too expensive to fetch.
+    // We'll just fetch these once per analytics upload cycle.
+    // (Which means the first analytics upload won't have DOM counters).
+    const domCounterStream = Observable.of(null)
+      .concat(analyticsTimeouts.switchMap(Observable.interval))
+      .switchMap(() => getDOMCounters())
+      .publishReplay(1)
+      .refCount();
+
     const updateToolbarJewel = value => {
       featureConfig.set('nuclide-health.toolbarJewel', value);
     };
     this._paneItemStates = Observable.combineLatest(
       packageStates,
+      domCounterStream,
       Observable.of(null).concat(childProcessesTreeStream),
-      (packageState, childProcessesTree) => ({
+      (packageState, domCounters, childProcessesTree) => ({
         ...packageState,
+        domCounters,
         childProcessesTree,
         updateToolbarJewel,
       }),
@@ -96,7 +109,10 @@ class Activation {
       // Buffer the stats and send analytics periodically.
       statsStream
         .buffer(analyticsTimeouts.switchMap(Observable.interval))
-        .subscribe(this._updateAnalytics),
+        .withLatestFrom(domCounterStream)
+        .subscribe(([buffer, domCounters]) => {
+          this._updateAnalytics(buffer, domCounters);
+        }),
       trackStalls(),
       this._registerCommandAndOpener(),
     );
@@ -154,13 +170,23 @@ class Activation {
     }
   }
 
-  _updateAnalytics(analyticsBuffer: Array<HealthStats>): void {
+  _updateAnalytics(
+    analyticsBuffer: Array<HealthStats>,
+    domCounters: ?DOMCounters,
+  ): void {
     if (analyticsBuffer.length === 0) {
       return;
     }
 
     // Aggregates the buffered stats up by suffixing avg, min, max to their names.
     const aggregateStats = {};
+
+    // We don't have aggregates for these - these are just the most recent numbers.
+    if (domCounters != null) {
+      aggregateStats.attachedDomNodes = domCounters.attachedNodes;
+      aggregateStats.domNodes = domCounters.nodes;
+      aggregateStats.domListeners = domCounters.jsEventListeners;
+    }
 
     // All analyticsBuffer entries have the same keys; we use the first entry to know what they
     // are.
@@ -189,9 +215,8 @@ class Activation {
 function aggregate(
   values: Array<number>,
 ): {avg: ?number, min: ?number, max: ?number} {
-  const avg = values.reduce((prevValue, currValue, index) => {
-    return prevValue + (currValue - prevValue) / (index + 1);
-  }, 0);
+  const sum = values.reduce((acc, value) => acc + value, 0);
+  const avg = values.length > 0 ? sum / values.length : 0;
   const min = Math.min(...values);
   const max = Math.max(...values);
   return {avg, min, max};
