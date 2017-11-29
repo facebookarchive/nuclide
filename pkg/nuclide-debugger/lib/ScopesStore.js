@@ -17,6 +17,8 @@ import type {ScopeSection} from './types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {BehaviorSubject, Observable} from 'rxjs';
+import {track} from '../../nuclide-analytics';
+import {AnalyticsEvents} from './constants';
 import {ActionTypes} from './DebuggerDispatcher';
 import {reportError} from './Protocol/EventReporter';
 import {DebuggerStore} from './DebuggerStore';
@@ -85,6 +87,15 @@ export default class ScopesStore {
     expression: string,
     newValue: string,
   ): Promise<string> {
+    const debuggerInstance = this._debuggerStore.getDebuggerInstance();
+    if (debuggerInstance == null) {
+      const errorMsg = 'setVariable failed because debuggerInstance is null';
+      reportError(errorMsg);
+      return Promise.reject(new Error(errorMsg));
+    }
+    track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
+      language: debuggerInstance.getProviderName(),
+    });
     return new Promise((resolve, reject) => {
       function callback(error: Error, response: SetVariableResponse) {
         if (error != null) {

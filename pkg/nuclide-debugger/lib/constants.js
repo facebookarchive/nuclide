@@ -16,6 +16,7 @@ export const AnalyticsEvents = Object.freeze({
   DEBUGGER_BREAKPOINT_TOGGLE: 'debugger-breakpoint-toggle',
   DEBUGGER_BREAKPOINT_TOGGLE_ENABLED: 'debugger-breakpoint-toggle-enabled',
   DEBUGGER_BREAKPOINT_UPDATE_CONDITION: 'debugger-breakpoint-update-condition',
+  DEBUGGER_EDIT_VARIABLE: 'debugger-edit-variable',
   DEBUGGER_START: 'debugger-start',
   DEBUGGER_START_FAIL: 'debugger-start-fail',
   DEBUGGER_STEP_CONTINUE: 'debugger-step-continue',
