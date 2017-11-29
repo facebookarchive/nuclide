@@ -8,11 +8,16 @@ import jedi
 from parso.python.tree import ImportFrom
 
 
-def serialize_names(names):
-    return list(filter(None, [serialize_name(n) for n in names]))
+def serialize_names(names, visited):
+    return list(filter(None, [serialize_name(n, visited) for n in names]))
 
 
-def serialize_name(name):
+def serialize_name(name, visited):
+    if name in visited:
+        # Some class structures seem to cause cycles :(
+        return None
+    visited.add(name)
+
     result = {}
 
     if name.type == 'class' or name.type == 'function':
@@ -23,7 +28,7 @@ def serialize_name(name):
             # Properties don't have params.
             result['params'] = []
         result['children'] = (
-            serialize_names(name.defined_names())
+            serialize_names(name.defined_names(), visited)
             if name.type == 'class' else [])
     elif name.type == 'statement':
         # Don't include underscore assignments in outline.
@@ -33,7 +38,11 @@ def serialize_name(name):
     else:
         return None
 
-    definition = name._name.tree_name.get_definition()
+    try:
+        definition = name._name.tree_name.get_definition()
+    except AttributeError:
+        return None
+
     # Do not include imported definitions.
     if isinstance(definition, ImportFrom):
         return None
@@ -60,4 +69,4 @@ def get_outline(src, contents):
     names = jedi.api.names(source=contents, path=src)
     # Only iterate through top-level definitions.
     names = filter(lambda name: name.parent().type == 'module', names)
-    return serialize_names(names)
+    return serialize_names(names, visited=set())
