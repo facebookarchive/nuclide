@@ -102,16 +102,17 @@ async function getRefactorings(
       Error('Must be run from a saved file.'),
     );
   }
-  const cursor = editor.getLastCursor();
   const provider = providers.getProviderForEditor(editor);
   if (provider == null) {
     return Actions.error('get-refactorings', Error('No providers found.'));
   }
   try {
+    const cursor = editor.getLastCursor();
     const cursorPosition = cursor.getBufferPosition();
-    const availableRefactorings = await provider.refactoringsAtPoint(
+    const selectedRange = editor.getSelectedBufferRange();
+    const availableRefactorings = await provider.refactorings(
       editor,
-      cursorPosition,
+      selectedRange,
     );
     availableRefactorings.sort(
       (x, y) => (x.disabled === true ? 1 : 0) - (y.disabled === true ? 1 : 0),

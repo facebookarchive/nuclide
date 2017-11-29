@@ -81,9 +81,9 @@ export type RefactorProvider = {
   priority: number,
   grammarScopes: Array<string>,
 
-  refactoringsAtPoint(
+  refactorings(
     editor: atom$TextEditor,
-    point: atom$Point,
+    range: atom$Range,
   ): Promise<Array<AvailableRefactoring>>,
 
   // Providers may stream back progress responses.
@@ -200,10 +200,7 @@ class Activation {
           return [];
         }
 
-        const refactors = await provider.refactoringsAtPoint(
-          editor,
-          range.start,
-        );
+        const refactors = await provider.refactorings(editor, range);
 
         return refactors
           .filter(refactor => {

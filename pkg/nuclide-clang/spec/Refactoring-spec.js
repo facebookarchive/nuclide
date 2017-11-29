@@ -35,9 +35,10 @@ describe('Refactoring', () => {
   describe('Refactoring.refactoringsAtPoint', () => {
     it('returns refactorings for a variable', () => {
       waitsForPromise({timeout: 15000}, async () => {
-        const refactorings = await Refactoring.refactoringsAtPoint(
+        const point = new Point(2, 6);
+        const refactorings = await Refactoring.refactorings(
           fakeEditor,
-          new Point(2, 6),
+          new Range(point, point),
         );
         expect(refactorings).toEqual([
           {
@@ -53,9 +54,10 @@ describe('Refactoring', () => {
 
     it('returns nothing for a function', () => {
       waitsForPromise({timeout: 15000}, async () => {
-        const refactorings = await Refactoring.refactoringsAtPoint(
+        const point = new Point(1, 5);
+        const refactorings = await Refactoring.refactorings(
           fakeEditor,
-          new Point(1, 5),
+          new Range(point, point),
         );
         expect(refactorings).toEqual([]);
       });

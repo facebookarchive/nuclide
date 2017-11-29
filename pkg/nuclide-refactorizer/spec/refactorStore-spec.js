@@ -82,9 +82,9 @@ describe('refactorStore', () => {
     provider = {
       grammarScopes: ['text.plain', 'text.plain.null-grammar'],
       priority: 1,
-      refactoringsAtPoint(
+      refactorings(
         editor: atom$TextEditor,
-        point: atom$Point,
+        range: atom$Range,
       ): Promise<Array<AvailableRefactoring>> {
         return refactoringsAtPointReturn;
       },
@@ -369,7 +369,7 @@ describe('refactorStore', () => {
         provider = {
           priority: 1,
           grammarScopes: ['text.plain', 'text.plain.null-grammar'],
-          async refactoringsAtPoint() {
+          async refactorings() {
             return [refactoring];
           },
           refactor(request: RefactorRequest) {

@@ -38,25 +38,25 @@ async function checkDiagnostics(editor: atom$TextEditor): Promise<boolean> {
 }
 
 export default class RefactoringHelpers {
-  static refactoringsAtPoint(
+  static refactorings(
     editor: atom$TextEditor,
-    point: atom$Point,
+    range: atom$Range,
   ): Promise<Array<AvailableRefactoring>> {
     return trackTiming('nuclide-clang:refactoringsAtPoint', () =>
-      RefactoringHelpers._refactoringsAtPoint(editor, point),
+      RefactoringHelpers._refactorings(editor, range),
     );
   }
 
-  static async _refactoringsAtPoint(
+  static async _refactorings(
     editor: atom$TextEditor,
-    point: atom$Point,
+    range: atom$Range,
   ): Promise<Array<AvailableRefactoring>> {
     const path = editor.getPath();
     if (path == null || !await checkDiagnostics(editor)) {
       return [];
     }
 
-    const {row, column} = point;
+    const {row, column} = range.start;
     const declInfo = await getDeclarationInfo(editor, row, column);
     if (declInfo == null || !SUPPORTED_CURSORS.has(declInfo[0].type)) {
       return [];

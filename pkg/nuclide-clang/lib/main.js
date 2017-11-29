@@ -157,8 +157,8 @@ export function provideRefactoring(): RefactorProvider {
   return {
     grammarScopes: Array.from(GRAMMAR_SET),
     priority: 1,
-    refactoringsAtPoint(editor, point) {
-      return Refactoring.refactoringsAtPoint(editor, point);
+    refactorings(editor, range) {
+      return Refactoring.refactorings(editor, range);
     },
     refactor(request) {
       return Refactoring.refactor(request);
