@@ -64,7 +64,12 @@ export function startMetro(
       const {command, cwd, args} = commandInfo;
       return observeProcess(command, args, {
         cwd,
-        env: {...process.env, REACT_EDITOR: shellQuote(editorArgs)},
+        env: {
+          ...process.env,
+          REACT_EDITOR: shellQuote(editorArgs),
+          // We don't want to pass the NODE_PATH from this process
+          NODE_PATH: null,
+        },
         killTreeWhenDone: true,
       }).catch(error => {
         if (error.exitCode === 11) {
