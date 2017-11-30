@@ -9,6 +9,8 @@
  * @format
  */
 
+import url from 'url';
+
 import {
   infoFromUri,
   uriFromCwd,
@@ -99,5 +101,75 @@ describe('main', () => {
       expect(info.command).toEqual(command);
       expect(info.title).toEqual(title);
     });
+    it('ignores cwd with incorrect trustToken', () => {
+      const cwd = 'nuclide://unexpected/directory';
+      const uri = breakTrustToken(
+        uriFromInfo({
+          ...defaultInfo,
+          cwd,
+        }),
+      );
+      const info = infoFromUri(uri);
+      expect(info).not.toBeNull();
+      expect(info.cwd).toBeUndefined();
+    });
   });
+  it('ignores command with incorrect trustToken', () => {
+    const command = {file: '/bin/bash', args: ['-c', 'echo rm -rf /']};
+    const uri = breakTrustToken(
+      uriFromInfo({
+        ...defaultInfo,
+        command,
+      }),
+    );
+    const info = infoFromUri(uri);
+    expect(info).not.toBeNull();
+    expect(info.command).toBeUndefined();
+  });
+  it('ignores environment with incorrect trustToken', () => {
+    const environmentVariables = new Map([['PATH', '/unexpected/path']]);
+    const uri = breakTrustToken(
+      uriFromInfo({
+        ...defaultInfo,
+        environmentVariables,
+      }),
+    );
+    const info = infoFromUri(uri);
+    expect(info).not.toBeNull();
+    expect(info.environmentVariables).toBeUndefined();
+  });
+  it('ignores preservedCommands with incorrect trustToken', () => {
+    const preservedCommands = ['unexpected:key-binding'];
+    const uri = breakTrustToken(
+      uriFromInfo({
+        ...defaultInfo,
+        preservedCommands,
+      }),
+    );
+    const info = infoFromUri(uri);
+    expect(info).not.toBeNull();
+    expect(info.preservedCommands).toBeUndefined();
+  });
+  it('ignores initialInput with incorrect trustToken', () => {
+    const initialInput = 'echo rm -rf /';
+    const uri = breakTrustToken(
+      uriFromInfo({
+        ...defaultInfo,
+        initialInput,
+      }),
+    );
+    const info = infoFromUri(uri);
+    expect(info).not.toBeNull();
+    expect(info.initialInput).toBeUndefined();
+  });
+
+  function breakTrustToken(uri: string): string {
+    const {protocol, host, slashes, query} = url.parse(uri, true);
+    return url.format({
+      protocol,
+      host,
+      slashes,
+      query: {...query, ...{trustToken: 'invalid'}},
+    });
+  }
 });
