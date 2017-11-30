@@ -19,16 +19,17 @@ import * as React from 'react';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-type Props = {
-  options: Array<string>,
+type Props = {|
   atomInput: AtomInput,
-  onSelect?: (option: string) => void,
   displayOnFocus: boolean,
-  isLoading: boolean,
   errorMessage: ?string,
-};
+  isLoading: boolean,
+  loadingMessage: string,
+  onSelect?: (option: string) => void,
+  options: Array<string>,
+|};
 
-type State = {
+type State = {|
   optionsVisible: boolean,
   optionsRect: ?{
     top: number,
@@ -36,7 +37,7 @@ type State = {
     width: number,
   },
   selectedIndex: number,
-};
+|};
 
 const UP = -1;
 const DOWN = 1;
@@ -55,8 +56,9 @@ export default class DropdownResults extends React.Component<Props, State> {
 
   static defaultProps = {
     displayOnFocus: false,
-    isLoading: false,
     errorMessage: null,
+    isLoading: false,
+    loadingMessage: 'Loading Results',
   };
 
   _disposables: UniversalDisposable;
@@ -133,7 +135,7 @@ export default class DropdownResults extends React.Component<Props, State> {
     } else if (this.props.isLoading) {
       options.push(
         <li key="loading-text" className="loading">
-          <span className="loading-message">Loading Results</span>
+          <span className="loading-message">{this.props.loadingMessage}</span>
         </li>,
       );
     } else {
