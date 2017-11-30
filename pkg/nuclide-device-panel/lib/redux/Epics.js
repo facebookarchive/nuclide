@@ -11,6 +11,8 @@
 
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
+import {track} from '../../../nuclide-analytics';
+import {AnalyticsActions} from '../constants';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {getProviders} from '../providers';
@@ -290,7 +292,14 @@ function observeAppInfoProviderValues(
           .map(value => ({value}))
           .catch(error => Observable.of({value: error.message, isError: true}));
       })
-      .distinctUntilChanged(shallowEqual),
+      .distinctUntilChanged(shallowEqual)
+      .do(item => {
+        if (item.isError) {
+          track(AnalyticsActions.APPINFOTABLES_DATA_ERROR, item);
+        } else {
+          track(AnalyticsActions.APPINFOTABLES_DATA_VALUE, item);
+        }
+      }),
   );
   // $FlowFixMe - combineLatest type spec doesn't support spread operator.
   return Observable.combineLatest(...observables);

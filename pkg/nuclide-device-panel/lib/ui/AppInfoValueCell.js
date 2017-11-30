@@ -13,6 +13,8 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import * as React from 'react';
 import classnames from 'classnames';
+import {track} from '../../../nuclide-analytics';
+import {AnalyticsActions} from '../constants';
 
 const MAX_ERROR_LINE_LENGTH = 80;
 const MAX_NUMBER_ERROR_LINES = 10;
@@ -55,17 +57,17 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
     const updateFunction =
       this.props.data.update || (value => Promise.resolve());
 
-    this.setState({editingState: 'syncing'});
+    this._setEditingState('syncing');
     return updateFunction(newValue)
       .catch(error => {
-        this.setState({editingState: 'error'});
+        this._setEditingState('error');
       })
       .then(() => {
-        this.setState({editingState: 'updated', value: newValue});
+        this._setEditingState('syncing', {value: newValue});
       })
       .then(() => {
         setTimeout(
-          () => this.setState({editingState: 'none', editingValue: null}),
+          () => this._setEditingState('none', {editingValue: null}),
           UPDATED_DELAY,
         );
       });
@@ -107,6 +109,12 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
     }
   }
 
+  _setEditingState(editingState: EditingState, otherState?: $Supertype<State>) {
+    const newState = {...otherState, editingState};
+    track(AnalyticsActions.APPINFOVALUECELL_UI_EDITINGSTATECHANGE, newState);
+    this.setState(newState);
+  }
+
   _renderEditableValue(value: any): React.Node {
     const {editingState} = this.state;
     const editingValue =
@@ -143,7 +151,7 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
             )}
             onClick={() => {
               if (this.state.editingState === 'none') {
-                this.setState({editingState: 'editing'});
+                this._setEditingState('editing');
               }
             }}
           />
@@ -157,8 +165,15 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
     const {value} = this.state;
 
     if (isError) {
+      track(AnalyticsActions.APPINFOVALUECELL_UI_ERROR);
       return this._renderError(value);
-    } else if (canUpdate) {
+    }
+
+    if (this.state.editingState === 'none') {
+      track(AnalyticsActions.APPINFOVALUECELL_UI_VALUE);
+    }
+
+    if (canUpdate) {
       return this._renderEditableValue(value);
     }
 

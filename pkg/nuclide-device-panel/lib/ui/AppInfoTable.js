@@ -13,6 +13,8 @@ import type {AppInfoRow} from '../types';
 
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
+import {track} from '../../../nuclide-analytics';
+import {AnalyticsActions} from '../constants';
 import {AppInfoValueCell} from './AppInfoValueCell';
 
 type Props = {
@@ -21,6 +23,16 @@ type Props = {
 };
 
 export class AppInfoTable extends React.PureComponent<Props> {
+  componentDidMount() {
+    track(AnalyticsActions.APPINFOTABLES_UI_MOUNT, {
+      rows: this.props.rows.map(row => row.name),
+    });
+  }
+
+  componentWillUnmount() {
+    track(AnalyticsActions.APPINFOTABLES_UI_UNMOUNT);
+  }
+
   render(): React.Node {
     const rows = this.props.rows.map(row => ({
       data: {property: row.name, rowData: row},
