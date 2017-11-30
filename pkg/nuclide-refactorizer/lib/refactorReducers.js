@@ -82,7 +82,7 @@ function gotRefactorings(
   invariant(state.type === 'open');
   invariant(state.phase.type === 'get-refactorings');
 
-  const {editor, originalPoint} = action.payload;
+  const {editor, originalRange} = action.payload;
 
   return {
     type: 'open',
@@ -91,7 +91,7 @@ function gotRefactorings(
       type: 'pick',
       provider: action.payload.provider,
       editor,
-      originalPoint,
+      originalRange,
       availableRefactorings: action.payload.availableRefactorings,
     },
   };
@@ -112,12 +112,12 @@ function pickedRefactor(
   invariant(state.phase.type === 'pick');
 
   const {refactoring} = action.payload;
-  const {provider, editor, originalPoint} = state.phase;
+  const {provider, editor, originalRange} = state.phase;
 
   return {
     type: 'open',
     ui: state.ui,
-    phase: getRefactoringPhase(refactoring, provider, editor, originalPoint),
+    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
   };
 }
 
@@ -125,7 +125,7 @@ function inlinePickedRefactor(
   state: RefactorState,
   action: InlinePickedRefactorAction,
 ): RefactorState {
-  const {provider, editor, originalPoint, refactoring} = action.payload;
+  const {provider, editor, originalRange, refactoring} = action.payload;
 
   invariant(state.type === 'closed');
   invariant(refactoring.kind === 'freeform');
@@ -133,7 +133,7 @@ function inlinePickedRefactor(
   return {
     type: 'open',
     ui: 'generic',
-    phase: getRefactoringPhase(refactoring, provider, editor, originalPoint),
+    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
   };
 }
 
@@ -141,7 +141,7 @@ function getRefactoringPhase(
   refactoring: AvailableRefactoring,
   provider: RefactorProvider,
   editor: atom$TextEditor,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
 ): RefactoringPhase {
   switch (refactoring.kind) {
     case 'rename':
@@ -149,7 +149,7 @@ function getRefactoringPhase(
         type: 'rename',
         provider,
         editor,
-        originalPoint,
+        originalPoint: originalRange.start,
         symbolAtPoint: refactoring.symbolAtPoint,
       };
     case 'freeform':
@@ -157,7 +157,7 @@ function getRefactoringPhase(
         type: 'freeform',
         provider,
         editor,
-        originalPoint,
+        originalRange,
         refactoring,
       };
     default:

@@ -404,7 +404,7 @@ describe('refactorStore', () => {
 
           const asyncify: FreeformRefactorRequest = {
             kind: 'freeform',
-            originalPoint: TEST_FILE_POINT,
+            originalRange: new Range(TEST_FILE_POINT, TEST_FILE_POINT),
             editor: openEditor,
             id: 'asyncify',
             range: new Range([0, 0], [0, 0]),

@@ -107,8 +107,6 @@ async function getRefactorings(
     return Actions.error('get-refactorings', Error('No providers found.'));
   }
   try {
-    const cursor = editor.getLastCursor();
-    const cursorPosition = cursor.getBufferPosition();
     const selectedRange = editor.getSelectedBufferRange();
     const availableRefactorings = await provider.refactorings(
       editor,
@@ -119,7 +117,7 @@ async function getRefactorings(
     );
     return Actions.gotRefactorings(
       editor,
-      cursorPosition,
+      selectedRange,
       provider,
       availableRefactorings,
     );

@@ -63,17 +63,17 @@ export type RenameRequest = {
   newName: string,
 };
 
-export type FreeformRefactorRequest = {
+export type FreeformRefactorRequest = {|
   kind: FreeformRefactorKind,
   editor: atom$TextEditor,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
   // Echoes FreeformRefactoring.id.
   id: string,
   // Echoes FreeformRefactoring.range.
   range: atom$Range,
   // Arguments provided by the user.
   arguments: Map<string, mixed>,
-};
+|};
 
 export type RefactorRequest = RenameRequest | FreeformRefactorRequest;
 
@@ -213,7 +213,7 @@ class Activation {
                 return store.dispatch(
                   Actions.inlinePickedRefactor(
                     editor,
-                    range.start,
+                    range,
                     provider,
                     refactor,
                   ),

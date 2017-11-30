@@ -55,7 +55,7 @@ export type GetRefactoringsPhase = {|
 export type PickPhase = {|
   type: 'pick',
   provider: RefactorProvider,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
   editor: atom$TextEditor,
   availableRefactorings: Array<AvailableRefactoring>,
 |};
@@ -75,7 +75,7 @@ export type FreeformPhase = {|
   type: 'freeform',
   provider: RefactorProvider,
   editor: atom$TextEditor,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
   refactoring: FreeformRefactoring,
 |};
 
@@ -117,7 +117,7 @@ export type OpenAction = {|
 export type GotRefactoringsAction = {|
   type: 'got-refactorings',
   payload: {
-    originalPoint: atom$Point,
+    originalRange: atom$Range,
     editor: atom$TextEditor,
     provider: RefactorProvider,
     availableRefactorings: Array<AvailableRefactoring>,
@@ -148,7 +148,7 @@ export type PickedRefactorAction = {|
 export type InlinePickedRefactorAction = {|
   type: 'inline-picked-refactor',
   payload: {
-    originalPoint: atom$Point,
+    originalRange: atom$Range,
     editor: atom$TextEditor,
     provider: RefactorProvider,
     refactoring: AvailableRefactoring,

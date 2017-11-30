@@ -37,7 +37,7 @@ export function open(ui: RefactorUI): OpenAction {
 
 export function gotRefactorings(
   editor: atom$TextEditor,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
   provider: RefactorProvider,
   availableRefactorings: Array<AvailableRefactoring>,
 ): GotRefactoringsAction {
@@ -45,7 +45,7 @@ export function gotRefactorings(
     type: 'got-refactorings',
     payload: {
       editor,
-      originalPoint,
+      originalRange,
       provider,
       availableRefactorings,
     },
@@ -75,14 +75,14 @@ export function pickedRefactor(
 
 export function inlinePickedRefactor(
   editor: atom$TextEditor,
-  originalPoint: atom$Point,
+  originalRange: atom$Range,
   provider: RefactorProvider,
   refactoring: AvailableRefactoring,
 ): InlinePickedRefactorAction {
   return {
     type: 'inline-picked-refactor',
     payload: {
-      originalPoint,
+      originalRange,
       editor,
       provider,
       refactoring,

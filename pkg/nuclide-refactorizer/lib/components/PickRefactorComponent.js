@@ -55,7 +55,7 @@ export class PickRefactorComponent extends React.Component<
         Actions.execute(this.props.pickPhase.provider, {
           kind: 'freeform',
           editor: this.props.pickPhase.editor,
-          originalPoint: this.props.pickPhase.originalPoint,
+          originalRange: this.props.pickPhase.originalRange,
           id: refactoring.id,
           range: refactoring.range,
           arguments: new Map(),
