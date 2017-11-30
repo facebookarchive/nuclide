@@ -35,6 +35,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import VsDebugSession from './VsDebugSession';
 import {VsAdapterTypes} from './constants';
 import {Observable, Subject} from 'rxjs';
+import util from 'util';
 
 function translateStopReason(stopReason: string): string {
   return stopReason;
@@ -478,10 +479,18 @@ export default class VsDebugSessionTranslator {
   }
 
   async _startDebugging(): Promise<void> {
-    if (this._debugMode === 'launch') {
-      await this._session.launch(this._debuggerArgs);
-    } else {
-      await this._session.attach(this._debuggerArgs);
+    try {
+      if (this._debugMode === 'launch') {
+        await this._session.launch(this._debuggerArgs);
+      } else {
+        await this._session.attach(this._debuggerArgs);
+      }
+    } catch (error) {
+      this._sendAtomNotification(
+        'error',
+        `Failed to ${this._debugMode} the debugger!<br/>` + util.format(error),
+      );
+      this.dispose();
     }
   }
 
