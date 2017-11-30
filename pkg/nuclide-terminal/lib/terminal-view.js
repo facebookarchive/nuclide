@@ -94,8 +94,11 @@ export class TerminalView implements PtyClient {
     const cwd = (this._cwd = info.cwd == null ? null : info.cwd);
     this._command = info.command == null ? null : info.command;
     this._title = info.title == null ? 'terminal' : info.title;
-    this._initialInput = info.initialInput == null ? '' : info.initialInput;
+    this._initialInput =
+      info.initialInput == null ? '' : getSafeInitialInput(info.initialInput);
     this._processExitCallback = () => {};
+
+    getSafeInitialInput(String.fromCharCode(10));
 
     this._startTime = performanceNow();
     this._bytesIn = 0;
@@ -653,4 +656,24 @@ function registerLinkHandlers(terminal: Terminal): void {
       {matchIndex},
     );
   }
+}
+
+// As a precaution, we should not let any undisplayable or potentially unsafe characters through
+export function getSafeInitialInput(initialInput: string): string {
+  for (let i = 0; i < initialInput.length; i++) {
+    const code = initialInput.charCodeAt(i);
+    // ASCII codes under 32 and 127 are control characters (potentially dangerous)
+    // ASCII codes 128-165 are extended ASCII characters that have uses in other languages
+    if (code < 32 || code === 127 || code > 165) {
+      atom.notifications.addWarning(
+        'Initial input for terminal unable to be prefilled',
+        {
+          detail: `Potentially malicious characters were found in the prefill command: ${initialInput}`,
+          dismissable: true,
+        },
+      );
+      return '';
+    }
+  }
+  return initialInput;
 }
