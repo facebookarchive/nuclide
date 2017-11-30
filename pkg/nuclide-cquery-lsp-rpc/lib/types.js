@@ -9,16 +9,18 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 export type CqueryProjectWithCompilationDb = {
   hasCompilationDb: true,
   compilationDbDir: string,
   flagsFile: string,
-  projectRoot: string,
+  projectRoot: NuclideUri,
 };
 export type CqueryProjectWithoutCompilationDb = {
   hasCompilationDb: false,
   defaultFlags: ?Array<string>,
-  projectRoot: string,
+  projectRoot: NuclideUri,
 };
 
 export type CqueryProject =
