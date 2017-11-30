@@ -67,22 +67,14 @@ class Activation {
     const isOpenSource = !await fsPromise.exists(
       path.join(__dirname, 'fb-config.js'),
     );
-    if (!await passesGK('nuclide_debugger_reactnative') && !isOpenSource) {
-      return;
+    if ((await passesGK('nuclide_debugger_reactnative')) || isOpenSource) {
+      this._registerDebugProvider({
+        name: 'React Native',
+        getLaunchAttachProvider: connection => {
+          return new ReactNativeLaunchAttachProvider(connection);
+        },
+      });
     }
-    const provider: NuclideDebuggerProvider = {
-      name: 'React Native',
-      getLaunchAttachProvider: connection => {
-        return new ReactNativeLaunchAttachProvider(connection);
-      },
-    };
-    this._subscriptions.add(
-      atom.packages.serviceHub.provide(
-        'nuclide-debugger.provider',
-        '0.0.0',
-        provider,
-      ),
-    );
   }
 
   dispose(): void {
