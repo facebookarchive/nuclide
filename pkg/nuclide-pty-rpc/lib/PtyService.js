@@ -65,7 +65,7 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
   // If no command and no local settings, default to /bin/bash
   return {
     file: '/bin/bash',
-    args: [],
+    args: ['-l'],
   };
 }
 
@@ -113,7 +113,7 @@ async function getDefaultShellCommand(): Promise<?Command> {
 
   return {
     file: defaultShell,
-    args: [],
+    args: ['-l'],
   };
 }
 
