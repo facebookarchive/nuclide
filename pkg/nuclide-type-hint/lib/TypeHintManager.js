@@ -10,7 +10,7 @@
  */
 
 import type {TypeHintProvider} from './types';
-import type {Datatip} from 'atom-ide-ui';
+import type {Datatip, MarkedString} from 'atom-ide-ui';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import {arrayRemove} from 'nuclide-commons/collection';
@@ -49,7 +49,7 @@ export default class TypeHintManager {
       provider.typeHint(editor, position),
     );
     // flowlint-next-line sketchy-null-mixed:off
-    if (!typeHint || this._marker) {
+    if (!typeHint || this._marker || !typeHint.hint.length === 0) {
       return;
     }
     const {hint, range} = typeHint;
@@ -58,8 +58,22 @@ export default class TypeHintManager {
       scope: scopeName,
       message: hint,
     });
+
+    const markedStrings: Array<MarkedString> = hint.map(h => {
+      // Flow doesn't like it when I don't specify these as literals.
+      if (h.type === 'snippet') {
+        return {type: 'snippet', value: h.value, grammar};
+      } else {
+        return {type: 'markdown', value: h.value};
+      }
+    });
+
+    if (markedStrings.length === 0) {
+      return null;
+    }
+
     return {
-      markedStrings: [{type: 'snippet', value: hint, grammar}],
+      markedStrings,
       range,
     };
   }

@@ -14,6 +14,7 @@ import type {MerlinType} from '../../nuclide-ocaml-rpc';
 
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
+import {typeHintFromSnippet} from '../../nuclide-language-service-rpc';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // Ignore typehints that span too many lines. These tend to be super spammy.
@@ -43,13 +44,13 @@ export default class TypeHintProvider {
       if (type.end.line - type.start.line > MAX_LINES) {
         return null;
       }
-      return {
-        hint: type.type,
-        range: new Range(
+      return typeHintFromSnippet(
+        type.type,
+        new Range(
           new Point(type.start.line - 1, type.start.col),
           new Point(type.end.line - 1, type.end.col),
         ),
-      };
+      );
     });
   }
 }

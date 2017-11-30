@@ -47,6 +47,7 @@ import type {
 
 import invariant from 'assert';
 import {Range, Point} from 'simple-text-buffer';
+import {typeHintFromSnippet} from '../../nuclide-language-service-rpc';
 import {getConfig} from './config';
 import {Observable} from 'rxjs';
 
@@ -432,10 +433,7 @@ export class FlowSingleProjectLanguageService {
       logger.error(`Problem pretty printing type hint: ${e.message}`);
       typeString = type;
     }
-    return {
-      hint: typeString,
-      range,
-    };
+    return typeHintFromSnippet(typeString, range);
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

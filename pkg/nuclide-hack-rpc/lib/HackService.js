@@ -74,6 +74,7 @@ import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {
   ServerLanguageService,
   ensureInvalidations,
+  typeHintFromSnippet,
 } from '../../nuclide-language-service-rpc';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
@@ -372,11 +373,8 @@ class HackSingleFileLanguageService {
     if (result == null || result.type == null || result.type === '_') {
       return null;
     } else {
-      return {
-        hint: result.type,
-        // TODO: Use hack range for type hints, not nuclide range.
-        range: match.range,
-      };
+      // TODO: Use hack range for type hints, not nuclide range.
+      return typeHintFromSnippet(result.type, match.range);
     }
   }
 

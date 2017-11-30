@@ -1811,24 +1811,35 @@ export class LspLanguageService {
       return null;
     }
 
-    let hint = response.contents;
-    if (Array.isArray(hint)) {
-      hint = hint.length > 0 ? hint[0] : '';
-      // TODO: render multiple hints at once with a thin divider between them
+    if (response.contents == null) {
+      return null;
     }
-    if (typeof hint === 'string') {
-      // TODO: convert markdown to text
-    } else {
-      hint = hint.value;
-      // TODO: colorize code if possible. (is hard without knowing its context)
-    }
+
+    const responseHint = Array.isArray(response.contents)
+      ? response.contents
+      : [response.contents];
+
+    const hint = responseHint.map(h => {
+      if (typeof h === 'string') {
+        if (responseHint.length > 1) {
+          return {type: 'markdown', value: h};
+        } else {
+          // If we only get one response, assume it's a snippet.
+          return {type: 'snippet', value: h};
+        }
+      } else {
+        // TODO: would be nice if there was some way to pass the language
+        // through too.
+        return {type: 'snippet', value: h.value};
+      }
+    });
 
     let range = new atom$Range(position, position);
     if (response.range) {
       range = convert.lspRange_atomRange(response.range);
     }
 
-    return hint ? {hint, range} : null;
+    return {hint, range};
   }
 
   async highlight(

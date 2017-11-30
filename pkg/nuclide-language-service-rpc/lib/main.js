@@ -21,3 +21,5 @@ export {NullLanguageService} from './NullLanguageService';
 export {MultiProjectLanguageService} from './MultiProjectLanguageService';
 
 export {forkHostServices} from './HostServicesAggregator';
+
+export {typeHintFromSnippet} from './TypeHintFromSnippet';

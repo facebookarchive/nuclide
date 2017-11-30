@@ -146,7 +146,7 @@ describe('FlowSingleProjectLanguageService', () => {
     it('should return the type on success', () => {
       waitsForPromise(async () => {
         expect(await runWith('thisIsAType', 1, 1, 1, 4)).diffJson({
-          hint: 'thisIsAType',
+          hint: [{type: 'snippet', value: 'thisIsAType'}],
           range: new Range([0, 0], [0, 4]),
         });
       });

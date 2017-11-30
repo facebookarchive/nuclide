@@ -30,7 +30,7 @@ describe('TypeHintHelpers', () => {
 
       const hint = await TypeHintHelpers.typeHint(mockEditor, new Point(0, 0));
       expect(hint).toEqual({
-        hint: 'test',
+        hint: [{type: 'snippet', value: 'test'}],
         range: new Range(new Point(0, 0), new Point(1, 1)),
       });
     });
@@ -45,7 +45,7 @@ describe('TypeHintHelpers', () => {
 
       const hint = await TypeHintHelpers.typeHint(mockEditor, new Point(0, 0));
       expect(hint).toEqual({
-        hint: 'a'.repeat(256) + '...',
+        hint: [{type: 'snippet', value: 'a'.repeat(256) + '...'}],
         range: new Range(new Point(0, 0), new Point(1, 1)),
       });
     });

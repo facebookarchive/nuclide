@@ -9,10 +9,11 @@
  * @format
  */
 
-export type TypeHint = {
-  /**
-   * A type hint string to display.
-   */
-  hint: Array<{type: 'snippet' | 'markdown', value: string}>,
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+
+export function typeHintFromSnippet(
+  snippet: string,
   range: atom$Range,
-};
+): TypeHint {
+  return {hint: [{type: 'snippet', value: snippet}], range};
+}
