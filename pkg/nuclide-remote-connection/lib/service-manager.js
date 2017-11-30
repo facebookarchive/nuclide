@@ -12,13 +12,17 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Transport} from '../../nuclide-rpc';
 
+import invariant from 'assert';
+import fs from 'fs';
+import {Observable} from 'rxjs';
 import {IpcClientTransport} from './IpcTransports';
 import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {fork} from 'nuclide-commons/process';
+import {fork, spawn} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import invariant from 'assert';
 import {isGkEnabled} from '../../commons-node/passesGK';
+import {__DEV__} from '../../commons-node/runtime-info';
+import {getAvailableServerPort} from '../../commons-node/serverPort';
 import {track} from '../../nuclide-analytics';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
@@ -31,19 +35,49 @@ let localRpcClient: ?RpcConnection<Transport> = null;
 
 // Creates a local RPC client that connects to a separate process.
 function createLocalRpcClient(): RpcConnection<Transport> {
+  // The Electron Node process won't support --inspect until v1.7.x.
+  // In the meantime, try to find a more standard Node process.
+  const fbNodeRun = require.resolve('../../commons-node/fb-node-run.sh');
+  const spawnOptions = {
+    killTreeWhenDone: true,
+    stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
+  };
   // We cannot synchronously spawn the process here due to the shell environment.
   // process.js will wait for Atom's shell environment to become ready.
-  const localServerProcess = fork(
-    '--require',
-    [
-      require.resolve('../../commons-node/load-transpiler'),
-      require.resolve('./LocalRpcServer'),
-    ],
-    {
-      killTreeWhenDone: true,
-      stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
-    },
-  );
+  const localServerProcess =
+    __DEV__ && fs.existsSync(fbNodeRun) && process.platform !== 'win32'
+      ? Observable.defer(() => getAvailableServerPort())
+          .do(port => {
+            // eslint-disable-next-line no-console
+            console.log(`Starting local RPC process with --inspect=${port}`);
+          })
+          .switchMap(port =>
+            spawn(
+              fbNodeRun,
+              [
+                'node',
+                // Electron v1.7.x will also allow --inspect=0.
+                `--inspect=${port}`,
+                '--require',
+                require.resolve('../../commons-node/load-transpiler'),
+                require.resolve('./LocalRpcServer'),
+              ],
+              {
+                ...spawnOptions,
+                // Enable the source-maps hook in nuclide-node-transpiler.
+                env: {...process.env, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS: '1'},
+              },
+            ),
+          )
+      : fork(
+          '--require',
+          [
+            require.resolve('../../commons-node/load-transpiler'),
+            require.resolve('./LocalRpcServer'),
+          ],
+          spawnOptions,
+        );
+
   const transport = new IpcClientTransport(localServerProcess);
   return RpcConnection.createLocal(
     transport,

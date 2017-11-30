@@ -20,7 +20,7 @@ describe('setUseLocalRpc', () => {
   });
 
   it('successfully starts up a local RPC server', () => {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 15000}, async () => {
       const infoService = getInfoServiceByNuclideUri('');
       const version = await infoService.getServerVersion();
       expect(version).toBe(getVersion());

@@ -46,6 +46,15 @@ process.on('exit', () => {
   });
 });
 
+// If we started this with --inspect, don't pass that on to the children.
+// Can be removed once --inspect=0 is usable.
+if (
+  process.execArgv.length > 0 &&
+  process.execArgv[0].startsWith('--inspect')
+) {
+  process.execArgv.splice(0, 1);
+}
+
 const serviceRegistry = new ServiceRegistry(
   getServerSideMarshalers,
   servicesConfig,
