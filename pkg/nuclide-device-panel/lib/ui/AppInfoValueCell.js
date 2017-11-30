@@ -35,7 +35,7 @@ type State = {
   editingValue: ?string,
 };
 
-export class AppInfoValueCell extends React.Component<Props, State> {
+export class AppInfoValueCell extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {

@@ -17,12 +17,12 @@ import {AppInfoValueCell} from './AppInfoValueCell';
 
 type Props = {
   title: string,
-  rows: Set<AppInfoRow>,
+  rows: Array<AppInfoRow>,
 };
 
-export class AppInfoTable extends React.Component<Props> {
+export class AppInfoTable extends React.PureComponent<Props> {
   render(): React.Node {
-    const rows = Array.from(this.props.rows.entries()).map(([row]) => ({
+    const rows = this.props.rows.map(row => ({
       data: {property: row.name, rowData: row},
     }));
     const columns = [

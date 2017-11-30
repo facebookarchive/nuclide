@@ -9,6 +9,7 @@
  * @format
  */
 
+import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'assert';
@@ -18,7 +19,16 @@ import {Cache} from '../../../commons-node/cache';
 import shallowEqual from 'shallowequal';
 
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
-import type {Action, Store, AppState, ProcessTask, Process} from '../types';
+import type {
+  Action,
+  Store,
+  AppState,
+  ProcessTask,
+  Process,
+  AppInfoRow,
+  DeviceAppInfoProvider,
+} from '../types';
+import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
 
 export function pollDevicesEpic(
   actions: ActionsObservable<Action>,
@@ -169,55 +179,121 @@ export function setAppInfoEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.SET_PROCESSES).switchMap(action => {
-    const state = store.getState();
-    const device = state.device;
-    if (device == null) {
-      return Observable.empty();
-    }
+  return observeProcessNamesOfInterest(actions, store)
+    .switchMap(processNames => {
+      const {device, host} = store.getState();
+      if (device == null || processNames.length === 0) {
+        return Observable.of(new Map());
+      }
+      const providers = Array.from(getProviders().appInfo);
+      return observeAppInfoTables(processNames, providers, host, device);
+    })
+    .map(appInfoTables => Actions.setAppInfoTables(appInfoTables));
+}
 
-    const runningProcessNames = new Set();
-    state.processes
-      .getOrDefault([])
-      .forEach(process => runningProcessNames.add(process.name));
-    return Observable.merge(
-      ...Array.from(getProviders().appInfo)
-        .filter(provider => provider.getType() === state.deviceType)
-        .filter(provider => runningProcessNames.has(provider.getProcessName()))
-        .map(provider => {
-          return provider
-            .observe(state.host, device)
-            .map(value => ({
-              appName: provider.getAppName(),
-              name: provider.getName(),
-              value,
-              canUpdate: provider.canUpdate(),
-              update: provider.update,
-            }))
-            .catch(error =>
-              Observable.of({
-                appName: provider.getAppName(),
-                name: provider.getName(),
-                value: error.message,
-                isError: true,
-              }),
-            );
-        }),
-    )
-      .toArray()
-      .map(appInfoItems => {
-        const appInfoTables = new Map();
-        appInfoItems.forEach(item => {
-          let itemSet = appInfoTables.get(item.appName);
-          if (itemSet == null) {
-            itemSet = new Set();
-            appInfoTables.set(item.appName, itemSet);
-          }
-          itemSet.add(item);
-        });
-        return Actions.setAppInfoTables(appInfoTables);
-      });
+function uniqueArray<T>(array: Array<T>): Array<T> {
+  return Array.from(new Set(array));
+}
+
+// Returns an observable to an array of process names. Only process names that
+// are needed by the AppInfo providers are observed. A new value is produced
+// every time the list of process names changes (a new process started running
+// or a running process was shut down).
+function observeProcessNamesOfInterest(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Array<string>> {
+  return actions
+    .ofType(Actions.SET_PROCESSES)
+    .map(action => {
+      const providers = Array.from(getProviders().appInfo);
+      const processNamesOfInterest = new Set(
+        providers.map(provider => provider.getProcessName()),
+      );
+      const processes = store.getState().processes.getOrDefault([]);
+      return uniqueArray(
+        processes
+          .filter(process => processNamesOfInterest.has(process.name))
+          .map(process => process.name),
+      );
+    })
+    .distinctUntilChanged(arrayEqual);
+}
+
+// Given a list of process names and providers it returns an observable for a
+// Map. Only providers for the given process names are subscribed to. The Map
+// is keyed by application name and maps to an array of AppInfoRow. The
+// AppInfoRow contains the values observed on each provider for the
+// corresponding application name.
+// This observable only emits a value when any of value is changed.
+function observeAppInfoTables(
+  processNames: Array<string>,
+  providers: Array<DeviceAppInfoProvider>,
+  host: string,
+  device: DeviceIdType,
+): Observable<Map<string, Array<AppInfoRow>>> {
+  const observables = processNames.map(processName => {
+    const providersForProcess = providers.filter(
+      provider => provider.getProcessName() === processName,
+    );
+    return observeAppInfoTable(providersForProcess, host, device);
   });
+
+  const resultSelector = (...multipleAppInfoRows) =>
+    // Creates a Map that groups by all appInfoRow by appName:
+    // Map<appName, Array<AppInfoRow>>
+    collect(
+      arrayFlatten(multipleAppInfoRows).map(appInfoRow => [
+        appInfoRow.appName,
+        appInfoRow,
+      ]),
+    );
+
+  // $FlowFixMe - combineLatest type spec doesn't support spread operator.
+  return Observable.combineLatest(...observables, resultSelector);
+}
+
+function observeAppInfoTable(
+  tableProviders: Array<DeviceAppInfoProvider>,
+  host: string,
+  device: DeviceIdType,
+): Observable<Array<AppInfoRow>> {
+  return observeAppInfoProviderValues(
+    tableProviders,
+    host,
+    device,
+  ).map(values => {
+    return tableProviders.map((provider, index) => ({
+      appName: provider.getAppName(),
+      name: provider.getName(),
+      ...values[index], // {value, isError?}
+      canUpdate: provider.canUpdate(),
+      update: provider.update,
+    }));
+  });
+}
+
+// Given an array of providers it subscribes to the values of all of them. It
+// returns an observer to an array of all the produced values from the
+// providers. A new array is produced every time any of values changes.
+const APP_INFO_UPDATE_INTERVAL = 3000;
+function observeAppInfoProviderValues(
+  providers: Array<DeviceAppInfoProvider>,
+  host: string,
+  device: DeviceIdType,
+): Observable<Array<{value: string, isError?: boolean}>> {
+  const observables = providers.map(provider =>
+    Observable.timer(0, APP_INFO_UPDATE_INTERVAL)
+      .switchMap(() => {
+        return provider
+          .observe(host, device)
+          .map(value => ({value}))
+          .catch(error => Observable.of({value: error.message, isError: true}));
+      })
+      .distinctUntilChanged(shallowEqual),
+  );
+  // $FlowFixMe - combineLatest type spec doesn't support spread operator.
+  return Observable.combineLatest(...observables);
 }
 
 function getInfoTables(

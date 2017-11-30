@@ -77,7 +77,7 @@ export function setInfoTables(
 }
 
 export function setAppInfoTables(
-  appInfoTables: Map<string, Set<AppInfoRow>>,
+  appInfoTables: Map<string, Array<AppInfoRow>>,
 ): SetAppInfoTablesAction {
   return {
     type: SET_APP_INFO_TABLES,

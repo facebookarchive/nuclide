@@ -113,7 +113,7 @@ export type AppState = {
   deviceTypes: string[],
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
-  appInfoTables: Expected<Map<string, Set<AppInfoRow>>>,
+  appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
@@ -223,7 +223,7 @@ export type SetInfoTablesAction = {
 export type SetAppInfoTablesAction = {
   type: 'SET_APP_INFO_TABLES',
   payload: {
-    appInfoTables: Map<string, Set<AppInfoRow>>,
+    appInfoTables: Map<string, Array<AppInfoRow>>,
   },
 };
 

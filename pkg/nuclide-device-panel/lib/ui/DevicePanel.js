@@ -28,7 +28,7 @@ type Props = {|
   toggleProcessPolling: (isActive: boolean) => void,
   goToRootPanel: () => void,
   infoTables: Expected<Map<string, Map<string, string>>>,
-  appInfoTables: Expected<Map<string, Set<AppInfoRow>>>,
+  appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
