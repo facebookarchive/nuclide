@@ -20,6 +20,7 @@ import {
   macrotask,
   microtask,
   nextAnimationFrame,
+  poll,
   PromiseCancelledError,
   reconcileSetDiffs,
   SingletonExecutor,
@@ -767,4 +768,73 @@ describe('nuclide-commons/observable', () => {
       });
     });
   });
+
+  describe('poll', () => {
+    beforeEach(() => {
+      jasmine.unspy(global, 'setTimeout');
+      jasmine.unspy(Date, 'now');
+    });
+
+    it('subscribes to the observable synchronously', () => {
+      const source = Observable.never();
+      const spy = spyOn(source, 'subscribe').andCallThrough();
+      const sub = source.let(poll(10)).subscribe();
+      expect(spy.callCount).toBe(1);
+      sub.unsubscribe();
+    });
+
+    it('resubscribes when complete', () => {
+      let sub;
+      let spy;
+      let mostRecentObserver;
+      runs(() => {
+        const source = Observable.create(observer => {
+          mostRecentObserver = observer;
+        });
+        spy = spyOn(source, 'subscribe').andCallThrough();
+        sub = source.let(poll(10)).subscribe();
+        expect(spy.callCount).toBe(1);
+        mostRecentObserver.next();
+      });
+
+      // Even though we're waiting longer than the delay, it hasn't completed yet so we shouldn't
+      // resubscribe.
+      waitsForPromise(() => sleep(30));
+      runs(() => {
+        expect(spy.callCount).toBe(1);
+        mostRecentObserver.complete();
+        expect(spy.callCount).toBe(1);
+      });
+
+      // Now that the source has completed, we should subscribe again.
+      waitsForPromise(() => sleep(30));
+      runs(() => {
+        expect(spy.callCount).toBe(2);
+        sub.unsubscribe();
+      });
+    });
+
+    it("doesn't resubscribe to the source when you unsubscribe", () => {
+      let spy;
+      runs(() => {
+        const source = new Subject();
+        spy = spyOn(source, 'subscribe').andCallThrough();
+        source
+          .let(poll(10))
+          .take(1) // This will unsubscribe after the first element.
+          .subscribe();
+        expect(spy.callCount).toBe(1);
+        source.next();
+      });
+      waitsForPromise(() => sleep(30));
+      runs(() => {
+        expect(spy.callCount).toBe(1);
+      });
+    });
+  });
 });
+
+const sleep = n =>
+  new Promise(resolve => {
+    setTimeout(resolve, n);
+  });
