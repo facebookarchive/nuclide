@@ -359,6 +359,10 @@ class Activation {
         updateOnEdit: true,
         priority: 1,
       },
+      findReferences: {
+        version: '0.1.0',
+        analyticsEventName: 'cquery.findReferences',
+      },
     };
 
     const languageService = new AtomLanguageService(
