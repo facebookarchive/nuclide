@@ -47,7 +47,13 @@ export class Connection {
     });
 
     this._socket.on('data', data => {
-      this._remoteSocket.write(data);
+      // There seems to be a situation where
+      // this event is fired and data isn't a Buffer.
+      // It causes the nuclide server to crash when
+      // attempting to marshal the data
+      if (data instanceof Buffer) {
+        this._remoteSocket.write(data);
+      }
     });
   }
 
