@@ -11,7 +11,9 @@
 
 import type {Provider, FileResult} from '../../nuclide-quick-open/lib/types';
 
+import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getMatchRanges} from 'nuclide-commons/string';
 import {getCodeSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import * as React from 'react';
@@ -110,24 +112,6 @@ export const CodeSearchProvider: Provider<FileResult> = {
   },
   getComponentForItem(_item: FileResult): React.Element<any> {
     const item = ((_item: any): CodeSearchFileResult);
-    const context = replaceAndWrap(
-      item.context || '',
-      item.query,
-      (rest, i) => (
-        <span
-          key={`rest-${i}`}
-          className="code-search-provider-result-context-rest">
-          {rest}
-        </span>
-      ),
-      (match, i) => (
-        <span
-          key={`match-${i}`}
-          className="code-search-provider-result-context-match">
-          {match}
-        </span>
-      ),
-    );
     return (
       <div
         className={
@@ -142,40 +126,17 @@ export const CodeSearchProvider: Provider<FileResult> = {
             {item.displayPath}
           </PathWithFileIcon>
         )}
-        <div className="code-search-provider-result-context">{context}</div>
+        <div className="code-search-provider-result-context">
+          <HighlightedText
+            highlightedRanges={getMatchRanges(
+              // The search is case-insensitive.
+              item.context.toLowerCase(),
+              item.query.toLowerCase(),
+            )}
+            text={item.context}
+          />
+        </div>
       </div>
     );
   },
 };
-
-function replaceAndWrap<T>(
-  str: string,
-  search: string,
-  wrapRest: (rest: string, index: number) => T,
-  wrapMatch: (match: string, index: number) => T,
-): Array<T> {
-  // Generate a unique React `key` for each item in the result.
-  let resultCount = 0;
-  if (!search) {
-    return [wrapRest(str, resultCount++)];
-  }
-  let current = str;
-  const result = [];
-  while (true) {
-    const index = current.toLowerCase().indexOf(search.toLowerCase());
-    if (index === -1) {
-      break;
-    }
-    if (index !== 0) {
-      result.push(wrapRest(current.slice(0, index), resultCount++));
-    }
-    result.push(
-      wrapMatch(current.slice(index, index + search.length), resultCount++),
-    );
-    current = current.slice(index + search.length);
-  }
-  if (current.length) {
-    result.push(wrapRest(current, resultCount++));
-  }
-  return result;
-}

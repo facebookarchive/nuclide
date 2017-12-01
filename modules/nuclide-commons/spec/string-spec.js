@@ -13,6 +13,7 @@
 import {
   capitalize,
   countOccurrences,
+  getMatchRanges,
   indent,
   maybeToString,
   pluralize,
@@ -287,5 +288,18 @@ describe('capitalize', () => {
     expect(capitalize('t')).toEqual('T');
     expect(capitalize('te')).toEqual('Te');
     expect(capitalize('test')).toEqual('Test');
+  });
+});
+
+describe('getMatchRanges', () => {
+  it('works', () => {
+    expect(getMatchRanges('test1test2test3', 'test')).toEqual([
+      [0, 4],
+      [5, 9],
+      [10, 14],
+    ]);
+    expect(getMatchRanges('ttttttt', 'ttt')).toEqual([[0, 6]]);
+    expect(getMatchRanges('test1test2test3', 'none')).toEqual([]);
+    expect(getMatchRanges('test1test2test3', '')).toEqual([]);
   });
 });

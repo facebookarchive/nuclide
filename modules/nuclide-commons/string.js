@@ -218,6 +218,36 @@ export function capitalize(str: string): string {
         .concat(str.slice(1));
 }
 
+type MatchRange = [/* start */ number, /* end */ number];
+
+/**
+ * Returns a list of ranges where needle occurs in haystack.
+ * This will *not* return overlapping matches; i.e. the returned list will be disjoint.
+ * This makes it easier to use for e.g. highlighting matches in a UI.
+ */
+export function getMatchRanges(
+  haystack: string,
+  needle: string,
+): Array<MatchRange> {
+  if (needle === '') {
+    // Not really a valid use.
+    return [];
+  }
+
+  const ranges = [];
+  let matchIndex = 0;
+  while ((matchIndex = haystack.indexOf(needle, matchIndex)) !== -1) {
+    const prevRange = ranges[ranges.length - 1];
+    if (prevRange != null && prevRange[1] === matchIndex) {
+      prevRange[1] += needle.length;
+    } else {
+      ranges.push([matchIndex, matchIndex + needle.length]);
+    }
+    matchIndex += needle.length;
+  }
+  return ranges;
+}
+
 // Originally copied from:
 // http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
 // But adopted to match `www.` urls as well as `https?` urls
