@@ -9,6 +9,7 @@
  * @format
  */
 
+import {Observable} from 'rxjs';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -131,7 +132,13 @@ describe('AutoImportsWorker node_modules indexer', () => {
           ['node_modules/left-pad/lib/index.js', 'module.exports = {};'],
         ]),
       );
+      // Deliberately sabotage spawn() to exercise the glob indexer.
+      const spawnSpy = spyOn(
+        require('nuclide-commons/process'),
+        'spawn',
+      ).andReturn(Observable.throw());
       fileIndex = await getFileIndex(dirPath, hasteSettings);
+      expect(spawnSpy).toHaveBeenCalled();
     });
   });
 

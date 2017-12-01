@@ -13,8 +13,10 @@ import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanCli
 import type {HasteSettings} from '../getConfig';
 
 import {getLogger} from 'log4js';
+import {arrayFlatten} from 'nuclide-commons/collection';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getOutputStream, spawn} from 'nuclide-commons/process';
 import {asyncLimit} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
@@ -62,37 +64,70 @@ export async function getFileIndex(
     root,
     'node_modules/*/package.json',
   );
-  try {
-    const [
-      jsFiles,
-      nodeModulesPackageJsonFiles,
-      mainFiles,
-    ] = await Promise.all([
-      watchmanListFiles(client, root, '*.js'),
-      nodeModulesPackageJsonFilesPromise,
-      watchmanListFiles(client, root, 'package.json').then(files =>
-        getMainFiles(root, files.map(file => file.name)),
-      ),
-      loadPromise,
-    ]);
-    return {root, exportCache, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
-  } catch (err) {
-    const [
-      jsFiles,
-      nodeModulesPackageJsonFiles,
-      mainFiles,
-    ] = await Promise.all([
-      globListFiles(root, '**/*.js', TO_IGNORE).then(fromGlobResult),
-      nodeModulesPackageJsonFilesPromise,
-      globListFiles(root, '**/package.json', TO_IGNORE).then(files =>
-        getMainFiles(root, files),
-      ),
-      loadPromise,
-    ]);
-    return {root, exportCache, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
-  } finally {
-    client.dispose();
-  }
+  const [jsFiles, nodeModulesPackageJsonFiles, mainFiles] = await Promise.all([
+    watchmanListFiles(client, root, '*.js').catch(err => {
+      getLogger('js-imports-server').warn(
+        'Failed to get files with Watchman: falling back to glob',
+        err,
+      );
+      return hgListFiles(root, '**.js', TO_IGNORE)
+        .catch(() => findListFiles(root, '*.js', TO_IGNORE))
+        .catch(() => globListFiles(root, '**/*.js', TO_IGNORE))
+        .catch(() => [])
+        .then(filesWithoutHash);
+    }),
+    nodeModulesPackageJsonFilesPromise,
+    watchmanListFiles(client, root, 'package.json')
+      .then(files => getMainFiles(root, files.map(file => file.name)))
+      .catch(() => {
+        return hgListFiles(root, '**/package.json', TO_IGNORE)
+          .catch(() => findListFiles(root, 'package.json', TO_IGNORE))
+          .catch(() => globListFiles(root, '**/package.json', TO_IGNORE))
+          .catch(() => [])
+          .then(files => getMainFiles(root, files));
+      }),
+    loadPromise,
+  ]);
+  client.dispose();
+  return {root, exportCache, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
+}
+
+function getOutputLines(command, args, opts) {
+  return spawn(command, args, opts).switchMap(proc => {
+    return getOutputStream(proc).reduce((acc, result) => {
+      if (result.kind === 'stdout') {
+        acc.push(result.data.trimRight());
+      }
+      return acc;
+    }, []);
+  });
+}
+
+function hgListFiles(
+  root: string,
+  pattern: string,
+  ignore: Array<string>,
+): Promise<Array<string>> {
+  const ignorePatterns = arrayFlatten(ignore.map(x => ['-X', x]));
+  return getOutputLines('hg', ['files', '-I', pattern, ...ignorePatterns], {
+    cwd: root,
+  }).toPromise();
+}
+
+function findListFiles(
+  root: string,
+  pattern: string,
+  ignore: Array<string>,
+): Promise<Array<string>> {
+  const ignorePatterns = arrayFlatten(ignore.map(x => ['-not', '-path', x]));
+  return (
+    getOutputLines('find', ['.', '-name', pattern, ...ignorePatterns], {
+      cwd: root,
+    })
+      // Strip the leading "./".
+      .map(files => files.map(f => f.substr(2)))
+      .toPromise()
+  );
 }
 
 function globListFiles(
@@ -100,7 +135,7 @@ function globListFiles(
   pattern: string,
   ignore?: Array<string>,
 ): Promise<Array<string>> {
-  return fsPromise.glob(pattern, {cwd: root, ignore}).catch(() => []);
+  return fsPromise.glob(pattern, {cwd: root, ignore});
 }
 
 function watchmanListFiles(
@@ -147,7 +182,7 @@ async function getMainFiles(
   return new Map(results.filter(Boolean));
 }
 
-function fromGlobResult(files: Array<string>): Array<FileWithHash> {
+function filesWithoutHash(files: Array<string>): Array<FileWithHash> {
   return files.map(name => ({name, sha1: null}));
 }
 
