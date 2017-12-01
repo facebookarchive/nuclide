@@ -12,12 +12,14 @@
 
 import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
+import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
 import invariant from 'assert';
 import classnames from 'classnames';
 
+import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import analytics from 'nuclide-commons-atom/analytics';
 import {
   goToLocation,
@@ -32,7 +34,6 @@ import {NestedTreeItem, Tree, TreeItem} from 'nuclide-commons-ui/Tree';
 
 import type {SearchResult} from './OutlineViewSearch';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
-import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';
 
 type State = {
   fontFamily: string,
@@ -392,15 +393,17 @@ function renderItem(
     );
   } else if (outline.plainText != null) {
     const textWithMatching =
-      searchResult && searchResult.matchingCharacters
-        ? groupMatchIndexes(
-            outline.plainText,
+      searchResult && searchResult.matchingCharacters ? (
+        <HighlightedText
+          highlightedRanges={matchIndexesToRanges(
             searchResult.matchingCharacters,
-            renderMatchedSubsequence,
-            renderUnmatchedSubsequence,
-          )
-        : outline.plainText;
-    r.push(...textWithMatching);
+          )}
+          text={outline.plainText || ''}
+        />
+      ) : (
+        outline.plainText
+      );
+    r.push(textWithMatching);
   } else {
     r.push('Missing text');
   }
@@ -417,39 +420,20 @@ function renderTextToken(
   const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
   return (
     <span className={className} key={index}>
-      {searchResult && searchResult.matchingCharacters
-        ? groupMatchIndexes(
-            token.value,
+      {searchResult && searchResult.matchingCharacters ? (
+        <HighlightedText
+          highlightedRanges={matchIndexesToRanges(
             searchResult.matchingCharacters
               .map(el => el - offset)
               .filter(el => el >= 0 && el < token.value.length),
-            renderMatchedSubsequence,
-            renderUnmatchedSubsequence,
-          )
-        : token.value}
+          )}
+          text={token.value}
+        />
+      ) : (
+        token.value
+      )}
     </span>
   );
-}
-
-function renderSubsequence(seq: string, props: Object): React.Element<any> {
-  return <span {...props}>{seq}</span>;
-}
-
-function renderUnmatchedSubsequence(
-  seq: string,
-  key: number | string,
-): React.Element<any> {
-  return renderSubsequence(seq, {key});
-}
-
-function renderMatchedSubsequence(
-  seq: string,
-  key: number | string,
-): React.Element<any> {
-  return renderSubsequence(seq, {
-    key,
-    className: 'outline-view-match',
-  });
 }
 
 function renderTrees(
