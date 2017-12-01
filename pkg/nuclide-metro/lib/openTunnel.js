@@ -69,26 +69,24 @@ function _askToRequestTunnel(
 ): Promise<?UniversalDisposable> {
   return new Promise(resolve => {
     let disposable = null;
-    const notification = atom.notifications.addSuccess(
-      'Open tunnel?\n\nOpen a new tunnel so Metro becomes available at `localhost:8081`?',
-      {
-        icon: 'milestone',
-        dismissable: true,
-        buttons: [
-          {
-            text: 'Open tunnel',
-            onDidClick: async () => {
-              disposable = await _requestTunnelFromService(service, tunnel);
-              notification.dismiss();
-            },
+    const notification = atom.notifications.addSuccess('Open tunnel?', {
+      detail: 'Open a new tunnel so Metro becomes available at localhost:8081?',
+      icon: 'milestone',
+      dismissable: true,
+      buttons: [
+        {
+          text: 'Open tunnel',
+          onDidClick: async () => {
+            disposable = await _requestTunnelFromService(service, tunnel);
+            notification.dismiss();
           },
-          {
-            text: 'Dismiss',
-            onDidClick: () => notification.dismiss(),
-          },
-        ],
-      },
-    );
+        },
+        {
+          text: 'Dismiss',
+          onDidClick: () => notification.dismiss(),
+        },
+      ],
+    });
     notification.onDidDismiss(() => resolve(disposable));
   });
 }
