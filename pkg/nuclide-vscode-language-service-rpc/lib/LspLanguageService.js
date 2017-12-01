@@ -484,7 +484,7 @@ export class LspLanguageService {
             dynamicRegistration: false,
             willSave: false,
             willSaveWaitUntil: false,
-            didSave: false,
+            didSave: true,
           },
           completion: {
             dynamicRegistration: false,

@@ -46,7 +46,7 @@ async function createOCamlLanguageService(
           unicode: true,
         },
         debounce: {
-          linter: 500,
+          linter: 10 * 1000, // 10s
         },
         diagnostics: {
           merlinPerfLogging: true,
