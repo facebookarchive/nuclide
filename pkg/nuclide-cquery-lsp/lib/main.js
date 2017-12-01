@@ -353,6 +353,12 @@ class Activation {
         analyticsEventName: 'cquery.getActions',
         applyAnalyticsEventName: 'cquery.applyAction',
       },
+      outline: {
+        version: '0.1.0',
+        analyticsEventName: 'cquery.outline',
+        updateOnEdit: true,
+        priority: 1,
+      },
     };
 
     const languageService = new AtomLanguageService(
