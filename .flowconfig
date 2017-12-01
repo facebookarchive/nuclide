@@ -25,8 +25,6 @@ experimental.const_params=true
 experimental.strict_type_args=true
 module.use_strict=true
 module.system.node.resolve_dirname=node_modules
-; 'modules' is added to the NODE_PATH via nuclide-node-transpiler.
-module.system.node.resolve_dirname=modules
 unsafe.enable_getters_and_setters=true
 
 suppress_comment=.*\\$FlowFixMe.*

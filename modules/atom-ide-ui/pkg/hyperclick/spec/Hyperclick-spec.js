@@ -512,8 +512,8 @@ describe('Hyperclick', () => {
         waitsForPromise(async () => {
           const provider = {
             providerName: 'test',
-            async getSuggestion(sourceTextEditor, text, range) {
-              return {range, callback() {}};
+            async getSuggestion(sourceTextEditor, text) {
+              return {range: [], callback() {}};
             },
             priority: 0,
           };
