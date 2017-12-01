@@ -12,18 +12,25 @@
 import type {ActionsObservable, Epic} from 'nuclide-commons/redux-observable';
 import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {getFileForPath} from 'nuclide-commons-atom/projects';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {
   ApplyAction,
   RefactorAction,
   RefactorState,
   ExecuteAction,
 } from './types';
+import type {ExternalTextEdit, RefactorEditResponse} from './rpc-types';
 import type {RefactorProvider} from '..';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import {Range, TextBuffer} from 'atom';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import parse from 'diffparser';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
+import {toUnifiedDiff} from 'nuclide-commons-atom/text-edit-diff';
 import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {getLogger} from 'log4js';
 import {track} from '../../nuclide-analytics';
@@ -67,6 +74,17 @@ export function getEpics(
       return actions.ofType('apply').switchMap(action => {
         invariant(action.type === 'apply');
         return applyRefactoring(action).takeUntil(actions.ofType('close'));
+      });
+    },
+
+    function loadDiffPreviewEpic(
+      actions: ActionsObservable<RefactorAction>,
+    ): Observable<RefactorAction> {
+      return actions.ofType('load-diff-preview').switchMap(action => {
+        invariant(action.type === 'load-diff-preview');
+        return Observable.fromPromise(
+          loadDiffPreview(action.payload.uri, action.payload.response),
+        );
       });
     },
 
@@ -215,4 +233,45 @@ export function applyRefactoring(
       ),
     );
   });
+}
+
+async function loadDiffPreview(
+  uri: NuclideUri,
+  response: RefactorEditResponse,
+): Promise<RefactorAction> {
+  const file = getFileForPath(uri);
+  if (file == null) {
+    throw new Error(`Could not read file ${uri}`);
+  }
+  const buffer = new TextBuffer(await file.read());
+  const edits = getEdits(uri, buffer, response);
+  const diffString = toUnifiedDiff(nuclideUri.basename(uri), buffer, edits);
+
+  return Actions.displayDiffPreview(parse(diffString));
+}
+
+function getEdits(
+  uri: NuclideUri,
+  buffer: atom$TextBuffer,
+  response: RefactorEditResponse,
+): Array<TextEdit> {
+  switch (response.type) {
+    case 'edit':
+      return response.edits.get(uri) || [];
+    case 'external-edit':
+      return (response.edits.get(uri) || []).map(e => toTextEdit(buffer, e));
+    default:
+      return [];
+  }
+}
+
+function toTextEdit(buffer: atom$TextBuffer, edit: ExternalTextEdit): TextEdit {
+  return {
+    oldRange: new Range(
+      buffer.positionForCharacterIndex(edit.startOffset),
+      buffer.positionForCharacterIndex(edit.endOffset),
+    ),
+    oldText: edit.oldText,
+    newText: edit.newText,
+  };
 }

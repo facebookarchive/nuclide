@@ -46,8 +46,25 @@
   overflow: auto;
 }
 
+.nuclide-refactorizer-confirm-list-item {
+  max-width:100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
 .nuclide-refactorizer-confirm-list-path {
   color: @text-color-selected;
+}
+
+.nuclide-refactorizer-diff-preview-icon {
+  display: inline-block;
+  color: @text-color-info;
+}
+
+.nuclide-refactorizer-diff-preview-icon:hover {
+  cursor: pointer;
+  color: @text-color-highlight;
 }
 
 .nuclide-refactorizer-progress {

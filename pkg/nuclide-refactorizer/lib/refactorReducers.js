@@ -12,9 +12,12 @@
 import type {AvailableRefactoring, RefactorProvider} from '..';
 
 import type {
+  BackFromDiffPreviewAction,
   ConfirmAction,
+  DisplayDiffPreviewAction,
   ExecuteAction,
   GotRefactoringsAction,
+  LoadDiffPreviewAction,
   OpenAction,
   PickedRefactorAction,
   InlinePickedRefactorAction,
@@ -48,6 +51,8 @@ export default function refactorReducers(
       return gotRefactorings(state, action);
     case 'close':
       return close(state);
+    case 'back-from-diff-preview':
+      return backFromDiffPreview(state, action);
     case 'picked-refactor':
       return pickedRefactor(state, action);
     case 'inline-picked-refactor':
@@ -56,6 +61,10 @@ export default function refactorReducers(
       return executeRefactor(state, action);
     case 'confirm':
       return confirmRefactor(state, action);
+    case 'load-diff-preview':
+      return loadDiffPreview(state, action);
+    case 'display-diff-preview':
+      return displayDiffPreview(state, action);
     case 'progress':
       return progress(state, action);
     default:
@@ -101,6 +110,18 @@ function close(state: RefactorState): RefactorState {
   invariant(state.type === 'open');
   return {
     type: 'closed',
+  };
+}
+
+function backFromDiffPreview(
+  state: RefactorState,
+  action: BackFromDiffPreviewAction,
+): RefactorState {
+  invariant(state.type === 'open');
+
+  return {
+    ...state,
+    phase: action.payload.phase,
   };
 }
 
@@ -190,6 +211,40 @@ function confirmRefactor(
     phase: {
       type: 'confirm',
       response: action.payload.response,
+    },
+  };
+}
+
+function loadDiffPreview(
+  state: RefactorState,
+  action: LoadDiffPreviewAction,
+): RefactorState {
+  invariant(state.type === 'open');
+
+  return {
+    ...state,
+    phase: {
+      type: 'diff-preview',
+      loading: true,
+      diffs: [],
+      previousPhase: action.payload.previousPhase,
+    },
+  };
+}
+
+function displayDiffPreview(
+  state: RefactorState,
+  action: DisplayDiffPreviewAction,
+): RefactorState {
+  invariant(state.type === 'open');
+  invariant(state.phase.type === 'diff-preview');
+
+  return {
+    ...state,
+    phase: {
+      ...state.phase,
+      loading: false,
+      diffs: action.payload.diffs,
     },
   };
 }

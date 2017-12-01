@@ -15,8 +15,10 @@ import * as React from 'react';
 import invariant from 'assert';
 
 import {Button} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 
 import {ConfirmRefactorComponent} from './ConfirmRefactorComponent';
+import {DiffPreviewComponent} from './DiffPreviewComponent';
 import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';
 import {ProgressComponent} from './ProgressComponent';
@@ -48,15 +50,33 @@ export class MainRefactorComponent extends React.Component<Props> {
     );
   }
 
+  _getBackButton(): React.Node {
+    const appState = this.props.appState;
+    const previousPhase =
+      (appState.phase && appState.phase.previousPhase) || null;
+    return previousPhase ? (
+      <Button
+        onClick={() =>
+          this.props.store.dispatch(
+            Actions.backFromDiffPreview(previousPhase),
+          )}>
+        Back
+      </Button>
+    ) : null;
+  }
+
   getHeaderElement(): React.Element<any> {
     const appState = this.props.appState;
     invariant(appState.type === 'open');
     return (
       <div className="nuclide-refactorizer-header">
         <span>Refactor</span>
-        <Button onClick={() => this.props.store.dispatch(Actions.close())}>
-          Close
-        </Button>
+        <ButtonGroup>
+          {this._getBackButton()}
+          <Button onClick={() => this.props.store.dispatch(Actions.close())}>
+            Close
+          </Button>
+        </ButtonGroup>
       </div>
     );
   }
@@ -86,6 +106,8 @@ export class MainRefactorComponent extends React.Component<Props> {
         );
       case 'progress':
         return <ProgressComponent phase={phase} />;
+      case 'diff-preview':
+        return <DiffPreviewComponent phase={phase} />;
       default:
         (phase: empty);
         return <div />;

@@ -22,6 +22,7 @@ import type {
 } from '..';
 
 import type {RefactorEditResponse} from './rpc-types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export type Store = {
   // Returns unsubscribe function
@@ -89,6 +90,13 @@ export type ConfirmPhase = {|
   response: RefactorEditResponse,
 |};
 
+export type DiffPreviewPhase = {|
+  type: 'diff-preview',
+  loading: boolean,
+  diffs: Array<diffparser$FileDiff>,
+  previousPhase: Phase,
+|};
+
 export type ProgressPhase = {|
   type: 'progress',
   message: string,
@@ -103,6 +111,7 @@ export type Phase =
   | FreeformPhase
   | ExecutePhase
   | ConfirmPhase
+  | DiffPreviewPhase
   | ProgressPhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
@@ -112,6 +121,13 @@ export type RefactoringPhase = RenamePhase | FreeformPhase;
 export type OpenAction = {|
   type: 'open',
   ui: RefactorUI,
+|};
+
+export type BackFromDiffPreviewAction = {|
+  type: 'back-from-diff-preview',
+  payload: {
+    phase: Phase,
+  },
 |};
 
 export type GotRefactoringsAction = {|
@@ -170,6 +186,22 @@ export type ConfirmAction = {|
   },
 |};
 
+export type LoadDiffPreviewAction = {|
+  type: 'load-diff-preview',
+  payload: {
+    previousPhase: Phase,
+    uri: NuclideUri,
+    response: RefactorEditResponse,
+  },
+|};
+
+export type DisplayDiffPreviewAction = {|
+  type: 'display-diff-preview',
+  payload: {
+    diffs: Array<diffparser$FileDiff>,
+  },
+|};
+
 export type ApplyAction = {|
   type: 'apply',
   payload: {
@@ -189,11 +221,14 @@ export type ProgressAction = {|
 export type RefactorAction =
   | OpenAction
   | CloseAction
+  | BackFromDiffPreviewAction
   | PickedRefactorAction
   | InlinePickedRefactorAction
   | GotRefactoringsAction
   | ErrorAction
   | ExecuteAction
   | ConfirmAction
+  | LoadDiffPreviewAction
+  | DisplayDiffPreviewAction
   | ApplyAction
   | ProgressAction;

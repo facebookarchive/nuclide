@@ -13,20 +13,25 @@ import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
 
 import type {
   ApplyAction,
+  BackFromDiffPreviewAction,
   CloseAction,
   ConfirmAction,
+  DisplayDiffPreviewAction,
   ErrorAction,
   ErrorSource,
   ExecuteAction,
   GotRefactoringsAction,
   InlinePickedRefactorAction,
   OpenAction,
+  Phase,
   ProgressAction,
   PickedRefactorAction,
   RefactorUI,
+  LoadDiffPreviewAction,
 } from './types';
 
 import type {RefactorEditResponse} from './rpc-types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export function open(ui: RefactorUI): OpenAction {
   return {
@@ -58,6 +63,15 @@ export function error(source: ErrorSource, err: Error): ErrorAction {
     payload: {
       source,
       error: err,
+    },
+  };
+}
+
+export function backFromDiffPreview(phase: Phase): BackFromDiffPreviewAction {
+  return {
+    type: 'back-from-diff-preview',
+    payload: {
+      phase,
     },
   };
 }
@@ -107,6 +121,30 @@ export function confirm(response: RefactorEditResponse): ConfirmAction {
   return {
     type: 'confirm',
     payload: {response},
+  };
+}
+
+export function loadDiffPreview(
+  previousPhase: Phase,
+  uri: NuclideUri,
+  response: RefactorEditResponse,
+): LoadDiffPreviewAction {
+  return {
+    type: 'load-diff-preview',
+    payload: {
+      previousPhase,
+      uri,
+      response,
+    },
+  };
+}
+
+export function displayDiffPreview(
+  diffs: Array<diffparser$FileDiff>,
+): DisplayDiffPreviewAction {
+  return {
+    type: 'display-diff-preview',
+    payload: {diffs},
   };
 }
 

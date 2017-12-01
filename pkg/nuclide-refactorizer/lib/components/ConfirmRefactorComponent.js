@@ -10,12 +10,15 @@
  */
 
 import type {Store, ConfirmPhase} from '../types';
+import type {RefactorEditResponse} from '../rpc-types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import * as React from 'react';
 
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {pluralize} from 'nuclide-commons/string';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
 import PathWithFileIcon from '../../../nuclide-ui/PathWithFileIcon';
 
@@ -29,6 +32,12 @@ type Props = {
 export class ConfirmRefactorComponent extends React.PureComponent<Props> {
   _execute = () => {
     this.props.store.dispatch(Actions.apply(this.props.phase.response));
+  };
+
+  _diffPreview = (uri: NuclideUri, response: RefactorEditResponse) => {
+    this.props.store.dispatch(
+      Actions.loadDiffPreview(this.props.phase, uri, response),
+    );
   };
 
   render(): React.Node {
@@ -48,7 +57,16 @@ export class ConfirmRefactorComponent extends React.PureComponent<Props> {
           <TreeList>
             {Array.from(editCount).map(([path, count]) => (
               <TreeItem key={path}>
-                <PathWithFileIcon path={path}>
+                <PathWithFileIcon
+                  className={'nuclide-refactorizer-confirm-list-item'}
+                  path={path}>
+                  <Icon
+                    className="nuclide-refactorizer-diff-preview-icon"
+                    onClick={() => {
+                      this._diffPreview(path, response);
+                    }}
+                    icon="diff"
+                  />
                   <span className="nuclide-refactorizer-confirm-list-path">
                     {getAtomProjectRelativePath(path)}
                   </span>{' '}
