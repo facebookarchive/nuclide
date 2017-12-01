@@ -195,6 +195,7 @@ class Activation {
         const provider = providerRegistry.getProviderForEditor(editor);
         if (
           provider == null ||
+          diagnostics.length > 0 ||
           !await passesGK('nuclide_refactorizer_code_actions')
         ) {
           return [];
