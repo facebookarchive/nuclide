@@ -74,17 +74,10 @@ export default class DebuggerActions {
     this._handleDebugModeStart();
     this.setDebuggerMode(DebuggerMode.STARTING);
     this.setDebugProcessInfo(processInfo);
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
 
     try {
       const debuggerCapabilities = processInfo.getDebuggerCapabilities();
       const debuggerProps = processInfo.getDebuggerProps();
-      const debuggerInstance = await processInfo.debug();
-      await this._store.getBridge().setupNuclideChannel(debuggerInstance);
-      this._registerConsole();
       const supportThreadsWindow = debuggerCapabilities.threads;
       this._store
         .getSettings()
@@ -117,6 +110,15 @@ export default class DebuggerActions {
       } else {
         this.updateConfigureSourcePathsCallback(null);
       }
+
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-debugger:show',
+      );
+
+      const debuggerInstance = await processInfo.debug();
+      await this._store.getBridge().setupNuclideChannel(debuggerInstance);
+      this._registerConsole();
 
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {

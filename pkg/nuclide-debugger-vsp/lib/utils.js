@@ -53,6 +53,7 @@ export async function getPythonParLaunchProcessInfo(
     'launch',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(parPath),
+    true, // showThreads
     getPythonParConfig(parPath, args),
   );
 }
@@ -69,6 +70,7 @@ export async function getPythonScriptLaunchProcessInfo(
     'launch',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(scriptPath),
+    true, // showThreads
     getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env),
   );
 }
@@ -139,6 +141,7 @@ async function getPythonAttachTargetProcessInfo(
     'attach',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(targetRootUri),
+    true, // showThreads
     getPythonAttachTargetConfig(target),
   );
 }
@@ -189,6 +192,7 @@ export async function getNodeLaunchProcessInfo(
     'launch',
     VsAdapterTypes.NODE,
     adapterInfo,
+    false, // showThreads
     getNodeScriptConfig(
       scriptPath,
       nodePath.length > 0 ? nodePath : adapterInfo.command,
@@ -210,6 +214,7 @@ export async function getNodeAttachProcessInfo(
     'attach',
     VsAdapterTypes.NODE,
     adapterInfo,
+    false, // showThreads
     getAttachNodeConfig(port),
   );
 }
@@ -276,6 +281,7 @@ export async function getReactNativeAttachProcessInfo(
     'attach',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
+    false, // showThreads
     getReactNativeScriptConfig(scriptPath, port),
   );
 }
@@ -294,6 +300,7 @@ export async function getReactNativeLaunchProcessInfo(
     'launch',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
+    false, // showThreads
     getReactNativeScriptConfig(scriptPath, port, platform),
   );
 }

@@ -763,8 +763,9 @@ export class DebuggerLayoutManager {
       })
       .filter(
         debuggerPane =>
-          debuggerPane.previousLocation == null ||
-          !debuggerPane.previousLocation.userHidden,
+          (debuggerPane.isEnabled == null || debuggerPane.isEnabled()) &&
+          (debuggerPane.previousLocation == null ||
+            !debuggerPane.previousLocation.userHidden),
       )
       .forEach(debuggerPane => {
         let targetDock = defaultDock;

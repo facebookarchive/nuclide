@@ -38,6 +38,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
   _adapterType: VsAdapterType;
   _adapterExecutable: VSAdapterExecutableInfo;
   _debugMode: DebuggerConfigAction;
+  _showThreads: boolean;
   _config: Object;
 
   constructor(
@@ -45,12 +46,14 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     debugMode: DebuggerConfigAction,
     adapterType: VsAdapterType,
     adapterExecutable: VSAdapterExecutableInfo,
+    showThreads: boolean,
     config: Object,
   ) {
     super(VSP_DEBUGGER_SERVICE_NAME, targetUri);
     this._debugMode = debugMode;
     this._adapterType = adapterType;
     this._adapterExecutable = adapterExecutable;
+    this._showThreads = showThreads;
     this._config = config;
   }
 
@@ -60,6 +63,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
       this._debugMode,
       this._adapterType,
       {...this._adapterExecutable},
+      this._showThreads,
       {...this._config},
     );
   }
@@ -68,7 +72,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     return {
       ...super.getDebuggerCapabilities(),
       conditionalBreakpoints: true,
-      threads: true,
+      threads: this._showThreads,
       setVariable: true,
       completionsRequest: true,
     };
