@@ -196,6 +196,7 @@
     "language-rust",
     "language-swift",
     "language-thrift",
+    "language-scala",
     "MagicPython",
     "nuclide-format-js",
     "set-syntax",
