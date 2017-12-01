@@ -31,7 +31,7 @@ export class DebuggerDatatipComponent extends React.Component<Props> {
     );
     let datatipElement;
     if (evaluationResult == null) {
-      datatipElement = <LoadingSpinner size="EXTRA_SMALL" />;
+      datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
     } else {
       datatipElement = (
         <span className="nuclide-debugger-datatip-value">
