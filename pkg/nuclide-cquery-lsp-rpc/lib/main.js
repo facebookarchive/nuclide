@@ -200,7 +200,7 @@ export async function createCqueryService(params: {|
   invariant(fileCache instanceof FileCache);
 
   return new CqueryLanguageServer(
-    'cquery', // id
+    languageId, // id
     command, // command
     logger,
     fileCache,

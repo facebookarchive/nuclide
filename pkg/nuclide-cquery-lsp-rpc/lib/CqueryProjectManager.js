@@ -19,6 +19,11 @@ import fsPromise from 'nuclide-commons/fsPromise';
 export class CqueryProjectManager {
   _keyToProject: Map<CqueryProjectKey, CqueryProject> = new Map();
   _fileToProjectKey: Map<string, CqueryProjectKey> = new Map();
+  _logger: log4js$Logger;
+
+  constructor(logger: log4js$Logger) {
+    this._logger = logger;
+  }
 
   getProjectKey(project: CqueryProject): CqueryProjectKey {
     return JSON.stringify(project);
@@ -35,6 +40,7 @@ export class CqueryProjectManager {
 
   async getProjectForFile(file: string): Promise<?CqueryProject> {
     const key = this._fileToProjectKey.get(await fsPromise.realpath(file));
+    this._logger.debug('key for', file, ':', key);
     return key == null ? null : this._keyToProject.get(key);
   }
 

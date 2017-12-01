@@ -32,7 +32,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   CqueryLanguageClient,
 > implements CqueryLanguageService {
   // Maps clang settings => settings metadata with same key as _processes field.
-  _projectManager: CqueryProjectManager = new CqueryProjectManager();
+  _projectManager: CqueryProjectManager;
   _fileCache: FileCache;
   _command: string;
   _host: HostServices;
@@ -53,6 +53,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._host = host;
     this._languageId = languageId;
     this._logger = logger;
+    this._projectManager = new CqueryProjectManager(logger);
 
     this._processes = new Cache(
       (projectKey: CqueryProjectKey) =>
