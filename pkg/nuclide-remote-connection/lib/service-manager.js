@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 import {IpcClientTransport} from './IpcTransports';
 import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {fork, spawn} from 'nuclide-commons/process';
+import {fork, spawn, getOriginalEnvironment} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {isGkEnabled} from '../../commons-node/passesGK';
 import {__DEV__} from '../../commons-node/runtime-info';
@@ -46,12 +46,14 @@ function createLocalRpcClient(): RpcConnection<Transport> {
   // process.js will wait for Atom's shell environment to become ready.
   const localServerProcess =
     __DEV__ && fs.existsSync(fbNodeRun) && process.platform !== 'win32'
-      ? Observable.defer(() => getAvailableServerPort())
-          .do(port => {
+      ? Observable.defer(() =>
+          Promise.all([getAvailableServerPort(), getOriginalEnvironment()]),
+        )
+          .do(([port]) => {
             // eslint-disable-next-line no-console
             console.log(`Starting local RPC process with --inspect=${port}`);
           })
-          .switchMap(port =>
+          .switchMap(([port, env]) =>
             spawn(
               fbNodeRun,
               [
@@ -65,7 +67,7 @@ function createLocalRpcClient(): RpcConnection<Transport> {
               {
                 ...spawnOptions,
                 // Enable the source-maps hook in nuclide-node-transpiler.
-                env: {...process.env, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS: '1'},
+                env: {...env, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS: '1'},
               },
             ),
           )
