@@ -11,7 +11,7 @@
 
 import type {DiffPreviewPhase} from '../types';
 
-import FileChanges from '../../../nuclide-ui/fb-FileChanges';
+import FileChanges from '../../../nuclide-ui/FileChanges';
 import * as React from 'react';
 
 type Props = {
