@@ -98,8 +98,6 @@ export class TerminalView implements PtyClient {
       info.initialInput == null ? '' : getSafeInitialInput(info.initialInput);
     this._processExitCallback = () => {};
 
-    getSafeInitialInput(String.fromCharCode(10));
-
     this._startTime = performanceNow();
     this._bytesIn = 0;
     this._bytesOut = 0;
