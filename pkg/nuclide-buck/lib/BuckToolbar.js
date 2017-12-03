@@ -47,10 +47,14 @@ type DropdownGroup = {
   selectableOptions: Array<Option>,
 };
 
-function hasMobilePlatform(platformGroups: Array<PlatformGroup>): boolean {
-  return platformGroups.some(platformGroup =>
-    platformGroup.platforms.some(platform => platform.isMobile),
-  );
+function hasMultipleOptions(platformGroups: Array<PlatformGroup>): boolean {
+  if (platformGroups.length === 0) {
+    return false;
+  }
+  const multipleGroups = platformGroups.length > 1;
+  const multiplePlatforms = platformGroups[0].platforms.length > 1;
+  const mobilePlatform = platformGroups[0].platforms[0].isMobile;
+  return multipleGroups || multiplePlatforms || mobilePlatform;
 }
 
 export default class BuckToolbar extends React.Component<Props, State> {
@@ -112,7 +116,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
           {status}
         </div>,
       );
-    } else if (hasMobilePlatform(platformGroups)) {
+    } else if (hasMultipleOptions(platformGroups)) {
       const options = this._optionsFromPlatformGroups(platformGroups);
 
       widgets.push(
@@ -183,8 +187,11 @@ export default class BuckToolbar extends React.Component<Props, State> {
       let dropdownGroup = null;
       if (platformGroup.platforms.length === 1) {
         const platform = platformGroup.platforms[0];
-        invariant(platform.isMobile);
-        if (platform.deviceGroups.length === 1) {
+        if (!platform.isMobile) {
+          // Header = platform group name, options = platform names
+          // We don't have any device for non-mobile platforms
+          dropdownGroup = this._topLevelOptionsArePlatforms(platformGroup);
+        } else if (platform.deviceGroups.length === 1) {
           // Header = platform group name + platform name, options = device names
           // No submenus, just a list of devices at the top level
           dropdownGroup = this._topLevelOptionsAreDevices(
