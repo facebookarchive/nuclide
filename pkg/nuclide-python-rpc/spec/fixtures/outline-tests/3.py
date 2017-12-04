@@ -21,3 +21,9 @@ class Test3:
     @staticmethod
     def meth():
         pass
+
+from blah import imported_decorator
+
+@imported_decorator()
+def func():
+    pass

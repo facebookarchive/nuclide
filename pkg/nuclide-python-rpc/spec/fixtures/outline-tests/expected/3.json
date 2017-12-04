@@ -74,5 +74,19 @@
       }
     ],
     "params": []
+  },
+  {
+    "children": [],
+    "end": {
+      "column": 0,
+      "line": 30
+    },
+    "kind": "function",
+    "name": "func",
+    "params": [],
+    "start": {
+      "column": 0,
+      "line": 28
+    }
   }
 ]

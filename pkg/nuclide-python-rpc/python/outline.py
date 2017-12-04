@@ -65,8 +65,16 @@ def serialize_name(name, visited):
     return result
 
 
+def is_toplevel(node):
+    try:
+        # Jedi bug: parent() throws for certain nodes.
+        return node.parent().type == 'module'
+    except AttributeError:
+        return False
+
+
 def get_outline(src, contents):
-    names = jedi.api.names(source=contents, path=src)
+    names = jedi.api.names(source=contents, path=src, all_scopes=True)
     # Only iterate through top-level definitions.
-    names = filter(lambda name: name.parent().type == 'module', names)
+    names = filter(is_toplevel, names)
     return serialize_names(names, visited=set())
