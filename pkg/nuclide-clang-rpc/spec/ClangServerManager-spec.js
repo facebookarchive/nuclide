@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 import ClangServerManager from '../lib/ClangServerManager';
 
 describe('ClangServerManager', () => {
@@ -111,6 +112,24 @@ describe('ClangServerManager', () => {
   });
 
   it('enforces a memory limit', () => {
+    const processModule = require('nuclide-commons/process');
+    const {runCommand} = processModule;
+    // Using real 'ps' is not stable enough in testing.
+    // We'll just mock it out with an arbitrary value per process.
+    spyOn(processModule, 'runCommand').andCallFake((command, ...args) => {
+      if (command === 'ps') {
+        return Observable.of(
+          serverManager._servers
+            .values()
+            .map(server => server.getPID())
+            .filter(Boolean)
+            .map(pid => `${pid}\t1000`)
+            .join('\n'),
+        );
+      }
+      return runCommand(command, ...args);
+    });
+
     let server;
     let server2;
     let server3;
@@ -137,10 +156,7 @@ describe('ClangServerManager', () => {
     waitsFor(() => server3.isReady(), 'server3 to become ready');
 
     waitsForPromise(async () => {
-      const usage = await serverManager._checkMemoryUsage();
-      // Check that the memory usage is within a reasonable range.
-      expect(usage).toBeGreaterThan(1000);
-      expect(usage).toBeLessThan(1000000);
+      await serverManager._checkMemoryUsage();
       expect(server2.isDisposed()).toBe(true);
       expect(server3.isDisposed()).toBe(false);
     });
