@@ -104,8 +104,6 @@ describe('BuckService (test-project-with-failing-targets)', () => {
             extraArguments: ['--help'],
           });
         } catch (e) {
-          // The help option, naturally, lists itself.
-          expect(e.message).toContain('--help');
           return;
         }
         throw new Error('promise should have been rejected');
