@@ -205,9 +205,13 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   const enableTypeHints = Boolean(
     featureConfig.get('nuclide-flow.enableTypeHints'),
   );
-  const enableFindRefs = Boolean(
-    featureConfig.get('nuclide-flow.enableFindReferences'),
-  );
+  const enableFindRefs =
+    Boolean(featureConfig.get('nuclide-flow.enableFindReferences')) ||
+    (await passesGK(
+      'nuclide_flow_find_refs',
+      // Wait 15 seconds for the gk check
+      15 * 1000,
+    ));
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
