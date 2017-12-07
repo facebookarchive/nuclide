@@ -18,6 +18,7 @@ export default class CommandLine implements ConsoleIO {
   _cli: readline$Interface;
   _inputStopped = false;
   _shouldPrompt = false;
+  _lastLine = '';
 
   constructor(dispatcher: CommandDispatcher) {
     this._dispatcher = dispatcher;
@@ -70,8 +71,11 @@ export default class CommandLine implements ConsoleIO {
   }
 
   async _executeCommand(line: string): Promise<void> {
+    if (line !== '') {
+      this._lastLine = line;
+    }
     try {
-      await this._dispatcher.execute(line);
+      await this._dispatcher.execute(this._lastLine);
     } catch (x) {
       this.outputLine(x.message);
     } finally {
