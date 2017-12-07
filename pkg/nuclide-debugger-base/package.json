@@ -1,6 +1,5 @@
 {
   "name": "nuclide-debugger-base",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides base Atom functionality for the Nuclide debugger",

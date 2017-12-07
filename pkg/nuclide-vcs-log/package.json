@@ -1,6 +1,5 @@
 {
   "name": "nuclide-vcs-log",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "General display mechanism for the VCS log of a file",

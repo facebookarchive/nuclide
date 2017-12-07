@@ -1,6 +1,5 @@
 {
   "name": "nuclide-buck-base",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides API to work with Buck",

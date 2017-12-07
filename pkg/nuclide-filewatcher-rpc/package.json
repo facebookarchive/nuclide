@@ -1,6 +1,5 @@
 {
   "name": "nuclide-filewatcher-rpc",
-  "repository": "https://github.com/facebook/nuclide",
   "version": "0.0.0",
   "description": "Watches files and directories on a remote directory using watchman.",
   "main": "./lib/FileWatcherService.js",

@@ -1,6 +1,5 @@
 {
   "name": "nuclide-related-files",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows jumping between related files in a project (e.g. header/source files)",

@@ -1,6 +1,5 @@
 {
   "name": "sample-nux-example",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A package demonstrating usage of NUXes within Nuclide.",

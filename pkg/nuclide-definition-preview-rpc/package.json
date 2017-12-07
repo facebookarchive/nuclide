@@ -1,6 +1,5 @@
 {
   "name": "nuclide-definition-preview-rpc",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/DefinitionPreviewService.js",
   "version": "0.0.0",
   "description": "Provides a service to read a definition",

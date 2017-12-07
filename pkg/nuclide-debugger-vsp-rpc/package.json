@@ -1,6 +1,5 @@
 {
   "name": "nuclide-debugger-vsp-rpc",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/VSCodeDebuggerAdapterService.js",
   "version": "0.0.0",
   "description": "VSCode deug protocol adapter",

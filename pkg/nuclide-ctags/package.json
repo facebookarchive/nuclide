@@ -1,6 +1,5 @@
 {
   "name": "nuclide-ctags",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Exposes nuclide-ctags-rpc functionality to Atom.",

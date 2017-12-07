@@ -1,6 +1,5 @@
 {
   "name": "nuclide-notifications",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides native notification support for Nuclide & Atom",

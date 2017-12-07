@@ -1,6 +1,5 @@
 {
   "name": "nuclide-terminal",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A terminal integrated into nuclide.",

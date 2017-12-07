@@ -1,6 +1,5 @@
 {
   "name": "nuclide-task",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/bootloader.js",
   "version": "0.0.0",
   "description": "Provides a utility to run babel code in a separate process",

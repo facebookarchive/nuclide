@@ -1,6 +1,5 @@
 {
   "name": "nuclide-pty-rpc",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/PtyService.js",
   "version": "0.0.0",
   "description": "A service for interacting with a remote pty.",

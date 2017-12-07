@@ -1,6 +1,5 @@
 {
   "name": "nuclide-home",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides a welcome message and other links for first time users.",

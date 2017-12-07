@@ -1,6 +1,5 @@
 {
   "name": "nuclide-console",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Aggregate and display output from various sources and provide an user interface for REPL-like functionality.",

@@ -1,6 +1,5 @@
 {
   "name": "nuclide-language-infer-al",
-  "repository": "https://github.com/facebook/nuclide",
   "version": "0.0.0",
   "description": "Infer AL language support in Atom",
   "atomTestRunner": "../../lib/test-runner-entry.js",

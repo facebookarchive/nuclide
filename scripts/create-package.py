@@ -83,7 +83,6 @@ module.exports = {
 ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
@@ -100,7 +99,6 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
 NODE_APM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
@@ -115,7 +113,6 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
 NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
 {
   "name": "%s",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",

@@ -20,7 +20,6 @@ EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
 # Detects errors in Nuclide package.json files.
 #  - missing/empty description
-#  - missing/incorrect repository
 #  - missing/incorrect version
 #  - missing/incorrect scripts/test property
 class PackageLinter(object):
@@ -65,9 +64,12 @@ class PackageLinter(object):
             self.report_error('Missing "description" for %s', package_name)
         elif not package['description']:
             self.report_error('Empty "description" for %s', package_name)
-        self.expect_field(package_name, package,
-                'repository', 'https://github.com/facebook/nuclide')
         self.expect_field(package_name, package, 'version', '0.0.0')
+
+        if package.get('repository', None) is not None:
+            self.report_error(
+                'Package should not contain a "repository" field. See D6510438 for explanation.'
+            )
 
         package_name = package['name']
         has_valid_prefix = False

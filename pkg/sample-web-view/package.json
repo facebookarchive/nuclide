@@ -1,6 +1,5 @@
 {
   "name": "sample-web-view",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Demonstrates how to create an Atom package that opens a pane to a web page",

@@ -1,6 +1,5 @@
 {
   "name": "sample-workspace-views-example",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "An example of how to use the Nuclide Gadgets service",

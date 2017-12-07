@@ -1,6 +1,5 @@
 {
   "name": "nuclide-test-helpers",
-  "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides utility functions for creating package test suites",
