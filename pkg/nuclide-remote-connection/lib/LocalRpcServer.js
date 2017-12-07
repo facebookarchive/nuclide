@@ -11,6 +11,7 @@
 
 import child_process from 'child_process';
 import {getLogger} from 'log4js';
+import {track} from '../../nuclide-analytics';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
@@ -63,3 +64,22 @@ const serverTransport = new IpcServerTransport();
 RpcConnection.createServer(serviceRegistry, serverTransport);
 
 logger.info('Started local RPC server.');
+
+const HEALTH_INTERVAL = 60 * 1000;
+
+// Track RPC server memory usage.
+// $FlowIssue: process.cpuUsage doesn't exist
+let lastCpuUsage = process.cpuUsage();
+setInterval(() => {
+  // $FlowIssue: process.cpuUsage doesn't exist
+  const cpuUsage = process.cpuUsage();
+  track('local-rpc-health', {
+    ...process.memoryUsage(),
+    // 1) CPU stats are in microseconds. Seconds are more convenient.
+    // 2) CPU stats are cumulative, so take the delta. The API is supposed to provide
+    //    a diff if given the previous value, but this doesn't work correctly in practice.
+    cpuUser: (cpuUsage.user - lastCpuUsage.user) / 1e6,
+    cpuSystem: (cpuUsage.system - lastCpuUsage.system) / 1e6,
+  });
+  lastCpuUsage = cpuUsage;
+}, HEALTH_INTERVAL);
