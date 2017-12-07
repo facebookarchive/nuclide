@@ -379,8 +379,8 @@ export class HgService {
    */
 
   /**
-    * Shells out of the `hg status` to get the statuses of the paths.
-    */
+   * Shells out of the `hg status` to get the statuses of the paths.
+   */
   fetchStatuses(
     toRevision?: string,
   ): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
@@ -852,7 +852,9 @@ export class HgService {
       output = await this._hgAsyncExecute(args, options);
     } catch (e) {
       getLogger('nuclide-hg-rpc').error(
-        `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${e.stderr}`,
+        `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${
+          e.stderr
+        }`,
       );
       return null;
     }
@@ -1002,7 +1004,9 @@ export class HgService {
       )).stdout.split('\n');
     } catch (e) {
       getLogger('nuclide-hg-rpc').error(
-        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${
+          e.stderr
+        }`,
       );
       throw e;
     }
@@ -1018,7 +1022,9 @@ export class HgService {
       ).toPromise();
     } catch (e) {
       getLogger('nuclide-hg-rpc').error(
-        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${
+          e.stderr
+        }`,
       );
       throw e;
     }

@@ -850,32 +850,31 @@ export class HgRepositoryClient {
         return Observable.of(new Map());
       }
 
-      return this._getFileDiffs(
-        pathsToFetch,
-        currentHeadId,
-      ).do(pathsToDiffInfo => {
-        if (pathsToDiffInfo) {
-          for (const [filePath, diffInfo] of pathsToDiffInfo) {
-            this._hgDiffCache.set(filePath, diffInfo);
+      return this._getFileDiffs(pathsToFetch, currentHeadId).do(
+        pathsToDiffInfo => {
+          if (pathsToDiffInfo) {
+            for (const [filePath, diffInfo] of pathsToDiffInfo) {
+              this._hgDiffCache.set(filePath, diffInfo);
+            }
           }
-        }
 
-        // Remove files marked for deletion.
-        this._hgDiffCacheFilesToClear.forEach(fileToClear => {
-          this._hgDiffCache.delete(fileToClear);
-        });
-        this._hgDiffCacheFilesToClear.clear();
+          // Remove files marked for deletion.
+          this._hgDiffCacheFilesToClear.forEach(fileToClear => {
+            this._hgDiffCache.delete(fileToClear);
+          });
+          this._hgDiffCacheFilesToClear.clear();
 
-        // The fetched files can now be updated again.
-        for (const pathToFetch of pathsToFetch) {
-          this._hgDiffCacheFilesUpdating.delete(pathToFetch);
-        }
+          // The fetched files can now be updated again.
+          for (const pathToFetch of pathsToFetch) {
+            this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+          }
 
-        // TODO (t9113913) Ideally, we could send more targeted events that better
-        // describe what change has occurred. Right now, GitRepository dictates either
-        // 'did-change-status' or 'did-change-statuses'.
-        this._emitter.emit('did-change-statuses');
-      });
+          // TODO (t9113913) Ideally, we could send more targeted events that better
+          // describe what change has occurred. Right now, GitRepository dictates either
+          // 'did-change-status' or 'did-change-statuses'.
+          this._emitter.emit('did-change-statuses');
+        },
+      );
     });
   }
 
@@ -952,9 +951,9 @@ export class HgRepositoryClient {
    */
 
   /**
-    * That extends the `GitRepository` implementation which takes a single file path.
-    * Here, it's possible to pass an array of file paths to revert/checkout-head.
-    */
+   * That extends the `GitRepository` implementation which takes a single file path.
+   * Here, it's possible to pass an array of file paths to revert/checkout-head.
+   */
   checkoutHead(filePathsArg: NuclideUri | Array<NuclideUri>): Promise<void> {
     const filePaths = Array.isArray(filePathsArg)
       ? filePathsArg
