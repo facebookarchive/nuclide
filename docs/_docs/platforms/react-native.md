@@ -32,11 +32,11 @@ If your React Native apps are primarily written in [Flow](/docs/languages/flow),
 
 All React Native features are currently available from the [Command Palette](/docs/editor/basics/#command-palette).
 
-You run the React Native Packager and Server from Nuclide and your application from the command line.
+You run Metro from Nuclide and your application from the command line.
 
-### React Native Packager
+### Metro
 
-From the [Command Palette](/docs/editor/basics/#command-palette), choose `Nuclide React Native: Start Packager` to start the React Native Server. The output in the `Console` panel indicates if the React Native Packager started or if it encountered any errors.
+From the [Command Palette](/docs/editor/basics/#command-palette), choose `Nuclide Metro: Start` to start Metro. The output in the `Console` panel indicates if Metro started or if it encountered any errors.
 
 ![](/static/images/docs/platform-react-native-start-packager.png)
 
@@ -69,9 +69,9 @@ You open a React Native project the
 establish that you have a React Native project by seeing the `node_modules/react-native` directory
 from the root of your project.
 
-### React Native Server
+### Metro
 
-[Launch the React Native Server from within Nuclide](#running-applications__react-native-packager).
+[Launch Metro from within Nuclide](#running-applications__metro).
 
 ### Run the React Native Application
 
@@ -81,7 +81,7 @@ from the root of your project.
 
 Nuclide provides an Element Inspector, where you can view and toggle properties of your application.
 
-From the [Command Palette](/docs/editor/basics/#command-palette), choose `Nuclide React Native Inspector: Show` to open the **React Native Inspector** tab in the
+From the [Command Palette](/docs/editor/basics/#command-palette), choose `Nuclide React Inspector: Show` to open the **React Inspector** tab in the
 main [Editing Area](/docs/editor/basics/#editing-area).
 
 ![](/static/images/docs/platform-react-native-element-inspector.png)
