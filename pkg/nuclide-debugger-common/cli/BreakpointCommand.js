@@ -44,19 +44,30 @@ export default class BreakpointCommand implements Command {
   }
 
   async execute(args: string[]): Promise<void> {
+    let result: ?BreakpointSetResult;
+
     const breakpointSpec = args[0];
     if (breakpointSpec == null) {
-      throw new Error("'breakpoint' requires a breakpoint specification.");
+      result = await this._setBreakpointHere();
+    } else {
+      const linePattern = /^(\d+)$/;
+      const lineMatch = breakpointSpec.match(linePattern);
+      if (lineMatch != null) {
+        result = await this._setBreakpointHere(parseInt(lineMatch[1], 10));
+      } else {
+        const sourceBreakPattern = /^(.+):(\d+)$/;
+        const sourceMatch = breakpointSpec.match(sourceBreakPattern);
+        if (sourceMatch != null) {
+          const [, path, line] = sourceMatch;
+          result = await this._debugger.setSourceBreakpoint(
+            path,
+            parseInt(line, 10),
+          );
+        }
+      }
     }
 
-    const sourceBreakPattern = /^(.+):(\d+)$/;
-    const sourceMatch = breakpointSpec.match(sourceBreakPattern);
-    if (sourceMatch != null) {
-      const [, path, line] = sourceMatch;
-      const result = await this._debugger.setSourceBreakpoint(
-        path,
-        parseInt(line, 10),
-      );
+    if (result != null) {
       this._displayBreakpointResult(result);
       return;
     }
@@ -72,5 +83,24 @@ export default class BreakpointCommand implements Command {
     if (result.message != null) {
       this._console.outputLine(result.message);
     }
+  }
+
+  async _setBreakpointHere(line: ?number): Promise<BreakpointSetResult> {
+    const frame = await this._debugger.getCurrentStackFrame();
+    if (frame == null) {
+      throw new Error('Cannot set breakpoint here, no current stack frame.');
+    }
+
+    if (frame.source == null || frame.source.path == null) {
+      throw new Error(
+        'Cannot set breakpoint here, current stack frame has no source.',
+      );
+    }
+
+    const result = await this._debugger.setSourceBreakpoint(
+      frame.source.path,
+      line == null ? frame.line : line,
+    );
+    return result;
   }
 }
