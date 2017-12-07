@@ -16,7 +16,7 @@ test:
     - |
       # eslint
       if [[ "$CIRCLE_BRANCH" != "release-v"* ]]; then
-        ./scripts/lint-eslint.js
+        ./node_modules/.bin/eslint --max-warnings=0 .
       fi
     - |
       # flow
