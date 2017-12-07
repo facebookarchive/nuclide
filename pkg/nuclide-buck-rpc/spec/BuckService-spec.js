@@ -127,6 +127,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     it('returns the type of a build rule specified by alias', () => {
       waitsForPromise(async () => {
         const resolved = await BuckService.buildRuleTypeFor(buckRoot, 'good');
+        invariant(resolved != null);
         expect(resolved.type).toBe('genrule');
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors.length).toBe(0);
@@ -139,6 +140,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           buckRoot,
           '//:good_rule',
         );
+        invariant(resolved != null);
         expect(resolved.type).toBe('genrule');
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors.length).toBe(0);
@@ -163,6 +165,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           buckRoot,
           ':good_rule',
         );
+        invariant(resolved != null);
         expect(resolved.type).toBe('genrule');
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors.length).toBe(0);
@@ -174,6 +177,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           buckRoot,
           '//:good_rule#',
         );
+        invariant(resolved != null);
         expect(resolved.type).toBe('genrule');
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors[0]).toBe('');
@@ -185,6 +189,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           buckRoot,
           '//:good_rule#foo',
         );
+        invariant(resolved != null);
         expect(resolved.type).toBe('genrule');
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors[0]).toBe('foo');
@@ -194,6 +199,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     it('works for multi-target rules', () => {
       waitsForPromise(async () => {
         const resolved = await BuckService.buildRuleTypeFor(buckRoot, '//:');
+        invariant(resolved != null);
         expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
         expect(resolved.buildTarget.qualifiedName).toBe('//:');
         expect(resolved.buildTarget.flavors.length).toBe(0);
@@ -201,6 +207,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
 
       waitsForPromise(async () => {
         const resolved = await BuckService.buildRuleTypeFor(buckRoot, '//...');
+        invariant(resolved != null);
         expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
         expect(resolved.buildTarget.qualifiedName).toBe('//...');
         expect(resolved.buildTarget.flavors.length).toBe(0);
@@ -208,8 +215,12 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     });
 
     it('fails when passed an invalid target', () => {
-      waitsForPromise({shouldReject: true}, async () => {
-        await BuckService.buildRuleTypeFor(buckRoot, '//not:athing');
+      waitsForPromise(async () => {
+        const resolved = await BuckService.buildRuleTypeFor(
+          buckRoot,
+          '//not:athing',
+        );
+        expect(resolved).toBeNull();
       });
     });
 
@@ -219,6 +230,7 @@ describe('BuckService (test-project-with-failing-targets)', () => {
           buckRoot,
           'good good2',
         );
+        invariant(resolved != null);
         expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
         expect(resolved.buildTarget.qualifiedName).toBe('good good2');
         expect(resolved.buildTarget.flavors.length).toBe(0);

@@ -20,6 +20,7 @@ import type {
 } from './types';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
+import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 import {runCommand, observeProcess} from 'nuclide-commons/process';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -415,7 +416,7 @@ export async function showOutput(
 export async function buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasesOrTargets: string,
-): Promise<ResolvedRuleType> {
+): Promise<?ResolvedRuleType> {
   const resolvedRuleTypes = await Promise.all(
     aliasesOrTargets
       .trim()
@@ -439,7 +440,7 @@ export async function buildRuleTypeFor(
 export async function _buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasOrTarget: string,
-): Promise<ResolvedRuleType> {
+): Promise<?ResolvedRuleType> {
   let flavors;
   if (aliasOrTarget.includes('#')) {
     const nameComponents = aliasOrTarget.split('#');
@@ -456,15 +457,21 @@ export async function _buildRuleTypeFor(
     '--output-attributes',
     'buck.type',
   ];
-  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-    rootPath,
-    args,
-  );
+  let result;
+  try {
+    result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
+      rootPath,
+      args,
+    );
+  } catch (error) {
+    getLogger('nuclide-buck-rpc').error(error.message);
+    return null;
+  }
   const json: {[target: string]: Object} = JSON.parse(result);
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
   const targets = Object.keys(json);
   if (targets.length === 0) {
-    throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
+    return null;
   }
   let qualifiedName;
   let type;
