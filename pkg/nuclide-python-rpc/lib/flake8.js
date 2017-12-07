@@ -21,7 +21,7 @@ function classifyCode(code: string): DiagnosticMessageType {
 }
 
 export function parseFlake8Output(src: string, output: string): Array<Object> {
-  const regex = /(\d+):(\d+):\s([A-Z]\d{2,3})\s+(.*)/g;
+  const regex = /(\d+):(\d+):\s([A-Z]{1,2}\d{2,3})\s+(.*)/g;
   const results = [];
 
   for (;;) {
