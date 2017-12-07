@@ -129,6 +129,8 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     if getattr(arguments, 'lldb_bootstrap_files', None):
         bootstrap_files = arguments.lldb_bootstrap_files
         for file in bootstrap_files:
+            log = 'using bootstrap file: ' + file
+            ipc_channel.send_output_message_async('log', log)
             debugger.HandleCommand(str('command source ' + file))
     elif getattr(arguments, 'executable_path', None):
         argument_list = map(os.path.expanduser, map(str, arguments.launch_arguments)) \
