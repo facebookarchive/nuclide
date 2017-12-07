@@ -24,7 +24,26 @@ export default class CommandDispatcher implements DispatcherInterface {
   }
 
   async execute(line: string): Promise<void> {
-    const tokens = line.split(/\s+/);
+    let tail = line;
+    const tokens: string[] = [];
+
+    // Here we're looking for quoted arguments.
+    // \1 is the contents of a single-quoted arg that may contain spaces
+    // \2 is a space-delimited arg if there are no quotes
+    // \3 is the rest of the command line
+    const tokenizer: RegExp = /^\s*(?:('([^']*)')|(\S+))\s*(.*)$/;
+
+    while (tail.length > 0) {
+      const match = tail.match(tokenizer);
+      if (match == null) {
+        break;
+      }
+
+      const [, , quoted, unquoted, rest] = match;
+      tokens.push(quoted != null ? quoted : unquoted);
+      tail = rest;
+    }
+
     return this.executeTokenizedLine(tokens);
   }
 
