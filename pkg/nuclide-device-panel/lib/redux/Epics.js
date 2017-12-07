@@ -260,19 +260,17 @@ function observeAppInfoTable(
   host: string,
   device: DeviceIdType,
 ): Observable<Array<AppInfoRow>> {
-  return observeAppInfoProviderValues(
-    tableProviders,
-    host,
-    device,
-  ).map(values => {
-    return tableProviders.map((provider, index) => ({
-      appName: provider.getAppName(),
-      name: provider.getName(),
-      ...values[index], // {value, isError?}
-      canUpdate: provider.canUpdate(),
-      update: provider.update,
-    }));
-  });
+  return observeAppInfoProviderValues(tableProviders, host, device).map(
+    values => {
+      return tableProviders.map((provider, index) => ({
+        appName: provider.getAppName(),
+        name: provider.getName(),
+        ...values[index], // {value, isError?}
+        canUpdate: provider.canUpdate(),
+        update: provider.update,
+      }));
+    },
+  );
 }
 
 // Given an array of providers it subscribes to the values of all of them. It

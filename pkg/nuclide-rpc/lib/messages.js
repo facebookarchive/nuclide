@@ -118,7 +118,9 @@ export function decodeError(
         `<${messageStr.length - ERROR_MESSAGE_LIMIT} bytes>`;
     }
     resultError.message =
-      `Remote Error: ${encodedError.message} processing message ${messageStr}\n` +
+      `Remote Error: ${
+        encodedError.message
+      } processing message ${messageStr}\n` +
       JSON.stringify(encodedError.stack);
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;

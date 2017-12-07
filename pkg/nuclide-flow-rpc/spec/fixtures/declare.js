@@ -13,12 +13,12 @@
 declare function foo(a: number): string;
 declare var PI: number;
 declare class Path {
-  someString: string,
-  toString(): string,
-  otherMethod(input: string): number,
+  someString: string;
+  toString(): string;
+  otherMethod(input: string): number;
 }
 declare module 'some-es-module' {
   declare class Path {
-    toString(): string,
+    toString(): string;
   }
 }

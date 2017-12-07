@@ -12,5 +12,5 @@
 import type {Command} from './Command';
 
 export interface DispatcherInterface {
-  getCommands(): Command[],
+  getCommands(): Command[];
 }

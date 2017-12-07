@@ -24,8 +24,8 @@ import idx from 'idx';
 import {getOriginalEnvironment} from 'nuclide-commons/process';
 
 export interface AdapterExitedEvent extends DebugProtocol.base$Event {
-  event: 'adapter-exited',
-  body: {exitCode: number},
+  event: 'adapter-exited';
+  body: {exitCode: number};
 }
 
 function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {

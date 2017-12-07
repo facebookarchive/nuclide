@@ -503,15 +503,15 @@ export class FileTreeStore {
   }
 
   /**
-  * Use the predicate function to update one or more of the roots in the file tree
-  */
+   * Use the predicate function to update one or more of the roots in the file tree
+   */
   _updateRoots(predicate: (root: FileTreeNode) => FileTreeNode): void {
     this._setRoots(this.roots.map(predicate));
   }
 
   /**
-  * Use the predicate to update a node (or a branch) of the file-tree
-  */
+   * Use the predicate to update a node (or a branch) of the file-tree
+   */
   _updateNodeAtRoot(
     rootKey: NuclideUri,
     nodeKey: NuclideUri,
@@ -549,8 +549,8 @@ export class FileTreeStore {
   }
 
   /**
-  * Update a node or a branch under any of the roots it was found at
-  */
+   * Update a node or a branch under any of the roots it was found at
+   */
   _updateNodeAtAllRoots(
     nodeKey: NuclideUri,
     predicate: (node: FileTreeNode) => FileTreeNode,
@@ -568,16 +568,16 @@ export class FileTreeStore {
   }
 
   /**
-  * Bubble the change up. The newNode is assumed to be prevNode after some manipulateion done to it
-  * therefore they are assumed to belong to the same parent.
-  *
-  * The method updates the child to the new node (which create a new parent instance) and call
-  * recursively for the parent update. Until there are no more parents and the new root is returned
-  *
-  * As the change bubbles up, and in addition to the change from the new child assignment, an
-  * optional predicate is also being applied to each newly created parent to support more complex
-  * change patterns.
-  */
+   * Bubble the change up. The newNode is assumed to be prevNode after some manipulateion done to it
+   * therefore they are assumed to belong to the same parent.
+   *
+   * The method updates the child to the new node (which create a new parent instance) and call
+   * recursively for the parent update. Until there are no more parents and the new root is returned
+   *
+   * As the change bubbles up, and in addition to the change from the new child assignment, an
+   * optional predicate is also being applied to each newly created parent to support more complex
+   * change patterns.
+   */
   _bubbleUp(
     prevNode: FileTreeNode,
     newNode: FileTreeNode,
@@ -593,8 +593,8 @@ export class FileTreeStore {
   }
 
   /**
-  * Updates the roots, maintains their sibling relationships and fires the change event.
-  */
+   * Updates the roots, maintains their sibling relationships and fires the change event.
+   */
   _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
     // Explicitly test for the empty case, otherwise configuration changes with an empty
     // tree will not emit changes.
@@ -645,9 +645,9 @@ export class FileTreeStore {
   }
 
   /**
-  * Update the configuration for the file-tree. The direct writing to the this._conf should be
-  * avoided.
-  */
+   * Update the configuration for the file-tree. The direct writing to the this._conf should be
+   * avoided.
+   */
   _updateConf(predicate: (conf: StoreConfigData) => void): void {
     predicate(this._conf);
     this._updateRoots(root => {
@@ -896,8 +896,8 @@ export class FileTreeStore {
   }
 
   /**
-  * Returns a node if it is the only one selected, or null otherwise
-  */
+   * Returns a node if it is the only one selected, or null otherwise
+   */
   getSingleSelectedNode(): ?FileTreeNode {
     const selectedNodes = this.getSelectedNodes();
 
@@ -951,8 +951,8 @@ export class FileTreeStore {
   }
 
   /**
-  * Builds the edited working set from the partially-child-derived .checkedStatus property
-  */
+   * Builds the edited working set from the partially-child-derived .checkedStatus property
+   */
   getEditedWorkingSet(): WorkingSet {
     return this._conf.editedWorkingSet;
   }
@@ -1550,8 +1550,8 @@ export class FileTreeStore {
   }
 
   /**
-  * Selects a single node and tracks it.
-  */
+   * Selects a single node and tracks it.
+   */
   _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._clearSelection();
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
@@ -1834,9 +1834,9 @@ export class FileTreeStore {
   }
 
   /**
-  * Moves the selection one node down. In case several nodes were selected, the topmost (first in
-  * the natural visual order) is considered to be the reference point for the move.
-  */
+   * Moves the selection one node down. In case several nodes were selected, the topmost (first in
+   * the natural visual order) is considered to be the reference point for the move.
+   */
   _moveSelectionDown(): void {
     if (this.roots.isEmpty()) {
       return;
@@ -1862,9 +1862,9 @@ export class FileTreeStore {
   }
 
   /**
-  * Moves the selection one node up. In case several nodes were selected, the topmost (first in
-  * the natural visual order) is considered to be the reference point for the move.
-  */
+   * Moves the selection one node up. In case several nodes were selected, the topmost (first in
+   * the natural visual order) is considered to be the reference point for the move.
+   */
   _moveSelectionUp(): void {
     if (this.roots.isEmpty()) {
       return;
@@ -1973,9 +1973,9 @@ export class FileTreeStore {
   }
 
   /**
-  * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
-  * needed and scheduling a child key fetch. Used by the reveal active file functionality.
-  */
+   * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
+   * needed and scheduling a child key fetch. Used by the reveal active file functionality.
+   */
   _ensureChildNode(nodeKey: NuclideUri): void {
     let firstRootUri;
 

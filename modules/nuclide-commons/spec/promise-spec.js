@@ -256,14 +256,10 @@ describe('promises::asyncLimit()', () => {
 
   it('runs in series if limit is 1', () => {
     waitsForPromise(async () => {
-      const {
-        result,
-        parallelismHistory,
-      } = await captureParallelismHistory(asyncLimit, [
-        [1, 2, 3],
-        1,
-        item => waitPromise(10, item + 1),
-      ]);
+      const {result, parallelismHistory} = await captureParallelismHistory(
+        asyncLimit,
+        [[1, 2, 3], 1, item => waitPromise(10, item + 1)],
+      );
       expect(parallelismHistory).toEqual([1, 1, 1]);
       expect(result).toEqual([2, 3, 4]);
     });
@@ -271,14 +267,14 @@ describe('promises::asyncLimit()', () => {
 
   it('runs with the specified limit, until finishing', () => {
     waitsForPromise(async () => {
-      const {
-        result,
-        parallelismHistory,
-      } = await captureParallelismHistory(asyncLimit, [
-        [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        3,
-        item => waitPromise(10 + item, item - 1),
-      ]);
+      const {result, parallelismHistory} = await captureParallelismHistory(
+        asyncLimit,
+        [
+          [1, 2, 3, 4, 5, 6, 7, 8, 9],
+          3,
+          item => waitPromise(10 + item, item - 1),
+        ],
+      );
       expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3]);
     });
@@ -396,13 +392,10 @@ describe('promises::asyncSome()', () => {
   // eslint-disable-next-line max-len
   it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
-      const {
-        result,
-        parallelismHistory,
-      } = await captureParallelismHistory(asyncSome, [
-        [1, 2, 3, 4, 5],
-        item => waitPromise(10, item === 6),
-      ]);
+      const {result, parallelismHistory} = await captureParallelismHistory(
+        asyncSome,
+        [[1, 2, 3, 4, 5], item => waitPromise(10, item === 6)],
+      );
       expect(result).toEqual(false);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
     });
@@ -410,14 +403,10 @@ describe('promises::asyncSome()', () => {
 
   it('some an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
-      const {
-        result,
-        parallelismHistory,
-      } = await captureParallelismHistory(asyncSome, [
-        [1, 2, 3, 4, 5],
-        item => waitPromise(10 + item, item === 5),
-        3,
-      ]);
+      const {result, parallelismHistory} = await captureParallelismHistory(
+        asyncSome,
+        [[1, 2, 3, 4, 5], item => waitPromise(10 + item, item === 5), 3],
+      );
       expect(result).toEqual(true);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
     });

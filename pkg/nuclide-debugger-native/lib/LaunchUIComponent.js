@@ -166,7 +166,8 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
             placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
             value={this.state.launchEnvironmentVariables}
             onDidChange={value =>
-              this.setState({launchEnvironmentVariables: value})}
+              this.setState({launchEnvironmentVariables: value})
+            }
           />
           <label>Source path: </label>
           <AtomInput
@@ -184,7 +185,8 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
             placeholderText="Working directory for the launched executable"
             value={this.state.launchWorkingDirectory}
             onDidChange={value =>
-              this.setState({launchWorkingDirectory: value})}
+              this.setState({launchWorkingDirectory: value})
+            }
           />
           <label>Stdin file: </label>
           <AtomInput

@@ -200,27 +200,25 @@ export function watchDirectory(root: string): Observable<FileChange> {
             getWatchmanExpression(root, '*.js'),
           ),
         ).switchMap(watchmanSubscription => {
-          return Observable.fromEvent(
-            watchmanSubscription,
-            'change',
-          ).switchMap((changes: Array<FileChange>) =>
-            Observable.from(
-              changes
-                .map(change => {
-                  const name = nuclideUri.join(
-                    watchmanSubscription.root,
-                    change.name,
-                  );
-                  if (!nuclideUri.contains(root, name)) {
-                    return null;
-                  }
-                  return {
-                    ...change,
-                    name,
-                  };
-                })
-                .filter(Boolean),
-            ),
+          return Observable.fromEvent(watchmanSubscription, 'change').switchMap(
+            (changes: Array<FileChange>) =>
+              Observable.from(
+                changes
+                  .map(change => {
+                    const name = nuclideUri.join(
+                      watchmanSubscription.root,
+                      change.name,
+                    );
+                    if (!nuclideUri.contains(root, name)) {
+                      return null;
+                    }
+                    return {
+                      ...change,
+                      name,
+                    };
+                  })
+                  .filter(Boolean),
+              ),
           );
         }),
     );

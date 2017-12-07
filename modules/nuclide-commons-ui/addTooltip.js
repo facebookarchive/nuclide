@@ -25,16 +25,16 @@ const _toDispose: Set<Element> = new Set();
 let _timeoutHandle: ?number;
 
 /**
-* Adds a self-disposing Atom's tooltip to a react element.
-*
-* Typical usage:
-* <div ref={addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})} />
-* or, if the ref needs to be preserved:
-* <div ref={c => {
-*   addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})(c);
-*   _myDiv = c;
-* }} />
-*/
+ * Adds a self-disposing Atom's tooltip to a react element.
+ *
+ * Typical usage:
+ * <div ref={addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})} />
+ * or, if the ref needs to be preserved:
+ * <div ref={c => {
+ *   addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})(c);
+ *   _myDiv = c;
+ * }} />
+ */
 export default function addTooltip(
   options: atom$TooltipsAddOptions,
 ): (elementRef: React.ElementRef<any>) => void {

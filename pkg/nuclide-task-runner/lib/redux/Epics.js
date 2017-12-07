@@ -697,7 +697,9 @@ function promptForShouldSave(taskMeta: TaskMetadata): Observable<boolean> {
       'You have files with unsaved changes.',
       {
         dismissable: true,
-        description: `Do you want to save them before running the ${taskMeta.label} task?`,
+        description: `Do you want to save them before running the ${
+          taskMeta.label
+        } task?`,
         buttons: [
           {
             text: `Save All & ${taskMeta.label}`,
@@ -757,7 +759,9 @@ function getTaskRunnerState(
       )
       .catch(error => {
         getLogger('nuclide-task-runner').error(
-          `Disabling ${taskRunner.name} task runner, because setProjectRoot failed.\n\n${error}`,
+          `Disabling ${
+            taskRunner.name
+          } task runner, because setProjectRoot failed.\n\n${error}`,
         );
         return Observable.of({
           taskRunner,

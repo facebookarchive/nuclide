@@ -50,55 +50,55 @@ import {findNearestCompilationDbDir as _findNearestCompilationDbDir} from './Com
 import CqueryLanguageServer from './CqueryLanguageServer';
 
 export interface CqueryLanguageService extends LanguageService {
-  freshenIndexForFile(file: NuclideUri): Promise<void>,
+  freshenIndexForFile(file: NuclideUri): Promise<void>;
   associateFileWithProject(
     file: NuclideUri,
     project: CqueryProject,
-  ): Promise<void>,
+  ): Promise<void>;
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
-  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>,
+  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>,
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
     request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult>,
+  ): Promise<?AutocompleteResult>;
 
   getDefinition(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?DefinitionQueryResult>,
+  ): Promise<?DefinitionQueryResult>;
 
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
+  ): Promise<?FindReferencesReturn>;
 
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
-  getOutline(fileVersion: FileVersion): Promise<?Outline>,
+  getOutline(fileVersion: FileVersion): Promise<?Outline>;
 
   getCodeActions(
     fileVersion: FileVersion,
     range: atom$Range,
     diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>>,
+  ): Promise<Array<CodeAction>>;
 
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
+  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>;
 
   highlight(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?Array<atom$Range>>,
+  ): Promise<?Array<atom$Range>>;
 
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
     options: FormatOptions,
-  ): Promise<?Array<TextEdit>>,
+  ): Promise<?Array<TextEdit>>;
 
   formatEntireFile(
     fileVersion: FileVersion,
@@ -107,47 +107,47 @@ export interface CqueryLanguageService extends LanguageService {
   ): Promise<?{
     newCursor?: number,
     formatted: string,
-  }>,
+  }>;
 
   formatAtPosition(
     fileVersion: FileVersion,
     position: atom$Point,
     triggerCharacter: string,
     options: FormatOptions,
-  ): Promise<?Array<TextEdit>>,
+  ): Promise<?Array<TextEdit>>;
 
   getAdditionalLogFiles(
     deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>>,
+  ): Promise<Array<AdditionalLogFile>>;
 
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
+  ): Promise<?NuclideEvaluationExpression>;
 
-  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>,
+  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
 
   symbolSearch(
     query: string,
     directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>>,
+  ): Promise<?Array<SymbolResult>>;
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>;
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>,
+  isFileInProject(fileUri: NuclideUri): Promise<boolean>;
 
   getExpandedSelectionRange(
     fileVersion: FileVersion,
     currentSelection: atom$Range,
-  ): Promise<?atom$Range>,
+  ): Promise<?atom$Range>;
 
   getCollapsedSelectionRange(
     fileVersion: FileVersion,
     currentSelection: atom$Range,
     originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range>,
+  ): Promise<?atom$Range>;
 
-  dispose(): void,
+  dispose(): void;
 }
 
 export function findNearestCompilationDbDir(

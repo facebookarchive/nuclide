@@ -100,9 +100,9 @@ export function registerRecordProviderEpic(
     // TODO: Can this be delayed until sometime after registration?
     const statusActions =
       typeof recordProvider.observeStatus === 'function'
-        ? observableFromSubscribeFunction(
-            recordProvider.observeStatus,
-          ).map(status => Actions.updateStatus(recordProvider.id, status))
+        ? observableFromSubscribeFunction(recordProvider.observeStatus).map(
+            status => Actions.updateStatus(recordProvider.id, status),
+          )
         : Observable.empty();
 
     const unregisteredEvents = actions

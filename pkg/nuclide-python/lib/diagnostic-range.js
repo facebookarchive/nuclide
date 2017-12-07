@@ -170,7 +170,9 @@ export function getDiagnosticRange(
         break;
     }
   } catch (e) {
-    const diagnosticAsString = `${diagnostic.file}:${unsafeLine}:${column} - ${code}: ${message}`;
+    const diagnosticAsString = `${
+      diagnostic.file
+    }:${unsafeLine}:${column} - ${code}: ${message}`;
     logger.error(
       `Failed to find flake8 diagnostic range: ${diagnosticAsString}`,
       e,

@@ -306,7 +306,9 @@ function parseText(text: string): Array<string | React.Element<any>> {
 
 const DIFF_PATTERN = '\\b[dD][1-9][0-9]{5,}\\b';
 const TASK_PATTERN = '\\b[tT]\\d+\\b';
-const CLICKABLE_PATTERNS = `(${DIFF_PATTERN})|(${TASK_PATTERN})|${URL_REGEX.source}`;
+const CLICKABLE_PATTERNS = `(${DIFF_PATTERN})|(${TASK_PATTERN})|${
+  URL_REGEX.source
+}`;
 const CLICKABLE_RE = new RegExp(CLICKABLE_PATTERNS, 'g');
 
 function toString(value: mixed): string {

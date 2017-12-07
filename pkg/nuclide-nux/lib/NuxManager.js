@@ -117,7 +117,9 @@ export class NuxManager {
             arr.length, // Number of NuxViewModels in the NuxTourModel
           );
         } catch (err) {
-          const error = `NuxView #${index} for "${nuxTourModel.id}" failed to instantiate.`;
+          const error = `NuxView #${index} for "${
+            nuxTourModel.id
+          }" failed to instantiate.`;
           logger.error(`ERROR: ${error}`);
           this._track(
             nuxTourModel.id,

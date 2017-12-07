@@ -725,126 +725,127 @@ export default class QuickSelectionComponent extends React.Component<
     const isOmniSearchActive =
       this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
-    const services = Object.keys(
-      this.state.resultsByService,
-    ).map(serviceName => {
-      let numResultsForService = 0;
-      const directories = this.state.resultsByService[serviceName].results;
-      const serviceTitle = this.state.resultsByService[serviceName].title;
-      const totalResults = this.state.resultsByService[serviceName]
-        .totalResults;
-      const directoryNames = Object.keys(directories);
-      const directoriesForService = directoryNames.map(dirName => {
-        const resultsForDirectory = directories[dirName];
-        let message = null;
-        if (resultsForDirectory.loading) {
-          numQueriesOutstanding++;
-          if (!isOmniSearchActive) {
-            numTotalResultsRendered++;
+    const services = Object.keys(this.state.resultsByService).map(
+      serviceName => {
+        let numResultsForService = 0;
+        const directories = this.state.resultsByService[serviceName].results;
+        const serviceTitle = this.state.resultsByService[serviceName].title;
+        const totalResults = this.state.resultsByService[serviceName]
+          .totalResults;
+        const directoryNames = Object.keys(directories);
+        const directoriesForService = directoryNames.map(dirName => {
+          const resultsForDirectory = directories[dirName];
+          let message = null;
+          if (resultsForDirectory.loading) {
+            numQueriesOutstanding++;
+            if (!isOmniSearchActive) {
+              numTotalResultsRendered++;
+              message = (
+                <span>
+                  <span className="loading loading-spinner-tiny inline-block" />
+                  Loading...
+                </span>
+              );
+            }
+          } else if (resultsForDirectory.error && !isOmniSearchActive) {
             message = (
               <span>
-                <span className="loading loading-spinner-tiny inline-block" />
-                Loading...
+                <span className="icon icon-circle-slash" />
+                Error: <pre>{resultsForDirectory.error}</pre>
+              </span>
+            );
+          } else if (
+            resultsForDirectory.results.length === 0 &&
+            !isOmniSearchActive
+          ) {
+            message = (
+              <span>
+                <span className="icon icon-x" />
+                No results
               </span>
             );
           }
-        } else if (resultsForDirectory.error && !isOmniSearchActive) {
-          message = (
-            <span>
-              <span className="icon icon-circle-slash" />
-              Error: <pre>{resultsForDirectory.error}</pre>
-            </span>
+          const itemComponents = resultsForDirectory.results.map(
+            (item, itemIndex) => {
+              numResultsForService++;
+              numTotalResultsRendered++;
+              const isSelected =
+                serviceName === this.state.selectedService &&
+                dirName === this.state.selectedDirectory &&
+                itemIndex === this.state.selectedItemIndex;
+              return (
+                <li
+                  className={classnames({
+                    'quick-open-result-item': true,
+                    'list-item': true,
+                    selected: isSelected,
+                  })}
+                  key={serviceName + dirName + itemIndex}
+                  onMouseDown={this._select}
+                  onMouseEnter={this._setSelectedIndex.bind(
+                    this,
+                    serviceName,
+                    dirName,
+                    itemIndex,
+                    /* userInitiated */ true,
+                  )}>
+                  {this._componentForItem(item, serviceName, dirName)}
+                </li>
+              );
+            },
           );
-        } else if (
-          resultsForDirectory.results.length === 0 &&
-          !isOmniSearchActive
-        ) {
-          message = (
-            <span>
-              <span className="icon icon-x" />
-              No results
-            </span>
-          );
-        }
-        const itemComponents = resultsForDirectory.results.map(
-          (item, itemIndex) => {
-            numResultsForService++;
-            numTotalResultsRendered++;
-            const isSelected =
-              serviceName === this.state.selectedService &&
-              dirName === this.state.selectedDirectory &&
-              itemIndex === this.state.selectedItemIndex;
-            return (
-              <li
-                className={classnames({
-                  'quick-open-result-item': true,
-                  'list-item': true,
-                  selected: isSelected,
-                })}
-                key={serviceName + dirName + itemIndex}
-                onMouseDown={this._select}
-                onMouseEnter={this._setSelectedIndex.bind(
-                  this,
-                  serviceName,
-                  dirName,
-                  itemIndex,
-                  /* userInitiated */ true,
-                )}>
-                {this._componentForItem(item, serviceName, dirName)}
-              </li>
+          let directoryLabel = null;
+          // hide folders if only 1 level would be shown, or if no results were found
+          const showDirectories =
+            directoryNames.length > 1 &&
+            (!isOmniSearchActive || resultsForDirectory.results.length > 0);
+          if (showDirectories) {
+            directoryLabel = (
+              <div className="list-item">
+                <span className="icon icon-file-directory">
+                  {nuclideUri.nuclideUriToDisplayString(dirName)}
+                </span>
+              </div>
             );
-          },
-        );
-        let directoryLabel = null;
-        // hide folders if only 1 level would be shown, or if no results were found
-        const showDirectories =
-          directoryNames.length > 1 &&
-          (!isOmniSearchActive || resultsForDirectory.results.length > 0);
-        if (showDirectories) {
-          directoryLabel = (
-            <div className="list-item">
-              <span className="icon icon-file-directory">
-                {nuclideUri.nuclideUriToDisplayString(dirName)}
-              </span>
+          }
+          return (
+            <li
+              className={classnames({'list-nested-item': showDirectories})}
+              key={dirName}>
+              {directoryLabel}
+              {message}
+              <ul className="list-tree">{itemComponents}</ul>
+            </li>
+          );
+        });
+        let serviceLabel = null;
+        if (isOmniSearchActive && numResultsForService > 0) {
+          serviceLabel = (
+            <div
+              className="quick-open-provider-item list-item"
+              onClick={() =>
+                this.props.quickSelectionActions.changeActiveProvider(
+                  serviceName,
+                )
+              }>
+              <Icon icon="gear" children={serviceTitle} />
+              <Badge
+                size={BadgeSizes.small}
+                className="quick-open-provider-count-badge"
+                value={totalResults}
+              />
             </div>
           );
+          return (
+            <li className="list-nested-item" key={serviceName}>
+              {serviceLabel}
+              <ul className="list-tree">{directoriesForService}</ul>
+            </li>
+          );
         }
-        return (
-          <li
-            className={classnames({'list-nested-item': showDirectories})}
-            key={dirName}>
-            {directoryLabel}
-            {message}
-            <ul className="list-tree">{itemComponents}</ul>
-          </li>
-        );
-      });
-      let serviceLabel = null;
-      if (isOmniSearchActive && numResultsForService > 0) {
-        serviceLabel = (
-          <div
-            className="quick-open-provider-item list-item"
-            onClick={() =>
-              this.props.quickSelectionActions.changeActiveProvider(
-                serviceName,
-              )}>
-            <Icon icon="gear" children={serviceTitle} />
-            <Badge
-              size={BadgeSizes.small}
-              className="quick-open-provider-count-badge"
-              value={totalResults}
-            />
-          </div>
-        );
-        return (
-          <li className="list-nested-item" key={serviceName}>
-            {serviceLabel}
-            <ul className="list-tree">{directoriesForService}</ul>
-          </li>
-        );
-      }
-      return directoriesForService;
-    });
+        return directoriesForService;
+      },
+    );
     const hasSearchResult = numTotalResultsRendered > 0;
     let omniSearchStatus = null;
     if (isOmniSearchActive && numQueriesOutstanding > 0) {

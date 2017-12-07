@@ -54,9 +54,9 @@ export async function getStartCommandFromBuck(
 }
 
 /**
-  * Look in the nearest node_modules directory for react-native and extract the packager script if
-  * it's found.
-  */
+ * Look in the nearest node_modules directory for react-native and extract the packager script if
+ * it's found.
+ */
 async function getStartCommandFromNodeModules(
   projectRoot: NuclideUri,
 ): Promise<?MetroStartCommand> {
@@ -81,9 +81,9 @@ async function getStartCommandFromNodeModules(
 }
 
 /**
-  * See if this is React Native itself and, if so, return the command to run the packager. This is
-  * special cased so that the bundled examples work out of the box.
-  */
+ * See if this is React Native itself and, if so, return the command to run the packager. This is
+ * special cased so that the bundled examples work out of the box.
+ */
 async function getStartCommandFromReactNative(
   dir: NuclideUri,
 ): Promise<?MetroStartCommand> {

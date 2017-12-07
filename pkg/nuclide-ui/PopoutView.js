@@ -304,8 +304,9 @@ export class PopoutView extends React.Component<Props, State> {
     // Hook up the IPC channel listener for the renderer.
     invariant(this._popoutPane != null);
     this._popoutPane.webContents.executeJavaScript(`
-      require('electron').ipcRenderer.on('${this
-        ._popoutWindowId}', function(e, ipcArgs) {
+      require('electron').ipcRenderer.on('${
+        this._popoutWindowId
+      }', function(e, ipcArgs) {
         try {
           if (ipcArgs != null) {
             const funcName = ipcArgs[0];

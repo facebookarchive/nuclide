@@ -146,7 +146,9 @@ class Activation {
   consumeTestRunner(testRunner: TestRunner): ?Disposable {
     if (this._testRunners.has(testRunner)) {
       logger.info(
-        `Attempted to add test runner "${testRunner.label}" that was already added`,
+        `Attempted to add test runner "${
+          testRunner.label
+        }" that was already added`,
       );
       return;
     }

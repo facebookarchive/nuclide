@@ -203,7 +203,9 @@ export default class SearchResultManager {
             .isEligibleForDirectory(directory)
             .catch(err => {
               getLogger('nuclide-quick-open').warn(
-                `isEligibleForDirectory failed for directory provider ${provider.name}`,
+                `isEligibleForDirectory failed for directory provider ${
+                  provider.name
+                }`,
                 err,
               );
               return false;
@@ -416,7 +418,8 @@ export default class SearchResultManager {
       ).then(result => {
         track('quickopen-query-source-provider', {
           'quickopen-source-provider': globalProvider.name,
-          'quickopen-query-duration': (performance.now() - startTime
+          'quickopen-query-duration': (
+            performance.now() - startTime
           ).toString(),
           'quickopen-result-count': result.length.toString(),
         });

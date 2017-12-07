@@ -337,12 +337,11 @@ describe('HgRepositoryClient', () => {
 
     beforeEach(() => {
       spyOn(repo, '_getCurrentHeadId').andReturn(Observable.of('test'));
-      spyOn(
-        repo._service,
-        'fetchFileContentAtRevision',
-      ).andCallFake(filePath => {
-        return new Observable.of('test').publish();
-      });
+      spyOn(repo._service, 'fetchFileContentAtRevision').andCallFake(
+        filePath => {
+          return new Observable.of('test').publish();
+        },
+      );
       spyOn(repo, '_getFileDiffs').andCallFake(pathsToFetch => {
         const diffs = [];
         for (const filePath of pathsToFetch) {

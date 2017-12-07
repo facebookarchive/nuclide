@@ -59,24 +59,23 @@ export default class TabbableContainer extends React.Component<Props> {
     }
 
     this._disposables = new UniversalDisposable(
-      Observable.fromEvent(
-        rootNode,
-        'keydown',
-      ).subscribe((event: KeyboardEvent) => {
-        if (event.altKey || event.ctrlKey || event.metaKey) {
-          return;
-        }
-
-        if (event.key === 'Tab') {
-          if (event.shiftKey) {
-            focusPrevious();
-          } else {
-            focusNext();
+      Observable.fromEvent(rootNode, 'keydown').subscribe(
+        (event: KeyboardEvent) => {
+          if (event.altKey || event.ctrlKey || event.metaKey) {
+            return;
           }
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      }),
+
+          if (event.key === 'Tab') {
+            if (event.shiftKey) {
+              focusPrevious();
+            } else {
+              focusNext();
+            }
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        },
+      ),
     );
   }
 
@@ -201,16 +200,16 @@ function focusPrevious(): void {
 }
 
 /**
-* Traverses all focusable elements for the next element to focus.
-* curentElement is where the traversal starts.
-* reverse determines whether to traverse backwards or forwards.
-* updateNextCandidate is a method that determines if the element is the best
-*                     candidate to be focused next. A boolean is returned to
-*                     stop the traversal if that element is guaranteed to be
-*                     the next candidate.
-* container is where all of the focusable elements are searched.
-*           Default value is document.
-*/
+ * Traverses all focusable elements for the next element to focus.
+ * curentElement is where the traversal starts.
+ * reverse determines whether to traverse backwards or forwards.
+ * updateNextCandidate is a method that determines if the element is the best
+ *                     candidate to be focused next. A boolean is returned to
+ *                     stop the traversal if that element is guaranteed to be
+ *                     the next candidate.
+ * container is where all of the focusable elements are searched.
+ *           Default value is document.
+ */
 function eachTabIndexedElement(
   currentElement: Element,
   reverse: boolean,
@@ -254,8 +253,8 @@ function getFocusedElement(): ?Element {
 }
 
 /**
-* Finds a parent of currentElement that satisfies the condition.
-*/
+ * Finds a parent of currentElement that satisfies the condition.
+ */
 function findParentElement(
   currentElement: ?Element,
   condition: (element: Element) => boolean,

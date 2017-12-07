@@ -14,7 +14,9 @@ import invariant from 'assert';
 import {parse, quote} from './_shell-quote';
 
 export function stringifyError(error: Error): string {
-  return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
+  return `name: ${error.name}, message: ${error.message}, stack: ${
+    error.stack
+  }.`;
 }
 
 // As of Flow v0.28, Flow does not alllow implicit string coercion of null or undefined. Use this to

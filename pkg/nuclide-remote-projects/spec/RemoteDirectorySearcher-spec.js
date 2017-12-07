@@ -63,8 +63,10 @@ describe('RemoteDirectorySearcher.processPaths', () => {
       path => new RemoteDirectory(connection, path),
     );
     searcher.search(directories, /./, {inclusions: [WORKING_SET_PATH_MARKER]});
-    expect(
-      serviceSpy.grepSearch,
-    ).toHaveBeenCalledWith('nuclide://host/a', /./, ['b']);
+    expect(serviceSpy.grepSearch).toHaveBeenCalledWith(
+      'nuclide://host/a',
+      /./,
+      ['b'],
+    );
   });
 });

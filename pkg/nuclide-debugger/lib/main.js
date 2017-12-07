@@ -1005,8 +1005,9 @@ class Activation {
         const path = nuclideUri.basename(
           item.location.path.replace(/^[a-zA-Z]+:\/\//, ''),
         );
-        callstackText += `${i}\t${item.name}\t${path}:${item.location
-          .line}${os.EOL}`;
+        callstackText += `${i}\t${item.name}\t${path}:${item.location.line}${
+          os.EOL
+        }`;
       });
 
       atom.clipboard.write(callstackText.trim());

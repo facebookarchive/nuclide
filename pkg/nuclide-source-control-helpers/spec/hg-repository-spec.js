@@ -21,13 +21,13 @@ describe('findHgRepository', () => {
         'hg-repo',
         new Map([['a/b/.hg/fakefile', ''], ['a/b/c/d/e', '']]),
       );
-      expect(
-        findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d')),
-      ).toEqual({
-        repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-        originURL: null,
-        workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-      });
+      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
+        {
+          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+          originURL: null,
+          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+        },
+      );
     });
   });
 
@@ -40,13 +40,13 @@ describe('findHgRepository', () => {
           ['a/b/c/d/e', ''],
         ]),
       );
-      expect(
-        findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d')),
-      ).toEqual({
-        repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-        originURL: 'foo',
-        workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-      });
+      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
+        {
+          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+          originURL: 'foo',
+          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+        },
+      );
     });
   });
 
@@ -56,13 +56,13 @@ describe('findHgRepository', () => {
         'hg-repo',
         new Map([['a/b/.hg/hgrc', ''], ['a/.hg/hgrc', ''], ['a/b/c/d/e', '']]),
       );
-      expect(
-        findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d')),
-      ).toEqual({
-        repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
-        originURL: null,
-        workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
-      });
+      expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toEqual(
+        {
+          repoPath: nuclideUri.join(fixturePath, 'a/b/.hg'),
+          originURL: null,
+          workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
+        },
+      );
     });
   });
 

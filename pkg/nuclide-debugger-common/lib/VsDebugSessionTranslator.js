@@ -364,20 +364,20 @@ export default class VsDebugSessionTranslator {
           result,
         };
       }),
-      this._commandsOfType(
-        'Debugger.evaluateOnCallFrame',
-      ).flatMap(async command => {
-        invariant(command.method === 'Debugger.evaluateOnCallFrame');
-        const {callFrameId, expression} = command.params;
-        const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
-          expression,
-          Number(callFrameId),
-        );
-        return {
-          id: command.id,
-          result,
-        };
-      }),
+      this._commandsOfType('Debugger.evaluateOnCallFrame').flatMap(
+        async command => {
+          invariant(command.method === 'Debugger.evaluateOnCallFrame');
+          const {callFrameId, expression} = command.params;
+          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
+            expression,
+            Number(callFrameId),
+          );
+          return {
+            id: command.id,
+            result,
+          };
+        },
+      ),
       this._commandsOfType('Debugger.setVariableValue').flatMap(
         catchCommandError(async command => {
           invariant(command.method === 'Debugger.setVariableValue');
@@ -517,57 +517,59 @@ export default class VsDebugSessionTranslator {
     }
 
     const responseGroups = await Promise.all(
-      Array.from(
-        breakpointCommandsByUrl,
-      ).map(async ([url, breakpointCommands]) => {
-        const path = uriToPath(url);
+      Array.from(breakpointCommandsByUrl).map(
+        async ([url, breakpointCommands]) => {
+          const path = uriToPath(url);
 
-        const existingTranslatorBreakpoints = this._getBreakpointsForFilePath(
-          path,
-        ).map(bp => ({...bp}));
+          const existingTranslatorBreakpoints = this._getBreakpointsForFilePath(
+            path,
+          ).map(bp => ({...bp}));
 
-        const breakOnLineNumbers = new Set();
+          const breakOnLineNumbers = new Set();
 
-        const translatorBreakpoins = breakpointCommands
-          .map(c => {
-            const newTranslatorBp = {
-              breakpointId: this._nextBreakpointId(),
-              path,
-              lineNumber: c.params.lineNumber + 1,
-              condition: c.params.condition || '',
-              resolved: false,
-              hitCount: 0,
-            };
-            breakOnLineNumbers.add(newTranslatorBp.lineNumber);
-            this._breakpointsById.set(
-              newTranslatorBp.breakpointId,
-              newTranslatorBp,
+          const translatorBreakpoins = breakpointCommands
+            .map(c => {
+              const newTranslatorBp = {
+                breakpointId: this._nextBreakpointId(),
+                path,
+                lineNumber: c.params.lineNumber + 1,
+                condition: c.params.condition || '',
+                resolved: false,
+                hitCount: 0,
+              };
+              breakOnLineNumbers.add(newTranslatorBp.lineNumber);
+              this._breakpointsById.set(
+                newTranslatorBp.breakpointId,
+                newTranslatorBp,
+              );
+              return newTranslatorBp;
+            })
+            .concat(
+              existingTranslatorBreakpoints.filter(
+                tBp => !breakOnLineNumbers.has(tBp.lineNumber),
+              ),
             );
-            return newTranslatorBp;
-          })
-          .concat(
-            existingTranslatorBreakpoints.filter(
-              tBp => !breakOnLineNumbers.has(tBp.lineNumber),
-            ),
-          );
 
-        await this._files.registerFile(url);
-        await this._syncBreakpointsForFilePath(path, translatorBreakpoins);
+          await this._files.registerFile(url);
+          await this._syncBreakpointsForFilePath(path, translatorBreakpoins);
 
-        return breakpointCommands.map((command, i) => {
-          const {breakpointId, lineNumber, resolved} = translatorBreakpoins[i];
+          return breakpointCommands.map((command, i) => {
+            const {breakpointId, lineNumber, resolved} = translatorBreakpoins[
+              i
+            ];
 
-          const result: NuclideDebugProtocol.SetBreakpointByUrlResponse = {
-            breakpointId,
-            locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
-            resolved,
-          };
-          return {
-            id: command.id,
-            result,
-          };
-        });
-      }),
+            const result: NuclideDebugProtocol.SetBreakpointByUrlResponse = {
+              breakpointId,
+              locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
+              resolved,
+            };
+            return {
+              id: command.id,
+              result,
+            };
+          });
+        },
+      ),
     );
     return arrayFlatten(responseGroups);
   }
@@ -895,36 +897,36 @@ export default class VsDebugSessionTranslator {
   }
 
   _getThreadsUpdatedEvent(): NuclideDebugProtocol.ThreadsUpdatedEvent {
-    const threads = Array.from(
-      this._threadsById.entries(),
-    ).map(([id, {state, callFrames, stopReason}]) => {
-      const topCallFrame = callFrames == null ? null : callFrames[0];
-      const threadName = `Thread ${id}`;
+    const threads = Array.from(this._threadsById.entries()).map(
+      ([id, {state, callFrames, stopReason}]) => {
+        const topCallFrame = callFrames == null ? null : callFrames[0];
+        const threadName = `Thread ${id}`;
 
-      let address;
-      let location;
-      let hasSource;
-      if (topCallFrame == null) {
-        address = '';
-        location = nuclideDebuggerLocation('N/A', 0, 0);
-        hasSource = false;
-      } else {
-        address = topCallFrame.functionName;
-        location = {...topCallFrame.location};
-        hasSource = topCallFrame.hasSource === true;
-      }
+        let address;
+        let location;
+        let hasSource;
+        if (topCallFrame == null) {
+          address = '';
+          location = nuclideDebuggerLocation('N/A', 0, 0);
+          hasSource = false;
+        } else {
+          address = topCallFrame.functionName;
+          location = {...topCallFrame.location};
+          hasSource = topCallFrame.hasSource === true;
+        }
 
-      return {
-        id,
-        name: threadName,
-        description: threadName,
-        address,
-        location,
-        // flowlint-next-line sketchy-null-string:off
-        stopReason: stopReason || 'running',
-        hasSource,
-      };
-    });
+        return {
+          id,
+          name: threadName,
+          description: threadName,
+          address,
+          location,
+          // flowlint-next-line sketchy-null-string:off
+          stopReason: stopReason || 'running',
+          hasSource,
+        };
+      },
+    );
 
     return {
       owningProcessId: VSP_PROCESS_ID,
@@ -977,9 +979,9 @@ export default class VsDebugSessionTranslator {
             frame.column - 1,
           ),
           hasSource: frame.source != null,
-          scopeChain: await this._getScopesForFrame(
-            frame.id,
-          ).catch(error => []),
+          scopeChain: await this._getScopesForFrame(frame.id).catch(
+            error => [],
+          ),
           this: (undefined: any),
         };
       }),

@@ -41,8 +41,7 @@ describe('CounterService', () => {
       invariant(service);
 
       let watchedCounters = 0;
-      service.Counter
-        .watchNewCounters()
+      service.Counter.watchNewCounters()
         .refCount()
         .subscribe(async counter => {
           await counter.getCount();

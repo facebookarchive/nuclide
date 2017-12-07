@@ -193,20 +193,20 @@ export interface RemotePackage {
     args: Array<string>,
     options: ExecOptions,
     ssh: SshClient,
-  ): Promise<{stdout: string, code: number | null}>,
+  ): Promise<{stdout: string, code: number | null}>;
 
   /**
    * Determines the installation status of the package. If unmanaged, this always returns 'okay'.
    * If managed, then this will check the manifest to verify that it is the correct version and not
    * corrupt. Refer to `Manifest` for what kinds of corruption can be detected.
    */
-  verifyInstallation(ssh: SshClient): Promise<PackageInstallStatus>,
+  verifyInstallation(ssh: SshClient): Promise<PackageInstallStatus>;
 
   /** Throws if installation is not supported. */
-  install(ssh: SshClient, options?: InstallOptions): Promise<void>,
+  install(ssh: SshClient, options?: InstallOptions): Promise<void>;
 
   /** Throws if installation is not supported. */
-  getInstallationPath(): string,
+  getInstallationPath(): string;
 }
 
 /**

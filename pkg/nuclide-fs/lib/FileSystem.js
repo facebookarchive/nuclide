@@ -38,32 +38,32 @@ export type WriteOptions = {
 };
 
 export interface FileSystem {
-  exists(path: NuclideUri): Promise<boolean>,
-  findNearestFile(name: string, directory: NuclideUri): Promise<?NuclideUri>,
-  stat(path: NuclideUri): Promise<fs.Stats>,
-  lstat(path: NuclideUri): Promise<fs.Stats>,
-  mkdir(path: NuclideUri): Promise<void>,
-  mkdirp(path: NuclideUri): Promise<boolean>,
-  chmod(path: NuclideUri, mode: number): Promise<void>,
-  chown(path: NuclideUri, uid: number, gid: number): Promise<void>,
-  newFile(path: NuclideUri): Promise<boolean>,
-  readdir(path: NuclideUri): Promise<Array<DirectoryEntry>>,
-  realpath(path: NuclideUri): Promise<NuclideUri>,
-  move(from: NuclideUri, to: NuclideUri): Promise<void>,
-  copy(from: NuclideUri, to: NuclideUri): Promise<void>,
-  rimraf(path: NuclideUri): Promise<void>,
-  unlink(path: NuclideUri): Promise<void>,
-  readFile(path: NuclideUri, options?: ReadOptions): Promise<Buffer>,
+  exists(path: NuclideUri): Promise<boolean>;
+  findNearestFile(name: string, directory: NuclideUri): Promise<?NuclideUri>;
+  stat(path: NuclideUri): Promise<fs.Stats>;
+  lstat(path: NuclideUri): Promise<fs.Stats>;
+  mkdir(path: NuclideUri): Promise<void>;
+  mkdirp(path: NuclideUri): Promise<boolean>;
+  chmod(path: NuclideUri, mode: number): Promise<void>;
+  chown(path: NuclideUri, uid: number, gid: number): Promise<void>;
+  newFile(path: NuclideUri): Promise<boolean>;
+  readdir(path: NuclideUri): Promise<Array<DirectoryEntry>>;
+  realpath(path: NuclideUri): Promise<NuclideUri>;
+  move(from: NuclideUri, to: NuclideUri): Promise<void>;
+  copy(from: NuclideUri, to: NuclideUri): Promise<void>;
+  rimraf(path: NuclideUri): Promise<void>;
+  unlink(path: NuclideUri): Promise<void>;
+  readFile(path: NuclideUri, options?: ReadOptions): Promise<Buffer>;
   createReadStream(
     path: NuclideUri,
     options?: ReadOptions,
-  ): ConnectableObservable<Buffer>,
+  ): ConnectableObservable<Buffer>;
   writeFile(
     path: NuclideUri,
     data: string,
     options?: WriteOptions,
-  ): Promise<void>,
-  isNfs(path: NuclideUri): Promise<boolean>,
-  isFuse(path: string): Promise<boolean>,
-  openArchive(path: NuclideUri): Promise<FileSystem>,
+  ): Promise<void>;
+  isNfs(path: NuclideUri): Promise<boolean>;
+  isFuse(path: string): Promise<boolean>;
+  openArchive(path: NuclideUri): Promise<FileSystem>;
 }

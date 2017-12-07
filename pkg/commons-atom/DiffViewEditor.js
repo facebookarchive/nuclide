@@ -174,7 +174,7 @@ export default class DiffViewEditor {
   /**
    * @param lineNumber A buffer line number to be highlighted.
    * @param type The type of highlight to be applied to the line.
-  *    Could be a value of: ['insert', 'delete'].
+   *    Could be a value of: ['insert', 'delete'].
    */
   _createLineMarker(lineNumber: number, type: string): atom$Marker {
     const range = new Range([lineNumber, 0], [lineNumber + 1, 0]);

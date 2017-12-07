@@ -37,59 +37,59 @@ export type DevicePanelServiceApi = {
 };
 
 export interface DeviceListProvider {
-  observe(host: NuclideUri): Observable<Expected<Device[]>>,
-  getType(): string,
+  observe(host: NuclideUri): Observable<Expected<Device[]>>;
+  getType(): string;
 }
 
 export interface DeviceInfoProvider {
   fetch(
     host: NuclideUri,
     device: DeviceIdType,
-  ): Observable<Map<string, string>>,
-  getType(): string,
-  getTitle(): string,
-  getPriority(): number,
-  isSupported(host: NuclideUri): Observable<boolean>,
+  ): Observable<Map<string, string>>;
+  getType(): string;
+  getTitle(): string;
+  getPriority(): number;
+  isSupported(host: NuclideUri): Observable<boolean>;
 }
 
 export interface DeviceProcessesProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<Process[]>,
-  getType(): string,
+  observe(host: NuclideUri, device: DeviceIdType): Observable<Process[]>;
+  getType(): string;
 }
 
 export interface DeviceTaskProvider {
-  getTask(host: NuclideUri, device: DeviceIdType): Observable<TaskEvent>,
-  getName(): string,
-  getType(): string,
-  isSupported(host: NuclideUri): Observable<boolean>,
+  getTask(host: NuclideUri, device: DeviceIdType): Observable<TaskEvent>;
+  getName(): string;
+  getType(): string;
+  isSupported(host: NuclideUri): Observable<boolean>;
 }
 
 export interface DeviceTypeTaskProvider {
-  getTask(host: NuclideUri): Observable<TaskEvent>,
-  getName(): string,
-  getType(): string,
+  getTask(host: NuclideUri): Observable<TaskEvent>;
+  getName(): string;
+  getType(): string;
 }
 
 export interface DeviceProcessTaskProvider {
-  run(host: NuclideUri, device: DeviceIdType, proc: Process): Promise<void>,
-  getTaskType(): ProcessTaskType,
-  getType(): string,
+  run(host: NuclideUri, device: DeviceIdType, proc: Process): Promise<void>;
+  getTaskType(): ProcessTaskType;
+  getType(): string;
   getSupportedPIDs(
     host: NuclideUri,
     device: DeviceIdType,
     procs: Process[],
-  ): Observable<Set<number>>,
-  getName(): string,
+  ): Observable<Set<number>>;
+  getName(): string;
 }
 
 export interface DeviceAppInfoProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<string>,
-  getName(): string,
-  getType(): string,
-  getProcessName(): string,
-  getAppName(): string,
-  canUpdate(): boolean,
-  update(value: string): Promise<void>,
+  observe(host: NuclideUri, device: DeviceIdType): Observable<string>;
+  getName(): string;
+  getType(): string;
+  getProcessName(): string;
+  getAppName(): string;
+  canUpdate(): boolean;
+  update(value: string): Promise<void>;
 }
 
 export type DeviceAction = {
@@ -98,7 +98,7 @@ export type DeviceAction = {
 };
 
 export interface DeviceActionProvider {
-  getActionsForDevice(device: Device): Array<DeviceAction>,
+  getActionsForDevice(device: Device): Array<DeviceAction>;
 }
 
 //

@@ -77,7 +77,9 @@ export default class V8Protocol {
   sendResponse(response: DebugProtocol.Response): void {
     if (response.seq > 0) {
       this._logger.error(
-        `attempt to send more than one response for command ${response.command}`,
+        `attempt to send more than one response for command ${
+          response.command
+        }`,
       );
     } else {
       this._sendMessage('response', response);

@@ -214,11 +214,14 @@ export class NuxView {
     // In this case we show a hint to the user.
     const nextLinkButton = `\
       <span
-        class="nuclide-nux-link ${nextLinkStyle} nuclide-nux-next-link-${this
-      ._index}"
-        ${nextLinkStyle === LINK_DISABLED
-          ? 'title="Interact with the indicated UI element to proceed."'
-          : ''}>
+        class="nuclide-nux-link ${nextLinkStyle} nuclide-nux-next-link-${
+      this._index
+    }"
+        ${
+          nextLinkStyle === LINK_DISABLED
+            ? 'title="Interact with the indicated UI element to proceed."'
+            : ''
+        }>
         Continue
       </span>
     `;
@@ -234,8 +237,9 @@ export class NuxView {
             ${this._content}
         </div>
         <div class="nuclide-nux-navigation">
-          <span class="nuclide-nux-link ${LINK_ENABLED} nuclide-nux-dismiss-link-${this
-      ._index}">
+          <span class="nuclide-nux-link ${LINK_ENABLED} nuclide-nux-dismiss-link-${
+      this._index
+    }">
             ${!this._finalNuxInTour ? 'Dismiss' : 'Complete'} Tour
           </span>
           ${!this._finalNuxInTour ? nextLinkButton : ''}

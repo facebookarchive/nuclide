@@ -125,8 +125,9 @@ export class Connection {
           this._stopReason = exception == null ? BREAKPOINT : EXCEPTION;
           if (this._stopReason === EXCEPTION) {
             this._onUserOutputCallback(
-              `Request ${this
-                ._id} has been paused to do an exception: ${exception}`,
+              `Request ${
+                this._id
+              } has been paused to do an exception: ${exception}`,
               'info',
             );
           }

@@ -55,7 +55,8 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component<
                 Xlinker,
                 Xswiftc,
                 buildPath,
-              )}
+              )
+            }
           />
         ) : null}
       </div>

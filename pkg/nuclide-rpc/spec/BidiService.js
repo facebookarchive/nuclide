@@ -10,8 +10,8 @@
  */
 
 interface I {
-  m(arg: string): Promise<string>,
-  dispose(): void,
+  m(arg: string): Promise<string>;
+  dispose(): void;
 }
 
 export async function f(s: string, i: I): Promise<string> {

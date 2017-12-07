@@ -687,9 +687,9 @@ export class TypeRegistry {
             } else if (!prop.optional) {
               // If the property is optional, it's okay for it to be missing.
               throw new Error(
-                `Source object: ${JSON.stringify(
-                  obj,
-                )} is missing property ${prop.name}.`,
+                `Source object: ${JSON.stringify(obj)} is missing property ${
+                  prop.name
+                }.`,
               );
             }
           }),
@@ -738,9 +738,9 @@ export class TypeRegistry {
               // If the property is optional, it's okay for it to be missing.
               // JSON omits undefined values, so they can also be missing.
               throw new Error(
-                `Source object: ${JSON.stringify(
-                  obj,
-                )} is missing property ${prop.name}.`,
+                `Source object: ${JSON.stringify(obj)} is missing property ${
+                  prop.name
+                }.`,
               );
             }
           }),

@@ -36,7 +36,9 @@ export default class VariablesCommand implements Command {
       if (scope.expensive && vars == null) {
         this._console.outputLine();
         this._console.outputLine(
-          `Variables in scope '${scope.scopeName}' have been elided as they are expensive`,
+          `Variables in scope '${
+            scope.scopeName
+          }' have been elided as they are expensive`,
         );
 
         this._console.outputLine(

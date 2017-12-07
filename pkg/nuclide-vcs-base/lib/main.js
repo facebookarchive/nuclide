@@ -235,9 +235,9 @@ export function confirmAndRevertPath(
   toRevision?: ?string,
 ): void {
   const result = atom.confirm({
-    message: `Are you sure you want to revert${path == null
-      ? ''
-      : ` "${path}"`}?`,
+    message: `Are you sure you want to revert${
+      path == null ? '' : ` "${path}"`
+    }?`,
     buttons: ['Revert', 'Cancel'],
   });
   invariant(result === 0 || result === 1);
@@ -400,13 +400,12 @@ export function getMultiRootFileChanges(
     roots = rootPaths.map(root => nuclideUri.ensureTrailingSeparator(root));
   }
 
-  const sortedFilePaths = Array.from(
-    fileChanges.entries(),
-  ).sort(([filePath1], [filePath2]) =>
-    nuclideUri
-      .basename(filePath1)
-      .toLowerCase()
-      .localeCompare(nuclideUri.basename(filePath2).toLowerCase()),
+  const sortedFilePaths = Array.from(fileChanges.entries()).sort(
+    ([filePath1], [filePath2]) =>
+      nuclideUri
+        .basename(filePath1)
+        .toLowerCase()
+        .localeCompare(nuclideUri.basename(filePath2).toLowerCase()),
   );
 
   const changedRoots = new Map(

@@ -65,11 +65,9 @@ export class DebugBridge {
         config.ports.length > 0
           ? Observable.concat(
               ...config.ports.map(port =>
-                runCommand(config.path, [
-                  '-P',
-                  String(port),
-                  'devices',
-                ]).map(stdout => this._parseDevicesCommandOutput(stdout, port)),
+                runCommand(config.path, ['-P', String(port), 'devices']).map(
+                  stdout => this._parseDevicesCommandOutput(stdout, port),
+                ),
               ),
             )
           : Observable.concat(

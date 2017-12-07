@@ -258,17 +258,17 @@ class Activation {
       observableFromSubscribeFunction(
         atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
       ),
-      observableFromSubscribeFunction(
-        observeTextEditors,
-      ).flatMap(textEditor => {
-        return observableFromSubscribeFunction(
-          textEditor.onDidChangePath.bind(textEditor),
-        ).takeUntil(
-          observableFromSubscribeFunction(
-            textEditor.onDidDestroy.bind(textEditor),
-          ),
-        );
-      }),
+      observableFromSubscribeFunction(observeTextEditors).flatMap(
+        textEditor => {
+          return observableFromSubscribeFunction(
+            textEditor.onDidChangePath.bind(textEditor),
+          ).takeUntil(
+            observableFromSubscribeFunction(
+              textEditor.onDidDestroy.bind(textEditor),
+            ),
+          );
+        },
+      ),
     ).let(fastDebounce(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS));
 
     this._disposables.add(

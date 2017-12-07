@@ -88,16 +88,16 @@ export function observeTextEditorsPositions(
   editorDebounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
   positionDebounceInterval: number = DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS,
 ): Observable<?EditorPosition> {
-  return observeActiveEditorsDebounced(
-    editorDebounceInterval,
-  ).switchMap(editor => {
-    return editor == null
-      ? Observable.of(null)
-      : getCursorPositions(editor)
-          .let(fastDebounce(positionDebounceInterval))
-          .map(position => {
-            invariant(editor != null);
-            return {editor, position};
-          });
-  });
+  return observeActiveEditorsDebounced(editorDebounceInterval).switchMap(
+    editor => {
+      return editor == null
+        ? Observable.of(null)
+        : getCursorPositions(editor)
+            .let(fastDebounce(positionDebounceInterval))
+            .map(position => {
+              invariant(editor != null);
+              return {editor, position};
+            });
+    },
+  );
 }

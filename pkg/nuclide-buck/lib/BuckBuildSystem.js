@@ -194,8 +194,8 @@ export class BuckBuildSystem {
   }
 
   /**
-     * Processes side diagnostics, converts relevant events to TaskEvents.
-     */
+   * Processes side diagnostics, converts relevant events to TaskEvents.
+   */
   _consumeEventStream(
     events: Observable<BuckEvent>,
     buckRoot: NuclideUri,

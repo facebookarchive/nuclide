@@ -113,7 +113,8 @@ export class BreakpointConfigComponent extends React.Component<
                 this.props.actions.updateBreakpointEnabled(
                   this.state.breakpoint.id,
                   isChecked,
-                )}
+                )
+              }
               checked={this.state.breakpoint.enabled}
               label="Enable breakpoint"
             />

@@ -233,16 +233,16 @@ export class BreakpointStore {
     }
     this._pauseAllExceptionBreakpointId = chromeId;
 
-    const breakpointPromises = Array.from(
-      this._connections.entries(),
-    ).map(([connection, map]) => {
-      return doWhileConnectionOpen(connection, async () => {
-        const xdebugBreakpointId = await connection.setExceptionBreakpoint(
-          PAUSE_ALL_EXCEPTION_NAME,
-        );
-        map.set(chromeId, xdebugBreakpointId);
-      });
-    });
+    const breakpointPromises = Array.from(this._connections.entries()).map(
+      ([connection, map]) => {
+        return doWhileConnectionOpen(connection, async () => {
+          const xdebugBreakpointId = await connection.setExceptionBreakpoint(
+            PAUSE_ALL_EXCEPTION_NAME,
+          );
+          map.set(chromeId, xdebugBreakpointId);
+        });
+      },
+    );
     await Promise.all(breakpointPromises);
   }
 
@@ -317,19 +317,19 @@ export class BreakpointStore {
 
   async addConnection(connection: Connection): Promise<void> {
     const map: Map<BreakpointId, XDebugBreakpointId> = new Map();
-    const breakpointPromises = Array.from(
-      this._breakpoints.values(),
-    ).map(async breakpoint => {
-      const {chromeId, breakpointInfo, connectionId} = breakpoint;
-      if (connectionId != null) {
-        // That breakpoint is set for a sepecific connection (doesn't apply to all connections).
-        return;
-      }
-      const xdebugBreakpointId = await connection.setFileLineBreakpoint(
-        breakpointInfo,
-      );
-      map.set(chromeId, xdebugBreakpointId);
-    });
+    const breakpointPromises = Array.from(this._breakpoints.values()).map(
+      async breakpoint => {
+        const {chromeId, breakpointInfo, connectionId} = breakpoint;
+        if (connectionId != null) {
+          // That breakpoint is set for a sepecific connection (doesn't apply to all connections).
+          return;
+        }
+        const xdebugBreakpointId = await connection.setFileLineBreakpoint(
+          breakpointInfo,
+        );
+        map.set(chromeId, xdebugBreakpointId);
+      },
+    );
     this._connections.set(connection, map);
     await Promise.all(breakpointPromises);
     // flowlint-next-line sketchy-null-string:off

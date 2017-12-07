@@ -109,10 +109,9 @@ export default class ExpressionEvaluationManager {
   ): void {
     function callback(error: Error, response: EvaluateOnCallFrameResponse) {
       if (error != null) {
-        const errorMsg = `evaluateOnCallFrame failed with ${typeof error ===
-        'string'
-          ? error
-          : JSON.stringify(error)}`;
+        const errorMsg = `evaluateOnCallFrame failed with ${
+          typeof error === 'string' ? error : JSON.stringify(error)
+        }`;
         if (objectGroup === 'console') {
           reportErrorFromConsole(errorMsg);
         } else {

@@ -58,10 +58,10 @@ export type LocalFileEvent =
   | FileSaveEvent;
 
 export interface FileNotifier {
-  onFileEvent(event: FileEvent): Promise<void>,
-  onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void>,
-  getTotalBufferSize(): Promise<number>,
-  dispose(): void,
+  onFileEvent(event: FileEvent): Promise<void>;
+  onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void>;
+  getTotalBufferSize(): Promise<number>;
+  dispose(): void;
 }
 
 export type FileVersion = {

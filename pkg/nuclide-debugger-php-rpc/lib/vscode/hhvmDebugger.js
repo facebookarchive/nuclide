@@ -33,9 +33,9 @@ import nuclideLogger from '../utils';
  */
 export interface LaunchRequestArguments
   extends DebugProtocol.LaunchRequestArguments {
-  config: PhpDebuggerSessionConfig,
+  config: PhpDebuggerSessionConfig;
   /** enable logging the Debug Adapter Protocol */
-  trace?: boolean,
+  trace?: boolean;
 }
 
 class HhvmDebugSession extends LoggingDebugSession {

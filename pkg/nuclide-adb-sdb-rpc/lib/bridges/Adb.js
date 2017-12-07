@@ -106,20 +106,16 @@ export class Adb extends DebugBridge {
   }
 
   getWifiIp(): Observable<string> {
-    return this.runShortCommand(
-      'shell',
-      'ip',
-      'addr',
-      'show',
-      'wlan0',
-    ).map(lines => {
-      const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
-      if (line == null) {
-        return '';
-      }
-      const rawIp = line.trim().split(/\s+/)[1];
-      return rawIp.substring(0, rawIp.indexOf('/'));
-    });
+    return this.runShortCommand('shell', 'ip', 'addr', 'show', 'wlan0').map(
+      lines => {
+        const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
+        if (line == null) {
+          return '';
+        }
+        const rawIp = line.trim().split(/\s+/)[1];
+        return rawIp.substring(0, rawIp.indexOf('/'));
+      },
+    );
   }
 
   // In some android devices, we have to kill the package, not the process.

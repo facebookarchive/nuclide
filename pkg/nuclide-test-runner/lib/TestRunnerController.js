@@ -103,8 +103,9 @@ export class TestRunnerController {
     const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
     if (!selectedTestRunner) {
       logger.warn(
-        `No test runner selected. Active test runners: ${this._testRunners
-          .size}`,
+        `No test runner selected. Active test runners: ${
+          this._testRunners.size
+        }`,
       );
       return;
     }
@@ -267,7 +268,9 @@ export class TestRunnerController {
             }
             if (error.code === 'ENOENT') {
               this._appendToBuffer(
-                `${Ansi.YELLOW}Command '${error.path}' does not exist${Ansi.RESET}`,
+                `${Ansi.YELLOW}Command '${error.path}' does not exist${
+                  Ansi.RESET
+                }`,
               );
               this._appendToBuffer(
                 `${Ansi.YELLOW}Are you trying to run remotely?${Ansi.RESET}`,

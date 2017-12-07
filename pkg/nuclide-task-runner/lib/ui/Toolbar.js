@@ -138,7 +138,8 @@ export class Toolbar extends React.Component<Props> {
             task.disabled || this.props.runningTaskIsCancelable === false
           }
           onClick={() =>
-            this.props.runTask({...task, taskRunner: activeTaskRunner})}
+            this.props.runTask({...task, taskRunner: activeTaskRunner})
+          }
         />
       );
     });

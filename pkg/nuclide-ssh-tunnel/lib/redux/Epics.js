@@ -42,14 +42,16 @@ export function openTunnelEpic(
           family: to.family || 6,
         },
       };
-      const friendlyString = `${tunnelDescription(
-        tunnelDescriptor,
-      )} (${tunnel.description})`;
+      const friendlyString = `${tunnelDescription(tunnelDescriptor)} (${
+        tunnel.description
+      })`;
 
       if (!await validateTunnel(tunnel)) {
         onOpen(
           new Error(
-            `Trying to open a tunnel on a non-whitelisted port: ${to.port}\n\n` +
+            `Trying to open a tunnel on a non-whitelisted port: ${
+              to.port
+            }\n\n` +
               'Contact the Nuclide team if you would like this port to be available.',
           ),
         );

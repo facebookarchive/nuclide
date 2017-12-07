@@ -26,8 +26,8 @@ import {logger} from './hack-config';
 let hhPromiseQueue: ?PromiseQueue = null;
 
 /**
-  * Executes hh_client with proper arguments returning the result string or json object.
-  */
+ * Executes hh_client with proper arguments returning the result string or json object.
+ */
 export async function callHHClient(
   args: Array<any>,
   errorStream: boolean,

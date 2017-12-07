@@ -507,8 +507,9 @@ export default class FileTreeController {
     } else {
       let message;
       if (rootPaths.size === 1) {
-        message = `The root directory '${rootPaths.first()
-          .nodeName}' can't be removed.`;
+        message = `The root directory '${
+          rootPaths.first().nodeName
+        }' can't be removed.`;
       } else {
         const rootPathNames = rootPaths
           .map(node => `'${node.nodeName}'`)

@@ -135,14 +135,12 @@ export class DebuggerHandler {
 
     const toRemoveBpDesciptiors: Array<VsBreakpointpointDescriptor> = [];
     const toRemoveBpIds = new Set();
-    setDifference(
-      existingBsSet,
-      newBpSources,
-      v => v.line,
-    ).forEach((bp: any) => {
-      toRemoveBpDesciptiors.push(bp);
-      toRemoveBpIds.add(bp.id);
-    });
+    setDifference(existingBsSet, newBpSources, v => v.line).forEach(
+      (bp: any) => {
+        toRemoveBpDesciptiors.push(bp);
+        toRemoveBpIds.add(bp.id);
+      },
+    );
 
     const newBreakpoints = existingBreakpoints
       .filter(bp => !toRemoveBpIds.has(bp.id))

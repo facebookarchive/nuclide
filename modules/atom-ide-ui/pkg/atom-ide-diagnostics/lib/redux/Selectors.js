@@ -25,9 +25,9 @@ const getMessagesState = state => state.messages;
 const getProviders = state => state.providers;
 
 /**
-  * Gets the current diagnostic messages for the file.
-  * Prefer to get updates via ::onFileMessagesDidUpdate.
-  */
+ * Gets the current diagnostic messages for the file.
+ * Prefer to get updates via ::onFileMessagesDidUpdate.
+ */
 export function getFileMessages(
   state: AppState,
   filePath: NuclideUri,
@@ -54,9 +54,9 @@ export function getFileMessageUpdates(
 }
 
 /**
-  * Gets all current diagnostic messages.
-  * Prefer to get updates via ::onAllMessagesDidUpdate.
-  */
+ * Gets all current diagnostic messages.
+ * Prefer to get updates via ::onAllMessagesDidUpdate.
+ */
 export const getMessages = createSelector(
   [getMessagesState],
   (messagesState): Array<DiagnosticMessage> => {

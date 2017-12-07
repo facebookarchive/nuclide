@@ -101,8 +101,8 @@ export function sendJsonResponse(
 }
 
 /**
-  * Parses the request body in an anyc/promise way
-  */
+ * Parses the request body in an anyc/promise way
+ */
 export function parseRequestBody(
   httpRequest: http$fixed$IncomingMessage,
   isJson: ?boolean,

@@ -273,10 +273,10 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     const IPC_CHANNEL_FD = 4;
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
     this.getSubscriptions().add(
-      splitStream(
-        observeStream(ipcStream),
-      ).subscribe(this._handleIpcMessage.bind(this, ipcStream), error =>
-        this.getLogger().error(`ipcStream error: ${JSON.stringify(error)}`),
+      splitStream(observeStream(ipcStream)).subscribe(
+        this._handleIpcMessage.bind(this, ipcStream),
+        error =>
+          this.getLogger().error(`ipcStream error: ${JSON.stringify(error)}`),
       ),
     );
   }

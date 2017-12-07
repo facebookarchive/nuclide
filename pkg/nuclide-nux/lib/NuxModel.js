@@ -29,10 +29,10 @@ export type NuxTourModel = {
    */
   gatekeeperID?: string,
   /**
-    * WARNING:  DO NOT COMMIT with this value set to true! The flow type ensures
-    * that an error will occur if you do so. Setting to true will always show the
-    * NUX every session, which is useful during development.
-    */
+   * WARNING:  DO NOT COMMIT with this value set to true! The flow type ensures
+   * that an error will occur if you do so. Setting to true will always show the
+   * NUX every session, which is useful during development.
+   */
   developmentMode?: false,
 };
 

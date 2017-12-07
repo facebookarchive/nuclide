@@ -494,10 +494,10 @@ function lspRelatedLocation_atomTrace(
 }
 
 /**
-* Converts an Atom Trace to an Lsp RelatedLocation. A RelatedLocation requires a
-* range. Therefore, this will return null when called with an Atom Trace that
-* does not have a range.
-*/
+ * Converts an Atom Trace to an Lsp RelatedLocation. A RelatedLocation requires a
+ * range. Therefore, this will return null when called with an Atom Trace that
+ * does not have a range.
+ */
 function atomTrace_lspRelatedLocation(
   trace: DiagnosticTrace,
 ): ?RelatedLocation {
@@ -548,10 +548,10 @@ export function lspCommand_atomCodeAction(
 }
 
 /**
-* Converts an Atom FileMessageDiagnostic to an LSP Diagnostic. LSP diagnostics
-* require a range, while they are currently optional for Atom Diangostics. Therefore,
-* this will return null when called with an Atom Diagnostic without a range.
-*/
+ * Converts an Atom FileMessageDiagnostic to an LSP Diagnostic. LSP diagnostics
+ * require a range, while they are currently optional for Atom Diangostics. Therefore,
+ * this will return null when called with an Atom Diagnostic without a range.
+ */
 export function atomDiagnostic_lspDiagnostic(
   diagnostic: FileDiagnosticMessage,
 ): ?Diagnostic {

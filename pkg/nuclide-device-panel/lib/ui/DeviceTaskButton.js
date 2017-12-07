@@ -43,7 +43,8 @@ export class DeviceTaskButton extends React.Component<Props> {
             placeholder={placeholder}
             size="xs"
             onChange={(action: DeviceAction) =>
-              action != null && action.callback(this.props.device)}
+              action != null && action.callback(this.props.device)
+            }
           />
         </div>
       );

@@ -53,8 +53,9 @@ class DevicePoller {
               Observable.of(
                 Expect.error(
                   new Error(
-                    `Can't fetch ${this._getPlatform()} devices. Make sure that ${this
-                      ._type} is in your $PATH and that it works properly.`,
+                    `Can't fetch ${this._getPlatform()} devices. Make sure that ${
+                      this._type
+                    } is in your $PATH and that it works properly.`,
                   ),
                 ),
               ),

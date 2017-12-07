@@ -114,7 +114,8 @@ export default class ChangedFilesList extends React.Component<Props, State> {
           onClick={() =>
             this.setState({
               visiblePagesCount: this.state.visiblePagesCount + 1,
-            })}
+            })
+          }
         />
       ) : null;
 
@@ -127,7 +128,8 @@ export default class ChangedFilesList extends React.Component<Props, State> {
               className="list-item"
               key={this.props.rootPath}
               onClick={() =>
-                this.setState({isCollapsed: !this.state.isCollapsed})}>
+                this.setState({isCollapsed: !this.state.isCollapsed})
+              }>
               <span
                 className="icon icon-file-directory nuclide-file-changes-root-entry"
                 data-path={this.props.rootPath}>

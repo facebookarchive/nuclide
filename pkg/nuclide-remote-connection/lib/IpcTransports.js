@@ -92,9 +92,9 @@ export class IpcClientTransport {
   }
 
   onMessage(): Observable<string> {
-    return Observable.fromPromise(
-      this._transport.promise,
-    ).switchMap(transport => transport.onMessage());
+    return Observable.fromPromise(this._transport.promise).switchMap(
+      transport => transport.onMessage(),
+    );
   }
 
   close() {

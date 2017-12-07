@@ -39,17 +39,17 @@ export function getSimulatorPlatform(
     if (simulators.length === 0) {
       deviceGroups = NO_SIMULATORS_FOUND_GROUPS;
     } else {
-      deviceGroups = Array.from(
-        groupByOs(simulators).entries(),
-      ).map(([os, simsForOs]) => ({
-        name: os,
-        devices: simsForOs.map(simulator => ({
-          name: simulator.name,
-          udid: simulator.udid,
-          arch: simulator.arch,
-          type: 'simulator',
-        })),
-      }));
+      deviceGroups = Array.from(groupByOs(simulators).entries()).map(
+        ([os, simsForOs]) => ({
+          name: os,
+          devices: simsForOs.map(simulator => ({
+            name: simulator.name,
+            udid: simulator.udid,
+            arch: simulator.arch,
+            type: 'simulator',
+          })),
+        }),
+      );
     }
 
     return {
@@ -89,17 +89,17 @@ export function getDevicePlatform(
       );
 
       if (physicalDevices.length > 0) {
-        deviceGroups = Array.from(
-          groupByOs(physicalDevices).entries(),
-        ).map(([os, devicesForOs]) => ({
-          name: os,
-          devices: devicesForOs.map(device => ({
-            name: device.name,
-            udid: device.udid,
-            arch: device.arch,
-            type: 'device',
-          })),
-        }));
+        deviceGroups = Array.from(groupByOs(physicalDevices).entries()).map(
+          ([os, devicesForOs]) => ({
+            name: os,
+            devices: devicesForOs.map(device => ({
+              name: device.name,
+              udid: device.udid,
+              arch: device.arch,
+              type: 'device',
+            })),
+          }),
+        );
       }
     }
 

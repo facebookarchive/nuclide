@@ -62,23 +62,29 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
       },
       {
         name: 'Attached DOM Nodes',
-        value: `${this.props.attachedDomNodes != null
-          ? this.props.attachedDomNodes
-          : 'N/A - are your devtools open?'}`,
+        value: `${
+          this.props.attachedDomNodes != null
+            ? this.props.attachedDomNodes
+            : 'N/A - are your devtools open?'
+        }`,
         disableJewel: true,
       },
       {
         name: 'Retained DOM Nodes',
-        value: `${this.props.domNodes != null
-          ? this.props.domNodes
-          : 'N/A - are your devtools open?'}`,
+        value: `${
+          this.props.domNodes != null
+            ? this.props.domNodes
+            : 'N/A - are your devtools open?'
+        }`,
         disableJewel: true,
       },
       {
         name: 'DOM Listeners',
-        value: `${this.props.domListeners != null
-          ? this.props.domListeners
-          : 'N/A - are your devtools open?'}`,
+        value: `${
+          this.props.domListeners != null
+            ? this.props.domListeners
+            : 'N/A - are your devtools open?'
+        }`,
         disableJewel: true,
       },
     ];

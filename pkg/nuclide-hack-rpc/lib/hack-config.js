@@ -29,8 +29,8 @@ let hackCommand = DEFAULT_HACK_COMMAND;
 const configCache = new ConfigCache([HACK_CONFIG_FILE_NAME]);
 
 /**
-* If this returns null, then it is not safe to run hack.
-*/
+ * If this returns null, then it is not safe to run hack.
+ */
 export function findHackConfigDir(localFile: string): Promise<?string> {
   return configCache.getConfigDir(localFile);
 }

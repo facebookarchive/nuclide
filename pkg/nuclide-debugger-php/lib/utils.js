@@ -47,7 +47,9 @@ function validateConfig(config): void {
   if (!isValidRegex(config.idekeyRegex)) {
     invariant(config.idekeyRegex != null);
     throw Error(
-      `config idekeyRegex is not a valid regular expression: ${config.idekeyRegex}`,
+      `config idekeyRegex is not a valid regular expression: ${
+        config.idekeyRegex
+      }`,
     );
   }
 }

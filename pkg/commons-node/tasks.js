@@ -118,27 +118,27 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
 
     const messages =
       typeof task.onMessage === 'function'
-        ? observableFromSubscribeFunction(
-            task.onMessage.bind(task),
-          ).map(message => ({type: 'message', message}))
+        ? observableFromSubscribeFunction(task.onMessage.bind(task)).map(
+            message => ({type: 'message', message}),
+          )
         : Observable.never();
     const progresses =
       typeof task.onProgress === 'function'
-        ? observableFromSubscribeFunction(
-            task.onProgress.bind(task),
-          ).map(progress => ({type: 'progress', progress}))
+        ? observableFromSubscribeFunction(task.onProgress.bind(task)).map(
+            progress => ({type: 'progress', progress}),
+          )
         : Observable.never();
     const results =
       typeof task.onResult === 'function'
-        ? observableFromSubscribeFunction(
-            task.onResult.bind(task),
-          ).map(result => ({type: 'result', result}))
+        ? observableFromSubscribeFunction(task.onResult.bind(task)).map(
+            result => ({type: 'result', result}),
+          )
         : Observable.never();
     const statuses =
       typeof task.onStatusChange === 'function'
-        ? observableFromSubscribeFunction(
-            task.onStatusChange.bind(task),
-          ).map(status => ({type: 'status', status}))
+        ? observableFromSubscribeFunction(task.onStatusChange.bind(task)).map(
+            status => ({type: 'status', status}),
+          )
         : Observable.never();
 
     const completeEvents = observableFromSubscribeFunction(

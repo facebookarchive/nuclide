@@ -29,6 +29,6 @@ export type SocketEvent =
   | {type: 'client_disconnected', clientPort: number};
 
 export interface IRemoteSocket {
-  write(msg: Buffer): void,
-  dispose(): void,
+  write(msg: Buffer): void;
+  dispose(): void;
 }

@@ -19,11 +19,11 @@ export function gitDiffContentAgainstFile(
   filePath: string,
 ): Observable<string> {
   const service = getFileSystemServiceByNuclideUri(filePath);
-  const diff = Observable.fromPromise(
-    service.readFile(filePath),
-  ).switchMap(buffer => {
-    return gitDiffStrings(content, buffer.toString('utf8'));
-  });
+  const diff = Observable.fromPromise(service.readFile(filePath)).switchMap(
+    buffer => {
+      return gitDiffStrings(content, buffer.toString('utf8'));
+    },
+  );
   return diff;
 }
 
@@ -31,27 +31,25 @@ export function gitDiffStrings(
   oldString: string,
   newString: string,
 ): Observable<string> {
-  return makeTempFiles(
-    oldString,
-    newString,
-  ).switchMap(([oldTempFile, newTempFile]) =>
-    runCommandDetailed(
-      'git',
-      ['diff', '--unified=0', '--no-index', oldTempFile, newTempFile],
-      {
-        killTreeWhenDone: true,
-      },
-    )
-      .map(({stdout}) => stdout)
-      .catch(e => {
-        // git diff returns with exit code 1 if there was a difference between
-        // the files being compared
-        return Observable.of(e.stdout);
-      })
-      .finally(() => {
-        fsPromise.unlink(oldTempFile);
-        fsPromise.unlink(newTempFile);
-      }),
+  return makeTempFiles(oldString, newString).switchMap(
+    ([oldTempFile, newTempFile]) =>
+      runCommandDetailed(
+        'git',
+        ['diff', '--unified=0', '--no-index', oldTempFile, newTempFile],
+        {
+          killTreeWhenDone: true,
+        },
+      )
+        .map(({stdout}) => stdout)
+        .catch(e => {
+          // git diff returns with exit code 1 if there was a difference between
+          // the files being compared
+          return Observable.of(e.stdout);
+        })
+        .finally(() => {
+          fsPromise.unlink(oldTempFile);
+          fsPromise.unlink(newTempFile);
+        }),
   );
 }
 

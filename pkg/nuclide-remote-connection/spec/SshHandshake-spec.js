@@ -53,14 +53,17 @@ describe('SshHandshake', () => {
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');
-    spyOn(
-      ((dns: any): Object),
-      'lookup',
-    ).andCallFake((host, family, callback) => {
-      process.nextTick(() => {
-        callback(/* error */ null, /* address */ 'example.com', /* family */ 4);
-      });
-    });
+    spyOn(((dns: any): Object), 'lookup').andCallFake(
+      (host, family, callback) => {
+        process.nextTick(() => {
+          callback(
+            /* error */ null,
+            /* address */ 'example.com',
+            /* family */ 4,
+          );
+        });
+      },
+    );
     handshakeDelegate = jasmine.createSpyObj('delegate', [
       'onKeyboardInteractive',
       'onWillConnect',

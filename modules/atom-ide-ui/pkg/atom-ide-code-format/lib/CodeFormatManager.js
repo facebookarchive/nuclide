@@ -176,13 +176,15 @@ export default class CodeFormatManager {
             return Observable.empty();
           });
       case 'type':
-        return this._formatCodeOnTypeInTextEditor(
-          editor,
-          event.edit,
-        ).catch(err => {
-          getLogger('code-format').warn('Failed to format code on type:', err);
-          return Observable.empty();
-        });
+        return this._formatCodeOnTypeInTextEditor(editor, event.edit).catch(
+          err => {
+            getLogger('code-format').warn(
+              'Failed to format code on type:',
+              err,
+            );
+            return Observable.empty();
+          },
+        );
       case 'save':
         return (
           this._safeFormatCodeOnSave(editor)

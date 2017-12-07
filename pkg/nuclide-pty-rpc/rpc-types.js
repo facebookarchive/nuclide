@@ -17,15 +17,15 @@ export type PtyInfo = {
 };
 
 export interface PtyClient {
-  onOutput(data: string): void,
-  onExit(code: number, signal: number): void,
-  dispose(): void,
+  onOutput(data: string): void;
+  onExit(code: number, signal: number): void;
+  dispose(): void;
 }
 
 export interface Pty {
-  resize(columns: number, rows: number): void,
-  writeInput(data: string): void,
-  dispose(): void,
+  resize(columns: number, rows: number): void;
+  writeInput(data: string): void;
+  dispose(): void;
 }
 
 export type Command = {

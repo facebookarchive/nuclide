@@ -46,7 +46,9 @@ export default (async function getPreviewDatatipFromDefinition(
       return {
         component: () => (
           <img
-            src={`data:${definitionPreview.mime};${definitionPreview.encoding},${definitionPreview.contents}`}
+            src={`data:${definitionPreview.mime};${
+              definitionPreview.encoding
+            },${definitionPreview.contents}`}
           />
         ),
         range,

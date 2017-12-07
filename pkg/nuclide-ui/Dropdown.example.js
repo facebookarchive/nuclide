@@ -44,8 +44,10 @@ const SplitButtonDropdownExample = (() => {
       <SplitButtonDropdown
         options={options}
         value={2}
-        onConfirm={// eslint-disable-next-line no-alert
-        x => alert(`You selected ${x}!`)}
+        onConfirm={
+          // eslint-disable-next-line no-alert
+          x => alert(`You selected ${x}!`)
+        }
       />
     </div>
   );

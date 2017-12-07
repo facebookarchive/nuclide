@@ -57,9 +57,8 @@ export class MainRefactorComponent extends React.Component<Props> {
     return previousPhase ? (
       <Button
         onClick={() =>
-          this.props.store.dispatch(
-            Actions.backFromDiffPreview(previousPhase),
-          )}>
+          this.props.store.dispatch(Actions.backFromDiffPreview(previousPhase))
+        }>
         Back
       </Button>
     ) : null;

@@ -31,10 +31,8 @@ export function addProvider(
     const updateActions: Observable<Action> = provider.updates.map(update =>
       Actions.updateMessages(provider, update),
     );
-    const invalidationActions: Observable<
-      Action,
-    > = provider.invalidations.map(invalidation =>
-      Actions.invalidateMessages(provider, invalidation),
+    const invalidationActions: Observable<Action> = provider.invalidations.map(
+      invalidation => Actions.invalidateMessages(provider, invalidation),
     );
     const removed = actions
       .filter(

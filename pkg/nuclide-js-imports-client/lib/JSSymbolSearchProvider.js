@@ -17,8 +17,8 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 
 /**
-* This service allows other packages to search JS symbols using language service
-*/
+ * This service allows other packages to search JS symbols using language service
+ */
 export default class JSSymbolSearchProvider {
   _languageService: AtomLanguageService<LanguageService>;
 

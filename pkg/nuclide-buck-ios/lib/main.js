@@ -54,19 +54,19 @@ function provideIosPlatformGroup(
     if (result) {
       return Observable.of(null);
     } else {
-      return Observable.fromPromise(
-        _getDebuggerCallback(buckRoot),
-      ).switchMap(debuggerCallback => {
-        return Observable.combineLatest(
-          getSimulatorPlatform(buckRoot, ruleType, debuggerCallback),
-          getDevicePlatform(buckRoot, ruleType, debuggerCallback),
-        ).map(([simulatorPlatform, devicePlatform]) => {
-          return {
-            name: 'iOS',
-            platforms: [simulatorPlatform, devicePlatform],
-          };
-        });
-      });
+      return Observable.fromPromise(_getDebuggerCallback(buckRoot)).switchMap(
+        debuggerCallback => {
+          return Observable.combineLatest(
+            getSimulatorPlatform(buckRoot, ruleType, debuggerCallback),
+            getDevicePlatform(buckRoot, ruleType, debuggerCallback),
+          ).map(([simulatorPlatform, devicePlatform]) => {
+            return {
+              name: 'iOS',
+              platforms: [simulatorPlatform, devicePlatform],
+            };
+          });
+        },
+      );
     }
   });
 }

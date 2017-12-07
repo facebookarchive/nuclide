@@ -143,9 +143,9 @@ export default class DeepLinkService {
           const targetBlank = params.target === '_blank';
           const targetWindow = targetBlank
             ? currentWindow
-            : remote.BrowserWindow
-                .getAllWindows()
-                .filter(browserWindow => browserWindow.isVisible())[0];
+            : remote.BrowserWindow.getAllWindows().filter(browserWindow =>
+                browserWindow.isVisible(),
+              )[0];
           if (targetWindow != null) {
             this.sendDeepLink(targetWindow, message, params);
 

@@ -64,7 +64,9 @@ export function notifySshHandshakeError(
         `  2. Make sure the hostname ${config.host} is valid.\n`;
       break;
     case SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY:
-      message = `Can't read content of private key path ${config.pathToPrivateKey}.`;
+      message = `Can't read content of private key path ${
+        config.pathToPrivateKey
+      }.`;
       detail =
         'Make sure the private key path is properly configured.\n' +
         'You may need to convert your private key from PKCS to RSA.\n' +
@@ -120,7 +122,9 @@ export function notifySshHandshakeError(
         default:
           message = 'Unknown SSH Authentication Method failed';
           detail =
-            `Unknown authentication method '${config.authMethod}' provided. Make sure your` +
+            `Unknown authentication method '${
+              config.authMethod
+            }' provided. Make sure your` +
             ' SSH connection is properly configured.';
           break;
       }
@@ -135,9 +139,13 @@ export function notifySshHandshakeError(
         `${config.remoteServerCommand}`;
       detail =
         'Troubleshooting: \n' +
-        `  1. Make sure the command "${config.remoteServerCommand}" is correct.\n` +
+        `  1. Make sure the command "${
+          config.remoteServerCommand
+        }" is correct.\n` +
         '  2. The server might take longer to start up than expected, try to connect again.\n' +
-        `  3. If none of above works, ssh to ${config.host} and kill existing nuclide-server` +
+        `  3. If none of above works, ssh to ${
+          config.host
+        } and kill existing nuclide-server` +
         ' by running "killall node", and reconnect.';
       break;
     case SshHandshake.ErrorType.SERVER_CANNOT_CONNECT:

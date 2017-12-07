@@ -10,7 +10,7 @@
  */
 
 export interface Command {
-  +name: string,
-  +helpText: string,
-  execute(args: string[]): Promise<void>,
+  +name: string;
+  +helpText: string;
+  execute(args: string[]): Promise<void>;
 }

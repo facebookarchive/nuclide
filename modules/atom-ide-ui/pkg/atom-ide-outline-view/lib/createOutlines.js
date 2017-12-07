@@ -73,11 +73,11 @@ export type OutlineForUi =
       kind: 'outline',
       outlineTrees: Array<OutlineTreeForUi>,
       /**
-   * Use a TextEditor instead of a path so that:
-   * - If there are multiple editors for a file, we always jump to outline item
-   *   locations in the correct editor.
-   * - Jumping to outline item locations works for new, unsaved files.
-   */
+       * Use a TextEditor instead of a path so that:
+       * - If there are multiple editors for a file, we always jump to outline item
+       *   locations in the correct editor.
+       * - Jumping to outline item locations works for new, unsaved files.
+       */
       editor: atom$TextEditor,
     };
 

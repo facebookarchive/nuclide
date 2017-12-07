@@ -35,32 +35,33 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
   }
 
   getTask(host: NuclideUri): Observable<TaskEvent> {
-    return Observable.defer(() =>
-      this._bridge.getFullConfig(host),
-    ).switchMap(fullConfig => {
-      return Observable.create(observer => {
-        const disposable = showModal(
-          dismiss => (
-            <ATCustomDBPathModal
-              dismiss={dismiss}
-              activePath={fullConfig.active}
-              currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}
-              registeredPaths={fullConfig.all}
-              setCustomPath={customPath =>
-                this._bridge.setCustomDebugBridgePath(host, customPath)}
-              type={this._bridge.debugBridge}
-            />
-          ),
-          {
-            className: 'nuclide-adb-sdb-custom-path-modal',
-            onDismiss: () => {
-              disposable.dispose();
-              observer.complete();
+    return Observable.defer(() => this._bridge.getFullConfig(host)).switchMap(
+      fullConfig => {
+        return Observable.create(observer => {
+          const disposable = showModal(
+            dismiss => (
+              <ATCustomDBPathModal
+                dismiss={dismiss}
+                activePath={fullConfig.active}
+                currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}
+                registeredPaths={fullConfig.all}
+                setCustomPath={customPath =>
+                  this._bridge.setCustomDebugBridgePath(host, customPath)
+                }
+                type={this._bridge.debugBridge}
+              />
+            ),
+            {
+              className: 'nuclide-adb-sdb-custom-path-modal',
+              onDismiss: () => {
+                disposable.dispose();
+                observer.complete();
+              },
+              shouldDismissOnClickOutsideModal: () => false,
             },
-            shouldDismissOnClickOutsideModal: () => false,
-          },
-        );
-      });
-    });
+          );
+        });
+      },
+    );
   }
 }

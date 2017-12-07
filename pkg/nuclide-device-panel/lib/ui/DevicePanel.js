@@ -49,13 +49,13 @@ export class DevicePanel extends React.Component<Props> {
     } else if (this.props.infoTables.isPending) {
       return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
     } else {
-      return Array.from(
-        this.props.infoTables.value.entries(),
-      ).map(([title, infoTable]) => (
-        <div className="block" key={title}>
-          <InfoTable title={title} table={infoTable} />
-        </div>
-      ));
+      return Array.from(this.props.infoTables.value.entries()).map(
+        ([title, infoTable]) => (
+          <div className="block" key={title}>
+            <InfoTable title={title} table={infoTable} />
+          </div>
+        ),
+      );
     }
   }
 
@@ -74,13 +74,13 @@ export class DevicePanel extends React.Component<Props> {
     } else if (appInfoTables.isPending) {
       return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
     } else {
-      return Array.from(
-        appInfoTables.value.entries(),
-      ).map(([appName, appInfoRows]) => (
-        <div className="block" key={appName}>
-          <AppInfoTable title={appName} rows={appInfoRows} />
-        </div>
-      ));
+      return Array.from(appInfoTables.value.entries()).map(
+        ([appName, appInfoRows]) => (
+          <div className="block" key={appName}>
+            <AppInfoTable title={appName} rows={appInfoRows} />
+          </div>
+        ),
+      );
     }
   }
 

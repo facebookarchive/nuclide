@@ -349,39 +349,39 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     const shouldShowFolderName = fileStatusesByRoot.size > 1;
     return (
       <div className="nuclide-ui-multi-root-file-tree-container">
-        {Array.from(
-          fileStatusesByRoot.entries(),
-        ).map(([root, fileStatuses]) => {
-          const fileChanges =
-            fileChangesByRoot == null ? null : fileChangesByRoot.get(root);
-          const checkedFiles =
-            checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
-          return (
-            // $FlowFixMe(>=0.53.0) Flow suppress
-            <ChangedFilesList
-              checkedFiles={checkedFiles}
-              commandPrefix={commandPrefix}
-              enableFileExpansion={enableFileExpansion === true}
-              enableInlineActions={enableInlineActions === true}
-              fileChanges={fileChanges}
-              fileStatuses={fileStatuses}
-              hideEmptyFolders={hideEmptyFolders}
-              key={root}
-              onAddFile={this._handleAddFile}
-              onDeleteFile={this._handleDeleteFile}
-              onFileChecked={onFileChecked}
-              onFileChosen={onFileChosen}
-              onForgetFile={this._handleForgetFile}
-              onMarkFileResolved={onMarkFileResolved}
-              onOpenFileInDiffView={this._handleOpenFileInDiffView}
-              openInDiffViewOption={openInDiffViewOption || false}
-              onRevertFile={this._handleRevertFile}
-              rootPath={root}
-              selectedFile={selectedFile}
-              shouldShowFolderName={shouldShowFolderName}
-            />
-          );
-        })}
+        {Array.from(fileStatusesByRoot.entries()).map(
+          ([root, fileStatuses]) => {
+            const fileChanges =
+              fileChangesByRoot == null ? null : fileChangesByRoot.get(root);
+            const checkedFiles =
+              checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
+            return (
+              // $FlowFixMe(>=0.53.0) Flow suppress
+              <ChangedFilesList
+                checkedFiles={checkedFiles}
+                commandPrefix={commandPrefix}
+                enableFileExpansion={enableFileExpansion === true}
+                enableInlineActions={enableInlineActions === true}
+                fileChanges={fileChanges}
+                fileStatuses={fileStatuses}
+                hideEmptyFolders={hideEmptyFolders}
+                key={root}
+                onAddFile={this._handleAddFile}
+                onDeleteFile={this._handleDeleteFile}
+                onFileChecked={onFileChecked}
+                onFileChosen={onFileChosen}
+                onForgetFile={this._handleForgetFile}
+                onMarkFileResolved={onMarkFileResolved}
+                onOpenFileInDiffView={this._handleOpenFileInDiffView}
+                openInDiffViewOption={openInDiffViewOption || false}
+                onRevertFile={this._handleRevertFile}
+                rootPath={root}
+                selectedFile={selectedFile}
+                shouldShowFolderName={shouldShowFolderName}
+              />
+            );
+          },
+        )}
       </div>
     );
   }

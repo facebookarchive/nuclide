@@ -19,19 +19,22 @@ export default {
   getCookies(domain: string): Promise<{[key: string]: string}> {
     return new Promise((resolve, reject) => {
       // $FlowFixMe: Add types for electron$WebContents
-      remote.getCurrentWindow().webContents.session.cookies.get({
-        domain,
-      }, (error, cookies) => {
-        if (error) {
-          reject(error);
-        } else {
-          const cookieMap = {};
-          cookies.forEach(cookie => {
-            cookieMap[cookie.name] = cookie.value;
-          });
-          resolve(cookieMap);
+      remote.getCurrentWindow().webContents.session.cookies.get(
+        {
+          domain,
+        },
+        (error, cookies) => {
+          if (error) {
+            reject(error);
+          } else {
+            const cookieMap = {};
+            cookies.forEach(cookie => {
+              cookieMap[cookie.name] = cookie.value;
+            });
+            resolve(cookieMap);
+          }
         }
-      });
+      );
     });
   },
 
@@ -43,18 +46,21 @@ export default {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       // $FlowFixMe: Add types for electron$WebContents
-      remote.getCurrentWindow().webContents.session.cookies.set({
-        url,
-        domain,
-        name,
-        value,
-      }, error => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
+      remote.getCurrentWindow().webContents.session.cookies.set(
+        {
+          url,
+          domain,
+          name,
+          value,
+        },
+        error => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
         }
-      });
+      );
     });
   },
 };

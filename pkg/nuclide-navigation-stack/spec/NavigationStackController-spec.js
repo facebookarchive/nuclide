@@ -23,10 +23,9 @@ describe('NavigationStackController test suite', () => {
       require('nuclide-commons-atom/text-editor'),
       'setPositionAndScroll',
     );
-    spyOn(
-      require('../lib/Location'),
-      'getPathOfLocation',
-    ).andCallFake(location => location.editor.getPath());
+    spyOn(require('../lib/Location'), 'getPathOfLocation').andCallFake(
+      location => location.editor.getPath(),
+    );
     spyOn(require('../lib/Location'), 'getLocationOfEditor').andCallFake(
       editor => editor.location,
     );

@@ -62,7 +62,8 @@ export class ProcessTaskButton extends React.Component<Props> {
           placeholder={placeholder}
           size="xs"
           onChange={(task: ProcessTask) =>
-            task != null && task.run(this.props.proc)}
+            task != null && task.run(this.props.proc)
+          }
         />
       );
     }

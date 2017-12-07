@@ -266,7 +266,8 @@ export class DebuggerLaunchAttachUI extends React.Component<
                 atom.commands.dispatch(
                   atom.views.getView(atom.workspace),
                   'core:cancel',
-                )}>
+                )
+              }>
               Cancel
             </Button>
             <Button
@@ -276,7 +277,8 @@ export class DebuggerLaunchAttachUI extends React.Component<
                 atom.commands.dispatch(
                   atom.views.getView(atom.workspace),
                   'core:confirm',
-                )}>
+                )
+              }>
               {this.props.dialogMode === 'attach' ? 'Attach' : 'Launch'}
             </Button>
           </ButtonGroup>

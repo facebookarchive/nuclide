@@ -88,16 +88,16 @@ export default class JediServer {
   constructor(src: string) {
     // Generate a name for this server using the src file name, used to namespace logs
     const name = `JediServer-${nuclideUri.basename(src)}`;
-    const processStream = Observable.fromPromise(
-      getServerArgs(src),
-    ).switchMap(({pythonPath, paths}) => {
-      let args = [PROCESS_PATH, '-s', src];
-      if (paths.length > 0) {
-        args.push('-p');
-        args = args.concat(paths);
-      }
-      return spawn(pythonPath, args, OPTS);
-    });
+    const processStream = Observable.fromPromise(getServerArgs(src)).switchMap(
+      ({pythonPath, paths}) => {
+        let args = [PROCESS_PATH, '-s', src];
+        if (paths.length > 0) {
+          args.push('-p');
+          args = args.concat(paths);
+        }
+        return spawn(pythonPath, args, OPTS);
+      },
+    );
     this._process = new RpcProcess(name, getServiceRegistry(), processStream);
     this._isDisposed = false;
   }

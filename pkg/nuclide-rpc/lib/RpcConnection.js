@@ -743,7 +743,9 @@ export class RpcConnection<TransportType: Transport> {
     // Attempting to marshal before construction is complete makes this impossible.
     if (this._objectRegistry.isRegistered(newObject)) {
       logger.error(
-        `Object of type ${constructorMessage.interface} was marshalled during the constructor.`,
+        `Object of type ${
+          constructorMessage.interface
+        } was marshalled during the constructor.`,
       );
     }
 

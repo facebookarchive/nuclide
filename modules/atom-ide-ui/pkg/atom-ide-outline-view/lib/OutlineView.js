@@ -195,7 +195,8 @@ class OutlineViewComponent extends React.PureComponent<
                   onClick={() =>
                     goToLocation(
                       `atom://config/install/package:ide-${outline.grammar}`,
-                    )}>
+                    )
+                  }>
                   Install an IDE package first.
                 </a>
               </div>

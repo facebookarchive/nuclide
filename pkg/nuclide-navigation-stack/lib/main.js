@@ -45,11 +45,11 @@ class Activation {
           controller.updatePosition(editor, event.newBufferPosition);
         },
       );
-      const scrollSubscription = getViewOfEditor(
-        editor,
-      ).onDidChangeScrollTop(scrollTop => {
-        controller.updateScroll(editor, scrollTop);
-      });
+      const scrollSubscription = getViewOfEditor(editor).onDidChangeScrollTop(
+        scrollTop => {
+          controller.updateScroll(editor, scrollTop);
+        },
+      );
       this._disposables.add(cursorSubscription);
       this._disposables.add(scrollSubscription);
       const destroySubscription = editor.onDidDestroy(() => {

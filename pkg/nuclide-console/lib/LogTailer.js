@@ -122,9 +122,9 @@ export class LogTailer {
         if (!errorWasHandled) {
           // Default error handling.
           const message =
-            `An unexpected error occurred while running the ${this
-              ._name} process` +
-            (err.message ? `:\n\n**${err.message}**` : '.');
+            `An unexpected error occurred while running the ${
+              this._name
+            } process` + (err.message ? `:\n\n**${err.message}**` : '.');
           const notification = atom.notifications.addError(message, {
             dismissable: true,
             detail: err.stack == null ? '' : err.stack.toString(),

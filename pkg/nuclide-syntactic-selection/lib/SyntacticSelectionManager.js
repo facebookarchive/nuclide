@@ -123,17 +123,17 @@ export class SyntacticSelectionManager {
   }
 
   /**
-  * Either retrieves the monitor object for the currently active text editor
-  * from the cache, or creates (and caches) the new one
-  *
-  * The monitor object hides the complexity of maintaining the last selection
-  * explicitly made by user and handles the expand/collapse requests
-  *
-  * The monitor objects are held in the state only as long as an editor's
-  * selection is modified by the syntactic selection feature. I.e. should a
-  * user change the selection manually, the editor is removed from the cache
-  * and any in-flight collapse/expand requests are abandoned (ignored).
-  */
+   * Either retrieves the monitor object for the currently active text editor
+   * from the cache, or creates (and caches) the new one
+   *
+   * The monitor object hides the complexity of maintaining the last selection
+   * explicitly made by user and handles the expand/collapse requests
+   *
+   * The monitor objects are held in the state only as long as an editor's
+   * selection is modified by the syntactic selection feature. I.e. should a
+   * user change the selection manually, the editor is removed from the cache
+   * and any in-flight collapse/expand requests are abandoned (ignored).
+   */
   _getTextSelectionMonitor(): ?TextEditorSelectionMonitor {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {

@@ -30,20 +30,18 @@ describe('HackSymbolProvider', () => {
   beforeEach(() => {
     getHackLanguageForUri = null;
     isFileInProject = null;
-    spyOn(
-      require('../lib/HackLanguage'),
-      'getHackLanguageForUri',
-    ).andCallFake((directory: NuclideUri) => {
-      invariant(getHackLanguageForUri);
-      return getHackLanguageForUri(directory);
-    });
-    spyOn(
-      require('../lib/HackLanguage'),
-      'isFileInHackProject',
-    ).andCallFake((directory: NuclideUri) => {
-      invariant(isFileInProject);
-      return isFileInProject(directory);
-    });
+    spyOn(require('../lib/HackLanguage'), 'getHackLanguageForUri').andCallFake(
+      (directory: NuclideUri) => {
+        invariant(getHackLanguageForUri);
+        return getHackLanguageForUri(directory);
+      },
+    );
+    spyOn(require('../lib/HackLanguage'), 'isFileInHackProject').andCallFake(
+      (directory: NuclideUri) => {
+        invariant(isFileInProject);
+        return isFileInProject(directory);
+      },
+    );
     uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 

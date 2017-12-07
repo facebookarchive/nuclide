@@ -23,10 +23,10 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {reportError} from './Protocol/EventReporter';
 
 /**
-  * Class that dispatches Nuclide commands to debugger engine.
-  * This is used to abstract away the underlying implementation for command dispatching
-  * and allows us to switch between chrome IPC and new non-chrome channel.
-  */
+ * Class that dispatches Nuclide commands to debugger engine.
+ * This is used to abstract away the underlying implementation for command dispatching
+ * and allows us to switch between chrome IPC and new non-chrome channel.
+ */
 export default class CommandDispatcher {
   _sessionSubscriptions: ?UniversalDisposable;
   _bridgeAdapter: ?BridgeAdapter;

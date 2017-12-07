@@ -31,41 +31,41 @@ import type {
 
 // TODO: Remove this once interface inheritance/subtyping is implemented in nuclide-rpc.
 export interface HackLanguageService extends LanguageService {
-  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>,
+  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>,
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
     request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult>,
+  ): Promise<?AutocompleteResult>;
 
   getDefinition(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?DefinitionQueryResult>,
+  ): Promise<?DefinitionQueryResult>;
 
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
+  ): Promise<?FindReferencesReturn>;
 
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
-  getOutline(fileVersion: FileVersion): Promise<?Outline>,
+  getOutline(fileVersion: FileVersion): Promise<?Outline>;
 
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
+  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>;
 
   highlight(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?Array<atom$Range>>,
+  ): Promise<?Array<atom$Range>>;
 
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<?Array<TextEdit>>,
+  ): Promise<?Array<TextEdit>>;
 
   formatEntireFile(
     fileVersion: FileVersion,
@@ -73,23 +73,23 @@ export interface HackLanguageService extends LanguageService {
   ): Promise<?{
     newCursor?: number,
     formatted: string,
-  }>,
+  }>;
 
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
+  ): Promise<?NuclideEvaluationExpression>;
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>;
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>,
+  isFileInProject(fileUri: NuclideUri): Promise<boolean>;
 
-  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>,
+  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
 
   symbolSearch(
     query: string,
     directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>>,
+  ): Promise<?Array<SymbolResult>>;
 
-  dispose(): void,
+  dispose(): void;
 }

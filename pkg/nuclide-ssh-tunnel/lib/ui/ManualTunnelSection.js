@@ -96,7 +96,8 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
               this.setState({
                 fromPortString: text,
                 fromPort: this._parsePort(text),
-              })}
+              })
+            }
           />
         </div>
         <Button onClick={() => this._switchToAndFrom()}>⇄</Button>
@@ -113,7 +114,8 @@ export default class ManualTunnelSection extends React.Component<Props, State> {
               this.setState({
                 toPortString: text,
                 toPort: this._parsePort(text),
-              })}
+              })
+            }
           />
         </div>
       </div>

@@ -110,8 +110,9 @@ export function createTunnel(
 }
 
 export function tunnelDescription(tunnel: TunnelDescriptor) {
-  return `${shortenHostname(tunnel.from.host)}:${tunnel.from
-    .port}->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
+  return `${shortenHostname(tunnel.from.host)}:${
+    tunnel.from.port
+  }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
 }
 
 export function shortenHostname(host: string): string {

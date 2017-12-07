@@ -98,10 +98,9 @@ export function hgRunCommand(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Observable<string> {
-  return Observable.fromPromise(
-    getHgExecParams(args_, options_),
-  ).switchMap(({command, args, options}) =>
-    runCommand(command, args, {...options, killTreeWhenDone: true}),
+  return Observable.fromPromise(getHgExecParams(args_, options_)).switchMap(
+    ({command, args, options}) =>
+      runCommand(command, args, {...options, killTreeWhenDone: true}),
   );
 }
 

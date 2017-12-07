@@ -77,7 +77,8 @@ export class DebuggerControlsView extends React.PureComponent<
                   atom.commands.dispatch(
                     atom.views.getView(atom.workspace),
                     'nuclide-debugger:show-attach-dialog',
-                  )}
+                  )
+                }
                 icon="nuclicon-debugger"
                 label="Attach debugger..."
               />
@@ -86,7 +87,8 @@ export class DebuggerControlsView extends React.PureComponent<
                   atom.commands.dispatch(
                     atom.views.getView(atom.workspace),
                     'nuclide-debugger:show-launch-dialog',
-                  )}
+                  )
+                }
                 icon="nuclicon-debugger"
                 label="Launch debugger..."
               />

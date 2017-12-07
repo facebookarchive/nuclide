@@ -85,9 +85,9 @@ function watchEntity(
   entityPath: string,
   isFile: boolean,
 ): Observable<WatchResult> {
-  return Observable.fromPromise(
-    getRealPath(entityPath, isFile),
-  ).switchMap(realPath => debounceDeletes(entityWatches.get(realPath)));
+  return Observable.fromPromise(getRealPath(entityPath, isFile)).switchMap(
+    realPath => debounceDeletes(entityWatches.get(realPath)),
+  );
 }
 
 // Register an observable for the given path.
@@ -108,9 +108,9 @@ async function getRealPath(
   const stat = await fsPromise.stat(entityPath);
   if (stat.isFile() !== isFile) {
     getLogger('nuclide-filewatcher-rpc').warn(
-      `FileWatcherService: expected ${entityPath} to be a ${isFile
-        ? 'file'
-        : 'directory'}`,
+      `FileWatcherService: expected ${entityPath} to be a ${
+        isFile ? 'file' : 'directory'
+      }`,
     );
   }
   return fsPromise.realpath(entityPath);

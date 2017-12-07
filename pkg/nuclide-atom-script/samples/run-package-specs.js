@@ -37,11 +37,11 @@ export default (async function runCommand(
   // Wait for the window to load
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  const testWindow = remote.BrowserWindow
-    .getAllWindows()
-    .find(browserWindow => {
+  const testWindow = remote.BrowserWindow.getAllWindows().find(
+    browserWindow => {
       return !initialWindows.includes(browserWindow);
-    });
+    },
+  );
 
   if (testWindow == null) {
     console.error('Could not find spec browser window.');

@@ -26,31 +26,31 @@ export type BreakpointSetResult = {
 };
 
 export interface DebuggerInterface {
-  getThreads(): Map<number, Thread>,
-  getActiveThread(): Thread,
-  stepIn(): Promise<void>,
-  stepOver(): Promise<void>,
-  continue(): Promise<void>,
+  getThreads(): Map<number, Thread>;
+  getActiveThread(): Thread;
+  stepIn(): Promise<void>;
+  stepOver(): Promise<void>;
+  continue(): Promise<void>;
   getStackTrace(
     thread: number,
     levels: number,
-  ): Promise<DebugProtocol.StackFrame[]>,
-  setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>,
-  getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>,
-  getVariables(): Promise<VariablesInScope[]>,
-  getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
-  setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>,
-  getAllBreakpoints(): Breakpoint[],
-  getBreakpointByIndex(index: number): Breakpoint,
-  setBreakpointEnabled(index: number, enabled: boolean): Promise<void>,
-  deleteBreakpoint(index: number): Promise<void>,
+  ): Promise<DebugProtocol.StackFrame[]>;
+  setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>;
+  getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>;
+  getVariables(): Promise<VariablesInScope[]>;
+  getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>;
+  setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>;
+  getAllBreakpoints(): Breakpoint[];
+  getBreakpointByIndex(index: number): Breakpoint;
+  setBreakpointEnabled(index: number, enabled: boolean): Promise<void>;
+  deleteBreakpoint(index: number): Promise<void>;
   getSourceLines(
     source: DebugProtocol.Source,
     start: number,
     length: number,
-  ): Promise<string[]>,
-  relaunch(): Promise<void>,
+  ): Promise<string[]>;
+  relaunch(): Promise<void>;
   evaluateExpression(
     expression: string,
-  ): Promise<DebugProtocol.EvaluateResponse>,
+  ): Promise<DebugProtocol.EvaluateResponse>;
 }

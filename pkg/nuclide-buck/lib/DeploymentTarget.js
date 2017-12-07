@@ -140,5 +140,7 @@ export function formatDeploymentTarget(
     deviceGroup != null && deviceGroup.name !== ''
       ? ` (${deviceGroup.name})`
       : '';
-  return `${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}`;
+  return `${platformGroup.name} ${
+    platform.name
+  }${deviceString}${deviceGroupString}`;
 }

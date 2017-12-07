@@ -97,9 +97,9 @@ export class NuclideSocket {
 
     const {protocol, host} = url.parse(serverUri);
     // TODO verify that `host` is non-null rather than using maybeToString
-    this._websocketUri = `ws${protocol === 'https:'
-      ? 's'
-      : ''}://${maybeToString(host)}`;
+    this._websocketUri = `ws${
+      protocol === 'https:' ? 's' : ''
+    }://${maybeToString(host)}`;
 
     this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
     this._heartbeat.onConnectionRestored(() => {

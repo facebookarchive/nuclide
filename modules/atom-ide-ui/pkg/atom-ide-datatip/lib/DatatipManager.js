@@ -203,12 +203,12 @@ function mountDatatipWithMarker(
     // The editor may not mount the marker until the next update.
     // It's not safe to render anything until that point, as datatips
     // often need to measure their size in the DOM.
-    Observable.from(
-      editor.getElement().getNextUpdatePromise(),
-    ).subscribe(() => {
-      element.style.display = 'block';
-      ReactDOM.render(renderedProviders, element);
-    }),
+    Observable.from(editor.getElement().getNextUpdatePromise()).subscribe(
+      () => {
+        element.style.display = 'block';
+        ReactDOM.render(renderedProviders, element);
+      },
+    ),
   );
 }
 

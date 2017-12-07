@@ -78,10 +78,10 @@ import {isIterable} from 'nuclide-commons/collection';
 // $FlowFixMe(>=0.55.0) Flow suppress
 type RecordCallback = (records: any, ...rest: Array<any>) => mixed;
 interface DOMObserver {
-  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver,
-  observe(...observeArgs: Array<any>): void,
-  disconnect(): void,
-  +unobserve?: (...unobserveArgs: Array<any>) => void,
+  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver;
+  observe(...observeArgs: Array<any>): void;
+  disconnect(): void;
+  +unobserve?: (...unobserveArgs: Array<any>) => void;
 }
 
 class DOMObserverObservable<
@@ -129,8 +129,9 @@ class DOMObserverObservable<
   unobserve(...unobserveArgs: TObserveArgs): void {
     if (this._domObserver != null && this._domObserver.unobserve == null) {
       throw new Error(
-        `Cannot unobserve: This observable has an active ${this._DOMObserverCtor
-          .name} and it does not support unobserve`,
+        `Cannot unobserve: This observable has an active ${
+          this._DOMObserverCtor.name
+        } and it does not support unobserve`,
       );
     }
 

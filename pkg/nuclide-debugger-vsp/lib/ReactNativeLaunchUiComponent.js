@@ -114,7 +114,8 @@ export default class ReactNativeLaunchUiComponent extends React.Component<
           selectedIndex={platforms.indexOf(this.state.platform)}
           optionLabels={platforms}
           onSelectedChange={index =>
-            this.setState({platform: platforms[index]})}
+            this.setState({platform: platforms[index]})
+          }
         />
         <label>Debug port number: </label>
         <AtomInput

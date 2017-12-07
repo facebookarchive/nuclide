@@ -59,8 +59,8 @@ const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
 export interface TerminalViewState {
-  deserializer: 'TerminalView',
-  paneUri: string,
+  deserializer: 'TerminalView';
+  paneUri: string;
 }
 
 type ProcessExitCallback = () => void;

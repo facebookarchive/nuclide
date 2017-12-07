@@ -184,10 +184,7 @@ export class SshClient {
     );
     return {
       stdio,
-      result: onceEvent(
-        stdio,
-        'close',
-      ).then(
+      result: onceEvent(stdio, 'close').then(
         (
           code: number | null,
           signal?: string,

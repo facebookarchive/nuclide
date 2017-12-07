@@ -326,7 +326,9 @@ export function validateDefinitions(definitions: Definitions): void {
       if (fieldNames.has(field.name)) {
         // TODO allow duplicate field names if they have the same type.
         throw error(
-          `Duplicate field name '${field.name}' in intersection types are not supported.`,
+          `Duplicate field name '${
+            field.name
+          }' in intersection types are not supported.`,
         );
       }
       fieldNames.add(field.name);
@@ -397,7 +399,9 @@ export function validateDefinitions(definitions: Definitions): void {
       // Ensure alternates match
       if (alternate.kind !== 'object') {
         throw error(
-          `Union alternates must be of the same type. (mismatch: ${alternate.kind})`,
+          `Union alternates must be of the same type. (mismatch: ${
+            alternate.kind
+          })`,
         );
       }
     });
@@ -415,9 +419,7 @@ export function validateDefinitions(definitions: Definitions): void {
     // Get set of fields which are literal types in al alternates.
     invariant(alternates.length > 0);
     // $FlowFixMe
-    const possibleFields: Set<
-      string,
-    > = alternates.reduce(
+    const possibleFields: Set<string> = alternates.reduce(
       (possibilities: ?Set<string>, alternate: ObjectType) => {
         const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(
           alternate,
@@ -761,9 +763,9 @@ export function validateDefinitions(definitions: Definitions): void {
         .slice(1)
         .map(
           definition =>
-            `\n${locationToString(
-              definition.location,
-            )}: Related definition ${definition.name}`,
+            `\n${locationToString(definition.location)}: Related definition ${
+              definition.name
+            }`,
         ),
     );
     return new Error(fullMessage);

@@ -347,9 +347,9 @@ describe('TreeRootComponent', () => {
         const selectNodeKeyPromise2 = component.selectNodeKey(nodes.A.getKey());
         await selectNodeKeyPromise2;
         await selectNodeKeyPromise1;
-        expect(
-          component.getSelectedNodes().map(node => node.getKey()),
-        ).toEqual([nodes.A.getKey()]);
+        expect(component.getSelectedNodes().map(node => node.getKey())).toEqual(
+          [nodes.A.getKey()],
+        );
       });
     });
 
@@ -414,9 +414,9 @@ describe('TreeRootComponent', () => {
           isRejected = true;
         }
         expect(isRejected).toBe(true);
-        expect(
-          component.getExpandedNodes().map(node => node.getKey()),
-        ).toEqual([nodes.G.getKey(), nodes.H.getKey(), nodes.I.getKey()]);
+        expect(component.getExpandedNodes().map(node => node.getKey())).toEqual(
+          [nodes.G.getKey(), nodes.H.getKey(), nodes.I.getKey()],
+        );
       });
     });
   });
@@ -463,9 +463,9 @@ describe('TreeRootComponent', () => {
         );
         await collapseNodeKeyPromise2;
         await collapseNodeKeyPromise1;
-        expect(
-          component.getExpandedNodes().map(node => node.getKey()),
-        ).toEqual([nodes.G.getKey()]);
+        expect(component.getExpandedNodes().map(node => node.getKey())).toEqual(
+          [nodes.G.getKey()],
+        );
       });
     });
 
@@ -488,9 +488,9 @@ describe('TreeRootComponent', () => {
           isRejected = true;
         }
         expect(isRejected).toBe(true);
-        expect(
-          component.getExpandedNodes().map(node => node.getKey()),
-        ).toEqual([nodes.G.getKey()]);
+        expect(component.getExpandedNodes().map(node => node.getKey())).toEqual(
+          [nodes.G.getKey()],
+        );
       });
     });
 
@@ -508,9 +508,9 @@ describe('TreeRootComponent', () => {
         const expandNodeKeyPromise = component.expandNodeKey(nodes.H.getKey());
         await expandNodeKeyPromise;
         await collapseNodeKeyPromise;
-        expect(
-          component.getExpandedNodes().map(node => node.getKey()),
-        ).toEqual([nodes.G.getKey(), nodes.H.getKey()]);
+        expect(component.getExpandedNodes().map(node => node.getKey())).toEqual(
+          [nodes.G.getKey(), nodes.H.getKey()],
+        );
       });
     });
   });

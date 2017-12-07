@@ -322,8 +322,9 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
       .mergeMap(([connection, languageService]) => {
         const connectionName = ServerConnection.toDebugString(connection);
         this._logger.debug(
-          `Starting observing diagnostics ${connectionName}, ${this
-            ._analyticsEventName}`,
+          `Starting observing diagnostics ${connectionName}, ${
+            this._analyticsEventName
+          }`,
         );
         return Observable.fromPromise(languageService)
           .catch(error => {
@@ -334,8 +335,9 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
           })
           .mergeMap((language: LanguageService) => {
             this._logger.debug(
-              `Observing diagnostics ${connectionName}, ${this
-                ._analyticsEventName}`,
+              `Observing diagnostics ${connectionName}, ${
+                this._analyticsEventName
+              }`,
             );
             return ensureInvalidations(
               this._logger,
@@ -379,8 +381,9 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
     )
       .map(connection => {
         this._logger.debug(
-          `Diagnostics closing ${connection.getRemoteHostname()}, ${this
-            ._analyticsEventName}`,
+          `Diagnostics closing ${connection.getRemoteHostname()}, ${
+            this._analyticsEventName
+          }`,
         );
         const files = Array.from(this._connectionToFiles.get(connection));
         this._connectionToFiles.delete(connection);

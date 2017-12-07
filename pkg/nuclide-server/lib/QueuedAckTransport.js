@@ -136,8 +136,9 @@ export class QueuedAckTransport {
     }
     invariant(!transport.isClosed(), 'reconnect with closed transport');
     logInfo(
-      `${this.id} reconnect (${this._pendingSends.length} sends, ${this
-        ._pendingReceives.size} receives)`,
+      `${this.id} reconnect (${this._pendingSends.length} sends, ${
+        this._pendingReceives.size
+      } receives)`,
     );
 
     if (this._transport != null) {
@@ -237,9 +238,11 @@ export class QueuedAckTransport {
           progress++;
         }
         protocolLogger.trace(
-          `${this
-            .id} received ack ${wireMessage} (cleared ${progress} messages, last sent ${this
-            ._lastSendId})`,
+          `${
+            this.id
+          } received ack ${wireMessage} (cleared ${progress} messages, last sent ${
+            this._lastSendId
+          })`,
         );
         break;
       }

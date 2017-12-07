@@ -251,11 +251,9 @@ export class SftpClient {
    * Updates 'continue'.
    */
   readdir(location: string | Buffer): Promise<Array<FileEntry>> {
-    return this._sftpToPromiseContinue(
-      this._sftp.readdir,
-      location,
-    ).then((files: Array<_FileEntryType>) =>
-      files.map(entry => new FileEntry(entry)),
+    return this._sftpToPromiseContinue(this._sftp.readdir, location).then(
+      (files: Array<_FileEntryType>) =>
+        files.map(entry => new FileEntry(entry)),
     );
   }
 

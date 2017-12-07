@@ -403,33 +403,33 @@ export function ensureInvalidations(
   diagnostics: Observable<FileDiagnosticMap>,
 ): Observable<FileDiagnosticMap> {
   const filesWithErrors = new Set();
-  const trackedDiagnostics: Observable<
-    FileDiagnosticMap,
-  > = diagnostics.do((diagnosticMap: FileDiagnosticMap) => {
-    for (const [filePath, messages] of diagnosticMap) {
-      if (messages.length === 0) {
-        logger.debug(`Removing ${filePath} from files with errors`);
-        filesWithErrors.delete(filePath);
-      } else {
-        logger.debug(`Adding ${filePath} to files with errors`);
-        filesWithErrors.add(filePath);
+  const trackedDiagnostics: Observable<FileDiagnosticMap> = diagnostics.do(
+    (diagnosticMap: FileDiagnosticMap) => {
+      for (const [filePath, messages] of diagnosticMap) {
+        if (messages.length === 0) {
+          logger.debug(`Removing ${filePath} from files with errors`);
+          filesWithErrors.delete(filePath);
+        } else {
+          logger.debug(`Adding ${filePath} to files with errors`);
+          filesWithErrors.add(filePath);
+        }
       }
-    }
-  });
+    },
+  );
 
-  const fileInvalidations: Observable<
-    FileDiagnosticMap,
-  > = Observable.defer(() => {
-    logger.debug('Clearing errors after stream closed');
-    return Observable.of(
-      new Map(
-        Array.from(filesWithErrors).map(file => {
-          logger.debug(`Clearing errors for ${file} after connection closed`);
-          return [file, []];
-        }),
-      ),
-    );
-  });
+  const fileInvalidations: Observable<FileDiagnosticMap> = Observable.defer(
+    () => {
+      logger.debug('Clearing errors after stream closed');
+      return Observable.of(
+        new Map(
+          Array.from(filesWithErrors).map(file => {
+            logger.debug(`Clearing errors for ${file} after connection closed`);
+            return [file, []];
+          }),
+        ),
+      );
+    },
+  );
 
   return trackedDiagnostics.concat(fileInvalidations);
 }

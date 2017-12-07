@@ -83,15 +83,15 @@ function generateTestNuxTour(
     selector: '.sample-nux-toolbar-button',
     position: 'auto',
     /**
-       * OPTIONAL: Use a custom selector function to return a DOM element if the
-       * element to bind the NUX to cannot be returned by a query selector class.
-       */
+     * OPTIONAL: Use a custom selector function to return a DOM element if the
+     * element to bind the NUX to cannot be returned by a query selector class.
+     */
     // selectorFunction: () => document.querySelector('.sample-nux-toolbar-button'),
     /**
-       * OPTIONAL: If set, the completion predicate will be evaluated after every
-       * NUX interaction. The NuxView will not progress to the next one in the
-       * NuxTour until the predicate evaluates to true.
-       */
+     * OPTIONAL: If set, the completion predicate will be evaluated after every
+     * NUX interaction. The NuxView will not progress to the next one in the
+     * NuxTour until the predicate evaluates to true.
+     */
     // completionPredicate: () => true,
   });
   const nuxList = Array(numViews)

@@ -903,8 +903,9 @@ export class LspLanguageService {
     this._host
       .dialogNotification(
         'error',
-        `Connection to the ${this
-          ._languageId} language server is erroring; shutting it down - ${this._errorString(
+        `Connection to the ${
+          this._languageId
+        } language server is erroring; shutting it down - ${this._errorString(
           error,
         )}`,
       )
@@ -1568,20 +1569,20 @@ export class LspLanguageService {
     // We'll also sort the nodes in lexical order of occurrence in the source
     // document. This is useful because containers always come lexically before their
     // children. (This isn't a LSP guarantee; just a heuristic.)
-    const list: Array<
-      [SymbolInformation, OutlineTree],
-    > = response.map(symbol => [
-      symbol,
-      {
-        icon: convert.lspSymbolKind_atomIcon(symbol.kind),
-        representativeName: symbol.name,
-        tokenizedText: convert.lspSymbolInformation_atomTokenizedText(symbol),
-        startPosition: convert.lspPosition_atomPoint(
-          symbol.location.range.start,
-        ),
-        children: [],
-      },
-    ]);
+    const list: Array<[SymbolInformation, OutlineTree]> = response.map(
+      symbol => [
+        symbol,
+        {
+          icon: convert.lspSymbolKind_atomIcon(symbol.kind),
+          representativeName: symbol.name,
+          tokenizedText: convert.lspSymbolInformation_atomTokenizedText(symbol),
+          startPosition: convert.lspPosition_atomPoint(
+            symbol.location.range.start,
+          ),
+          children: [],
+        },
+      ],
+    );
     list.sort(([, aNode], [, bNode]) =>
       aNode.startPosition.compare(bNode.startPosition),
     );
@@ -1613,7 +1614,9 @@ export class LspLanguageService {
       const parentCandidates = map.get(parentName);
       if (parentCandidates == null) {
         this._logger.error(
-          `Outline textDocument/documentSymbol ${symbol.name} is missing container ${parentName}`,
+          `Outline textDocument/documentSymbol ${
+            symbol.name
+          } is missing container ${parentName}`,
         );
       } else {
         invariant(parentCandidates.length > 0);
@@ -1631,7 +1634,9 @@ export class LspLanguageService {
           // All candidates after item? That's an error! We'll arbitrarily pick first one.
           parentCandidates[0].children.push(node);
           this._logger.error(
-            `Outline textDocument/documentSymbol ${symbol.name} comes after its container`,
+            `Outline textDocument/documentSymbol ${
+              symbol.name
+            } comes after its container`,
           );
         } else {
           // Some candidates before+after? Then item's parent is the last candidate before.

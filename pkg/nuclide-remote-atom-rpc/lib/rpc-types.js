@@ -19,15 +19,15 @@ export interface AtomCommands {
     line: number,
     column: number,
     isWaiting: boolean,
-  ): ConnectableObservable<AtomFileEvent>,
+  ): ConnectableObservable<AtomFileEvent>;
   openRemoteFile(
     uri: string,
     line: number,
     column: number,
     isWaiting: boolean,
-  ): ConnectableObservable<AtomFileEvent>,
-  addProject(projectPath: NuclideUri): Promise<void>,
-  dispose(): void,
+  ): ConnectableObservable<AtomFileEvent>;
+  addProject(projectPath: NuclideUri): Promise<void>;
+  dispose(): void;
 }
 
 export type ConnectionDetails = {

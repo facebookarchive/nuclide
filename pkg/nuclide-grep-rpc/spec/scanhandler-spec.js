@@ -231,56 +231,47 @@ describe('Scan Handler Tests', () => {
   // Mercurial between v3.3 (where hg grep searches the revision history), and v3.4
   // (where hg grep) searches the working directory.
   // eslint-disable-next-line jasmine/no-disabled-tests
-  xit(
-    'Hg repo: should ignore untracked files or files listed in .hgignore',
-    () => {
-      waitsForPromise(async () => {
-        // Create a git repo in a temporary folder.
-        const folder = await generateFixture('grep-rpc');
-        await runCommand('hg', ['init'], {cwd: folder}).toPromise();
+  xit('Hg repo: should ignore untracked files or files listed in .hgignore', () => {
+    waitsForPromise(async () => {
+      // Create a git repo in a temporary folder.
+      const folder = await generateFixture('grep-rpc');
+      await runCommand('hg', ['init'], {cwd: folder}).toPromise();
 
-        // Create a file that is ignored.
-        fs.writeFileSync(nuclideUri.join(folder, '.hgignore'), 'ignored.txt');
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'ignored.txt'),
-          'Hello World!',
-        );
+      // Create a file that is ignored.
+      fs.writeFileSync(nuclideUri.join(folder, '.hgignore'), 'ignored.txt');
+      fs.writeFileSync(nuclideUri.join(folder, 'ignored.txt'), 'Hello World!');
 
-        // Create a file that is tracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'tracked.txt'),
-          'Hello World!',
-        );
-        await runCommand('hg', ['add', 'tracked.txt'], {
-          cwd: folder,
-        }).toPromise();
+      // Create a file that is tracked.
+      fs.writeFileSync(nuclideUri.join(folder, 'tracked.txt'), 'Hello World!');
+      await runCommand('hg', ['add', 'tracked.txt'], {
+        cwd: folder,
+      }).toPromise();
 
-        // Create a file that is untracked.
-        fs.writeFileSync(
-          nuclideUri.join(folder, 'untracked.txt'),
-          'Hello World!',
-        );
+      // Create a file that is untracked.
+      fs.writeFileSync(
+        nuclideUri.join(folder, 'untracked.txt'),
+        'Hello World!',
+      );
 
-        await runCommand('hg', ['commit', '-m', 'test commit'], {
-          cwd: folder,
-        }).toPromise();
+      await runCommand('hg', ['commit', '-m', 'test commit'], {
+        cwd: folder,
+      }).toPromise();
 
-        const results = await search(folder, /hello world()/i, [])
-          .toArray()
-          .toPromise();
-        const expected = JSON.parse(
-          fs.readFileSync(
-            nuclideUri.join(__dirname, 'fixtures', 'repo.json'),
-            'utf8',
-          ),
-        );
+      const results = await search(folder, /hello world()/i, [])
+        .toArray()
+        .toPromise();
+      const expected = JSON.parse(
+        fs.readFileSync(
+          nuclideUri.join(__dirname, 'fixtures', 'repo.json'),
+          'utf8',
+        ),
+      );
 
-        // Sort the list of matches by filename to normalize order.
-        sortResults(results);
-        expect(results).diffJson(expected);
-      });
-    },
-  );
+      // Sort the list of matches by filename to normalize order.
+      sortResults(results);
+      expect(results).diffJson(expected);
+    });
+  });
 });
 
 // Helper function to sort an array of file results - first by their filepath,

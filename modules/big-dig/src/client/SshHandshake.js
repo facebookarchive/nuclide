@@ -219,19 +219,19 @@ const SshConnectionErrorLevelMap: Map<
  * means that we want it to be `T`, but must verify first.
  */
 interface ServerInfo {
-  success?: boolean | any,
-  hostname?: string | any,
+  success?: boolean | any;
+  hostname?: string | any;
   // TODO(siegebell): `port` should probably be `any` in case we're in "insecure" mode.
   //   See: `_updateServerInfo`.
-  port?: number,
+  port?: number;
   /** Certificate authority. */
-  ca?: string | any,
+  ca?: string | any;
   /** Client certificate. */
-  cert?: string | any,
+  cert?: string | any;
   /** Client key. */
-  key?: string | any,
+  key?: string | any;
   /** Logging info, which we report if there was an error. */
-  logs?: any,
+  logs?: any;
 }
 
 export class SshHandshakeError extends Error {
@@ -309,9 +309,7 @@ export class SshHandshake {
   }
 
   async _userPromptSingle(prompt: Prompt): Promise<string> {
-    const [
-      answer,
-    ] = await this._delegate.onKeyboardInteractive(
+    const [answer] = await this._delegate.onKeyboardInteractive(
       '' /* name */,
       '' /* instructions */,
       '' /* instructionsLang */,

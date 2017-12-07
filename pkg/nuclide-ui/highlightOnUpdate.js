@@ -65,9 +65,9 @@ export function highlightOnUpdate<
     render(): React.Node {
       return (
         <span
-          className={`${className} ${this.showFlash
-            ? className + '-highlight'
-            : ''}`}>
+          className={`${className} ${
+            this.showFlash ? className + '-highlight' : ''
+          }`}>
           <ComposedComponent {...this.props} />
         </span>
       );

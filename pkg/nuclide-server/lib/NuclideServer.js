@@ -259,24 +259,25 @@ export default class NuclideServer {
   ) {
     const loweredCaseMethod = method.toLowerCase();
     // $FlowFixMe - Use map instead of computed property.
-    this._app[
-      loweredCaseMethod
-    ](serviceName, async (request, response, next) => {
-      try {
-        const result = await this.callService(
-          serviceName,
-          deserializeArgs(request.url),
-        );
-        if (isTextResponse) {
-          sendTextResponse(response, result || '');
-        } else {
-          sendJsonResponse(response, result);
+    this._app[loweredCaseMethod](
+      serviceName,
+      async (request, response, next) => {
+        try {
+          const result = await this.callService(
+            serviceName,
+            deserializeArgs(request.url),
+          );
+          if (isTextResponse) {
+            sendTextResponse(response, result || '');
+          } else {
+            sendJsonResponse(response, result);
+          }
+        } catch (e) {
+          // Delegate to the registered connect error handler.
+          next(e);
         }
-      } catch (e) {
-        // Delegate to the registered connect error handler.
-        next(e);
-      }
-    });
+      },
+    );
   }
 
   _onConnection(socket: WS): void {
