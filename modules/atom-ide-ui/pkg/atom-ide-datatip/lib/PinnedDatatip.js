@@ -219,7 +219,7 @@ export class PinnedDatatip {
       case 'above-range':
         _hostElement.style.bottom =
           _editor.getLineHeightInPixels() +
-          _hostElement.clientHeight +
+          _hostElement.clientHeight -
           _offset.y +
           'px';
         _hostElement.style.left = _offset.x + 'px';
