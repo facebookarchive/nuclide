@@ -82,9 +82,8 @@ describe('AtomInput', () => {
 
   it('updates will stop firing when the component is unmounted', () => {
     const initialValue = 'some text';
-    reactElement = createWithProps({initialValue});
     const onDidChange = jasmine.createSpy('onDidChange');
-    reactElement.onDidChange(onDidChange);
+    reactElement = createWithProps({initialValue, onDidChange});
 
     const textEditor = reactElement.getTextEditor();
     textEditor.setText('the new text');
@@ -98,5 +97,20 @@ describe('AtomInput', () => {
 
     textEditor.setText('even more new text');
     expect(onDidChange.calls.length).toBe(1);
+  });
+
+  it('does not leak TextEditorComponent', () => {
+    waitsForPromise(async () => {
+      jasmine.useRealClock();
+      const hostEl = document.createElement('div');
+      const component = ReactDOM.render(<AtomInput />, hostEl);
+      const textEditor = component.getTextEditor();
+      const element = textEditor.getElement();
+      ReactDOM.unmountComponentAtNode(hostEl);
+
+      // Cleanup occurs during the next tick.
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(element.component).toBe(null);
+    });
   });
 });

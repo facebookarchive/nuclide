@@ -12,6 +12,7 @@
 
 import {AtomTextEditor} from '../AtomTextEditor';
 import * as React from 'react';
+import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import invariant from 'assert';
 
@@ -163,6 +164,21 @@ describe('nuclide-ui-atom-text-editor', () => {
         model.backspace();
         expect(model.getText()).toEqual('fooba');
       });
+    });
+  });
+
+  it('does not leak TextEditorComponent', () => {
+    waitsForPromise(async () => {
+      jasmine.useRealClock();
+      const hostEl = document.createElement('div');
+      const component = ReactDOM.render(<AtomTextEditor />, hostEl);
+      const textEditor = component.getModel();
+      const element = textEditor.getElement();
+      ReactDOM.unmountComponentAtNode(hostEl);
+
+      // Cleanup occurs during the next tick.
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(element.component).toBe(null);
     });
   });
 });
