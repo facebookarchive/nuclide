@@ -1297,10 +1297,22 @@ export class HgService {
       .publish();
   }
 
-  diff(revision: string, unified: ?number): ConnectableObservable<string> {
-    const args = ['diff', '-r', revision];
+  diff(
+    revision: string,
+    unified: ?number,
+    diffCommitted: ?boolean,
+    noPrefix: ?boolean,
+    noDates: ?boolean,
+  ): ConnectableObservable<string> {
+    const args = ['diff', diffCommitted ? '-c' : '-r', revision];
     if (unified != null) {
       args.push('--unified', `${unified}`);
+    }
+    if (noPrefix) {
+      args.push('--noprefix');
+    }
+    if (noDates) {
+      args.push('--nodates');
     }
     const execOptions = {
       cwd: this._workingDirectory,

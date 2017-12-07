@@ -977,10 +977,21 @@ export class HgRepositoryClient {
 
   diff(
     revision: number | string,
-    options: {unified?: number} = {},
+    options: {
+      // diffCommitted uses the -c flag instead of -r, fetches committed changes
+      // '--unified n' gives us n lines of context around the change
+      // '--noprefix' omits the a/ and b/ prefixes from filenames
+      // '--nodates' avoids appending dates to the file path line
+      unified?: number,
+      diffCommitted?: boolean,
+      noPrefix?: boolean,
+      noDates?: boolean,
+    } = {},
   ): Observable<string> {
-    const {unified} = options;
-    return this._service.diff(String(revision), unified).refCount();
+    const {unified, diffCommitted, noPrefix, noDates} = options;
+    return this._service
+      .diff(String(revision), unified, diffCommitted, noPrefix, noDates)
+      .refCount();
   }
 
   purge(): Promise<void> {
