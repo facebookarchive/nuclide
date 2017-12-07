@@ -273,9 +273,7 @@ export class TerminalView implements PtyClient {
       Observable.merge(
         Observable.fromEvent(this._terminal, 'focus'),
         Observable.fromEvent(window, 'resize'),
-        observeElementDimensions(
-          (this._div.querySelector('.xterm-viewport'): any),
-        ),
+        observeElementDimensions(this._div),
       )
         .let(fastDebounce(RESIZE_EVENT_DEBOUNCE_MS))
         .subscribe(() => this._fitAndResize()),
