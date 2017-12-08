@@ -335,4 +335,10 @@ describe('QueuedAckTransport', () => {
     advanceClock(2 * PENDING_MESSAGE_TIMEOUT);
     check('advanceClock final');
   });
+
+  it('does not crash with amnesia', () => {
+    receiver.next(frameAck(10));
+    expect(q.getState()).toBe('closed');
+    expect(transport.close).toHaveBeenCalled();
+  });
 });
