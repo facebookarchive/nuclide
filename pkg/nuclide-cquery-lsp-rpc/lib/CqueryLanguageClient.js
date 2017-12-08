@@ -16,6 +16,8 @@ import type {
   Command,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
+import {Subject} from 'rxjs';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {
   lspUri_localPath,
   lspTextEdits_atomTextEdits,
@@ -49,6 +51,7 @@ export class CqueryLanguageClient extends LspLanguageService {
   }
 
   async startCquery(): Promise<void> {
+    const progressSubject = new Subject();
     this._lspConnection._jsonRpcConnection.onNotification(
       {method: '$cquery/progress'},
       (args: CqueryProgressNotification) => {
@@ -65,17 +68,40 @@ export class CqueryLanguageClient extends LspLanguageService {
           loadPreviousIndexCount +
           onIdMappedCount +
           onIndexedCount;
-        if (total === 0) {
+        progressSubject.next(total);
+      },
+    );
+    // cquery progress is strange; sometimes it reaches 0 then goes back up
+    // again, so we wait a bit before clearing the progress icon at 0.
+    progressSubject
+      .distinctUntilChanged()
+      .throttleTime(50)
+      .do(
+        // update progress text
+        value => {
+          const label = `cquery: ${value} jobs`;
+          this._handleProgressNotification({id: 'cquery-progress', label});
+        },
+      )
+      // if progress has not changed for 2 seconds and is now 0 then complete.
+      .let(fastDebounce(2000))
+      .subscribe(
+        // next
+        value => {
+          if (value === 0) {
+            progressSubject.complete();
+          }
+        },
+        // error
+        null,
+        // complete
+        () => {
           this._handleProgressNotification({
             id: 'cquery-progress',
             label: null,
           });
-        } else {
-          const label = `cquery: ${total} jobs`;
-          this._handleProgressNotification({id: 'cquery-progress', label});
-        }
-      },
-    );
+        },
+      );
     // TODO pelmers Register handlers for other custom cquery messages.
     // TODO pelmers hook into refactorizer for renaming?
   }
