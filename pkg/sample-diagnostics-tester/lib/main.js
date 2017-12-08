@@ -15,9 +15,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import PackageModel from './PackageModel';
-import PanelViewModel from './PanelViewModel';
-
-const WORKSPACE_ITEM_URI = 'atom://nuclide/sample-diagnostics-tester';
+import PanelViewModel, {WORKSPACE_ITEM_URI} from './PanelViewModel';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -57,6 +55,10 @@ class Activation {
         this._disposables.remove(linter);
       },
     );
+  }
+
+  deserializeDiagnosticsTester(): PanelViewModel {
+    return new PanelViewModel(this._model);
   }
 }
 

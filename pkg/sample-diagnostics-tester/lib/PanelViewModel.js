@@ -19,11 +19,17 @@ export type AddMessagesType = (
 ) => mixed;
 export type ClearType = () => mixed;
 
+export const WORKSPACE_ITEM_URI = 'atom://nuclide/sample-diagnostics-tester';
+
 export default class PanelViewModel {
   element: ?HTMLElement;
 
   constructor(options: {+addMessages: AddMessagesType, +clear: ClearType}) {
     this.element = renderReactRoot(<PanelView {...options} />);
+  }
+
+  getURI(): string {
+    return WORKSPACE_ITEM_URI;
   }
 
   getTitle() {
@@ -32,5 +38,9 @@ export default class PanelViewModel {
 
   getDefaultLocation(): string {
     return 'right';
+  }
+
+  serialize(): mixed {
+    return {deserializer: 'nuclide.DiagnosticsTester'};
   }
 }
