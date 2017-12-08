@@ -171,10 +171,18 @@ export default class VsDebugSession extends V8Protocol {
           return response;
         },
         (errorResponse: DebugProtocol.ErrorResponse) => {
-          const errorMessage =
-            idx(errorResponse, _ => _.body.error.format) ||
-            JSON.stringify(errorResponse);
-          throw new Error(errorMessage);
+          let formattedError = idx(errorResponse, _ => _.body.error.format);
+          if (formattedError === '{_stack}') {
+            formattedError = JSON.stringify(errorResponse.body.error);
+          } else if (formattedError == null) {
+            formattedError = [
+              `command: ${command}`,
+              `args: ${JSON.stringify(args)}`,
+              `response: ${JSON.stringify(errorResponse)}`,
+              `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
+            ].join(', ');
+          }
+          throw new Error(formattedError);
         },
       ),
     );

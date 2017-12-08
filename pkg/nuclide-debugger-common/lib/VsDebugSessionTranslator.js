@@ -486,11 +486,10 @@ export default class VsDebugSessionTranslator {
         await this._session.attach(this._debuggerArgs);
       }
     } catch (error) {
-      this._sendAtomNotification(
-        'error',
-        `Failed to ${this._debugMode} the debugger!<br/>` + util.format(error),
+      this._terminateSessionWithError(
+        `Failed to ${this._debugMode} the debugger!`,
+        error,
       );
-      this.dispose();
     }
   }
 
@@ -835,7 +834,7 @@ export default class VsDebugSessionTranslator {
             });
           },
           error =>
-            this._logger.error(
+            this._terminateSessionWithError(
               'Unable to translate stop event / call stack',
               error,
             ),
@@ -879,9 +878,19 @@ export default class VsDebugSessionTranslator {
         })
         .subscribe(
           () => this._logger.info('Session synced'),
-          error => this._logger.error('Unable to sync session: ', error),
+          error =>
+            this._terminateSessionWithError('Unable to sync session', error),
         ),
     );
+  }
+
+  _terminateSessionWithError(errorMessage: string, error: any) {
+    this._logger.error(errorMessage, error);
+    this._sendAtomNotification(
+      'error',
+      `${errorMessage}<br/>` + util.format(error),
+    );
+    this.dispose();
   }
 
   _updateThreadsState(threadIds: Iterable<number>, state: ThreadState): void {
