@@ -83,7 +83,16 @@ async function main(): Promise<void> {
       process.exit(0);
     }
 
-    const adapter = debuggerAdapterFactory.adapterFromArguments(args);
+    let adapter;
+
+    try {
+      adapter = debuggerAdapterFactory.adapterFromArguments(args);
+    } catch (error) {
+      cli.outputLine(error.message);
+      cli.outputLine();
+      showHelp();
+      process.exit(0);
+    }
 
     const logger = buildLogger();
     const debuggerInstance = new Debugger(logger, cli);
