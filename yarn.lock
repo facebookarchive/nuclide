@@ -3912,9 +3912,9 @@ react-relay@1.4.1:
     prop-types "^15.5.8"
     relay-runtime "1.4.1"
 
-react-virtualized@9.10.1:
-  version "9.10.1"
-  resolved "https://registry.yarnpkg.com/react-virtualized/-/react-virtualized-9.10.1.tgz#d32365d0edf49debbe25fbfe73b5f55f6d9d8c72"
+react-virtualized@9.13.0:
+  version "9.13.0"
+  resolved "https://registry.yarnpkg.com/react-virtualized/-/react-virtualized-9.13.0.tgz#83e4d984271a37631225e5fe6faeaeada6e59f53"
   dependencies:
     babel-runtime "^6.23.0"
     classnames "^2.2.3"

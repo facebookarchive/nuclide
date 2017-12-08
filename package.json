@@ -95,7 +95,7 @@
     "react-dom": "16.0.0",
     "react-redux": "5.0.6",
     "react-relay": "1.4.1",
-    "react-virtualized": "9.10.1",
+    "react-virtualized": "9.13.0",
     "redux": "3.6.0",
     "redux-logger": "3.0.6",
     "relay-runtime": "1.4.1",
