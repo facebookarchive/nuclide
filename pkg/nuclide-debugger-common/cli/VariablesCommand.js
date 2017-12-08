@@ -23,7 +23,7 @@ Each stack frame in a program may have its own local variables, and there there
 may also be variables accessible at other scopes (such as global or in closures.)
 The variables command queries the target for all scopes at the select stack frame,
 and displays values for all variables in scopes deemed inexpensive to evaluate.
-Optionally, you can specify a scope  argument to just display the variables from
+Optionally, you can specify a scope argument to just display the variables from
 that scope, and the variables will be shown even if they are slow to evaluate.
 
 The exact grouping of variables into scopes is dependent upon the source language

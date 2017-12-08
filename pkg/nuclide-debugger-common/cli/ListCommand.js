@@ -23,7 +23,28 @@ type SourceReference = {
 
 export default class ListCommand implements Command {
   name = 'list';
-  helpText = "[source|@[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
+  helpText = "[line | source[:line] | @[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
+
+  detailedHelpText = `
+list [line | source[:line] | @[:line]]
+
+Lists source files.
+
+With no arguments, list tries to continue displaying the current source file. If
+a file has been previously listed, then that is the current source file; otherwise,
+the current source file is the file containing the location of the selected stack
+frame.
+
+If just a line number is given, then the current source file will be listed starting
+at that line.
+
+If just a source file is given, then that file will be listed started at the beginning.
+If a line number is also given, then the listing will start at that line.
+
+'@' may be used as a shorthand for the source file of the current location in the
+selected stack frame. With no line number, the listing will attempt to center the
+current location in the ouput. Otherwise, listing will begin at the given line number.
+  `;
 
   static _formatError = "Format is 'list [source[:line]]'.";
   static _linesToPrint = 25;

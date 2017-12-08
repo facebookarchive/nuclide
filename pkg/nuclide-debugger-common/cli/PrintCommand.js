@@ -19,6 +19,24 @@ import {DebuggerInterface} from './DebuggerInterface';
 export default class PrintCommand implements Command {
   name = 'print';
   helpText = 'expr: Prints the result of an expression in the context of the current stack frame.';
+  detailedHelpText = `
+print expression
+
+Displays the value of an expression. The expression will be evaluated in the syntax
+of the program's language.
+
+The expression will be evaluated in the context of the selected stack frame. See
+'backtrace' for how to set the selected frame.
+
+The expression may have side effects, in which case program state will be modified.
+For example,
+
+print x = 5
+
+is a convenient way to set the value of 'x' to 5. Also, since a function call is
+an expression, any in-scope function may be called, which may modify program state
+in complex ways.
+  `;
 
   _console: ConsoleIO;
   _debugger: DebuggerInterface;

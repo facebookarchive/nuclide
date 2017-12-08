@@ -27,6 +27,39 @@ export default class BreakpointCommand implements Command {
   // help system to support subcommands
   helpText = 'Sets a breakpoint on the target.';
 
+  detailedHelpText = `
+breakpoint [subcommand | [source-file:]line]
+
+Sets a breakpoint, or operates on existing breakpoints.
+
+With no arguments, attempts to set a breakpoint at the current location as determined
+by the selected stack frame. With no source file, attempts to set a breakpoint at
+the given line number in the source file at the current location.
+
+Upon setting a breakpoint, the debugger may respond that the breakpoint was set
+but not bound. There are several reasons this can happen:
+
+* The line number specified has no executable code associated with it.
+* The source file specified does not exist.
+* The breakpoint is in a proper location in a good source file, but information
+  about the source file has not yet been loaded. Not all languages know what source
+  files will be loaded in the course of execution; for example, in node a source
+  file will not be become available until some other module has called 'require'
+  on it.
+
+If the breakpoint is incorrectly specified, it will never be hit. However, in the
+latter case, the breakpoint will become active when the runtime loads the specified
+file.
+
+The breakpoint command has several subcommands:
+
+* 'delete' will delete an existing breakpoint
+* 'disable' will temporarily disable an existing breakpoint
+* 'enable' will re-enable an existing breakpoint
+* 'help' will give detailed information about the subcommands
+* 'list' will list all existing breakpoints
+  `;
+
   _debugger: DebuggerInterface;
   _console: ConsoleIO;
   _dispatcher: CommandDispatcher;
