@@ -57,6 +57,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   _emitter: Emitter;
   _logger: log4js$Logger;
   _newProtocolMessageChecker: NewProtocolMessageChecker;
+  _disposed: boolean;
 
   constructor(
     processInfo: DebuggerProcessInfo,
@@ -64,6 +65,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     subscriptions: ?UniversalDisposable,
   ) {
     super(processInfo);
+    this._disposed = false;
     this._rpcService = rpcService;
     this._disposables = new UniversalDisposable();
     if (subscriptions != null) {
@@ -148,9 +150,13 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   /**
    * The following three methods are used by new Nuclide channel.
    */
-  sendNuclideMessage(message: string): Promise<void> {
+  sendNuclideMessage(message: string): void {
+    if (this._disposed) {
+      this._logger.error('sendNuclideMessage after dispose!', message);
+      return;
+    }
     this._newProtocolMessageChecker.registerSentMessage(message);
-    return this._handleChromeSocketMessage(message);
+    this._handleChromeSocketMessage(message);
   }
 
   registerNuclideNotificationHandler(
@@ -174,6 +180,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   dispose() {
+    this._disposed = true;
     this._disposables.dispose();
   }
 }
