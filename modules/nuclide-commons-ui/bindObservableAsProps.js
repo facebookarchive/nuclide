@@ -31,17 +31,12 @@ export function bindObservableAsProps<T: React.ComponentType<any>, U: T>(
   return class extends React.Component<$FlowFixMeProps, {[key: string]: any}> {
     _subscription: ?rxjs$ISubscription;
     _resolved: boolean;
-    _wrappedComponent: ?T;
 
     constructor(props) {
       super(props);
       this._subscription = null;
       this.state = {};
       this._resolved = false;
-    }
-
-    getWrappedComponent(): ?T {
-      return this._wrappedComponent;
     }
 
     componentDidMount(): void {
@@ -65,12 +60,7 @@ export function bindObservableAsProps<T: React.ComponentType<any>, U: T>(
         ...this.props,
         ...this.state,
       };
-      return (
-        <ComposedComponent
-          ref={component => (this._wrappedComponent = component)}
-          {...props}
-        />
-      );
+      return <ComposedComponent {...props} />;
     }
   };
 }
