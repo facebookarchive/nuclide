@@ -169,3 +169,22 @@ function f(int $x, dict<int, (int, ?int)> $y): void {
   //                                      ^ punctuation.definition.variable
   //                                       ^ variable.other.php
 }
+
+function f(int $a, arraykey $b, keyarray $c, ints $d, lint $e): void {
+  //       ^^^ storage.type.php
+  //               ^^^^^^^^ support.class.php
+  //                            ^^^^^^^^ support.class.php
+  //                                         ^^^^ support.class.php
+  //                                                  ^^^^ support.class.php
+}
+
+function f(array<int> $a, array<lint> $b, keyarray<int> $c, arrays<ints> $d): void {
+  //       ^^^^^ storage.type.array.php
+  //             ^^^ storage.type.php
+  //                      ^^^^^ storage.type.array.php
+  //                            ^^^^ support.class.php
+  //                                      ^^^^^^^^ support.class.php
+  //                                               ^^^ storage.type.php
+  //                                                        ^^^^^^ support.class.php
+  //                                                               ^^^^ support.class.php
+}

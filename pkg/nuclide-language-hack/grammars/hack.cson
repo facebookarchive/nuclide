@@ -335,11 +335,11 @@
     'name': 'storage.type.php'
     'patterns': [
       {
-        'match': 'array'
+        'match': '\\barray\\b'
         'name': 'storage.type.array.php'
       }
       {
-        'match': 'bool|int|float|string|array|resource|mixed'
+        'match': '\\b(?:bool|int|float|string|array|resource|mixed)\\b'
         'name': 'storage.type.php'
       }
       {
