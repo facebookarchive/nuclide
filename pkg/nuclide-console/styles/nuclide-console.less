@@ -1,7 +1,7 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-@nuclide-console-border-size: 1px;
+@nuclide-console-border-size: 0.1em;
 @nuclide-console-record-background-color-normal: @syntax-background-color;
 @nuclide-console-record-text-color-normal: @syntax-text-color;
 // Don't use @base-border-color because that's a UI color, and makes light/dark
@@ -13,8 +13,8 @@
 @nuclide-console-record-border-color-warning: @background-color-warning;
 @nuclide-console-record-text-color-success: @text-color-success;
 @nuclide-console-record-border-color-success: @background-color-success;
-@nuclide-console-record-vertical-padding: 1px;
-@nuclide-console-record-horizontal-padding: 5px;
+@nuclide-console-record-vertical-padding: 0.1em;
+@nuclide-console-record-horizontal-padding: 0.5em;
 @nuclide-console-icon-size: 11px;
 
 // Color variables for `level-color` classes.
@@ -58,12 +58,13 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  font-size: @nuclide-console-record-font-size;
   background-color: @syntax-background-color;
+  line-height: 1.5;
   min-height: 0;
 }
 
 .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-  font-size: @nuclide-console-record-font-size;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
   white-space: pre-wrap;
   word-break: normal;
@@ -130,6 +131,7 @@
   cursor: text;
   border-left: (@component-padding / 2) solid transparent;
   pre {
+    font-size: inherit;
     background-color: transparent;
 
     // Break on words
@@ -144,19 +146,11 @@
 
   .icon {
     color: fadeout(@nuclide-console-record-text-color-normal, 70%);
+    font-size: inherit;
     text-align: center;
   }
 
-  &,
-  pre,
-  atom-text-editor,
-  .icon,
   .icon::before {
-    font-size: @nuclide-console-record-font-size;
-  }
-
-  .icon::before {
-    width: @nuclide-console-record-font-size;
     margin-right: 0.5em;
   }
 
@@ -383,10 +377,11 @@
   color: @nuclide-console-record-background-color-normal;
   display: flex;
   flex-direction: column;
-  font-size: @nuclide-console-record-font-size;
   font-weight: bold;
   height: 1.4em;
   justify-content: center;
+  margin-top: auto;
+  margin-bottom: auto;
   margin-right: @component-padding / 2;
   min-width: 1.4em;
   padding: 0 0.4em;
