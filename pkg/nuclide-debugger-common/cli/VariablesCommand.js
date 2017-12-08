@@ -16,6 +16,23 @@ import {DebuggerInterface} from './DebuggerInterface';
 export default class VariablesCommand implements Command {
   name = 'variables';
   helpText = '[scope] Display variables of the current stack frame, optionally for a single scope.';
+  detailedHelpText = `
+variables [scope]
+
+Each stack frame in a program may have its own local variables, and there there
+may also be variables accessible at other scopes (such as global or in closures.)
+The variables command queries the target for all scopes at the select stack frame,
+and displays values for all variables in scopes deemed inexpensive to evaluate.
+Optionally, you can specify a scope  argument to just display the variables from
+that scope, and the variables will be shown even if they are slow to evaluate.
+
+The exact grouping of variables into scopes is dependent upon the source language
+of the program being  debugged and the implemention of the debug adapter for that
+type.
+
+You can use the 'backtrace' command to set the selected stack frame. By default,
+when the program stops the most recent frame will be selected.
+  `;
 
   _console: ConsoleIO;
   _debugger: DebuggerInterface;

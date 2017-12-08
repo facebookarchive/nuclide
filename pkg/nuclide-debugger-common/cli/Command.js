@@ -12,5 +12,6 @@
 export interface Command {
   +name: string;
   +helpText: string;
+  +detailedHelpText?: string;
   execute(args: string[]): Promise<void>;
 }

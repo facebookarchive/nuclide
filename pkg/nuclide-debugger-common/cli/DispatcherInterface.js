@@ -13,4 +13,6 @@ import type {Command} from './Command';
 
 export interface DispatcherInterface {
   getCommands(): Command[];
+  getCommandsMatching(prefix: string): Command[];
+  commandListToString(commands: Command[]): string;
 }

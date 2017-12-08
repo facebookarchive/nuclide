@@ -24,7 +24,14 @@ export default class HelpCommand implements Command {
     this._dispatcher = dispatcher;
   }
 
-  async execute(): Promise<void> {
+  async execute(args: string[]): Promise<void> {
+    const [command] = args;
+
+    if (command != null) {
+      this._displayDetailedHelp(command);
+      return;
+    }
+
     this._displayHelp();
   }
 
@@ -38,5 +45,26 @@ export default class HelpCommand implements Command {
     commandNames.forEach(name => {
       this._console.outputLine(`${name}: ${commandDict[name].helpText}`);
     });
+  }
+
+  _displayDetailedHelp(cmd: string): void {
+    const commands = this._dispatcher.getCommandsMatching(cmd);
+    if (commands.length === 0) {
+      throw new Error(`There is no command "${cmd}"`);
+    }
+
+    if (commands.length > 1) {
+      const list = this._dispatcher.commandListToString(commands);
+      throw new Error(`Multiple commands match "${cmd}": ${list}`);
+    }
+
+    const command = commands[0];
+
+    if (command.detailedHelpText != null) {
+      this._console.outputLine(command.detailedHelpText);
+      return;
+    }
+
+    this._console.outputLine(command.helpText);
   }
 }
