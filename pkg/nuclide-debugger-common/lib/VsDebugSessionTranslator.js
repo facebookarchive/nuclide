@@ -675,7 +675,9 @@ export default class VsDebugSessionTranslator {
       };
     } catch (error) {
       return {
-        result: (null: any),
+        result: {
+          type: 'undefined',
+        },
         exceptionDetails: error.message,
         wasThrown: true,
       };
