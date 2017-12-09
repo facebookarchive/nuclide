@@ -12,17 +12,18 @@
 import type {
   AtomNotification,
   DebuggerConfigAction,
-} from '../../nuclide-debugger-common/lib/types';
+} from 'nuclide-debugger-common/types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   VsAdapterType,
   VSAdapterExecutableInfo,
-} from '../../nuclide-debugger-common/lib/types';
+} from 'nuclide-debugger-common/types';
 
+// eslint-disable-next-line rulesdir/no-unresolved
 import {
   DebuggerRpcServiceBase,
   VsDebugSessionTranslator,
-} from '../../nuclide-debugger-common';
+} from 'nuclide-debugger-common';
 
 export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
   _translator: ?VsDebugSessionTranslator;

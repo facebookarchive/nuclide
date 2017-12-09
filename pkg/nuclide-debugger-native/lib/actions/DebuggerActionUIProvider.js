@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from '../../../nuclide-debugger-common';
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {LaunchAttachActions} from '../LaunchAttachActions';

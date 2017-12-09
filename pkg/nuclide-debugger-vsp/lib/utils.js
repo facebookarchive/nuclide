@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VSAdapterExecutableInfo} from '../../nuclide-debugger-common/lib/types';
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
@@ -21,7 +21,8 @@ import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import VspProcessInfo from './VspProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {VsAdapterTypes} from '../../nuclide-debugger-common/lib/constants';
+// eslint-disable-next-line rulesdir/no-unresolved
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,

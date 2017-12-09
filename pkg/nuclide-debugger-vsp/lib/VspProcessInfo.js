@@ -10,11 +10,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 import type {
   VsAdapterType,
   VSAdapterExecutableInfo,
-} from '../../nuclide-debugger-common/lib/types';
+} from 'nuclide-debugger-common/types';
 import type {VSCodeDebuggerAdapterService} from '../../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService';
 import type {
   DebuggerInstanceBase,

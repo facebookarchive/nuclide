@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import BaseClientCallback from '../../nuclide-debugger-common/lib/ClientCallback';
+import BaseClientCallback from 'nuclide-debugger-common/ClientCallback';
 import {Subject} from 'rxjs';
 
 export type UserMessageType = 'notification' | 'console' | 'outputWindow';

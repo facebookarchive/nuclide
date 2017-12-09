@@ -11,18 +11,18 @@
 
 import type {ConnectableObservable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {AtomNotification} from '../../nuclide-debugger-common';
+import type {AtomNotification} from 'nuclide-debugger-common';
 
 import logger from './utils';
 import {hphpdMightBeAttached} from './helpers';
 import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VsAdapterTypes} from '../../nuclide-debugger-common/lib/constants';
 import {
   ClientCallback,
+  VsAdapterTypes,
   VsDebugSessionTranslator,
-} from '../../nuclide-debugger-common';
+} from 'nuclide-debugger-common/main';
 
 export type PhpDebuggerSessionConfig = {
   xdebugAttachPort: number,
@@ -128,7 +128,7 @@ export class PhpDebuggerService {
   _getNodePath(): string {
     try {
       // $FlowFB
-      return require('../../nuclide-debugger-common/lib/fb-constants')
+      return require('nuclide-debugger-common//fb-constants')
         .DEVSERVER_NODE_PATH;
     } catch (error) {
       return 'node';

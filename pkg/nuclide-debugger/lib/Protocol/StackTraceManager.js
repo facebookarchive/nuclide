@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CallFrame} from '../../../nuclide-debugger-common/lib/protocol-types';
+import type {CallFrame} from 'nuclide-debugger-common/protocol-types';
 import type {Callstack, CallstackItem} from '../types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 

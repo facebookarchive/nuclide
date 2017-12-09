@@ -15,7 +15,7 @@ import React from 'react';
 import ReactNativeAttachUiComponent from './ReactNativeAttachUiComponent';
 import ReactNativeLaunchUiComponent from './ReactNativeLaunchUiComponent';
 
-import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 export default class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(targetUri: string) {

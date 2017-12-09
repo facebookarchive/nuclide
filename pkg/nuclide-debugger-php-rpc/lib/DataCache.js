@@ -15,7 +15,7 @@ import type {
   PropertyDescriptor,
   RemoteObject,
   RemoteObjectId,
-} from '../../nuclide-debugger-common/lib/protocol-types';
+} from 'nuclide-debugger-common/protocol-types';
 
 import logger from './utils';
 import {

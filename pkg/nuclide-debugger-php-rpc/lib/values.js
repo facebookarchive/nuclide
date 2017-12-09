@@ -23,7 +23,7 @@ import type {ObjectId} from './ObjectId';
 import type {
   RemoteObject,
   RemoteObjectId,
-} from '../../nuclide-debugger-common/lib/protocol-types';
+} from 'nuclide-debugger-common/protocol-types';
 
 /**
  * Converts a dbgp value to a Chrome RemoteObject.

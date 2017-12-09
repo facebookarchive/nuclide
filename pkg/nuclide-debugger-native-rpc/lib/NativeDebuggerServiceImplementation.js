@@ -22,7 +22,7 @@ import type {Socket} from 'net';
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
+import {DebuggerRpcWebSocketService} from 'nuclide-debugger-common/main';
 import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
 import {runCommand} from 'nuclide-commons/process';

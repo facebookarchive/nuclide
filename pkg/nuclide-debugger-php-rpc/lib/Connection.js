@@ -13,7 +13,7 @@ import type {
   Scope,
   PropertyDescriptor,
   RemoteObjectId,
-} from '../../nuclide-debugger-common/lib/protocol-types';
+} from 'nuclide-debugger-common/protocol-types';
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 import {ConnectionStatus} from './DbgpSocket';

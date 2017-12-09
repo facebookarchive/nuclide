@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RemoteObjectId} from '../../nuclide-debugger-common/lib/protocol-types';
+import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
 import type ScopesStore from './ScopesStore';
 import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
 import invariant from 'assert';

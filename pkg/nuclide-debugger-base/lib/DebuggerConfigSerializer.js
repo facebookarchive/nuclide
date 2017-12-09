@@ -10,7 +10,7 @@
  */
 /* global localStorage */
 
-import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 // transientSettings will matinain configuration that should be persisted for the
 // duration of the current Nunclide session (so preserved across the configuration dialog

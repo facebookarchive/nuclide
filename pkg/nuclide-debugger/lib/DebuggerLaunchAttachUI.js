@@ -11,7 +11,7 @@
 
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 import type DebuggerActions from './DebuggerActions';
 
 import * as React from 'react';

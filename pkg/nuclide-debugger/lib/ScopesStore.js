@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {SetVariableResponse} from '../../nuclide-debugger-common/lib/protocol-types';
+import type {SetVariableResponse} from 'nuclide-debugger-common/protocol-types';
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';

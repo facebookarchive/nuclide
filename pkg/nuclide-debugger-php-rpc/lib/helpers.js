@@ -20,7 +20,7 @@ import {shellParse} from 'nuclide-commons/string';
 import {runCommand} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {pathToUri, uriToPath} from '../../nuclide-debugger-common/lib/helpers';
+import {pathToUri, uriToPath} from 'nuclide-debugger-common/main';
 export {pathToUri, uriToPath};
 
 export const DUMMY_FRAME_ID = 'Frame.0';

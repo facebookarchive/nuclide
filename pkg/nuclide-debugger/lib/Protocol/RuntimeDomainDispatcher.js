@@ -12,7 +12,7 @@
 import type {
   RemoteObjectId,
   ExecutionContextCreatedEvent,
-} from '../../../nuclide-debugger-common/lib/protocol-types';
+} from 'nuclide-debugger-common/protocol-types';
 import type {ObjectGroup} from '../types';
 
 /**

@@ -19,7 +19,7 @@ import type {
   PausedEvent,
   ThreadsUpdatedEvent,
   ThreadUpdatedEvent,
-} from '../../../nuclide-debugger-common/lib/protocol-types';
+} from 'nuclide-debugger-common/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
