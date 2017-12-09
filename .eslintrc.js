@@ -395,7 +395,10 @@ module.exports = {
     'react/no-multi-comp': 0,
     'react/no-render-return-value': 0,
     'react/no-set-state': 0,
-    'react/no-string-refs': 0,
+
+    // String refs don't work correctly if multiple versions of React are at play.
+    'react/no-string-refs': 1,
+
     'react/no-unescaped-entities': 0,
     'react/no-unknown-property': 1,
     'react/no-unused-prop-types': 1,
