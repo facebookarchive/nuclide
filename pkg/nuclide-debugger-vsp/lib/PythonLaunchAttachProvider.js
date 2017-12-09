@@ -14,7 +14,7 @@ import * as React from 'react';
 import PythonScriptLaunchUiComponent from './PythonScriptLaunchUiComponent';
 import invariant from 'assert';
 
-import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
 
 export default class PythonLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(targetUri: string) {

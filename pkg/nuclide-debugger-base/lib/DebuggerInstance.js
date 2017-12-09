@@ -11,7 +11,7 @@
 
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AtomNotification} from './types';
+import type {AtomNotification} from '../../nuclide-debugger-common';
 
 import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

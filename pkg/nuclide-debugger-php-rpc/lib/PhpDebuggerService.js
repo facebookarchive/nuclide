@@ -11,7 +11,7 @@
 
 import type {ConnectableObservable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {AtomNotification} from '../../nuclide-debugger-base/lib/types';
+import type {AtomNotification} from '../../nuclide-debugger-common';
 
 import logger from './utils';
 import {hphpdMightBeAttached} from './helpers';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../../nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import * as React from 'react';

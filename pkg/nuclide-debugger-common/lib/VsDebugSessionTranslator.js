@@ -12,7 +12,7 @@
 import type {
   AtomNotificationType,
   DebuggerConfigAction,
-} from '../../nuclide-debugger-base/lib/types';
+} from '../../nuclide-debugger-common';
 import type {
   VsAdapterType,
   VSAdapterExecutableInfo,

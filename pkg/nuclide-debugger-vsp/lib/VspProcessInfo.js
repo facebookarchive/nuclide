@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
 import type {
   VsAdapterType,
   VSAdapterExecutableInfo,

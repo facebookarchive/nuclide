@@ -26,10 +26,8 @@ import type {
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {
-  DebuggerLaunchAttachProvider,
-  DebuggerConfigAction,
-} from '../../nuclide-debugger-base';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {FileLineBreakpoint} from './types';

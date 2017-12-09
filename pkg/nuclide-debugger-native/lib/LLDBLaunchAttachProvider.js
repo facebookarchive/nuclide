@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';

@@ -12,7 +12,7 @@
 import type {
   AtomNotification,
   DebuggerConfigAction,
-} from '../../nuclide-debugger-base/lib/types';
+} from '../../nuclide-debugger-common/lib/types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   VsAdapterType,

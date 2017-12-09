@@ -9,6 +9,14 @@
  * @format
  */
 
+export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
+export type AtomNotification = {
+  type: AtomNotificationType,
+  message: string,
+};
+
+export type DebuggerConfigAction = 'launch' | 'attach';
+
 export type VSAdapterExecutableInfo = {
   command: string,
   args: Array<string>,

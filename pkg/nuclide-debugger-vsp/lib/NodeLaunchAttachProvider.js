@@ -15,7 +15,7 @@ import NodeLaunchUiComponent from './NodeLaunchUiComponent';
 import NodeAttachUiComponent from './NodeAttachUiComponent';
 import invariant from 'assert';
 
-import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-common';
 
 export default class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(targetUri: string) {

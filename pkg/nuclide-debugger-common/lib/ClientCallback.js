@@ -12,7 +12,7 @@
 import type {
   AtomNotification,
   AtomNotificationType,
-} from '../../nuclide-debugger-base/lib/types';
+} from '../../nuclide-debugger-common';
 import {Observable, Subject} from 'rxjs';
 
 export default class ClientCallback {

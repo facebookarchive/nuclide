@@ -9,6 +9,12 @@
  * @format
  */
 
+export type {
+  AtomNotification,
+  AtomNotificationType,
+  DebuggerConfigAction,
+} from './types';
+
 export {default as ClientCallback} from './ClientCallback';
 
 export {

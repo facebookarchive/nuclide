@@ -10,7 +10,7 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
-import type {AtomNotification} from '../../nuclide-debugger-base/lib/types';
+import type {AtomNotification} from '../../nuclide-debugger-common';
 
 import WS from 'ws';
 import ClientCallback from './ClientCallback';
