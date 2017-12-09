@@ -18,6 +18,7 @@ import type {LaunchTargetInfo} from '../../nuclide-debugger-native-rpc/lib/Nativ
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   serializeDebuggerConfig,
@@ -48,6 +49,14 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
+
+  _coreDump: ?AtomInput;
+  _launchArguments: ?AtomInput;
+  _launchEnvironmentVariables: ?AtomInput;
+  _launchExecutable: ?AtomInput;
+  _launchSourcePath: ?AtomInput;
+  _launchWorkingDirectory: ?AtomInput;
+  _stdinFilePath: ?AtomInput;
 
   constructor(props: PropsType) {
     super(props);
@@ -99,9 +108,8 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
       },
     );
 
-    const launchExecutableInput = this.refs.launchExecutable;
-    if (launchExecutableInput != null) {
-      launchExecutableInput.focus();
+    if (this._launchExecutable != null) {
+      this._launchExecutable.focus();
     }
 
     this._disposables.add(
@@ -127,7 +135,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
       <div className="block">
         <label>Executable: </label>
         <AtomInput
-          ref="launchExecutable"
+          ref={input => {
+            this._launchExecutable = input;
+          }}
           tabIndex="11"
           placeholderText="Input the executable path you want to launch"
           value={this.state.launchExecutable}
@@ -135,7 +145,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
         />
         <label>Core dump file: </label>
         <AtomInput
-          ref="coreDump"
+          ref={input => {
+            this._coreDump = input;
+          }}
           tabIndex="12"
           placeholderText="Optional path to a core dump file to offline debug a crash"
           value={this.state.coreDump}
@@ -151,7 +163,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
           })}>
           <label>Arguments: </label>
           <AtomInput
-            ref="launchArguments"
+            ref={input => {
+              this._launchArguments = input;
+            }}
             tabIndex="13"
             disabled={this.state.coreDump !== ''}
             placeholderText="Arguments to the executable"
@@ -160,7 +174,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
           />
           <label>Environment Variables: </label>
           <AtomInput
-            ref="launchEnvironmentVariables"
+            ref={input => {
+              this._launchEnvironmentVariables = input;
+            }}
             tabIndex="14"
             disabled={this.state.coreDump !== ''}
             placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
@@ -171,7 +187,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
           />
           <label>Source path: </label>
           <AtomInput
-            ref="launchSourcePath"
+            ref={input => {
+              this._launchSourcePath = input;
+            }}
             tabIndex="16"
             placeholderText="Optional base path for sources"
             value={this.state.launchSourcePath}
@@ -179,7 +197,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
           />
           <label>Working directory: </label>
           <AtomInput
-            ref="launchWorkingDirectory"
+            ref={input => {
+              this._launchWorkingDirectory = input;
+            }}
             tabIndex="17"
             disabled={this.state.coreDump !== ''}
             placeholderText="Working directory for the launched executable"
@@ -190,7 +210,9 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
           />
           <label>Stdin file: </label>
           <AtomInput
-            ref="stdinFilePath"
+            ref={input => {
+              this._stdinFilePath = input;
+            }}
             tabIndex="18"
             disabled={this.state.coreDump !== ''}
             placeholderText="Redirect stdin to this file"
@@ -204,17 +226,27 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
 
   _handleLaunchClick = (): void => {
     // TODO: perform some validation for the input.
-    const launchExecutable = this.refs.launchExecutable.getText().trim();
-    const coreDump = this.refs.coreDump.getText().trim();
-    const launchArguments = shellParse(this.refs.launchArguments.getText());
-    const launchEnvironmentVariables = shellParse(
-      this.refs.launchEnvironmentVariables.getText(),
-    );
-    const launchWorkingDirectory = this.refs.launchWorkingDirectory
+    const launchExecutable = nullthrows(this._launchExecutable)
       .getText()
       .trim();
-    const launchSourcePath = this.refs.launchSourcePath.getText().trim();
-    const stdinFilePath = this.refs.stdinFilePath.getText().trim();
+    const coreDump = nullthrows(this._coreDump)
+      .getText()
+      .trim();
+    const launchArguments = shellParse(
+      nullthrows(this._launchArguments).getText(),
+    );
+    const launchEnvironmentVariables = shellParse(
+      nullthrows(this._launchEnvironmentVariables).getText(),
+    );
+    const launchWorkingDirectory = nullthrows(this._launchWorkingDirectory)
+      .getText()
+      .trim();
+    const launchSourcePath = nullthrows(this._launchSourcePath)
+      .getText()
+      .trim();
+    const stdinFilePath = nullthrows(this._stdinFilePath)
+      .getText()
+      .trim();
     const launchTarget: LaunchTargetInfo = {
       executablePath: launchExecutable,
       arguments: launchArguments,

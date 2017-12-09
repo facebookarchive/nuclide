@@ -20,6 +20,7 @@ import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Button, ButtonSizes, ButtonTypes} from 'nuclide-commons-ui/Button';
+import nullthrows from 'nullthrows';
 import createPaneContainer from '../../../commons-atom/create-pane-container';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -53,6 +54,7 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
   });
 
   _paneContainer: Object;
+  _paneContainerElement: ?HTMLElement;
   _textEditorModel: TextEditor;
   // Bound Functions for use as callbacks.
   setSelectedTestRunnerIndex: Function;
@@ -76,8 +78,7 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
       flexScale: 2,
     });
 
-    // $FlowFixMe
-    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
+    nullthrows(this._paneContainerElement).appendChild(
       atom.views.getView(this._paneContainer),
     );
 
@@ -189,7 +190,6 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
             value: index,
           }))}
           onChange={this.setSelectedTestRunnerIndex}
-          ref="dropdown"
           value={this.state.selectedTestRunnerIndex}
           size="sm"
           title="Choose a test runner"
@@ -266,7 +266,12 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
             </Button>
           </ToolbarRight>
         </Toolbar>
-        <div className="nuclide-test-runner-console" ref="paneContainer" />
+        <div
+          className="nuclide-test-runner-console"
+          ref={el => {
+            this._paneContainerElement = el;
+          }}
+        />
       </div>
     );
   }

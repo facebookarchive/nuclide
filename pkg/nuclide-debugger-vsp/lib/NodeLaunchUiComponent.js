@@ -59,6 +59,13 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
 > {
   _disposables: UniversalDisposable;
 
+  _args: ?AtomInput;
+  _environmentVariables: ?AtomInput;
+  _nodePath: ?AtomInput;
+  _outFiles: ?AtomInput;
+  _scriptPath: ?AtomInput;
+  _workingDirectory: ?AtomInput;
+
   constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
@@ -106,7 +113,7 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
       },
     );
 
-    const scriptPathInput = this.refs.scriptPath;
+    const scriptPathInput = this._scriptPath;
     if (scriptPathInput != null) {
       scriptPathInput.focus();
     }
@@ -138,7 +145,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         <p>This is intended to debug node.js files (for node version 6.3+).</p>
         <label>Script Path: </label>
         <AtomInput
-          ref="scriptPath"
+          ref={input => {
+            this._scriptPath = input;
+          }}
           tabIndex="1"
           placeholderText="Input the script path you want to launch"
           value={this.state.scriptPath}
@@ -147,7 +156,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         <label>(Optional) Node Runtime Path: </label>
         <p>Will use Nuclide's node version if not provided.</p>
         <AtomInput
-          ref="nodePath"
+          ref={input => {
+            this._nodePath = input;
+          }}
           tabIndex="2"
           placeholderText="Node executable path (e.g. /usr/local/bin/node)"
           value={this.state.nodePath}
@@ -155,7 +166,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         />
         <label>(Optional) Arguments: </label>
         <AtomInput
-          ref="args"
+          ref={input => {
+            this._args = input;
+          }}
           tabIndex="3"
           placeholderText="Arguments to the executable"
           value={this.state.args}
@@ -163,7 +176,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         />
         <label>(Optional) Environment Variables: </label>
         <AtomInput
-          ref="environmentVariables"
+          ref={input => {
+            this._environmentVariables = input;
+          }}
           tabIndex="4"
           placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
           value={this.state.environmentVariables}
@@ -171,7 +186,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         />
         <label>(Optional) Working directory: </label>
         <AtomInput
-          ref="workingDirectory"
+          ref={input => {
+            this._workingDirectory = input;
+          }}
           tabIndex="5"
           placeholderText="Working directory for the launched executable"
           value={this.state.workingDirectory}
@@ -179,7 +196,9 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
         />
         <label>(Optional) source maps output files: </label>
         <AtomInput
-          ref="outFiles"
+          ref={input => {
+            this._outFiles = input;
+          }}
           tabIndex="6"
           placeholderText="Output files pattern (e.g. $projectRoot/out/**/*.js)"
           value={this.state.outFiles}
@@ -191,16 +210,26 @@ export default class NodeScriptLaunchUiComponent extends React.Component<
 
   _handleLaunchButtonClick = async (): Promise<void> => {
     track('fb-node-debugger-launch-from-dialog');
-    const nodePath = this.refs.nodePath.getText().trim();
-    const scriptPath = this.refs.scriptPath.getText().trim();
-    const args = shellParse(this.refs.args.getText());
-    const workingDirectory = this.refs.workingDirectory.getText().trim();
-    const outFiles = this.refs.outFiles.getText().trim();
+    const nodePath = nullthrows(this._nodePath)
+      .getText()
+      .trim();
+    const scriptPath = nullthrows(this._scriptPath)
+      .getText()
+      .trim();
+    const args = shellParse(nullthrows(this._args).getText());
+    const workingDirectory = nullthrows(this._workingDirectory)
+      .getText()
+      .trim();
+    const outFiles = nullthrows(this._outFiles)
+      .getText()
+      .trim();
     const environmentVariables = {};
-    shellParse(this.refs.environmentVariables.getText()).forEach(variable => {
-      const [key, value] = variable.split('=');
-      environmentVariables[key] = value;
-    });
+    shellParse(nullthrows(this._environmentVariables).getText()).forEach(
+      variable => {
+        const [key, value] = variable.split('=');
+        environmentVariables[key] = value;
+      },
+    );
 
     const {hostname} = nuclideUri.parse(this.props.targetUri);
     const scriptUri =

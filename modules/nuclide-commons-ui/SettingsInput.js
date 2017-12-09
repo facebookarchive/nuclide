@@ -12,6 +12,7 @@
 
 import type {SettingsPropsDefault} from './SettingsUtils';
 
+import invariant from 'assert';
 import {AtomInput} from './AtomInput';
 import * as React from 'react';
 import {
@@ -29,6 +30,7 @@ type Props = SettingsPropsDefault & {
 
 export default class SettingsInput extends React.Component<Props> {
   _ignoreInputCallback: boolean;
+  _input: ?AtomInput;
 
   constructor(props: Object) {
     super(props);
@@ -53,7 +55,8 @@ export default class SettingsInput extends React.Component<Props> {
 
   _onFocus = () => {
     const keyPath = this.props.keyPath;
-    const input = this.refs[keyPath];
+    const input = this._input;
+    invariant(input != null);
     if (isDefaultConfigValue(keyPath)) {
       const defaultValue = getDefaultConfigValueString(keyPath);
       this._updateInput(input, defaultValue);
@@ -62,7 +65,8 @@ export default class SettingsInput extends React.Component<Props> {
 
   _onBlur = () => {
     const keyPath = this.props.keyPath;
-    const input = this.refs[keyPath];
+    const input = this._input;
+    invariant(input != null);
     if (isDefaultConfigValue(keyPath, input.getText())) {
       this._updateInput(input, '');
     }
@@ -85,7 +89,8 @@ export default class SettingsInput extends React.Component<Props> {
   }
 
   componentDidUpdate(prevProps: Props): void {
-    const input = this.refs[this.props.keyPath];
+    const input = this._input;
+    invariant(input != null);
     const value = this._getValue();
     if (input.getText() !== value) {
       this._updateInput(input, value);
@@ -116,7 +121,9 @@ export default class SettingsInput extends React.Component<Props> {
                 onFocus={this._onFocus}
                 onBlur={this._onBlur}
                 placeholderText={placeholder}
-                ref={keyPath}
+                ref={input => {
+                  this._input = input;
+                }}
                 text={value}
               />
             </subview>

@@ -17,6 +17,7 @@ import type {
 } from './connection-types';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
@@ -55,7 +56,9 @@ export default class CreateConnectionProfileForm extends React.Component<
 > {
   props: Props;
 
+  _connectionDetails: ?ConnectionDetailsForm;
   disposables: UniversalDisposable;
+  _profileName: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -72,7 +75,7 @@ export default class CreateConnectionProfileForm extends React.Component<
       // $FlowFixMe
       atom.commands.add(root, 'core:cancel', this._clickCancel),
     );
-    this.refs['profile-name'].focus();
+    nullthrows(this._profileName).focus();
   }
 
   componentWillUnmount(): void {
@@ -91,7 +94,13 @@ export default class CreateConnectionProfileForm extends React.Component<
       <div>
         <div className="form-group">
           <label>{PROFILE_NAME_LABEL}:</label>
-          <AtomInput initialValue="" ref="profile-name" unstyled={true} />
+          <AtomInput
+            initialValue=""
+            ref={input => {
+              this._profileName = input;
+            }}
+            unstyled={true}
+          />
         </div>
         <ConnectionDetailsForm
           initialUsername={initialFields.username}
@@ -110,7 +119,9 @@ export default class CreateConnectionProfileForm extends React.Component<
           onCancel={emptyFunction}
           onConfirm={this._clickSave}
           onDidChange={emptyFunction}
-          ref="connection-details"
+          ref={details => {
+            this._connectionDetails = details;
+          }}
         />
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
@@ -125,18 +136,15 @@ export default class CreateConnectionProfileForm extends React.Component<
   }
 
   _getProfileName(): string {
-    const fieldName = 'profile-name';
-    return (
-      (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || ''
-    );
+    return (this._profileName && this._profileName.getText().trim()) || '';
   }
 
   _clickSave = (): void => {
     // Validate the form inputs.
     const profileName = this._getProfileName();
-    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = this.refs[
-      'connection-details'
-    ].getFormFields();
+    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = nullthrows(
+      this._connectionDetails,
+    ).getFormFields();
     const validationResult = validateFormInputs(
       profileName,
       connectionDetails,

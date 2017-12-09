@@ -20,6 +20,7 @@ import {getOfficialRemoteServerCommand} from './connection-profile-utils';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import {getIPsForHosts} from './connection-profile-utils';
 import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 import RadioGroup from 'nuclide-commons-ui/RadioGroup';
@@ -71,6 +72,14 @@ export default class ConnectionDetailsForm extends React.Component<
   _disposables: ?UniversalDisposable;
   _promptChanged: boolean;
 
+  _cwd: ?AtomInput;
+  _username: ?AtomInput;
+  _password: ?HTMLInputElement;
+  _pathToPrivateKey: ?AtomInput;
+  _remoteServerCommand: ?AtomInput;
+  _server: ?AtomInput;
+  _sshPort: ?AtomInput;
+
   constructor(props: Props) {
     super(props);
 
@@ -114,7 +123,7 @@ export default class ConnectionDetailsForm extends React.Component<
     // If the input changed due to a higher level change in the
     // ConnectionDetailsPrompt, don't check for host collisions
     if (!this._promptChanged) {
-      this._checkForHostCollisions(this._getText('server'));
+      this._checkForHostCollisions(this._getText(this._server));
       this.props.onDidChange();
     }
     this._promptChanged = false;
@@ -132,7 +141,7 @@ export default class ConnectionDetailsForm extends React.Component<
         // when setting this immediately, Atom will unset the focus...
         setTimeout(() => {
           // $FlowFixMe
-          ReactDOM.findDOMNode(this.refs.pathToPrivateKey).focus();
+          ReactDOM.findDOMNode(this._pathToPrivateKey).focus();
         }, 0);
       },
     );
@@ -147,8 +156,7 @@ export default class ConnectionDetailsForm extends React.Component<
         selectedAuthMethodIndex: passwordAuthMethodIndex,
       },
       () => {
-        // $FlowFixMe
-        ReactDOM.findDOMNode(this.refs.password).focus();
+        nullthrows(this._password).focus();
       },
     );
   };
@@ -198,7 +206,9 @@ export default class ConnectionDetailsForm extends React.Component<
             disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
             onChange={this._handleInputDidChange}
             onKeyPress={this._onKeyPress.bind(this)}
-            ref="password"
+            ref={el => {
+              this._password = el;
+            }}
           />
         </div>
       </div>
@@ -213,7 +223,9 @@ export default class ConnectionDetailsForm extends React.Component<
             onClick={this._handleKeyFileInputClick}
             onDidChange={this._handleInputDidChange}
             placeholder="Path to private key"
-            ref="pathToPrivateKey"
+            ref={input => {
+              this._pathToPrivateKey = input;
+            }}
             unstyled={true}
           />
         </div>
@@ -256,7 +268,9 @@ export default class ConnectionDetailsForm extends React.Component<
           <AtomInput
             initialValue={this.state.username}
             onDidChange={this._handleInputDidChange}
-            ref="username"
+            ref={input => {
+              this._username = input;
+            }}
             unstyled={true}
           />
         </div>
@@ -269,7 +283,9 @@ export default class ConnectionDetailsForm extends React.Component<
             <AtomInput
               initialValue={this.state.server}
               onDidChange={this._handleInputDidChangeForServer}
-              ref="server"
+              ref={input => {
+                this._server = input;
+              }}
               unstyled={true}
             />
           </div>
@@ -278,7 +294,9 @@ export default class ConnectionDetailsForm extends React.Component<
             <AtomInput
               initialValue={this.state.sshPort}
               onDidChange={this._handleInputDidChange}
-              ref="sshPort"
+              ref={input => {
+                this._sshPort = input;
+              }}
               unstyled={true}
             />
           </div>
@@ -288,7 +306,9 @@ export default class ConnectionDetailsForm extends React.Component<
           <AtomInput
             initialValue={this.state.cwd}
             onDidChange={this._handleInputDidChange}
-            ref="cwd"
+            ref={input => {
+              this._cwd = input;
+            }}
             unstyled={true}
           />
         </div>
@@ -305,7 +325,9 @@ export default class ConnectionDetailsForm extends React.Component<
           <AtomInput
             initialValue={this.state.remoteServerCommand}
             onDidChange={this._handleInputDidChange}
-            ref="remoteServerCommand"
+            ref={input => {
+              this._remoteServerCommand = input;
+            }}
             unstyled={true}
           />
         </div>
@@ -348,14 +370,14 @@ export default class ConnectionDetailsForm extends React.Component<
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {
     return {
-      username: this._getText('username'),
-      server: this._getText('server'),
-      cwd: this._getText('cwd'),
+      username: this._getText(this._username),
+      server: this._getText(this._server),
+      cwd: this._getText(this._cwd),
       remoteServerCommand:
-        this._getText('remoteServerCommand') ||
+        this._getText(this._remoteServerCommand) ||
         getOfficialRemoteServerCommand(),
-      sshPort: this._getText('sshPort'),
-      pathToPrivateKey: this._getText('pathToPrivateKey'),
+      sshPort: this._getText(this._sshPort),
+      pathToPrivateKey: this._getText(this._pathToPrivateKey),
       authMethod: this._getAuthMethod(),
       password: this._getPassword(),
       displayTitle: this.state.displayTitle,
@@ -363,7 +385,7 @@ export default class ConnectionDetailsForm extends React.Component<
   }
 
   focus(): void {
-    this.refs.username.focus();
+    nullthrows(this._username).focus();
   }
 
   // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
@@ -377,29 +399,26 @@ export default class ConnectionDetailsForm extends React.Component<
     authMethod?: NuclideRemoteAuthMethods,
     displayTitle?: string,
   }): void {
-    this._setText('username', fields.username);
-    this._setText('server', fields.server);
-    this._setText('cwd', fields.cwd);
-    this._setText('remoteServerCommand', fields.remoteServerCommand);
-    this._setText('sshPort', fields.sshPort);
-    this._setText('pathToPrivateKey', fields.pathToPrivateKey);
+    this._setText(this._username, fields.username);
+    this._setText(this._server, fields.server);
+    this._setText(this._cwd, fields.cwd);
+    this._setText(this._remoteServerCommand, fields.remoteServerCommand);
+    this._setText(this._sshPort, fields.sshPort);
+    this._setText(this._pathToPrivateKey, fields.pathToPrivateKey);
     this._setAuthMethod(fields.authMethod);
     // `displayTitle` is not editable and therefore has no `<atom-text-editor mini>`. Its value is
     // stored only in local state.
     this.setState({displayTitle: fields.displayTitle});
   }
 
-  _getText(fieldName: string): string {
-    return (
-      (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || ''
-    );
+  _getText(atomInput: ?AtomInput): string {
+    return (atomInput && atomInput.getText().trim()) || '';
   }
 
-  _setText(fieldName: string, text: ?string): void {
+  _setText(atomInput: ?AtomInput, text: ?string): void {
     if (text == null) {
       return;
     }
-    const atomInput = this.refs[fieldName];
     if (atomInput) {
       atomInput.setText(text);
     }
@@ -420,15 +439,11 @@ export default class ConnectionDetailsForm extends React.Component<
   }
 
   _getPassword(): string {
-    return (
-      // $FlowFixMe
-      (this.refs.password && ReactDOM.findDOMNode(this.refs.password).value) ||
-      ''
-    );
+    return (this._password && this._password.value) || '';
   }
 
   clearPassword(): void {
-    const passwordInput = this.refs.password;
+    const passwordInput = this._password;
     if (passwordInput) {
       passwordInput.value = '';
     }

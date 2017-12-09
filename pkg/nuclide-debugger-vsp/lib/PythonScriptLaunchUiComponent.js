@@ -58,6 +58,12 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
 > {
   _disposables: UniversalDisposable;
 
+  _args: ?AtomInput;
+  _environmentVariables: ?AtomInput;
+  _pythonPath: ?AtomInput;
+  _scriptPath: ?AtomInput;
+  _workingDirectory: ?AtomInput;
+
   constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
@@ -103,9 +109,8 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
       },
     );
 
-    const scriptPathInput = this.refs.scriptPath;
-    if (scriptPathInput != null) {
-      scriptPathInput.focus();
+    if (this._scriptPath != null) {
+      this._scriptPath.focus();
     }
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
@@ -144,7 +149,9 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
         </p>
         <label>Script Path: </label>
         <AtomInput
-          ref="scriptPath"
+          ref={input => {
+            this._scriptPath = input;
+          }}
           tabIndex="12"
           placeholderText="Input the script path you want to launch"
           value={this.state.scriptPath}
@@ -152,7 +159,9 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
         />
         <label>Python Path: </label>
         <AtomInput
-          ref="pythonPath"
+          ref={input => {
+            this._pythonPath = input;
+          }}
           tabIndex="11"
           placeholderText="Input python executable path (e.g. /usr/bin/python)"
           value={this.state.pythonPath}
@@ -160,7 +169,9 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
         />
         <label>Arguments: </label>
         <AtomInput
-          ref="args"
+          ref={input => {
+            this._args = input;
+          }}
           tabIndex="13"
           placeholderText="Arguments to the executable"
           value={this.state.args}
@@ -168,7 +179,9 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
         />
         <label>Environment Variables: </label>
         <AtomInput
-          ref="environmentVariables"
+          ref={input => {
+            this._environmentVariables = input;
+          }}
           tabIndex="14"
           placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
           value={this.state.environmentVariables}
@@ -176,7 +189,9 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
         />
         <label>Working directory: </label>
         <AtomInput
-          ref="workingDirectory"
+          ref={input => {
+            this._workingDirectory = input;
+          }}
           tabIndex="15"
           placeholderText="Working directory for the launched executable"
           value={this.state.workingDirectory}
@@ -188,15 +203,23 @@ export default class PythonScriptLaunchUiComponent extends React.Component<
 
   _handleLaunchButtonClick = async (): Promise<void> => {
     track('fb-python-debugger-launch-from-dialog');
-    const pythonPath = this.refs.pythonPath.getText().trim();
-    const scriptPath = this.refs.scriptPath.getText().trim();
-    const args = shellParse(this.refs.args.getText());
-    const workingDirectory = this.refs.workingDirectory.getText().trim();
+    const pythonPath = nullthrows(this._pythonPath)
+      .getText()
+      .trim();
+    const scriptPath = nullthrows(this._scriptPath)
+      .getText()
+      .trim();
+    const args = shellParse(nullthrows(this._args).getText());
+    const workingDirectory = nullthrows(this._workingDirectory)
+      .getText()
+      .trim();
     const environmentVariables = {};
-    shellParse(this.refs.environmentVariables.getText()).forEach(variable => {
-      const [key, value] = variable.split('=');
-      environmentVariables[key] = value;
-    });
+    shellParse(nullthrows(this._environmentVariables).getText()).forEach(
+      variable => {
+        const [key, value] = variable.split('=');
+        environmentVariables[key] = value;
+      },
+    );
 
     const {hostname} = nuclideUri.parse(this.props.targetUri);
     const scriptUri =

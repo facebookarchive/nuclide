@@ -46,6 +46,8 @@ type State = {
 };
 
 export class OpenFilesListComponent extends React.PureComponent<Props, State> {
+  _selectedRow: ?TreeItem;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -54,7 +56,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props): void {
-    const selectedRow = this.refs.selectedRow;
+    const selectedRow = this._selectedRow;
     if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
       // Our lint rule isn't smart enough to recognize that this is a custom method and not the one
       // on HTMLElements, so we just have to squelch the error.
@@ -125,6 +127,10 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     });
   };
 
+  _handleSelectedRow = (treeItem: ?TreeItem): void => {
+    this._selectedRow = treeItem;
+  };
+
   render(): React.Node {
     const sortedEntries = propsToEntries(this.props);
 
@@ -155,7 +161,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     onMouseDown={this._onMouseDown.bind(this, e)}
                     path={e.uri}
                     name={e.name}
-                    ref={e.isSelected ? 'selectedRow' : null}>
+                    ref={e.isSelected ? this._handleSelectedRow : null}>
                     <span
                       className={classnames('icon', {
                         'icon-primitive-dot': e.isModified && !isHoveredUri,

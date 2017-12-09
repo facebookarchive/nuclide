@@ -84,6 +84,10 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * Component that manages the state transitions as the user connects to a server.
  */
 export default class ConnectionDialog extends React.Component<Props, State> {
+  _cancelButton: ?Button;
+  _okButton: ?Button;
+  _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
+
   constructor(props: Props) {
     super(props);
 
@@ -144,22 +148,21 @@ export default class ConnectionDialog extends React.Component<Props, State> {
       this.props.selectedProfileIndex === prevProps.selectedProfileIndex &&
       !this.state.isDirty &&
       prevState.isDirty &&
-      this.refs.okButton != null
+      this._okButton != null
     ) {
       // When editing a profile and clicking "Save", the Save button disappears. Focus the primary
       // button after re-rendering so focus is on a logical element.
-      this.refs.okButton.focus();
+      this._okButton.focus();
     }
   }
 
   _focus(): void {
-    const content = this.refs.content;
+    const content = this._content;
     if (content == null) {
-      const {cancelButton} = this.refs;
-      if (cancelButton == null) {
+      if (this._cancelButton == null) {
         return;
       }
-      cancelButton.focus();
+      this._cancelButton.focus();
     } else {
       content.focus();
     }
@@ -175,7 +178,9 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     const selectedProfile = this.props.connectionProfiles[
       this.props.selectedProfileIndex
     ];
-    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = this.refs.content.getFormFields();
+    const connectionDetailsPrompt = this._content;
+    invariant(connectionDetailsPrompt instanceof ConnectionDetailsPrompt);
+    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = connectionDetailsPrompt.getFormFields();
     const validationResult = validateFormInputs(
       selectedProfile.displayTitle,
       connectionDetails,
@@ -222,7 +227,9 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           onDeleteProfileClicked={this.props.onDeleteProfileClicked}
           onDidChange={this._handleDidChange}
           onProfileClicked={this.onProfileClicked}
-          ref="content"
+          ref={prompt => {
+            this._content = prompt;
+          }}
         />
       );
       isOkDisabled = false;
@@ -240,7 +247,9 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           instructions={this.state.instructions}
           onCancel={this.cancel}
           onConfirm={this.ok}
-          ref="content"
+          ref={prompt => {
+            this._content = prompt;
+          }}
         />
       );
       isOkDisabled = false;
@@ -275,14 +284,20 @@ export default class ConnectionDialog extends React.Component<Props, State> {
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           {saveButtonGroup}
           <ButtonGroup>
-            <Button onClick={this.cancel} ref="cancelButton">
+            <Button
+              onClick={this.cancel}
+              ref={button => {
+                this._cancelButton = button;
+              }}>
               Cancel
             </Button>
             <Button
               buttonType={ButtonTypes.PRIMARY}
               disabled={isOkDisabled}
               onClick={this.ok}
-              ref="okButton">
+              ref={button => {
+                this._okButton = button;
+              }}>
               {okButtonText}
             </Button>
           </ButtonGroup>
@@ -321,7 +336,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
-      const connectionDetailsForm = this.refs.content;
+      const connectionDetailsForm = this._content;
+      invariant(connectionDetailsForm instanceof ConnectionDetailsPrompt);
       const {
         username,
         server,
@@ -349,7 +365,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
         });
         this.state.sshHandshake.connect({
           host: server,
-          sshPort,
+          sshPort: parseInt(sshPort, 10),
           username,
           pathToPrivateKey,
           authMethod,
@@ -365,7 +381,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
         );
       }
     } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
-      const authenticationPrompt = this.refs.content;
+      const authenticationPrompt = this._content;
+      invariant(authenticationPrompt instanceof AuthenticationPrompt);
       const password = authenticationPrompt.getPassword();
 
       this.state.finish([password]);
@@ -390,11 +407,11 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   getFormFields(): ?NuclideRemoteConnectionParams {
-    const connectionDetailsForm = this.refs.content;
+    const connectionDetailsForm = this._content;
     if (!connectionDetailsForm) {
       return null;
     }
-
+    invariant(connectionDetailsForm instanceof ConnectionDetailsPrompt);
     const {
       username,
       server,

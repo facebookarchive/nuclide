@@ -21,6 +21,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import nullthrows from 'nullthrows';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -42,6 +43,8 @@ export class WatchExpressionComponent extends React.PureComponent<
   State,
 > {
   coreCancelDisposable: ?IDisposable;
+  _newExpressionEditor: ?AtomInput;
+  _editExpressionEditor: ?AtomInput;
   _expansionStates: Map<
     string /* expression */,
     /* unique reference for expression */ Object,
@@ -74,13 +77,13 @@ export class WatchExpressionComponent extends React.PureComponent<
   }
 
   _onConfirmNewExpression = (): void => {
-    const text = this.refs.newExpressionEditor.getText();
+    const text = nullthrows(this._newExpressionEditor).getText();
     this.addExpression(text);
-    this.refs.newExpressionEditor.setText('');
+    nullthrows(this._newExpressionEditor).setText('');
   };
 
   _onConfirmExpressionEdit(index: number): void {
-    const text = this.refs.editExpressionEditor.getText();
+    const text = nullthrows(this._editExpressionEditor).getText();
     this.props.onUpdateWatchExpression(index, text);
     this._resetExpressionEditState();
   }
@@ -121,7 +124,9 @@ export class WatchExpressionComponent extends React.PureComponent<
           onConfirm={this._onConfirmExpressionEdit.bind(this, index)}
           onCancel={this._resetExpressionEditState}
           onBlur={this._resetExpressionEditState}
-          ref="editExpressionEditor"
+          ref={input => {
+            this._editExpressionEditor = input;
+          }}
           size="sm"
           initialValue={expression}
         />
@@ -184,7 +189,9 @@ export class WatchExpressionComponent extends React.PureComponent<
           'nuclide-debugger-watch-expression-add-new-input',
         )}
         onConfirm={this._onConfirmNewExpression}
-        ref="newExpressionEditor"
+        ref={input => {
+          this._newExpressionEditor = input;
+        }}
         size="sm"
         placeholderText="Add new watch expression"
       />

@@ -62,6 +62,9 @@ class SuggestionList extends React.Component<Props, State> {
   _subscriptions: UniversalDisposable;
   _boundConfirm: () => void;
 
+  _scroller: ?HTMLElement;
+  _selectionList: ?HTMLElement;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -102,10 +105,12 @@ class SuggestionList extends React.Component<Props, State> {
 
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = event => event.stopPropagation();
-    this.refs.scroller.addEventListener('mousewheel', stopPropagation);
+    const scroller = this._scroller;
+    invariant(scroller != null);
+    scroller.addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(
       new Disposable(() => {
-        this.refs.scroller.removeEventListener('mousewheel', stopPropagation);
+        scroller.removeEventListener('mousewheel', stopPropagation);
       }),
     );
 
@@ -145,8 +150,14 @@ class SuggestionList extends React.Component<Props, State> {
     return (
       <div
         className="popover-list select-list hyperclick-suggestion-list-scroller"
-        ref="scroller">
-        <ol className="list-group" ref="selectionList">
+        ref={el => {
+          this._scroller = el;
+        }}>
+        <ol
+          className="list-group"
+          ref={el => {
+            this._selectionList = el;
+          }}>
           {itemComponents}
         </ol>
       </div>
@@ -215,7 +226,8 @@ class SuggestionList extends React.Component<Props, State> {
   }
 
   _updateScrollPosition() {
-    const listNode = this.refs.selectionList;
+    const listNode = this._selectionList;
+    invariant(listNode != null);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     scrollIntoViewIfNeeded(selectedNode, false);
   }

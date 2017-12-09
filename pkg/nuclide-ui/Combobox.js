@@ -9,10 +9,9 @@
  * @format
  */
 
-/* globals Element */
-
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Portal} from './Portal';
@@ -69,8 +68,10 @@ type State = {
  * TODO move combobox to separate package.
  */
 export class Combobox extends React.Component<Props, State> {
+  _freeformInput: ?AtomInput;
   _optionsElement: HTMLElement;
   _updateSubscription: ?rxjs$ISubscription;
+  _selectedOption: ?HTMLElement;
   _subscriptions: UniversalDisposable;
   _shouldBlur: boolean;
 
@@ -157,7 +158,7 @@ export class Combobox extends React.Component<Props, State> {
   };
 
   selectValue(newValue: string, didRenderCallback?: () => void) {
-    this.refs.freeformInput.setText(newValue);
+    nullthrows(this._freeformInput).setText(newValue);
     this.setState(
       {
         textInput: newValue,
@@ -172,12 +173,12 @@ export class Combobox extends React.Component<Props, State> {
   }
 
   getText(): string {
-    return this.refs.freeformInput.getText();
+    return nullthrows(this._freeformInput).getText();
   }
 
   focus(showOptions: boolean): void {
     this._shouldBlur = true;
-    this.refs.freeformInput.focus();
+    nullthrows(this._freeformInput).focus();
     this.setState({optionsVisible: showOptions});
   }
 
@@ -244,7 +245,7 @@ export class Combobox extends React.Component<Props, State> {
   }
 
   _handleTextInputChange = (): void => {
-    const newText = this.refs.freeformInput.getText();
+    const newText = nullthrows(this._freeformInput).getText();
     if (newText === this.state.textInput) {
       return;
     }
@@ -297,7 +298,7 @@ export class Combobox extends React.Component<Props, State> {
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
-      const input = ReactDOM.findDOMNode(this.refs.freeformInput);
+      const input = ReactDOM.findDOMNode(this._freeformInput);
       if (input) {
         // $FlowFixMe
         input.focus();
@@ -356,10 +357,13 @@ export class Combobox extends React.Component<Props, State> {
   }
 
   _scrollSelectedOptionIntoViewIfNeeded = (): void => {
-    const selectedOption = ReactDOM.findDOMNode(this.refs.selectedOption);
-    if (selectedOption instanceof Element) {
-      scrollIntoViewIfNeeded(selectedOption);
+    if (this._selectedOption != null) {
+      scrollIntoViewIfNeeded(this._selectedOption);
     }
+  };
+
+  _handleSelectedOption = (el: ?HTMLElement): void => {
+    this._selectedOption = el;
   };
 
   render(): React.Node {
@@ -412,7 +416,7 @@ export class Combobox extends React.Component<Props, State> {
               key={'option-' + option}
               onClick={this._handleItemClick.bind(this, option)}
               onMouseOver={this._setSelectedIndex.bind(this, i)}
-              ref={isSelected ? 'selectedOption' : null}>
+              ref={isSelected ? this._handleSelectedOption : null}>
               {beforeMatch}
               <strong className="text-highlight">{highlightedMatch}</strong>
               {afterMatch}
@@ -463,7 +467,9 @@ export class Combobox extends React.Component<Props, State> {
           onCancel={this._handleCancel}
           onDidChange={this._handleTextInputChange}
           placeholderText={placeholderText}
-          ref="freeformInput"
+          ref={input => {
+            this._freeformInput = input;
+          }}
           size={size}
           width={width}
           disabled={this.props.disabled}

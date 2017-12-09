@@ -12,6 +12,7 @@
 
 import type {FileReferences} from '../types';
 
+import invariant from 'assert';
 import * as React from 'react';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
@@ -34,6 +35,8 @@ type State = {
 };
 
 export default class FindReferencesView extends React.Component<Props, State> {
+  _root: ?HTMLElement;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -65,7 +68,8 @@ export default class FindReferencesView extends React.Component<Props, State> {
   }
 
   _onScroll(evt: Event) {
-    const root = this.refs.root;
+    const root = this._root;
+    invariant(root != null);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
@@ -114,7 +118,9 @@ export default class FindReferencesView extends React.Component<Props, State> {
         <ul
           className="find-references-files list-tree has-collapsable-children"
           onScroll={this._onScroll}
-          ref="root"
+          ref={el => {
+            this._root = el;
+          }}
           tabIndex="0">
           {children}
         </ul>

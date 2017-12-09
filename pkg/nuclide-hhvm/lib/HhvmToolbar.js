@@ -18,6 +18,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {HhvmToolbarSettings} from './HhvmToolbarSettings';
 
@@ -39,6 +40,9 @@ type State = {
 };
 
 export default class HhvmToolbar extends React.Component<Props, State> {
+  _debugTarget: ?AtomInput;
+  _dropdown: ?Dropdown;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -99,7 +103,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
       store.setDebugMode('webserver');
     }
     this._suggestTargetIfCustomDebugMode(store.getDebugMode());
-    this.refs.debugTarget.setText(store.getDebugTarget());
+    nullthrows(this._debugTarget).setText(store.getDebugTarget());
   }
 
   render(): React.Node {
@@ -116,20 +120,24 @@ export default class HhvmToolbar extends React.Component<Props, State> {
           options={this._getMenuItems()}
           value={store.getDebugMode()}
           onChange={this._handleDropdownChange}
-          ref="dropdown"
+          ref={dropdown => {
+            this._dropdown = dropdown;
+          }}
           size="sm"
         />
         <div className="inline-block" style={{width: '300px'}}>
           <AtomInput
-            ref="debugTarget"
+            ref={input => {
+              this._debugTarget = input;
+            }}
             value={value}
             // Ugly hack: prevent people changing the value without disabling so
             // that they can copy and paste.
             onDidChange={
               isDisabled
                 ? () => {
-                    if (this.refs.debugTarget.getText() !== value) {
-                      this.refs.debugTarget.setText(value);
+                    if (nullthrows(this._debugTarget).getText() !== value) {
+                      nullthrows(this._debugTarget).setText(value);
                     }
                   }
                 : this._updateLastScriptCommand
@@ -167,7 +175,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
               label="Sticky"
               onChange={isChecked => {
                 this.props.projectStore.setStickyCommand(
-                  this.refs.debugTarget.getText(),
+                  nullthrows(this._debugTarget).getText(),
                   isChecked,
                 );
                 this.setState({stickyScript: isChecked});

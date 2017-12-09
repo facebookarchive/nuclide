@@ -16,6 +16,7 @@ import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Block} from 'nuclide-commons-ui/Block';
 import * as React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import nullthrows from 'nullthrows';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -35,6 +36,7 @@ export class DefinitionPreviewView extends React.Component<
   ContextElementProps,
   State,
 > {
+  _editor: ?AtomTextEditor;
   _settingsChangeDisposable: IDisposable;
 
   constructor(props: ContextElementProps) {
@@ -123,7 +125,9 @@ export class DefinitionPreviewView extends React.Component<
           className="nuclide-definition-preview-editor"
           style={{height: `${this.state.editorHeight}em`}}>
           <AtomTextEditor
-            ref="editor"
+            ref={editor => {
+              this._editor = editor;
+            }}
             gutterHidden={true}
             lineNumberGutterVisible={false}
             path={definition.path}
@@ -175,7 +179,7 @@ export class DefinitionPreviewView extends React.Component<
   };
 
   getEditor(): atom$TextEditor {
-    return this.refs.editor.getModel();
+    return nullthrows(this._editor).getModel();
   }
 
   _scrollToRow(row: number): void {

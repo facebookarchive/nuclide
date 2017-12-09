@@ -54,6 +54,7 @@ const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
 
 export class DebuggerThreadsComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
+  _threadTable: ?Table<*>;
 
   constructor(props: Props) {
     super(props);
@@ -89,7 +90,7 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
   }
 
   _scrollSelectedThreadIntoView(): void {
-    const listNode = ReactDOM.findDOMNode(this.refs.threadTable);
+    const listNode = ReactDOM.findDOMNode(this._threadTable);
     if (listNode) {
       const selectedRows =
         // $FlowFixMe
@@ -230,7 +231,9 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
         onSort={this._handleSort}
         sortedColumn={this.state.sortedColumn}
         sortDescending={this.state.sortDescending}
-        ref="threadTable"
+        ref={table => {
+          this._threadTable = table;
+        }}
       />
     );
   }

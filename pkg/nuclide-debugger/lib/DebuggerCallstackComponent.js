@@ -172,7 +172,6 @@ export class DebuggerCallstackComponent extends React.Component<
         resizable={true}
         onSelect={this._handleCallframeClick}
         sortable={false}
-        ref="callstackTable"
       />
     );
   }

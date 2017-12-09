@@ -12,6 +12,7 @@
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
@@ -36,6 +37,7 @@ export default class NodeScriptAttachUiComponent extends React.Component<
   State,
 > {
   _disposables: UniversalDisposable;
+  _port: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -70,9 +72,8 @@ export default class NodeScriptAttachUiComponent extends React.Component<
       },
     );
 
-    const portInput = this.refs.port;
-    if (portInput != null) {
-      portInput.focus();
+    if (this._port != null) {
+      this._port.focus();
     }
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
@@ -102,7 +103,9 @@ export default class NodeScriptAttachUiComponent extends React.Component<
         <p>Attach to a running node.js process</p>
         <label>Debug port number: </label>
         <AtomInput
-          ref="port"
+          ref={input => {
+            this._port = input;
+          }}
           tabIndex="1"
           placeholderText="Node debug port (e.g. 5858 or 9229)"
           value={this.state.port}
@@ -114,7 +117,11 @@ export default class NodeScriptAttachUiComponent extends React.Component<
 
   _handleAttachButtonClick = async (): Promise<void> => {
     track('fb-node-debugger-attach-from-dialog');
-    const port = Number(this.refs.port.getText().trim());
+    const port = Number(
+      nullthrows(this._port)
+        .getText()
+        .trim(),
+    );
     const attachInfo = await getNodeAttachProcessInfo(
       this.props.targetUri,
       port,

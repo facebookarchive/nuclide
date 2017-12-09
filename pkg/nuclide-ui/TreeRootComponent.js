@@ -68,8 +68,6 @@ function toggleSetHas(
   return added;
 }
 
-const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
-
 type DefaultProps = {
   // Render will return this component if there are no root nodes.
   elementToRenderWhenEmpty?: ?(null | React.Element<any>),
@@ -106,6 +104,7 @@ export class TreeRootComponent extends React.Component<Props, State> {
   _keyToNode: ?{[key: string]: LazyTreeNode};
   _rejectDidUpdateListenerPromise: ?() => void;
   _subscriptions: ?UniversalDisposable;
+  _firstSelectedDescendant: ?TreeNodeComponent;
 
   static defaultProps: DefaultProps = {
     elementToRenderWhenEmpty: null,
@@ -150,7 +149,7 @@ export class TreeRootComponent extends React.Component<Props, State> {
     // (3) Press the up or down arrow key to change the selected node
     // (4) The new node should scroll into view
     if (!prevState || this.state.selectedKeys !== prevState.selectedKeys) {
-      const firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
+      const firstSelectedDescendant = this._firstSelectedDescendant;
       if (firstSelectedDescendant !== undefined) {
         const el = ReactDOM.findDOMNode(firstSelectedDescendant);
         if (el instanceof Element) {
@@ -304,13 +303,13 @@ export class TreeRootComponent extends React.Component<Props, State> {
         const item = stack.pop();
         const node = item.node;
 
-        // Keep a reference the first selected descendant with
-        // `this.refs[FIRST_SELECTED_DESCENDANT_REF]`.
         const isNodeSelected: boolean = this._isNodeSelected(node);
-        let ref: ?string = null;
+        let ref = null;
         if (!foundFirstSelectedDescendant && isNodeSelected) {
           foundFirstSelectedDescendant = true;
-          ref = FIRST_SELECTED_DESCENDANT_REF;
+          ref = c => {
+            this._firstSelectedDescendant = c;
+          };
         }
 
         const child = (

@@ -42,6 +42,8 @@ type Props = {
  * to ensure this component is pure.
  */
 export class Checkbox extends React.PureComponent<Props> {
+  _input: ?HTMLInputElement;
+
   static defaultProps: DefaultProps = {
     disabled: false,
     indeterminate: false,
@@ -75,7 +77,10 @@ export class Checkbox extends React.PureComponent<Props> {
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
   _setIndeterminate(): void {
-    this.refs.input.indeterminate = this.props.indeterminate;
+    if (this._input == null) {
+      return;
+    }
+    this._input.indeterminate = this.props.indeterminate;
   }
 
   render(): React.Node {
@@ -111,7 +116,9 @@ export class Checkbox extends React.PureComponent<Props> {
           disabled={disabled}
           onChange={this._onChange}
           onMouseDown={onMouseDown}
-          ref="input"
+          ref={el => {
+            this._input = el;
+          }}
           type="checkbox"
         />
         {text}

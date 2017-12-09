@@ -94,7 +94,6 @@ export default class ReactAttachLaunchUiComponent extends React.Component<
       <div className="block">
         <label>Workspace path (should contain package.json): </label>
         <AtomInput
-          ref="workspacePath"
           placeholderText="Path containing package.json"
           value={this.state.workspacePath}
           onDidChange={value => this.setState({workspacePath: value})}
@@ -102,7 +101,6 @@ export default class ReactAttachLaunchUiComponent extends React.Component<
         />
         <label>Debug port number: </label>
         <AtomInput
-          ref="port"
           tabIndex="1"
           placeholderText={`React Native packager port (default ${REACT_NATIVE_PACKAGER_DEFAULT_PORT})`}
           value={this.state.port}

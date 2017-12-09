@@ -21,6 +21,8 @@ import type {
   GroupedResults,
 } from './searchResultHelpers';
 
+import nullthrows from 'nullthrows';
+
 type ResultContext = {
   nonEmptyResults: GroupedResults,
   serviceNames: Array<string>,
@@ -104,6 +106,9 @@ export default class QuickSelectionComponent extends React.Component<
   Props,
   State,
 > {
+  _modal: ?HTMLElement;
+  _queryInput: ?AtomInput;
+  _selectionList: ?HTMLElement;
   _subscriptions: UniversalDisposable;
 
   constructor(props: Props) {
@@ -162,7 +167,7 @@ export default class QuickSelectionComponent extends React.Component<
     const nextProviderName = this.props.searchResultManager.getActiveProviderName();
     if (this.state.activeTab.name === nextProviderName) {
       process.nextTick(() => {
-        const query = this.refs.queryInput.getText();
+        const query = nullthrows(this._queryInput).getText();
         this.props.quickSelectionActions.query(query);
       });
     } else {
@@ -170,7 +175,7 @@ export default class QuickSelectionComponent extends React.Component<
         nextProviderName,
       );
       const lastResults = this.props.searchResultManager.getResults(
-        this.refs.queryInput.getText(),
+        nullthrows(this._queryInput).getText(),
         nextProviderName,
       );
       this._getTextEditor().setPlaceholderText(activeProviderSpec.prompt);
@@ -181,7 +186,7 @@ export default class QuickSelectionComponent extends React.Component<
         },
         () => {
           process.nextTick(() => {
-            const query = this.refs.queryInput.getText();
+            const query = nullthrows(this._queryInput).getText();
             this.props.quickSelectionActions.query(query);
           });
           if (this.props.onItemsChanged != null) {
@@ -244,7 +249,7 @@ export default class QuickSelectionComponent extends React.Component<
       ),
       // The text editor often changes during dispatches, so wait until the next tick.
       observableFromSubscribeFunction(cb =>
-        this.refs.queryInput.onDidChange(cb),
+        nullthrows(this._queryInput).onDidChange(cb),
       )
         .startWith(null)
         .let(throttle(microtask, {leading: false}))
@@ -333,8 +338,8 @@ export default class QuickSelectionComponent extends React.Component<
     // the click was elsewhere on the document and should close the modal.
     // Otherwise, refocus the input box.
     if (
-      event.target !== this.refs.modal &&
-      !this.refs.modal.contains(event.target)
+      event.target !== this._modal &&
+      !nullthrows(this._modal).contains((event.target: any))
     ) {
       this.props.onCancellation();
     } else {
@@ -363,7 +368,7 @@ export default class QuickSelectionComponent extends React.Component<
   _updateResults(): void {
     const activeProviderName = this.props.searchResultManager.getActiveProviderName();
     const updatedResults = this.props.searchResultManager.getResults(
-      this.refs.queryInput.getText(),
+      nullthrows(this._queryInput).getText(),
       activeProviderName,
     );
     const [topProviderName] = Object.keys(updatedResults);
@@ -553,11 +558,10 @@ export default class QuickSelectionComponent extends React.Component<
 
   // Update the scroll position of the list view to ensure the selected item is visible.
   _updateScrollPosition(): void {
-    if (!(this.refs && this.refs.selectionList)) {
+    if (this._selectionList == null) {
       return;
     }
-    const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
-    // $FlowFixMe
+    const listNode = nullthrows(this._selectionList);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
@@ -663,11 +667,11 @@ export default class QuickSelectionComponent extends React.Component<
 
   _getInputTextEditor(): atom$TextEditorElement {
     // $FlowFixMe
-    return ReactDOM.findDOMNode(this.refs.queryInput);
+    return ReactDOM.findDOMNode(this._queryInput);
   }
 
   _getTextEditor(): TextEditor {
-    return this.refs.queryInput.getTextEditor();
+    return nullthrows(this._queryInput).getTextEditor();
   }
 
   /**
@@ -869,12 +873,16 @@ export default class QuickSelectionComponent extends React.Component<
     return (
       <div
         className="select-list omnisearch-modal"
-        ref="modal"
+        ref={el => {
+          this._modal = el;
+        }}
         onKeyPress={this._handleKeyPress}>
         <div className="omnisearch-search-bar">
           <AtomInput
             className="omnisearch-pane"
-            ref="queryInput"
+            ref={input => {
+              this._queryInput = input;
+            }}
             initialValue={this.state.initialQuery}
             placeholderText={this.state.activeTab.prompt}
           />
@@ -888,7 +896,11 @@ export default class QuickSelectionComponent extends React.Component<
         {this._renderTabs()}
         <div className="omnisearch-results">
           <div className="omnisearch-pane">
-            <ul className="list-tree" ref="selectionList">
+            <ul
+              className="list-tree"
+              ref={el => {
+                this._selectionList = el;
+              }}>
               {services}
               {omniSearchStatus}
             </ul>

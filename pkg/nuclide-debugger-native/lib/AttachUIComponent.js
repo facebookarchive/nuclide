@@ -292,7 +292,6 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
         />
         <label>Source path: </label>
         <AtomInput
-          ref="attachSourcePath"
           placeholderText="Optional base path for sources"
           value={this.state.attachSourcePath}
           onDidChange={value => this.setState({attachSourcePath: value})}

@@ -253,7 +253,6 @@ export class DebuggerLaunchAttachUI extends React.Component<
             className="inline"
             options={this.props.connectionOptions}
             onChange={(value: ?string) => this.props.connectionChanged(value)}
-            ref="dropdown"
             size="xs"
             value={this.props.connection}
           />

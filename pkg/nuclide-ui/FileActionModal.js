@@ -12,6 +12,7 @@
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -31,7 +32,7 @@ type Props = {
   // Message is displayed above the input.
   message: React.Element<any>,
   // Will be called (before `onClose`) if the user confirms.
-  onConfirm: (value: boolean, options: Options) => void,
+  onConfirm: (value: string, options: Options) => void,
   // Will be called regardless of whether the user confirms.
   onClose: () => void,
   // Whether or not to initially select the base name of the path.
@@ -48,6 +49,8 @@ class FileDialogComponent extends React.Component<
     options: Options,
   },
 > {
+  _dialog: ?HTMLElement;
+  _input: ?AtomInput;
   _disposables: UniversalDisposable;
   _isClosed: boolean;
 
@@ -71,7 +74,7 @@ class FileDialogComponent extends React.Component<
   }
 
   componentDidMount(): void {
-    const input = this.refs.input;
+    const input = nullthrows(this._input);
     this._disposables.add(
       atom.commands.add(
         // $FlowFixMe
@@ -127,9 +130,18 @@ class FileDialogComponent extends React.Component<
     //
     // [1] https://github.com/atom/tree-view/blob/v0.200.0/lib/dialog.coffee#L7
     return (
-      <div className="tree-view-dialog" ref="dialog">
+      <div
+        className="tree-view-dialog"
+        ref={el => {
+          this._dialog = el;
+        }}>
         <label className={labelClassName}>{this.props.message}</label>
-        <AtomInput initialValue={this.props.initialValue} ref="input" />
+        <AtomInput
+          initialValue={this.props.initialValue}
+          ref={input => {
+            this._input = input;
+          }}
+        />
         {checkboxes}
       </div>
     );
@@ -142,16 +154,19 @@ class FileDialogComponent extends React.Component<
   }
 
   _handleDocumentMouseDown = (event: Event): void => {
-    const dialog = this.refs.dialog;
+    const dialog = this._dialog;
     // If the click did not happen on the dialog or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
-    if (event.target !== dialog && !dialog.contains(event.target)) {
+    if (
+      event.target !== dialog &&
+      !nullthrows(dialog).contains((event.target: any))
+    ) {
       this._close();
     }
   };
 
   _confirm = () => {
-    this.props.onConfirm(this.refs.input.getText(), this.state.options);
+    this.props.onConfirm(nullthrows(this._input).getText(), this.state.options);
     this._close();
   };
 

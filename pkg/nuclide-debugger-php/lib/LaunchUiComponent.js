@@ -15,6 +15,7 @@ import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
@@ -42,6 +43,7 @@ type State = {
 
 export class LaunchUiComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable = new UniversalDisposable();
+  _scriptPath: ?AtomInput;
 
   state = {
     recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
@@ -112,7 +114,9 @@ export class LaunchUiComponent extends React.Component<Props, State> {
         />
         <label>Command: </label>
         <AtomInput
-          ref="scriptPath"
+          ref={input => {
+            this._scriptPath = input;
+          }}
           tabIndex="11"
           placeholderText="/path/to/my/script.php arg1 arg2"
           initialValue={this._getActiveFilePath()}
@@ -122,7 +126,6 @@ export class LaunchUiComponent extends React.Component<Props, State> {
         <Checkbox
           checked={this.state.runInTerminal}
           label="Run in Terminal"
-          ref="runInTerminal"
           onChange={checked => this.setState({runInTerminal: checked})}
           title="When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane"
         />
@@ -194,7 +197,9 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   };
 
   _handleLaunchButtonClick = (): void => {
-    const scriptPath = this.refs.scriptPath.getText().trim();
+    const scriptPath = nullthrows(this._scriptPath)
+      .getText()
+      .trim();
     this._setRecentlyLaunchedScript(
       scriptPath,
       this.state.recentlyLaunchedScripts,

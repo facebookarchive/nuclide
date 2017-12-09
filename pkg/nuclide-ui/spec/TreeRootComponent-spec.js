@@ -564,7 +564,7 @@ describe('TreeRootComponent', () => {
           expect(component.getExpandedNodes()).toEqual([nodes.G]);
 
           const nodeComponents = getNodeComponents(component);
-          const arrowNode = ReactDOM.findDOMNode(nodeComponents.G.refs.arrow);
+          const arrowNode = ReactDOM.findDOMNode(nodeComponents.G._arrow);
           invariant(arrowNode instanceof Element);
           TestUtils.Simulate.click(arrowNode);
 
@@ -583,7 +583,7 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([]);
 
           const nodeComponents = getNodeComponents(component);
-          const arrowNode = ReactDOM.findDOMNode(nodeComponents.G.refs.arrow);
+          const arrowNode = ReactDOM.findDOMNode(nodeComponents.G._arrow);
           invariant(arrowNode instanceof Element);
           TestUtils.Simulate.click(arrowNode);
 

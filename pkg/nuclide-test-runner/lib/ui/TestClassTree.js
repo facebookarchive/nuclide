@@ -12,6 +12,7 @@
 import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 import type TestSuiteModel from '../TestSuiteModel';
 
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
@@ -27,6 +28,8 @@ type Props = {
 };
 
 export default class TestClassTree extends React.Component<Props> {
+  _tree: ?TreeRootComponent;
+
   componentDidUpdate(prevProps: Object) {
     const {testSuiteModel} = this.props;
     if (testSuiteModel !== prevProps.testSuiteModel) {
@@ -36,7 +39,7 @@ export default class TestClassTree extends React.Component<Props> {
           roots.push(new TestClassTreeNode(testClass));
         }
       }
-      this.refs.tree.setRoots(roots);
+      nullthrows(this._tree).setRoots(roots);
     }
 
     (this: any).rowClassNameForNode = this.rowClassNameForNode.bind(this);
@@ -63,7 +66,9 @@ export default class TestClassTree extends React.Component<Props> {
             initialRoots={[]}
             labelClassNameForNode={labelClassNameForNode}
             onKeepSelection={() => {}}
-            ref="tree"
+            ref={tree => {
+              this._tree = tree;
+            }}
             rowClassNameForNode={this.rowClassNameForNode}
           />
         </div>

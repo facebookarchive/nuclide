@@ -639,7 +639,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       },
     );
     return [
-      <div key="header" className="nuclide-ui-table" ref="table">
+      <div key="header" className="nuclide-ui-table">
         <div className="nuclide-ui-table-header">{header}</div>
       </div>,
       <div

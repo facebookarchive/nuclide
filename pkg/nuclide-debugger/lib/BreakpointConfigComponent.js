@@ -17,6 +17,7 @@ import * as React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import BreakpointStore from './BreakpointStore';
@@ -39,6 +40,7 @@ export class BreakpointConfigComponent extends React.Component<
   PropsType,
   StateType,
 > {
+  _condition: ?AtomInput;
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -81,7 +83,9 @@ export class BreakpointConfigComponent extends React.Component<
   }
 
   _updateBreakpoint = () => {
-    const condition = this.refs.condition.getText().trim();
+    const condition = nullthrows(this._condition)
+      .getText()
+      .trim();
     this.props.actions.updateBreakpointCondition(
       this.state.breakpoint.id,
       condition,
@@ -124,7 +128,9 @@ export class BreakpointConfigComponent extends React.Component<
               placeholderText="Breakpoint hit condition..."
               value={this.state.breakpoint.condition}
               size="sm"
-              ref="condition"
+              ref={input => {
+                this._condition = input;
+              }}
               autofocus={true}
             />
           </div>

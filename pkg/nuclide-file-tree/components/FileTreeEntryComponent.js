@@ -20,6 +20,7 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
@@ -52,6 +53,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
   // when an entry is truly hovered/unhovered, since these fire many times over
   // the duration of one user interaction.
+  _arrowContainer: ?HTMLElement;
   dragEventCount: number;
   _loadingTimeout: ?number;
   _disposables: ?UniversalDisposable;
@@ -194,7 +196,11 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         onMouseDown={this._onMouseDown}
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}>
-        <div className={listItemClassName} ref="arrowContainer">
+        <div
+          className={listItemClassName}
+          ref={el => {
+            this._arrowContainer = el;
+          }}>
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
               'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
@@ -260,7 +266,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     const shouldToggleExpand =
       node.isContainer &&
       // $FlowFixMe
-      ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target) &&
+      nullthrows(this._arrowContainer).contains(event.target) &&
       event.clientX <
         // $FlowFixMe
         ReactDOM.findDOMNode(this._pathContainer).getBoundingClientRect().left;

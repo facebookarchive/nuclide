@@ -19,6 +19,7 @@ import type {
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
+import nullthrows from 'nullthrows';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
@@ -66,6 +67,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
   Props,
   State,
 > {
+  _connectionDetailsForm: ?ConnectionDetailsForm;
   _settingFormFieldsLock: boolean;
 
   constructor(props: Props) {
@@ -100,15 +102,14 @@ export default class ConnectionDetailsPrompt extends React.Component<
         prevProps.connectionProfiles.length !==
           this.props.connectionProfiles.length)
     ) {
-      const existingConnectionDetailsForm = this.refs[
-        'connection-details-form'
-      ];
+      const existingConnectionDetailsForm = this._connectionDetailsForm;
       if (existingConnectionDetailsForm) {
         // Setting values in the ConnectionDetailsForm fires change events. However, this is a
         // controlled update that should not trigger any change events. "Lock" change events until
         // synchronous updates to the form are complete.
         this._settingFormFieldsLock = true;
         existingConnectionDetailsForm.setFormFields(
+          // $FlowFixMe
           this.getPrefilledConnectionParams(),
         );
         existingConnectionDetailsForm.clearPassword();
@@ -131,11 +132,11 @@ export default class ConnectionDetailsPrompt extends React.Component<
   }
 
   focus(): void {
-    this.refs['connection-details-form'].focus();
+    nullthrows(this._connectionDetailsForm).focus();
   }
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {
-    return this.refs['connection-details-form'].getFormFields();
+    return nullthrows(this._connectionDetailsForm).getFormFields();
   }
 
   getPrefilledConnectionParams(): ?NuclideRemoteConnectionParams {
@@ -162,7 +163,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
   };
 
   _onDefaultProfileClicked = (): void => {
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -173,7 +174,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
     if (profileId == null) {
       return;
     }
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -184,7 +185,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
   };
 
   _onProfileClicked = (profileId: string): void => {
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    const existingConnectionDetailsForm = this._connectionDetailsForm;
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
@@ -338,7 +339,9 @@ export default class ConnectionDetailsPrompt extends React.Component<
           onConfirm={this.props.onConfirm}
           onCancel={this.props.onCancel}
           onDidChange={this._handleConnectionDetailsFormDidChange}
-          ref="connection-details-form"
+          ref={form => {
+            this._connectionDetailsForm = form;
+          }}
         />
       </div>
     );

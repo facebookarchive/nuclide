@@ -101,15 +101,12 @@ export default class ReactNativeLaunchUiComponent extends React.Component<
       <div className="block">
         <label>Workspace path (should contain package.json): </label>
         <AtomInput
-          ref="workspacePath"
           placeholderText="Path containing package.json"
           value={this.state.workspacePath}
           onDidChange={value => this.setState({workspacePath: value})}
           autofocus={true}
         />
         <label>Platform: </label>
-        {/* Suppression copied from nuclide-commons-ui/RadioGroup.example.js */}
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <RadioGroup
           selectedIndex={platforms.indexOf(this.state.platform)}
           optionLabels={platforms}
@@ -119,7 +116,6 @@ export default class ReactNativeLaunchUiComponent extends React.Component<
         />
         <label>Debug port number: </label>
         <AtomInput
-          ref="port"
           tabIndex="1"
           placeholderText="React Native packager port (default 8081)"
           value={this.state.port}
