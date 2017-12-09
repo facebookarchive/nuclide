@@ -14,7 +14,7 @@ import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type {
   PausedEvent,
   Location,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+} from '../../../nuclide-debugger-common/lib/protocol-types';
 import type {ThreadSwitchMessageData} from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

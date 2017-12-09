@@ -10,7 +10,7 @@
  */
 
 import type {IPCEvent} from './types';
-import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {PausedEvent} from '../../nuclide-debugger-common/lib/protocol-types';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 require('./Protocol/Object');

@@ -15,7 +15,7 @@ import type {
   DebuggerCapabilities,
   DebuggerProperties,
 } from '../../nuclide-debugger-base';
-import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {PausedEvent} from '../../nuclide-debugger-common/lib/protocol-types';
 
 export default class DebuggerProcessInfo {
   _serviceName: string;

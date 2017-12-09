@@ -25,7 +25,7 @@ import type {
   CallFrameId,
   SetDebuggerSettingsRequest,
   SetPauseOnExceptionsRequest,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+} from '../../../nuclide-debugger-common/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';

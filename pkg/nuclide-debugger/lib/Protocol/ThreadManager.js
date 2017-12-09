@@ -14,7 +14,7 @@ import type {
   ThreadUpdatedEvent,
   CallFrame,
   GetThreadStackResponse,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+} from '../../../nuclide-debugger-common/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import {Subject, Observable} from 'rxjs';

@@ -17,7 +17,7 @@ import type {
   EvaluateOnCallFrameResponse,
   EvaluateResponse,
   GetPropertiesResponse,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+} from '../../../nuclide-debugger-common/lib/protocol-types';
 import type {ObjectGroup, ExpansionResult} from '../types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';

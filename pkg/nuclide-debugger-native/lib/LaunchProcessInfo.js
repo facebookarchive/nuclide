@@ -22,7 +22,7 @@ import type {
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {PausedEvent} from '../../nuclide-debugger-common/lib/protocol-types';
 
 import invariant from 'assert';
 import {

@@ -13,7 +13,7 @@
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Observable} from 'rxjs';
-import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {RemoteObjectId} from '../../nuclide-debugger-common/lib/protocol-types';
 
 export type ControlButtonSpecification = {
   icon: IconName,

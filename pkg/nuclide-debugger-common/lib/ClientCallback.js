@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  AtomNotification,
-  AtomNotificationType,
-} from '../../nuclide-debugger-common';
+import type {AtomNotification, AtomNotificationType} from './types';
 import {Observable, Subject} from 'rxjs';
 
 export default class ClientCallback {

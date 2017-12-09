@@ -17,7 +17,7 @@ import type {
   BreakpointHitCountEvent,
   SetBreakpointByUrlResponse,
   SetPauseOnExceptionsRequest,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+} from '../../../nuclide-debugger-common/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import invariant from 'assert';

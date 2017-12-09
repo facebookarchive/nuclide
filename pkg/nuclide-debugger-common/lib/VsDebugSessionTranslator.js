@@ -12,19 +12,16 @@
 import type {
   AtomNotificationType,
   DebuggerConfigAction,
-} from '../../nuclide-debugger-common';
-import type {
   VsAdapterType,
   VSAdapterExecutableInfo,
-} from '../../nuclide-debugger-common/lib/types';
+} from './types';
 import type {
   Level as OutputLevelType,
   Message,
 } from '../../nuclide-console/lib/types';
 import type {ClientCallback} from '../../nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import * as NuclideDebugProtocol from '../../nuclide-debugger-base/lib/protocol-types';
+import * as NuclideDebugProtocol from '../../nuclide-debugger-common/lib/protocol-types';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {FileCache} from '../../nuclide-debugger-common';

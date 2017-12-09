@@ -45,7 +45,7 @@ import {arrayFlatten, setDifference} from 'nuclide-commons/collection';
 import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {RemoteObjectId} from '../../nuclide-debugger-common/lib/protocol-types';
 import type {
   Breakpoint as HhBreakpointType,
   ExceptionState,
