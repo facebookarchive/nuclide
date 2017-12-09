@@ -14,11 +14,10 @@ import type {
   DebuggerConfigAction,
   VsAdapterType,
   VSAdapterExecutableInfo,
+  UserOutput,
+  UserOutputLevel,
 } from './types';
-import type {
-  Level as OutputLevelType,
-  Message,
-} from '../../nuclide-console/lib/types';
+
 import type {ClientCallback} from '../../nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import * as NuclideDebugProtocol from '../../nuclide-debugger-common/lib/protocol-types';
@@ -1054,8 +1053,8 @@ export default class VsDebugSessionTranslator {
     this._clientCallback.sendAtomNotification(level, message);
   }
 
-  _sendUserOutputMessage(level: OutputLevelType, text: string): void {
-    const message: Message = {level, text};
+  _sendUserOutputMessage(level: UserOutputLevel, text: string): void {
+    const message: UserOutput = {level, text};
     this._clientCallback.sendUserOutputMessage(JSON.stringify(message));
   }
 

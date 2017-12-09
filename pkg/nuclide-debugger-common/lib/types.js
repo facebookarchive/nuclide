@@ -28,3 +28,16 @@ export type VsAdapterType =
   | 'node'
   | 'java'
   | 'react_native';
+
+export type UserOutputLevel =
+  | 'debug'
+  | 'info'
+  | 'warning'
+  | 'log'
+  | 'error'
+  | 'success';
+
+export type UserOutput = {
+  level: UserOutputLevel,
+  text: string,
+};

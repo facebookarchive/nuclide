@@ -13,6 +13,7 @@ export type {
   AtomNotification,
   AtomNotificationType,
   DebuggerConfigAction,
+  UserOutput,
 } from './types';
 
 export {default as ClientCallback} from './ClientCallback';
