@@ -16,13 +16,14 @@ import type {
   RemoteDebugCommandRequest,
 } from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
+import type {Adapter} from 'nuclide-debugger-vsps/main';
 
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import VspProcessInfo from './VspProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 // eslint-disable-next-line rulesdir/no-unresolved
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes} from 'nuclide-debugger-common/main';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,
@@ -85,18 +86,24 @@ async function getNodeBinaryPath(path: NuclideUri): Promise<string> {
   }
 }
 
+async function getAdapterExecutableWithProperNode(
+  adapterType: Adapter,
+  path: NuclideUri,
+): Promise<VSAdapterExecutableInfo> {
+  const service = getRemoteDebuggerCommandServiceByNuclideUri(path);
+  const adapterInfo = await service.getAdapterExecutableInfo(adapterType);
+
+  if (adapterInfo.command === 'node') {
+    adapterInfo.command = await getNodeBinaryPath(path);
+  }
+
+  return adapterInfo;
+}
+
 async function getPythonAdapterInfo(
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
-  const [adapterPath, nodePath] = await Promise.all([
-    getRemoteDebuggerCommandServiceByNuclideUri(path).getPythonAdapterPath(),
-    getNodeBinaryPath(path),
-  ]);
-
-  return {
-    command: nodePath,
-    args: [adapterPath],
-  };
+  return getAdapterExecutableWithProperNode('python', path);
 }
 
 function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
@@ -223,15 +230,7 @@ export async function getNodeAttachProcessInfo(
 async function getNodeAdapterInfo(
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
-  const [adapterPath, nodePath] = await Promise.all([
-    getRemoteDebuggerCommandServiceByNuclideUri(path).getNodeAdapterPath(),
-    getNodeBinaryPath(path),
-  ]);
-
-  return {
-    command: nodePath,
-    args: [adapterPath],
-  };
+  return getAdapterExecutableWithProperNode('node', path);
 }
 
 function getNodeScriptConfig(
@@ -306,23 +305,10 @@ export async function getReactNativeLaunchProcessInfo(
   );
 }
 
-function getReactNativeAdapterPath(): string {
-  return nuclideUri.join(
-    __dirname,
-    '../VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
-  );
-}
-
 async function getReactNativeAdapterInfo(
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
-  const nodePath = await getNodeBinaryPath(path);
-  const adapterPath = getReactNativeAdapterPath();
-
-  return {
-    command: nodePath,
-    args: [adapterPath],
-  };
+  return getAdapterExecutableWithProperNode('react-native', path);
 }
 
 function getAttachNodeConfig(port: number): Object {

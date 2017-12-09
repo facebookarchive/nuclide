@@ -10,13 +10,17 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common/main';
+import type {Adapter} from 'nuclide-debugger-vsps/main';
+
+export type {VSAdapterExecutableInfo};
 
 import http from 'http';
 import net from 'net';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 import {sleep} from 'nuclide-commons/promise';
+import {getAdapterExecutable} from 'nuclide-debugger-vsps/main';
 
 let isServerSetup = false;
 
@@ -162,16 +166,8 @@ function handleJsonRequest(body, res) {
   res.end(JSON.stringify({success}));
 }
 
-export async function getNodeAdapterPath(): Promise<string> {
-  return nuclideUri.join(
-    __dirname,
-    '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
-  );
-}
-
-export async function getPythonAdapterPath(): Promise<string> {
-  return nuclideUri.join(
-    __dirname,
-    '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
-  );
+export async function getAdapterExecutableInfo(
+  adapterType: Adapter,
+): Promise<VSAdapterExecutableInfo> {
+  return getAdapterExecutable(adapterType);
 }
