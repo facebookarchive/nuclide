@@ -16,41 +16,55 @@ import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common/main';
 
 export type Adapter = 'node' | 'python' | 'react-native';
 
-const _adapters: Map<Adapter, VSAdapterExecutableInfo> = new Map([
+type AdapterInfo = {
+  executable: VSAdapterExecutableInfo,
+  root: string,
+};
+
+const _adapters: Map<Adapter, AdapterInfo> = new Map([
   [
     'node',
     {
-      command: 'node',
-      args: [
-        nuclideUri.join(
-          __dirname,
-          'VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
-        ),
-      ],
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            'VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'VendorLib/vscode-node-debug2'),
     },
   ],
   [
     'python',
     {
-      command: 'node',
-      args: [
-        nuclideUri.join(
-          __dirname,
-          'VendorLib/vs-py-debugger/out/client/debugger/Main.js',
-        ),
-      ],
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            'VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'VendorLib/vs-py-debugger'),
     },
   ],
   [
     'react-native',
     {
-      command: 'node',
-      args: [
-        nuclideUri.join(
-          __dirname,
-          'VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
-        ),
-      ],
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            'VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'VendorLib/vscode-react-native'),
     },
   ],
 ]);
@@ -62,5 +76,13 @@ export function getAdapterExecutable(
   if (adapterInfo == null) {
     throw new Error(`Cannot find VSP for given adapter type ${adapter}`);
   }
-  return adapterInfo;
+  return adapterInfo.executable;
+}
+
+export function getAdapterPackageRoot(adapter: Adapter): string {
+  const adapterInfo = _adapters.get(adapter);
+  if (adapterInfo == null) {
+    throw new Error(`Cannot find VSP for given adapter type ${adapter}`);
+  }
+  return adapterInfo.root;
 }

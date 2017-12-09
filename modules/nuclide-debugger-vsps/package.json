@@ -1,6 +1,6 @@
 {
   "name": "nuclide-debugger-vsps",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Third party VSP adapters used by the Nuclide debugger.",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "nuclide-commons": "0.4.0",
-    "nuclide-debugger-common": "0.1.0"
+    "nuclide-debugger-common": "0.4.0"
   },
   "devDependencies": {
     "babel-plugin-idx": "1.4.0",

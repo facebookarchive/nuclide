@@ -9,6 +9,7 @@
  * @flow
  * @format
  */
+
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
 

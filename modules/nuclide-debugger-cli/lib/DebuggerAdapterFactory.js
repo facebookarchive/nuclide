@@ -14,14 +14,19 @@ import type {
   LaunchRequestArguments,
   AttachRequestArguments,
 } from 'vscode-debugprotocol';
-import type {VSAdapterExecutableInfo} from '../types';
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 import type {StartAction} from './VSPOptionsData';
 import type {CustomArgumentType} from './VSPOptionsParser';
+import type {Adapter} from 'nuclide-debugger-vsps/main';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {objectFromMap} from 'nuclide-commons/collection';
-import {VsAdapterTypes} from '../../nuclide-debugger-common/constants';
+import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
+import {
+  getAdapterExecutable,
+  getAdapterPackageRoot,
+} from 'nuclide-debugger-vsps/main';
 import VSPOptionsParser from './VSPOptionsParser';
 
 export type ParsedVSAdapter = {
@@ -38,9 +43,7 @@ type Arguments = {
 };
 
 type AdapterData = {
-  interpreter: string,
-  serverScript: string,
-  packagePath: string,
+  key: Adapter,
   type: string,
   customArguments: Map<string, CustomArgumentType>,
 };
@@ -50,15 +53,7 @@ export default class DebuggerAdapterFactory {
     [
       VsAdapterTypes.PYTHON,
       {
-        interpreter: 'node',
-        serverScript: nuclideUri.join(
-          __dirname,
-          '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
-        ),
-        packagePath: nuclideUri.join(
-          __dirname,
-          '../../nuclide-debugger-vsp/VendorLib/vs-py-debugger',
-        ),
+        key: 'python',
         type: 'python',
         customArguments: new Map(),
       },
@@ -66,15 +61,7 @@ export default class DebuggerAdapterFactory {
     [
       VsAdapterTypes.NODE,
       {
-        interpreter: 'node',
-        serverScript: nuclideUri.join(
-          __dirname,
-          '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
-        ),
-        packagePath: nuclideUri.join(
-          __dirname,
-          '../../nuclide-debugger-vsp/VendorLib/vscode-node-debug2',
-        ),
+        key: 'node',
         type: 'node2',
         customArguments: new Map([
           [
@@ -135,7 +122,8 @@ export default class DebuggerAdapterFactory {
       'Adapter server table not properly populated in DebuggerAdapterFactory',
     );
 
-    const optionsParser = new VSPOptionsParser(adapter.packagePath);
+    const root = getAdapterPackageRoot(adapter.key);
+    const optionsParser = new VSPOptionsParser(root);
     const action: StartAction = args.attach ? 'attach' : 'launch';
 
     optionsParser.showCommandLineHelp(
@@ -161,7 +149,8 @@ export default class DebuggerAdapterFactory {
       'Adapter server table not properly populated in DebuggerAdapterFactory',
     );
 
-    const parser = new VSPOptionsParser(adapter.packagePath);
+    const root = getAdapterPackageRoot(adapter.key);
+    const parser = new VSPOptionsParser(root);
     const commandLineArgs = parser.parseCommandLine(
       adapter.type,
       'attach',
@@ -172,10 +161,7 @@ export default class DebuggerAdapterFactory {
 
     return {
       action: 'attach',
-      adapterInfo: {
-        command: adapter.interpreter,
-        args: [adapter.serverScript],
-      },
+      adapterInfo: getAdapterExecutable(adapter.key),
       attachArgs: objectFromMap(commandLineArgs),
     };
   }
@@ -208,7 +194,8 @@ export default class DebuggerAdapterFactory {
       'Adapter server table not properly populated in DebuggerAdapterFactory',
     );
 
-    const parser = new VSPOptionsParser(adapter.packagePath);
+    const root = getAdapterPackageRoot(adapter.key);
+    const parser = new VSPOptionsParser(root);
     const commandLineArgs = parser.parseCommandLine(
       adapter.type,
       'launch',
@@ -226,10 +213,7 @@ export default class DebuggerAdapterFactory {
 
     return {
       action: 'launch',
-      adapterInfo: {
-        command: adapter.interpreter,
-        args: [adapter.serverScript],
-      },
+      adapterInfo: getAdapterExecutable(adapter.key),
       launchArgs: objectFromMap(commandLineArgs),
     };
   }

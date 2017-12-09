@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {VSAdapterExecutableInfo} from '../types';
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 import type {Capabilities} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
 import type {ParsedVSAdapter} from './DebuggerAdapterFactory';
@@ -41,7 +41,7 @@ import RestartCommand from './RestartCommand';
 import PrintCommand from './PrintCommand';
 
 import invariant from 'assert';
-import VsDebugSession from '../VsDebugSession';
+import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 
 export default class Debugger implements DebuggerInterface {
   _capabilities: ?Capabilities;
