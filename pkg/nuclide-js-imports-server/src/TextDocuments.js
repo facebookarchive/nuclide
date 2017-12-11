@@ -10,27 +10,16 @@
  */
 
 import type {
-  // flowlint-next-line untyped-type-import:off
   DidChangeTextDocumentParams,
-  // flowlint-next-line untyped-type-import:off
   DidCloseTextDocumentParams,
-  // flowlint-next-line untyped-type-import:off
   DidOpenTextDocumentParams,
-  // flowlint-next-line untyped-type-import:off
   DidSaveTextDocumentParams,
-  // flowlint-next-line untyped-type-import:off
-  IConnection,
-  // flowlint-next-line untyped-type-import:off
-  TextDocumentSyncKindType,
-} from 'vscode-languageserver';
+  TextDocumentItem,
+} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  // flowlint-next-line untyped-type-import:off
-  ITextDocumentItem,
-  // flowlint-next-line untyped-type-import:off
-  TextDocumentChangeEvent,
-} from 'vscode-languageserver-types';
+// flowlint-next-line untyped-type-import:off
+import type {IConnection} from 'vscode-languageserver';
 
 import invariant from 'assert';
 import TextDocument from './TextDocument';
@@ -38,7 +27,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Emitter} from 'event-kit';
 import {TextDocumentSyncKind} from 'vscode-languageserver';
 
-function textDocumentFromLSPTextDocument(textDocument: ITextDocumentItem) {
+function textDocumentFromLSPTextDocument(textDocument: TextDocumentItem) {
   return new TextDocument(
     textDocument.uri,
     textDocument.languageId,
@@ -64,7 +53,7 @@ export default class TextDocuments {
     return this._disposables.disposed;
   }
 
-  get syncKind(): TextDocumentSyncKindType {
+  get syncKind(): TextDocumentSyncKind {
     return TextDocumentSyncKind.Incremental;
   }
 
@@ -97,7 +86,7 @@ export default class TextDocuments {
 
     connection.onDidSaveTextDocument((e: DidSaveTextDocumentParams) => {
       const document = this.get(e.textDocument.uri);
-      document.save(e.textDocument.version, e.text);
+      document.save(e.text);
     });
   }
 
@@ -121,19 +110,21 @@ export default class TextDocuments {
     return Array.from(this._documents.values());
   }
 
-  onDidChangeContent(handler: (e: TextDocumentChangeEvent) => void): void {
+  onDidChangeContent(handler: (e: {document: TextDocument}) => void): void {
     this._emitter.on('didChangeContent', handler);
   }
 
-  onDidSave(handler: (e: TextDocumentChangeEvent) => void): void {
+  onDidSave(handler: (e: {document: TextDocument}) => void): void {
     this._emitter.on('didSave', handler);
   }
 
-  onDidOpenTextDocument(handler: (e: TextDocumentChangeEvent) => void): void {
+  onDidOpenTextDocument(
+    handler: (e: {textDocument: TextDocument}) => void,
+  ): void {
     this._emitter.on('didOpenTextDocument', handler);
   }
 
-  onDidClose(handler: (e: TextDocumentChangeEvent) => void): void {
+  onDidClose(handler: (e: {textDocument: TextDocument}) => void): void {
     this._emitter.on('didClose', handler);
   }
 

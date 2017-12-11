@@ -862,6 +862,9 @@ export type DidCloseTextDocumentParams = {
 export type DidSaveTextDocumentParams = {
   // The document that was saved.
   textDocument: TextDocumentIdentifier,
+  // Optional the content when saved. Depends on the includeText value
+  // when the save notifcation was requested.
+  text: ?string,
 };
 
 export type DidChangeWatchedFilesParams = {
