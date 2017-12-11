@@ -94,7 +94,13 @@ export class AutoImportsManager {
     code: string,
   ): Array<ImportSuggestion> {
     const ast = parseFile(code);
+    return this.findMissingImportsInAST(fileUri, ast);
+  }
 
+  findMissingImportsInAST(
+    fileUri: NuclideUri,
+    ast: ?Object,
+  ): Array<ImportSuggestion> {
     if (ast == null || checkEslint(ast)) {
       return [];
     }

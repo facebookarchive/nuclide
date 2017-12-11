@@ -26,7 +26,6 @@ import {parseFile} from './lib/AutoImportsManager';
 import {Range} from 'simple-text-buffer';
 import {
   atomRangeToLSPRange,
-  babelLocationToAtomRange,
   compareForInsertion,
   getRequiredModule,
 } from './utils/util';
@@ -116,22 +115,16 @@ export class CommandExecutor {
   }
 
   getEditsForFixingAllImports(fileMissingImport: NuclideUri): Array<TextEdit> {
-    const ast = parseFile(
-      this.documents
-        .get(nuclideUri.nuclideUriToUri(fileMissingImport))
-        .getText(),
-    );
+    const fileMissingImportUri = nuclideUri.nuclideUriToUri(fileMissingImport);
+    const ast = parseFile(this.documents.get(fileMissingImportUri).getText());
     if (ast == null || ast.program == null || ast.program.body == null) {
       // TODO(T24077432): Figure out when this happens and throw an error
       return [];
     }
-    const {body, loc} = ast.program;
+    const {body} = ast.program;
     return arrayFlatten(
       this.autoImportsManager
-        .getSuggestedImportsForRange(
-          fileMissingImport,
-          atomRangeToLSPRange(babelLocationToAtomRange(loc)),
-        )
+        .findMissingImportsInAST(fileMissingImport, ast)
         .map(({filesWithExport, symbol}) => {
           const missingImport = findClosestImport(
             symbol.id,
