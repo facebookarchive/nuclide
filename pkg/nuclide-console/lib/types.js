@@ -248,4 +248,10 @@ export type Action =
         providerId: string,
         status: OutputProviderStatus,
       },
+    }
+  | {
+      type: 'SET_FONT_SIZE',
+      payload: {
+        fontSize: number,
+      },
     };

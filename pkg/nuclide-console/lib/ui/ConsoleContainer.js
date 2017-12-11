@@ -58,6 +58,7 @@ type State = {
   history: Array<string>,
   sources: Array<Source>,
   executors: Map<string, Executor>,
+  fontSize: number,
 
   //
   // State unique to this particular Console instance
@@ -110,6 +111,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
       providers: new Map(),
       providerStatuses: new Map(),
       executors: new Map(),
+      fontSize: 0,
       displayableRecords: [],
       history: [],
       sources: [],
@@ -185,6 +187,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
           displayableRecords: this._toDisplayableRecords(state.records),
           history: state.history,
           sources: getSources(state),
+          fontSize: state.fontSize,
         });
       });
   }
@@ -366,6 +369,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
           this._handleDisplayableRecordHeightChange
         }
         resetAllFilters={this._resetAllFilters}
+        fontSize={this.state.fontSize}
       />
     );
   }

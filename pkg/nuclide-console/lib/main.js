@@ -26,11 +26,13 @@ import type {
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {Observable} from 'rxjs';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   combineEpics,
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
@@ -85,6 +87,15 @@ class Activation {
           );
         },
       ),
+      Observable.combineLatest(
+        observableFromSubscribeFunction(cb =>
+          atom.config.observe('editor.fontSize', cb),
+        ),
+        featureConfig.observeAsStream('nuclide-console.consoleFontScale'),
+        (fontSize, consoleFontScale) => fontSize * parseFloat(consoleFontScale),
+      )
+        .map(Actions.setFontSize)
+        .subscribe(this._store.dispatch),
       this._registerCommandAndOpener(),
     );
   }

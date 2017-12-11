@@ -170,6 +170,13 @@ export default function accumulateState(
         watchEditor,
       };
     }
+    case Actions.SET_FONT_SIZE: {
+      const {fontSize} = action.payload;
+      return {
+        ...state,
+        fontSize,
+      };
+    }
   }
 
   return state;

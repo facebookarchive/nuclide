@@ -32,6 +32,7 @@ import NewMessagesNotification from './NewMessagesNotification';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 import recordsChanged from '../recordsChanged';
+import StyleSheet from 'nuclide-commons-ui/StyleSheet';
 
 type Props = {
   displayableRecords: Array<DisplayableRecord>,
@@ -54,6 +55,7 @@ type Props = {
   filteredRecordCount: number,
   filterText: string,
   resetAllFilters: () => void,
+  fontSize: number,
 };
 
 type State = {
@@ -63,9 +65,12 @@ type State = {
 // Maximum time (ms) for the console to try scrolling to the bottom.
 const MAXIMUM_SCROLLING_TIME = 3000;
 
+let count = 0;
+
 export default class Console extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
   _isScrolledNearBottom: boolean;
+  _id: number;
 
   // Used when _scrollToBottom is called. The console optimizes message loading
   // so scrolling to the bottom once doesn't always scroll to the bottom since
@@ -84,6 +89,7 @@ export default class Console extends React.Component<Props, State> {
     this._isScrolledNearBottom = true;
     this._isScrollingToBottom = false;
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
+    this._id = count++;
   }
 
   componentDidMount(): void {
@@ -177,6 +183,15 @@ export default class Console extends React.Component<Props, State> {
   render(): React.Node {
     return (
       <div className="nuclide-console">
+        <StyleSheet
+          sourcePath="nuclide-console-font-style"
+          priority={-1}
+          css={`
+            #nuclide-console-font-size-${this._id} {
+              font-size: ${this.props.fontSize}px;
+            }
+          `}
+        />
         <ConsoleHeader
           clear={this.props.clearRecords}
           createPaste={this.props.createPaste}
@@ -191,8 +206,12 @@ export default class Console extends React.Component<Props, State> {
         {/*
           We need an extra wrapper element here in order to have the new messages notification stick
           to the bottom of the scrollable area (and not scroll with it).
+
+          nuclide-console-font-size is defined in main.js and updated via a user setting
         */}
-        <div className="nuclide-console-body">
+        <div
+          className="nuclide-console-body"
+          id={'nuclide-console-font-size-' + this._id}>
           <div className="nuclide-console-scroll-pane-wrapper">
             <FilteredMessagesReminder
               filteredRecordCount={this.props.filteredRecordCount}
@@ -203,6 +222,7 @@ export default class Console extends React.Component<Props, State> {
               ref={this._handleOutputTable}
               displayableRecords={this.props.displayableRecords}
               showSourceLabels={this.props.selectedSourceIds.length > 1}
+              fontSize={this.props.fontSize}
               getExecutor={this._getExecutor}
               getProvider={this._getProvider}
               onScroll={this._handleScroll}

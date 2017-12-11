@@ -27,6 +27,7 @@ import {ResizeSensitiveContainer} from '../../../nuclide-ui/ResizeSensitiveConta
 type Props = {
   displayableRecords: Array<DisplayableRecord>,
   showSourceLabels: boolean,
+  fontSize: number,
   getExecutor: (id: string) => ?Executor,
   getProvider: (id: string) => ?OutputProvider,
   onScroll: (
@@ -98,6 +99,11 @@ export default class OutputTable extends React.Component<Props, State> {
     ) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.recomputeRowHeights();
+    }
+    if (prevProps.fontSize !== this.props.fontSize) {
+      this._renderedRecords.forEach(recordView =>
+        recordView.measureAndNotifyHeight(),
+      );
     }
   }
 

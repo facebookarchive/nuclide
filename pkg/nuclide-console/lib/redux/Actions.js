@@ -34,6 +34,7 @@ export const RECORD_RECEIVED = 'RECORD_RECEIVED';
 export const REGISTER_SOURCE = 'REGISTER_SOURCE';
 export const REMOVE_SOURCE = 'REMOVE_SOURCE';
 export const UPDATE_STATUS = 'UPDATE_STATUS';
+export const SET_FONT_SIZE = 'SET_FONT_SIZE';
 
 export function clearRecords(): Action {
   return {type: CLEAR_RECORDS};
@@ -158,5 +159,12 @@ export function setWatchEditor(watchEditor: ?WatchEditorFunction): Action {
   return {
     type: SET_WATCH_EDITOR_FUNCTION,
     payload: {watchEditor},
+  };
+}
+
+export function setFontSize(fontSize: number): Action {
+  return {
+    type: SET_FONT_SIZE,
+    payload: {fontSize},
   };
 }

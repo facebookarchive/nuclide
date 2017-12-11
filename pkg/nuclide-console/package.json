@@ -47,6 +47,13 @@
         "description": "The URL to link T1234567 text to. (%s will be replaced with the match.)",
         "type": "string",
         "default": ""
+      },
+      "consoleFontScale": {
+        "title": "Console Font Scale",
+        "description": "The scale of the font used in the console relative to the editor font size.",
+        "type": "number",
+        "default": 0.9,
+        "minimum": 0.1
       }
     },
     "packageType": "Atom",
