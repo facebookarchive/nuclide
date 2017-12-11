@@ -23,6 +23,13 @@
       }
     }
   },
+  "consumedServices": {
+    "find-references-view": {
+      "versions": {
+        "0.1.0": "consumeReferencesView"
+      }
+    }
+  },
   "activationHooks": [
     "language-c:grammar-used",
     "language-cpp14:grammar-used",

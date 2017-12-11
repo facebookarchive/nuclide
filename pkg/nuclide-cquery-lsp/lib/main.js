@@ -15,6 +15,7 @@ import type {
   Outline,
   CodeAction,
 } from 'atom-ide-ui';
+import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
@@ -56,6 +57,9 @@ import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
 import {determineCqueryProject} from './CqueryProject';
+import {wordUnderPoint} from './utils';
+
+let _referencesViewService: ?FindReferencesViewService;
 
 // Wrapper that queries for clang settings when new files seen.
 class CqueryLSPClient {
@@ -74,15 +78,67 @@ class CqueryLSPClient {
   }
 
   _addCommands(): IDisposable {
-    return atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor) {
-        const path = editor.getPath();
-        if (this._service && path != null) {
-          this._service.freshenIndexForFile(path);
+    // This command just sends a notification to the server.
+    const notificationCommands = [
+      atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor) {
+          const path: ?NuclideUri = editor.getPath();
+          if (this._service && path != null) {
+            this._service.freshenIndexForFile(path);
+          }
         }
-      }
-    });
+      }),
+    ];
+    // These commands all request locations in response to a position
+    // which we can display in a find references pane.
+    const requestCommands = [
+      {
+        command: 'cquery:find-variables',
+        methodName: '$cquery/vars',
+        title: 'Variables',
+      },
+      {
+        command: 'cquery:find-callers',
+        methodName: '$cquery/callers',
+        title: 'Callers',
+      },
+      {
+        command: 'cquery:find-base-class',
+        methodName: '$cquery/base',
+        title: 'Base classes',
+      },
+      {
+        command: 'cquery:find-derived-class',
+        methodName: '$cquery/derived',
+        title: 'Derived classes',
+      },
+    ].map(({command, methodName, title}) =>
+      atom.commands.add('atom-text-editor', command, () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor) {
+          const point = editor.getCursorBufferPosition();
+          const path: ?NuclideUri = editor.getPath();
+          const name = wordUnderPoint(editor, point);
+          if (this._service && path != null && name != null) {
+            this._service
+              .requestLocationsCommand(methodName, path, point)
+              .then(locations => {
+                if (_referencesViewService != null) {
+                  _referencesViewService.viewResults({
+                    type: 'data',
+                    baseUri: path,
+                    referencedSymbolName: name,
+                    title,
+                    references: locations.map(loc => ({...loc, name: ''})),
+                  });
+                }
+              });
+          }
+        }
+      }),
+    );
+    return new UniversalDisposable(...notificationCommands, ...requestCommands);
   }
 
   async ensureProject(file: string): Promise<?CqueryProject> {
@@ -319,6 +375,13 @@ class Activation {
     provider: ClangConfigurationProvider,
   ): IDisposable {
     return registerClangProvider(provider);
+  }
+
+  consumeReferencesView(provider: FindReferencesViewService): IDisposable {
+    _referencesViewService = provider;
+    return new UniversalDisposable(() => {
+      _referencesViewService = null;
+    });
   }
 
   initializeLsp(): IDisposable {

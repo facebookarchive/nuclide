@@ -11,16 +11,21 @@
 
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction} from 'atom-ide-ui';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   TextEdit,
   Command,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+import type {RequestLocationsResult} from './types';
 
 import {Subject} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {
   lspUri_localPath,
+  localPath_lspUri,
   lspTextEdits_atomTextEdits,
+  lspRange_atomRange,
+  atomPoint_lspPosition,
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
 
@@ -173,5 +178,28 @@ export class CqueryLanguageClient extends LspLanguageService {
     this._lspConnection._jsonRpcConnection.sendNotification(
       '$cquery/freshenIndex',
     );
+  }
+
+  async requestLocationsCommand(
+    methodName: string,
+    path: NuclideUri,
+    point: atom$Point,
+  ): Promise<RequestLocationsResult> {
+    const position = atomPoint_lspPosition(point);
+    const response = await this._lspConnection._jsonRpcConnection.sendRequest(
+      methodName,
+      {
+        textDocument: {
+          uri: localPath_lspUri(path),
+        },
+        position,
+      },
+    );
+    return response == null
+      ? []
+      : response.map(({uri, range}) => ({
+          uri: lspUri_localPath(uri),
+          range: lspRange_atomRange(range),
+        }));
   }
 }

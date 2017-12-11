@@ -11,7 +11,11 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {CqueryProject, CqueryProjectKey} from './types';
+import type {
+  CqueryProject,
+  CqueryProjectKey,
+  RequestLocationsResult,
+} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -126,6 +130,24 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
+  }
+
+  async requestLocationsCommand(
+    methodName: string,
+    path: NuclideUri,
+    point: atom$Point,
+  ): Promise<RequestLocationsResult> {
+    const cqueryProcess = await this.getLanguageServiceForFile(path);
+    if (cqueryProcess) {
+      return cqueryProcess.requestLocationsCommand(methodName, path, point);
+    } else {
+      this._host.consoleNotification(
+        this._languageId,
+        'warning',
+        'Could not freshen: no cquery index found for ' + path,
+      );
+      return [];
+    }
   }
 
   async freshenIndexForFile(file: NuclideUri): Promise<void> {

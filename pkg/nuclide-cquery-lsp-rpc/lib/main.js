@@ -40,7 +40,7 @@ import type {
 import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {CqueryProject} from './types';
+import type {CqueryProject, RequestLocationsResult} from './types';
 
 import invariant from 'assert';
 import which from 'nuclide-commons/which';
@@ -51,6 +51,11 @@ import CqueryLanguageServer from './CqueryLanguageServer';
 
 export interface CqueryLanguageService extends LanguageService {
   freshenIndexForFile(file: NuclideUri): Promise<void>;
+  requestLocationsCommand(
+    methodName: string,
+    path: NuclideUri,
+    point: atom$Point,
+  ): Promise<RequestLocationsResult>;
   associateFileWithProject(
     file: NuclideUri,
     project: CqueryProject,

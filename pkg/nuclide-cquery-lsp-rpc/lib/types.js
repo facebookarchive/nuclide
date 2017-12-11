@@ -11,6 +11,11 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+export type RequestLocationsResult = Array<{
+  uri: NuclideUri,
+  range: atom$Range,
+}>;
+
 export type CqueryProjectWithCompilationDb = {
   hasCompilationDb: true,
   compilationDbDir: string,

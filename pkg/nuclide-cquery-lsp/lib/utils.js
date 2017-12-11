@@ -9,9 +9,22 @@
  * @format
  */
 
+import {wordAtPosition} from 'nuclide-commons-atom/range';
+
 export async function secondIfFirstIsNull<T>(
   first: ?T,
   second: () => Promise<T>,
 ): Promise<T> {
   return first != null ? first : second();
+}
+
+export function wordUnderPoint(
+  editor: atom$TextEditor,
+  point: atom$Point,
+): ?string {
+  const match = wordAtPosition(editor, point);
+  if (match != null && match.wordMatch.length > 0) {
+    return match.wordMatch[0];
+  }
+  return null;
 }
