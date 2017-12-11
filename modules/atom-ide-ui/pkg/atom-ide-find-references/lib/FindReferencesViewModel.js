@@ -39,7 +39,12 @@ export class FindReferencesViewModel {
   }
 
   getTitle(): string {
-    return 'Symbol References: ' + this._model.getSymbolName();
+    const symbol = this._model.getSymbolName();
+    const title = this._model.getTitle();
+    if (symbol.length > 0) {
+      return `${title}: ${symbol}`;
+    }
+    return title;
   }
 
   getIconName(): IconName {

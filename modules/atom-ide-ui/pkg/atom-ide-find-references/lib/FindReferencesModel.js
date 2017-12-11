@@ -59,6 +59,7 @@ function addReferenceGroup(
 export default class FindReferencesModel {
   _basePath: string;
   _symbolName: string;
+  _title: string;
   _references: Array<[string, Array<ReferenceGroup>]>;
   _referenceCount: number;
   _options: FindReferencesOptions;
@@ -72,11 +73,13 @@ export default class FindReferencesModel {
   constructor(
     basePath: string,
     symbolName: string,
+    title: string,
     references: Array<Reference>,
     options?: FindReferencesOptions,
   ) {
     this._basePath = basePath;
     this._symbolName = symbolName;
+    this._title = title;
     this._referenceCount = references.length;
     this._options = options || {};
 
@@ -103,6 +106,10 @@ export default class FindReferencesModel {
 
   getBasePath(): string {
     return this._basePath;
+  }
+
+  getTitle(): string {
+    return this._title;
   }
 
   getSymbolName(): string {

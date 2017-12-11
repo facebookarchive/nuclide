@@ -44,5 +44,12 @@
         "0.1.0": "consumeProvider"
       }
     }
+  },
+  "providedServices": {
+    "find-references-view": {
+      "versions": {
+        "0.1.0": "provideReferencesViewService"
+      }
+    }
   }
 }

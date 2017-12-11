@@ -35,6 +35,7 @@ export type FindReferencesData = {
   baseUri: NuclideUri,
   referencedSymbolName: string,
   references: Array<Reference>,
+  title?: string, // defaults to 'Symbol References'
 };
 
 export type FindReferencesError = {
@@ -43,6 +44,10 @@ export type FindReferencesError = {
 };
 
 export type FindReferencesReturn = FindReferencesData | FindReferencesError;
+
+export type FindReferencesViewService = {
+  viewResults(results: FindReferencesData): Promise<void>,
+};
 
 export type ReferenceGroup = {
   references: Array<Reference>,

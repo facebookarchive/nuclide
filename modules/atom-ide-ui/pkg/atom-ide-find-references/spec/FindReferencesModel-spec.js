@@ -45,7 +45,12 @@ describe('FindReferencesModel', () => {
         {uri: TEST1, name: 'test1', range: range(0, 0, 0, 1)},
         {uri: TEST2, name: 'test2', range: range(1, 0, 1, 1)},
       ];
-      const model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel(
+        '/test',
+        'testFunction',
+        'title',
+        refs,
+      );
       expect(model.getReferenceCount()).toEqual(3);
       expect(model.getFileCount()).toEqual(2);
 
@@ -92,7 +97,12 @@ describe('FindReferencesModel', () => {
         // ignore duplicates
         {uri: TEST1, name: 'dupe!', range: range(0, 0, 0, 1)},
       ];
-      const model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel(
+        '/test',
+        'testFunction',
+        'title',
+        refs,
+      );
       expect(model.getReferenceCount()).toEqual(7);
       expect(model.getFileCount()).toEqual(2);
 
@@ -123,7 +133,12 @@ describe('FindReferencesModel', () => {
         {uri: TEST1, name: 'test1', range: range(0, 0, 0, 1)},
         {uri: 'bad', name: 'bad', range: range(1, 0, 1, 1)},
       ];
-      const model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel(
+        '/test',
+        'testFunction',
+        'title',
+        refs,
+      );
       expect(model.getReferenceCount()).toEqual(2);
       expect(model.getFileCount()).toEqual(2);
 
