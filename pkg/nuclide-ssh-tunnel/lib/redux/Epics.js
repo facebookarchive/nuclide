@@ -19,6 +19,7 @@ import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/'
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {memoize} from 'lodash';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
+import * as SocketService from '../../../nuclide-socket-rpc';
 
 export function openTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -118,7 +119,8 @@ export function openTunnelEpic(
 
 function getSocketServiceByHost(host) {
   if (host === 'localhost') {
-    return getSocketServiceByNuclideUri('');
+    // Bypass the RPC framework to avoid extra marshal/unmarshaling.
+    return SocketService;
   } else {
     const uri = nuclideUri.createRemoteUri(host, '/');
     return getSocketServiceByNuclideUri(uri);
