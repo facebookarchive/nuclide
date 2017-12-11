@@ -56,9 +56,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   preAttachActions(): void {
     try {
-      // TODO(t18124539) @nmote This should require FlowFB but when used flow
-      // complains that it is an unused supression.
-      // eslint-disable-next-line rulesdir/flow-fb-oss
+      // $FlowFB
       const services = require('./fb/services');
       services.startSlog();
     } catch (_) {}
