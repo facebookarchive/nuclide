@@ -132,14 +132,22 @@ export class CommandExecutor {
           fileMissingImport,
           atomRangeToLSPRange(babelLocationToAtomRange(loc)),
         )
-        .map(({filesWithExport}) =>
-          getEditsForImport(
+        .map(({filesWithExport, symbol}) => {
+          const missingImport = findClosestImport(
+            symbol.id,
+            fileMissingImport,
+            filesWithExport,
+          );
+          if (!missingImport) {
+            return [];
+          }
+          return getEditsForImport(
             this.importFormatter,
             fileMissingImport,
-            filesWithExport[0], // Choosing first suggestion for now
+            missingImport,
             body,
-          ),
-        ),
+          );
+        }),
     );
   }
 }
@@ -332,4 +340,70 @@ function insertBefore(node: Object, spacing: number = 0): EditParams {
     newLinesAfter: 1 + spacing,
     newLinesBefore: 0,
   };
+}
+
+// Chooses the import suggestion which has the most similar file URI
+// to the current file (by considering the number of up/down hops
+// needed to get from to the other) or most similar module identifier
+// to the missing symbol identifier.
+// Returns null if the closest import cannot be determined
+function findClosestImport(
+  identifier: string,
+  fileURI: NuclideUri,
+  filesWithExport: Array<JSExport>,
+): ?JSExport {
+  const fileURIParts = nuclideUri.split(fileURI);
+  const closestExports = findSmallestByMeasure(filesWithExport, ({uri}) => {
+    const exportURIParts = nuclideUri.split(uri);
+    return computeURIDistance(fileURIParts, exportURIParts);
+  });
+
+  if (closestExports.length > 1) {
+    const closestByModuleID = findSmallestByMeasure(closestExports, ({uri}) => {
+      const id = moduleID(uri);
+      return id === identifier ? 0 : id.indexOf(identifier) !== -1 ? 1 : 2;
+    });
+
+    if (closestByModuleID.length === 1) {
+      return closestByModuleID[0];
+    }
+    return null;
+  }
+  return closestExports[0];
+}
+
+function computeURIDistance(uriA: Array<string>, uriB: Array<string>): number {
+  let i = 0;
+  while (uriA[i] === uriB[i] && uriA[i] != null) {
+    i++;
+  }
+  // Make the importing from other modules more expensive than parent modules
+  return uriA.length - i + 1.75 * (uriB.length - i);
+}
+
+function findSmallestByMeasure<T>(
+  list: Array<T>,
+  measure: T => number,
+): Array<T> {
+  const smallestIndices = new Set(findIndicesOfSmallest(list.map(measure)));
+  return list.filter((_, i) => smallestIndices.has(i));
+}
+
+function findIndicesOfSmallest(list: Array<number>): Array<number> {
+  let indecesOfSmallest = [0];
+  let smallest = list[0];
+  list.forEach((item, index) => {
+    if (item < smallest) {
+      indecesOfSmallest = [index];
+      smallest = item;
+    } else if (index > 0 && item === smallest) {
+      indecesOfSmallest.push(index);
+    }
+  });
+  return indecesOfSmallest;
+}
+
+function moduleID(fileURI: string): string {
+  const parts = nuclideUri.split(fileURI);
+  return parts[parts.length - 1].replace(/\.\w+$/, '');
 }
