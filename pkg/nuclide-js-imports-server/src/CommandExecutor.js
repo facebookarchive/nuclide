@@ -124,15 +124,18 @@ export class CommandExecutor {
     const {body} = ast.program;
     return arrayFlatten(
       this.autoImportsManager
-        .findMissingImportsInAST(fileMissingImport, ast)
+        .findMissingImportsInAST(fileMissingImport, ast, false)
         .map(({filesWithExport, symbol}) => {
+          if (filesWithExport.length === 0) {
+            return undecidableImportEdits();
+          }
           const missingImport = findClosestImport(
             symbol.id,
             fileMissingImport,
             filesWithExport,
           );
           if (!missingImport) {
-            return [];
+            return undecidableImportEdits();
           }
           return getEditsForImport(
             this.importFormatter,
@@ -333,6 +336,16 @@ function insertBefore(node: Object, spacing: number = 0): EditParams {
     newLinesAfter: 1 + spacing,
     newLinesBefore: 0,
   };
+}
+
+// Signal across RPC that the import had no available exports, via empty newText
+function undecidableImportEdits(): Array<TextEdit> {
+  return [
+    {
+      range: atomRangeToLSPRange(new Range([0, 0], [0, 0])),
+      newText: '',
+    },
+  ];
 }
 
 // Chooses the import suggestion which has the most similar file URI

@@ -146,7 +146,12 @@ class Activation {
     return this._quickOpenProvider;
   }
 
-  consumeOrganizeRequiresService(organizeRequires): UniversalDisposable {
+  consumeOrganizeRequiresService(
+    organizeRequires: ({
+      addedRequires: boolean,
+      missingExports: boolean,
+    }) => void,
+  ): UniversalDisposable {
     this._commandSubscription.add(
       atom.commands.add(
         'atom-text-editor',
@@ -188,7 +193,11 @@ class Activation {
             }
           }
           // Then use nuclide-format-js to properly format the imports
-          organizeRequires(result != null);
+          organizeRequires({
+            addedRequires: result != null,
+            missingExports:
+              (result || []).find(edit => edit.newText === '') != null,
+          });
           buffer.groupChangesSinceCheckpoint(beforeEditsCheckpoint);
         },
       ),

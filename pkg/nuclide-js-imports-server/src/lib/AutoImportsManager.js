@@ -92,14 +92,16 @@ export class AutoImportsManager {
   findMissingImports(
     fileUri: NuclideUri,
     code: string,
+    onlyAvailableExports: boolean = true,
   ): Array<ImportSuggestion> {
     const ast = parseFile(code);
-    return this.findMissingImportsInAST(fileUri, ast);
+    return this.findMissingImportsInAST(fileUri, ast, onlyAvailableExports);
   }
 
   findMissingImportsInAST(
     fileUri: NuclideUri,
     ast: ?Object,
+    onlyAvailableExports: boolean,
   ): Array<ImportSuggestion> {
     if (ast == null || checkEslint(ast)) {
       return [];
@@ -109,6 +111,7 @@ export class AutoImportsManager {
       fileUri,
       this.undefinedSymbolsManager.findUndefined(ast),
       this.exportsManager,
+      onlyAvailableExports,
     );
     this.suggestedImports.set(fileUri, missingImports);
     return missingImports;
@@ -160,6 +163,7 @@ function undefinedSymbolsToMissingImports(
   fileUri: NuclideUri,
   undefinedSymbols: Array<UndefinedSymbol>,
   exportsManager: ExportManager,
+  onlyAvailableExports: boolean,
 ): Array<ImportSuggestion> {
   return undefinedSymbols
     .map(symbol => {
@@ -179,7 +183,9 @@ function undefinedSymbolsToMissingImports(
           }),
       };
     })
-    .filter(result => result.filesWithExport.length > 0);
+    .filter(
+      result => !onlyAvailableExports || result.filesWithExport.length > 0,
+    );
 }
 
 function checkEslint(ast: Object): boolean {
