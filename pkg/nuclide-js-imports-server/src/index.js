@@ -28,6 +28,7 @@ import {CommandExecutor} from './CommandExecutor';
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintEnvs, getConfigFromFlow} from './getConfig';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from './utils/constantsForClient';
 import {WorkspaceSymbols} from './WorkspaceSymbols';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -68,6 +69,7 @@ let diagnostics = new Diagnostics(autoImportsManager, importFormatter);
 let codeActions = new CodeActions(autoImportsManager, importFormatter);
 let commandExecuter = new CommandExecutor(
   connection,
+  autoImportsManager,
   importFormatter,
   documents,
 );
@@ -87,7 +89,12 @@ connection.onInitialize((params): InitializeResult => {
   completion = new Completions(documents, autoImportsManager, importFormatter);
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);
   codeActions = new CodeActions(autoImportsManager, importFormatter);
-  commandExecuter = new CommandExecutor(connection, importFormatter, documents);
+  commandExecuter = new CommandExecutor(
+    connection,
+    autoImportsManager,
+    importFormatter,
+    documents,
+  );
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
@@ -96,6 +103,7 @@ connection.onInitialize((params): InitializeResult => {
         triggerCharacters: getAllTriggerCharacters(),
       },
       codeActionProvider: true,
+      documentFormattingProvider: true,
       executeCommandProvider: Array.from(Object.keys(CommandExecutor.COMMANDS)),
       workspaceSymbolProvider: true,
     },
@@ -180,6 +188,16 @@ connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): Array<
   SymbolInformation,
 > => {
   return WorkspaceSymbols.getWorkspaceSymbols(autoImportsManager, params);
+});
+
+connection.onDocumentFormatting(params => {
+  const fileUri = nuclideUri.uriToNuclideUri(params.textDocument.uri);
+  return Promise.resolve(
+    params.options.tabSize !== TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING ||
+    fileUri == null
+      ? []
+      : commandExecuter.getEditsForFixingAllImports(fileUri),
+  );
 });
 
 documents.listen(connection);

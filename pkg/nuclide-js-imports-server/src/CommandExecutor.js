@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AutoImportsManager} from './lib/AutoImportsManager';
 import type {JSExport, JSImport} from './lib/types';
 import type TextDocuments from './TextDocuments';
 import type {
@@ -17,6 +18,7 @@ import type {
   TextEdit,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
+import {arrayFlatten} from 'nuclide-commons/collection';
 import {IConnection} from 'vscode-languageserver';
 import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -24,6 +26,7 @@ import {parseFile} from './lib/AutoImportsManager';
 import {Range} from 'simple-text-buffer';
 import {
   atomRangeToLSPRange,
+  babelLocationToAtomRange,
   compareForInsertion,
   getRequiredModule,
 } from './utils/util';
@@ -44,15 +47,18 @@ export class CommandExecutor {
   };
 
   connection: IConnection;
+  autoImportsManager: AutoImportsManager;
   importFormatter: ImportFormatter;
   documents: TextDocuments;
 
   constructor(
     connection: IConnection,
+    autoImportsManager: AutoImportsManager,
     importFormatter: ImportFormatter,
     documents: TextDocuments,
   ) {
     this.connection = connection;
+    this.autoImportsManager = autoImportsManager;
     this.importFormatter = importFormatter;
     this.documents = documents;
   }
@@ -106,6 +112,34 @@ export class CommandExecutor {
 
     this.connection.workspace.applyEdit(
       ({changes, documentChanges}: WorkspaceEdit),
+    );
+  }
+
+  getEditsForFixingAllImports(fileMissingImport: NuclideUri): Array<TextEdit> {
+    const ast = parseFile(
+      this.documents
+        .get(nuclideUri.nuclideUriToUri(fileMissingImport))
+        .getText(),
+    );
+    if (ast == null || ast.program == null || ast.program.body == null) {
+      // TODO(T24077432): Figure out when this happens and throw an error
+      return [];
+    }
+    const {body, loc} = ast.program;
+    return arrayFlatten(
+      this.autoImportsManager
+        .getSuggestedImportsForRange(
+          fileMissingImport,
+          atomRangeToLSPRange(babelLocationToAtomRange(loc)),
+        )
+        .map(({filesWithExport}) =>
+          getEditsForImport(
+            this.importFormatter,
+            fileMissingImport,
+            filesWithExport[0], // Choosing first suggestion for now
+            body,
+          ),
+        ),
     );
   }
 }

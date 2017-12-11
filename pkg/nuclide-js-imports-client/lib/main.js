@@ -23,12 +23,17 @@ import type {LanguageService} from '../../nuclide-language-service/lib/LanguageS
 import createPackage from 'nuclide-commons-atom/createPackage';
 import typeof * as JsService from '../../nuclide-js-imports-client-rpc/lib/JsImportsService';
 
+import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
+import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from '../../nuclide-js-imports-server/src/utils/constantsForClient';
 import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
+import {
+  getNotifierByConnection,
+  getFileVersionOfEditor,
+} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import QuickOpenProvider from './QuickOpenProvider';
@@ -119,6 +124,44 @@ class Activation {
     this._languageService = createLanguageService();
     this._languageService.activate();
     this._quickOpenProvider = new QuickOpenProvider(this._languageService);
+    atom.commands.add(
+      'atom-text-editor',
+      'nuclide-js-imports:auto-require',
+      async () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        const fileVersion = await getFileVersionOfEditor(editor);
+        if (fileVersion == null) {
+          return;
+        }
+        const range = editor.getBuffer().getRange();
+        const languageService = await this._languageService.getLanguageServiceForUri(
+          editor.getPath(),
+        );
+        if (languageService == null) {
+          return;
+        }
+        const triggerOptions = {
+          // secret code
+          tabSize: TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING,
+          // just for typechecking to pass
+          insertSpaces: true,
+        };
+        const result = await languageService.formatSource(
+          fileVersion,
+          range,
+          triggerOptions,
+        );
+        if (result != null) {
+          if (!applyTextEditsToBuffer(editor.getBuffer(), result)) {
+            // TODO(T24077432): Show the error to the user
+            throw new Error('Could not apply edits to text buffer.');
+          }
+        }
+      },
+    );
   }
 
   provideProjectSymbolSearch(): ProjectSymbolSearchProvider {
