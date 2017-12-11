@@ -198,7 +198,7 @@
     "language-thrift",
     "language-scala",
     "MagicPython",
-    "nuclide-format-js",
+    "nuclide-format-js:0.0.42",
     "set-syntax",
     "sort-lines"
   ]

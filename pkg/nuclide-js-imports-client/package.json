@@ -59,5 +59,12 @@
         "0.0.0": "provideJSSymbolSearchService"
       }
     }
+  },
+  "consumedServices": {
+    "organizeRequires": {
+      "versions": {
+        "^0.0.1": "consumeOrganizeRequiresService"
+      }
+    }
   }
 }

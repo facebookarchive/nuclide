@@ -21,6 +21,7 @@ import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import typeof * as JsService from '../../nuclide-js-imports-client-rpc/lib/JsImportsService';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
@@ -119,49 +120,13 @@ function getAutoImportSettings() {
 class Activation {
   _languageService: AtomLanguageService<LanguageService>;
   _quickOpenProvider: QuickOpenProvider;
+  _commandSubscription: UniversalDisposable;
 
   constructor() {
     this._languageService = createLanguageService();
     this._languageService.activate();
     this._quickOpenProvider = new QuickOpenProvider(this._languageService);
-    atom.commands.add(
-      'atom-text-editor',
-      'nuclide-js-imports:auto-require',
-      async () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor == null) {
-          return;
-        }
-        const fileVersion = await getFileVersionOfEditor(editor);
-        if (fileVersion == null) {
-          return;
-        }
-        const range = editor.getBuffer().getRange();
-        const languageService = await this._languageService.getLanguageServiceForUri(
-          editor.getPath(),
-        );
-        if (languageService == null) {
-          return;
-        }
-        const triggerOptions = {
-          // secret code
-          tabSize: TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING,
-          // just for typechecking to pass
-          insertSpaces: true,
-        };
-        const result = await languageService.formatSource(
-          fileVersion,
-          range,
-          triggerOptions,
-        );
-        if (result != null) {
-          if (!applyTextEditsToBuffer(editor.getBuffer(), result)) {
-            // TODO(T24077432): Show the error to the user
-            throw new Error('Could not apply edits to text buffer.');
-          }
-        }
-      },
-    );
+    this._commandSubscription = new UniversalDisposable();
   }
 
   provideProjectSymbolSearch(): ProjectSymbolSearchProvider {
@@ -174,10 +139,61 @@ class Activation {
 
   dispose() {
     this._languageService.dispose();
+    this._commandSubscription.dispose();
   }
 
   registerQuickOpenProvider(): GlobalProviderType<SymbolResult> {
     return this._quickOpenProvider;
+  }
+
+  consumeOrganizeRequiresService(organizeRequires): UniversalDisposable {
+    this._commandSubscription.add(
+      atom.commands.add(
+        'atom-text-editor',
+        'nuclide-js-imports:auto-require',
+        async () => {
+          const editor = atom.workspace.getActiveTextEditor();
+          if (editor == null) {
+            return;
+          }
+          const fileVersion = await getFileVersionOfEditor(editor);
+          if (fileVersion == null) {
+            return;
+          }
+          const buffer = editor.getBuffer();
+          const range = buffer.getRange();
+          const languageService = await this._languageService.getLanguageServiceForUri(
+            editor.getPath(),
+          );
+          if (languageService == null) {
+            return;
+          }
+          const triggerOptions = {
+            // secret code
+            tabSize: TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING,
+            // just for typechecking to pass
+            insertSpaces: true,
+          };
+          const result = await languageService.formatSource(
+            fileVersion,
+            range,
+            triggerOptions,
+          );
+          const beforeEditsCheckpoint = buffer.createCheckpoint();
+          // First add all new imports naively
+          if (result != null) {
+            if (!applyTextEditsToBuffer(buffer, result)) {
+              // TODO(T24077432): Show the error to the user
+              throw new Error('Could not apply edits to text buffer.');
+            }
+          }
+          // Then use nuclide-format-js to properly format the imports
+          organizeRequires(result != null);
+          buffer.groupChangesSinceCheckpoint(beforeEditsCheckpoint);
+        },
+      ),
+    );
+    return this._commandSubscription;
   }
 }
 
