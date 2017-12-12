@@ -249,7 +249,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
           footerHeight={this.state.footerHeight}
           onRowsRendered={this._onRowsRendered}
           tabIndex={null}
-          containerStyle={{'overflow-x': 'scroll'}}
+          containerStyle={{overflowX: 'scroll'}}
           /* This is a workaround. React doesn't detect that a change in this component's state
             should affect the properties of this List's children. Maybe it's an interop problem
             with react-virtualized.
