@@ -10,6 +10,6 @@
   },
   "activationHooks": [
     "language-babel:grammar-used",
-    "langauge-graphql:grammar-used"
+    "language-graphql:grammar-used"
   ]
 }

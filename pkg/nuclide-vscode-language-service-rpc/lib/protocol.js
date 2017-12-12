@@ -521,7 +521,7 @@ export type Hover = {
 /**
  * The marked string is rendered:
  * - as markdown if it is represented as a string
- * - as code block of the given langauge if it is represented as a pair of a language and a value
+ * - as code block of the given language if it is represented as a pair of a language and a value
  *
  * The pair of a language and a value is an equivalent to markdown:
  * ```${language};
