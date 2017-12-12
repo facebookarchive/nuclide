@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
@@ -38,7 +37,6 @@ import SettingsModal from './SettingsModal';
 
 export type Props = {
   diagnostics: Array<DiagnosticMessage>,
-  pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
   showDirectoryColumn: boolean,
@@ -73,19 +71,7 @@ export default class DiagnosticsView extends React.Component<Props> {
   }
 
   render(): React.Element<any> {
-    let {diagnostics} = this.props;
-    const {showDirectoryColumn, showTraces} = this.props;
-    if (this.props.filterByActiveTextEditor) {
-      const pathToFilterBy = this.props.pathToActiveTextEditor;
-      if (pathToFilterBy != null) {
-        diagnostics = diagnostics.filter(
-          diagnostic => diagnostic.filePath === pathToFilterBy,
-        );
-      } else {
-        // Current pane is not a text editor; do not show diagnostics.
-        diagnostics = [];
-      }
-    }
+    const {diagnostics, showDirectoryColumn, showTraces} = this.props;
 
     const groups = ['errors', 'warnings', 'info'];
     if (this.props.supportedMessageKinds.has('review')) {

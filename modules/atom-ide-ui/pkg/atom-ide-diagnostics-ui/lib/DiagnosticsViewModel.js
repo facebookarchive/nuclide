@@ -64,15 +64,17 @@ export class DiagnosticsViewModel {
     // Memoize `_filterDiagnostics()`
     (this: any)._filterDiagnostics = memoizeUntilChanged(
       this._filterDiagnostics,
-      (diagnostics, pattern, hiddenGroups) => ({
+      (diagnostics, pattern, hiddenGroups, filterPath) => ({
         diagnostics,
         pattern,
         hiddenGroups,
+        filterPath,
       }),
       (a, b) =>
         patternsAreEqual(a.pattern, b.pattern) &&
         areSetsEqual(a.hiddenGroups, b.hiddenGroups) &&
-        arrayEqual(a.diagnostics, b.diagnostics),
+        arrayEqual(a.diagnostics, b.diagnostics) &&
+        a.filterPath === b.filterPath,
     );
 
     const {pattern, invalid} = getFilterPattern('', false);
@@ -107,6 +109,9 @@ export class DiagnosticsViewModel {
           globalState.diagnostics,
           instanceState.textFilter.pattern,
           instanceState.hiddenGroups,
+          globalState.filterByActiveTextEditor
+            ? globalState.pathToActiveTextEditor
+            : null,
         ),
         onTypeFilterChange: this._handleTypeFilterChange,
         onTextFilterChange: this._handleTextFilterChange,
@@ -120,7 +125,6 @@ export class DiagnosticsViewModel {
   }
 
   // If autoVisibility setting is on, then automatically show/hide on changes.
-  // Otherwise mute the props stream to prevent unnecessary updates.
   _trackVisibility(props: Observable<Props>): Observable<Props> {
     let lastDiagnostics = [];
     return props.do(newProps => {
@@ -230,9 +234,13 @@ export class DiagnosticsViewModel {
     diagnostics: Array<DiagnosticMessage>,
     pattern: ?RegExp,
     hiddenGroups: Set<DiagnosticGroup>,
+    filterByPath: ?string,
   ): Array<DiagnosticMessage> {
     return diagnostics.filter(message => {
       if (hiddenGroups.has(GroupUtils.getGroup(message))) {
+        return false;
+      }
+      if (filterByPath != null && message.filePath !== filterByPath) {
         return false;
       }
       if (pattern == null) {
