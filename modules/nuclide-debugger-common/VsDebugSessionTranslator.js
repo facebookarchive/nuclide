@@ -109,7 +109,7 @@ const OUTPUT_CATEGORY_TO_LEVEL = Object.freeze({
 const VSP_PROCESS_ID = -1;
 
 type TranslatorBreakpoint = {
-  breakpointId: NuclideDebugProtocol.BreakpointId,
+  breakpointId: ?NuclideDebugProtocol.BreakpointId,
   path: NuclideUri,
   lineNumber: number,
   condition: string,
@@ -139,10 +139,7 @@ export default class VsDebugSessionTranslator {
   _disposables: UniversalDisposable;
   _commands: Subject<NuclideDebugProtocol.DebuggerCommand>;
   _handledCommands: Set<string>;
-  _breakpointsById: Map<
-    NuclideDebugProtocol.BreakpointId,
-    TranslatorBreakpoint,
-  >;
+  _breakpoints: Array<TranslatorBreakpoint>;
 
   _configDoneSent: boolean;
   _lastBreakpointId: number;
@@ -171,7 +168,7 @@ export default class VsDebugSessionTranslator {
     this._logger = logger;
     this._commands = new Subject();
     this._handledCommands = new Set();
-    this._breakpointsById = new Map();
+    this._breakpoints = [];
     this._threadsById = new Map();
     this._mainThreadId = null;
     this._lastBreakpointId = 0;
@@ -526,7 +523,7 @@ export default class VsDebugSessionTranslator {
           const translatorBreakpoins = breakpointCommands
             .map(c => {
               const newTranslatorBp = {
-                breakpointId: this._nextBreakpointId(),
+                breakpointId: null,
                 path,
                 lineNumber: c.params.lineNumber + 1,
                 condition: c.params.condition || '',
@@ -534,10 +531,7 @@ export default class VsDebugSessionTranslator {
                 hitCount: 0,
               };
               breakOnLineNumbers.add(newTranslatorBp.lineNumber);
-              this._breakpointsById.set(
-                newTranslatorBp.breakpointId,
-                newTranslatorBp,
-              );
+              this._breakpoints.push(newTranslatorBp);
               return newTranslatorBp;
             })
             .concat(
@@ -554,6 +548,7 @@ export default class VsDebugSessionTranslator {
               i
             ];
 
+            invariant(breakpointId != null);
             const result: NuclideDebugProtocol.SetBreakpointByUrlResponse = {
               breakpointId,
               locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
@@ -571,9 +566,7 @@ export default class VsDebugSessionTranslator {
   }
 
   _syncBreakpoints(): Promise<mixed> {
-    const filePaths = new Set(
-      Array.from(this._breakpointsById.values()).map(bp => bp.path),
-    );
+    const filePaths = new Set(this._breakpoints.map(bp => bp.path));
     const setBreakpointPromises = [];
     for (const filePath of filePaths) {
       setBreakpointPromises.push(
@@ -624,21 +617,27 @@ export default class VsDebugSessionTranslator {
     }
     vsBreakpoints.forEach((vsBreakpoint, i) => {
       breakpoints[i].resolved = vsBreakpoint.verified;
+      breakpoints[i].breakpointId = String(
+        vsBreakpoint.id == null ? this._nextBreakpointId() : vsBreakpoint.id,
+      );
     });
   }
 
   async _removeBreakpoint(
     breakpointId: NuclideDebugProtocol.BreakpointId,
   ): Promise<void> {
-    const foundBreakpoint = this._breakpointsById.get(breakpointId);
-    if (foundBreakpoint == null) {
+    const foundBreakpointIdx = this._breakpoints.findIndex(
+      bp => bp.breakpointId === breakpointId,
+    );
+    if (foundBreakpointIdx === -1) {
       this._logger.info(`No breakpoint with id: ${breakpointId} to remove!`);
       return;
     }
+    const foundBreakpoint = this._breakpoints[foundBreakpointIdx];
     const remainingBreakpoints = this._getBreakpointsForFilePath(
       foundBreakpoint.path,
     ).filter(breakpoint => breakpoint.breakpointId !== breakpointId);
-    this._breakpointsById.delete(breakpointId);
+    this._breakpoints.splice(foundBreakpointIdx, 1);
 
     await this._syncBreakpointsForFilePath(
       foundBreakpoint.path,
@@ -681,13 +680,11 @@ export default class VsDebugSessionTranslator {
   }
 
   _getBreakpointsForFilePath(path: NuclideUri): Array<TranslatorBreakpoint> {
-    return Array.from(this._breakpointsById.values()).filter(
-      breakpoint => breakpoint.path === path,
-    );
+    return this._breakpoints.filter(breakpoint => breakpoint.path === path);
   }
 
-  _nextBreakpointId(): NuclideDebugProtocol.BreakpointId {
-    return String(++this._lastBreakpointId);
+  _nextBreakpointId(): number {
+    return ++this._lastBreakpointId;
   }
 
   _commandsOfType(
@@ -755,8 +752,9 @@ export default class VsDebugSessionTranslator {
       }),
       this._session.observeBreakpointEvents().subscribe(({body}) => {
         const {breakpoint} = body;
-        const existingBreakpoint = this._breakpointsById.get(
-          String(breakpoint.id == null ? -1 : breakpoint.id),
+        const bpId = String(breakpoint.id == null ? -1 : breakpoint.id);
+        const existingBreakpoint = this._breakpoints.find(
+          bp => bp.breakpointId === bpId,
         );
         const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
 
@@ -770,7 +768,7 @@ export default class VsDebugSessionTranslator {
           this._sendMessageToClient({
             method: 'Debugger.breakpointResolved',
             params: {
-              breakpointId: existingBreakpoint.breakpointId,
+              breakpointId: bpId,
               location: nuclideDebuggerLocation(
                 existingBreakpoint.path,
                 existingBreakpoint.lineNumber - 1,
@@ -787,7 +785,7 @@ export default class VsDebugSessionTranslator {
           this._sendMessageToClient({
             method: 'Debugger.breakpointHitCountChanged',
             params: {
-              breakpointId: String(breakpoint.id),
+              breakpointId: bpId,
               hitCount,
             },
           });
@@ -797,7 +795,7 @@ export default class VsDebugSessionTranslator {
       }),
       this._session
         .observeStopEvents()
-        .flatMap(async ({body}) => {
+        .concatMap(async ({body}) => {
           const {threadId, reason} = body;
           let callFrames = [];
           const translatedStopReason = translateStopReason(reason);
