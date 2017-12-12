@@ -25,7 +25,7 @@ import TabbableContainer from './TabbableContainer';
  * Given a function to dismiss the modal, return a React element for the content.
  * Call the function when e.g. the user clicks a Cancel or Submit button.
  */
-type ContentFactory = (dismiss: () => void) => React.Element<any>;
+type ContentFactory = (dismiss: () => void) => React.Node;
 
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
