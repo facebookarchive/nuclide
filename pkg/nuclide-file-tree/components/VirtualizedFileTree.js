@@ -14,7 +14,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import invariant from 'assert';
-import {List} from 'react-virtualized';
+import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
