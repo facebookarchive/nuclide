@@ -1,5 +1,17 @@
 # Nuclide Changelog
 
+## v0.271.0
+
+### General
+
+* Fix 'ripgrep' option for Code Search pane in Omnisearch.
+* Can preview changes before confirming a refactoring.
+* Fixed a variety of memory leaks causing text editors to be retained.
+
+### Debuggers
+
+* Make React Native debugger visible in open source UI.
+
 ## v0.270.0
 
 ### Highlights
