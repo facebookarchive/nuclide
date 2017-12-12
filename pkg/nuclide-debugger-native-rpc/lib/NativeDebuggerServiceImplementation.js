@@ -227,10 +227,11 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     this.getLogger().debug(`bootstrap lldb: ${JSON.stringify(bootstrapInfo)}`);
     const inferiorArguments = {
       lldb_bootstrap_files: bootstrapInfo.lldbBootstrapFiles,
-      // flowlint-next-line sketchy-null-string:off
-      basepath: bootstrapInfo.basepath
-        ? bootstrapInfo.basepath
-        : this._config.buckConfigRootFile,
+      basepath: this._expandPath(
+        bootstrapInfo.basepath != null
+          ? bootstrapInfo.basepath
+          : this._config.buckConfigRootFile,
+      ),
       lldb_python_path: this._config.lldbPythonPath,
     };
     return Observable.fromPromise(
