@@ -64,7 +64,12 @@ export class DebuggerStore {
   _setSourcePathCallback: ?() => void;
   loaderBreakpointResumePromise: Promise<void>;
 
-  constructor(dispatcher: DebuggerDispatcher, model: DebuggerModel) {
+  constructor(
+    dispatcher: DebuggerDispatcher,
+    model: DebuggerModel,
+    pauseOnException: boolean,
+    pauseOnCaughtException: boolean,
+  ) {
     this._dispatcher = dispatcher;
     this._model = model;
     this._emitter = new Emitter();
@@ -77,8 +82,8 @@ export class DebuggerStore {
     this._error = null;
     this._evaluationExpressionProviders = new Set();
     this._debuggerMode = DebuggerMode.STOPPED;
-    this._togglePauseOnException = false;
-    this._togglePauseOnCaughtException = false;
+    this._togglePauseOnException = pauseOnException;
+    this._togglePauseOnCaughtException = pauseOnCaughtException;
     this._enableSingleThreadStepping = false;
     this._enableShowDisassembly = false;
     this._registerExecutor = null;

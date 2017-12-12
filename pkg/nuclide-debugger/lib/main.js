@@ -68,6 +68,8 @@ export type SerializedState = {
   watchExpressions: ?Array<SerializedWatchExpression>,
   showDebugger: boolean,
   workspaceDocksVisibility: Array<boolean>,
+  pauseOnException: boolean,
+  pauseOnCaughtException: boolean,
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
@@ -560,6 +562,10 @@ class Activation {
         .getSerializedWatchExpressions(),
       showDebugger: this._layoutManager.isDebuggerVisible(),
       workspaceDocksVisibility: this._layoutManager.getWorkspaceDocksVisibility(),
+      pauseOnException: this._model.getStore().getTogglePauseOnException(),
+      pauseOnCaughtException: this._model
+        .getStore()
+        .getTogglePauseOnCaughtException(),
     };
     return state;
   }
@@ -1078,6 +1084,8 @@ export function serialize(): SerializedState {
       watchExpressions: null,
       showDebugger: false,
       workspaceDocksVisibility: [false, false, false, false],
+      pauseOnException: true,
+      pauseOnCaughtException: false,
     };
   }
 }

@@ -54,7 +54,15 @@ export default class DebuggerModel {
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
     this._emitter = new EventEmitter();
-    this._store = new DebuggerStore(this._dispatcher, this);
+    const pauseOnException = state != null ? state.pauseOnException : true;
+    const pauseOnCaughtException =
+      state != null ? state.pauseOnCaughtException : false;
+    this._store = new DebuggerStore(
+      this._dispatcher,
+      this,
+      pauseOnException,
+      pauseOnCaughtException,
+    );
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(
       this._dispatcher,
