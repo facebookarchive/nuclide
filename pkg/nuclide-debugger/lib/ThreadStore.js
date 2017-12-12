@@ -105,8 +105,14 @@ export default class ThreadStore {
   _updateThreads(threadData: NuclideThreadData): void {
     this._threadMap.clear();
     this._owningProcessId = threadData.owningProcessId;
-    this._stopThreadId = threadData.stopThreadId;
-    this._selectedThreadId = threadData.stopThreadId;
+    if (
+      !Number.isNaN(threadData.stopThreadId) &&
+      threadData.stopThreadId >= 0
+    ) {
+      this._stopThreadId = threadData.stopThreadId;
+      this._selectedThreadId = threadData.stopThreadId;
+    }
+
     this._threadsReloading = false;
     threadData.threads.forEach(thread =>
       this._threadMap.set(Number(thread.id), thread),

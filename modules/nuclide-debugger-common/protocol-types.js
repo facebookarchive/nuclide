@@ -520,7 +520,7 @@ export type ThreadsUpdatedEvent = {
   owningProcessId: number,
 
   /** Unique identifier of the thread caused process to stop. */
-  stopThreadId: number,
+  stopThreadId?: number,
 
   /** List of threads. */
   threads: Thread[],

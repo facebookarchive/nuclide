@@ -151,6 +151,7 @@ export default class VsDebugSessionTranslator {
 
   // Session state.
   _pausedThreadId: ?number;
+  _previousPauseMsgThreadId: ?number;
 
   constructor(
     adapterType: VsAdapterType,
@@ -734,10 +735,18 @@ export default class VsDebugSessionTranslator {
         if (allThreadsStopped) {
           this._updateThreadsState(this._threadsById.keys(), 'paused');
           this._pausedThreadId = Array.from(this._threadsById.keys())[0];
+          if (this._pausedThreadId == null) {
+            this._pausedThreadId =
+              threadId != null
+                ? threadId
+                : Array.from(this._threadsById.keys())[0];
+          }
         }
         if (threadId != null) {
           this._updateThreadsState([threadId], 'paused');
-          this._pausedThreadId = threadId;
+          if (this._pausedThreadId == null) {
+            this._pausedThreadId = threadId;
+          }
         }
         // Even though the python debugger engine pauses all threads,
         // It only reports the main thread as paused.
@@ -810,7 +819,8 @@ export default class VsDebugSessionTranslator {
           const pausedEvent: NuclideDebugProtocol.PausedEvent = {
             callFrames,
             reason: translatedStopReason,
-            stopThreadId: threadId,
+            stopThreadId:
+              this._pausedThreadId != null ? this._pausedThreadId : threadId,
             threadSwitchMessage: null,
           };
 
@@ -819,10 +829,16 @@ export default class VsDebugSessionTranslator {
         })
         .subscribe(
           ({pausedEvent, threadsUpdatedEvent}) => {
-            this._sendMessageToClient({
-              method: 'Debugger.paused',
-              params: pausedEvent,
-            });
+            if (this._previousPauseMsgThreadId !== this._pausedThreadId) {
+              this._previousPauseMsgThreadId = this._pausedThreadId;
+              this._sendMessageToClient({
+                method: 'Debugger.paused',
+                params: pausedEvent,
+              });
+              if (this._pausedThreadId != null) {
+                threadsUpdatedEvent.stopThreadId = this._pausedThreadId;
+              }
+            }
             this._sendMessageToClient({
               method: 'Debugger.threadsUpdated',
               params: threadsUpdatedEvent,
@@ -838,6 +854,7 @@ export default class VsDebugSessionTranslator {
         const {allThreadsContinued, threadId} = body;
         if (allThreadsContinued || threadId === this._pausedThreadId) {
           this._pausedThreadId = null;
+          this._previousPauseMsgThreadId = null;
         }
 
         if (allThreadsContinued) {
@@ -936,8 +953,6 @@ export default class VsDebugSessionTranslator {
 
     return {
       owningProcessId: VSP_PROCESS_ID,
-      // flowlint-next-line sketchy-null-number:off
-      stopThreadId: this._pausedThreadId || -1,
       threads,
     };
   }
