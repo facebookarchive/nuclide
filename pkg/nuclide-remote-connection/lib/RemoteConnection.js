@@ -128,7 +128,7 @@ export class RemoteConnection {
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
-    const connectionConfig = getConnectionConfig(hostOrIp);
+    const connectionConfig = await getConnectionConfig(hostOrIp);
     if (!connectionConfig) {
       return null;
     }

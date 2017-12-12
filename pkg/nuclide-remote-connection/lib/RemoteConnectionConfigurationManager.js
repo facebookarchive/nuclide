@@ -48,9 +48,9 @@ function getStorageKey(host: string): string {
   return `${CONFIG_DIR}:${host}`;
 }
 
-export function getConnectionConfig(
+export async function getConnectionConfig(
   host: string,
-): ?ServerConnectionConfiguration {
+): Promise<?ServerConnectionConfiguration> {
   const storedConfig = localStorage.getItem(getStorageKey(host));
   if (storedConfig == null) {
     return null;
@@ -63,10 +63,10 @@ export function getConnectionConfig(
   }
 }
 
-export function setConnectionConfig(
+export async function setConnectionConfig(
   config: ServerConnectionConfiguration,
   ipAddress: string,
-): void {
+): Promise<void> {
   // Don't attempt to store insecure connections.
   // Insecure connections are used for testing and will fail the encryption call below.
   if (isInsecure(config)) {
@@ -74,7 +74,7 @@ export function setConnectionConfig(
   }
 
   try {
-    const encrypted = JSON.stringify(encryptConfig(config));
+    const encrypted = JSON.stringify(await encryptConfig(config));
     localStorage.setItem(getStorageKey(config.host), encrypted);
     // Store configurations by their IP address as well.
     // This way, multiple aliases for the same hostname can reuse a single connection.
@@ -97,9 +97,9 @@ export async function clearConnectionConfig(host: string): Promise<void> {
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function encryptConfig(
+async function encryptConfig(
   remoteProjectConfig: ServerConnectionConfiguration,
-): SerializableServerConnectionConfiguration {
+): Promise<SerializableServerConnectionConfiguration> {
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
@@ -112,7 +112,7 @@ function encryptConfig(
   invariant(clientKey);
   const realClientKey = clientKey.toString(); // Convert from Buffer to string.
   const {salt, password, encryptedString} = encryptString(realClientKey);
-  keytarWrapper.replacePassword(
+  await keytarWrapper.replacePassword(
     'nuclide.remoteProjectConfig',
     sha1sum,
     password,
@@ -138,20 +138,19 @@ function encryptConfig(
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function decryptConfig(
+async function decryptConfig(
   remoteProjectConfig: SerializableServerConnectionConfiguration,
-): ServerConnectionConfiguration {
+): Promise<ServerConnectionConfiguration> {
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
 
-  const password = keytarWrapper.getPassword(
+  const password = await keytarWrapper.getPassword(
     'nuclide.remoteProjectConfig',
     sha1sum,
   );
 
-  // flowlint-next-line sketchy-null-string:off
-  if (!password) {
+  if (password == null) {
     throw new Error('Cannot find password for encrypted client key');
   }
 

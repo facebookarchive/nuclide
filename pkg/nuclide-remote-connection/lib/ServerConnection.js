@@ -248,7 +248,7 @@ export class ServerConnection {
     this._monitorConnectionHeartbeat();
 
     ServerConnection._connections.set(this.getRemoteHostname(), this);
-    setConnectionConfig(this._config, ip.address);
+    await setConnectionConfig(this._config, ip.address);
     ServerConnection._emitter.emit('did-add', this);
   }
 

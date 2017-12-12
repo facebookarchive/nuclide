@@ -9,48 +9,8 @@
  * @format
  */
 
-import child_process from 'child_process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import semver from 'semver';
-
-// KeyTar<=3.x APM<1.18
-const getPasswordScriptSync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    var password = keytar.getPassword(data.service, data.account);
-    console.log(JSON.stringify(password));
-    rl.close();
-  });
-`;
-
-// KeyTar<=3.x APM<1.18
-const replacePasswordScriptSync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    var result = keytar.replacePassword(data.service, data.account, data.password);
-    console.log(JSON.stringify(result));
-    rl.close();
-  });
-`;
-
-// KeyTar<=3.x APM<1.18
-const deletePasswordScriptSync = `
-  var readline = require('readline');
-  var keytar = require('keytar');
-  var rl = readline.createInterface({input: process.stdin});
-  rl.on('line', function(input) {
-    var data = JSON.parse(input);
-    var result = keytar.deletePassword(data.service, data.account);
-    console.log(JSON.stringify(result));
-    rl.close();
-  });
-`;
+import {runCommand} from 'nuclide-commons/process';
 
 // KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
@@ -101,10 +61,6 @@ const deletePasswordScriptAsync = `
   });
 `;
 
-function isAsyncKeytar(): boolean {
-  return semver.gte(atom.getVersion(), '1.18.0-beta0');
-}
-
 function getApmNodePath(): string {
   const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
   return nuclideUri.normalize(nuclideUri.join(apmDir, 'node'));
@@ -120,7 +76,7 @@ function runScriptInApmNode(
   service: string,
   account: string,
   password?: string,
-): string {
+): Promise<string> {
   const args = ['-e', script];
   const options = {
     // The newline is important so we can use readline's line event.
@@ -130,31 +86,24 @@ function runScriptInApmNode(
       NODE_PATH: getApmNodeModulesPath(),
     },
   };
-  const output = child_process.spawnSync(getApmNodePath(), args, options);
-  return output.stdout.toString();
+  return runCommand(getApmNodePath(), args, options).toPromise();
 }
 
 export default {
-  getPassword(service: string, account: string): ?string {
+  async getPassword(service: string, account: string): Promise<?string> {
     return JSON.parse(
-      runScriptInApmNode(
-        isAsyncKeytar() ? getPasswordScriptAsync : getPasswordScriptSync,
-        service,
-        account,
-      ),
+      await runScriptInApmNode(getPasswordScriptAsync, service, account),
     );
   },
 
-  replacePassword(
+  async replacePassword(
     service: string,
     account: string,
     password: string,
-  ): ?boolean {
+  ): Promise<?boolean> {
     return JSON.parse(
-      runScriptInApmNode(
-        isAsyncKeytar()
-          ? replacePasswordScriptAsync
-          : replacePasswordScriptSync,
+      await runScriptInApmNode(
+        replacePasswordScriptAsync,
         service,
         account,
         password,
@@ -162,13 +111,9 @@ export default {
     );
   },
 
-  deletePassword(service: string, account: string): ?boolean {
+  async deletePassword(service: string, account: string): Promise<?boolean> {
     return JSON.parse(
-      runScriptInApmNode(
-        isAsyncKeytar() ? deletePasswordScriptAsync : deletePasswordScriptSync,
-        service,
-        account,
-      ),
+      await runScriptInApmNode(deletePasswordScriptAsync, service, account),
     );
   },
 };
