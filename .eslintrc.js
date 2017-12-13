@@ -369,6 +369,7 @@ module.exports = {
     'rulesdir/no-unnecessary-disposable-wrapping': 1,
     'rulesdir/no-unresolved': 1,
     'rulesdir/prefer-nuclide-uri': 1,
+    'rulesdir/react-virtualized-import': 1,
     'rulesdir/use-nuclide-ui-components': 1,
     'rulesdir/no-commonjs': 1,
 

@@ -31,6 +31,7 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': require('./no-unnecessary-disposable-wrapping'),
     'no-unresolved': require('./no-unresolved'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
+    'react-virtualized-import': require('./react-virtualized-import'),
     'use-nuclide-ui-components': require('./use-nuclide-ui-components'),
   },
   rulesConfig: {
@@ -46,6 +47,7 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': 0,
     'no-unresolved': 0,
     'prefer-nuclide-uri': 0,
+    'react-virtualized-import': 0,
     'use-nuclide-ui-components': 0,
   },
 };

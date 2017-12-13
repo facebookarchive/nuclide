@@ -19,7 +19,7 @@ import type {
 
 import Hasher from 'nuclide-commons/Hasher';
 import * as React from 'react';
-import {List} from 'react-virtualized';
+import List from 'react-virtualized/dist/commonjs/List';
 import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
 import {ResizeSensitiveContainer} from '../../../nuclide-ui/ResizeSensitiveContainer';
