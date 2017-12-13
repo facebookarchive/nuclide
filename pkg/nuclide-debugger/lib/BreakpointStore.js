@@ -178,6 +178,13 @@ export default class BreakpointStore {
       return;
     }
     breakpoint.enabled = enabled;
+    if (!enabled) {
+      // For VSCode backends, disabling a breakpoint removes it from the backend
+      // even though the front-end remembers it. If this bp had a hit count
+      // being maintained by the backend, it will be reset to 0 so remove it
+      // from the UX as well.
+      delete breakpoint.hitCount;
+    }
     this._updateBreakpoint(breakpoint);
   }
 

@@ -977,36 +977,45 @@ export default class VsDebugSessionTranslator {
   async _getTranslatedCallFramesForThread(
     threadId: number,
   ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
-    const {body: {stackFrames}} = await this._session.stackTrace({
-      threadId,
-    });
-    // $FlowFixMe(>=0.55.0) Flow suppress
-    return Promise.all(
-      stackFrames.map(async frame => {
-        let scriptId;
-        if (frame.source != null && frame.source.path != null) {
-          scriptId = frame.source.path;
-        } else {
-          this._logger.error('Cannot find source/script of frame: ', frame);
-          scriptId = 'N/A';
-        }
-        await this._files.registerFile(pathToUri(scriptId));
-        return {
-          callFrameId: String(frame.id),
-          functionName: frame.name,
-          location: nuclideDebuggerLocation(
-            scriptId,
-            frame.line - 1,
-            frame.column - 1,
-          ),
-          hasSource: frame.source != null,
-          scopeChain: await this._getScopesForFrame(frame.id).catch(
-            error => [],
-          ),
-          this: (undefined: any),
-        };
-      }),
-    );
+    try {
+      const {body: {stackFrames}} = await this._session.stackTrace({
+        threadId,
+      });
+      // $FlowFixMe(>=0.55.0) Flow suppress
+      return Promise.all(
+        stackFrames.map(async frame => {
+          let scriptId;
+          if (frame.source != null && frame.source.path != null) {
+            scriptId = frame.source.path;
+          } else {
+            this._logger.error('Cannot find source/script of frame: ', frame);
+            scriptId = 'N/A';
+          }
+          await this._files.registerFile(pathToUri(scriptId));
+          return {
+            callFrameId: String(frame.id),
+            functionName: frame.name,
+            location: nuclideDebuggerLocation(
+              scriptId,
+              frame.line - 1,
+              frame.column - 1,
+            ),
+            hasSource: frame.source != null,
+            scopeChain: await this._getScopesForFrame(frame.id).catch(
+              error => [],
+            ),
+            this: (undefined: any),
+          };
+        }),
+      );
+    } catch (e) {
+      // This is expected in some situations, such as if stacks were requested
+      // asynchronously but the target resumed before the request was received.
+      // Throwing here or failing to provide a stack completely breaks the
+      // state machine in the Nuclide UX layer.
+      this._logger.error('Could not get stack traces: ', e.message);
+      return [];
+    }
   }
 
   async _getScopesForFrame(
