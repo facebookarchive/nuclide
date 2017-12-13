@@ -257,8 +257,16 @@ export default class BreakpointDisplayController {
 
     this._debugging = debugging;
 
+    const fileLength = this._editor.getLineCount();
+
     // Add new markers for breakpoints without corresponding markers.
     for (const [line, breakpoint] of breakpoints) {
+      // Remove any breakpoints that are past the end of the file.
+      if (line >= fileLength) {
+        this._debuggerActions.deleteBreakpoint(path, line);
+        continue;
+      }
+
       if (!unhandledLines.has(line)) {
         // This line has been handled.
         continue;

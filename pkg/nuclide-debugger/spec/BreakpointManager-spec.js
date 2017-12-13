@@ -49,9 +49,10 @@ describe('BreakpointManager', () => {
       const path = uniqueEditor.getPath();
       // flowlint-next-line sketchy-null-string:off
       invariant(path);
-      breakpointStore._addBreakpoint(path, 1);
       const editor = await atom.workspace.open(path);
-      expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
+      editor.getBuffer().append('Hello World.\n');
+      breakpointStore._addBreakpoint(path, 1);
+      expect(hasBreakpointDecorationInRow(editor, 1)).toBe(true);
       expect(breakpointManager.getDisplayControllers().size).toBe(1);
 
       const pane = atom.workspace.paneForItem(editor);
