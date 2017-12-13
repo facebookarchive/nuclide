@@ -706,8 +706,28 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.uriToNuclideUri('file://somehost/file/path')).toEqual(
       '/file/path',
     );
+    expect(
+      nuclideUri.uriToNuclideUri(
+        'file:///foo/bar/buck-out/flavor%231%232%233%2Cabc',
+      ),
+    ).toEqual('/foo/bar/buck-out/flavor#1#2#3,abc');
+    expect(
+      nuclideUri.uriToNuclideUri('file:///file/path/file_%25.ext'),
+    ).toEqual('/file/path/file_%.ext');
     expect(nuclideUri.uriToNuclideUri('file://C:\\some\\file\\path')).toEqual(
       'C:\\some\\file\\path',
+    );
+  });
+
+  it('properly converts local paths to file URIs', () => {
+    expect(nuclideUri.nuclideUriToUri('/foo/bar/file.ext')).toEqual(
+      'file:///foo/bar/file.ext',
+    );
+    expect(
+      nuclideUri.nuclideUriToUri('/foo/bar/buck-out/flavor#1#2#3,abc'),
+    ).toEqual('file:///foo/bar/buck-out/flavor%231%232%233%2Cabc');
+    expect(nuclideUri.nuclideUriToUri('/file/path/file_%.ext')).toEqual(
+      'file:///file/path/file_%25.ext',
     );
   });
 

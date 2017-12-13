@@ -132,6 +132,7 @@
     "vscode-jsonrpc": "3.3.0",
     "vscode-languageserver": "3.3.0",
     "vscode-nls": "2.0.2",
+    "vscode-uri": "1.0.1",
     "ws": "3.2.0",
     "xml2js": "0.4.17",
     "xterm": "2.9.2",

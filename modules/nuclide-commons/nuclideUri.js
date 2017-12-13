@@ -15,6 +15,8 @@
 //
 // This package creates, queries and decomposes NuclideUris.
 
+import LspUri from 'vscode-uri';
+
 export type NuclideUri = string;
 
 type ParsedUrl = {
@@ -39,7 +41,6 @@ import invariant from 'assert';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import pathModule from 'path';
 
-import url from 'url';
 import os from 'os';
 import {maybeToString} from './string';
 
@@ -358,11 +359,11 @@ function uriToNuclideUri(uri: string): ?string {
     return windowsPathFromUri;
   }
 
-  const urlParts = url.parse(_escapeSpecialCharacters(uri), false);
+  const lspUri = LspUri.parse(uri);
   // flowlint-next-line sketchy-null-string:off
-  if (urlParts.protocol === 'file:' && urlParts.path) {
+  if (lspUri.scheme === 'file' && lspUri.path) {
     // only handle real files for now.
-    return urlParts.path;
+    return lspUri.path;
   } else if (isRemote(uri)) {
     return uri;
   } else {
@@ -378,7 +379,7 @@ function nuclideUriToUri(uri: NuclideUri): string {
   if (isRemote(uri)) {
     return uri;
   } else {
-    return 'file://' + uri;
+    return LspUri.file(uri).toString();
   }
 }
 
@@ -798,15 +799,6 @@ function _isArchiveSeparator(path: string, index: number): boolean {
       return path.indexOf(ext, extStart) === extStart;
     })
   );
-}
-
-/**
- * The backslash and percent characters (\ %) are, unfortunately, valid symbols to be used in POSIX
- * paths. They, however, are being automatically "corrected" by node's `url.parse()` method if not
- * escaped properly.
- */
-function _escapeSpecialCharacters(uri: NuclideUri): NuclideUri {
-  return uri.replace(/%/g, '%25').replace(/\\/g, '%5C');
 }
 
 function _testForIllegalUri(uri: ?NuclideUri): void {

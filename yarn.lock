@@ -5232,6 +5232,10 @@ vscode-nls@^1.0.4:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-1.0.7.tgz#298c01fce87802c644c0a15ef526a33c62c0d58e"
 
+vscode-uri@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.1.tgz#11a86befeac3c4aa3ec08623651a3c81a6d0bbc8"
+
 vscode@1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.4.tgz#1f1d4d662d55c9a28bc467aacb632291f70a686d"

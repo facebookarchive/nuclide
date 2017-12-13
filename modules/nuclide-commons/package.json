@@ -25,6 +25,7 @@
     "rxjs": "5.3.1",
     "shell-quote": "1.6.1",
     "temp": "0.8.3",
+    "vscode-uri": "1.0.1",
     "uuid": "3.0.1"
   },
   "devDependencies": {
