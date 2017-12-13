@@ -34,6 +34,9 @@ export function app(state: AppState, action: Action): AppState {
 
     case Actions.SET_DEVICE_TYPE:
       const {deviceType} = action.payload;
+      if (deviceType === state.deviceType) {
+        return state;
+      }
       return {
         ...state,
         deviceType,

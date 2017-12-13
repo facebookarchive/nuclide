@@ -38,9 +38,9 @@ export function pollDevicesEpic(
 ): Observable<Action> {
   return actions
     .ofType(Actions.TOGGLE_DEVICE_POLLING)
-    .switchMap(action => {
+    .map(action => {
       invariant(action.type === Actions.TOGGLE_DEVICE_POLLING);
-      return Observable.of([store.getState(), action.payload.isActive]);
+      return [store.getState(), action.payload.isActive];
     })
     .distinctUntilChanged(
       ([stateA, isActiveA], [stateB, isActiveB]) =>
@@ -138,6 +138,7 @@ const deviceTypeTaskCache = new Cache({
   keyFactory: ([state: AppState, providerName: string]) =>
     JSON.stringify([state.host, state.deviceType, providerName]),
 });
+
 export function setDeviceTypeEpic(
   actions: ActionsObservable<Action>,
   store: Store,
