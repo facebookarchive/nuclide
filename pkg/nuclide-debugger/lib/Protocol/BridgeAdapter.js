@@ -124,10 +124,10 @@ export default class BridgeAdapter {
     this._stackTraceManager.clearPauseStates();
   }
 
-  runToLocation(fileUri: NuclideUri, line: number): void {
+  runToLocation(fileUri: NuclideUri, line: number, threadId: number): void {
     if (!this._getIsReadonlyTarget()) {
       this._clearStates();
-      this._executionManager.runToLocation(fileUri, line);
+      this._executionManager.runToLocation(fileUri, line, threadId);
     }
   }
 

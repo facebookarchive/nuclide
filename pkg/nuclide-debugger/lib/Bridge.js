@@ -117,8 +117,10 @@ export default class Bridge {
   }
 
   runToLocation(filePath: string, line: number) {
+    const stopThreadId = this._debuggerModel.getThreadStore().getStopThread();
+    const threadId = stopThreadId == null ? -1 : stopThreadId;
     this._clearInterfaceDelayed();
-    this._commandDispatcher.send('RunToLocation', filePath, line);
+    this._commandDispatcher.send('RunToLocation', filePath, line, threadId);
   }
 
   triggerAction(actionId: string): void {

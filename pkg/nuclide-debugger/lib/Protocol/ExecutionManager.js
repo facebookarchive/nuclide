@@ -72,7 +72,7 @@ export default class ExecutionManager {
     }
   }
 
-  runToLocation(fileUri: NuclideUri, line: number): void {
+  runToLocation(fileUri: NuclideUri, line: number, threadId: number): void {
     if (!this._getIsReadonlyTarget()) {
       // Chrome's continueToLocation implementation incorrect
       // uses source uri instead of scriptId as the location ScriptId
@@ -84,6 +84,7 @@ export default class ExecutionManager {
           scriptId,
           lineNumber: line,
           columnNumber: 0,
+          threadId,
         });
       } else {
         reportError(`Cannot find resolve location for file: ${fileUri}`);

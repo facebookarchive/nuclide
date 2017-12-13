@@ -443,6 +443,8 @@ declare module 'vscode-debugprotocol' {
     line: number,
     /** An optional column location for which the goto targets are determined. */
     column?: number,
+    /** Thread ID the location is associated with. */
+    threadId?: number,
   }
 
   /** Response to 'nuclide_continueToLocation' request. */

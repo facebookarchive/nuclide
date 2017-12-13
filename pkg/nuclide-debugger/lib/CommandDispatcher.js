@@ -109,7 +109,7 @@ export default class CommandDispatcher {
         this._bridgeAdapter.stepOut();
         break;
       case 'RunToLocation':
-        this._bridgeAdapter.runToLocation(args[1], args[2]);
+        this._bridgeAdapter.runToLocation(args[1], args[2], args[3]);
         break;
       case 'triggerDebuggerAction':
         this._triggerDebuggerAction(args[1]);

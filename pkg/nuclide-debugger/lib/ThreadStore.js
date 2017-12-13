@@ -198,6 +198,10 @@ export default class ThreadStore {
     return this._threadsReloading;
   }
 
+  getStopThread(): ?number {
+    return this._stopThreadId;
+  }
+
   onChange(callback: () => void): IDisposable {
     return this._emitter.on('change', callback);
   }

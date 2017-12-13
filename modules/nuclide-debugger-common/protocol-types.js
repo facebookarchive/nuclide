@@ -247,6 +247,9 @@ export type Location = {
 
   /** Column number in the script (0-based). */
   columnNumber?: number,
+
+  /** Thread ID the location is associated with. */
+  threadId?: number,
 };
 
 export type Disassembly = {
