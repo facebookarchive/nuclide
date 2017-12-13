@@ -45,7 +45,10 @@ export default class RelatedFileFinder {
   ): Promise<Array<string>> {
     const relatedLists = await Promise.all(
       Array.from(relatedFilesProviders.values()).map(provider =>
-        timeoutPromise(provider.getRelatedFiles(path), 2000),
+        timeoutPromise(provider.getRelatedFiles(path), 1000).catch(error => {
+          // silently catch the error and return an empty result
+          return [];
+        }),
       ),
     );
     const relatedFiles = new Set();

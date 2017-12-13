@@ -116,5 +116,26 @@ describe('RelatedFileFinder', () => {
         });
       });
     });
+
+    it('returns result even with bad provider', () => {
+      // relies on the 1 second timeout in RFF._findRelatedFilesFromProviders
+      jasmine.useRealClock();
+      waitsForPromise({timeout: 2000}, async () => {
+        RelatedFileFinder.registerRelatedFilesProvider({
+          getRelatedFiles(path: string): Promise<Array<string>> {
+            // return a promise that never calls resolve.
+            return new Promise(resolve => {});
+          },
+        });
+        // copy an earlier test
+        mockFiles(['Test.m', 'Test.v', 'Test.t']);
+        expect(
+          await RelatedFileFinder.find('dir/Test.m', new Set(['.t'])),
+        ).toEqual({
+          relatedFiles: ['dir/Test.m', 'dir/Test.t'],
+          index: 0,
+        });
+      });
+    });
   });
 });
