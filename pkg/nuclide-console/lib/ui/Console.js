@@ -21,11 +21,13 @@ import type {
 import type {CreatePasteFunction} from '../../../nuclide-paste-base';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import Model from 'nuclide-commons/Model';
 import shallowEqual from 'shallowequal';
 import {bindObservableAsProps} from '../../../../modules/nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from '../../../../modules/nuclide-commons-ui/renderReactRoot';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
+import {toggle} from '../../../../modules/nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
@@ -249,6 +251,8 @@ export class Console {
       // $FlowIssue: Flow doesn't know about Symbol.observable
       Observable.from(this._store),
     )
+      // Don't re-render when the console isn't visible.
+      .let(toggle(observePaneItemVisibility(this)))
       .audit(() => nextAnimationFrame)
       .map(([localState, globalState]) => {
         const {
