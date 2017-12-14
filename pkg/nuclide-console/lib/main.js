@@ -27,7 +27,6 @@ import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {Observable} from 'rxjs';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   combineEpics,
   createEpicMiddleware,
@@ -40,7 +39,6 @@ import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
 import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
-import * as React from 'react';
 import {applyMiddleware, createStore} from 'redux';
 import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
@@ -178,7 +176,7 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return viewableFromReactElement(<Console store={this._getStore()} />);
+          return new Console({store: this._getStore()});
         }
       }),
       () => destroyItemWhere(item => item instanceof Console),
@@ -188,15 +186,13 @@ class Activation {
     );
   }
 
-  deserializeConsole(state: ConsolePersistedState): atom$Pane {
-    return viewableFromReactElement(
-      <Console
-        store={this._getStore()}
-        initialFilterText={state.filterText}
-        initialEnableRegExpFilter={state.enableRegExpFilter}
-        initialUnselectedSourceIds={state.unselectedSourceIds}
-      />,
-    );
+  deserializeConsole(state: ConsolePersistedState): Console {
+    return new Console({
+      store: this._getStore(),
+      initialFilterText: state.filterText,
+      initialEnableRegExpFilter: state.enableRegExpFilter,
+      initialUnselectedSourceIds: state.unselectedSourceIds,
+    });
   }
 
   /**
