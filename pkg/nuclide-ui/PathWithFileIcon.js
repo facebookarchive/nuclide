@@ -70,29 +70,41 @@ type Props = {
   path: string,
 };
 
+let addItemToElement: ?FileIconsAddItemToElementFn;
+atom.packages.serviceHub.consume(
+  'file-icons.element-icons',
+  '1.0.0',
+  (_addItemToElement: FileIconsAddItemToElementFn) => {
+    addItemToElement = (element: HTMLElement, path: string) => {
+      try {
+        return _addItemToElement(element, path);
+      } catch (e) {
+        getLogger('nuclide-ui-path-with-file-icon').error(
+          'Error adding item to element',
+          e,
+        );
+        return new UniversalDisposable();
+      }
+    };
+    return new UniversalDisposable(() => {
+      addItemToElement = null;
+    });
+  },
+);
+
 export default class PathWithFileIcon extends React.Component<Props> {
   _disposables: UniversalDisposable;
   _fileIconsDisposable: ?IDisposable;
-  _addItemToElement: ?FileIconsAddItemToElementFn;
   _mounted: boolean;
 
   constructor(props: Props) {
     super(props);
     this._mounted = false;
-    this._disposables = new UniversalDisposable();
-    // Note: _consumeFileIconService refers to this._disposables.
-    this._disposables.add(
-      atom.packages.serviceHub.consume(
-        'file-icons.element-icons',
-        '1.0.0',
-        this._consumeFileIconService.bind(this),
-      ),
-      () => {
-        if (this._fileIconsDisposable != null) {
-          this._fileIconsDisposable.dispose();
-        }
-      },
-    );
+    this._disposables = new UniversalDisposable(() => {
+      if (this._fileIconsDisposable != null) {
+        this._fileIconsDisposable.dispose();
+      }
+    });
   }
 
   componentDidMount(): void {
@@ -105,40 +117,12 @@ export default class PathWithFileIcon extends React.Component<Props> {
     }
   }
 
-  // This only gets called if the file-icons package is installed.
-  _consumeFileIconService(
-    addItemToElement: FileIconsAddItemToElementFn,
-  ): IDisposable {
-    this._addItemToElement = (element: HTMLElement, path: string) => {
-      try {
-        return addItemToElement(element, path);
-      } catch (e) {
-        getLogger('nuclide-ui-path-with-file-icon').error(
-          'Error adding item to element',
-          e,
-        );
-        return new UniversalDisposable();
-      }
-    };
-    this._forceIconUpdate();
-    const disposable = new UniversalDisposable(() => {
-      this._addItemToElement = null;
-      this._forceIconUpdate();
-      this._disposables.remove(disposable);
-    });
-    // This is a bit subtle; the returned disposable here persists until
-    // file-icons goes away. Since this is likely "forever", this is a leak!
-    // We need to make sure that it's also disposed on unmount.
-    this._disposables.add(disposable);
-    return disposable;
-  }
-
   _handleRef = (element: ?HTMLElement): void => {
     if (this.props.isFolder) {
       return;
     }
     this._ensureIconRemoved();
-    if (this._addItemToElement == null) {
+    if (addItemToElement == null) {
       // file-icons service not available; ignore.
       return;
     }
@@ -146,14 +130,7 @@ export default class PathWithFileIcon extends React.Component<Props> {
       // Element is unmounting.
       return;
     }
-    this._fileIconsDisposable = new UniversalDisposable(
-      this._addItemToElement(element, this.props.path),
-      // On dispose, file-icons doesn't actually remove the classNames it assigned to the node,
-      // so we need to reset the classList manually.
-      () => {
-        element.className = this._getDefaultClassName();
-      },
-    );
+    this._fileIconsDisposable = addItemToElement(element, this.props.path);
   };
 
   _getDefaultClassName(): string {
