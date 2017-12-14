@@ -40,6 +40,7 @@ type Arguments = {
   _: string[],
   type?: string,
   attach: boolean,
+  usenode?: string,
 };
 
 type AdapterData = {
@@ -103,11 +104,22 @@ export default class DebuggerAdapterFactory {
   _includeOptions: Set<string> = new Set(['address', 'port']);
 
   adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
+    const node: string = args.usenode == null ? 'node' : (args.usenode: string);
+    let adapter;
+
     if (args.attach) {
-      return this._parseAttachArguments(args);
+      adapter = this._parseAttachArguments(args);
     } else {
-      return this._parseLaunchArguments(args);
+      adapter = this._parseLaunchArguments(args);
     }
+
+    if (adapter != null) {
+      if (adapter.adapterInfo.command === 'node') {
+        adapter.adapterInfo.command = node;
+      }
+    }
+
+    return adapter;
   }
 
   showContextSensitiveHelp(args: Arguments): void {
@@ -210,6 +222,12 @@ export default class DebuggerAdapterFactory {
     commandLineArgs.set('noDebug', false);
     commandLineArgs.set('stopOnEntry', true);
     commandLineArgs.set('cwd', nuclideUri.resolve('.'));
+
+    // $TODO refactor this code to not be so hacky about adapter specific
+    // arguments
+    if (targetType === VsAdapterTypes.NODE && args.usenode != null) {
+      commandLineArgs.set('runtimeExecutable', args.usenode);
+    }
 
     return {
       action: 'launch',
