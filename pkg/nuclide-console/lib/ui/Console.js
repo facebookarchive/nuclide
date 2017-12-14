@@ -121,11 +121,21 @@ export class Console {
     return 'terminal';
   }
 
+  // Get the pane item's title. If there's only one source selected, we'll use that to make a more
+  // descriptive title.
   getTitle(): string {
-    const sources = this._getSources();
+    const enabledProviderCount = this._store.getState().providers.size;
     const {unselectedSourceIds} = this._model.state;
 
+    // Calling `_getSources()` is (currently) expensive because it needs to search all the records
+    // for sources that have been disabled but still have records. We try to avoid calling it if we
+    // already know that there's more than one selected source.
+    if (enabledProviderCount - unselectedSourceIds.length > 1) {
+      return 'Console';
+    }
+
     // If there's only one source selected, use its name in the tab title.
+    const sources = this._getSources();
     if (sources.length - unselectedSourceIds.length === 1) {
       const selectedSource = sources.find(
         source => unselectedSourceIds.indexOf(source.id) === -1,
@@ -134,6 +144,7 @@ export class Console {
         return `Console: ${selectedSource.name}`;
       }
     }
+
     return 'Console';
   }
 
