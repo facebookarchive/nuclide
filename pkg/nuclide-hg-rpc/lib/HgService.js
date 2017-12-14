@@ -167,6 +167,11 @@ export type RevisionShowInfo = {
   diff: string,
 };
 
+export type RevisionInfoFetched = {
+  revisions: Array<RevisionInfo>,
+  fromFilesystem: boolean,
+};
+
 export type AsyncExecuteRet = {
   command?: string,
   errorMessage?: string,

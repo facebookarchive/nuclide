@@ -25,6 +25,7 @@ import type {
   StatusCodeNumberValue,
   StatusCodeIdValue,
   VcsLogResponse,
+  RevisionInfoFetched,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
@@ -458,7 +459,7 @@ export class HgRepositoryClient {
       .map(b => b.bookmarks);
   }
 
-  observeRevisionChanges(): Observable<Array<RevisionInfo>> {
+  observeRevisionChanges(): Observable<RevisionInfoFetched> {
     return this._revisionsCache.observeRevisionChanges();
   }
 
@@ -1105,7 +1106,7 @@ export class HgRepositoryClient {
   }
 
   getCachedRevisions(): Array<RevisionInfo> {
-    return this._revisionsCache.getCachedRevisions();
+    return this._revisionsCache.getCachedRevisions().revisions;
   }
 
   getCachedRevisionStatuses(): RevisionStatuses {

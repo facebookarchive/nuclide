@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {HgService, RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  HgService,
+  RevisionInfoFetched,
+} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
@@ -26,35 +29,50 @@ const FETCH_REVISIONS_RETRY_COUNT = 2;
 // Also, any write operation will update them.
 // That way, we guarantee we only update the revisions state if the revisions are changed.
 function isEqualRevisions(
-  revisions1: Array<RevisionInfo>,
-  revisions2: Array<RevisionInfo>,
+  revisionsFetched1: RevisionInfoFetched,
+  revisionsFetched2: RevisionInfoFetched,
 ): boolean {
-  if (revisions1 === revisions2) {
+  const {
+    revisions: revisions1,
+    fromFilesystem: fromFilesystem1,
+  } = revisionsFetched1;
+  const {
+    revisions: revisions2,
+    fromFilesystem: fromFilesystem2,
+  } = revisionsFetched2;
+  const areBothFromFileSystem = fromFilesystem1 === fromFilesystem2;
+  if (revisions1 === revisions2 && areBothFromFileSystem) {
     return true;
   }
   if (revisions1 == null || revisions2 == null) {
     return false;
   }
-  return arrayEqual(revisions1, revisions2, (revision1, revision2) => {
-    return (
-      revision1.id === revision2.id &&
-      revision1.isHead === revision2.isHead &&
-      arrayEqual(revision1.tags, revision2.tags) &&
-      arrayEqual(revision1.bookmarks, revision2.bookmarks)
-    );
-  });
+  return (
+    areBothFromFileSystem &&
+    arrayEqual(revisions1, revisions2, (revision1, revision2) => {
+      return (
+        revision1.id === revision2.id &&
+        revision1.isHead === revision2.isHead &&
+        arrayEqual(revision1.tags, revision2.tags) &&
+        arrayEqual(revision1.bookmarks, revision2.bookmarks)
+      );
+    })
+  );
 }
 
 export default class RevisionsCache {
   _hgService: HgService;
-  _revisions: BehaviorSubject<Array<RevisionInfo>>;
-  _lazyRevisionFetcher: Observable<Array<RevisionInfo>>;
+  _revisions: BehaviorSubject<RevisionInfoFetched>;
+  _lazyRevisionFetcher: Observable<RevisionInfoFetched>;
   _fetchRevisionsRequests: Subject<null>;
   _isFetchingRevisions: Subject<boolean>;
 
   constructor(hgService: HgService) {
     this._hgService = hgService;
-    this._revisions = new BehaviorSubject([]);
+    this._revisions = new BehaviorSubject({
+      revisions: [],
+      fromFilesystem: false,
+    });
     this._fetchRevisionsRequests = new Subject();
     this._isFetchingRevisions = new Subject();
 
@@ -71,7 +89,8 @@ export default class RevisionsCache {
               'RevisionsCache Error:',
               error,
             );
-            return Observable.empty();
+            // Failed to fetch smartlog, timeout and return an empty array
+            return Observable.of({revisions: [], fromFilesystem: true});
           }),
       )
       .distinctUntilChanged(isEqualRevisions)
@@ -79,11 +98,12 @@ export default class RevisionsCache {
       .share();
   }
 
-  _fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
+  _fetchSmartlogRevisions(): Observable<RevisionInfoFetched> {
     this._isFetchingRevisions.next(true);
     return this._hgService
       .fetchSmartlogRevisions()
       .refCount()
+      .map(revisions => ({revisions, fromFilesystem: true}))
       .timeout(FETCH_REVISIONS_TIMEOUT_MS)
       .catch(err => {
         if (err instanceof TimeoutError) {
@@ -100,11 +120,11 @@ export default class RevisionsCache {
     this._fetchRevisionsRequests.next(null);
   }
 
-  getCachedRevisions(): Array<RevisionInfo> {
+  getCachedRevisions(): RevisionInfoFetched {
     return this._revisions.getValue();
   }
 
-  observeRevisionChanges(): Observable<Array<RevisionInfo>> {
+  observeRevisionChanges(): Observable<RevisionInfoFetched> {
     return this._lazyRevisionFetcher.startWith(this.getCachedRevisions());
   }
 
