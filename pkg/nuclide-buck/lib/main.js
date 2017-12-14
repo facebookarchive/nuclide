@@ -12,7 +12,7 @@
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {HyperclickProvider} from 'atom-ide-ui';
-import type {SerializedState} from './types';
+import type {BuckTaskRunnerService, SerializedState} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 
@@ -89,6 +89,14 @@ class Activation {
 
   provideBuckBuilder(): BuckBuildSystem {
     return this._taskRunner.getBuildSystem();
+  }
+
+  provideBuckTaskRunnerService(): BuckTaskRunnerService {
+    return {
+      getBuildTarget: () => this._taskRunner.getBuildTarget(),
+      setBuildTarget: buildTarget =>
+        this._taskRunner.setBuildTarget(buildTarget),
+    };
   }
 
   providePlatformService(): PlatformService {

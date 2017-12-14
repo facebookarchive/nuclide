@@ -149,3 +149,8 @@ export type PlatformProviderUi = {
   settings: ?PlatformProviderSettings,
   toolbar: ?React.Element<any>,
 };
+
+export type BuckTaskRunnerService = {
+  getBuildTarget(): ?string,
+  setBuildTarget(buildTarget: string): void,
+};

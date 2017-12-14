@@ -142,6 +142,14 @@ export class BuckTaskRunner {
     return this._platformService;
   }
 
+  getBuildTarget(): ?string {
+    this._getStore().getState().buildTarget;
+  }
+
+  setBuildTarget(buildTarget: string) {
+    this._getStore().dispatch(Actions.setBuildTarget(buildTarget));
+  }
+
   setProjectRoot(
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
