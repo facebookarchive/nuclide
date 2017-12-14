@@ -68,11 +68,10 @@ export type AppState = {
   providerStatuses: Map<string, OutputProviderStatus>,
 };
 
-// A special type used internally by the ConsoleContainer component to represent
-// each record that is displayed with its height. This is stored at the component
-// level since the expansion state of any record (which affects its height) is
-// unique to each Console pane (whereas the records themselves are shared between
-// all Console panes). The height is needed for partial rendering.
+// A special type used internally by the Console component to represent each record that is
+// displayed with its height. This is stored at the component level since the expansion state of any
+// record (which affects its height) is unique to each Console pane (whereas the records themselves
+// are shared between all Console panes). The height is needed for partial rendering.
 export type DisplayableRecord = {
   id: number,
   record: Record,
@@ -150,7 +149,7 @@ export type ConsoleApi = {
 };
 
 export type ConsolePersistedState = {
-  deserializer: 'nuclide.ConsoleContainer',
+  deserializer: 'nuclide.Console',
   filterText?: string,
   enableRegExpFilter?: boolean,
   unselectedSourceIds?: Array<string>,

@@ -16,7 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
-import {WORKSPACE_VIEW_URI as CONSOLE_VIEW_URI} from './ui/ConsoleContainer';
+import {WORKSPACE_VIEW_URI as CONSOLE_VIEW_URI} from './ui/Console';
 
 type TrackingEventNames = {
   start: string,

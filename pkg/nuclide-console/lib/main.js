@@ -38,7 +38,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
-import {ConsoleContainer, WORKSPACE_VIEW_URI} from './ui/ConsoleContainer';
+import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
 import * as React from 'react';
 import {applyMiddleware, createStore} from 'redux';
@@ -178,21 +178,19 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return viewableFromReactElement(
-            <ConsoleContainer store={this._getStore()} />,
-          );
+          return viewableFromReactElement(<Console store={this._getStore()} />);
         }
       }),
-      () => destroyItemWhere(item => item instanceof ConsoleContainer),
+      () => destroyItemWhere(item => item instanceof Console),
       atom.commands.add('atom-workspace', 'nuclide-console:toggle', () => {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
   }
 
-  deserializeConsoleContainer(state: ConsolePersistedState): atom$Pane {
+  deserializeConsole(state: ConsolePersistedState): atom$Pane {
     return viewableFromReactElement(
-      <ConsoleContainer
+      <Console
         store={this._getStore()}
         initialFilterText={state.filterText}
         initialEnableRegExpFilter={state.enableRegExpFilter}
