@@ -13,12 +13,6 @@ import {getVersion} from '../../nuclide-version';
 import {getInfoServiceByNuclideUri} from '..';
 
 describe('setUseLocalRpc', () => {
-  beforeEach(() => {
-    spyOn(require('../../commons-node/passesGK'), 'isGkEnabled').andReturn(
-      true,
-    );
-  });
-
   it('successfully starts up a local RPC server', () => {
     waitsForPromise({timeout: 15000}, async () => {
       const infoService = getInfoServiceByNuclideUri('');

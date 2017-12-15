@@ -20,16 +20,17 @@ import {ServerConnection} from './ServerConnection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork, spawn, getOriginalEnvironment} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {isGkEnabled} from '../../commons-node/passesGK';
 import {__DEV__} from '../../commons-node/runtime-info';
 import {getAvailableServerPort} from '../../commons-node/serverPort';
-import {track} from '../../nuclide-analytics';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
 import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';
 
+// This code may be executed before the config has been loaded!
+// getWithDefaults is necessary to make sure that the default is 'true'.
+// (But not in tests, as it's slow to start it up every time.)
 const useLocalRpc = Boolean(
-  featureConfig.get('useLocalRpc') || isGkEnabled('nuclide_local_rpc'),
+  featureConfig.getWithDefaults('useLocalRpc', !atom.inSpecMode()),
 );
 let localRpcClient: ?RpcConnection<Transport> = null;
 
@@ -92,7 +93,6 @@ export function getlocalService(serviceName: string): Object {
   if (useLocalRpc) {
     if (localRpcClient == null) {
       localRpcClient = createLocalRpcClient();
-      track('use-local-rpc');
     }
     return localRpcClient.getService(serviceName);
   } else {
