@@ -10,7 +10,7 @@
  */
 
 import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
-import type {HasteSettings} from '../getConfig';
+import type {ConfigFromFlow} from '../Config';
 
 import {getLogger} from 'log4js';
 import {arrayFlatten} from 'nuclide-commons/collection';
@@ -46,10 +46,10 @@ export type FileIndex = {
 
 export async function getFileIndex(
   root: string,
-  hasteSettings: HasteSettings,
+  configFromFlow: ConfigFromFlow,
 ): Promise<FileIndex> {
   const client = new WatchmanClient();
-  const exportCache = new ExportCache({root, hasteSettings});
+  const exportCache = new ExportCache({root, configFromFlow});
   const loadPromise = exportCache.load().then(success => {
     const logger = getLogger('js-imports-server');
     if (success) {

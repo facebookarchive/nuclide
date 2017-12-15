@@ -22,14 +22,14 @@ import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
 import {initializeLoggerForWorker} from '../../logging/initializeLogging';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getConfigFromFlow} from '../getConfig';
+import {getConfigFromFlow} from '../Config';
 import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
 import {getHasteName, hasteReduceName} from './HasteUtils';
 import {watchDirectory, getFileIndex} from './file-index';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HasteSettings} from '../getConfig';
+import type {HasteSettings} from '../Config';
 import type {JSExport} from './types';
 import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
 import type {FileIndex} from './file-index';
@@ -66,7 +66,8 @@ async function main() {
     return;
   }
   const root = process.argv[2];
-  const {hasteSettings} = getConfigFromFlow(root);
+  const configFromFlow = getConfigFromFlow(root);
+  const {hasteSettings} = configFromFlow;
 
   // Listen for open files that should be indexed immediately
   setupParentMessagesHandler(root, hasteSettings);
@@ -75,8 +76,8 @@ async function main() {
   watchDirectoryRecursively(root, hasteSettings);
 
   // Build up the initial index with all files recursively from the root.
-  const index = await getFileIndex(root, hasteSettings);
-  const newCache = new ExportCache({root, hasteSettings});
+  const index = await getFileIndex(root, configFromFlow);
+  const newCache = new ExportCache({root, configFromFlow});
 
   disposables.add(
     Observable.merge(

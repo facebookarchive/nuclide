@@ -23,12 +23,17 @@ const hasteSettings = {
   nameReducerBlacklist: [],
 };
 
+const configFromFlow = {
+  moduleDirs: [],
+  hasteSettings,
+};
+
 describe('AutoImportsWorker', () => {
   let fileIndex;
   const dirPath = nuclideUri.join(__dirname, 'fixtures');
   beforeEach(() => {
     waitsForPromise(async () => {
-      fileIndex = await getFileIndex(dirPath, hasteSettings);
+      fileIndex = await getFileIndex(dirPath, configFromFlow);
     });
   });
 
@@ -84,7 +89,7 @@ describe('AutoImportsWorker main files indexer', () => {
           ['package_json_without_main/index.js', 'export class Test{}'],
         ]),
       );
-      fileIndex = await getFileIndex(dirPath, hasteSettings);
+      fileIndex = await getFileIndex(dirPath, configFromFlow);
     });
   });
 
@@ -137,7 +142,7 @@ describe('AutoImportsWorker node_modules indexer', () => {
         require('nuclide-commons/process'),
         'spawn',
       ).andReturn(Observable.throw());
-      fileIndex = await getFileIndex(dirPath, hasteSettings);
+      fileIndex = await getFileIndex(dirPath, configFromFlow);
       expect(spawnSpy).toHaveBeenCalled();
     });
   });

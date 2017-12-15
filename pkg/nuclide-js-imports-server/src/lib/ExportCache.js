@@ -9,21 +9,21 @@
  * @format
  */
 
-import type {HasteSettings} from '../getConfig';
+import type {ConfigFromFlow} from '../Config';
 import type {JSExport} from './types';
 
 import crypto from 'crypto';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import DiskCache from '../../../commons-node/DiskCache';
-import {serializeHasteSettings} from '../getConfig';
+import {serializeConfig} from '../Config';
 
 const CACHE_DIR = nuclideUri.join(os.tmpdir(), 'nuclide-js-imports-cache');
 const CACHE_VERSION = 1; // Bump this for any breaking changes.
 
 export type CacheParams = {
   root: string,
-  hasteSettings: HasteSettings,
+  configFromFlow: ConfigFromFlow,
 };
 
 export type FileWithHash = {
@@ -31,11 +31,10 @@ export type FileWithHash = {
   sha1: string,
 };
 
-function getCachePath({root, hasteSettings}: CacheParams): string {
+function getCachePath({root, configFromFlow}: CacheParams): string {
   const hash = crypto.createHash('sha1');
   hash.update(`${root}:${CACHE_VERSION}\n`);
-  // Should cover all fields in HasteSettings. Sadly, it's not JSON-serializable.
-  hash.update(serializeHasteSettings(hasteSettings));
+  hash.update(serializeConfig(configFromFlow));
   const fileName =
     nuclideUri.basename(root) + '-' + hash.digest('hex').substr(0, 8);
   return nuclideUri.join(CACHE_DIR, fileName);

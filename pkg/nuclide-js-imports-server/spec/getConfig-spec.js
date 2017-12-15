@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getConfigFromFlow} from '../src/getConfig';
+import {getConfigFromFlow} from '../src/Config';
 
 describe('getConfig', () => {
   it('reads haste configs', () => {
@@ -40,6 +40,8 @@ describe('getConfig', () => {
       moduleDirs: [
         nuclideUri.join(root, 'node_modules'),
         nuclideUri.join(root, 'modules'),
+        nuclideUri.join(root, 'yarn_workspaces'),
+        nuclideUri.join(root, 'yarn_workspaces2'),
       ],
       hasteSettings: {
         isHaste: false,

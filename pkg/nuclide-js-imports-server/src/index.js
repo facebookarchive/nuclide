@@ -26,7 +26,7 @@ import {CodeActions} from './CodeActions';
 import {CommandExecutor} from './CommandExecutor';
 
 import initializeLogging from '../logging/initializeLogging';
-import {getEslintEnvs, getConfigFromFlow} from './getConfig';
+import {getEslintEnvs, getConfigFromFlow} from './Config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from './utils/constantsForClient';
 import {WorkspaceSymbols} from './WorkspaceSymbols';

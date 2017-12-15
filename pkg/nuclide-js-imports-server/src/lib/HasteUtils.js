@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HasteSettings} from '../getConfig';
+import type {HasteSettings} from '../Config';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 

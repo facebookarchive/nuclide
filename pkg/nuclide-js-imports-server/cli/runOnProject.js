@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observeProcess} from 'nuclide-commons/process';
-import {getEslintEnvs, getConfigFromFlow} from '../src/getConfig';
+import {getEslintEnvs, getConfigFromFlow} from '../src/Config';
 import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 import {getFileIndex} from '../src/lib/file-index';
@@ -35,9 +35,10 @@ async function main() {
 
   const envs = getEslintEnvs(root);
   const autoImportsManager = new AutoImportsManager(envs);
-  const {hasteSettings} = getConfigFromFlow(root);
+  const configFromFlow = getConfigFromFlow(root);
+  const {hasteSettings} = configFromFlow;
 
-  const index = await getFileIndex(root, hasteSettings);
+  const index = await getFileIndex(root, configFromFlow);
   const indexDirStream = indexDirectory(
     index,
     hasteSettings,

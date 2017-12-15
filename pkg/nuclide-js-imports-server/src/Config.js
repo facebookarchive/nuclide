@@ -12,15 +12,16 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
 import globals from 'globals';
+import {getLogger} from 'log4js';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 const ALL_ENVS = Object.keys(globals);
 
-type ConfigFromFlow = {
+export type ConfigFromFlow = $ReadOnly<{|
   moduleDirs: Array<NuclideUri>,
   hasteSettings: HasteSettings,
-};
+|}>;
 
 /**
  * Haste settings are surprisingly complicated.
@@ -29,25 +30,29 @@ type ConfigFromFlow = {
  * - When useNameReducers is enabled, we'll attempt to resolve whitelisted files *without*
  *   @providesModule purely using their name, excluding files in the blacklist.
  */
-export type HasteSettings = {
+export type HasteSettings = $ReadOnly<{|
   isHaste: boolean,
   useNameReducers: boolean,
   nameReducers: Array<{regexp: RegExp, replacement: string}>,
   nameReducerWhitelist: Array<RegExp>,
   nameReducerBlacklist: Array<RegExp>,
-};
+|}>;
 
-export function serializeHasteSettings(settings: HasteSettings): string {
+export function serializeConfig(config: ConfigFromFlow): string {
+  const {moduleDirs, hasteSettings: settings} = config;
   // RegExps aren't normally stringifyable.
   return JSON.stringify({
-    isHaste: settings.isHaste,
-    useNameReducers: settings.useNameReducers,
-    nameReducers: settings.nameReducers.map(reducer => ({
-      regexp: reducer.regexp.toString(),
-      replacement: reducer.replacement,
-    })),
-    nameReducerBlacklist: settings.nameReducerBlacklist.map(String),
-    nameReducerWhitelist: settings.nameReducerWhitelist.map(String),
+    moduleDirs,
+    hasteSettings: {
+      isHaste: settings.isHaste,
+      useNameReducers: settings.useNameReducers,
+      nameReducers: settings.nameReducers.map(reducer => ({
+        regexp: reducer.regexp.toString(),
+        replacement: reducer.replacement,
+      })),
+      nameReducerBlacklist: settings.nameReducerBlacklist.map(String),
+      nameReducerWhitelist: settings.nameReducerWhitelist.map(String),
+    },
   });
 }
 
@@ -71,7 +76,10 @@ export function getConfigFromFlow(root: NuclideUri): ConfigFromFlow {
   try {
     const flowFile = nuclideUri.join(root, '.flowconfig');
     const flowConfigContents = fs.readFileSync(flowFile, 'utf8');
-    moduleDirs = flowConfigToResolveDirnames(flowFile, flowConfigContents);
+    moduleDirs = flowConfigToResolveDirnames(
+      flowFile,
+      flowConfigContents,
+    ).concat(getYarnWorkspaces(root));
     hasteSettings = flowConfigToHasteSettings(root, flowConfigContents);
   } catch (error) {}
   return {
@@ -170,4 +178,38 @@ function packageJsonToEnvs(packageJsonFile: string): ?Array<string> {
     }
   } catch (err) {}
   return null;
+}
+
+function getYarnWorkspaces(root: string): Array<string> {
+  try {
+    const packageJsonFile = nuclideUri.join(root, 'package.json');
+    const json = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
+    if (Array.isArray(json.workspaces)) {
+      return Array.from(
+        new Set(
+          json.workspaces
+            .map(workspace => {
+              // Yarn workspaces can be a glob pattern (folder/*) or specific paths.
+              // Either way, getting the dirname should work for most cases.
+              if (typeof workspace === 'string') {
+                try {
+                  return nuclideUri.resolve(
+                    root,
+                    nuclideUri.dirname(workspace),
+                  );
+                } catch (err) {
+                  getLogger('js-imports-server').error(
+                    `Could not parse Yarn workspace: ${workspace}`,
+                    err,
+                  );
+                  return null;
+                }
+              }
+            })
+            .filter(Boolean),
+        ),
+      );
+    }
+  } catch (err) {}
+  return [];
 }
