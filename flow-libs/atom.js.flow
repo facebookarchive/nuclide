@@ -814,6 +814,7 @@ declare class atom$TextEditor extends atom$Model {
     },
   ): atom$Range,
   insertText(text: string): Array<atom$Range> | false,
+  mutateSelectedText(fn: (selection: atom$Selection, index: number) => void): void,
   delete: () => void,
   backspace: () => void,
   duplicateLines: () => void,
@@ -2032,6 +2033,7 @@ declare class atom$Token {
 declare class atom$Selection {
   clear(): void,
   getText(): string,
+  getBufferRange(): atom$Range,
   insertText(
     text: string,
     options?: {
