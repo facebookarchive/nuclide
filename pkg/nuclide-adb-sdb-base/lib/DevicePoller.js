@@ -42,7 +42,7 @@ class DevicePoller {
     const host = nuclideUri.isRemote(_host) ? _host : '';
     let fetching = false;
     return this._observables.getOrCreate(host, () =>
-      Observable.interval(1000)
+      Observable.interval(10 * 1000)
         .startWith(0)
         .filter(() => !fetching)
         .switchMap(() => {
