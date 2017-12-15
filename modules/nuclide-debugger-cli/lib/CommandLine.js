@@ -28,7 +28,7 @@ export default class CommandLine implements ConsoleIO {
       output: process.stdout,
     });
 
-    this._cli.setPrompt('fbdb> ');
+    this._cli.setPrompt('fbdbg> ');
   }
 
   // $TODO handle

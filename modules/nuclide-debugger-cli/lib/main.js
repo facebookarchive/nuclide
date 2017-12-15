@@ -43,7 +43,7 @@ function buildLogger(): log4js$Logger {
 }
 
 const _help: string[] = [
-  'fbdb [options] [program [program-arguments]]',
+  'fbdbg [options] [program [program-arguments]]',
   '  The debugger may be launched in either "launch" or "attach" mode. "launch"',
   '  starts a local program; "attach" attaches to an already running program',
   '  which may be remote. There are options which are specific to the mode and',
