@@ -10,10 +10,7 @@
  */
 
 import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';
-import {
-  getViewOfEditor,
-  isValidTextEditor,
-} from 'nuclide-commons-atom/text-editor';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -40,46 +37,50 @@ class Activation {
     this._disposables = new UniversalDisposable();
 
     const subscribeEditor = (editor: atom$TextEditor) => {
-      const cursorSubscription = editor.onDidChangeCursorPosition(
-        (event: ChangeCursorPositionEvent) => {
-          controller.updatePosition(editor, event.newBufferPosition);
-        },
-      );
-      const scrollSubscription = getViewOfEditor(editor).onDidChangeScrollTop(
-        scrollTop => {
-          controller.updateScroll(editor, scrollTop);
-        },
-      );
-      this._disposables.add(cursorSubscription);
-      this._disposables.add(scrollSubscription);
       const destroySubscription = editor.onDidDestroy(() => {
         controller.onDestroy(editor);
-        this._disposables.remove(cursorSubscription);
-        this._disposables.remove(scrollSubscription);
         this._disposables.remove(destroySubscription);
       });
       this._disposables.add(destroySubscription);
     };
 
+    let lastActiveEditor: ?atom$TextEditor;
+
     const addEditor = (addEvent: AddTextEditorEvent) => {
       const editor = addEvent.textEditor;
       if (isValidTextEditor(editor)) {
         subscribeEditor(editor);
+        updateLastEditor(editor);
         controller.onCreate(editor);
       }
     };
 
+    function updateLastEditor(editor: atom$TextEditor) {
+      if (editor === lastActiveEditor) {
+        return;
+      }
+      if (lastActiveEditor != null && !lastActiveEditor.isDestroyed()) {
+        controller.updatePosition(
+          lastActiveEditor,
+          lastActiveEditor.getCursorBufferPosition(),
+        );
+      }
+      lastActiveEditor = editor;
+    }
+
     atom.workspace.getTextEditors().forEach(subscribeEditor);
     this._disposables.add(
+      atom.workspace.observeActivePaneItem(item => {
+        if (!isValidTextEditor(item)) {
+          return;
+        }
+        updateLastEditor((item: any));
+        controller.onActivate((item: any));
+      }),
       atom.workspace.onDidAddTextEditor(addEditor),
       atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
         if (isValidTextEditor(event.item)) {
           controller.onOpen((event.item: any));
-        }
-      }),
-      atom.workspace.observeActivePaneItem(item => {
-        if (isValidTextEditor(item)) {
-          controller.onActivate((item: any));
         }
       }),
       atom.workspace.onDidStopChangingActivePaneItem(item => {

@@ -149,7 +149,6 @@ export class NavigationStackController {
     } else {
       this._updateStackLocation(editor);
     }
-    this._lastLocation = null;
   }
 
   onActivate(editor: atom$TextEditor): void {
