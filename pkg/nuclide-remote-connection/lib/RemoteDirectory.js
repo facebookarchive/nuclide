@@ -91,6 +91,14 @@ export class RemoteDirectory {
     return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
 
+  /**
+   * We may want to provide an implementation for this at some point.
+   * However, for the time being, we don't get any benefits from doing so.
+   */
+  onDidChangeFiles(callback: () => mixed): IDisposable {
+    return new Disposable();
+  }
+
   _willAddSubscription(): void {
     this._subscriptionCount++;
     try {

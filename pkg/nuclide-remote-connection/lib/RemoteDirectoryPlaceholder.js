@@ -40,6 +40,10 @@ export default class RemoteDirectoryPlaceholder {
     return new UniversalDisposable();
   }
 
+  onDidChangeFiles(callback: () => mixed): IDisposable {
+    return new UniversalDisposable();
+  }
+
   isFile(): boolean {
     return false;
   }
