@@ -19,6 +19,7 @@ import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import shallowEqual from 'shallowequal';
 
 type Props = {
   enableBack: boolean,
@@ -39,12 +40,14 @@ export function consumeStatusBar(
   const onForward = navigationStack.navigateForwards;
   const props: Observable<Props> = observableFromSubscribeFunction(
     navigationStack.subscribe,
-  ).map(stack => ({
-    enableBack: stack.hasPrevious,
-    enableForward: stack.hasNext,
-    onBack,
-    onForward,
-  }));
+  )
+    .map(stack => ({
+      enableBack: stack.hasPrevious,
+      enableForward: stack.hasNext,
+      onBack,
+      onForward,
+    }))
+    .distinctUntilChanged(shallowEqual);
   const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
   const item = renderReactRoot(<Tile />);
   item.className = 'nuclide-navigation-stack-tile inline-block';
