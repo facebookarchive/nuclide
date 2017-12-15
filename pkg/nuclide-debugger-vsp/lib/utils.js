@@ -185,6 +185,39 @@ function notifyOpenDebugSession(): void {
     },
   );
 }
+export async function getPrepackLaunchProcessInfo(
+  scriptPath: NuclideUri,
+  prepackPath: string,
+  args: Array<string>,
+): Promise<VspProcessInfo> {
+  const adapterInfo = await getPrepackAdapterInfo(scriptPath);
+  return new VspProcessInfo(
+    scriptPath,
+    'launch',
+    VsAdapterTypes.PREPACK,
+    adapterInfo,
+    false,
+    getPrepackScriptConfig(scriptPath, prepackPath, args),
+  );
+}
+
+async function getPrepackAdapterInfo(
+  path: NuclideUri,
+): Promise<VSAdapterExecutableInfo> {
+  return getAdapterExecutableWithProperNode('prepack', path);
+}
+
+function getPrepackScriptConfig(
+  scriptPath: NuclideUri,
+  prepackPath: string,
+  args: Array<string>,
+): Object {
+  return {
+    sourceFile: nuclideUri.getPath(scriptPath),
+    prepackRuntime: prepackPath,
+    prepackArguments: args,
+  };
+}
 
 export async function getNodeLaunchProcessInfo(
   scriptPath: NuclideUri,

@@ -12,9 +12,9 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common/main';
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 
-export type Adapter = 'node' | 'python' | 'react-native';
+export type Adapter = 'node' | 'python' | 'prepack' | 'react-native';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
@@ -65,6 +65,21 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(__dirname, 'VendorLib/vscode-react-native'),
+    },
+  ],
+  [
+    'prepack',
+    {
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            'VendorLib/vscode-prepack/adapter/DebugAdapter.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'VendorLib/vscode-prepack'),
     },
   ],
 ]);

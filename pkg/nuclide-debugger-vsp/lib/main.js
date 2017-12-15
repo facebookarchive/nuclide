@@ -16,6 +16,7 @@ import passesGK from '../../commons-node/passesGK';
 import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
 import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
+import PrepackLaunchAttachProvider from './PrepackLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {listenToRemoteDebugCommands} from './utils';
@@ -33,6 +34,7 @@ class Activation {
     this._registerPythonDebugProvider();
     this._registerNodeDebugProvider();
     this._registerReactNativeDebugProvider();
+    this._registerPrepackDebugProvider();
   }
 
   _registerPythonDebugProvider(): void {
@@ -72,6 +74,20 @@ class Activation {
         name: 'React Native',
         getLaunchAttachProvider: connection => {
           return new ReactNativeLaunchAttachProvider(connection);
+        },
+      });
+    }
+  }
+
+  async _registerPrepackDebugProvider(): Promise<void> {
+    const isOpenSource = !await fsPromise.exists(
+      path.join(__dirname, 'fb-config.js'),
+    );
+    if ((await passesGK('nuclide_debugger_prepack')) || isOpenSource) {
+      this._registerDebugProvider({
+        name: 'Prepack',
+        getLaunchAttachProvider: connection => {
+          return new PrepackLaunchAttachProvider(connection);
         },
       });
     }

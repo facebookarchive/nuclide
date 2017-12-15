@@ -28,7 +28,8 @@ export type VsAdapterType =
   | 'python'
   | 'node'
   | 'java'
-  | 'react_native';
+  | 'react_native'
+  | 'prepack';
 
 export type UserOutputLevel =
   | 'debug'
