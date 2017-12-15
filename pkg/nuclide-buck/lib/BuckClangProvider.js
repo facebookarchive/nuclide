@@ -54,7 +54,6 @@ class Provider {
             nuclideUri.basename(src) +
             '"',
           () => dbPromise,
-          {onlyForFile: src},
         );
   }
 
