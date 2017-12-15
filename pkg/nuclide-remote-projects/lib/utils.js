@@ -79,7 +79,7 @@ export function* getOpenFileEditorForRemoteProject(
           paneItem instanceof TextEditor ||
           paneItem instanceof RemoteTextEditorPlaceholder
         ) ||
-        !paneItem.getURI()
+        !paneItem.getPath()
       ) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;
