@@ -9,6 +9,7 @@
  * @format
  */
 
+import invariant from 'assert';
 import fs from 'fs';
 import {getLogger} from 'log4js';
 import {Deferred} from 'nuclide-commons/promise';
@@ -68,24 +69,38 @@ export class IpcClientTransport {
   _handleError(err: Error) {
     this._transport.reject(err);
     getLogger().fatal('Nuclide RPC process crashed', err);
+    const buttons = [
+      {
+        text: 'Reload Atom',
+        className: 'icon icon-zap',
+        onDidClick() {
+          atom.reload();
+        },
+      },
+    ];
+    if (atom.packages.isPackageLoaded('fb-file-a-bug')) {
+      buttons.push({
+        text: 'File a bug',
+        className: 'icon icon-nuclicon-bug',
+        onDidClick() {
+          atom.commands.dispatch(
+            atom.workspace.getElement(),
+            'fb-file-a-bug:file',
+          );
+        },
+      });
+    }
     atom.notifications.addError('Local RPC process crashed!', {
       description:
         'The local Nuclide RPC process crashed. Please reload Atom to continue.',
       detail: String(err),
       dismissable: true,
-      buttons: [
-        {
-          text: 'Reload Atom',
-          className: 'icon icon-zap',
-          onDidClick() {
-            atom.reload();
-          },
-        },
-      ],
+      buttons,
     });
   }
 
   send(message: string): void {
+    invariant(!this.isClosed(), 'Transport unexpectedly closed');
     this._transport.promise.then(transport => {
       transport.send(message);
     });
