@@ -49,5 +49,5 @@ declare module 'ws' {
     url: string,
   }
 
-  declare var exports: typeof ws$WebSocket;
+  declare module.exports: typeof ws$WebSocket;
 }

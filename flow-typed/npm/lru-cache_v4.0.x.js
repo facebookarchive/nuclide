@@ -22,5 +22,5 @@ declare module 'lru-cache' {
   };
 
   // TODO You can supply just an integer (max size), or even nothing at all.
-  declare var exports: <K, V>(options: Options<K, V>) => LRUCache<K, V>;
+  declare module.exports: <K, V>(options: Options<K, V>) => LRUCache<K, V>;
 }
