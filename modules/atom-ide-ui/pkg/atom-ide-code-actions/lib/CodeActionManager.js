@@ -78,7 +78,10 @@ export class CodeActionManager {
   }
 
   consumeIndie(register: RegisterIndieLinter): IDisposable {
-    const linterDelegate = register({name: 'Code Actions'});
+    const linterDelegate = register({
+      name: 'Code Actions',
+      supportedMessageKinds: ['action'],
+    });
     this._disposables.add(linterDelegate);
     this._linterDelegate = linterDelegate;
     return new UniversalDisposable(() => {

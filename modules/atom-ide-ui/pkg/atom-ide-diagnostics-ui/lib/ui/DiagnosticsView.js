@@ -77,6 +77,9 @@ export default class DiagnosticsView extends React.Component<Props> {
     if (this.props.supportedMessageKinds.has('review')) {
       groups.push('review');
     }
+    if (this.props.supportedMessageKinds.has('action')) {
+      groups.push('action');
+    }
 
     const showFullDescriptionToggle = diagnostics.find(
       diagnostic =>
