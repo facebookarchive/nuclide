@@ -44,10 +44,9 @@ export async function getGeneratedFileType(
   const filename = nuclideUri.basename(filePath);
   const fileTags = await findTaggedFiles(dirPath, [filename]);
 
-  const tag = fileTags.get(filename);
+  let tag = fileTags.get(filename);
   if (tag == null) {
-    cache.set(filePath, 'manual');
-    return 'manual';
+    tag = 'manual';
   }
 
   cache.set(filePath, tag);
@@ -83,15 +82,20 @@ export async function getGeneratedFileTypes(
 
   for (const file of uncheckedFiles) {
     const filePath = nuclideUri.join(dirPath, file);
-    const tag = fileTags.get(file);
-    if (tag == null) {
-      cache.set(filePath, 'manual');
-      // don't send this across the wire; receiver should assume that if it gets
-      // a response, any files in the directory that aren't specified are manual
-    } else {
-      cache.set(filePath, tag);
+    let tag = fileTags.get(file);
+    if (tag != null) {
       fileTypes.set(filePath, tag);
+    } else {
+      if (matchesGeneratedPaths(filePath)) {
+        tag = 'generated';
+        fileTypes.set(filePath, tag);
+      } else {
+        tag = 'manual';
+        // don't send this across the wire; receiver should assume that if it gets
+        // a response, any files in the directory that aren't specified are manual
+      }
     }
+    cache.set(filePath, tag);
   }
 
   return fileTypes;
