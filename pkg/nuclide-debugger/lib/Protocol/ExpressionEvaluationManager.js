@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./EventReporter');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,79 +23,49 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  RemoteObjectId,
-  PropertyDescriptor,
-  Scope,
-  CallFrameId,
-  EvaluateOnCallFrameResponse,
-  EvaluateResponse,
-  GetPropertiesResponse,
-} from 'nuclide-debugger-common/protocol-types';
-import type {ObjectGroup, ExpansionResult} from '../types';
-import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
-import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
-
-import invariant from 'assert';
-import {Subject, Observable} from 'rxjs';
-import {reportError, reportErrorFromConsole} from './EventReporter';
-
 class RemoteObjectProxy {
-  _objectId: RemoteObjectId;
-  _runtimeDispatcher: RuntimeDomainDispatcher;
 
-  constructor(
-    runtimeDispatcher: RuntimeDomainDispatcher,
-    objectId: RemoteObjectId,
-  ) {
+  constructor(runtimeDispatcher, objectId) {
     this._runtimeDispatcher = runtimeDispatcher;
     this._objectId = objectId;
   }
 
-  getProperties(): Promise<GetPropertiesResponse> {
+  getProperties() {
     return new Promise((resolve, reject) => {
-      function callback(error: Error, response: GetPropertiesResponse) {
+      function callback(error, response) {
         if (error != null) {
-          reportError(`getProperties failed with ${JSON.stringify(error)}`);
+          (0, (_EventReporter || _load_EventReporter()).reportError)(`getProperties failed with ${JSON.stringify(error)}`);
           reject(error);
         }
         resolve(response);
       }
-      this._runtimeDispatcher.getProperties(
-        this._objectId,
-        callback.bind(this),
-      );
+      this._runtimeDispatcher.getProperties(this._objectId, callback.bind(this));
     });
   }
 }
 
 class RemoteObjectManager {
-  _runtimeDispatcher: RuntimeDomainDispatcher;
-  _remoteObjects: Map<RemoteObjectId, RemoteObjectProxy>;
 
-  constructor(runtimeDispatcher: RuntimeDomainDispatcher) {
+  constructor(runtimeDispatcher) {
     this._runtimeDispatcher = runtimeDispatcher;
     this._remoteObjects = new Map();
   }
 
-  addObject(objectId: RemoteObjectId): RemoteObjectProxy {
-    const remoteObject = new RemoteObjectProxy(
-      this._runtimeDispatcher,
-      objectId,
-    );
+  addObject(objectId) {
+    const remoteObject = new RemoteObjectProxy(this._runtimeDispatcher, objectId);
     this._remoteObjects.set(objectId, remoteObject);
     return remoteObject;
   }
 
-  getRemoteObjectFromId(objectId: RemoteObjectId): ?RemoteObjectProxy {
+  getRemoteObjectFromId(objectId) {
     return this._remoteObjects.get(objectId);
   }
 
-  clear(): void {
+  clear() {
     this._remoteObjects.clear();
   }
 }
@@ -85,41 +73,27 @@ class RemoteObjectManager {
 /**
  * Bridge between Nuclide IPC and RPC breakpoint protocols.
  */
-export default class ExpressionEvaluationManager {
-  _debuggerDispatcher: DebuggerDomainDispatcher;
-  _runtimeDispatcher: RuntimeDomainDispatcher;
-  _evalutionEvent$: Subject<Array<mixed>>;
-  _remoteObjectManager: RemoteObjectManager;
+class ExpressionEvaluationManager {
 
-  constructor(
-    debuggerDispatcher: DebuggerDomainDispatcher,
-    runtimeDispatcher: RuntimeDomainDispatcher,
-  ) {
+  constructor(debuggerDispatcher, runtimeDispatcher) {
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
-    this._evalutionEvent$ = new Subject();
+    this._evalutionEvent$ = new _rxjsBundlesRxMinJs.Subject();
     this._remoteObjectManager = new RemoteObjectManager(runtimeDispatcher);
   }
 
-  evaluateOnCallFrame(
-    transactionId: number,
-    callFrameId: CallFrameId,
-    expression: string,
-    objectGroup: ObjectGroup,
-  ): void {
-    function callback(error: Error, response: EvaluateOnCallFrameResponse) {
+  evaluateOnCallFrame(transactionId, callFrameId, expression, objectGroup) {
+    function callback(error, response) {
       if (error != null) {
-        const errorMsg = `evaluateOnCallFrame failed with ${
-          typeof error === 'string' ? error : JSON.stringify(error)
-        }`;
+        const errorMsg = `evaluateOnCallFrame failed with ${typeof error === 'string' ? error : JSON.stringify(error)}`;
         if (objectGroup === 'console') {
-          reportErrorFromConsole(errorMsg);
+          (0, (_EventReporter || _load_EventReporter()).reportErrorFromConsole)(errorMsg);
         } else {
-          reportError(errorMsg);
+          (0, (_EventReporter || _load_EventReporter()).reportError)(errorMsg);
         }
         return;
       }
-      const {result, wasThrown, exceptionDetails} = response;
+      const { result, wasThrown, exceptionDetails } = response;
       if (result != null && result.objectId != null) {
         this._remoteObjectManager.addObject(result.objectId);
       }
@@ -127,28 +101,19 @@ export default class ExpressionEvaluationManager {
         result,
         error: wasThrown ? exceptionDetails : null,
         expression,
-        id: transactionId,
+        id: transactionId
       });
     }
-    this._debuggerDispatcher.evaluateOnCallFrame(
-      callFrameId,
-      expression,
-      objectGroup,
-      callback.bind(this),
-    );
+    this._debuggerDispatcher.evaluateOnCallFrame(callFrameId, expression, objectGroup, callback.bind(this));
   }
 
-  runtimeEvaluate(
-    transactionId: number,
-    expression: string,
-    objectGroup: ObjectGroup,
-  ): void {
-    function callback(error: Error, response: EvaluateResponse) {
+  runtimeEvaluate(transactionId, expression, objectGroup) {
+    function callback(error, response) {
       if (error != null) {
-        reportError(`runtimeEvaluate failed with ${JSON.stringify(error)}`);
+        (0, (_EventReporter || _load_EventReporter()).reportError)(`runtimeEvaluate failed with ${JSON.stringify(error)}`);
         return;
       }
-      const {result, wasThrown, exceptionDetails} = response;
+      const { result, wasThrown, exceptionDetails } = response;
       if (result.objectId != null) {
         this._remoteObjectManager.addObject(result.objectId);
       }
@@ -156,96 +121,99 @@ export default class ExpressionEvaluationManager {
         result,
         error: wasThrown ? exceptionDetails : null,
         expression,
-        id: transactionId,
+        id: transactionId
       });
     }
-    this._runtimeDispatcher.evaluate(
-      expression,
-      objectGroup,
-      callback.bind(this),
-    );
+    this._runtimeDispatcher.evaluate(expression, objectGroup, callback.bind(this));
   }
 
-  getProperties(id: number, objectId: RemoteObjectId): void {
-    const remoteObject = this._remoteObjectManager.getRemoteObjectFromId(
-      objectId,
-    );
+  getProperties(id, objectId) {
+    const remoteObject = this._remoteObjectManager.getRemoteObjectFromId(objectId);
     if (remoteObject == null) {
-      reportError(`Cannot find object id ${objectId} for getProperties()`);
+      (0, (_EventReporter || _load_EventReporter()).reportError)(`Cannot find object id ${objectId} for getProperties()`);
       return;
     }
     remoteObject.getProperties().then(response => {
       // TODO: exceptionDetails
-      const {result} = response;
+      const { result } = response;
       const expansionResult = this._propertiesToExpansionResult(result);
       this._raiseIPCEvent('GetPropertiesResponse', {
         result: expansionResult,
         // error, TODO
         objectId,
-        id,
+        id
       });
     });
   }
 
-  _propertiesToExpansionResult(
-    properties: Array<PropertyDescriptor>,
-  ): ?ExpansionResult {
-    return properties
-      .filter(({name, value}) => value != null)
-      .map(({name, value}) => {
-        invariant(value != null);
-        const {type, subtype, objectId, value: innerValue, description} = value;
-        if (objectId != null) {
-          this._remoteObjectManager.addObject(objectId);
-        }
-        return {
-          name,
-          value: {
-            type,
-            subtype,
-            objectId,
-            value: innerValue,
-            description,
-          },
-        };
-      });
-  }
+  _propertiesToExpansionResult(properties) {
+    return properties.filter(({ name, value }) => value != null).map(({ name, value }) => {
+      if (!(value != null)) {
+        throw new Error('Invariant violation: "value != null"');
+      }
 
-  updateCurrentFrameScope(scopes: Array<Scope>): void {
-    const scopesPromises = scopes.map(async scope => {
-      const scopeObjectId = scope.object.objectId;
-      invariant(
-        scopeObjectId != null,
-        'Engine returns a scope without objectId?',
-      );
-      const remoteObject = this._remoteObjectManager.addObject(scopeObjectId);
-      const response = await remoteObject.getProperties();
-
-      // TODO: deal with response.exceptionDetails.
-      const scopeVariables = this._propertiesToExpansionResult(response.result);
+      const { type, subtype, objectId, value: innerValue, description } = value;
+      if (objectId != null) {
+        this._remoteObjectManager.addObject(objectId);
+      }
       return {
-        name: scope.object.description,
-        scopeVariables,
-        scopeObjectId,
+        name,
+        value: {
+          type,
+          subtype,
+          objectId,
+          value: innerValue,
+          description
+        }
       };
     });
+  }
+
+  updateCurrentFrameScope(scopes) {
+    var _this = this;
+
+    const scopesPromises = scopes.map((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (scope) {
+        const scopeObjectId = scope.object.objectId;
+
+        if (!(scopeObjectId != null)) {
+          throw new Error('Engine returns a scope without objectId?');
+        }
+
+        const remoteObject = _this._remoteObjectManager.addObject(scopeObjectId);
+        const response = yield remoteObject.getProperties();
+
+        // TODO: deal with response.exceptionDetails.
+        const scopeVariables = _this._propertiesToExpansionResult(response.result);
+        return {
+          name: scope.object.description,
+          scopeVariables,
+          scopeObjectId
+        };
+      });
+
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })());
 
     Promise.all(scopesPromises).then(scopesData => {
       this._raiseIPCEvent('ScopesUpdate', scopesData);
     });
   }
 
-  clearPauseStates(): void {
+  clearPauseStates() {
     this._remoteObjectManager.clear();
   }
 
-  getEventObservable(): Observable<Array<mixed>> {
+  getEventObservable() {
     return this._evalutionEvent$.asObservable();
   }
 
   // Not a real IPC event, but simulate the chrome IPC events/responses
   // across bridge boundary.
-  _raiseIPCEvent(...args: Array<mixed>): void {
+  _raiseIPCEvent(...args) {
     this._evalutionEvent$.next(args);
   }
 }
+exports.default = ExpressionEvaluationManager;

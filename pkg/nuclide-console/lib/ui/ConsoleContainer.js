@@ -1,3 +1,69 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConsoleContainer = exports.WORKSPACE_VIEW_URI = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _viewableFromReactElement;
+
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../../commons-atom/viewableFromReactElement');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _RegExpFilter;
+
+function _load_RegExpFilter() {
+  return _RegExpFilter = require('nuclide-commons-ui/RegExpFilter');
+}
+
+var _getCurrentExecutorId;
+
+function _load_getCurrentExecutorId() {
+  return _getCurrentExecutorId = _interopRequireDefault(require('../getCurrentExecutorId'));
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('../redux/Actions'));
+}
+
+var _Console;
+
+function _load_Console() {
+  return _Console = _interopRequireDefault(require('./Console'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Other Nuclide packages (which cannot import this) depend on this URI. If this
+// needs to be changed, grep for CONSOLE_VIEW_URI and ensure that the URIs match.
+
+
+// since state is shared amongst instances, this rule is too risky
+/* eslint-disable react/no-unused-state */
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,103 +71,110 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AppState,
-  ConsolePersistedState,
-  DisplayableRecord,
-  Executor,
-  OutputProvider,
-  OutputProviderStatus,
-  Record,
-  Source,
-  Store,
-  WatchEditorFunction,
-} from '../types';
-import type {CreatePasteFunction} from '../../../nuclide-paste-base';
-import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/console';
 
-import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
-import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
-import getCurrentExecutorId from '../getCurrentExecutorId';
-import * as Actions from '../redux/Actions';
-import Console from './Console';
-import * as React from 'react';
-import {Observable, Subject} from 'rxjs';
-
-// since state is shared amongst instances, this rule is too risky
-/* eslint-disable react/no-unused-state */
-
-type Props = {
-  store: Store,
-  initialFilterText?: string,
-  initialEnableRegExpFilter?: boolean,
-  initialUnselectedSourceIds?: Array<string>,
-};
-
-type State = {
-  //
-  // State shared between all Console instances
-  //
-
-  createPasteFunction: ?CreatePasteFunction,
-  watchEditor: ?WatchEditorFunction,
-  currentExecutor: ?Executor,
-  providers: Map<string, OutputProvider>,
-  providerStatuses: Map<string, OutputProviderStatus>,
-  ready: boolean,
-  history: Array<string>,
-  sources: Array<Source>,
-  executors: Map<string, Executor>,
-  fontSize: number,
-
-  //
-  // State unique to this particular Console instance
-  //
-
-  displayableRecords: Array<DisplayableRecord>,
-  filterText: string,
-  enableRegExpFilter: boolean,
-  unselectedSourceIds: Array<string>,
-};
-
-type BoundActionCreators = {
-  execute: (code: string) => void,
-  selectExecutor: (executorId: string) => void,
-  clearRecords: () => void,
-};
-
-// Other Nuclide packages (which cannot import this) depend on this URI. If this
-// needs to be changed, grep for CONSOLE_VIEW_URI and ensure that the URIs match.
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
-
-const ERROR_TRANSCRIBING_MESSAGE =
-  "// Nuclide couldn't find the right text to display";
+const ERROR_TRANSCRIBING_MESSAGE = "// Nuclide couldn't find the right text to display";
 const INITIAL_RECORD_HEIGHT = 21;
 
 // NOTE: We're not accounting for the "store" prop being changed.
-export class ConsoleContainer extends React.Component<Props, State> {
-  _actionCreators: BoundActionCreators;
+class ConsoleContainer extends _react.Component {
 
-  // Associates Records with their display state (height, expansionStateId).
-  _displayableRecords: WeakMap<Record, DisplayableRecord>;
+  constructor(props) {
+    var _this;
 
-  _nextRecordId: number;
-  _statesSubscription: rxjs$ISubscription;
-  _stateChanges: Subject<void>;
-  _titleChanges: Observable<string>;
+    _this = super(props);
 
-  constructor(props: Props) {
-    super(props);
+    this._resetAllFilters = () => {
+      this._selectSources(this.state.sources.map(s => s.id));
+      this.setState({ filterText: '' });
+    };
+
+    this._createPaste = (0, _asyncToGenerator.default)(function* () {
+      const { createPasteFunction } = _this.state;
+      if (createPasteFunction == null) {
+        return;
+      }
+
+      const { displayableRecords } = _this._getFilterInfo();
+      const lines = displayableRecords.filter(function (displayable) {
+        return displayable.record.kind === 'message' || displayable.record.kind === 'request' || displayable.record.kind === 'response';
+      }).map(function (displayable) {
+        const record = displayable.record;
+        const level = record.level != null ? record.level.toString().toUpperCase() : 'LOG';
+        const timestamp = record.timestamp.toLocaleString();
+        const text = record.text || record.data && record.data.value || ERROR_TRANSCRIBING_MESSAGE;
+        return `[${level}][${record.sourceId}][${timestamp}]\t ${text}`;
+      }).join('\n');
+
+      if (lines === '') {
+        // Can't create an empty paste!
+        atom.notifications.addWarning('There is nothing in your console to Paste! Check your console filters and try again.');
+        return;
+      }
+
+      atom.notifications.addInfo('Creating Paste...');
+
+      try {
+        const uri = yield createPasteFunction(lines, {
+          title: 'Nuclide Console Paste'
+        }, 'console paste');
+        atom.notifications.addSuccess(`Created Paste at ${uri}`);
+      } catch (error) {
+        if (error.stdout == null) {
+          atom.notifications.addError(`Failed to create paste: ${String(error.message || error)}`);
+          return;
+        }
+        const errorMessages = error.stdout.trim().split('\n').map(JSON.parse).map(function (e) {
+          return e.message;
+        });
+        atom.notifications.addError('Failed to create paste', {
+          detail: errorMessages.join('\n'),
+          dismissable: true
+        });
+      }
+    });
+
+    this._selectSources = selectedSourceIds => {
+      const sourceIds = this.state.sources.map(source => source.id);
+      const unselectedSourceIds = sourceIds.filter(sourceId => selectedSourceIds.indexOf(sourceId) === -1);
+      this.setState({ unselectedSourceIds });
+    };
+
+    this._updateFilter = change => {
+      const { text, isRegExp } = change;
+      this.setState({
+        filterText: text,
+        enableRegExpFilter: isRegExp
+      });
+    };
+
+    this._handleDisplayableRecordHeightChange = (recordId, newHeight, callback) => {
+      const newDisplayableRecords = [];
+      this.state.displayableRecords.forEach(displayableRecord => {
+        if (displayableRecord.id === recordId) {
+          // Update the changed record.
+          const newDisplayableRecord = Object.assign({}, displayableRecord, {
+            height: newHeight
+          });
+          newDisplayableRecords.push(newDisplayableRecord);
+          this._displayableRecords.set(displayableRecord.record, newDisplayableRecord);
+        } else {
+          newDisplayableRecords.push(displayableRecord);
+        }
+      });
+      this.setState({
+        displayableRecords: newDisplayableRecords
+      }, callback);
+    };
+
     const {
       initialFilterText,
       initialEnableRegExpFilter,
-      initialUnselectedSourceIds,
+      initialUnselectedSourceIds
     } = props;
     this.state = {
       ready: false,
@@ -117,36 +190,29 @@ export class ConsoleContainer extends React.Component<Props, State> {
       sources: [],
       filterText: initialFilterText == null ? '' : initialFilterText,
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
-      unselectedSourceIds:
-        initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
+      unselectedSourceIds: initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds
     };
     this._nextRecordId = 0;
     this._displayableRecords = new WeakMap();
-    this._stateChanges = new Subject();
-    this._titleChanges = this._stateChanges
-      .map(() => this.state)
-      .distinctUntilChanged()
-      .map(() => this.getTitle())
-      .distinctUntilChanged();
+    this._stateChanges = new _rxjsBundlesRxMinJs.Subject();
+    this._titleChanges = this._stateChanges.map(() => this.state).distinctUntilChanged().map(() => this.getTitle()).distinctUntilChanged();
   }
 
-  componentDidUpdate(): void {
+  // Associates Records with their display state (height, expansionStateId).
+
+
+  componentDidUpdate() {
     this._stateChanges.next();
   }
 
-  getIconName(): string {
+  getIconName() {
     return 'terminal';
   }
 
-  getTitle(): string {
+  getTitle() {
     // If there's only one source selected, use its name in the tab title.
-    if (
-      this.state.sources.length - this.state.unselectedSourceIds.length ===
-      1
-    ) {
-      const selectedSource = this.state.sources.find(
-        source => this.state.unselectedSourceIds.indexOf(source.id) === -1,
-      );
+    if (this.state.sources.length - this.state.unselectedSourceIds.length === 1) {
+      const selectedSource = this.state.sources.find(source => this.state.unselectedSourceIds.indexOf(source.id) === -1);
       if (selectedSource) {
         return `Console: ${selectedSource.name}`;
       }
@@ -154,288 +220,143 @@ export class ConsoleContainer extends React.Component<Props, State> {
     return 'Console';
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'bottom';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  onDidChangeTitle(callback: (title: string) => mixed): IDisposable {
-    return new UniversalDisposable(this._titleChanges.subscribe(callback));
+  onDidChangeTitle(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._titleChanges.subscribe(callback));
   }
 
   componentDidMount() {
     // $FlowFixMe: How do we tell flow about Symbol.observable?
-    this._statesSubscription = Observable.from(this.props.store)
-      .audit(() => nextAnimationFrame)
-      .subscribe(state => {
-        const currentExecutorId = getCurrentExecutorId(state);
-        const currentExecutor =
-          currentExecutorId != null
-            ? state.executors.get(currentExecutorId)
-            : null;
-        this.setState({
-          createPasteFunction: state.createPasteFunction,
-          watchEditor: state.watchEditor,
-          ready: true,
-          currentExecutor,
-          executors: state.executors,
-          providers: state.providers,
-          providerStatuses: state.providerStatuses,
-          displayableRecords: this._toDisplayableRecords(state.records),
-          history: state.history,
-          sources: getSources(state),
-          fontSize: state.fontSize,
-        });
+    this._statesSubscription = _rxjsBundlesRxMinJs.Observable.from(this.props.store).audit(() => (_observable || _load_observable()).nextAnimationFrame).subscribe(state => {
+      const currentExecutorId = (0, (_getCurrentExecutorId || _load_getCurrentExecutorId()).default)(state);
+      const currentExecutor = currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
+      this.setState({
+        createPasteFunction: state.createPasteFunction,
+        watchEditor: state.watchEditor,
+        ready: true,
+        currentExecutor,
+        executors: state.executors,
+        providers: state.providers,
+        providerStatuses: state.providerStatuses,
+        displayableRecords: this._toDisplayableRecords(state.records),
+        history: state.history,
+        sources: getSources(state),
+        fontSize: state.fontSize
       });
+    });
   }
 
   componentWillUnmount() {
     this._statesSubscription.unsubscribe();
   }
 
-  copy(): atom$PaneItem {
-    return viewableFromReactElement(
-      <ConsoleContainer
-        store={this.props.store}
-        initialFilterText={this.state.filterText}
-        initialEnableRegExpFilter={this.state.enableRegExpFilter}
-        initialUnselectedSourceIds={this.state.unselectedSourceIds}
-      />,
-    );
+  copy() {
+    return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_react.createElement(ConsoleContainer, {
+      store: this.props.store,
+      initialFilterText: this.state.filterText,
+      initialEnableRegExpFilter: this.state.enableRegExpFilter,
+      initialUnselectedSourceIds: this.state.unselectedSourceIds
+    }));
   }
 
-  _getBoundActionCreators(): BoundActionCreators {
+  _getBoundActionCreators() {
     if (this._actionCreators == null) {
-      const {store} = this.props;
+      const { store } = this.props;
       this._actionCreators = {
         execute: code => {
-          store.dispatch(Actions.execute(code));
+          store.dispatch((_Actions || _load_Actions()).execute(code));
         },
         selectExecutor: executorId => {
-          store.dispatch(Actions.selectExecutor(executorId));
+          store.dispatch((_Actions || _load_Actions()).selectExecutor(executorId));
         },
         clearRecords: () => {
-          store.dispatch(Actions.clearRecords());
-        },
+          store.dispatch((_Actions || _load_Actions()).clearRecords());
+        }
       };
     }
     return this._actionCreators;
   }
 
-  _resetAllFilters = (): void => {
-    this._selectSources(this.state.sources.map(s => s.id));
-    this.setState({filterText: ''});
-  };
+  _getFilterInfo() {
+    const { pattern, invalid } = (0, (_RegExpFilter || _load_RegExpFilter()).getFilterPattern)(this.state.filterText, this.state.enableRegExpFilter);
 
-  _createPaste = async (): Promise<void> => {
-    const {createPasteFunction} = this.state;
-    if (createPasteFunction == null) {
-      return;
-    }
+    const selectedSourceIds = this.state.sources.map(source => source.id).filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
 
-    const {displayableRecords} = this._getFilterInfo();
-    const lines = displayableRecords
-      .filter(
-        displayable =>
-          displayable.record.kind === 'message' ||
-          displayable.record.kind === 'request' ||
-          displayable.record.kind === 'response',
-      )
-      .map(displayable => {
-        const record = displayable.record;
-        const level =
-          record.level != null ? record.level.toString().toUpperCase() : 'LOG';
-        const timestamp = record.timestamp.toLocaleString();
-        const text =
-          record.text ||
-          (record.data && record.data.value) ||
-          ERROR_TRANSCRIBING_MESSAGE;
-        return `[${level}][${record.sourceId}][${timestamp}]\t ${text}`;
-      })
-      .join('\n');
-
-    if (lines === '') {
-      // Can't create an empty paste!
-      atom.notifications.addWarning(
-        'There is nothing in your console to Paste! Check your console filters and try again.',
-      );
-      return;
-    }
-
-    atom.notifications.addInfo('Creating Paste...');
-
-    try {
-      const uri = await createPasteFunction(
-        lines,
-        {
-          title: 'Nuclide Console Paste',
-        },
-        'console paste',
-      );
-      atom.notifications.addSuccess(`Created Paste at ${uri}`);
-    } catch (error) {
-      if (error.stdout == null) {
-        atom.notifications.addError(
-          `Failed to create paste: ${String(error.message || error)}`,
-        );
-        return;
-      }
-      const errorMessages = error.stdout
-        .trim()
-        .split('\n')
-        .map(JSON.parse)
-        .map(e => e.message);
-      atom.notifications.addError('Failed to create paste', {
-        detail: errorMessages.join('\n'),
-        dismissable: true,
-      });
-    }
-  };
-
-  _getFilterInfo(): {
-    invalid: boolean,
-    selectedSourceIds: Array<string>,
-    displayableRecords: Array<DisplayableRecord>,
-  } {
-    const {pattern, invalid} = getFilterPattern(
-      this.state.filterText,
-      this.state.enableRegExpFilter,
-    );
-
-    const selectedSourceIds = this.state.sources
-      .map(source => source.id)
-      .filter(
-        sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1,
-      );
-
-    const displayableRecords = filterRecords(
-      this.state.displayableRecords,
-      selectedSourceIds,
-      pattern,
-      this.state.sources.length !== selectedSourceIds.length,
-    );
+    const displayableRecords = filterRecords(this.state.displayableRecords, selectedSourceIds, pattern, this.state.sources.length !== selectedSourceIds.length);
 
     return {
       invalid,
       selectedSourceIds,
-      displayableRecords,
+      displayableRecords
     };
   }
 
-  render(): React.Node {
+  render() {
     if (!this.state.ready) {
-      return <span />;
+      return _react.createElement('span', null);
     }
 
     const actionCreators = this._getBoundActionCreators();
     const {
       invalid,
       selectedSourceIds,
-      displayableRecords,
+      displayableRecords
     } = this._getFilterInfo();
-    const filteredRecordCount =
-      this.state.displayableRecords.length - displayableRecords.length;
+    const filteredRecordCount = this.state.displayableRecords.length - displayableRecords.length;
 
-    const createPaste =
-      this.state.createPasteFunction != null ? this._createPaste : null;
+    const createPaste = this.state.createPasteFunction != null ? this._createPaste : null;
 
     const watchEditor = this.state.watchEditor;
 
-    return (
-      <Console
-        invalidFilterInput={invalid}
-        execute={actionCreators.execute}
-        selectExecutor={actionCreators.selectExecutor}
-        clearRecords={actionCreators.clearRecords}
-        createPaste={createPaste}
-        watchEditor={watchEditor}
-        currentExecutor={this.state.currentExecutor}
-        unselectedSourceIds={this.state.unselectedSourceIds}
-        filterText={this.state.filterText}
-        enableRegExpFilter={this.state.enableRegExpFilter}
-        displayableRecords={displayableRecords}
-        filteredRecordCount={filteredRecordCount}
-        history={this.state.history}
-        sources={this.state.sources}
-        selectedSourceIds={selectedSourceIds}
-        selectSources={this._selectSources}
-        executors={this.state.executors}
-        getProvider={id => this.state.providers.get(id)}
-        updateFilter={this._updateFilter}
-        onDisplayableRecordHeightChange={
-          this._handleDisplayableRecordHeightChange
-        }
-        resetAllFilters={this._resetAllFilters}
-        fontSize={this.state.fontSize}
-      />
-    );
+    return _react.createElement((_Console || _load_Console()).default, {
+      invalidFilterInput: invalid,
+      execute: actionCreators.execute,
+      selectExecutor: actionCreators.selectExecutor,
+      clearRecords: actionCreators.clearRecords,
+      createPaste: createPaste,
+      watchEditor: watchEditor,
+      currentExecutor: this.state.currentExecutor,
+      unselectedSourceIds: this.state.unselectedSourceIds,
+      filterText: this.state.filterText,
+      enableRegExpFilter: this.state.enableRegExpFilter,
+      displayableRecords: displayableRecords,
+      filteredRecordCount: filteredRecordCount,
+      history: this.state.history,
+      sources: this.state.sources,
+      selectedSourceIds: selectedSourceIds,
+      selectSources: this._selectSources,
+      executors: this.state.executors,
+      getProvider: id => this.state.providers.get(id),
+      updateFilter: this._updateFilter,
+      onDisplayableRecordHeightChange: this._handleDisplayableRecordHeightChange,
+      resetAllFilters: this._resetAllFilters,
+      fontSize: this.state.fontSize
+    });
   }
 
-  serialize(): ConsolePersistedState {
-    const {filterText, enableRegExpFilter, unselectedSourceIds} = this.state;
+  serialize() {
+    const { filterText, enableRegExpFilter, unselectedSourceIds } = this.state;
     return {
       deserializer: 'nuclide.ConsoleContainer',
       filterText,
       enableRegExpFilter,
-      unselectedSourceIds,
+      unselectedSourceIds
     };
   }
-
-  _selectSources = (selectedSourceIds: Array<string>): void => {
-    const sourceIds = this.state.sources.map(source => source.id);
-    const unselectedSourceIds = sourceIds.filter(
-      sourceId => selectedSourceIds.indexOf(sourceId) === -1,
-    );
-    this.setState({unselectedSourceIds});
-  };
-
-  _updateFilter = (change: RegExpFilterChange): void => {
-    const {text, isRegExp} = change;
-    this.setState({
-      filterText: text,
-      enableRegExpFilter: isRegExp,
-    });
-  };
-
-  _handleDisplayableRecordHeightChange = (
-    recordId: number,
-    newHeight: number,
-    callback: () => void,
-  ): void => {
-    const newDisplayableRecords = [];
-    this.state.displayableRecords.forEach(displayableRecord => {
-      if (displayableRecord.id === recordId) {
-        // Update the changed record.
-        const newDisplayableRecord = {
-          ...displayableRecord,
-          height: newHeight,
-        };
-        newDisplayableRecords.push(newDisplayableRecord);
-        this._displayableRecords.set(
-          displayableRecord.record,
-          newDisplayableRecord,
-        );
-      } else {
-        newDisplayableRecords.push(displayableRecord);
-      }
-    });
-    this.setState(
-      {
-        displayableRecords: newDisplayableRecords,
-      },
-      callback,
-    );
-  };
 
   /**
    * Transforms the Records from the store into DisplayableRecords. This caches the result
    * per-ConsoleContainer instance because the same record can have different heights in different
    * containers.
    */
-  _toDisplayableRecords(records: Array<Record>): Array<DisplayableRecord> {
+  _toDisplayableRecords(records) {
     return records.map(record => {
       const displayableRecord = this._displayableRecords.get(record);
       if (displayableRecord != null) {
@@ -445,7 +366,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
         id: this._nextRecordId++,
         record,
         height: INITIAL_RECORD_HEIGHT,
-        expansionStateId: {},
+        expansionStateId: {}
       };
       this._displayableRecords.set(record, newDisplayableRecord);
       return newDisplayableRecord;
@@ -453,21 +374,19 @@ export class ConsoleContainer extends React.Component<Props, State> {
   }
 }
 
-function getSources(state: AppState): Array<Source> {
+exports.ConsoleContainer = ConsoleContainer;
+function getSources(state) {
   // Convert the providers to a map of sources.
-  const mapOfSources = new Map(
-    Array.from(state.providers.entries()).map(([k, provider]) => {
-      const source = {
-        id: provider.id,
-        name: provider.id,
-        status: state.providerStatuses.get(provider.id) || 'stopped',
-        start:
-          typeof provider.start === 'function' ? provider.start : undefined,
-        stop: typeof provider.stop === 'function' ? provider.stop : undefined,
-      };
-      return [k, source];
-    }),
-  );
+  const mapOfSources = new Map(Array.from(state.providers.entries()).map(([k, provider]) => {
+    const source = {
+      id: provider.id,
+      name: provider.id,
+      status: state.providerStatuses.get(provider.id) || 'stopped',
+      start: typeof provider.start === 'function' ? provider.start : undefined,
+      stop: typeof provider.stop === 'function' ? provider.stop : undefined
+    };
+    return [k, source];
+  }));
 
   // Some providers may have been unregistered, but still have records. Add sources for them too.
   // TODO: Iterating over all the records to get this every time we get a new record is inefficient.
@@ -479,7 +398,7 @@ function getSources(state: AppState): Array<Source> {
         name: record.sourceId,
         status: 'stopped',
         start: undefined,
-        stop: undefined,
+        stop: undefined
       });
     }
   }
@@ -487,26 +406,18 @@ function getSources(state: AppState): Array<Source> {
   return Array.from(mapOfSources.values());
 }
 
-function filterRecords(
-  displayableRecords: Array<DisplayableRecord>,
-  selectedSourceIds: Array<string>,
-  filterPattern: ?RegExp,
-  filterSources: boolean,
-): Array<DisplayableRecord> {
+function filterRecords(displayableRecords, selectedSourceIds, filterPattern, filterSources) {
   if (!filterSources && filterPattern == null) {
     return displayableRecords;
   }
 
-  return displayableRecords.filter(({record}) => {
+  return displayableRecords.filter(({ record }) => {
     // Only filter regular messages
     if (record.kind !== 'message') {
       return true;
     }
 
     const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
-    return (
-      sourceMatches &&
-      (filterPattern == null || filterPattern.test(record.text))
-    );
+    return sourceMatches && (filterPattern == null || filterPattern.test(record.text));
   });
 }

@@ -1,56 +1,63 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {HasteSettings} from '../getConfig';
-import type {JSExport} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import crypto from 'crypto';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import os from 'os';
-import DiskCache from '../../../commons-node/DiskCache';
-import {serializeHasteSettings} from '../getConfig';
+var _crypto = _interopRequireDefault(require('crypto'));
 
-const CACHE_DIR = nuclideUri.join(os.tmpdir(), 'nuclide-js-imports-cache');
-const CACHE_VERSION = 1; // Bump this for any breaking changes.
+var _nuclideUri;
 
-export type CacheParams = {
-  root: string,
-  hasteSettings: HasteSettings,
-};
-
-export type FileWithHash = {
-  filePath: string,
-  sha1: string,
-};
-
-function getCachePath({root, hasteSettings}: CacheParams): string {
-  const hash = crypto.createHash('sha1');
-  hash.update(`${root}:${CACHE_VERSION}\n`);
-  // Should cover all fields in HasteSettings. Sadly, it's not JSON-serializable.
-  hash.update(serializeHasteSettings(hasteSettings));
-  const fileName =
-    nuclideUri.basename(root) + '-' + hash.digest('hex').substr(0, 8);
-  return nuclideUri.join(CACHE_DIR, fileName);
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
 }
 
-function getCacheKey({filePath, sha1}: FileWithHash) {
+var _os = _interopRequireDefault(require('os'));
+
+var _DiskCache;
+
+function _load_DiskCache() {
+  return _DiskCache = _interopRequireDefault(require('../../../commons-node/DiskCache'));
+}
+
+var _getConfig;
+
+function _load_getConfig() {
+  return _getConfig = require('../getConfig');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const CACHE_DIR = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), 'nuclide-js-imports-cache'); /**
+                                                                                                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                       * All rights reserved.
+                                                                                                                       *
+                                                                                                                       * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                       * the root directory of this source tree.
+                                                                                                                       *
+                                                                                                                       * 
+                                                                                                                       * @format
+                                                                                                                       */
+
+const CACHE_VERSION = 1; // Bump this for any breaking changes.
+
+function getCachePath({ root, hasteSettings }) {
+  const hash = _crypto.default.createHash('sha1');
+  hash.update(`${root}:${CACHE_VERSION}\n`);
+  // Should cover all fields in HasteSettings. Sadly, it's not JSON-serializable.
+  hash.update((0, (_getConfig || _load_getConfig()).serializeHasteSettings)(hasteSettings));
+  const fileName = (_nuclideUri || _load_nuclideUri()).default.basename(root) + '-' + hash.digest('hex').substr(0, 8);
+  return (_nuclideUri || _load_nuclideUri()).default.join(CACHE_DIR, fileName);
+}
+
+function getCacheKey({ filePath, sha1 }) {
   // We can truncate the sha1 hash, as collisions are very unlikely.
   return `${filePath}:${sha1.substr(0, 8)}`;
 }
 
-export default class ExportCache extends DiskCache<
-  FileWithHash,
-  Array<JSExport>,
-> {
-  constructor(params: CacheParams) {
+class ExportCache extends (_DiskCache || _load_DiskCache()).default {
+  constructor(params) {
     super(getCachePath(params), getCacheKey);
   }
 }
+exports.default = ExportCache;

@@ -1,57 +1,74 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import {Section} from '../../nuclide-ui/Section';
-import {track} from '../../nuclide-analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProviderContainer = undefined;
 
-type Props = {
-  title: string,
-  children?: React.Element<any>,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-type State = {
-  collapsed: boolean,
-};
+var _Section;
+
+function _load_Section() {
+  return _Section = require('../../nuclide-ui/Section');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * Each context provider view is rendered inside a ProviderContainer.
  */
-export class ProviderContainer extends React.Component<Props, State> {
-  constructor(props: Props): void {
+class ProviderContainer extends _react.Component {
+  constructor(props) {
     super(props);
+
+    this._setCollapsed = collapsed => {
+      this.setState({ collapsed });
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-context-view-toggle-provider', {
+        title: this.props.title,
+        collapsed: String(collapsed)
+      });
+    };
+
     this.state = {
-      collapsed: false,
+      collapsed: false
     };
   }
 
-  render(): React.Node {
-    return (
-      <div className="nuclide-context-view-provider-container">
-        <Section
-          headline={this.props.title}
-          collapsable={true}
-          onChange={this._setCollapsed}
-          collapsed={this.state.collapsed}>
-          <div className="padded">{this.props.children}</div>
-        </Section>
-      </div>
+  render() {
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-context-view-provider-container' },
+      _react.createElement(
+        (_Section || _load_Section()).Section,
+        {
+          headline: this.props.title,
+          collapsable: true,
+          onChange: this._setCollapsed,
+          collapsed: this.state.collapsed },
+        _react.createElement(
+          'div',
+          { className: 'padded' },
+          this.props.children
+        )
+      )
     );
   }
 
-  _setCollapsed = (collapsed: boolean): void => {
-    this.setState({collapsed});
-    track('nuclide-context-view-toggle-provider', {
-      title: this.props.title,
-      collapsed: String(collapsed),
-    });
-  };
 }
+exports.ProviderContainer = ProviderContainer; /**
+                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the license found in the LICENSE file in
+                                                * the root directory of this source tree.
+                                                *
+                                                * 
+                                                * @format
+                                                */

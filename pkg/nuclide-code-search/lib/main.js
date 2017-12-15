@@ -1,3 +1,25 @@
+'use strict';
+
+var _CodeSearchProvider;
+
+function _load_CodeSearchProvider() {
+  return _CodeSearchProvider = require('./CodeSearchProvider');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,31 +27,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
-
-import {CodeSearchProvider} from './CodeSearchProvider';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
 class Activation {
-  _disposables: UniversalDisposable;
 
-  constructor(state: ?mixed) {
+  constructor(state) {
     // TODO(wallace): Add activation code here.
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  registerProvider(): Provider<FileResult> {
-    return CodeSearchProvider;
+  registerProvider() {
+    return (_CodeSearchProvider || _load_CodeSearchProvider()).CodeSearchProvider;
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

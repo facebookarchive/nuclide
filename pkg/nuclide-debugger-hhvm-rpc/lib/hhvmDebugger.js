@@ -1,26 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import child_process from 'child_process';
-import assert from 'assert';
-import {OutputEvent} from 'vscode-debugadapter';
+var _child_process = _interopRequireDefault(require('child_process'));
 
-const TWO_CRLF = '\r\n\r\n';
+var _assert = _interopRequireDefault(require('assert'));
+
+var _vscodeDebugadapter;
+
+function _load_vscodeDebugadapter() {
+  return _vscodeDebugadapter = require('vscode-debugadapter');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const TWO_CRLF = '\r\n\r\n'; /**
+                              * Copyright (c) 2015-present, Facebook, Inc.
+                              * All rights reserved.
+                              *
+                              * This source code is licensed under the license found in the LICENSE file in
+                              * the root directory of this source tree.
+                              *
+                              * 
+                              * @format
+                              */
+
 const CONTENT_LENGTH_PATTERN = new RegExp('Content-Length: (\\d+)');
 
 class HHVMDebuggerWrapper {
-  _sequenceNumber: number;
-  _currentOutputData: string;
-  _currentInputData: string;
-  _currentContentLength: number;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -41,7 +46,7 @@ class HHVMDebuggerWrapper {
         this._launchTarget();
         break;
       default:
-        assert(false);
+        (0, _assert.default)(false);
     }
   }
 
@@ -58,23 +63,23 @@ class HHVMDebuggerWrapper {
       stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
       // When the wrapper exits, so does the target.
       detached: false,
-      env: process.env,
+      env: process.env
     };
 
-    const targetProcess = child_process.spawn(hhvmPath, hhvmArgs, options);
+    const targetProcess = _child_process.default.spawn(hhvmPath, hhvmArgs, options);
 
     // Exit with the same error code the target exits with.
     targetProcess.on('exit', code => process.exit(code));
 
     // Wrap any stdout from the target into a VS Code stdout event.
     targetProcess.stdout.on('data', chunk => {
-      const block: string = chunk.toString();
+      const block = chunk.toString();
       this._writeOutputEvent('stdout', block);
     });
 
     // Wrap any stderr from the target into a VS Code stderr event.
     targetProcess.stderr.on('data', chunk => {
-      const block: string = chunk.toString();
+      const block = chunk.toString();
       this._writeOutputEvent('stderr', block);
     });
 
@@ -93,9 +98,7 @@ class HHVMDebuggerWrapper {
           obj.seq = ++this._sequenceNumber;
           this._writeOutputWithHeader(JSON.stringify(obj));
         } catch (e) {
-          process.stderr.write(
-            `Error parsing message from target: ${e.toString()}: ${message}`,
-          );
+          process.stderr.write(`Error parsing message from target: ${e.toString()}: ${message}`);
         }
 
         // Advance to idx + 1 (lose the NULL char)
@@ -150,25 +153,23 @@ class HHVMDebuggerWrapper {
     // Chop the Content-Length header off the input data and start looking for
     // the message.
     this._currentContentLength = parseInt(match[1], 10);
-    this._currentInputData = this._currentInputData.substr(
-      idx + TWO_CRLF.length,
-    );
+    this._currentInputData = this._currentInputData.substr(idx + TWO_CRLF.length);
   }
 
-  _writeOutputEvent(eventType: string, message: string) {
-    const outputEvent: OutputEvent = {
+  _writeOutputEvent(eventType, message) {
+    const outputEvent = {
       seq: ++this._sequenceNumber,
       type: 'event',
       event: 'output',
       body: {
         category: eventType,
-        output: message,
-      },
+        output: message
+      }
     };
     this._writeOutputWithHeader(JSON.stringify(outputEvent));
   }
 
-  _writeOutputWithHeader(output: string) {
+  _writeOutputWithHeader(output) {
     const length = Buffer.byteLength(output, 'utf8');
     process.stdout.write('Content-Length: ' + length + TWO_CRLF, 'utf8');
     process.stdout.write(output, 'utf8');

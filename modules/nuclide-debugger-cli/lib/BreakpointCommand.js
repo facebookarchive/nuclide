@@ -1,34 +1,55 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
-import type {DebuggerInterface, BreakpointSetResult} from './DebuggerInterface';
-import type {ConsoleIO} from './ConsoleIO';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import BreakpointDeleteCommand from './BreakpointDeleteCommand';
-import BreakpointDisableCommand from './BreakpointDisableCommand';
-import BreakpointEnableCommand from './BreakpointEnableCommand';
-import BreakpointListCommand from './BreakpointListCommand';
-import CommandDispatcher from './CommandDispatcher';
-import HelpCommand from './HelpCommand';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class BreakpointCommand implements Command {
-  name = 'breakpoint';
+var _BreakpointDeleteCommand;
 
-  // $TODO this will need more thorough help which will require extending the
-  // help system to support subcommands
-  helpText = 'Sets a breakpoint on the target.';
+function _load_BreakpointDeleteCommand() {
+  return _BreakpointDeleteCommand = _interopRequireDefault(require('./BreakpointDeleteCommand'));
+}
 
-  detailedHelpText = `
+var _BreakpointDisableCommand;
+
+function _load_BreakpointDisableCommand() {
+  return _BreakpointDisableCommand = _interopRequireDefault(require('./BreakpointDisableCommand'));
+}
+
+var _BreakpointEnableCommand;
+
+function _load_BreakpointEnableCommand() {
+  return _BreakpointEnableCommand = _interopRequireDefault(require('./BreakpointEnableCommand'));
+}
+
+var _BreakpointListCommand;
+
+function _load_BreakpointListCommand() {
+  return _BreakpointListCommand = _interopRequireDefault(require('./BreakpointListCommand'));
+}
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+var _HelpCommand;
+
+function _load_HelpCommand() {
+  return _HelpCommand = _interopRequireDefault(require('./HelpCommand'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BreakpointCommand {
+
+  constructor(con, debug) {
+    this.name = 'breakpoint';
+    this.helpText = 'Sets a breakpoint on the target.';
+    this.detailedHelpText = `
 breakpoint [subcommand | [source-file:]line]
 
 Sets a breakpoint, or operates on existing breakpoints.
@@ -61,80 +82,90 @@ The breakpoint command has several subcommands:
 * 'list' will list all existing breakpoints
   `;
 
-  _debugger: DebuggerInterface;
-  _console: ConsoleIO;
-  _dispatcher: CommandDispatcher;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
-    this._dispatcher = new CommandDispatcher();
+    this._dispatcher = new (_CommandDispatcher || _load_CommandDispatcher()).default();
 
-    this._dispatcher.registerCommand(new BreakpointDeleteCommand(debug));
-    this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
-    this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
-    this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));
-    this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
+    this._dispatcher.registerCommand(new (_BreakpointDeleteCommand || _load_BreakpointDeleteCommand()).default(debug));
+    this._dispatcher.registerCommand(new (_BreakpointDisableCommand || _load_BreakpointDisableCommand()).default(debug));
+    this._dispatcher.registerCommand(new (_BreakpointEnableCommand || _load_BreakpointEnableCommand()).default(debug));
+    this._dispatcher.registerCommand(new (_BreakpointListCommand || _load_BreakpointListCommand()).default(con, debug));
+    this._dispatcher.registerCommand(new (_HelpCommand || _load_HelpCommand()).default(con, this._dispatcher));
   }
 
-  async execute(args: string[]): Promise<void> {
-    let result: ?BreakpointSetResult;
+  // $TODO this will need more thorough help which will require extending the
+  // help system to support subcommands
 
-    const breakpointSpec = args[0];
-    if (breakpointSpec == null) {
-      result = await this._setBreakpointHere();
-    } else {
-      const linePattern = /^(\d+)$/;
-      const lineMatch = breakpointSpec.match(linePattern);
-      if (lineMatch != null) {
-        result = await this._setBreakpointHere(parseInt(lineMatch[1], 10));
+
+  execute(args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      let result;
+
+      const breakpointSpec = args[0];
+      if (breakpointSpec == null) {
+        result = yield _this._setBreakpointHere();
       } else {
-        const sourceBreakPattern = /^(.+):(\d+)$/;
-        const sourceMatch = breakpointSpec.match(sourceBreakPattern);
-        if (sourceMatch != null) {
-          const [, path, line] = sourceMatch;
-          result = await this._debugger.setSourceBreakpoint(
-            path,
-            parseInt(line, 10),
-          );
+        const linePattern = /^(\d+)$/;
+        const lineMatch = breakpointSpec.match(linePattern);
+        if (lineMatch != null) {
+          result = yield _this._setBreakpointHere(parseInt(lineMatch[1], 10));
+        } else {
+          const sourceBreakPattern = /^(.+):(\d+)$/;
+          const sourceMatch = breakpointSpec.match(sourceBreakPattern);
+          if (sourceMatch != null) {
+            const [, path, line] = sourceMatch;
+            result = yield _this._debugger.setSourceBreakpoint(path, parseInt(line, 10));
+          }
         }
       }
-    }
 
-    if (result != null) {
-      this._displayBreakpointResult(result);
-      return;
-    }
+      if (result != null) {
+        _this._displayBreakpointResult(result);
+        return;
+      }
 
-    // $TODO function breakpoints - not implementing yet because none of the
-    // supported adapters support them
+      // $TODO function breakpoints - not implementing yet because none of the
+      // supported adapters support them
 
-    await this._dispatcher.executeTokenizedLine(args);
+      yield _this._dispatcher.executeTokenizedLine(args);
+    })();
   }
 
-  _displayBreakpointResult(result: BreakpointSetResult): void {
+  _displayBreakpointResult(result) {
     this._console.outputLine(`Breakpoint ${result.index} set.`);
     if (result.message != null) {
       this._console.outputLine(result.message);
     }
   }
 
-  async _setBreakpointHere(line: ?number): Promise<BreakpointSetResult> {
-    const frame = await this._debugger.getCurrentStackFrame();
-    if (frame == null) {
-      throw new Error('Cannot set breakpoint here, no current stack frame.');
-    }
+  _setBreakpointHere(line) {
+    var _this2 = this;
 
-    if (frame.source == null || frame.source.path == null) {
-      throw new Error(
-        'Cannot set breakpoint here, current stack frame has no source.',
-      );
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const frame = yield _this2._debugger.getCurrentStackFrame();
+      if (frame == null) {
+        throw new Error('Cannot set breakpoint here, no current stack frame.');
+      }
 
-    const result = await this._debugger.setSourceBreakpoint(
-      frame.source.path,
-      line == null ? frame.line : line,
-    );
-    return result;
+      if (frame.source == null || frame.source.path == null) {
+        throw new Error('Cannot set breakpoint here, current stack frame has no source.');
+      }
+
+      const result = yield _this2._debugger.setSourceBreakpoint(frame.source.path, line == null ? frame.line : line);
+      return result;
+    })();
   }
 }
+exports.default = BreakpointCommand; /**
+                                      * Copyright (c) 2017-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the BSD-style license found in the
+                                      * LICENSE file in the root directory of this source tree. An additional grant
+                                      * of patent rights can be found in the PATENTS file in the same directory.
+                                      *
+                                      * 
+                                      * @format
+                                      */

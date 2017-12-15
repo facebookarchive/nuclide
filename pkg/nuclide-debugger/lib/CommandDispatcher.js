@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _NuclideProtocolParser;
+
+function _load_NuclideProtocolParser() {
+  return _NuclideProtocolParser = _interopRequireDefault(require('./Protocol/NuclideProtocolParser'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _BridgeAdapter;
+
+function _load_BridgeAdapter() {
+  return _BridgeAdapter = _interopRequireDefault(require('./Protocol/BridgeAdapter'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./Protocol/EventReporter');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// eslint-disable-next-line rulesdir/no-commonjs
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,90 +42,83 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IPCEvent} from './types';
-import type {PausedEvent} from 'nuclide-debugger-common/protocol-types';
-
-// eslint-disable-next-line rulesdir/no-commonjs
 require('./Protocol/Object');
-import InspectorBackendClass from './Protocol/NuclideProtocolParser';
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import BridgeAdapter from './Protocol/BridgeAdapter';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {reportError} from './Protocol/EventReporter';
 
 /**
  * Class that dispatches Nuclide commands to debugger engine.
  * This is used to abstract away the underlying implementation for command dispatching
  * and allows us to switch between chrome IPC and new non-chrome channel.
  */
-export default class CommandDispatcher {
-  _sessionSubscriptions: ?UniversalDisposable;
-  _bridgeAdapter: ?BridgeAdapter;
-  _getIsReadonlyTarget: () => boolean;
-  _shouldFilterBreak: (pausedEvent: PausedEvent) => boolean;
+class CommandDispatcher {
 
-  constructor(
-    getIsReadonlyTarget: () => boolean,
-    shouldFilterBreak: (pausedEvent: PausedEvent) => boolean,
-  ) {
+  constructor(getIsReadonlyTarget, shouldFilterBreak) {
     this._getIsReadonlyTarget = getIsReadonlyTarget;
     this._shouldFilterBreak = shouldFilterBreak;
   }
 
-  setupChromeChannel(): void {
+  setupChromeChannel() {
     this._ensureSessionCreated();
     // Do not bother setup load if new channel is enabled.
 
-    invariant(this._bridgeAdapter != null);
+    if (!(this._bridgeAdapter != null)) {
+      throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+    }
+
     this._bridgeAdapter.enable();
   }
 
-  async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
-    this._ensureSessionCreated();
-    const dispatchers = await InspectorBackendClass.bootstrap(debuggerInstance);
-    this._bridgeAdapter = new BridgeAdapter(
-      dispatchers,
-      this._getIsReadonlyTarget,
-      this._shouldFilterBreak,
-    );
-    invariant(this._sessionSubscriptions != null);
-    this._sessionSubscriptions.add(() => {
-      if (this._bridgeAdapter != null) {
-        this._bridgeAdapter.dispose();
-        this._bridgeAdapter = null;
+  setupNuclideChannel(debuggerInstance) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._ensureSessionCreated();
+      const dispatchers = yield (_NuclideProtocolParser || _load_NuclideProtocolParser()).default.bootstrap(debuggerInstance);
+      _this._bridgeAdapter = new (_BridgeAdapter || _load_BridgeAdapter()).default(dispatchers, _this._getIsReadonlyTarget, _this._shouldFilterBreak);
+
+      if (!(_this._sessionSubscriptions != null)) {
+        throw new Error('Invariant violation: "this._sessionSubscriptions != null"');
       }
-    });
+
+      _this._sessionSubscriptions.add(function () {
+        if (_this._bridgeAdapter != null) {
+          _this._bridgeAdapter.dispose();
+          _this._bridgeAdapter = null;
+        }
+      });
+    })();
   }
 
-  _ensureSessionCreated(): void {
+  _ensureSessionCreated() {
     if (this._sessionSubscriptions == null) {
-      this._sessionSubscriptions = new UniversalDisposable();
+      this._sessionSubscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
   }
 
-  cleanupSessionState(): void {
+  cleanupSessionState() {
     if (this._sessionSubscriptions != null) {
       this._sessionSubscriptions.dispose();
       this._sessionSubscriptions = null;
     }
   }
 
-  send(...args: Array<any>): void {
+  send(...args) {
     this._sendViaNuclideChannel(...args);
   }
 
-  getEventObservable(): Observable<IPCEvent> {
-    invariant(this._bridgeAdapter != null);
+  getEventObservable() {
+    if (!(this._bridgeAdapter != null)) {
+      throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+    }
+
     return this._bridgeAdapter.getEventObservable();
   }
 
-  _sendViaNuclideChannel(...args: Array<any>): void {
+  _sendViaNuclideChannel(...args) {
     if (this._bridgeAdapter == null) {
       return;
     }
@@ -160,18 +190,21 @@ export default class CommandDispatcher {
         this._bridgeAdapter.setShowDisassembly(args[1]);
         break;
       default:
-        reportError(`Command ${args[0]} is not implemented yet.`);
+        (0, (_EventReporter || _load_EventReporter()).reportError)(`Command ${args[0]} is not implemented yet.`);
         break;
     }
   }
 
-  _triggerDebuggerAction(actionId: string): void {
-    invariant(this._bridgeAdapter != null);
+  _triggerDebuggerAction(actionId) {
+    if (!(this._bridgeAdapter != null)) {
+      throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+    }
+
     switch (actionId) {
       case 'debugger.toggle-pause':
         // TODO[jetan]: 'debugger.toggle-pause' needs to implement state management which
         // I haven't think well yet so forward to chrome for now.
-        reportError('toggle-pause is not implemented yet.');
+        (0, (_EventReporter || _load_EventReporter()).reportError)('toggle-pause is not implemented yet.');
         break;
       case 'debugger.step-over':
         this._bridgeAdapter.stepOver();
@@ -186,9 +219,8 @@ export default class CommandDispatcher {
         this._bridgeAdapter.resume();
         break;
       default:
-        throw Error(
-          `_triggerDebuggerAction: unrecognized actionId: ${actionId}`,
-        );
+        throw Error(`_triggerDebuggerAction: unrecognized actionId: ${actionId}`);
     }
   }
 }
+exports.default = CommandDispatcher;
