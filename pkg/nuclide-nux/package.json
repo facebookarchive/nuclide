@@ -27,5 +27,10 @@
       }
     }
   },
+  "activationCommands": {
+    "atom-workspace": [
+      "DEPRECATED: Enable unused parts of Nuclide"
+    ]
+  },
   "private": false
 }
