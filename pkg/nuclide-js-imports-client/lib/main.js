@@ -82,6 +82,7 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     disableForSelector: null,
     autocompleteCacherConfig: null,
     onDidInsertSuggestionAnalyticsEventName: 'jsimports.autocomplete-chosen',
+    trackAdditionalInfo: false,
   };
 
   const codeActionConfig: CodeActionConfig = {

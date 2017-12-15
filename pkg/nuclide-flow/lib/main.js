@@ -258,6 +258,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       },
       onDidInsertSuggestionAnalyticsEventName:
         'nuclide-flow.autocomplete-chosen',
+      trackAdditionalInfo: false,
     },
     diagnostics: (await shouldUsePushDiagnostics())
       ? {

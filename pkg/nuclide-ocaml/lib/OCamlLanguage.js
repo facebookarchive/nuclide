@@ -110,6 +110,7 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       analyticsEventName: 'ocaml.getAutocompleteSuggestions',
       autocompleteCacherConfig: null,
       onDidInsertSuggestionAnalyticsEventName: 'ocaml.autocompleteChosen',
+      trackAdditionalInfo: false,
     },
     diagnostics: {
       version: '0.2.0',

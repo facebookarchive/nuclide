@@ -76,6 +76,7 @@ async function createLanguageService(): Promise<
     disableForSelector: null,
     autocompleteCacherConfig: null,
     onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
+    trackAdditionalInfo: false,
   };
 
   const atomConfig: AtomLanguageServiceConfig = {

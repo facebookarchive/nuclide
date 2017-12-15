@@ -156,6 +156,7 @@ async function createLanguageService(): Promise<
             updateResults: hackUpdateAutocompleteResults,
           },
       onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
+      trackAdditionalInfo: true,
     },
     diagnostics: {
       version: '0.2.0',

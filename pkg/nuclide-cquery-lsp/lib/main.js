@@ -400,6 +400,7 @@ class Activation {
         },
         analyticsEventName: 'cquery.getAutocompleteSuggestions',
         onDidInsertSuggestionAnalyticsEventName: 'cquery.autocomplete-chosen',
+        trackAdditionalInfo: false,
       },
       definition: {
         version: '0.1.0',

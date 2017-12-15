@@ -46,6 +46,7 @@ export type AutocompleteConfig = {|
   analyticsEventName: string,
   onDidInsertSuggestionAnalyticsEventName: string,
   autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
+  trackAdditionalInfo: boolean,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -60,6 +61,9 @@ export class AutocompleteProvider<T: LanguageService> {
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
+  // _trackAdditionalInfo enables logging of the completions chosen and the
+  // replaced prefixes.
+  _trackAdditionalInfo: boolean;
 
   constructor(
     name: string,
@@ -73,6 +77,7 @@ export class AutocompleteProvider<T: LanguageService> {
     onDidInsertSuggestionAnalyticsEventName: string,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
     connectionToLanguageService: ConnectionCache<T>,
+    trackAdditionalInfo: boolean,
   ) {
     this.name = name;
     this.selector = selector;
@@ -82,6 +87,7 @@ export class AutocompleteProvider<T: LanguageService> {
     this.excludeLowerPriority = excludeLowerPriority;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
+    this._trackAdditionalInfo = trackAdditionalInfo;
 
     if (autocompleteCacherConfig != null) {
       this._autocompleteCacher = new AutocompleteCacher(
@@ -92,11 +98,23 @@ export class AutocompleteProvider<T: LanguageService> {
 
     this._onDidInsertSuggestion = onDidInsertSuggestion;
 
-    this.onDidInsertSuggestion = arg => {
-      track(onDidInsertSuggestionAnalyticsEventName);
-      this._handleTextEdits(arg);
+    this.onDidInsertSuggestion = suggestionInsertedRequest => {
+      if (this._trackAdditionalInfo) {
+        const suggestion = suggestionInsertedRequest.suggestion;
+        let suggestionText = suggestion.text;
+        if (suggestionText == null) {
+          suggestionText = suggestion.snippet;
+        }
+        track(onDidInsertSuggestionAnalyticsEventName, {
+          replacementPrefix: suggestion.replacementPrefix,
+          suggestionText,
+        });
+      } else {
+        track(onDidInsertSuggestionAnalyticsEventName);
+      }
+      this._handleTextEdits(suggestionInsertedRequest);
       if (this._onDidInsertSuggestion != null) {
-        this._onDidInsertSuggestion(arg);
+        this._onDidInsertSuggestion(suggestionInsertedRequest);
       }
     };
   }
@@ -123,6 +141,7 @@ export class AutocompleteProvider<T: LanguageService> {
         config.onDidInsertSuggestionAnalyticsEventName,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
+        config.trackAdditionalInfo,
       ),
     );
   }
@@ -130,15 +149,26 @@ export class AutocompleteProvider<T: LanguageService> {
   getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<Completion>> {
-    return trackTiming(this._analyticsEventName, async () => {
-      let result;
-      if (this._autocompleteCacher != null) {
-        result = await this._autocompleteCacher.getSuggestions(request);
-      } else {
-        result = await this._getSuggestionsFromLanguageService(request);
-      }
-      return result != null ? result.items : null;
-    });
+    const values = {};
+    return trackTiming(
+      this._analyticsEventName,
+      async () => {
+        let result;
+        if (this._autocompleteCacher != null) {
+          result = await this._autocompleteCacher.getSuggestions(request);
+        } else {
+          result = await this._getSuggestionsFromLanguageService(request);
+        }
+        if (result != null) {
+          values.isEmpty = false;
+          return result.items;
+        } else {
+          values.isEmpty = true;
+          return null;
+        }
+      },
+      values,
+    );
   }
 
   _handleTextEdits(arg: OnDidInsertSuggestionArgument) {

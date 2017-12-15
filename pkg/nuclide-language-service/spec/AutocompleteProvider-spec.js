@@ -74,6 +74,7 @@ describe('AutocompleteProvider', () => {
           analyticsEventName: 'test',
           onDidInsertSuggestionAnalyticsEventName: 'test',
           autocompleteCacherConfig: null,
+          trackAdditionalInfo: false,
         },
         onDidInsertSuggestionSpy,
         mockCache,
