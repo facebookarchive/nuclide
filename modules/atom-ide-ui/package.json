@@ -28,7 +28,7 @@
     "react-dom": "16.0.0",
     "redux": "3.6.0",
     "reselect": "3.0.1",
-    "rxjs": "5.3.1",
+    "rxjs": "5.5.5",
     "semver": "5.3.0"
   },
   "devDependencies": {

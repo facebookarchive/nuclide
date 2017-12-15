@@ -17,7 +17,7 @@
     "log4js": "1.1.1",
     "nuclide-commons": "0.4.0",
     "redux-logger": "3.0.6",
-    "rxjs": "5.3.1",
+    "rxjs": "5.5.5",
     "semver": "5.3.0",
     "shallowequal": "0.2.2"
   },

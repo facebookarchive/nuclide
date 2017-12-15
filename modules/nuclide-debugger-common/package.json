@@ -18,7 +18,7 @@
     "nuclide-commons": "0.4.0",
     "nuclide-node-transpiler": "0.4.0",
     "nullthrows": "1.0.0",
-    "rxjs": "5.3.1",
+    "rxjs": "5.5.5",
     "v8-compile-cache": "1.1.0",
     "vscode-debugprotocol": "1.24.0",
     "ws": "3.2.0",
