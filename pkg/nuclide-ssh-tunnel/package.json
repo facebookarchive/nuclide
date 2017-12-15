@@ -30,8 +30,5 @@
         "0.0.0": "consumeOutputService"
       }
     }
-  },
-  "activationHooks": [
-    "nuclide_ssh_tunnels:gk:nuclide"
-  ]
+  }
 }

@@ -40,9 +40,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationHooks": [
-    "nuclide_js_auto_imports:gk:nuclide"
-  ],
   "providedServices": {
     "nuclide-quick-open-register-provider": {
       "versions": {
