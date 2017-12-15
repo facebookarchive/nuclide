@@ -120,10 +120,14 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       host,
       this._languageId,
       this._command,
-      ['--language-server'], // args
+      [
+        '--language-server',
+        '--log-file',
+        `${initalizationOptions.cacheDirectory}/diagnostics`,
+      ], // args
       {}, // spawnOptions
       project.projectRoot,
-      ['.cpp', '.h', '.hpp', '.cc'],
+      ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'],
       initalizationOptions,
       5 * 60 * 1000, // 5 minutes
     );
