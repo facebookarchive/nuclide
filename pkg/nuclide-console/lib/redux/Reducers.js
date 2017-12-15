@@ -11,6 +11,7 @@
 
 import type {Action, AppState, Record} from '../types';
 
+import {List} from 'immutable';
 import {arrayEqual} from 'nuclide-commons/collection';
 import * as Actions from './Actions';
 
@@ -63,25 +64,35 @@ export default function accumulateState(
   switch (action.type) {
     case Actions.RECORD_RECEIVED: {
       const {record} = action.payload;
+      let nextRecords = state.records;
+
       // check if the message is exactly the same as the previous one, if so
       // we add a count to it.
-      const lastRecord = state.records[state.records.length - 1];
+      const lastRecord = nextRecords.last();
       if (
-        state.records.length &&
+        lastRecord != null &&
         shouldAccumulateRecordCount(lastRecord, record)
       ) {
-        state.records[state.records.length - 1] = {
+        // Update the last record. Don't use `splice()` because that's O(n)
+        const updatedRecord: Record = {
           ...lastRecord,
           repeatCount: lastRecord.repeatCount + 1,
           timestamp: record.timestamp,
         };
-        return state;
+        nextRecords = nextRecords.pop().push(updatedRecord);
       } else {
-        return {
-          ...state,
-          records: state.records.concat(record).slice(-state.maxMessageCount),
-        };
+        nextRecords = nextRecords.push(record);
       }
+
+      if (nextRecords.size > state.maxMessageCount) {
+        // We could only have gone over by one.
+        nextRecords = nextRecords.shift();
+      }
+
+      return {
+        ...state,
+        records: nextRecords,
+      };
     }
     case Actions.SET_MAX_MESSAGE_COUNT: {
       const {maxMessageCount} = action.payload;
@@ -107,7 +118,7 @@ export default function accumulateState(
     case Actions.CLEAR_RECORDS: {
       return {
         ...state,
-        records: [],
+        records: List(),
       };
     }
     case Actions.REGISTER_EXECUTOR: {

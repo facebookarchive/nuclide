@@ -13,6 +13,7 @@ import type {Action, Executor} from '../lib/types';
 
 import * as Actions from '../lib/redux/Actions';
 import Reducers from '../lib/redux/Reducers';
+import * as Immutable from 'immutable';
 import {Observable} from 'rxjs';
 
 const emptyAppState = {
@@ -23,7 +24,7 @@ const emptyAppState = {
   providers: new Map(),
   providerStatuses: new Map(),
   providerSubscriptions: new Map(),
-  records: [],
+  records: Immutable.List(),
   history: [],
 };
 
@@ -33,7 +34,7 @@ describe('createStateStream', () => {
     let initialRecords;
 
     beforeEach(() => {
-      initialRecords = [];
+      initialRecords = Immutable.List();
       const initialState = {
         ...emptyAppState,
         maxMessageCount: 2,
@@ -58,19 +59,22 @@ describe('createStateStream', () => {
     });
 
     it('adds records', () => {
-      expect(finalState.records.length).toBeGreaterThan(0);
+      expect(finalState.records.size).toBeGreaterThan(0);
     });
 
     it('truncates the record list using `maxMessageCount`', () => {
-      expect(finalState.records.length).toBe(2);
+      expect(finalState.records.size).toBe(2);
     });
 
     it('truncates the least recent records', () => {
-      expect(finalState.records.map(record => record.text)).toEqual(['3', '4']);
+      expect(finalState.records.map(record => record.text).toArray()).toEqual([
+        '3',
+        '4',
+      ]);
     });
 
     it("doesn't mutate the original records list", () => {
-      expect(initialRecords.length).toBe(0);
+      expect(initialRecords.size).toBe(0);
     });
   });
 
@@ -115,7 +119,7 @@ describe('createStateStream', () => {
     let finalState;
 
     beforeEach(() => {
-      initialRecords = [
+      initialRecords = Immutable.List([
         {
           kind: 'message',
           sourceId: 'Test',
@@ -126,7 +130,7 @@ describe('createStateStream', () => {
           data: null,
           repeatCount: 1,
         },
-      ];
+      ]);
       const initialState = {
         ...emptyAppState,
         records: initialRecords,
@@ -136,11 +140,11 @@ describe('createStateStream', () => {
     });
 
     it('clears the records', () => {
-      expect(finalState.records.length).toBe(0);
+      expect(finalState.records.size).toBe(0);
     });
 
     it("doesn't mutate the original records list", () => {
-      expect(initialRecords.length).toBe(1);
+      expect(initialRecords.size).toBe(1);
     });
   });
 

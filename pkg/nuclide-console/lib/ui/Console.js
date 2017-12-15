@@ -34,6 +34,7 @@ import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import ConsoleView from './ConsoleView';
+import {List} from 'immutable';
 import * as React from 'react';
 import {Observable, ReplaySubject} from 'rxjs';
 
@@ -292,7 +293,7 @@ export class Console {
           enableRegExpFilter: localState.enableRegExpFilter,
           displayableRecords: filteredRecords,
           filteredRecordCount:
-            globalState.records.length - filteredRecords.length,
+            globalState.records.size - filteredRecords.length,
           history: globalState.history,
           sources: this._getSources(),
           selectedSourceIds,
@@ -346,8 +347,9 @@ export class Console {
     newHeight: number,
     callback: () => void,
   ): void => {
-    const nextDisplayableRecords = [];
-    this._store.getState().records.forEach(record => {
+    const {records} = this._store.getState();
+    const nextDisplayableRecords = Array(records.size);
+    records.forEach((record, i) => {
       let displayableRecord = this._toDisplayableRecord(record);
       if (displayableRecord.id === recordId) {
         // Update the record with the new height.
@@ -357,7 +359,7 @@ export class Console {
         };
         this._displayableRecords.set(record, displayableRecord);
       }
-      nextDisplayableRecords.push(displayableRecord);
+      nextDisplayableRecords[i] = displayableRecord;
     });
 
     this._model.setState({displayableRecords: nextDisplayableRecords});
@@ -365,9 +367,12 @@ export class Console {
   };
 
   _getDisplayableRecords(): Array<DisplayableRecord> {
-    return this._store
-      .getState()
-      .records.map(record => this._toDisplayableRecord(record));
+    const {records} = this._store.getState();
+    const displayableRecords = Array(records.size);
+    records.forEach((record, i) => {
+      displayableRecords[i] = this._toDisplayableRecord(record);
+    });
+    return displayableRecords;
   }
 
   /**
@@ -392,7 +397,7 @@ export class Console {
 }
 
 function getSources(options: {
-  records: Array<Record>,
+  records: List<Record>,
   providers: Map<string, SourceInfo>,
   providerStatuses: Map<string, OutputProviderStatus>,
 }): Array<Source> {
@@ -415,8 +420,7 @@ function getSources(options: {
 
   // Some providers may have been unregistered, but still have records. Add sources for them too.
   // TODO: Iterating over all the records to get this every time we get a new record is inefficient.
-  for (let i = 0, len = records.length; i < len; i++) {
-    const record = records[i];
+  records.forEach((record, i) => {
     if (!mapOfSources.has(record.sourceId)) {
       mapOfSources.set(record.sourceId, {
         id: record.sourceId,
@@ -426,7 +430,7 @@ function getSources(options: {
         stop: undefined,
       });
     }
-  }
+  });
 
   return Array.from(mapOfSources.values());
 }

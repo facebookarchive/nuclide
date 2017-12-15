@@ -24,6 +24,8 @@ import type {
   Store,
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
+
+import {List} from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {Observable} from 'rxjs';
@@ -326,7 +328,10 @@ class Activation {
       MAXIMUM_SERIALIZED_HISTORY_CONFIG,
     ): any);
     return {
-      records: this._store.getState().records.slice(-maximumSerializedMessages),
+      records: this._store
+        .getState()
+        .records.slice(-maximumSerializedMessages)
+        .toArray(),
       history: this._store.getState().history.slice(-maximumSerializedHistory),
     };
   }
@@ -339,8 +344,8 @@ function deserializeAppState(rawState: ?Object): AppState {
     currentExecutorId: null,
     records:
       rawState && rawState.records
-        ? rawState.records.map(deserializeRecord)
-        : [],
+        ? List(rawState.records.map(deserializeRecord))
+        : List(),
     history: rawState && rawState.history ? rawState.history : [],
     providers: new Map(),
     providerStatuses: new Map(),

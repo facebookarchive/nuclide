@@ -11,6 +11,8 @@
 
 import type {Observable} from 'rxjs';
 import type {Level as TaskLevelType} from 'nuclide-commons/process';
+// flowlint-next-line untyped-type-import:off
+import type {List} from 'immutable';
 import type {
   EvaluationResult,
   ExpansionResult,
@@ -62,7 +64,10 @@ export type AppState = {
   currentExecutorId: ?string,
   executors: Map<string, Executor>,
   maxMessageCount: number,
-  records: Array<Record>,
+  // We use Immutable for the records list so that adding an item is O(1). However, rendering the
+  // items after the addition is O(n), so it's important that we schedule and throttle our renders
+  // or we'll lose the benefit of an O(1) insertion.
+  records: List<Record>,
   history: Array<string>,
   providers: Map<string, SourceInfo>,
   providerStatuses: Map<string, OutputProviderStatus>,

@@ -12,6 +12,7 @@
 import type {Executor} from '../lib/types';
 
 import getCurrentExecutorId from '../lib/getCurrentExecutorId';
+import * as Immutable from 'immutable';
 import {Observable} from 'rxjs';
 
 const baseAppState = {
@@ -21,7 +22,7 @@ const baseAppState = {
   executors: new Map([['a', createDummyExecutor('a')]]),
   providers: new Map(),
   providerStatuses: new Map(),
-  records: [],
+  records: Immutable.List(),
   history: [],
 };
 
