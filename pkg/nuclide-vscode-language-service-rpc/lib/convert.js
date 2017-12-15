@@ -458,8 +458,9 @@ function lspSeverity_atomDiagnosticMessageType(
     case DiagnosticSeverity.Warning:
       return 'Warning';
     case DiagnosticSeverity.Information:
-    case DiagnosticSeverity.Hint:
       return 'Info';
+    case DiagnosticSeverity.Hint:
+      return 'Hint';
   }
 }
 
@@ -472,10 +473,9 @@ function atomDiagnosticMessageType_lspSeverity(
     case 'Warning':
       return DiagnosticSeverity.Warning;
     case 'Info':
-      // The inverse function maps both DiagnosticServerity.Hint and
-      // DiagnosticServerity.Information to 'Info', but in the reverse direction
-      // we'll pick to map 'Info' to DiagnosticSeverity.Information.
       return DiagnosticSeverity.Information;
+    case 'Hint':
+      return DiagnosticSeverity.Hint;
     default:
       (diagnosticType: empty); // Will cause a Flow error if a new DiagnosticSeverity value is added.
       throw new Error('Unsupported DiagnosticMessageType');

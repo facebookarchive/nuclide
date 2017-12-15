@@ -53,6 +53,7 @@ const HIGHLIGHT_CSS_LEVELS = {
   Error: 'diagnostics-gutter-ui-highlight-error',
   Warning: 'diagnostics-gutter-ui-highlight-warning',
   Info: 'diagnostics-gutter-ui-highlight-info',
+  Hint: '',
 };
 
 const GUTTER_CSS_GROUPS = {
@@ -61,6 +62,7 @@ const GUTTER_CSS_GROUPS = {
   warnings: 'diagnostics-gutter-ui-gutter-warning',
   info: 'diagnostics-gutter-ui-gutter-info',
   action: 'diagnostics-gutter-ui-gutter-action',
+  hidden: '',
 };
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();

@@ -64,7 +64,7 @@ export type DiagnosticProviderUpdate = Map<
 >;
 
 export type DiagnosticMessageKind = 'lint' | 'review' | 'action';
-export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info';
+export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info' | 'Hint';
 
 export type DiagnosticTrace = {
   type: 'Trace',

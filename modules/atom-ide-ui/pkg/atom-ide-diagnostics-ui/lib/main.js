@@ -195,6 +195,7 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
+        .map(diagnostics => diagnostics.filter(d => d.type !== 'Hint'))
         .let(fastDebounce(100))
         .startWith([]);
 
@@ -491,6 +492,14 @@ function getEditorDiagnosticUpdates(
             )
           : Observable.empty(),
     )
+    .map(diagnosticMessages => {
+      return {
+        ...diagnosticMessages,
+        messages: diagnosticMessages.messages.filter(
+          diagnostic => diagnostic.type !== 'Hint',
+        ),
+      };
+    })
     .takeUntil(
       observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
     );

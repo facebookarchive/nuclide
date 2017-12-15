@@ -472,6 +472,7 @@ function getIconName(classification: Classification): IconName {
   if (kind === 'review') {
     return 'nuclicon-comment-discussion';
   }
+  invariant(severity !== 'Hint');
   switch (severity) {
     case 'Warning':
       return 'nuclicon-warning';
