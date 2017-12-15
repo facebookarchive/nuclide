@@ -15,6 +15,7 @@ import {CodeActionManager} from './CodeActionManager';
 
 import type {RegisterIndieLinter} from '../../../index';
 import type {CodeActionProvider, CodeActionFetcher} from './types';
+import type {DiagnosticUpdater} from '../../atom-ide-diagnostics/lib/types';
 
 class Activation {
   _codeActionManager: CodeActionManager;
@@ -29,6 +30,10 @@ class Activation {
 
   consumeCodeActionProvider(provider: CodeActionProvider) {
     return this._codeActionManager.addProvider(provider);
+  }
+
+  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater) {
+    return this._codeActionManager.consumeDiagnosticUpdates(diagnosticUpdater);
   }
 
   provideCodeActionFetcher(): CodeActionFetcher {

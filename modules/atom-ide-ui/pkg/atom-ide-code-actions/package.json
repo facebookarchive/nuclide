@@ -16,6 +16,11 @@
       "versions": {
         "2.0.0": "consumeIndie"
       }
+    },
+    "diagnostics-store": {
+      "versions": {
+        "0.3.0": "consumeDiagnosticUpdates"
+      }
     }
   },
   "providedServices": {

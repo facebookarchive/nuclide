@@ -22,7 +22,10 @@ import type {
   IndieLinterDelegate,
   LinterMessageV2,
 } from '../../../index';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
+import type {
+  DiagnosticMessage,
+  DiagnosticUpdater,
+} from '../../atom-ide-diagnostics/lib/types';
 import type {CodeAction, CodeActionProvider, CodeActionFetcher} from './types';
 
 const TIP_DELAY_MS = 500;
@@ -50,6 +53,7 @@ export class CodeActionManager {
   _providerRegistry: ProviderRegistry<CodeActionProvider>;
   _disposables: UniversalDisposable;
   _linterDelegate: ?IndieLinterDelegate;
+  _diagnosticUpdater: ?DiagnosticUpdater;
 
   constructor() {
     this._providerRegistry = new ProviderRegistry();
@@ -64,6 +68,13 @@ export class CodeActionManager {
     const disposable = this._providerRegistry.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
+  }
+
+  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
+    this._diagnosticUpdater = diagnosticUpdater;
+    return new UniversalDisposable(() => {
+      this._diagnosticUpdater = null;
+    });
   }
 
   consumeIndie(register: RegisterIndieLinter): IDisposable {
@@ -147,8 +158,17 @@ export class CodeActionManager {
           if (file == null) {
             return Observable.empty();
           }
+          const diagnostics =
+            this._diagnosticUpdater == null
+              ? []
+              : this._diagnosticUpdater
+                  .getFileMessageUpdates(file)
+                  .messages.filter(
+                    message =>
+                      message.range && message.range.intersectsWith(range),
+                  );
           return Observable.fromPromise(
-            this._genAllCodeActions(editor, range, []),
+            this._genAllCodeActions(editor, range, diagnostics),
           ).switchMap(actions => {
             // Only produce a message if we have actions to display.
             if (actions.length > 0) {
