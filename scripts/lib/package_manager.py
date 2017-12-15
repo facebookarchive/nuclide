@@ -98,5 +98,6 @@ def create_config_for_package(path):
         'excludeTestsFromContinuousIntegration', False)
     config['atomTestRunner'] = pkg.get('atomTestRunner')
     config['_atomModuleCache'] = pkg.get('_atomModuleCache')
+    config['_rawPkg'] = pkg
 
     return config

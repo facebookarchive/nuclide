@@ -9,8 +9,5 @@
   },
   "scripts": {
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
-  },
-  "activationHooks": [
-    "nuclide_hhvm_debugger_vscode:gk:nuclide"
-  ]
+  }
 }

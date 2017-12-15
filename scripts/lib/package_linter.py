@@ -7,7 +7,6 @@
 import logging
 import os
 import re
-import sys
 
 DEPENDENCIES_FIELDS = [
     'dependencies',
@@ -17,6 +16,7 @@ DEPENDENCIES_FIELDS = [
     'bundledDependencies'
 ]
 EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
+
 
 # Detects errors in Nuclide package.json files.
 #  - missing/empty description
@@ -60,7 +60,7 @@ class PackageLinter(object):
         else:
             self.verify_apm_package(package)
 
-        if not 'description' in package:
+        if 'description' not in package:
             self.report_error('Missing "description" for %s', package_name)
         elif not package['description']:
             self.report_error('Empty "description" for %s', package_name)
@@ -110,16 +110,20 @@ class PackageLinter(object):
             else:
                 expected_package_name = component + '-' + expected_package_name
         if package_name != expected_package_name:
-            self.report_error('Expected package name %s found %s', expected_package_name, package_name)
+            self.report_error(
+                'Expected package name %s found %s',
+                expected_package_name, package_name)
 
     def verify_main_property(self, package_name, package):
         if package['main'] is None:
             return
-        package_main = package['main'];
+        package_main = package['main']
         main_file = os.path.join(package['packageRootAbsolutePath'], package_main)
         if not package_main.startswith('./'):
             # stylistic only - omitting the "./" works
-            self.report_error('Package %s should have a "main" file that starts with "./"', package_name)
+            self.report_error(
+                'Package %s should have a "main" file that starts with "./"',
+                package_name)
         if not os.path.isfile(main_file):
             self.report_error('Package %s should have a "main" file that exists', package_name)
         if not package_main.endswith('.js'):
@@ -129,14 +133,29 @@ class PackageLinter(object):
 
     def verify_npm_package(self, package):
         self.verify_npm_test_property(package)
+        self.verify_invalid_npm_properties(package)
+
+    def verify_invalid_npm_properties(self, package):
+        activation_properties = [
+            'activationCommands', 'activationHooks',
+            'consumedServices', 'providedServices'
+        ]
+        package_name = package['name']
+        raw_pkg = package['_rawPkg']
+        for prop in activation_properties:
+            if prop in raw_pkg:
+                self.report_error(
+                    'npm package %s should not have a "%s" property.',
+                    package_name, prop
+                )
 
     def verify_npm_test_property(self, package):
         package_name = package['name']
-        if not 'scripts' in package:
+        if 'scripts' not in package:
             self.report_error(
                 'Package %s should have a "scripts" section with a "test" property.',
                 package_name)
-        elif not 'test' in package['scripts']:
+        elif 'test' not in package['scripts']:
             self.report_error(
                 ('Package %s should have a "test" property in its "scripts" section ' +
                     'to define how its tests are run.'),
@@ -148,6 +167,17 @@ class PackageLinter(object):
 
     def verify_apm_package(self, package):
         self.verify_apm_test_property(package)
+        self.verify_nuclide_config_property(package)
+
+    def verify_nuclide_config_property(self, package):
+        '''apm packages should either have an "atomConfig" or "nuclide.config", but not both.'''
+        package_name = package['name']
+        raw_pkg = package['_rawPkg']
+        if 'atomConfig' in raw_pkg and 'nuclide' in raw_pkg and 'config' in raw_pkg['nuclide']:
+            self.report_error(
+                ('Package %s should either have an "atomConfig" ' +
+                    'or "nuclide.config", but not both.'),
+                package_name)
 
     def verify_apm_test_property(self, package):
         '''apm packages should not specify a separate test runner.'''
@@ -200,16 +230,18 @@ class PackageLinter(object):
         if fieldValue is None:
             self.report_error('Missing field "%s" for "%s"', field, package_name)
         elif package[field] != value:
-            self.report_error('Incorrect "%s" for %s. Found %s expected %s',
-                    field, package_name, fieldValue, value)
+            self.report_error(
+                'Incorrect "%s" for %s. Found %s expected %s',
+                field, package_name, fieldValue, value)
 
     def expect_field_in(self, package_name, package, field, values):
         fieldValue = package.get(field, None)
         if fieldValue is None:
             self.report_error('Missing field "%s" for %s', field, package_name)
-        elif not fieldValue in values:
-            self.report_error('Incorrect "%s" for %s. Found %s',
-                    field, package_name, fieldValue)
+        elif fieldValue not in values:
+            self.report_error(
+                'Incorrect "%s" for %s. Found %s',
+                field, package_name, fieldValue)
 
     def is_internal_name(self, package_name):
         return package_name.startswith('fb-')
