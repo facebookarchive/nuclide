@@ -56,14 +56,14 @@ export function notifySshHandshakeError(
     '  [ -z "$PS1" ] && return';
 
   switch (errorType) {
-    case SshHandshake.ErrorType.HOST_NOT_FOUND:
+    case 'HOST_NOT_FOUND':
       message = `Can't resolve IP address for host ${config.host}.`;
       detail =
         'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         `  2. Make sure the hostname ${config.host} is valid.\n`;
       break;
-    case SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY:
+    case 'CANT_READ_PRIVATE_KEY':
       message = `Can't read content of private key path ${
         config.pathToPrivateKey
       }.`;
@@ -72,22 +72,22 @@ export function notifySshHandshakeError(
         'You may need to convert your private key from PKCS to RSA.\n' +
         originalErrorDetail;
       break;
-    case SshHandshake.ErrorType.SSH_CONNECT_TIMEOUT:
+    case 'SSH_CONNECT_TIMEOUT':
       message = `Timeout while connecting to ${config.host}.`;
       detail =
         'Troubleshooting:\n' +
         '  1. Check your network connection.\n' +
         '  2. Input correct 2Fac passcode when prompted.';
       break;
-    case SshHandshake.ErrorType.SFTP_TIMEOUT:
+    case 'SFTP_TIMEOUT':
       message = `Timeout while connecting to ${config.host}.`;
       detail = createTimeoutDetail();
       break;
-    case SshHandshake.ErrorType.USER_CANCELLED:
+    case 'USER_CANCELLED':
       message = `User cancelled while connecting to ${config.host}.`;
       detail = createTimeoutDetail();
       break;
-    case SshHandshake.ErrorType.SSH_CONNECT_FAILED:
+    case 'SSH_CONNECT_FAILED':
       message = `Failed to connect to ${config.host}:${config.sshPort}.`;
       detail =
         'Troubleshooting:\n' +
@@ -96,7 +96,7 @@ export function notifySshHandshakeError(
         ` ssh server running on ${config.sshPort}.\n\n` +
         originalErrorDetail;
       break;
-    case SshHandshake.ErrorType.SSH_AUTHENTICATION:
+    case 'SSH_AUTHENTICATION':
       switch (config.authMethod) {
         case SshHandshake.SupportedMethods.PASSWORD:
           message = 'Password Authentication failed';
@@ -129,11 +129,11 @@ export function notifySshHandshakeError(
           break;
       }
       break;
-    case SshHandshake.ErrorType.DIRECTORY_NOT_FOUND:
+    case 'DIRECTORY_NOT_FOUND':
       message = `There is no such directory ${config.cwd} on ${config.host}.`;
       detail = `Make sure ${config.cwd} exists on ${config.host}.`;
       break;
-    case SshHandshake.ErrorType.SERVER_START_FAILED:
+    case 'SERVER_START_FAILED':
       message =
         `Failed to start nuclide-server on ${config.host} using  ` +
         `${config.remoteServerCommand}`;
@@ -148,14 +148,25 @@ export function notifySshHandshakeError(
         } and kill existing nuclide-server` +
         ' by running "killall node", and reconnect.';
       break;
-    case SshHandshake.ErrorType.SERVER_CANNOT_CONNECT:
+    case 'SERVER_CANNOT_CONNECT':
       message = 'Unable to connect to server';
       detail =
         'The server successfully started, but we were unable to connect.\n\n' +
         originalErrorDetail;
       break;
-    default:
+    case 'CERT_NOT_YET_VALID':
+      message = 'Your clock is behind';
+      detail =
+        'Your system clock is behind - unable to authenticate.\n' +
+        'Please check your date and time settings to continue.\n\n' +
+        originalErrorDetail;
+      break;
+    case 'UNKNOWN':
       message = `Unexpected error occurred: ${error.message}.`;
+      detail = originalErrorDetail;
+      break;
+    default:
+      (errorType: empty);
       detail = originalErrorDetail;
   }
   atom.notifications.addError(message, {detail, dismissable: true});

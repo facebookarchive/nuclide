@@ -57,6 +57,7 @@ const ErrorType = Object.freeze({
   UNKNOWN: 'UNKNOWN',
   HOST_NOT_FOUND: 'HOST_NOT_FOUND',
   CANT_READ_PRIVATE_KEY: 'CANT_READ_PRIVATE_KEY',
+  CERT_NOT_YET_VALID: 'CERT_NOT_YET_VALID',
   SSH_CONNECT_TIMEOUT: 'SSH_CONNECT_TIMEOUT',
   SSH_CONNECT_FAILED: 'SSH_CONNECT_FAILED',
   SSH_AUTHENTICATION: 'SSH_AUTHENTICATION',
@@ -71,6 +72,7 @@ export type SshHandshakeErrorType =
   | 'UNKNOWN'
   | 'HOST_NOT_FOUND'
   | 'CANT_READ_PRIVATE_KEY'
+  | 'CERT_NOT_YET_VALID'
   | 'SSH_CONNECT_TIMEOUT'
   | 'SSH_CONNECT_FAILED'
   | 'SSH_AUTHENTICATION'
@@ -544,7 +546,9 @@ export class SshHandshake {
       } catch (e) {
         this._error(
           'Connection check failed',
-          SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
+          e.code === 'CERT_NOT_YET_VALID'
+            ? SshHandshake.ErrorType.CERT_NOT_YET_VALID
+            : SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
           e,
         );
       }
