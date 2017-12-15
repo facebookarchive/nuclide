@@ -52,7 +52,7 @@ type Options = {|
 export default function showModal(
   contentFactory: ContentFactory,
   options: Options = defaults,
-): IDisposable {
+): IDisposable & {getElement(): ?HTMLElement} {
   const hostElement = document.createElement('div');
   const atomPanel = atom.workspace.addModalPanel({
     item: hostElement,
@@ -62,6 +62,7 @@ export default function showModal(
   const shouldDismissOnClickOutsideModal =
     options.shouldDismissOnClickOutsideModal || (() => true);
 
+  let panelElement = atomPanel.getElement();
   const previouslyFocusedElement = document.activeElement;
   const disposable = new UniversalDisposable(
     Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
@@ -87,6 +88,7 @@ export default function showModal(
         options.onDismiss();
       }
       ReactDOM.unmountComponentAtNode(hostElement);
+      panelElement = null;
       atomPanel.destroy();
       if (previouslyFocusedElement != null) {
         previouslyFocusedElement.focus();
@@ -94,13 +96,16 @@ export default function showModal(
     },
   );
 
+  (disposable: any).getElement = () => panelElement;
+
   ReactDOM.render(
     <ModalContainer>
       {contentFactory(disposable.dispose.bind(disposable))}
     </ModalContainer>,
     hostElement,
   );
-  return disposable;
+
+  return (disposable: any);
 }
 
 /** Flow makes {} an unsealed object (eyeroll) */
