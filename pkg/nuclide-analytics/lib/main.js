@@ -71,11 +71,13 @@ export class TimingTracker {
   _eventName: string;
   _startTime: number;
   _startMark: string;
+  _values: {[key: string]: mixed};
 
-  constructor(eventName: string) {
+  constructor(eventName: string, values: {[key: string]: mixed}) {
     this._eventName = eventName;
     this._startMark = `${this._eventName}_${TimingTracker.eventCount++}_start`;
     this._startTime = performanceNow();
+    this._values = values;
     if (canMeasure) {
       // eslint-disable-next-line no-undef
       performance.mark(this._startMark);
@@ -104,6 +106,7 @@ export class TimingTracker {
     }
 
     track(PERFORMANCE_EVENT, {
+      ...this._values,
       duration: Math.round(performanceNow() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
@@ -112,8 +115,11 @@ export class TimingTracker {
   }
 }
 
-export function startTracking(eventName: string): TimingTracker {
-  return new TimingTracker(eventName);
+export function startTracking(
+  eventName: string,
+  values?: {[key: string]: mixed} = {},
+): TimingTracker {
+  return new TimingTracker(eventName, values);
 }
 
 /**
@@ -125,8 +131,12 @@ export function startTracking(eventName: string): TimingTracker {
  *
  * Returns (or throws) the result of the operation.
  */
-export function trackTiming<T>(eventName: string, operation: () => T): T {
-  const tracker = startTracking(eventName);
+export function trackTiming<T>(
+  eventName: string,
+  operation: () => T,
+  values?: {[key: string]: mixed} = {},
+): T {
+  const tracker = startTracking(eventName, values);
 
   try {
     const result = operation();

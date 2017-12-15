@@ -53,6 +53,20 @@ describe('startTracking', () => {
     expect(trackValues.exception).toBe('');
   });
 
+  it('startTracking - success with values', () => {
+    const timer = startTracking('st-success', {newValue: 'value'});
+    advanceClock(10);
+    timer.onSuccess();
+    expect(track.track).toHaveBeenCalled();
+    expect(trackKey).toBe('performance');
+    invariant(trackValues != null);
+    expect(trackValues.duration).toBe('10');
+    expect(trackValues.eventName).toBe('st-success');
+    expect(trackValues.error).toBe('0');
+    expect(trackValues.exception).toBe('');
+    expect(trackValues.newValue).toBe('value');
+  });
+
   it('startTracking - error', () => {
     const timer = startTracking('st-error');
     advanceClock(11);
@@ -64,6 +78,20 @@ describe('startTracking', () => {
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
+  });
+
+  it('startTracking - error with values', () => {
+    const timer = startTracking('st-error', {newValue: 'value'});
+    advanceClock(11);
+    timer.onError(new Error());
+    expect(track.track).toHaveBeenCalled();
+    expect(trackKey).toBe('performance');
+    invariant(trackValues != null);
+    expect(trackValues.duration).toBe('11');
+    expect(trackValues.eventName).toBe('st-error');
+    expect(trackValues.error).toBe('1');
+    expect(trackValues.exception).toBe('Error');
+    expect(trackValues.newValue).toBe('value');
   });
 });
 
