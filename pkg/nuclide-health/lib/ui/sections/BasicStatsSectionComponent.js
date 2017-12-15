@@ -14,8 +14,6 @@ import type {HandlesByType} from '../../types';
 import * as React from 'react';
 
 type Props = {
-  toolbarJewel: string,
-  updateToolbarJewel: (value: string) => void,
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,
@@ -27,13 +25,7 @@ type Props = {
   domListeners: ?number,
 };
 
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-
 export default class BasicStatsSectionComponent extends React.Component<Props> {
-  updateToolbarJewel(value: string): void {
-    this.props.updateToolbarJewel(value);
-  }
-
   render(): React.Node {
     const stats = [
       {
@@ -67,7 +59,6 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
             ? this.props.attachedDomNodes
             : 'N/A - are your devtools open?'
         }`,
-        disableJewel: true,
       },
       {
         name: 'Retained DOM Nodes',
@@ -76,7 +67,6 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
             ? this.props.domNodes
             : 'N/A - are your devtools open?'
         }`,
-        disableJewel: true,
       },
       {
         name: 'DOM Listeners',
@@ -85,11 +75,8 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
             ? this.props.domListeners
             : 'N/A - are your devtools open?'
         }`,
-        disableJewel: true,
       },
     ];
-
-    const updateToolbarJewel = this.updateToolbarJewel;
     return (
       <table className="table">
         <thead>
@@ -104,26 +91,10 @@ export default class BasicStatsSectionComponent extends React.Component<Props> {
         <tbody>
           {stats.map((stat, s) => {
             const props: Object = {};
-            let jewelLabel = 'Show';
-            let jewelValue = stat.name;
-            if (this.props.toolbarJewel === stat.name) {
-              props.className = 'selected';
-              jewelLabel = 'Hide';
-              jewelValue = 'None';
-            }
             return (
               <tr {...props} key={s}>
                 <th>{stat.name}</th>
                 <td>{stat.value}</td>
-                <td className="text-right">
-                  {!stat.disableJewel && (
-                    <Button
-                      size={ButtonSizes.EXTRA_SMALL}
-                      onClick={updateToolbarJewel.bind(this, jewelValue)}>
-                      {jewelLabel}
-                    </Button>
-                  )}
-                </td>
               </tr>
             );
           })}

@@ -13,7 +13,6 @@ import type {DOMCounters} from './getDOMCounters';
 import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
-import invariant from 'assert';
 import {Disposable} from 'atom';
 import * as React from 'react';
 import {Observable} from 'rxjs';
@@ -25,7 +24,6 @@ import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElem
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';
@@ -42,7 +40,6 @@ class Activation {
   _healthButton: ?HTMLElement;
 
   constructor(state: ?Object): void {
-    (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
     (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
 
     // Observe all of the settings.
@@ -55,27 +52,18 @@ class Activation {
     const analyticsTimeouts = configs
       .map(config => config.analyticsTimeout * 60 * 1000)
       .distinctUntilChanged();
-    const toolbarJewels = configs
-      .map(config => config.toolbarJewel || '')
-      .distinctUntilChanged();
 
     // Update the stats immediately, and then periodically based on the config.
     const statsStream = Observable.of(null)
       .concat(viewTimeouts.switchMap(Observable.interval))
       .map(getStats)
-      .share();
+      .publishReplay(1)
+      .refCount();
 
     const childProcessesTreeStream = Observable.of(null)
       .concat(viewTimeouts.switchMap(Observable.interval))
       .switchMap(getChildProcessesTree)
       .share();
-
-    const packageStates = cacheWhileSubscribed(
-      statsStream
-        .withLatestFrom(toolbarJewels)
-        .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
-        .share(),
-    );
 
     // These aren't really aggregated because they're too expensive to fetch.
     // We'll just fetch these once per analytics upload cycle.
@@ -86,26 +74,18 @@ class Activation {
       .publishReplay(1)
       .refCount();
 
-    const updateToolbarJewel = value => {
-      featureConfig.set('nuclide-health.toolbarJewel', value);
-    };
     this._paneItemStates = Observable.combineLatest(
-      packageStates,
+      statsStream,
       domCounterStream,
       Observable.of(null).concat(childProcessesTreeStream),
-      (packageState, domCounters, childProcessesTree) => ({
-        ...packageState,
+      (stats, domCounters, childProcessesTree) => ({
+        stats,
         domCounters,
         childProcessesTree,
-        updateToolbarJewel,
       }),
     );
 
     this._subscriptions = new UniversalDisposable(
-      // Keep the toolbar jewel up-to-date.
-      packageStates
-        .map(formatToolbarJewelLabel)
-        .subscribe(this._updateToolbarJewel),
       // Buffer the stats and send analytics periodically.
       statsStream
         .buffer(analyticsTimeouts.switchMap(Observable.interval))
@@ -142,11 +122,9 @@ class Activation {
   }
 
   _registerCommandAndOpener(): UniversalDisposable {
-    invariant(this._paneItemStates);
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          invariant(this._paneItemStates != null);
           return viewableFromReactElement(
             <HealthPaneItem stateStream={this._paneItemStates} />,
           );
@@ -157,17 +135,6 @@ class Activation {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
-  }
-
-  _updateToolbarJewel(label: string): void {
-    const healthButton = this._healthButton;
-    if (healthButton != null) {
-      healthButton.classList.toggle(
-        'updated',
-        healthButton.dataset.jewelValue !== label,
-      );
-      healthButton.dataset.jewelValue = label;
-    }
   }
 
   _updateAnalytics(
@@ -220,29 +187,6 @@ function aggregate(
   const min = Math.min(...values);
   const max = Math.max(...values);
   return {avg, min, max};
-}
-
-function formatToolbarJewelLabel(opts: {
-  stats: HealthStats,
-  toolbarJewel: string,
-}): string {
-  const {stats, toolbarJewel} = opts;
-  switch (toolbarJewel) {
-    case 'CPU':
-      return `${stats.cpuPercentage.toFixed(0)}%`;
-    case 'Heap':
-      return `${stats.heapPercentage.toFixed(0)}%`;
-    case 'Memory':
-      return `${Math.floor(stats.rss / 1024 / 1024)}M`;
-    case 'Handles':
-      return `${stats.activeHandles}`;
-    case 'Child processes':
-      return `${stats.activeHandlesByType.childprocess.length}`;
-    case 'Event loop':
-      return `${stats.activeRequests}`;
-    default:
-      return '';
-  }
 }
 
 createPackage(module.exports, Activation);

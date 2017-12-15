@@ -35,9 +35,7 @@ describe('Health', () => {
       {label: 'workspace views to load', timeout: 10000},
       async () => {
         jasmine.unspy(window, 'setTimeout');
-        await Promise.all([
-          atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
-        ]);
+        await atom.packages.activatePackage(nuclideUri.join(__dirname, '..'));
       },
     );
   });

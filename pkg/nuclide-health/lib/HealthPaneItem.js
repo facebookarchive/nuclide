@@ -69,13 +69,7 @@ export default class HealthPaneItem extends React.Component<
   }
 
   render() {
-    const {
-      toolbarJewel,
-      updateToolbarJewel,
-      childProcessesTree,
-      stats,
-      domCounters,
-    } = this.state;
+    const {childProcessesTree, stats, domCounters} = this.state;
 
     if (stats == null) {
       return <div />;
@@ -88,8 +82,6 @@ export default class HealthPaneItem extends React.Component<
         tabIndex={-1}>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <HealthPaneItemComponent
-          toolbarJewel={toolbarJewel}
-          updateToolbarJewel={updateToolbarJewel}
           cpuPercentage={stats.cpuPercentage}
           heapPercentage={stats.heapPercentage}
           memory={stats.rss}
