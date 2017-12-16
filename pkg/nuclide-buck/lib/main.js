@@ -9,10 +9,15 @@
  * @format
  */
 
+import type {Message} from 'nuclide-commons/process';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {HyperclickProvider} from 'atom-ide-ui';
-import type {BuckTaskRunnerService, SerializedState} from './types';
+import type {
+  BuckTaskRunnerService,
+  SerializedState,
+  ConsolePrinter,
+} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 
@@ -31,6 +36,7 @@ const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 class Activation {
   _disposables: UniversalDisposable;
   _busySignalService: ?BusySignalService;
+  _printToConsole: ?ConsolePrinter;
   _taskRunner: BuckTaskRunner;
   _initialState: ?Object = null;
 
@@ -59,7 +65,14 @@ class Activation {
   }
 
   consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
-    this._disposables.add(api.register(this._taskRunner));
+    this._printToConsole = (message: Message) =>
+      api.printToConsole(message, this._taskRunner);
+    this._disposables.add(
+      new UniversalDisposable(
+        api.register(this._taskRunner),
+        () => (this._printToConsole = null),
+      ),
+    );
   }
 
   consumeBusySignal(service: BusySignalService): IDisposable {
@@ -104,7 +117,11 @@ class Activation {
   }
 
   provideClangConfiguration(): ClangConfigurationProvider {
-    return getClangProvider(this._taskRunner, () => this._busySignalService);
+    return getClangProvider(
+      this._taskRunner,
+      () => this._busySignalService,
+      () => this._printToConsole,
+    );
   }
 }
 

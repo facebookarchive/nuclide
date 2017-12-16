@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {Message} from 'nuclide-commons/process';
 import type {
   AppState,
   BoundActionCreators,
@@ -323,6 +324,19 @@ class Activation {
           if (pkg != null) {
             pkg._actionCreators.unregisterTaskRunner(taskRunner);
           }
+        });
+      },
+      printToConsole: (message: Message, taskRunner: TaskRunner) => {
+        invariant(
+          pkg != null,
+          'Task runner service API used after deactivation',
+        );
+        this._store.dispatch({
+          type: Actions.TASK_MESSAGE,
+          payload: {
+            taskRunner,
+            message,
+          },
         });
       },
     };

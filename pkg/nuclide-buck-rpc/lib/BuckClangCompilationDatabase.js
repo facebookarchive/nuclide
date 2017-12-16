@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
+import type {BuckClangCompilationDatabase} from './types';
 
 import * as ClangService from '../../nuclide-clang-rpc';
 import * as BuckService from './BuckServiceImpl';
@@ -18,6 +18,7 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
 import {guessBuildFile} from '../../nuclide-clang-rpc/lib/utils';
+import {convertBuckClangCompilationDatabase} from './types';
 
 const logger = getLogger('nuclide-buck');
 const BUCK_TIMEOUT = 10 * 60 * 1000;
@@ -62,13 +63,13 @@ class BuckClangCompilationDatabaseHandler {
     this._sourceToTargetKey.clear();
   }
 
-  getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+  getCompilationDatabase(src: string): Promise<?BuckClangCompilationDatabase> {
     return this._sourceCache.getOrCreate(src, async () => {
       const buckRoot = await BuckService.getRootForPath(src);
       return this._loadCompilationDatabaseFromBuck(src, buckRoot)
         .catch(err => {
           logger.error('Error getting flags from Buck', err);
-          return null;
+          throw err;
         })
         .then(db => {
           if (db != null) {
@@ -82,7 +83,7 @@ class BuckClangCompilationDatabaseHandler {
   async _loadCompilationDatabaseFromBuck(
     src: string,
     buckRoot: ?string,
-  ): Promise<?ClangCompilationDatabase> {
+  ): Promise<?BuckClangCompilationDatabase> {
     if (buckRoot == null) {
       return null;
     }
@@ -102,7 +103,15 @@ class BuckClangCompilationDatabaseHandler {
       // Even if we can't get flags, return a flagsFile to watch
       const buildFile = await guessBuildFile(src);
       if (buildFile != null) {
-        return {flagsFile: buildFile, file: null, libclangPath: null};
+        return {
+          flagsFile: buildFile,
+          file: null,
+          libclangPath: null,
+          warnings: [
+            `I could not find owner target of ${src}`,
+            `Is there an error in ${buildFile}?`,
+          ],
+        };
       }
       return null;
     }
@@ -134,7 +143,7 @@ class BuckClangCompilationDatabaseHandler {
   async _loadCompilationDatabaseForBuckTarget(
     buckProjectRoot: string,
     target: string,
-  ): Promise<ClangCompilationDatabase> {
+  ): Promise<BuckClangCompilationDatabase> {
     // TODO(t12973165): Allow configuring a custom flavor.
     // For now, this seems to use cxx.default_platform, which tends to be correct.
     const allFlavors = [
@@ -165,7 +174,7 @@ class BuckClangCompilationDatabaseHandler {
       {commandOptions: {timeout: BUCK_TIMEOUT}},
     );
     if (!buildReport.success) {
-      const error = `Failed to build ${buildTarget}`;
+      const error = new Error(`Failed to build ${buildTarget}`);
       logger.error(error);
       throw error;
     }
@@ -181,15 +190,16 @@ class BuckClangCompilationDatabaseHandler {
       file: pathToCompilationDatabase,
       flagsFile: buildFile,
       libclangPath: null,
+      warnings: [],
     };
     return this._processCompilationDb(compilationDB, buckProjectRoot, allArgs);
   }
 
   async _processCompilationDb(
-    db: ClangCompilationDatabase,
+    db: BuckClangCompilationDatabase,
     buckRoot: string,
     args: string[],
-  ): Promise<ClangCompilationDatabase> {
+  ): Promise<BuckClangCompilationDatabase> {
     try {
       // $FlowFB
       const {createOmCompilationDb} = require('./fb/omCompilationDb');
@@ -199,12 +209,12 @@ class BuckClangCompilationDatabaseHandler {
   }
 
   async _cacheAllTheFilesInTheSameDB(
-    db: ClangCompilationDatabase,
+    db: BuckClangCompilationDatabase,
     buckRoot: ?string,
   ): Promise<void> {
     const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
       {
-        compilationDatabase: db,
+        compilationDatabase: convertBuckClangCompilationDatabase(db),
         projectRoot: buckRoot,
       },
     );

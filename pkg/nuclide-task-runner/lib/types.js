@@ -298,4 +298,5 @@ export type Action =
 
 export type TaskRunnerServiceApi = {
   register(taskRunner: TaskRunner): IDisposable,
+  printToConsole(message: Message, taskRunner: TaskRunner): void,
 };

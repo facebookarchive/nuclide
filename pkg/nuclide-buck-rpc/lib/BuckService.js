@@ -12,11 +12,11 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {ConnectableObservable} from 'rxjs';
-import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {
   BaseBuckBuildOptions,
   ResolvedRuleType,
   CommandInfo,
+  BuckClangCompilationDatabase,
 } from './types';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
@@ -648,7 +648,7 @@ export async function resetCompilationDatabase(
 export function getCompilationDatabase(
   src: NuclideUri,
   params: CompilationDatabaseParams,
-): ConnectableObservable<?ClangCompilationDatabase> {
+): ConnectableObservable<?BuckClangCompilationDatabase> {
   return Observable.fromPromise(
     getCompilationDatabaseHandler(params).getCompilationDatabase(src),
   ).publish();

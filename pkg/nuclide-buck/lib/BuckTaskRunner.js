@@ -73,7 +73,7 @@ const TASKS = [
 ];
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
-const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+export const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {

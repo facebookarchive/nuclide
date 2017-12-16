@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
+
 export type BaseBuckBuildOptions = {
   install?: boolean,
   run?: boolean,
@@ -35,3 +37,21 @@ export type ResolvedRuleType = {
   type: string,
   buildTarget: ResolvedBuildTarget,
 };
+
+export type BuckClangCompilationDatabase = {|
+  file: ?string,
+  flagsFile: ?string,
+  libclangPath: ?string,
+  warnings: Array<string>,
+|};
+
+// Remove the warnings field from the buck value.
+export function convertBuckClangCompilationDatabase(
+  buckDb: ?BuckClangCompilationDatabase,
+): ?ClangCompilationDatabase {
+  if (buckDb != null) {
+    const {file, flagsFile, libclangPath} = buckDb;
+    return {file, flagsFile, libclangPath};
+  }
+  return null;
+}

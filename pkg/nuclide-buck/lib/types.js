@@ -14,7 +14,7 @@ import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
 import type {PlatformService} from './PlatformService';
 import type {Observable} from 'rxjs';
-import type {TaskEvent} from 'nuclide-commons/process';
+import type {TaskEvent, Message} from 'nuclide-commons/process';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
   ResolvedBuildTarget,
@@ -154,3 +154,5 @@ export type BuckTaskRunnerService = {
   getBuildTarget(): ?string,
   setBuildTarget(buildTarget: string): void,
 };
+
+export type ConsolePrinter = (message: Message) => void;

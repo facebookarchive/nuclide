@@ -9,26 +9,94 @@
  * @format
  */
 
-import type {
-  ClangCompilationDatabase,
-  ClangRequestSettings,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {BuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
+import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CompilationDatabaseParams} from './types';
+import type {CompilationDatabaseParams, ConsolePrinter} from './types';
 
+import {convertBuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {BuckTaskRunner} from './BuckTaskRunner';
+import {BuckTaskRunner, CONSOLE_VIEW_URI} from './BuckTaskRunner';
 import {ClangFlagsFileWatcher} from '../../nuclide-clang-base/lib/ClangFlagsFileWatcher';
+
+const WARNING_HINT =
+  'Hint: Try **Nuclide > Clang > Clean and Rebuild** once fixed.';
+
+// Strip off remote error, which is JSON object on last line of error message.
+function cleanupErrorMessage(message: string): string {
+  const trimmed = message.trim();
+  const lastNewline = trimmed.lastIndexOf('\n');
+  if (lastNewline !== -1) {
+    return trimmed.substring(0, lastNewline);
+  }
+  return trimmed;
+}
+
+function constructNotificationOptions(
+  clickCallback?: () => void,
+): atom$NotificationOptions {
+  const buttons = [
+    {
+      text: 'Show in console',
+      onDidClick: () => {
+        // eslint-disable-next-line rulesdir/atom-apis
+        atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
+        if (clickCallback) {
+          clickCallback();
+        }
+      },
+    },
+  ];
+  return {dismissable: true, buttons};
+}
+
+function emitCompilationDbWarnings(
+  db: BuckClangCompilationDatabase,
+  consolePrinter: ?ConsolePrinter,
+): void {
+  if (db.warnings.length > 0) {
+    if (consolePrinter) {
+      db.warnings.forEach(text => consolePrinter({text, level: 'warning'}));
+    }
+    const notification = atom.notifications.addWarning(
+      [
+        'Buck: warnings detected while fetching compile commands,',
+        'some language services may not work properly.',
+        WARNING_HINT,
+      ].join(' '),
+      constructNotificationOptions(() =>
+        // Notification doesn't dismiss itself on click.
+        notification.dismiss(),
+      ),
+    );
+  }
+}
+
+function emitCompilationDbError(
+  errorMessage: string,
+  consolePrinter: ?ConsolePrinter,
+): void {
+  if (consolePrinter) {
+    consolePrinter({text: cleanupErrorMessage(errorMessage), level: 'error'});
+  }
+  const notification = atom.notifications.addError(
+    [
+      'Buck error: build failed while fetching compile commands.',
+      WARNING_HINT,
+    ].join(' '),
+    constructNotificationOptions(() => notification.dismiss()),
+  );
+}
 
 class Provider {
   _projectRootCache: Cache<string, Promise<?string>> = new Cache();
   _compilationDBCache: Cache<
     string,
-    Promise<?ClangCompilationDatabase>,
+    Promise<?BuckClangCompilationDatabase>,
   > = new Cache();
 
   _host: NuclideUri;
@@ -44,8 +112,8 @@ class Provider {
   _reportCompilationDBBusySignalWhile(
     src: string,
     getBusySignalService: () => ?BusySignalService,
-    dbPromise: Promise<?ClangCompilationDatabase>,
-  ): Promise<?ClangCompilationDatabase> {
+    dbPromise: Promise<?BuckClangCompilationDatabase>,
+  ): Promise<?BuckClangCompilationDatabase> {
     const busySignal = getBusySignalService();
     return busySignal == null
       ? dbPromise
@@ -60,7 +128,9 @@ class Provider {
   getCompilationDatabase(
     src: string,
     getBusySignalService: () => ?BusySignalService,
-  ): Promise<?ClangCompilationDatabase> {
+    getConsolePrinter: () => ?ConsolePrinter,
+  ): Promise<?BuckClangCompilationDatabase> {
+    const consolePrinter = getConsolePrinter();
     return this._compilationDBCache.getOrCreate(src, () => {
       return this._reportCompilationDBBusySignalWhile(
         src,
@@ -74,8 +144,14 @@ class Provider {
                 this.resetForSource(src),
               );
             }
+            if (db != null) {
+              emitCompilationDbWarnings(db, consolePrinter);
+            }
           })
-          .toPromise(),
+          .toPromise()
+          .catch(error => {
+            emitCompilationDbError(error.message, consolePrinter);
+          }),
       );
     });
   }
@@ -125,6 +201,7 @@ const supportsSourceCache: Cache<string, Promise<boolean>> = new Cache();
 export function getClangProvider(
   taskRunner: BuckTaskRunner,
   getBusySignalService: () => ?BusySignalService,
+  getConsolePrinter: () => ?ConsolePrinter,
 ): ClangConfigurationProvider {
   return {
     async supportsSource(src: string): Promise<boolean> {
@@ -137,8 +214,12 @@ export function getClangProvider(
     async getSettings(src: string): Promise<?ClangRequestSettings> {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       const provider = getProvider(src, params);
-      const [compilationDatabase, projectRoot] = await Promise.all([
-        provider.getCompilationDatabase(src, getBusySignalService),
+      const [buckCompilationDatabase, projectRoot] = await Promise.all([
+        provider.getCompilationDatabase(
+          src,
+          getBusySignalService,
+          getConsolePrinter,
+        ),
         provider.getProjectRoot(src),
       ]);
       if (projectRoot == null) {
@@ -146,7 +227,9 @@ export function getClangProvider(
       }
       return {
         projectRoot,
-        compilationDatabase,
+        compilationDatabase: convertBuckClangCompilationDatabase(
+          buckCompilationDatabase,
+        ),
       };
     },
     resetForSource(src: string): void {
