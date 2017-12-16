@@ -162,6 +162,13 @@ export class PtyImplementation implements Pty {
       env,
     }));
     subscriptions.add(() => pty.destroy());
+    // We need to dispose PtyClient here so that the client can GC the client.
+    // (Otherwise, Nuclide's RPC framework will keep it around forever).
+    // This is a bit of a weird flow where
+    // 1) PtyClient gets disposed, which triggers this.dispose
+    // 2) this.dispose triggers PtyClient.dispose
+    // so make sure that double-disposing PtyClient is OK.
+    subscriptions.add(client);
     this._client = client;
 
     const onOutput = this._onOutput.bind(this);
