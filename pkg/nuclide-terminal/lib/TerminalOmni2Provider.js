@@ -52,6 +52,7 @@ export default class TerminalOmni2Provider
         {
           type: 'generic',
           primaryText: 'Enter a command to run in the terminal',
+          relevance: 1,
         },
       ];
     } else {
@@ -63,6 +64,7 @@ export default class TerminalOmni2Provider
           type: 'generic',
           primaryText: highlightText`Run ${query} in the terminal`,
           secondaryText: `at ${cwdPath}`,
+          relevance: 1,
           callback: () => {
             goToLocation(
               uriFromInfo({
