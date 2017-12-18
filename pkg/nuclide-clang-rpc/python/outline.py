@@ -117,6 +117,15 @@ def visit_cursor(libclang, cursor):
         # Include template information.
         name = cursor.displayname
         children = []
+        if kind == 'OBJC_CATEGORY_DECL':
+            # Fix for T24363204, ref. http://lists.llvm.org/pipermail/cfe-dev/2014-November/039961.html
+            for child in cursor.get_children():
+                try:
+                    if child.kind.name == 'OBJC_CLASS_REF':
+                        name = '{} ({})'.format(child.displayname, name)
+                        break
+                except:
+                    pass
         for child in cursor.get_children():
             child_outline = visit_cursor(libclang, child)
             if child_outline is not None:
