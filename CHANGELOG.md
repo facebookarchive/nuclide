@@ -1,5 +1,29 @@
 # Nuclide Changelog
 
+## v0.272.0
+
+### Fixathon Highlights
+
+* Tune down aggressive expensive health monitoring (responsible for 10% of CPU usage).
+* Improve Nuclide's startup time by 3 seconds (down from 8 to 5).
+* Improve performance of console (most actions are now O(1) instead of O(n)).
+* Improve breadcrumbs, file tree & file icons expensive DOM operations (was affecting keyboard & scrolling latency).
+* Cleanup unused functionality & some rolled-out GKs (for better consistency on & off lighthouse).
+* Fix various UX and runtime issues throughout Nuclide!
+
+### Java
+
+* Java Language Service logging has been greatly expanded, and Java logs are included when reporting bugs through Nuclide's bug nub.
+
+### C++
+
+* Surface Buck warnings and errors when building compilation databases.
+* Related file finding (switching between source/header files) no longer has to wait for Buck to build first.
+
+### General
+
+* Scrolling pinned datatips now does not also scroll the editor behind it.
+
 ## v0.271.0
 
 ### General
