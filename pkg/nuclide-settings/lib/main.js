@@ -9,9 +9,17 @@
  * @format
  */
 
+import type {
+  DeepLinkService,
+  DeepLinkParams,
+} from '../../nuclide-deep-link/lib/types';
+
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import querystring from 'querystring';
 import * as React from 'react';
+import url from 'url';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
@@ -30,8 +38,18 @@ export function deactivate(): void {
 function registerCommandAndOpener(): UniversalDisposable {
   return new UniversalDisposable(
     atom.workspace.addOpener(uri => {
-      if (uri === WORKSPACE_VIEW_URI) {
-        return viewableFromReactElement(<SettingsPaneItem />);
+      if (uri.startsWith(WORKSPACE_VIEW_URI)) {
+        let initialFilter = '';
+        const {query} = url.parse(uri);
+        if (query != null) {
+          const params = querystring.parse(query);
+          if (typeof params.filter === 'string') {
+            initialFilter = params.filter;
+          }
+        }
+        return viewableFromReactElement(
+          <SettingsPaneItem initialFilter={initialFilter} />,
+        );
       }
     }),
     () => destroyItemWhere(item => item instanceof SettingsPaneItem),
@@ -57,6 +75,22 @@ export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   const disposable = new UniversalDisposable(() => {
     toolBar.removeItems();
   });
+  subscriptions.add(disposable);
+  return disposable;
+}
+
+export function consumeDeepLinkService(service: DeepLinkService): IDisposable {
+  const disposable = service.subscribeToPath(
+    'settings',
+    (params: DeepLinkParams): void => {
+      const {filter} = params;
+      let uri = WORKSPACE_VIEW_URI;
+      if (typeof filter === 'string') {
+        uri += '?' + querystring.stringify({filter});
+      }
+      goToLocation(uri);
+    },
+  );
   subscriptions.add(disposable);
   return disposable;
 }

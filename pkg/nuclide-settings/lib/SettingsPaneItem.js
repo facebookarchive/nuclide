@@ -19,17 +19,25 @@ import {Section} from '../../nuclide-ui/Section';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/settings';
 
+type Props = {
+  initialFilter?: string,
+};
+
+type State = {
+  filter: string,
+};
+
 export default class NuclideSettingsPaneItem extends React.Component<
-  Object,
-  Object,
+  Props,
+  State,
 > {
   _disposables: UniversalDisposable;
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
-      filter: '',
+      filter: props.initialFilter || '',
     };
   }
 
@@ -77,10 +85,6 @@ export default class NuclideSettingsPaneItem extends React.Component<
         const {pathComponents} = nuclide.configMetadata;
         const categoryName = pathComponents[0];
         const packageTitle = pathComponents[1] || pkgName;
-        const categoryMatches =
-          this.state == null || matchesFilter(this.state.filter, categoryName);
-        const packageMatches =
-          this.state == null || matchesFilter(this.state.filter, packageTitle);
 
         // Group packages according to their category.
         let packages = configData[categoryName];
@@ -98,10 +102,11 @@ export default class NuclideSettingsPaneItem extends React.Component<
           const description = getDescription(schema);
           if (
             this.state == null ||
-            categoryMatches ||
-            packageMatches ||
+            matchesFilter(this.state.filter, categoryName) ||
+            matchesFilter(this.state.filter, packageTitle) ||
             matchesFilter(this.state.filter, title) ||
-            matchesFilter(this.state.filter, description)
+            matchesFilter(this.state.filter, description) ||
+            matchesFilter(this.state.filter, keyPath)
           ) {
             settings[settingName] = {
               name: settingName,
@@ -177,6 +182,7 @@ export default class NuclideSettingsPaneItem extends React.Component<
                   <AtomInput
                     size="lg"
                     placeholderText="Filter by setting title or description"
+                    initialValue={this.props.initialFilter}
                     onDidChange={this._onFilterTextChanged}
                   />
                 </Section>

@@ -13,6 +13,11 @@
       "versions": {
         "^1.0.0": "consumeToolBar"
       }
+    },
+    "nuclide-deep-link.provider": {
+      "versions": {
+        "0.0.0": "consumeDeepLinkService"
+      }
     }
   }
 }
