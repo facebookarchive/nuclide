@@ -20,7 +20,7 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
-import {objectFromMap} from 'nuclide-commons/collection';
+import {objectFromMap, mapEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -600,7 +600,10 @@ export default class FileTreeActions {
         })
         .share();
 
-      vcsChanges = hgChanges.switchMap(c => c.statusChanges).map(objectFromMap);
+      vcsChanges = hgChanges
+        .switchMap(c => c.statusChanges)
+        .distinctUntilChanged(mapEqual)
+        .map(objectFromMap);
       vcsCalculating = hgChanges.switchMap(c => c.isCalculatingChanges);
     }
 
