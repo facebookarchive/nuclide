@@ -42,6 +42,7 @@ import {
 } from './getModifierKeys';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
+import isScrollable from './isScrollable';
 import {PinnedDatatip} from './PinnedDatatip';
 
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
@@ -250,6 +251,7 @@ class DatatipManagerForEditor {
   _subscriptions: UniversalDisposable;
   _interactedWith: boolean;
   _checkedScrollable: boolean;
+  _isScrollable: boolean;
 
   constructor(
     editor: atom$TextEditor,
@@ -268,6 +270,7 @@ class DatatipManagerForEditor {
     this._heldKeys = new Set();
     this._interactedWith = false;
     this._checkedScrollable = false;
+    this._isScrollable = false;
     this._lastHiddenTime = 0;
     this._lastFetchedFromCursorPosition = false;
     this._shouldDropNextMouseMoveAfterFocus = false;
@@ -350,21 +353,12 @@ class DatatipManagerForEditor {
         // We'll mark this as an 'interaction' only if the scroll target was scrollable.
         // This requires going over the ancestors, so only check this once.
         // If it comes back as false, we won't bother checking again.
-        if (!this._interactedWith && !this._checkedScrollable) {
-          let node = e.target;
-          while (node != null && node !== this._datatipElement) {
-            if (
-              node.scrollHeight > node.clientHeight ||
-              node.scrollWidth > node.clientWidth
-            ) {
-              this._interactedWith = true;
-              break;
-            }
-            node = node.parentNode;
-          }
+        if (!this._checkedScrollable) {
+          this._isScrollable = isScrollable(this._datatipElement, e);
           this._checkedScrollable = true;
         }
-        if (this._interactedWith) {
+        if (this._isScrollable) {
+          this._interactedWith = true;
           e.stopPropagation();
         }
       }),

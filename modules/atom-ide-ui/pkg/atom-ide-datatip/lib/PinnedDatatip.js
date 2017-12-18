@@ -26,6 +26,7 @@ import classnames from 'classnames';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
+import isScrollable from './isScrollable';
 
 const LINE_END_MARGIN = 20;
 
@@ -74,6 +75,8 @@ export class PinnedDatatip {
   _isDragging: boolean;
   _offset: Position;
   _isHovering: boolean;
+  _checkedScrollable: boolean;
+  _isScrollable: boolean;
   _hideDataTips: () => void;
   _position: PinnedDatatipPosition;
   _showRangeHighlight: boolean;
@@ -96,6 +99,20 @@ export class PinnedDatatip {
     this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
     this._boundHandleMouseLeave = this.handleMouseLeave.bind(this);
     this._boundHandleCapturedClick = this.handleCapturedClick.bind(this);
+    this._checkedScrollable = false;
+    this._isScrollable = false;
+
+    this._subscriptions.add(
+      Observable.fromEvent(this._hostElement, 'wheel').subscribe(e => {
+        if (!this._checkedScrollable) {
+          this._isScrollable = isScrollable(this._hostElement, e);
+          this._checkedScrollable = true;
+        }
+        if (this._isScrollable) {
+          e.stopPropagation();
+        }
+      }),
+    );
     this._hostElement.addEventListener(
       'mouseenter',
       this._boundHandleMouseEnter,
@@ -195,6 +212,9 @@ export class PinnedDatatip {
   handleCapturedClick(event: SyntheticEvent<>): void {
     if (this._isDragging) {
       event.stopPropagation();
+    } else {
+      // Have to re-check scrolling because the datatip size may have changed.
+      this._checkedScrollable = false;
     }
   }
 
