@@ -336,8 +336,9 @@ export class BuckTaskRunner {
     return {
       ...task,
       getTrackingData: () => ({
-        buckRoot,
         buildTarget,
+        deploymentTarget: deploymentTargetString,
+        ruleType: buildRuleType.type,
         taskSettings: state.taskSettings,
       }),
     };
