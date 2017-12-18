@@ -137,13 +137,14 @@ export class CodeActionManager {
           )
             .switchMap(
               event =>
-                Observable.of(event.newBufferRange)
-                  .delay(TIP_DELAY_MS) // Delay the emission of the range.
-                  .startWith(null), // null the range immediately when selection changes.
+                // Remove 0-character selections since it's just cursor movement.
+                event.newBufferRange.isEmpty()
+                  ? Observable.of(null)
+                  : Observable.of(event.newBufferRange)
+                      .delay(TIP_DELAY_MS) // Delay the emission of the range.
+                      .startWith(null), // null the range immediately when selection changes.
             )
             .distinctUntilChanged()
-            // Remove 0-character selections since it's just cursor movement.
-            .filter(range => range == null || !range.isEmpty())
             .takeUntil(destroyEvents);
           return selections.map(
             range => (range == null ? null : {editor, range}),

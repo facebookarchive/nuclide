@@ -15,12 +15,14 @@ import type {CodeHighlightProvider} from './types';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {fastDebounce} from 'nuclide-commons/observable';
+import {fastDebounce, toggle} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 
-const HIGHLIGHT_DELAY_MS = 250;
+const CURSOR_DELAY_MS = 250;
+// Apply a much higher debounce to text changes to avoid disrupting the typing experience.
+const CHANGE_TOGGLE_MS = 2500;
 
 export default class CodeHighlightManager {
   _subscriptions: UniversalDisposable;
@@ -35,43 +37,54 @@ export default class CodeHighlightManager {
 
   _highlightEditors(): rxjs$Subscription {
     return observeActiveEditorsDebounced(0)
+      .do(() => this._destroyMarkers())
       .switchMap(editor => {
         if (editor == null) {
           return Observable.empty();
         }
-        const changeCursorEvents = observableFromSubscribeFunction(
+        const cursorPositions = observableFromSubscribeFunction(
           editor.onDidChangeCursorPosition.bind(editor),
         )
-          .map(event => event.newBufferPosition)
           .filter(
             // If we're moving around inside highlighted ranges, that's fine.
-            position => !this._isPositionInHighlightedRanges(editor, position),
-          );
+            event =>
+              !this._isPositionInHighlightedRanges(
+                editor,
+                event.newBufferPosition,
+              ),
+          )
+          .do(() => this._destroyMarkers()) // Immediately clear previous markers.
+          .let(fastDebounce(CURSOR_DELAY_MS))
+          .startWith((null: any)) // Immediately kick off a highlight event.
+          .map(() => editor.getCursorBufferPosition());
 
+        // Changing text triggers a CHANGE_TOGGLE_MS period in which cursor changes are ignored.
+        // We'll model this as one stream that emits 'false' and another that debounces 'true's.
         const changeEvents = observableFromSubscribeFunction(
           editor.onDidChange.bind(editor),
         )
-          // Ensure we start highlighting immediately.
-          .startWith(null)
-          .map(() => editor.getCursorBufferPosition());
+          .do(() => this._destroyMarkers())
+          .share();
+
+        const changeToggles = Observable.merge(
+          Observable.of(true),
+          changeEvents.mapTo(false),
+          changeEvents.let(fastDebounce(CHANGE_TOGGLE_MS)).mapTo(true),
+        );
 
         const destroyEvents = observableFromSubscribeFunction(
           editor.onDidDestroy.bind(editor),
         );
 
-        return (
-          Observable.merge(changeCursorEvents, changeEvents)
-            // Destroy old markers immediately - never show stale results.
-            .do(() => this._destroyMarkers())
-            .let(fastDebounce(HIGHLIGHT_DELAY_MS))
-            .switchMap(async position => {
-              return {
-                editor,
-                ranges: await this._getHighlightedRanges(editor, position),
-              };
-            })
-            .takeUntil(destroyEvents)
-        );
+        return cursorPositions
+          .let(toggle(changeToggles))
+          .switchMap(async position => {
+            return {
+              editor,
+              ranges: await this._getHighlightedRanges(editor, position),
+            };
+          })
+          .takeUntil(destroyEvents);
       })
       .subscribe(({editor, ranges}) => {
         if (ranges != null) {

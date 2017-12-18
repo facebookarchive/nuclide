@@ -45,7 +45,6 @@ describe('CodeHighlightManager', () => {
     // Just opening the editor should trigger highlights.
     runs(() => {
       advanceClock(1); // editor debounce
-      advanceClock(300);
       expect(spy).toHaveBeenCalled();
     });
 
@@ -55,9 +54,9 @@ describe('CodeHighlightManager', () => {
     runs(() => {
       ranges[0] = new Range([1, 0], [1, 3]);
       editor.setCursorBufferPosition(new Point(1, 0));
+      advanceClock(300); // trigger debounce
       // Old markers should be cleared immediately.
       expect(manager._markers.length).toBe(0);
-      advanceClock(300); // trigger debounce
       expect(spy.callCount).toBe(2);
     });
 
@@ -87,7 +86,7 @@ describe('CodeHighlightManager', () => {
     runs(() => {
       advanceClock(1);
       editor.insertText('a');
-      advanceClock(300); // trigger debounce
+      advanceClock(3000); // trigger typing debounce
       expect(spy).toHaveBeenCalled();
     });
 
