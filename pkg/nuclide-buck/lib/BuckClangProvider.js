@@ -17,6 +17,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams, ConsolePrinter} from './types';
 
 import {convertBuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
+import {track} from '../../nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -147,6 +148,11 @@ class Provider {
             if (db != null) {
               emitCompilationDbWarnings(db, consolePrinter);
             }
+            track('buck-clang.getSettings', {
+              src,
+              db,
+              warningsLength: db != null ? db.warnings.length : 0,
+            });
           })
           .toPromise()
           .catch(error => {

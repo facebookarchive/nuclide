@@ -21,6 +21,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {shellQuote} from 'nuclide-commons/string';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
+import {trackTiming} from '../../nuclide-analytics';
 
 const logger = getLogger('nuclide-buck-rpc');
 
@@ -221,10 +222,16 @@ export async function runBuckCommandFromProjectRoot(
     buckCommandOptions: options,
   } = await _getBuckCommandAndOptions(rootPath, commandOptions);
 
+  // Create an event name from the first arg, e.g. 'buck.query' or 'buck.build'.
+  const analyticsEvent = `buck.${args.length > 0 ? args[0] : ''}`;
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   return getPool(rootPath, readOnly).submit(() => {
     logger.debug(`Running \`${pathToBuck} ${shellQuote(args)}\``);
-    return runCommand(pathToBuck, newArgs, options).toPromise();
+    return trackTiming(
+      analyticsEvent,
+      () => runCommand(pathToBuck, newArgs, options).toPromise(),
+      {args},
+    );
   });
 }
 
