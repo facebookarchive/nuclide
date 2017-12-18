@@ -105,9 +105,9 @@ export class MemoizedFieldsDeriver {
     if (store.vcsStatuses !== conf.vcsStatuses) {
       store.vcsStatuses = conf.vcsStatuses;
 
-      const rootVcsStatuses = store.vcsStatuses.get(this._rootUri) || {};
+      const rootVcsStatuses = store.vcsStatuses.get(this._rootUri) || new Map();
       store.vcsStatusCode =
-        rootVcsStatuses[this._uri] || StatusCodeNumber.CLEAN;
+        rootVcsStatuses.get(this._uri) || StatusCodeNumber.CLEAN;
     }
 
     return store.vcsStatusCode;

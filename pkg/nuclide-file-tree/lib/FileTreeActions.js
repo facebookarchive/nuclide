@@ -20,7 +20,7 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
-import {objectFromMap, mapEqual} from 'nuclide-commons/collection';
+import {mapEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -304,7 +304,7 @@ export default class FileTreeActions {
 
   setVcsStatuses(
     rootKey: string,
-    vcsStatuses: {[path: string]: StatusCodeNumberValue},
+    vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
   ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_VCS_STATUSES,
@@ -558,9 +558,9 @@ export default class FileTreeActions {
     // Observe the repository so that the VCS statuses are kept up to date.
     // This observer should fire off an initial value after we subscribe to it,
     // and subsequent values after any changes to the repository.
-    let vcsChanges: Observable<{
-      [filePath: NuclideUri]: StatusCodeNumberValue,
-    }> = Observable.empty();
+    let vcsChanges: Observable<
+      Map<NuclideUri, StatusCodeNumberValue>,
+    > = Observable.empty();
     let vcsCalculating: Observable<boolean> = Observable.of(false);
 
     if (repo.isDestroyed()) {
@@ -574,7 +574,11 @@ export default class FileTreeActions {
       )
         .let(fastDebounce(1000))
         .startWith(null)
-        .map(_ => this._getCachedPathStatuses(repo));
+        .map(() =>
+          this._getCachedPathStatusesForGitRepo(
+            ((repo: any): atom$GitRepository),
+          ),
+        );
     } else if (repo.getType() === 'hg') {
       // We special-case the HgRepository because it offers up the
       // required observable directly, and because it actually allows us to pick
@@ -602,8 +606,7 @@ export default class FileTreeActions {
 
       vcsChanges = hgChanges
         .switchMap(c => c.statusChanges)
-        .distinctUntilChanged(mapEqual)
-        .map(objectFromMap);
+        .distinctUntilChanged(mapEqual);
       vcsCalculating = hgChanges.switchMap(c => c.isCalculatingChanges);
     }
 
@@ -629,52 +632,39 @@ export default class FileTreeActions {
    * Fetches a consistent object map from absolute file paths to
    * their corresponding `StatusCodeNumber` for easy representation with the file tree.
    */
-  _getCachedPathStatuses(
-    repo: atom$GitRepository | HgRepositoryClient,
-  ): {[filePath: NuclideUri]: StatusCodeNumberValue} {
-    let relativeCodePaths;
-    if (repo.getType() === 'hg') {
-      const hgRepo: HgRepositoryClient = (repo: any);
-      // `hg` already comes from `HgRepositoryClient` in `StatusCodeNumber` format.
-      relativeCodePaths = hgRepo.getCachedPathStatuses();
-    } else if (repo.getType() === 'git') {
-      const gitRepo: atom$GitRepository = (repo: any);
-      const {statuses} = gitRepo;
-      const internalGitRepo = gitRepo.getRepo();
-      relativeCodePaths = {};
-      // Transform `git` bit numbers to `StatusCodeNumber` format.
-      const {StatusCodeNumber} = hgConstants;
-      for (const relativePath in statuses) {
-        const gitStatusNumber = statuses[relativePath];
-        let statusCode;
-        if (internalGitRepo.isStatusNew(gitStatusNumber)) {
-          statusCode = StatusCodeNumber.UNTRACKED;
-        } else if (internalGitRepo.isStatusStaged(gitStatusNumber)) {
-          statusCode = StatusCodeNumber.ADDED;
-        } else if (internalGitRepo.isStatusModified(gitStatusNumber)) {
-          statusCode = StatusCodeNumber.MODIFIED;
-        } else if (internalGitRepo.isStatusIgnored(gitStatusNumber)) {
-          statusCode = StatusCodeNumber.IGNORED;
-        } else if (internalGitRepo.isStatusDeleted(gitStatusNumber)) {
-          statusCode = StatusCodeNumber.REMOVED;
-        } else {
-          getLogger('nuclide-file-tree').warn(
-            `Unrecognized git status number ${gitStatusNumber}`,
-          );
-          statusCode = StatusCodeNumber.MODIFIED;
-        }
-        relativeCodePaths[relativePath] = statusCode;
-      }
-    } else {
-      throw new Error(`Unsupported repository type: ${repo.getType()}`);
-    }
+  _getCachedPathStatusesForGitRepo(
+    repo: atom$GitRepository,
+  ): Map<NuclideUri, StatusCodeNumberValue> {
+    const gitRepo: atom$GitRepository = (repo: any);
+    const {statuses} = gitRepo;
+    const internalGitRepo = gitRepo.getRepo();
+    const codePathStatuses = new Map();
     const repoRoot = repo.getWorkingDirectory();
-    const absoluteCodePaths = {};
-    for (const relativePath in relativeCodePaths) {
-      const absolutePath = nuclideUri.join(repoRoot, relativePath);
-      absoluteCodePaths[absolutePath] = relativeCodePaths[relativePath];
+    // Transform `git` bit numbers to `StatusCodeNumber` format.
+    const {StatusCodeNumber} = hgConstants;
+    for (const relativePath in statuses) {
+      const gitStatusNumber = statuses[relativePath];
+      let statusCode;
+      if (internalGitRepo.isStatusNew(gitStatusNumber)) {
+        statusCode = StatusCodeNumber.UNTRACKED;
+      } else if (internalGitRepo.isStatusStaged(gitStatusNumber)) {
+        statusCode = StatusCodeNumber.ADDED;
+      } else if (internalGitRepo.isStatusModified(gitStatusNumber)) {
+        statusCode = StatusCodeNumber.MODIFIED;
+      } else if (internalGitRepo.isStatusIgnored(gitStatusNumber)) {
+        statusCode = StatusCodeNumber.IGNORED;
+      } else if (internalGitRepo.isStatusDeleted(gitStatusNumber)) {
+        statusCode = StatusCodeNumber.REMOVED;
+      } else {
+        getLogger('nuclide-file-tree').warn(
+          `Unrecognized git status number ${gitStatusNumber}`,
+        );
+        statusCode = StatusCodeNumber.MODIFIED;
+      }
+      codePathStatuses.set(nuclideUri.join(repoRoot, relativePath), statusCode);
     }
-    return absoluteCodePaths;
+
+    return codePathStatuses;
   }
 
   _repositoryRemoved(repo: atom$Repository) {

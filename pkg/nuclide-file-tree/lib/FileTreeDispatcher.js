@@ -118,7 +118,7 @@ export type FileTreeAction =
   | {
       actionType: 'SET_VCS_STATUSES', // VCS = version control system
       rootKey: NuclideUri,
-      vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
+      vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
     }
   | {
       actionType: 'SET_REPOSITORIES',

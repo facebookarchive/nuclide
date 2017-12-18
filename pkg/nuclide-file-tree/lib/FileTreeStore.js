@@ -64,7 +64,7 @@ export type ExportStoreData = {
 export type StoreConfigData = {
   vcsStatuses: Immutable.Map<
     NuclideUri,
-    {[path: NuclideUri]: StatusCodeNumberValue},
+    Map<NuclideUri, StatusCodeNumberValue>,
   >,
   workingSet: WorkingSet,
   hideIgnoredNames: boolean,
@@ -734,11 +734,10 @@ export class FileTreeStore {
 
   _setFileChanges(
     rootKey: NuclideUri,
-    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
+    vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
   ): void {
     const fileChanges = new Map();
-    Object.keys(vcsStatuses).forEach(filePath => {
-      const statusCode = vcsStatuses[filePath];
+    vcsStatuses.forEach((statusCode, filePath) => {
       fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
     });
 
@@ -747,7 +746,7 @@ export class FileTreeStore {
 
   _setVcsStatuses(
     rootKey: NuclideUri,
-    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
+    vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
   ): void {
     // We use file changes for populating the uncommitted list, this is different as compared
     // to what is computed in the vcsStatuses in that it does not need the exact path but just
@@ -760,7 +759,7 @@ export class FileTreeStore {
     // tree, since the reported VCS status may be for a node that is not yet present in the
     // fetched tree, and so it it can't affect its parents statuses. To have the roots colored
     // consistently we manually add all parents of all of the modified nodes up till the root
-    const enrichedVcsStatuses = {...vcsStatuses};
+    const enrichedVcsStatuses = new Map(vcsStatuses);
 
     const ensurePresentParents = uri => {
       if (uri === rootKey) {
@@ -771,16 +770,15 @@ export class FileTreeStore {
       while (current !== rootKey) {
         current = FileTreeHelpers.getParentKey(current);
 
-        if (enrichedVcsStatuses[current] != null) {
+        if (enrichedVcsStatuses.has(current)) {
           return;
         }
 
-        enrichedVcsStatuses[current] = StatusCodeNumber.MODIFIED;
+        enrichedVcsStatuses.set(current, StatusCodeNumber.MODIFIED);
       }
     };
 
-    Object.keys(vcsStatuses).forEach(uri => {
-      const status = vcsStatuses[uri];
+    vcsStatuses.forEach((status, uri) => {
       if (
         status === StatusCodeNumber.MODIFIED ||
         status === StatusCodeNumber.ADDED ||
@@ -795,31 +793,9 @@ export class FileTreeStore {
       }
     });
 
-    if (this._vcsStatusesAreDifferent(rootKey, enrichedVcsStatuses)) {
-      this._updateConf(conf => {
-        conf.vcsStatuses = conf.vcsStatuses.set(rootKey, enrichedVcsStatuses);
-      });
-    }
-  }
-
-  _vcsStatusesAreDifferent(
-    rootKey: NuclideUri,
-    newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
-  ): boolean {
-    const currentStatuses = this._conf.vcsStatuses.get(rootKey);
-    if (currentStatuses == null || newVcsStatuses == null) {
-      if (currentStatuses !== newVcsStatuses) {
-        return true;
-      }
-    }
-
-    const currentKeys = Object.keys(currentStatuses);
-    const newKeys = Object.keys(newVcsStatuses);
-    if (currentKeys.length !== newKeys.length) {
-      return true;
-    }
-
-    return newKeys.some(key => currentStatuses[key] !== newVcsStatuses[key]);
+    this._updateConf(conf => {
+      conf.vcsStatuses = conf.vcsStatuses.set(rootKey, enrichedVcsStatuses);
+    });
   }
 
   _setUsePreviewTabs(usePreviewTabs: boolean): void {
