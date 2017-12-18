@@ -118,6 +118,12 @@ class Activation {
           line: selection.line,
           column: selection.column,
         });
+      }
+
+      if (
+        selection.resultType === 'FILE' ||
+        selection.resultType === 'SYMBOL'
+      ) {
         track('quickopen-select-file', {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,
