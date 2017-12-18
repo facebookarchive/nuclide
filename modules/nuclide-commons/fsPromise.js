@@ -471,6 +471,18 @@ function realpath(path: string, cache?: Object): Promise<string> {
   });
 }
 
+function access(path: string, mode: number): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    fs.access(path, mode, err => {
+      if (err == null) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    });
+  });
+}
+
 function stat(path: string): Promise<fs.Stats> {
   return new Promise((resolve, reject) => {
     fs.stat(path, (err, result) => {
@@ -568,4 +580,5 @@ export default {
   unlink,
   utimes,
   rmdir,
+  access,
 };

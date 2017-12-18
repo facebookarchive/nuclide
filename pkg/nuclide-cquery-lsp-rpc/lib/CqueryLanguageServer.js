@@ -16,6 +16,7 @@ import type {
   CqueryProjectKey,
   RequestLocationsResult,
 } from './types';
+import type {CqueryLanguageService} from '..';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -28,7 +29,6 @@ import {getInitializationOptions} from './CqueryInitialization';
 import {CqueryInvalidator} from './CqueryInvalidator';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import {CqueryProjectManager} from './CqueryProjectManager';
-import type {CqueryLanguageService} from '..';
 
 export const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
@@ -105,6 +105,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     if (initalizationOptions == null) {
       return null;
     }
+
     this._logger.info(
       `Using cache dir: ${initalizationOptions.cacheDirectory}`,
     );
@@ -172,7 +173,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     project: CqueryProject,
   ): Promise<void> {
     this._projectManager.associateFileWithProject(file, project);
-    this._processes.get(this._projectManager.getProjectKey(project));
+    this._processes.get(this._projectManager.getProjectKey(project)); // spawn the process ahead of time
   }
 
   async getLanguageServiceForFile(

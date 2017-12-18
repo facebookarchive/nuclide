@@ -12,8 +12,11 @@
 import type {CqueryProject} from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import os from 'os';
+import fsPromise from '../../../modules/nuclide-commons/fsPromise';
+import fs from 'fs';
 
-const CQUERY_CACHE_DIR = 'cquery_cache';
+const CQUERY_CACHE_DIR = '.cquery_cache';
 
 // TODO pelmers: expose some of these in the atom config
 function staticInitializationOptions(): Object {
@@ -65,7 +68,9 @@ async function getInitializationOptionsWithCompilationDb(
   return {
     ...staticInitializationOptions(),
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: nuclideUri.join(compilationDbDir, CQUERY_CACHE_DIR),
+    cacheDirectory: await verifyOrCreateFallbackCacheDir(
+      nuclideUri.join(compilationDbDir, CQUERY_CACHE_DIR),
+    ),
   };
 }
 
@@ -76,6 +81,18 @@ async function getInitializationOptionsWithoutCompilationDb(
   return {
     ...staticInitializationOptions(),
     extraClangArguments: defaultFlags,
-    cacheDirectory: nuclideUri.join(projectRoot, CQUERY_CACHE_DIR),
+    cacheDirectory: await verifyOrCreateFallbackCacheDir(
+      nuclideUri.join(projectRoot, CQUERY_CACHE_DIR),
+    ),
   };
+}
+
+async function verifyOrCreateFallbackCacheDir(cacheDir: string) {
+  // If the cache directory can't be created, then we fallback to putting it
+  // in the system's tempdir. This makes caching unreliable but otherwise
+  // cquery would crash.
+  if (!await fsPromise.access(cacheDir, fs.W_OK + fs.R_OK)) {
+    return nuclideUri.join(os.tmpdir(), cacheDir);
+  }
+  return cacheDir;
 }
