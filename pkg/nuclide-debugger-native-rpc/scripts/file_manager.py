@@ -158,6 +158,13 @@ class File(FileLike):
 
     @staticmethod
     def from_filespec(sbfilespec, basepath='.'):
+        if basepath == '':
+            try:
+                from fb_path_resolver import absolutize
+                return File(sbfilespec, absolutize(sbfilespec.fullpath))
+            except ImportError:
+                # Non-fb environment, swallow
+                pass
         abspath = os.path.realpath(os.path.normpath(os.path.join(basepath, sbfilespec.fullpath)))
         return File(sbfilespec, abspath)
 

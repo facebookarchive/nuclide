@@ -139,14 +139,7 @@ class DebuggerDomain(HandlerDomain):
         # Otherwise, it's a regular file+line breakpoint
         # Use source file name to set breakpoint.
         parsed_url = urlparse.urlparse(params['url'])
-        base_path = self.debugger_store.base_path
-        if base_path != '.' and parsed_url.path.startswith(base_path):
-            path = parsed_url.path.replace(base_path, '', 1)
-            if path.startswith('/'):
-                path = path.replace('/', '', 1)
-            path = os.path.join('./', path)
-        else:
-            path = os.path.basename(parsed_url.path)
+        path = self._parse_breakpoint_path(parsed_url.path)
 
         return self._set_breakpoint_by_source_path(
             str(path),
@@ -244,3 +237,20 @@ class DebuggerDomain(HandlerDomain):
     def _is_hex_address(self, path):
         pattern = re.compile('0x[0-9A-Fa-f]+')
         return re.match(pattern, path)
+
+    def _parse_breakpoint_path(self, path):
+        base_path = self.debugger_store.base_path
+        if base_path == '':
+            try:
+                from fb_path_resolver import relativize
+                return relativize(path)
+            except ImportError:
+                # Non-fb environment, swallow
+                pass
+        if base_path != '.' and path.startswith(base_path):
+            path = path.replace(base_path, '', 1)
+            if path.startswith('/'):
+                path = path.replace('/', '', 1)
+            return os.path.join('./', path)
+        else:
+            return os.path.basename(path)
