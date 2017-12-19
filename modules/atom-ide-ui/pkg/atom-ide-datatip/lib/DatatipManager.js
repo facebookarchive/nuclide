@@ -22,6 +22,7 @@ import type {
 } from './types';
 
 import {Range} from 'atom';
+import {asyncFind} from 'nuclide-commons/promise';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -31,8 +32,6 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import idx from 'idx';
 import performanceNow from 'nuclide-commons/performanceNow';
 import {Observable} from 'rxjs';
-import {arrayCompact} from 'nuclide-commons/collection';
-import {asyncFind} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
@@ -50,7 +49,7 @@ const DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY = 1000;
 
 type PinClickHandler = (editor: atom$TextEditor, datatip: Datatip) => void;
 
-type DataTipResult = {
+type DatatipResult = {
   datatip: Datatip,
   provider: AnyDatatipProvider,
 };
@@ -97,21 +96,21 @@ function getBufferPosition(
   return editor.bufferPositionForScreenPosition(screenPosition);
 }
 
-async function getTopDatatipAndProvider<TProvider: AnyDatatipProvider>(
+async function getDatatipResults<TProvider: AnyDatatipProvider>(
   providers: ProviderRegistry<TProvider>,
   editor: atom$TextEditor,
   position: atom$Point,
   invoke: TProvider => Promise<?Datatip>,
-): Promise<?DataTipResult> {
+): Promise<Array<DatatipResult>> {
   const filteredDatatipProviders = Array.from(
     providers.getAllProvidersForEditor(editor),
   );
   if (filteredDatatipProviders.length === 0) {
-    return null;
+    return [];
   }
 
-  const datatipPromises = filteredDatatipProviders.map(
-    async (provider: TProvider): Promise<?DataTipResult> => {
+  const promises = filteredDatatipProviders.map(
+    async (provider: TProvider): Promise<?DatatipResult> => {
       const name = getProviderName(provider);
       const timingTracker = new analytics.TimingTracker(name + '.datatip');
       try {
@@ -122,7 +121,7 @@ async function getTopDatatipAndProvider<TProvider: AnyDatatipProvider>(
 
         timingTracker.onSuccess();
 
-        const result: DataTipResult = {
+        const result: DatatipResult = {
           datatip,
           provider,
         };
@@ -137,8 +136,12 @@ async function getTopDatatipAndProvider<TProvider: AnyDatatipProvider>(
       }
     },
   );
-
-  return asyncFind(datatipPromises, p => p);
+  if (featureConfig.get('atom-ide-datatip.onlyTopDatatip')) {
+    const result = await asyncFind(promises, x => x);
+    return result != null ? [result] : [];
+  } else {
+    return (await Promise.all(promises)).filter(Boolean);
+  }
 }
 
 type PinnableDatatipProps = {
@@ -240,7 +243,7 @@ class DatatipManagerForEditor {
   _lastFetchedFromCursorPosition: boolean;
   _lastMoveEvent: ?MouseEvent;
   _lastPosition: ?atom$Point;
-  _lastDatatipAndProviderPromise: ?Promise<?DataTipResult>;
+  _lastResultsPromise: ?Promise<Array<DatatipResult>>;
   _heldKeys: Set<ModifierKey>;
   _markerDisposable: ?IDisposable;
   _pinnedDatatips: Set<PinnedDatatip>;
@@ -515,41 +518,36 @@ class DatatipManagerForEditor {
     );
   }
 
-  async _fetch(position: atom$Point): Promise<Array<DataTipResult>> {
+  async _fetch(position: atom$Point): Promise<Array<DatatipResult>> {
     this._setState(DatatipState.FETCHING);
 
-    let datatipAndProviderPromise: Promise<?DataTipResult>;
+    let results: Promise<Array<DatatipResult>>;
     if (
       this._lastPosition != null &&
       position.isEqual(this._lastPosition) &&
-      this._lastDatatipAndProviderPromise != null
+      this._lastResultsPromise != null
     ) {
-      datatipAndProviderPromise = this._lastDatatipAndProviderPromise;
+      results = this._lastResultsPromise;
     } else {
-      this._lastDatatipAndProviderPromise = getTopDatatipAndProvider(
+      this._lastResultsPromise = getDatatipResults(
         this._datatipProviders,
         this._editor,
         position,
         provider => provider.datatip(this._editor, position),
       );
-      datatipAndProviderPromise = this._lastDatatipAndProviderPromise;
+      results = this._lastResultsPromise;
       this._lastPosition = position;
     }
 
-    const datatipsAndProviders: Array<DataTipResult> = arrayCompact(
-      await Promise.all([
-        datatipAndProviderPromise,
-        getTopDatatipAndProvider(
-          this._modifierDatatipProviders,
-          this._editor,
-          position,
-          provider =>
-            provider.modifierDatatip(this._editor, position, this._heldKeys),
-        ),
-      ]),
+    return (await results).concat(
+      await getDatatipResults(
+        this._modifierDatatipProviders,
+        this._editor,
+        position,
+        provider =>
+          provider.modifierDatatip(this._editor, position, this._heldKeys),
+      ),
     );
-
-    return datatipsAndProviders;
   }
 
   async _fetchAndRender(
@@ -748,7 +746,7 @@ class DatatipManagerForEditor {
     if (pos == null) {
       return;
     }
-    const results: Array<DataTipResult> = await this._fetch(pos);
+    const results: Array<DatatipResult> = await this._fetch(pos);
     this._setState(DatatipState.HIDDEN);
 
     const tip = idx(results, _ => _[0].datatip);

@@ -28,6 +28,12 @@
       "type": "number",
       "default": 1000,
       "minimum": 1
+    },
+    "onlyTopDatatip": {
+      "title": "Only display the top datatip",
+      "description": "Display only the highest priority datatip on hover.",
+      "type": "boolean",
+      "default": false
     }
   },
   "providedServices": {
