@@ -342,10 +342,9 @@ export default class FileTreeActions {
     // Group all of the root keys by their repository, excluding any that don't belong to a
     // repository.
     const rootKeysForRepository = Immutable.Map(
-      Immutable.List(rootKeys)
-        .groupBy((rootKey, index) => nullthrows(rootRepos[index]))
-        .filter((v, k) => k != null)
-        .map(v => Immutable.Set(v)),
+      omitNullKeys(
+        Immutable.List(rootKeys).groupBy((rootKey, index) => rootRepos[index]),
+      ).map(v => Immutable.Set(v)),
     );
 
     const prevRepos = this._store.getRepositories();
@@ -685,4 +684,13 @@ export default class FileTreeActions {
     this.invalidateRemovedFolder();
     disposable.dispose();
   }
+}
+
+/**
+ * A flow-friendly way of filtering out null keys.
+ */
+function omitNullKeys<T, U>(
+  map: Immutable.KeyedSeq<?T, U>,
+): Immutable.KeyedCollection<T, U> {
+  return (map.filter((v, k) => k != null): any);
 }
