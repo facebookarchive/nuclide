@@ -19,7 +19,7 @@ import Terminal from 'xterm';
 
 import {getPtyServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {observeElementDimensions} from '../../commons-atom/observe-element-dimensions';
+import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
 import {
   infoFromUri,
@@ -273,7 +273,7 @@ export class TerminalView implements PtyClient {
       Observable.merge(
         Observable.fromEvent(this._terminal, 'focus'),
         Observable.fromEvent(window, 'resize'),
-        observeElementDimensions(this._div),
+        new ResizeObservable(this._div),
       )
         .let(fastDebounce(RESIZE_EVENT_DEBOUNCE_MS))
         .subscribe(() => this._fitAndResize()),
