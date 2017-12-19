@@ -223,10 +223,7 @@ export default class DropdownResults extends React.Component<Props, State> {
     // want to show dropdown results again.
     if (!this._shouldShowOnChange) {
       this._shouldShowOnChange = true;
-    } else if (
-      this.props.atomInput.isFocussed() &&
-      !this.state.optionsVisible
-    ) {
+    } else if (this.props.atomInput.isFocused() && !this.state.optionsVisible) {
       this.setState({
         optionsVisible: true,
       });

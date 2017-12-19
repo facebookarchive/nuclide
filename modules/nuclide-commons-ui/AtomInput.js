@@ -72,7 +72,7 @@ export class AtomInput extends React.Component<Props, State> {
   _rootNode: ?HTMLElement;
   _debouncedEditorBlur: (blurEvent: Event) => void;
   _debouncedEditorFocus: () => void;
-  _isFocussed: boolean;
+  _isFocused: boolean;
 
   static defaultProps: DefaultProps = {
     disabled: false,
@@ -232,20 +232,20 @@ export class AtomInput extends React.Component<Props, State> {
   }
 
   _onEditorFocus = (): void => {
-    if (this.isFocussed() && !this._isFocussed) {
-      this._isFocussed = true;
+    if (this.isFocused() && !this._isFocused) {
+      this._isFocused = true;
       this.props.onFocus && this.props.onFocus();
     }
   };
 
   _onEditorBlur = (blurEvent: Event): void => {
-    if (!this.isFocussed() && this._isFocussed) {
-      this._isFocussed = false;
+    if (!this.isFocused() && this._isFocused) {
+      this._isFocused = false;
       this.props.onBlur && this.props.onBlur(blurEvent);
     }
   };
 
-  isFocussed(): boolean {
+  isFocused(): boolean {
     return (
       this._rootNode != null && this._rootNode.contains(document.activeElement)
     );
