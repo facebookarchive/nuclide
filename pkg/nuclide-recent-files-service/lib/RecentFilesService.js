@@ -9,9 +9,12 @@
  * @format
  */
 
-export type FilePath = string;
-export type TimeStamp = number;
-export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
+import type {
+  FileList,
+  FilePath,
+  TimeStamp,
+  RecentFilesSerializedState,
+} from '..';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -20,7 +23,7 @@ export default class RecentFilesService {
   _fileList: Map<FilePath, TimeStamp>;
   _subscriptions: UniversalDisposable;
 
-  constructor(state: ?{filelist?: FileList}) {
+  constructor(state: ?RecentFilesSerializedState) {
     this._fileList = new Map();
     if (state != null && state.filelist != null) {
       // Serialized state is in reverse chronological order. Reverse it to insert items correctly.

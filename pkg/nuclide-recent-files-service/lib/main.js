@@ -9,27 +9,32 @@
  * @format
  */
 
-import invariant from 'assert';
-import {Disposable} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import RecentFilesService from './RecentFilesService';
+
+export type FilePath = string;
+export type TimeStamp = number;
+export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
+export type RecentFilesSerializedState = {filelist?: FileList};
 
 class Activation {
   _subscriptions: UniversalDisposable;
   _service: RecentFilesService;
 
-  constructor(state: ?Object) {
-    this._subscriptions = new UniversalDisposable();
+  constructor(state: ?RecentFilesSerializedState) {
     this._service = new RecentFilesService(state);
-    this._subscriptions.add(
-      new Disposable(() => {
-        this._service.dispose();
-      }),
-    );
+    this._subscriptions = new UniversalDisposable(this._service);
   }
 
-  getService(): RecentFilesService {
+  provideRecentFilesService(): RecentFilesService {
     return this._service;
+  }
+
+  serialize(): Object {
+    return {
+      filelist: this._service.getRecentFiles(),
+    };
   }
 
   dispose() {
@@ -37,29 +42,4 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  if (activation == null) {
-    activation = new Activation(state);
-  }
-}
-
-export function provideRecentFilesService(): RecentFilesService {
-  invariant(activation);
-  return activation.getService();
-}
-
-export function serialize(): Object {
-  invariant(activation);
-  return {
-    filelist: activation.getService().getRecentFiles(),
-  };
-}
-
-export function deactivate(): void {
-  if (activation) {
-    activation.dispose();
-    activation = null;
-  }
-}
+createPackage(module.exports, Activation);
