@@ -14,12 +14,12 @@ import type {Action, Tunnel, OpenTunnel} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
 import * as Actions from './Actions';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 export function openTunnels(
-  state: Immutable.Map<Tunnel, OpenTunnel> = new Immutable.Map(),
+  state: Immutable.Map<Tunnel, OpenTunnel> = Immutable.Map(),
   action: Action,
 ) {
   switch (action.type) {

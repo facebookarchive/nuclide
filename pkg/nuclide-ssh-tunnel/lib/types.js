@@ -15,7 +15,7 @@ import type {Subject} from 'rxjs';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {Directory} from '../../nuclide-remote-connection';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 export type SshTunnelService = {
   openTunnel(
