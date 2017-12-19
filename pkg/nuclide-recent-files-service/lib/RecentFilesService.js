@@ -15,16 +15,18 @@ import type {
   TimeStamp,
   RecentFilesSerializedState,
 } from '..';
+import type {LRUCache} from 'lru-cache';
 
+import LRU from 'lru-cache';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
-  _fileList: Map<FilePath, TimeStamp>;
+  _fileList: LRUCache<FilePath, TimeStamp>;
   _subscriptions: UniversalDisposable;
 
   constructor(state: ?RecentFilesSerializedState) {
-    this._fileList = new Map();
+    this._fileList = LRU({max: 100});
     if (state != null && state.filelist != null) {
       // Serialized state is in reverse chronological order. Reverse it to insert items correctly.
       state.filelist.reduceRight((_, fileItem) => {
@@ -48,8 +50,6 @@ export default class RecentFilesService {
   }
 
   touchFile(path: string): void {
-    // Delete first to force a new insertion.
-    this._fileList.delete(path);
     this._fileList.set(path, Date.now());
   }
 
@@ -57,13 +57,11 @@ export default class RecentFilesService {
    * Returns a reverse-chronological list of recently opened files.
    */
   getRecentFiles(): FileList {
-    return Array.from(this._fileList)
-      .reverse()
-      .map(pair => ({
-        resultType: 'FILE',
-        path: pair[0],
-        timestamp: pair[1],
-      }));
+    return this._fileList.dump().map(({k, v}) => ({
+      resultType: 'FILE',
+      path: k,
+      timestamp: v,
+    }));
   }
 
   dispose() {
