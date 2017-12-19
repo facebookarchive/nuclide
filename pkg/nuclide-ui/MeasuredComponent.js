@@ -11,12 +11,14 @@
 
 import * as React from 'react';
 
-import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
-
-import {observeElementDimensions} from '../commons-atom/observe-element-dimensions';
+import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
+import invariant from 'assert';
 
 type Props = {
-  onMeasurementsChanged: (measurements: DOMMeasurements) => void,
+  onMeasurementsChanged: (
+    measurements: DOMRectReadOnly,
+    target: HTMLElement,
+  ) => mixed,
   children?: React.Element<any>,
 };
 
@@ -26,7 +28,7 @@ type Props = {
  */
 export class MeasuredComponent extends React.Component<Props> {
   // Listens to the container DOM node for mutations
-  _mutationObserverSubscription: rxjs$ISubscription;
+  _resizeSubscription: rxjs$ISubscription;
   _domNode: ?HTMLElement;
 
   _updateDomNode = (node: ?HTMLElement): void => {
@@ -34,12 +36,16 @@ export class MeasuredComponent extends React.Component<Props> {
       this._domNode = null;
       // _updateDomNode is called before component unmount, so don't need to unsubscribe()
       // in componentWillUnmount()
-      this._mutationObserverSubscription.unsubscribe();
+      this._resizeSubscription.unsubscribe();
       return;
     }
-    this._mutationObserverSubscription = observeElementDimensions(
-      node,
-    ).subscribe(this.props.onMeasurementsChanged);
+    this._resizeSubscription = new ResizeObservable(node).subscribe(entries => {
+      invariant(entries.length === 1);
+      this.props.onMeasurementsChanged(
+        entries[0].contentRect,
+        entries[0].target,
+      );
+    });
     this._domNode = node;
   };
 

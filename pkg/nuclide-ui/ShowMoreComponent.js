@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
-
 import * as React from 'react';
 import {MeasuredComponent} from './MeasuredComponent';
 import {Button} from 'nuclide-commons-ui/Button';
@@ -41,10 +39,15 @@ export class ShowMoreComponent extends React.Component<Props, State> {
     };
   }
 
-  _updateMeasurements = (newMeasurements: DOMMeasurements): void => {
-    if (newMeasurements.scrollHeight !== this.state.currentHeight) {
+  _updateMeasurements = (
+    newMeasurements: DOMRectReadOnly,
+    target: HTMLElement,
+  ): void => {
+    const newHeight = target.scrollHeight;
+
+    if (newHeight !== this.state.currentHeight) {
       this.setState({
-        currentHeight: newMeasurements.scrollHeight,
+        currentHeight: newHeight,
       });
     }
   };
