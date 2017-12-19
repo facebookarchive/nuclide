@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,30 +16,31 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Command} from './Command';
-import type {DebuggerInterface} from './DebuggerInterface';
+class BreakpointDisableCommand {
 
-export default class BreakpointDisableCommand implements Command {
-  name = 'disable';
-  helpText = '[index]: temporarily disables a breakpoint.';
+  constructor(debug) {
+    this.name = 'disable';
+    this.helpText = '[index]: temporarily disables a breakpoint.';
 
-  _debugger: DebuggerInterface;
-
-  constructor(debug: DebuggerInterface) {
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
-    let index = -1;
+  execute(args) {
+    var _this = this;
 
-    if (args.length !== 1 || isNaN((index = parseInt(args[0], 10)))) {
-      throw new Error("Format is 'breakpoint disable index'");
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      let index = -1;
 
-    await this._debugger.setBreakpointEnabled(index, false);
+      if (args.length !== 1 || isNaN(index = parseInt(args[0], 10))) {
+        throw new Error("Format is 'breakpoint disable index'");
+      }
+
+      yield _this._debugger.setBreakpointEnabled(index, false);
+    })();
   }
 }
+exports.default = BreakpointDisableCommand;

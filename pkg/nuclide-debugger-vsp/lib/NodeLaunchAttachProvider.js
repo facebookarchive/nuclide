@@ -1,3 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _NodeLaunchUiComponent;
+
+function _load_NodeLaunchUiComponent() {
+  return _NodeLaunchUiComponent = _interopRequireDefault(require('./NodeLaunchUiComponent'));
+}
+
+var _NodeAttachUiComponent;
+
+function _load_NodeAttachUiComponent() {
+  return _NodeAttachUiComponent = _interopRequireDefault(require('./NodeAttachUiComponent'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,65 +37,58 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import * as React from 'react';
-import NodeLaunchUiComponent from './NodeLaunchUiComponent';
-import NodeAttachUiComponent from './NodeAttachUiComponent';
-import invariant from 'assert';
-
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-
-export default class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  constructor(targetUri: string) {
+class NodeLaunchAttachProvider extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachProvider {
+  constructor(targetUri) {
     super('Node', targetUri);
   }
 
-  getCallbacksForAction(action: DebuggerConfigAction) {
+  getCallbacksForAction(action) {
     return {
       /**
        * Whether this provider is enabled or not.
        */
-      isEnabled: async () => {
-        return true;
-      },
+      isEnabled: (() => {
+        var _ref = (0, _asyncToGenerator.default)(function* () {
+          return true;
+        });
+
+        return function isEnabled() {
+          return _ref.apply(this, arguments);
+        };
+      })(),
 
       /**
        * Returns a list of supported debugger types + environments for the specified action.
        */
-      getDebuggerTypeNames: super.getCallbacksForAction(action)
-        .getDebuggerTypeNames,
+      getDebuggerTypeNames: super.getCallbacksForAction(action).getDebuggerTypeNames,
 
       /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
-      getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      getComponent: (debuggerTypeName, configIsValidChanged) => {
         if (action === 'launch') {
-          return (
-            <NodeLaunchUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
+          return _react.createElement((_NodeLaunchUiComponent || _load_NodeLaunchUiComponent()).default, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged
+          });
         } else if (action === 'attach') {
-          return (
-            <NodeAttachUiComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
+          return _react.createElement((_NodeAttachUiComponent || _load_NodeAttachUiComponent()).default, {
+            targetUri: this.getTargetUri(),
+            configIsValidChanged: configIsValidChanged
+          });
         } else {
-          invariant(false, 'Unrecognized action for component.');
+          if (!false) {
+            throw new Error('Unrecognized action for component.');
+          }
         }
-      },
+      }
     };
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.default = NodeLaunchAttachProvider;

@@ -1,3 +1,56 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _V8Protocol;
+
+function _load_V8Protocol() {
+  return _V8Protocol = _interopRequireDefault(require('./V8Protocol'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function raiseAdapterExitedEvent(exitCode) {
+  return {
+    seq: 0,
+    type: 'event',
+    event: 'adapter-exited',
+    body: { exitCode: 0 }
+  };
+}
+
+/**
+ * Use V8 JSON-RPC protocol to send & receive messages
+ * (requests, responses & events) over `stdio` of adapter child processes.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,196 +59,127 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-import type {VSAdapterExecutableInfo} from './types';
+class VsDebugSession extends (_V8Protocol || _load_V8Protocol()).default {
 
-import child_process from 'child_process';
-import V8Protocol from './V8Protocol';
-import {
-  killProcess,
-  logStreamErrors,
-  preventStreamsFromThrowing,
-} from 'nuclide-commons/process';
-import {Observable, Subject} from 'rxjs';
-import idx from 'idx';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-
-export interface AdapterExitedEvent extends DebugProtocol.base$Event {
-  event: 'adapter-exited';
-  body: {exitCode: number};
-}
-
-function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
-  return {
-    seq: 0,
-    type: 'event',
-    event: 'adapter-exited',
-    body: {exitCode: 0},
-  };
-}
-
-/**
- * Use V8 JSON-RPC protocol to send & receive messages
- * (requests, responses & events) over `stdio` of adapter child processes.
- */
-export default class VsDebugSession extends V8Protocol {
-  _readyForBreakpoints: boolean;
-  _disconnected: boolean;
-
-  _serverProcess: ?child_process$ChildProcess;
-  _cachedInitServer: ?Promise<void>;
-  _startTime: number;
-
-  _capabilities: DebugProtocol.Capabilities;
-  _adapterExecutable: VSAdapterExecutableInfo;
-  _logger: log4js$Logger;
-
-  _onDidInitialize: Subject<DebugProtocol.InitializedEvent>;
-  _onDidStop: Subject<DebugProtocol.StoppedEvent>;
-  _onDidContinued: Subject<DebugProtocol.ContinuedEvent>;
-  _onDidTerminateDebugee: Subject<DebugProtocol.TerminatedEvent>;
-  _onDidExitDebugee: Subject<DebugProtocol.ExitedEvent>;
-  _onDidExitAdapter: Subject<AdapterExitedEvent>;
-  _onDidThread: Subject<DebugProtocol.ThreadEvent>;
-  _onDidOutput: Subject<DebugProtocol.OutputEvent>;
-  _onDidBreakpoint: Subject<DebugProtocol.BreakpointEvent>;
-  _onDidModule: Subject<DebugProtocol.ModuleEvent>;
-  _onDidLoadSource: Subject<DebugProtocol.LoadedSourceEvent>;
-  _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
-
-  constructor(
-    id: string,
-    logger: log4js$Logger,
-    adapterExecutable: VSAdapterExecutableInfo,
-  ) {
+  constructor(id, logger, adapterExecutable) {
     super(id, logger);
     this._adapterExecutable = adapterExecutable;
     this._logger = logger;
     this._readyForBreakpoints = false;
 
-    this._onDidInitialize = new Subject();
-    this._onDidStop = new Subject();
-    this._onDidContinued = new Subject();
-    this._onDidTerminateDebugee = new Subject();
-    this._onDidExitDebugee = new Subject();
-    this._onDidExitAdapter = new Subject();
-    this._onDidThread = new Subject();
-    this._onDidOutput = new Subject();
-    this._onDidBreakpoint = new Subject();
-    this._onDidModule = new Subject();
-    this._onDidLoadSource = new Subject();
-    this._onDidEvent = new Subject();
+    this._onDidInitialize = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidStop = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidContinued = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidTerminateDebugee = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidExitDebugee = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidExitAdapter = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidThread = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidOutput = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidBreakpoint = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidModule = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidLoadSource = new _rxjsBundlesRxMinJs.Subject();
+    this._onDidEvent = new _rxjsBundlesRxMinJs.Subject();
   }
 
-  observeInitializeEvents(): Observable<DebugProtocol.InitializedEvent> {
+  observeInitializeEvents() {
     return this._onDidInitialize.asObservable();
   }
 
-  observeStopEvents(): Observable<DebugProtocol.StoppedEvent> {
+  observeStopEvents() {
     return this._onDidStop.asObservable();
   }
 
-  observeContinuedEvents(): Observable<DebugProtocol.ContinuedEvent> {
+  observeContinuedEvents() {
     return this._onDidContinued.asObservable();
   }
 
-  observeTerminateDebugeeEvents(): Observable<DebugProtocol.TerminatedEvent> {
+  observeTerminateDebugeeEvents() {
     return this._onDidTerminateDebugee.asObservable();
   }
 
-  observeExitedDebugeeEvents(): Observable<DebugProtocol.ExitedEvent> {
+  observeExitedDebugeeEvents() {
     return this._onDidExitDebugee.asObservable();
   }
 
-  observeAdapterExitedEvents(): Observable<AdapterExitedEvent> {
+  observeAdapterExitedEvents() {
     return this._onDidExitAdapter.asObservable();
   }
 
-  observeThreadEvents(): Observable<DebugProtocol.ThreadEvent> {
+  observeThreadEvents() {
     return this._onDidThread.asObservable();
   }
 
-  observeOutputEvents(): Observable<DebugProtocol.OutputEvent> {
+  observeOutputEvents() {
     return this._onDidOutput.asObservable();
   }
 
-  observeBreakpointEvents(): Observable<DebugProtocol.BreakpointEvent> {
+  observeBreakpointEvents() {
     return this._onDidBreakpoint.asObservable();
   }
 
-  observeModuleEvents(): Observable<DebugProtocol.ModuleEvent> {
+  observeModuleEvents() {
     return this._onDidModule.asObservable();
   }
 
-  observeSourceLoadedEvents(): Observable<DebugProtocol.LoadedSourceEvent> {
+  observeSourceLoadedEvents() {
     return this._onDidLoadSource.asObservable();
   }
 
-  observeAllEvents(): Observable<DebugProtocol.Event | AdapterExitedEvent> {
+  observeAllEvents() {
     return this._onDidEvent.asObservable();
   }
 
-  _initServer(): Promise<void> {
+  _initServer() {
     if (this._cachedInitServer) {
       return this._cachedInitServer;
     }
 
     const serverPromise = this._startServer();
-    this._cachedInitServer = serverPromise.then(
-      () => {
-        this._startTime = new Date().getTime();
-      },
-      err => {
-        this._cachedInitServer = null;
-        return Promise.reject(err);
-      },
-    );
+    this._cachedInitServer = serverPromise.then(() => {
+      this._startTime = new Date().getTime();
+    }, err => {
+      this._cachedInitServer = null;
+      return Promise.reject(err);
+    });
 
     return this._cachedInitServer;
   }
 
-  custom(request: string, args: any): Promise<DebugProtocol.CustomResponse> {
+  custom(request, args) {
     return this.send(request, args);
   }
 
-  send(command: string, args: any): Promise<any> {
+  send(command, args) {
     this._logger.info('Send request:', command, args);
     return this._initServer().then(() =>
-      // Babel Bug: `super` isn't working with `async`.
-      super.send(command, args).then(
-        response => {
-          this._logger.info('Received response:', response);
-          return response;
-        },
-        (errorResponse: DebugProtocol.ErrorResponse) => {
-          let formattedError = idx(errorResponse, _ => _.body.error.format);
-          if (formattedError === '{_stack}') {
-            formattedError = JSON.stringify(errorResponse.body.error);
-          } else if (formattedError == null) {
-            formattedError = [
-              `command: ${command}`,
-              `args: ${JSON.stringify(args)}`,
-              `response: ${JSON.stringify(errorResponse)}`,
-              `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
-            ].join(', ');
-          }
-          throw new Error(formattedError);
-        },
-      ),
-    );
+    // Babel Bug: `super` isn't working with `async`.
+    super.send(command, args).then(response => {
+      this._logger.info('Received response:', response);
+      return response;
+    }, errorResponse => {
+      var _ref, _ref2, _ref3;
+
+      let formattedError = (_ref = errorResponse) != null ? (_ref2 = _ref.body) != null ? (_ref3 = _ref2.error) != null ? _ref3.format : _ref3 : _ref2 : _ref;
+      if (formattedError === '{_stack}') {
+        formattedError = JSON.stringify(errorResponse.body.error);
+      } else if (formattedError == null) {
+        formattedError = [`command: ${command}`, `args: ${JSON.stringify(args)}`, `response: ${JSON.stringify(errorResponse)}`, `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`].join(', ');
+      }
+      throw new Error(formattedError);
+    }));
   }
 
-  onEvent(event: DebugProtocol.Event | AdapterExitedEvent): void {
+  onEvent(event) {
     if (event.body != null) {
       // $FlowFixMe `sessionId` isn't in the type def.
       event.body.sessionId = this.getId();
     } else {
       // $FlowFixMe `event.body` type def.
-      event.body = {sessionId: this.getId()};
+      event.body = { sessionId: this.getId() };
     }
 
     this._onDidEvent.next(event);
@@ -241,200 +225,162 @@ export default class VsDebugSession extends V8Protocol {
     }
   }
 
-  getCapabilities(): DebugProtocol.Capabilities {
+  getCapabilities() {
     return this._capabilities || {};
   }
 
-  async initialize(
-    args: DebugProtocol.InitializeRequestArguments,
-  ): Promise<DebugProtocol.InitializeResponse> {
-    const response = await this.send('initialize', args);
-    return this._readCapabilities(response);
+  initialize(args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const response = yield _this.send('initialize', args);
+      return _this._readCapabilities(response);
+    })();
   }
 
-  _readCapabilities(response: any): any {
+  _readCapabilities(response) {
     if (response) {
-      this._capabilities = {
-        ...this._capabilities,
-        ...response.body,
-      };
+      this._capabilities = Object.assign({}, this._capabilities, response.body);
     }
     return response;
   }
 
-  async launch(
-    args: DebugProtocol.LaunchRequestArguments,
-  ): Promise<DebugProtocol.LaunchResponse> {
-    const response = await this.send('launch', args);
-    return this._readCapabilities(response);
+  launch(args) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const response = yield _this2.send('launch', args);
+      return _this2._readCapabilities(response);
+    })();
   }
 
-  async attach(
-    args: DebugProtocol.AttachRequestArguments,
-  ): Promise<DebugProtocol.AttachResponse> {
-    const response = await this.send('attach', args);
-    return this._readCapabilities(response);
+  attach(args) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const response = yield _this3.send('attach', args);
+      return _this3._readCapabilities(response);
+    })();
   }
 
-  next(args: DebugProtocol.NextArguments): Promise<DebugProtocol.NextResponse> {
+  next(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('next', args);
   }
 
-  stepIn(
-    args: DebugProtocol.StepInArguments,
-  ): Promise<DebugProtocol.StepInResponse> {
+  stepIn(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('stepIn', args);
   }
 
-  stepOut(
-    args: DebugProtocol.StepOutArguments,
-  ): Promise<DebugProtocol.StepOutResponse> {
+  stepOut(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('stepOut', args);
   }
 
-  continue(
-    args: DebugProtocol.ContinueArguments,
-  ): Promise<DebugProtocol.ContinueResponse> {
+  continue(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('continue', args);
   }
 
-  pause(
-    args: DebugProtocol.PauseArguments,
-  ): Promise<DebugProtocol.PauseResponse> {
+  pause(args) {
     return this.send('pause', args);
   }
 
-  setVariable(
-    args: DebugProtocol.SetVariableArguments,
-  ): Promise<DebugProtocol.SetVariableResponse> {
+  setVariable(args) {
     return this.send('setVariable', args);
   }
 
-  restartFrame(
-    args: DebugProtocol.RestartFrameArguments,
-    threadId: number,
-  ): Promise<DebugProtocol.RestartFrameResponse> {
+  restartFrame(args, threadId) {
     this._fireFakeContinued(threadId);
     return this.send('restartFrame', args);
   }
 
-  completions(
-    args: DebugProtocol.CompletionsArguments,
-  ): Promise<DebugProtocol.CompletionsResponse> {
+  completions(args) {
     return this.send('completions', args);
   }
 
-  async disconnect(
-    restart: boolean = false,
-    force: boolean = false,
-  ): Promise<void> {
-    if (this._disconnected && force) {
-      this._stopServer();
-      return;
-    }
+  disconnect(restart = false, force = false) {
+    var _this4 = this;
 
-    if (this._serverProcess && !this._disconnected) {
-      // point of no return: from now on don't report any errors
-      this._disconnected = true;
-      await this.send('disconnect', {restart});
-      this._stopServer();
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this4._disconnected && force) {
+        _this4._stopServer();
+        return;
+      }
+
+      if (_this4._serverProcess && !_this4._disconnected) {
+        // point of no return: from now on don't report any errors
+        _this4._disconnected = true;
+        yield _this4.send('disconnect', { restart });
+        _this4._stopServer();
+      }
+    })();
   }
 
-  setBreakpoints(
-    args: DebugProtocol.SetBreakpointsArguments,
-  ): Promise<DebugProtocol.SetBreakpointsResponse> {
+  setBreakpoints(args) {
     return this.send('setBreakpoints', args);
   }
 
-  setFunctionBreakpoints(
-    args: DebugProtocol.SetFunctionBreakpointsArguments,
-  ): Promise<DebugProtocol.SetFunctionBreakpointsResponse> {
+  setFunctionBreakpoints(args) {
     return this.send('setFunctionBreakpoints', args);
   }
 
-  setExceptionBreakpoints(
-    args: DebugProtocol.SetExceptionBreakpointsArguments,
-  ): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
+  setExceptionBreakpoints(args) {
     return this.send('setExceptionBreakpoints', args);
   }
 
-  configurationDone(): Promise<DebugProtocol.ConfigurationDoneResponse> {
+  configurationDone() {
     return this.send('configurationDone', null);
   }
 
-  stackTrace(
-    args: DebugProtocol.StackTraceArguments,
-  ): Promise<DebugProtocol.StackTraceResponse> {
+  stackTrace(args) {
     return this.send('stackTrace', args);
   }
 
-  exceptionInfo(
-    args: DebugProtocol.ExceptionInfoArguments,
-  ): Promise<DebugProtocol.ExceptionInfoResponse> {
+  exceptionInfo(args) {
     return this.send('exceptionInfo', args);
   }
 
-  scopes(
-    args: DebugProtocol.ScopesArguments,
-  ): Promise<DebugProtocol.ScopesResponse> {
+  scopes(args) {
     return this.send('scopes', args);
   }
 
-  variables(
-    args: DebugProtocol.VariablesArguments,
-  ): Promise<DebugProtocol.VariablesResponse> {
+  variables(args) {
     return this.send('variables', args);
   }
 
-  source(
-    args: DebugProtocol.SourceArguments,
-  ): Promise<DebugProtocol.SourceResponse> {
+  source(args) {
     return this.send('source', args);
   }
 
-  threads(): Promise<DebugProtocol.ThreadsResponse> {
+  threads() {
     return this.send('threads', null);
   }
 
-  evaluate(
-    args: DebugProtocol.EvaluateArguments,
-  ): Promise<DebugProtocol.EvaluateResponse> {
+  evaluate(args) {
     return this.send('evaluate', args);
   }
 
-  stepBack(
-    args: DebugProtocol.StepBackArguments,
-  ): Promise<DebugProtocol.StepBackResponse> {
+  stepBack(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('stepBack', args);
   }
 
-  reverseContinue(
-    args: DebugProtocol.ReverseContinueArguments,
-  ): Promise<DebugProtocol.ReverseContinueResponse> {
+  reverseContinue(args) {
     this._fireFakeContinued(args.threadId);
     return this.send('reverseContinue', args);
   }
 
-  nuclide_continueToLocation(
-    args: DebugProtocol.nuclide_ContinueToLocationArguments,
-  ): Promise<DebugProtocol.nuclide_ContinueToLocationResponse> {
+  nuclide_continueToLocation(args) {
     return this.custom('nuclide_continueToLocation', args);
   }
 
-  getLengthInSeconds(): number {
+  getLengthInSeconds() {
     return (new Date().getTime() - this._startTime) / 1000;
   }
 
-  dispatchRequest(
-    request: DebugProtocol.Request,
-    response: DebugProtocol.Response,
-  ): void {
+  dispatchRequest(request, response) {
     if (request.command === 'runInTerminal') {
       this._logger.error('TODO: runInTerminal', request);
     } else if (request.command === 'handshake') {
@@ -446,97 +392,93 @@ export default class VsDebugSession extends V8Protocol {
     }
   }
 
-  _fireFakeContinued(
-    threadId: number,
-    allThreadsContinued?: boolean = false,
-  ): void {
-    const event: DebugProtocol.ContinuedEvent = {
+  _fireFakeContinued(threadId, allThreadsContinued = false) {
+    const event = {
       type: 'event',
       event: 'continued',
       // $FlowFixMe
       body: {
         threadId,
-        allThreadsContinued,
+        allThreadsContinued
       },
-      seq: 0,
+      seq: 0
     };
     this._onDidContinued.next(event);
     this._onDidEvent.next(event);
   }
 
-  async _startServer(): Promise<void> {
-    const {command, args} = this._adapterExecutable;
-    const options = {
-      stdio: [
-        'pipe', // stdin
+  _startServer() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { command, args } = _this5._adapterExecutable;
+      const options = {
+        stdio: ['pipe', // stdin
         'pipe', // stdout
-        'pipe', // stderr
-      ],
-      env: await getOriginalEnvironment(),
-    };
-    const serverProcess = (this._serverProcess = child_process.spawn(
-      command,
-      args,
-      options,
-    ));
-    // Process and stream errors shouldn't crash the server.
-    preventStreamsFromThrowing(serverProcess);
-    logStreamErrors(serverProcess, command, args, options);
+        'pipe'],
+        env: yield (0, (_process || _load_process()).getOriginalEnvironment)()
+      };
+      const serverProcess = _this5._serverProcess = _child_process.default.spawn(command, args, options);
+      // Process and stream errors shouldn't crash the server.
+      (0, (_process || _load_process()).preventStreamsFromThrowing)(serverProcess);
+      (0, (_process || _load_process()).logStreamErrors)(serverProcess, command, args, options);
 
-    serverProcess.on('error', (err: Error) => this.onServerError(err));
-    serverProcess.on('exit', (code: number, signal: string) =>
-      this.onServerExit(code),
-    );
+      serverProcess.on('error', function (err) {
+        return _this5.onServerError(err);
+      });
+      serverProcess.on('exit', function (code, signal) {
+        return _this5.onServerExit(code);
+      });
 
-    serverProcess.stderr.on('data', (data: string) => {
-      const event: DebugProtocol.OutputEvent = ({
-        type: 'event',
-        event: 'output',
-        body: {
-          category: 'stderr',
-          output: data.toString(),
-        },
-        seq: 0,
-      }: any);
-      this._onDidOutput.next(event);
-      this._onDidEvent.next(event);
-      this._logger.error(`adapter stderr: ${data.toString()}`);
-    });
+      serverProcess.stderr.on('data', function (data) {
+        const event = {
+          type: 'event',
+          event: 'output',
+          body: {
+            category: 'stderr',
+            output: data.toString()
+          },
+          seq: 0
+        };
+        _this5._onDidOutput.next(event);
+        _this5._onDidEvent.next(event);
+        _this5._logger.error(`adapter stderr: ${data.toString()}`);
+      });
 
-    this.connect(serverProcess.stdout, serverProcess.stdin);
+      _this5.connect(serverProcess.stdout, serverProcess.stdin);
+    })();
   }
 
-  _stopServer(): void {
+  _stopServer() {
     this.onEvent(raiseAdapterExitedEvent(0));
     if (this._serverProcess == null) {
       return;
     }
 
     this._disconnected = true;
-    killProcess(this._serverProcess, /* killTree */ true);
+    (0, (_process || _load_process()).killProcess)(this._serverProcess, /* killTree */true);
   }
 
-  onServerError(error: Error): void {
+  onServerError(error) {
     this._logger.error('Adapter error:', error);
     this._stopServer();
   }
 
-  onServerExit(code: number): void {
+  onServerExit(code) {
     this._serverProcess = null;
     this._cachedInitServer = null;
     if (!this._disconnected) {
-      this._logger.error(
-        `Debug adapter process has terminated unexpectedly ${code}`,
-      );
+      this._logger.error(`Debug adapter process has terminated unexpectedly ${code}`);
     }
     this.onEvent(raiseAdapterExitedEvent(code));
   }
 
-  isReadyForBreakpoints(): boolean {
+  isReadyForBreakpoints() {
     return this._readyForBreakpoints;
   }
 
-  dispose(): void {
+  dispose() {
     this.disconnect();
   }
 }
+exports.default = VsDebugSession;

@@ -1,3 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getGroup = getGroup;
+exports.getDisplayName = getDisplayName;
+exports.getIcon = getIcon;
+exports.getHighestPriorityGroup = getHighestPriorityGroup;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +15,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-import type {DiagnosticGroup} from './types';
+const PRIORITIZED_GROUPS = ['review', 'errors', 'warnings', 'info', 'action'];
 
-import invariant from 'assert';
-
-const PRIORITIZED_GROUPS: Array<DiagnosticGroup> = [
-  'review',
-  'errors',
-  'warnings',
-  'info',
-  'action',
-];
-
-export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
-  const {kind} = message;
+function getGroup(message) {
+  const { kind } = message;
   switch (kind) {
     case 'lint':
     case null:
     case undefined:
-      invariant(message.type !== 'Hint');
+      if (!(message.type !== 'Hint')) {
+        throw new Error('Invariant violation: "message.type !== \'Hint\'"');
+      }
       // We have a separate button for each severity.
+
+
       switch (message.type) {
         case 'Error':
           return 'errors';
@@ -40,7 +41,7 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
         case 'Info':
           return 'info';
         default:
-          (message.type: empty);
+          message.type;
           throw new Error(`Invalid message severity: ${message.type}`);
       }
     case 'review':
@@ -48,12 +49,12 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
     case 'action':
       return 'action';
     default:
-      (kind: empty);
+      kind;
       throw new Error(`Invalid message kind: ${kind}`);
   }
 }
 
-export function getDisplayName(group: DiagnosticGroup): string {
+function getDisplayName(group) {
   switch (group) {
     case 'errors':
       return 'Errors';
@@ -66,12 +67,12 @@ export function getDisplayName(group: DiagnosticGroup): string {
     case 'action':
       return 'Action';
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid group: ${group}`);
   }
 }
 
-export function getIcon(group: DiagnosticGroup): IconName {
+function getIcon(group) {
   switch (group) {
     case 'errors':
       return 'nuclicon-error';
@@ -84,14 +85,12 @@ export function getIcon(group: DiagnosticGroup): IconName {
     case 'action':
       return 'light-bulb';
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid filter type: ${group}`);
   }
 }
 
-export function getHighestPriorityGroup(
-  groups: Set<DiagnosticGroup>,
-): DiagnosticGroup {
+function getHighestPriorityGroup(groups) {
   for (const group of PRIORITIZED_GROUPS) {
     if (groups.has(group)) {
       return group;

@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__TEST__ = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// KeyTar>=4.x APM>=1.18
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,14 +29,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
-
-// KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
   var readline = require('readline');
   var keytar = require('keytar');
@@ -61,65 +81,49 @@ const deletePasswordScriptAsync = `
   });
 `;
 
-function getApmNodePath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, 'node'));
+function getApmNodePath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, 'node'));
 }
 
-function getApmNodeModulesPath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, '..', 'node_modules'));
+function getApmNodeModulesPath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, '..', 'node_modules'));
 }
 
-function runScriptInApmNode(
-  script: string,
-  service: string,
-  account: string,
-  password?: string,
-): Promise<string> {
+function runScriptInApmNode(script, service, account, password) {
   const args = ['-e', script];
   const options = {
     // The newline is important so we can use readline's line event.
-    input: JSON.stringify({service, account, password}) + '\n',
-    env: {
-      ...process.env,
-      NODE_PATH: getApmNodeModulesPath(),
-    },
+    input: JSON.stringify({ service, account, password }) + '\n',
+    env: Object.assign({}, process.env, {
+      NODE_PATH: getApmNodeModulesPath()
+    })
   };
-  return runCommand(getApmNodePath(), args, options).toPromise();
+  return (0, (_process || _load_process()).runCommand)(getApmNodePath(), args, options).toPromise();
 }
 
-export default {
-  async getPassword(service: string, account: string): Promise<?string> {
-    return JSON.parse(
-      await runScriptInApmNode(getPasswordScriptAsync, service, account),
-    );
+exports.default = {
+  getPassword(service, account) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return JSON.parse((yield runScriptInApmNode(getPasswordScriptAsync, service, account)));
+    })();
   },
 
-  async replacePassword(
-    service: string,
-    account: string,
-    password: string,
-  ): Promise<?boolean> {
-    return JSON.parse(
-      await runScriptInApmNode(
-        replacePasswordScriptAsync,
-        service,
-        account,
-        password,
-      ),
-    );
+  replacePassword(service, account, password) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return JSON.parse((yield runScriptInApmNode(replacePasswordScriptAsync, service, account, password)));
+    })();
   },
 
-  async deletePassword(service: string, account: string): Promise<?boolean> {
-    return JSON.parse(
-      await runScriptInApmNode(deletePasswordScriptAsync, service, account),
-    );
-  },
+  deletePassword(service, account) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return JSON.parse((yield runScriptInApmNode(deletePasswordScriptAsync, service, account)));
+    })();
+  }
 };
-
-export const __TEST__ = {
+const __TEST__ = exports.__TEST__ = {
   getApmNodeModulesPath,
   getApmNodePath,
-  runScriptInApmNode,
+  runScriptInApmNode
 };

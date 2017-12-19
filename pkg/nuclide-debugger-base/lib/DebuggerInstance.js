@@ -1,156 +1,160 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AtomNotification} from 'nuclide-debugger-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerInstance = undefined;
 
-import {Emitter} from 'atom';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  translateMessageFromServer,
-  translateMessageToServer,
-} from './ChromeMessageRemoting';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import NewProtocolMessageChecker from './NewProtocolMessageChecker';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {getLogger} from 'log4js';
-const SESSION_END_EVENT = 'session-end-event';
+var _atom = require('atom');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _ChromeMessageRemoting;
+
+function _load_ChromeMessageRemoting() {
+  return _ChromeMessageRemoting = require('./ChromeMessageRemoting');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _NewProtocolMessageChecker;
+
+function _load_NewProtocolMessageChecker() {
+  return _NewProtocolMessageChecker = _interopRequireDefault(require('./NewProtocolMessageChecker'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const SESSION_END_EVENT = 'session-end-event'; /**
+                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the license found in the LICENSE file in
+                                                * the root directory of this source tree.
+                                                *
+                                                * 
+                                                * @format
+                                                */
+
 const RECEIVED_MESSAGE_EVENT = 'received-message-event';
 
-export default class DebuggerInstanceBase {
-  _processInfo: DebuggerProcessInfo;
-  +onSessionEnd: ?(callback: () => void) => IDisposable;
+class DebuggerInstanceBase {
 
-  constructor(processInfo: DebuggerProcessInfo) {
+  constructor(processInfo) {
     this._processInfo = processInfo;
   }
 
-  getDebuggerProcessInfo(): DebuggerProcessInfo {
+  getDebuggerProcessInfo() {
     return this._processInfo;
   }
 
-  getProviderName(): string {
+  getProviderName() {
     return this._processInfo.getServiceName();
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._processInfo.getTargetUri();
   }
 
-  dispose(): void {
+  dispose() {
     throw new Error('abstract method');
   }
 }
 
-export class DebuggerInstance extends DebuggerInstanceBase {
-  _rpcService: Object;
-  _disposables: UniversalDisposable;
-  _emitter: Emitter;
-  _logger: log4js$Logger;
-  _newProtocolMessageChecker: NewProtocolMessageChecker;
-  _disposed: boolean;
+exports.default = DebuggerInstanceBase;
+class DebuggerInstance extends DebuggerInstanceBase {
 
-  constructor(
-    processInfo: DebuggerProcessInfo,
-    rpcService: IDisposable,
-    subscriptions: ?UniversalDisposable,
-  ) {
+  constructor(processInfo, rpcService, subscriptions) {
     super(processInfo);
     this._disposed = false;
     this._rpcService = rpcService;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     if (subscriptions != null) {
       this._disposables.add(subscriptions);
     }
     this._disposables.add(rpcService);
-    this._logger = getLogger(`nuclide-debugger-${this.getProviderName()}`);
-    this._newProtocolMessageChecker = new NewProtocolMessageChecker();
-    this._emitter = new Emitter();
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)(`nuclide-debugger-${this.getProviderName()}`);
+    this._newProtocolMessageChecker = new (_NewProtocolMessageChecker || _load_NewProtocolMessageChecker()).default();
+    this._emitter = new _atom.Emitter();
     this._registerServerHandlers();
   }
 
-  getLogger(): log4js$Logger {
+  getLogger() {
     return this._logger;
   }
 
-  _registerServerHandlers(): void {
-    const disposables = new UniversalDisposable(
-      this._rpcService
-        .getServerMessageObservable()
-        .refCount()
-        .subscribe(
-          this._handleServerMessage.bind(this),
-          this._handleServerError.bind(this),
-          this._handleSessionEnd.bind(this),
-        ),
-    );
+  _registerServerHandlers() {
+    const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._rpcService.getServerMessageObservable().refCount().subscribe(this._handleServerMessage.bind(this), this._handleServerError.bind(this), this._handleSessionEnd.bind(this)));
     if (rpcServiceSupportsAtomNotifications(this._rpcService)) {
-      disposables.add(
-        this._rpcService
-          .getAtomNotificationObservable()
-          .refCount()
-          .subscribe(this._handleAtomNotification.bind(this)),
-      );
+      disposables.add(this._rpcService.getAtomNotificationObservable().refCount().subscribe(this._handleAtomNotification.bind(this)));
     }
     this._disposables.add(disposables);
   }
 
-  _handleAtomNotification(notification: AtomNotification): void {
-    const {type, message} = notification;
+  _handleAtomNotification(notification) {
+    const { type, message } = notification;
     atom.notifications.add(type, message);
   }
 
-  onSessionEnd(callback: () => mixed): IDisposable {
+  onSessionEnd(callback) {
     return this._emitter.on(SESSION_END_EVENT, callback);
   }
 
-  _translateMessageIfNeeded(message_: string): string {
+  _translateMessageIfNeeded(message_) {
     let message = message_;
     // TODO: do we really need isRemote() checking?
-    if (nuclideUri.isRemote(this.getTargetUri())) {
-      message = translateMessageFromServer(
-        nuclideUri.getHostname(this.getTargetUri()),
-        message,
-      );
+    if ((_nuclideUri || _load_nuclideUri()).default.isRemote(this.getTargetUri())) {
+      message = (0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageFromServer)((_nuclideUri || _load_nuclideUri()).default.getHostname(this.getTargetUri()), message);
     }
     return message;
   }
 
-  _handleServerMessage(message_: string): void {
+  _handleServerMessage(message_) {
     let message = message_;
     const processedMessage = this.preProcessServerMessage(message);
     message = this._translateMessageIfNeeded(processedMessage);
     this.receiveNuclideMessage(message);
   }
 
-  _handleServerError(error: string): void {
+  _handleServerError(error) {
     this.getLogger().error('Received server error: ' + error);
   }
 
-  _handleSessionEnd(): void {
+  _handleSessionEnd() {
     this.getLogger().debug('Ending Session');
     this._emitter.emit(SESSION_END_EVENT);
     this.dispose();
   }
 
-  async _handleChromeSocketMessage(message: string): Promise<void> {
-    const processedMessage = await this.preProcessClientMessage(message);
-    this._rpcService.sendCommand(translateMessageToServer(processedMessage));
+  _handleChromeSocketMessage(message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const processedMessage = yield _this.preProcessClientMessage(message);
+      _this._rpcService.sendCommand((0, (_ChromeMessageRemoting || _load_ChromeMessageRemoting()).translateMessageToServer)(processedMessage));
+    })();
   }
 
   /**
    * The following three methods are used by new Nuclide channel.
    */
-  sendNuclideMessage(message: string): void {
+  sendNuclideMessage(message) {
     if (this._disposed) {
       this._logger.error('sendNuclideMessage after dispose!', message);
       return;
@@ -159,23 +163,21 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this._handleChromeSocketMessage(message);
   }
 
-  registerNuclideNotificationHandler(
-    callback: (message: string) => mixed,
-  ): IDisposable {
+  registerNuclideNotificationHandler(callback) {
     return this._emitter.on(RECEIVED_MESSAGE_EVENT, callback);
   }
 
-  receiveNuclideMessage(message: string): void {
+  receiveNuclideMessage(message) {
     this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
   }
 
   // Preprocessing hook for client messages before sending to server.
-  preProcessClientMessage(message: string): Promise<string> {
+  preProcessClientMessage(message) {
     return Promise.resolve(message);
   }
 
   // Preprocessing hook for server messages before sending to client UI.
-  preProcessServerMessage(message: string): string {
+  preProcessServerMessage(message) {
     return message;
   }
 
@@ -185,6 +187,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 }
 
-function rpcServiceSupportsAtomNotifications(service: Object): boolean {
+exports.DebuggerInstance = DebuggerInstance;
+function rpcServiceSupportsAtomNotifications(service) {
   return typeof service.getAtomNotificationObservable === 'function';
 }
