@@ -14,7 +14,7 @@ import type {
   BusySignalService,
   BusySignalOptions,
   BusyMessage,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-busy-signal/lib/types.js';
+} from 'atom-ide-ui/pkg/atom-ide-busy-signal/lib/types.js';
 
 import {Observable} from 'rxjs';
 import {addMatchers} from '../../nuclide-test-helpers';

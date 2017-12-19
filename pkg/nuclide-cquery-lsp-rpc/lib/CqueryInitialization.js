@@ -13,7 +13,7 @@ import type {CqueryProject} from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
-import fsPromise from '../../../modules/nuclide-commons/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import fs from 'fs';
 
 const CQUERY_CACHE_DIR = '.cquery_cache';
