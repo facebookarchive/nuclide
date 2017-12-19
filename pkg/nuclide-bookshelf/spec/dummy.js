@@ -11,7 +11,7 @@
 
 import type {BookShelfRepositoryState, BookShelfState} from '../lib/types';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 export const REPO_PATH_1 = '/fake/path_1';
 export const SHOTHEAD_1_1 = 'foo';

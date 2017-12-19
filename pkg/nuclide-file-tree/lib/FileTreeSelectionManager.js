@@ -11,7 +11,7 @@
 
 import type {FileTreeNode} from './FileTreeNode';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 export class FileTreeSelectionManager {
   _selectedNodes: Immutable.Set<FileTreeNode>;
@@ -20,8 +20,8 @@ export class FileTreeSelectionManager {
 
   constructor(emitChange: () => mixed) {
     this._emitChange = emitChange;
-    this._selectedNodes = new Immutable.Set();
-    this._focusedNodes = new Immutable.Set();
+    this._selectedNodes = Immutable.Set();
+    this._focusedNodes = Immutable.Set();
   }
 
   selectedNodes(): Immutable.Set<FileTreeNode> {

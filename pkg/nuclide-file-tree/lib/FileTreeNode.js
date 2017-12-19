@@ -11,7 +11,7 @@
 
 import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
@@ -66,7 +66,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isLoading: false,
   wasFetched: false,
   isCwd: false,
-  children: new Immutable.OrderedMap(),
+  children: Immutable.OrderedMap(),
   connectionTitle: '',
   subscription: null,
   highlightedText: '',
@@ -193,7 +193,7 @@ export class FileTreeNode {
   static childrenFromArray(
     children: Array<FileTreeNode>,
   ): Immutable.OrderedMap<string, FileTreeNode> {
-    return new Immutable.OrderedMap(children.map(child => [child.name, child]));
+    return Immutable.OrderedMap(children.map(child => [child.name, child]));
   }
 
   /**
@@ -430,7 +430,9 @@ export class FileTreeNode {
     return this.set({isCwd});
   }
 
-  setChildren(children: Immutable.List<FileTreeNode>): FileTreeNode {
+  setChildren(
+    children: Immutable.OrderedMap<string, FileTreeNode>,
+  ): FileTreeNode {
     return this.set({children});
   }
 
@@ -443,7 +445,7 @@ export class FileTreeNode {
    * the complete reconstruction of the entire tree branch
    */
   updateConf(): FileTreeNode {
-    const children = this.children.map(c => c.updateConf(this.conf));
+    const children = this.children.map(c => c.updateConf());
     return this._newNode({children}, this.conf);
   }
 
@@ -505,6 +507,7 @@ export class FileTreeNode {
     const children = this.children.map(child =>
       child.setRecursive(prePredicate, postPredicate),
     );
+
     return postPredicate(this.setChildren(children));
   }
 
@@ -649,7 +652,7 @@ export class FileTreeNode {
     }
 
     let it = this.children.last();
-    while (!it.shouldBeShown && it != null) {
+    while (it != null && !it.shouldBeShown) {
       it = it.prevSibling;
     }
 
@@ -831,7 +834,7 @@ export class FileTreeNode {
       if (newChild != null) {
         this._handleChildrenChange(node.children, newChild.children);
       } else {
-        this._handleChildrenChange(node.children, new Immutable.OrderedMap());
+        this._handleChildrenChange(node.children, Immutable.OrderedMap());
       }
     });
 

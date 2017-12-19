@@ -12,11 +12,12 @@
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from 'log4js';
+import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
@@ -54,7 +55,7 @@ export default class FileTreeActions {
   constructor() {
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._store = FileTreeStore.getInstance();
-    this._disposableForRepository = new Immutable.Map();
+    this._disposableForRepository = Immutable.Map();
   }
 
   setCwd(rootKey: ?string): void {
@@ -340,15 +341,17 @@ export default class FileTreeActions {
 
     // Group all of the root keys by their repository, excluding any that don't belong to a
     // repository.
-    const rootKeysForRepository = Immutable.List(rootKeys)
-      .groupBy((rootKey, index) => rootRepos[index])
-      .filter((v, k) => k != null)
-      .map(v => new Immutable.Set(v));
+    const rootKeysForRepository = Immutable.Map(
+      Immutable.List(rootKeys)
+        .groupBy((rootKey, index) => nullthrows(rootRepos[index]))
+        .filter((v, k) => k != null)
+        .map(v => Immutable.Set(v)),
+    );
 
     const prevRepos = this._store.getRepositories();
 
     // Let the store know we have some new repos!
-    const nextRepos: Immutable.Set<atom$Repository> = new Immutable.Set(
+    const nextRepos: Immutable.Set<atom$Repository> = Immutable.Set(
       rootKeysForRepository.keys(),
     );
     this._dispatcher.dispatch({
@@ -547,7 +550,7 @@ export default class FileTreeActions {
   }
 
   async _repositoryAdded(
-    repo: atom$GitRepository | HgRepositoryClient,
+    repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<
       atom$Repository,
       Immutable.Set<string>,
@@ -611,7 +614,9 @@ export default class FileTreeActions {
     }
 
     const subscription = vcsChanges.subscribe(statusCodeForPath => {
-      for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
+      for (const rootKeyForRepo of nullthrows(
+        rootKeysForRepository.get(repo),
+      )) {
         this.setVcsStatuses(rootKeyForRepo, statusCodeForPath);
       }
     });

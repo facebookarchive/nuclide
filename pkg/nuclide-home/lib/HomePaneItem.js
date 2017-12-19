@@ -12,7 +12,7 @@
 import type {HomeFragments} from './types';
 import type {Observable, BehaviorSubject} from 'rxjs';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import * as React from 'react';
 import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
@@ -56,7 +56,7 @@ type Props = {
 export default class HomePaneItem extends React.Component<
   Props,
   {
-    allHomeFragments: Immutable.Set<string, React.Element<any>>,
+    allHomeFragments: Immutable.Set<HomeFragments>,
     showOnStartup: boolean,
   },
 > {

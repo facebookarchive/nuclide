@@ -21,8 +21,9 @@ import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
+import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
@@ -83,8 +84,8 @@ export default class FileTreeController {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._projectSelectionManager = new ProjectSelectionManager();
-    this._repositories = new Immutable.Set();
-    this._disposableForRepository = new Immutable.Map();
+    this._repositories = Immutable.Set();
+    this._disposableForRepository = Immutable.Map();
     this._disposables = new UniversalDisposable(() => {
       if (this._cwdApiSubscription != null) {
         this._cwdApiSubscription.dispose();
@@ -435,7 +436,7 @@ export default class FileTreeController {
    */
   _collapseSelection(deep: boolean = false): void {
     const selectedNodes = this._store.getSelectedNodes();
-    const firstSelectedNode = selectedNodes.first();
+    const firstSelectedNode = nullthrows(selectedNodes.first());
     if (
       selectedNodes.size === 1 &&
       !firstSelectedNode.isRoot &&
@@ -448,7 +449,7 @@ export default class FileTreeController {
        *   * The node is not an expanded directory
       */
 
-      const parent = firstSelectedNode.parent;
+      const parent = nullthrows(firstSelectedNode.parent);
       this._selectAndTrackNode(parent);
     } else {
       selectedNodes.forEach(node => {
@@ -508,11 +509,11 @@ export default class FileTreeController {
       let message;
       if (rootPaths.size === 1) {
         message = `The root directory '${
-          rootPaths.first().nodeName
+          nullthrows(rootPaths.first()).name
         }' can't be removed.`;
       } else {
         const rootPathNames = rootPaths
-          .map(node => `'${node.nodeName}'`)
+          .map(node => `'${node.name}'`)
           .join(', ');
         message = `The root directories ${rootPathNames} can't be removed.`;
       }

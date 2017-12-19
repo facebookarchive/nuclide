@@ -11,8 +11,10 @@
 
 import type {LazyTreeNode} from '../LazyTreeNode';
 
+import * as Immutable from 'immutable';
 import {LazyTestTreeNode} from './LazyTestTreeNode';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 
 describe('LazyTreeNode', () => {
   it('caches the fetched children', () => {
@@ -67,11 +69,11 @@ describe('LazyTreeNode', () => {
         let children = null;
         async function fetchChildren(
           parentNode: LazyTreeNode,
-        ): Promise<Array<LazyTreeNode>> {
-          children = [
+        ): Promise<Immutable.List<LazyTreeNode>> {
+          children = Immutable.List([
             new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
             new LazyTestTreeNode({label: 'C'}, /* parent */ parentNode, false),
-          ];
+          ]);
           return children;
         }
         const node = new LazyTestTreeNode(
@@ -83,7 +85,7 @@ describe('LazyTreeNode', () => {
         expect(await node.fetchChildren()).toEqual(children);
         const cachedChildren = node.getCachedChildren();
         invariant(cachedChildren);
-        expect(cachedChildren[0].isRoot()).toBe(false);
+        expect(nullthrows(cachedChildren.first()).isRoot()).toBe(false);
       });
     });
   });

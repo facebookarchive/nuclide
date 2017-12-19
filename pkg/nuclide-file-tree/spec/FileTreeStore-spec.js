@@ -66,7 +66,10 @@ describe('FileTreeStore', () => {
     nodeKey: string,
   ): Array<FileTreeNode> {
     const node = getNode(rootKey, nodeKey);
-    return node.children.filter(n => n.shouldBeShown).toArray();
+    return node.children
+      .filter(n => n.shouldBeShown)
+      .valueSeq()
+      .toArray();
   }
 
   function isExpanded(rootKey: string, nodeKey: string): boolean {

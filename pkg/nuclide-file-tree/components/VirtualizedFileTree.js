@@ -23,7 +23,6 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
 
-// flowlint-next-line untyped-type-import:off
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -454,7 +453,7 @@ function findIndexOfTheTrackedNode(
 }
 
 function countShownNodes(
-  roots: Immutable.OrderedMap<mixed, FileTreeNode>,
+  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
 ): number {
   return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 }

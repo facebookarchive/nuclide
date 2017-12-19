@@ -10,7 +10,6 @@
  */
 
 import type {FileTreeNode} from '../lib/FileTreeNode';
-// flowlint-next-line untyped-type-import:off
 import type Immutable from 'immutable';
 
 import FileTreeActions from '../lib/FileTreeActions';
@@ -362,7 +361,11 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     event.stopPropagation();
 
     const nodes = store.getSelectedNodes();
-    if (!this.props.isPreview && nodes.size === 1 && nodes.first().isRoot) {
+    if (
+      !this.props.isPreview &&
+      nodes.size === 1 &&
+      nullthrows(nodes.first()).isRoot
+    ) {
       getActions().reorderDragInto(this.props.node.rootUri);
       return;
     }

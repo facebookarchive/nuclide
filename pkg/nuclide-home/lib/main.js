@@ -21,7 +21,7 @@ import {getAtomNuclideDir} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';

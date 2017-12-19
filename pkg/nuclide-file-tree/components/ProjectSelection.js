@@ -72,7 +72,7 @@ export class ProjectSelection extends React.Component<Props, State> {
     if (list.isEmpty()) {
       return null;
     }
-    return list.toJS();
+    return list.toArray();
   }
 
   render(): React.Node {

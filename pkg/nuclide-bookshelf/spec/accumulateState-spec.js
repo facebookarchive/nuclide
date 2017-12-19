@@ -22,7 +22,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {accumulateState} from '../lib/accumulateState';
 import {ActionType, EMPTY_SHORTHEAD} from '../lib/constants';
 import {getEmptBookShelfState} from '../lib/utils';
-import Immutable from 'immutable';
+import nullthrows from 'nullthrows';
+import * as Immutable from 'immutable';
 
 describe('BookShelf accumulateState', () => {
   let fakeRepository: atom$Repository = (null: any);
@@ -66,8 +67,8 @@ describe('BookShelf accumulateState', () => {
       expect(fakeRepository.getWorkingDirectory).toHaveBeenCalled();
       expect(emptyState.repositoryPathToState.size).toBe(0);
       expect(newState.repositoryPathToState.size).toBe(1);
-      const addedRepoState: BookShelfRepositoryState = newState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const addedRepoState: BookShelfRepositoryState = nullthrows(
+        newState.repositoryPathToState.get(REPO_PATH_1),
       );
       expect(addedRepoState).toBeDefined();
       expect(addedRepoState.activeShortHead).toBe(EMPTY_SHORTHEAD);
@@ -86,8 +87,8 @@ describe('BookShelf accumulateState', () => {
       const newState = accumulateState(oneRepoState, addRepositoryAction);
       expect(fakeRepository.getWorkingDirectory).toHaveBeenCalled();
       expect(newState.repositoryPathToState.size).toBe(1);
-      const keptRepoState: BookShelfRepositoryState = newState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const keptRepoState: BookShelfRepositoryState = nullthrows(
+        newState.repositoryPathToState.get(REPO_PATH_1),
       );
       expect(keptRepoState).toBeDefined();
       expect(keptRepoState.activeShortHead).toBe(ACTIVE_SHOTHEAD_1);
@@ -146,8 +147,8 @@ describe('BookShelf accumulateState', () => {
       const newState = accumulateState(emptyState, updateBookmarksAction);
       expect(emptyState.repositoryPathToState.size).toBe(0);
       expect(newState.repositoryPathToState.size).toBe(1);
-      const newRepositoryState: BookShelfRepositoryState = newState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const newRepositoryState: BookShelfRepositoryState = nullthrows(
+        newState.repositoryPathToState.get(REPO_PATH_1),
       );
       expect(newRepositoryState.activeShortHead).toBe('a');
       expect(newRepositoryState.isRestoring).toBe(false);
@@ -166,16 +167,16 @@ describe('BookShelf accumulateState', () => {
       const oldRpositoryState = oneRepoState.repositoryPathToState.get(
         REPO_PATH_1,
       );
-      expect(oldRpositoryState.shortHeadsToFileList.size).toBe(2);
+      expect(nullthrows(oldRpositoryState).shortHeadsToFileList.size).toBe(2);
       expect(
-        oldRpositoryState.shortHeadsToFileList.has(SHOTHEAD_1_1),
+        nullthrows(oldRpositoryState).shortHeadsToFileList.has(SHOTHEAD_1_1),
       ).toBeTruthy();
 
       const newState = accumulateState(oneRepoState, updateBookmarksAction);
       expect(newState.repositoryPathToState.size).toBe(1);
 
-      const newRepositoryState: BookShelfRepositoryState = newState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const newRepositoryState: BookShelfRepositoryState = nullthrows(
+        newState.repositoryPathToState.get(REPO_PATH_1),
       );
       expect(newRepositoryState.activeShortHead).toBe(SHOTHEAD_1_2);
       expect(newRepositoryState.isRestoring).toBe(false);
@@ -184,7 +185,7 @@ describe('BookShelf accumulateState', () => {
         newRepositoryState.shortHeadsToFileList.has(SHOTHEAD_1_1),
       ).toBeFalsy();
       expect(newRepositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2)).toEqual(
-        oldRpositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2),
+        nullthrows(oldRpositoryState).shortHeadsToFileList.get(SHOTHEAD_1_2),
       );
     });
   });
@@ -219,8 +220,8 @@ describe('BookShelf accumulateState', () => {
       };
       const newState = accumulateState(oneRepoState, updatePaneItemAction);
 
-      const oldShortHeadsToFileList = oneRepoState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const oldShortHeadsToFileList = nullthrows(
+        oneRepoState.repositoryPathToState.get(REPO_PATH_1),
       ).shortHeadsToFileList;
       expect(oldShortHeadsToFileList.size).toBe(2);
       expect(oldShortHeadsToFileList.get(SHOTHEAD_1_1)).toEqual([
@@ -231,8 +232,8 @@ describe('BookShelf accumulateState', () => {
       // Doesn't add untracked repos.
       expect(newState.repositoryPathToState.size).toBe(1);
 
-      const newShortHeadsToFileList = newState.repositoryPathToState.get(
-        REPO_PATH_1,
+      const newShortHeadsToFileList = nullthrows(
+        newState.repositoryPathToState.get(REPO_PATH_1),
       ).shortHeadsToFileList;
       expect(newShortHeadsToFileList.size).toBe(2);
       expect(newShortHeadsToFileList.get(SHOTHEAD_1_1)).toEqual([

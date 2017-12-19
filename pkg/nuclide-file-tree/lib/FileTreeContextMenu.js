@@ -10,12 +10,12 @@
  */
 
 import type {FileTreeNode} from './FileTreeNode';
-// flowlint-next-line untyped-type-import:off
 import type Immutable from 'immutable';
 
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import {
   EVENT_HANDLER_SELECTOR,
   OPEN_FILES_MENU_SELECTOR,
@@ -296,7 +296,9 @@ export default class FileTreeContextMenu {
           if (nodes.isEmpty()) {
             return false;
           }
-          const dirKey = FileTreeHelpers.getParentKey(nodes.first().uri);
+          const dirKey = FileTreeHelpers.getParentKey(
+            nullthrows(nodes.first()).uri,
+          );
           return nodes.every(
             n => FileTreeHelpers.getParentKey(n.uri) === dirKey,
           );
@@ -546,7 +548,7 @@ export default class FileTreeContextMenu {
     });
   }
 
-  getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
+  getSelectedNodes(): Immutable.List<FileTreeNode> {
     return this._store.getTargetNodes();
   }
 

@@ -23,7 +23,7 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import invariant from 'assert';
 
 function getEmptyRepositoryState(): BookShelfRepositoryState {

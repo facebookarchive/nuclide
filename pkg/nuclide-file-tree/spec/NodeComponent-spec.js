@@ -17,7 +17,7 @@ import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import invariant from 'assert';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
@@ -38,13 +38,13 @@ function renderEntryComponentIntoDocument(
   };
 
   const nodeConf = {
-    vcsStatuses: new Immutable.Map(),
+    vcsStatuses: Immutable.Map(),
     workingSet: new WorkingSet(),
     editedWorkingSet: new WorkingSet(),
     hideIgnoredNames: true,
     excludeVcsIgnoredPaths: true,
-    ignoredPatterns: new Immutable.Set(),
-    repositories: new Immutable.Set(),
+    ignoredPatterns: Immutable.Set(),
+    repositories: Immutable.Set(),
     usePreviewTabs: true,
     focusEditorOnFileSelection: false,
     isEditingWorkingSet: false,

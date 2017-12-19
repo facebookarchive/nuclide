@@ -31,10 +31,7 @@ import {
   SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
   WORKSPACE_VIEW_URI,
 } from '../lib/Constants';
-import {
-  filterMultiRootFileChanges,
-  repositoryForPath,
-} from '../../nuclide-vcs-base';
+import {repositoryForPath} from '../../nuclide-vcs-base';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -62,6 +59,7 @@ import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
+import Immutable from 'immutable';
 
 type State = {|
   shouldRenderToolbar: boolean,
@@ -74,9 +72,9 @@ type State = {|
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
   hidden: boolean,
-  uncommittedFileChanges: Map<
+  uncommittedFileChanges: Immutable.Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>,
+    Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
   isCalculatingChanges: boolean,
   path: string,
@@ -123,7 +121,7 @@ export default class FileTreeSidebarComponent extends React.Component<
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,
-      uncommittedFileChanges: new Map(),
+      uncommittedFileChanges: Immutable.Map(),
       isCalculatingChanges: false,
       path: 'No Current Working Directory',
       title: 'File Tree',
@@ -727,4 +725,25 @@ function getCurrentBuffers(): Array<atom$TextBuffer> {
   });
 
   return buffers;
+}
+
+function filterMultiRootFileChanges(
+  unfilteredFileChanges: Immutable.Map<
+    NuclideUri,
+    Immutable.Map<NuclideUri, FileChangeStatusValue>,
+  >,
+): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
+  const filteredFileChanges = new Map();
+  // Filtering the changes to make sure they only show up under the directory the
+  // file exists under.
+  for (const [root, fileChanges] of unfilteredFileChanges) {
+    const filteredFiles = new Map(
+      fileChanges.filter((_, filePath) => filePath.startsWith(root)),
+    );
+    if (filteredFiles.size !== 0) {
+      filteredFileChanges.set(root, filteredFiles);
+    }
+  }
+
+  return filteredFileChanges;
 }

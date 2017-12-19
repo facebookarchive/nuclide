@@ -15,6 +15,7 @@ import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteFile} from '../../nuclide-remote-connection';
 
+import invariant from 'assert';
 import {openDialog, closeDialog} from '../../nuclide-ui/FileActionModal';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
@@ -22,9 +23,10 @@ import {FileTreeStore} from './FileTreeStore';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {File} from 'atom';
+import nullthrows from 'nullthrows';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 type CopyPath = {
   old: NuclideUri,
@@ -321,6 +323,7 @@ class FileSystemActions {
     }
 
     const node = targetNodes.first();
+    invariant(node != null);
     const nodePath = node.localPath;
     openDialog({
       iconClassName: 'icon-arrow-right',
@@ -353,7 +356,8 @@ class FileSystemActions {
     onDidConfirm: (filePaths: Array<string>) => mixed,
   ): void {
     const node = nodes.first();
-    const nodePath = node.localPath;
+    invariant(node != null);
+    const nodePath = nullthrows(node).localPath;
     let initialValue = nuclideUri.basename(nodePath);
     const ext = nuclideUri.extname(nodePath);
     initialValue =

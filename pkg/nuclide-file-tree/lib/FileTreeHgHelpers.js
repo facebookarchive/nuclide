@@ -13,10 +13,12 @@ import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import invariant from 'assert';
 import {shell} from 'electron';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import FileTreeHelpers from './FileTreeHelpers';
+import nullthrows from 'nullthrows';
 import {triggerAfterWait} from 'nuclide-commons/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -187,8 +189,10 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
     await Promise.all(
       pathsByHost.map(async pathGroup => {
         // Batch delete using fs service.
-        const service = getFileSystemServiceByNuclideUri(pathGroup.get(0));
-        await service.rmdirAll(pathGroup.toJS());
+        const service = getFileSystemServiceByNuclideUri(
+          nullthrows(pathGroup.get(0)),
+        );
+        await service.rmdirAll(pathGroup.toArray());
       }),
     );
   }
@@ -201,8 +205,9 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
 
   await Promise.all(
     nodesByHgRepository.map(async ([hgRepository, repoNodes]) => {
+      invariant(hgRepository != null);
       const hgPaths = nuclideUri.collapse(
-        repoNodes.map(node => FileTreeHelpers.keyToPath(node.uri)).toJS(),
+        repoNodes.map(node => FileTreeHelpers.keyToPath(node.uri)).toArray(),
       );
       await hgRepository.remove(hgPaths, true /* after */);
     }),

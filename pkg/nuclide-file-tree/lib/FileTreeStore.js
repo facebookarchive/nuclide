@@ -13,12 +13,13 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
+import invariant from 'assert';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import {FileTreeSelectionManager} from './FileTreeSelectionManager';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
 import {matchesFilter} from './FileTreeFilterHelper';
@@ -31,6 +32,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {HistogramTracker, track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
+import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -86,18 +88,18 @@ export type StoreConfigData = {
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
 
 export const DEFAULT_CONF = {
-  vcsStatuses: new Immutable.Map(),
+  vcsStatuses: Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
   excludeVcsIgnoredPaths: true,
-  ignoredPatterns: new Immutable.Set(),
+  ignoredPatterns: Immutable.Set(),
   usePreviewTabs: false,
   focusEditorOnFileSelection: true,
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},
-  fileChanges: new Immutable.Map(),
+  fileChanges: Immutable.Map(),
 };
 
 export type ReorderPreviewStatus = ?{
@@ -133,7 +135,7 @@ export class FileTreeStore {
   _repositories: Immutable.Set<atom$Repository>;
   _fileChanges: Immutable.Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>,
+    Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >;
 
   _dispatcher: FileTreeDispatcher;
@@ -166,25 +168,25 @@ export class FileTreeStore {
   }
 
   constructor() {
-    this.roots = new Immutable.OrderedMap();
+    this.roots = Immutable.OrderedMap();
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
     this._dispatcher.register(this._onDispatch.bind(this));
     this._logger = getLogger('nuclide-file-tree');
-    this._fileChanges = new Immutable.Map();
+    this._fileChanges = Immutable.Map();
     this.reorderPreviewStatus = null;
 
     this._usePrefixNav = false;
     this._autoExpandSingleChild = true;
-    this._isLoadingMap = new Immutable.Map();
-    this._repositories = new Immutable.Set();
+    this._isLoadingMap = Immutable.Map();
+    this._repositories = Immutable.Set();
     this.selectionManager = new FileTreeSelectionManager(
       this._emitChange.bind(this),
     );
 
     this._conf = {...DEFAULT_CONF, selectionManager: this.selectionManager};
     this._filter = '';
-    this._extraProjectSelectionContent = new Immutable.List();
+    this._extraProjectSelectionContent = Immutable.List();
     this.foldersExpanded = true;
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
@@ -200,7 +202,10 @@ export class FileTreeStore {
    * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
    */
   exportData(): ExportStoreData {
-    const rootKeys = this.roots.map(root => root.uri).toArray();
+    const rootKeys = this.roots
+      .valueSeq()
+      .toArray()
+      .map(root => root.uri);
 
     return {
       version: VERSION,
@@ -233,7 +238,7 @@ export class FileTreeStore {
           isExpanded: true,
           isSelected: false,
           isLoading: true,
-          children: new Immutable.OrderedMap(),
+          children: Immutable.OrderedMap(),
           isCwd: false,
           connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
         },
@@ -269,7 +274,7 @@ export class FileTreeStore {
     const combinedPaths = normalizedDataPaths.concat(pathsMissingInData);
 
     this._setRoots(
-      new Immutable.OrderedMap(
+      Immutable.OrderedMap(
         combinedPaths.map(rootUri => [rootUri, buildRootNode(rootUri)]),
       ),
     );
@@ -563,7 +568,6 @@ export class FileTreeStore {
 
       return this._bubbleUp(node, predicate(node));
     });
-
     this._setRoots(roots);
   }
 
@@ -690,7 +694,10 @@ export class FileTreeStore {
   }
 
   getRootKeys(): Array<NuclideUri> {
-    return this.roots.toArray().map(root => root.uri);
+    return this.roots
+      .valueSeq()
+      .toArray()
+      .map(root => root.uri);
   }
 
   getCwdKey(): ?string {
@@ -706,7 +713,7 @@ export class FileTreeStore {
 
   getFileChanges(): Immutable.Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>,
+    Immutable.Map<NuclideUri, FileChangeStatusValue>,
   > {
     return this._fileChanges;
   }
@@ -729,16 +736,19 @@ export class FileTreeStore {
       }
     });
 
-    this._fileChanges = new Immutable.Map(updatedFileChanges);
+    this._fileChanges = Immutable.Map(updatedFileChanges);
   }
 
   _setFileChanges(
     rootKey: NuclideUri,
     vcsStatuses: Map<NuclideUri, StatusCodeNumberValue>,
   ): void {
-    const fileChanges = new Map();
+    let fileChanges = Immutable.Map();
     vcsStatuses.forEach((statusCode, filePath) => {
-      fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
+      fileChanges = fileChanges.set(
+        filePath,
+        HgStatusToFileChangeStatus[statusCode],
+      );
     });
 
     this._fileChanges = this._fileChanges.set(rootKey, fileChanges);
@@ -834,6 +844,7 @@ export class FileTreeStore {
   ): Promise<Array<NuclideUri>> {
     const shownChildrenUris = node => {
       return node.children
+        .valueSeq()
         .toArray()
         .filter(n => n.shouldBeShown)
         .map(n => n.uri);
@@ -853,7 +864,7 @@ export class FileTreeStore {
   }
 
   getSelectedNodes(): Immutable.List<FileTreeNode> {
-    return new Immutable.List(this.selectionManager.selectedNodes().values());
+    return Immutable.List(this.selectionManager.selectedNodes().values());
   }
 
   // Retrieves target node in an immutable list if it's set, or all selected
@@ -865,7 +876,7 @@ export class FileTreeStore {
         this._targetNodeKeys.nodeKey,
       );
       if (targetNode) {
-        return new Immutable.List([targetNode]);
+        return Immutable.List([targetNode]);
       }
     }
     return this.getSelectedNodes();
@@ -975,7 +986,7 @@ export class FileTreeStore {
             return node.set({
               isExpanded: false,
               isLoading: false,
-              children: new Immutable.OrderedMap(),
+              children: Immutable.OrderedMap(),
             });
           });
 
@@ -1385,7 +1396,10 @@ export class FileTreeStore {
     this._clearSelection();
 
     try {
-      await FileTreeHgHelpers.moveNodes(selectedNodes.toJS(), targetNode.uri);
+      await FileTreeHgHelpers.moveNodes(
+        selectedNodes.toArray(),
+        targetNode.uri,
+      );
     } catch (e) {
       atom.notifications.addError('Failed to move entries: ' + e.message);
     }
@@ -1394,7 +1408,7 @@ export class FileTreeStore {
   async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
     try {
-      await FileTreeHgHelpers.deleteNodes(selectedNodes.toJS());
+      await FileTreeHgHelpers.deleteNodes(selectedNodes.toArray());
       this._clearSelectionRange();
     } catch (e) {
       atom.notifications.addError('Failed to delete entries: ' + e.message);
@@ -1824,7 +1838,7 @@ export class FileTreeStore {
     if (selectedNodes.isEmpty()) {
       nodeToSelect = this.roots.first();
     } else {
-      const selectedNode = selectedNodes.first();
+      const selectedNode = nullthrows(selectedNodes.first());
       nodeToSelect = selectedNode.findNext();
     }
 
@@ -1850,9 +1864,9 @@ export class FileTreeStore {
 
     let nodeToSelect;
     if (selectedNodes.isEmpty()) {
-      nodeToSelect = this.roots.last().findLastRecursiveChild();
+      nodeToSelect = nullthrows(this.roots.last()).findLastRecursiveChild();
     } else {
-      const selectedNode = selectedNodes.first();
+      const selectedNode = nullthrows(selectedNodes.first());
       nodeToSelect = selectedNode.findPrevious();
     }
 
@@ -1886,7 +1900,9 @@ export class FileTreeStore {
     }
 
     const lastRoot = this.roots.last();
+    invariant(lastRoot != null);
     const lastChild = lastRoot.findLastRecursiveChild();
+    invariant(lastChild != null);
     this._setSelectedAndFocusedNode(lastChild.rootUri, lastChild.uri);
   }
 
@@ -1927,9 +1943,7 @@ export class FileTreeStore {
       );
     });
 
-    const roots = new Immutable.OrderedMap(
-      rootNodes.map(root => [root.uri, root]),
-    );
+    const roots = Immutable.OrderedMap(rootNodes.map(root => [root.uri, root]));
     const removedRoots = this.roots.filter(root => !roots.has(root.uri));
     removedRoots.forEach(root =>
       root.traverse(
@@ -1941,6 +1955,7 @@ export class FileTreeStore {
         },
       ),
     );
+
     this._setRoots(roots);
 
     // Just in case there's a race between the update of the root keys and the cwdKey and the cwdKey
@@ -2190,7 +2205,7 @@ export class FileTreeStore {
 
     // Reset data store.
     this._conf = {...DEFAULT_CONF, selectionManager: this.selectionManager};
-    this._setRoots(new Immutable.OrderedMap());
+    this._setRoots(Immutable.OrderedMap());
     this.selectionManager.clearSelected();
     this.selectionManager.clearFocused();
     this._trackedRootKey = null;

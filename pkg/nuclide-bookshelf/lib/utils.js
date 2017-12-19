@@ -22,7 +22,7 @@ import {
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import featureConfig from 'nuclide-commons-atom/feature-config';

@@ -11,7 +11,6 @@
 
 import type {Observable} from 'rxjs';
 import type {Level as TaskLevelType} from 'nuclide-commons/process';
-// flowlint-next-line untyped-type-import:off
 import type {List} from 'immutable';
 import type {
   EvaluationResult,

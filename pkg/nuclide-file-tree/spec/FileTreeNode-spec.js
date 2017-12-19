@@ -10,19 +10,19 @@
  */
 
 import {FileTreeNode} from '../lib/FileTreeNode';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 
 const CONF = {
-  vcsStatuses: new Immutable.Map(),
-  fileChanges: new Immutable.Map(),
+  vcsStatuses: Immutable.Map(),
+  fileChanges: Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
   excludeVcsIgnoredPaths: true,
-  ignoredPatterns: new Immutable.Set(),
-  repositories: new Immutable.Set(),
+  ignoredPatterns: Immutable.Set(),
+  repositories: Immutable.Set(),
   usePreviewTabs: true,
   focusEditorOnFileSelection: false,
   isEditingWorkingSet: false,
@@ -53,7 +53,7 @@ describe('FileTreeNode', () => {
   });
 
   it('properly sets the supplied properties', () => {
-    const children = new Immutable.OrderedMap();
+    const children = Immutable.OrderedMap();
     const node = new FileTreeNode(
       {
         uri: '/abc/def',
@@ -116,7 +116,7 @@ describe('FileTreeNode', () => {
       CONF,
     );
 
-    const children = new Immutable.OrderedMap([
+    const children = Immutable.OrderedMap([
       [child1.name, child1],
       [child2.name, child2],
     ]);
@@ -142,7 +142,7 @@ describe('FileTreeNode', () => {
     expect(updatedNode).toBe(node);
     updatedNode = node.setIsCwd(true);
     expect(updatedNode).toBe(node);
-    updatedNode = node.setChildren(new Immutable.OrderedMap(children));
+    updatedNode = node.setChildren(Immutable.OrderedMap(children));
     expect(updatedNode).toBe(node);
     updatedNode = node.setRecursive(null, child => child.setIsSelected(false));
     expect(updatedNode).toBe(node);
