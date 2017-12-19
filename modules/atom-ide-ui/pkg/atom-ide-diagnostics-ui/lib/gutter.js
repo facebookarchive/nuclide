@@ -23,19 +23,17 @@ import invariant from 'assert';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {completingSwitchMap} from 'nuclide-commons/observable';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons-atom/analytics';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {Observable} from 'rxjs';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 import * as GroupUtils from './GroupUtils';
+import {hoveringOrAiming} from './aim';
 
 const GUTTER_ID = 'diagnostics-gutter';
-
-// Needs to be the same as glyph-height in gutter.atom-text-editor.less.
-const GLYPH_HEIGHT = 15; // px
-
-const POPUP_DISPOSE_TIMEOUT = 100;
 
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
 // the child element with the "region" CSS class), we also do a showPopupFor(). This seems to be
@@ -179,7 +177,11 @@ export function applyUpdateToEditor(
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
   for (const [row, messages] of rowToMessage.entries()) {
     // This marker adds some UI to the gutter.
-    const {item, dispose} = createGutterItem(messages, diagnosticUpdater);
+    const {item, dispose} = createGutterItem(
+      messages,
+      diagnosticUpdater,
+      gutter,
+    );
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
@@ -199,6 +201,7 @@ export function applyUpdateToEditor(
 function createGutterItem(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
+  gutter: atom$Gutter,
 ): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
   const messageGroups = new Set();
@@ -214,56 +217,55 @@ function createGutterItem(
   icon.className = `icon icon-${GroupUtils.getIcon(group)}`;
   item.appendChild(icon);
 
-  let popupElement = null;
-  let paneItemSubscription = null;
-  let disposeTimeout = null;
-  const clearDisposeTimeout = () => {
-    // flowlint-next-line sketchy-null-number:off
-    if (disposeTimeout) {
-      clearTimeout(disposeTimeout);
-    }
+  const spawnPopup = (): Observable<HTMLElement> => {
+    return Observable.create(observer => {
+      const goToLocation = (path: string, line: number) => {
+        // Before we jump to the location, we want to close the popup.
+        const column = 0;
+        atomGoToLocation(path, {line, column});
+        observer.complete();
+      };
+
+      const popupElement = showPopupFor(
+        messages,
+        item,
+        goToLocation,
+        diagnosticUpdater,
+        gutter,
+      );
+      observer.next(popupElement);
+
+      return () => {
+        ReactDOM.unmountComponentAtNode(popupElement);
+        invariant(popupElement.parentNode != null);
+        popupElement.parentNode.removeChild(popupElement);
+      };
+    });
   };
-  const dispose = () => {
-    if (popupElement) {
-      ReactDOM.unmountComponentAtNode(popupElement);
-      invariant(popupElement.parentNode != null);
-      popupElement.parentNode.removeChild(popupElement);
-      popupElement = null;
-    }
-    if (paneItemSubscription) {
-      paneItemSubscription.dispose();
-      paneItemSubscription = null;
-    }
-    clearDisposeTimeout();
-  };
-  const goToLocation = (path: string, line: number) => {
-    // Before we jump to the location, we want to close the popup.
-    dispose();
-    const column = 0;
-    atomGoToLocation(path, {line, column});
-  };
-  item.addEventListener('mouseenter', (event: MouseEvent) => {
-    // If there was somehow another popup for this gutter item, dispose it. This can happen if the
-    // user manages to scroll and escape disposal.
-    dispose();
-    popupElement = showPopupFor(
-      messages,
-      item,
-      goToLocation,
-      diagnosticUpdater,
-    );
-    popupElement.addEventListener('mouseleave', dispose);
-    popupElement.addEventListener('mouseenter', clearDisposeTimeout);
-    // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
-    paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
-  });
-  item.addEventListener('mouseleave', (event: MouseEvent) => {
-    // When the popup is shown, we want to dispose it if the user manages to move the cursor off of
-    // the gutter glyph without moving it onto the popup. Even though the popup appears above (as in
-    // Z-index above) the gutter glyph, if you move the cursor such that it is only above the glyph
-    // for one frame you can cause the popup to appear without the mouse ever entering it.
-    disposeTimeout = setTimeout(dispose, POPUP_DISPOSE_TIMEOUT);
-  });
+
+  const hoverSubscription = Observable.fromEvent(item, 'mouseenter')
+    .exhaustMap((event: MouseEvent) => {
+      return spawnPopup()
+        .let(
+          completingSwitchMap((popupElement: HTMLElement) => {
+            const innerPopupElement = popupElement.firstChild;
+            invariant(innerPopupElement instanceof HTMLElement);
+
+            // Events which should cause the popup to close.
+            return Observable.merge(
+              hoveringOrAiming(item, innerPopupElement),
+              // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
+              observableFromSubscribeFunction(cb =>
+                atom.workspace.onDidChangeActivePaneItem(cb),
+              ).mapTo(false),
+            );
+          }),
+        )
+        .takeWhile(Boolean);
+    })
+    .subscribe();
+
+  const dispose = () => hoverSubscription.unsubscribe();
   return {item, dispose};
 }
 
@@ -275,6 +277,7 @@ function showPopupFor(
   item: HTMLElement,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
   diagnosticUpdater: DiagnosticUpdater,
+  gutter: atom$Gutter,
 ): HTMLElement {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
@@ -284,7 +287,14 @@ function showPopupFor(
   // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
-  const {top, left} = item.getBoundingClientRect();
+  const {
+    bottom: itemBottom,
+    top: itemTop,
+    height: itemHeight,
+  } = item.getBoundingClientRect();
+  // $FlowFixMe atom$Gutter.getElement is not a documented API, but it beats using a query selector.
+  const gutterContainer = gutter.getElement();
+  const {right: gutterRight} = gutterContainer.getBoundingClientRect();
 
   const trackedFixer = (...args) => {
     diagnosticUpdater.applyFix(...args);
@@ -299,11 +309,12 @@ function showPopupFor(
   invariant(editor != null);
   diagnosticUpdater.fetchCodeActions(editor, messages);
 
+  const popupTop = itemBottom;
   const BoundPopup = bindObservableAsProps(
     observableFromSubscribeFunction(cb =>
       diagnosticUpdater.observeCodeActionsForMessage(cb),
     ).map(codeActionsForMessage => ({
-      style: {left, top, position: 'absolute'},
+      style: {left: gutterRight, top: popupTop, position: 'absolute'},
       messages,
       fixer: trackedFixer,
       goToLocation: trackedGoToLocation,
@@ -320,16 +331,12 @@ function showPopupFor(
     top: editorTop,
     height: editorHeight,
   } = editorElement.getBoundingClientRect();
-  const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
+
   const popupElement = hostElement.firstElementChild;
   invariant(popupElement instanceof HTMLElement);
   const popupHeight = popupElement.clientHeight;
   if (itemTop + itemHeight + popupHeight > editorTop + editorHeight) {
-    // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
-    // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
-    // below. I don't know why.
-    popupElement.style.top =
-      String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
+    popupElement.style.top = `${popupTop - popupHeight - itemHeight}px`;
   }
 
   try {
