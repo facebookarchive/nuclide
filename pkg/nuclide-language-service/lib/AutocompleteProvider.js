@@ -358,8 +358,14 @@ export function updateAutocompleteFirstResults(
 
   const items: Array<{filterScore: number, completion: Completion}> = [];
   for (const item of firstResult.items) {
-    // flowlint-next-line sketchy-null-string:off
-    const text = item.displayText || item.snippet || item.text || '';
+    // If there are text edits, the first one will be used for scoring purposes.
+    const firstTextEdit =
+      item.textEdits != null && item.textEdits.length > 0
+        ? item.textEdits[0].newText
+        : null;
+    const text =
+      // flowlint-next-line sketchy-null-string:off
+      item.displayText || item.snippet || item.text || firstTextEdit || '';
     // flowlint-next-line sketchy-null-string:off
     const filterText = padEnd(item.filterText || text, 40, ' ');
     // If no prefix, then include all items and avoid doing work to score.
@@ -375,10 +381,13 @@ export function updateAutocompleteFirstResults(
     }
     const completion: Completion = {
       ...item,
-      replacementPrefix: prefix,
       // flowlint-next-line sketchy-null-string:off
       sortText: item.sortText || text,
     };
+    // If there are no textEdits, then a replacement prefix is needed.
+    if (firstTextEdit == null) {
+      completion.replacementPrefix = prefix;
+    }
     items.push({filterScore, completion});
   }
 
