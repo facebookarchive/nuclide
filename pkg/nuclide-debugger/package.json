@@ -29,9 +29,9 @@
         "0.0.0": "provideRemoteControlService"
       }
     },
-    "autocomplete.provider": {
+    "nuclide-autocomplete.provider": {
       "versions": {
-        "2.0.0": "createAutocompleteProvider"
+        "0.0.0": "createAutocompleteProvider"
       }
     }
   },

@@ -31,6 +31,7 @@ import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {FileLineBreakpoint} from './types';
+import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {AnalyticsEvents} from './constants';
@@ -135,8 +136,12 @@ function getLineForEvent(editor: atom$TextEditor, event: any): number {
   );
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
+    analytics: {
+      eventName: 'nuclide-debugger',
+      shouldLogInsertedSuggestion: false,
+    },
     labels: ['nuclide-console'],
     selector: '*',
     filterSuggestions: true,
