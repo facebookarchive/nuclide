@@ -56,7 +56,7 @@ export async function getConnectionConfig(
     return null;
   }
   try {
-    return decryptConfig(JSON.parse(storedConfig));
+    return await decryptConfig(JSON.parse(storedConfig));
   } catch (e) {
     logger.error(`The configuration file for ${host} is corrupted.`, e);
     return null;
