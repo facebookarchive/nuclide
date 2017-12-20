@@ -21,8 +21,12 @@ import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
+import {
+  isValidTextEditor,
+  observeTextEditors,
+} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import BlameToggle from './BlameToggle';
 
 const PACKAGES_MISSING_MESSAGE =
   'Could not open blame. Missing at least one blame provider.';
@@ -31,6 +35,8 @@ const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
 class Activation {
   _packageDisposables: UniversalDisposable;
   _registeredProviders: Set<BlameProvider>;
+  // Map of a TextEditor to its BlameToggle, if it exists.
+  _textEditorToBlameToggle: Map<atom$TextEditor, BlameToggle>;
   // Map of a TextEditor to its BlameGutter, if it exists.
   _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
   // Map of a TextEditor to the subscription on its ::onDidDestroy.
@@ -39,6 +45,7 @@ class Activation {
   constructor() {
     this._registeredProviders = new Set();
     this._textEditorToBlameGutter = new Map();
+    this._textEditorToBlameToggle = new Map();
     this._textEditorToDestroySubscription = new Map();
     this._packageDisposables = new UniversalDisposable();
     this._packageDisposables.add(
@@ -74,12 +81,33 @@ class Activation {
         }
       }),
     );
+
+    this._packageDisposables.add(
+      observeTextEditors(editor => {
+        const button = new BlameToggle(
+          editor,
+          this._hasProviderForEditor.bind(this),
+        );
+        const disposeButton = () => button.destroy();
+        this._packageDisposables.add(disposeButton);
+
+        this._textEditorToBlameToggle.set(editor, button);
+        this._textEditorToDestroySubscription.set(
+          editor,
+          editor.onDidDestroy(() => {
+            this._packageDisposables.remove(disposeButton);
+            this._editorWasDestroyed(editor);
+          }),
+        );
+      }),
+    );
   }
 
   dispose() {
     this._packageDisposables.dispose();
     this._registeredProviders.clear();
     this._textEditorToBlameGutter.clear();
+    this._textEditorToBlameToggle.clear();
     for (const disposable of this._textEditorToDestroySubscription.values()) {
       disposable.dispose();
     }
@@ -106,25 +134,20 @@ class Activation {
 
     let blameGutter = this._textEditorToBlameGutter.get(editor);
     if (!blameGutter) {
-      let providerForEditor = null;
-      for (const blameProvider of this._registeredProviders) {
-        if (blameProvider.canProvideBlameForEditor(editor)) {
-          providerForEditor = blameProvider;
-          break;
-        }
-      }
+      const providerForEditor = this._getProviderForEditor(editor);
 
-      if (providerForEditor) {
+      if (editor.isModified()) {
+        atom.notifications.addInfo(
+          'There is blame information for this file, but only for saved changes. ' +
+            'Save, then try again.',
+        );
+      } else if (providerForEditor) {
         blameGutter = new BlameGutter(
           'nuclide-blame',
           editor,
           providerForEditor,
         );
         this._textEditorToBlameGutter.set(editor, blameGutter);
-        const destroySubscription = editor.onDidDestroy(() =>
-          this._editorWasDestroyed(editor),
-        );
-        this._textEditorToDestroySubscription.set(editor, destroySubscription);
 
         track('blame-open', {
           editorPath: editor.getPath() || '',
@@ -148,7 +171,18 @@ class Activation {
       blameGutter.destroy();
       this._textEditorToBlameGutter.delete(editor);
     }
-    this._textEditorToDestroySubscription.delete(editor);
+
+    const blameToggle = this._textEditorToBlameToggle.get(editor);
+    if (blameToggle != null) {
+      blameToggle.destroy();
+      this._textEditorToBlameToggle.delete(editor);
+    }
+
+    const subscription = this._textEditorToDestroySubscription.get(editor);
+    if (subscription != null) {
+      subscription.dispose();
+      this._textEditorToDestroySubscription.delete(editor);
+    }
   }
 
   /**
@@ -186,6 +220,20 @@ class Activation {
   /**
    * Section: Consuming Services
    */
+
+  _getProviderForEditor(editor: atom$TextEditor): ?BlameProvider {
+    for (const blameProvider of this._registeredProviders) {
+      if (blameProvider.canProvideBlameForEditor(editor)) {
+        return blameProvider;
+      }
+    }
+
+    return null;
+  }
+
+  _hasProviderForEditor(editor: atom$TextEditor): boolean {
+    return Boolean(this._getProviderForEditor(editor) != null);
+  }
 
   consumeBlameProvider(provider: BlameProvider): IDisposable {
     this._registeredProviders.add(provider);

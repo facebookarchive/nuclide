@@ -18,19 +18,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-blame-provider-hg');
 
 function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
-  if (editor.isModified()) {
-    atom.notifications.addInfo(
-      'There is Hg blame information for this file, but only for saved changes. ' +
-        'Save, then try again.',
-    );
-    logger.info(
-      'nuclide-blame: Could not open Hg blame due to unsaved changes in file: ' +
-        String(editor.getPath()),
-    );
-    return false;
-  }
-  const repo = hgRepositoryForEditor(editor);
-  return Boolean(repo);
+  return Boolean(hgRepositoryForEditor(editor));
 }
 
 function getBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
