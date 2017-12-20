@@ -1507,7 +1507,13 @@ export class HgService {
   }
 
   fetchMergeConflicts(): ConnectableObservable<?MergeConflicts> {
-    const args = ['resolve', '--tool=internal:dumpjson', '--all'];
+    const args = [
+      'resolve',
+      '--tool=internal:dumpjson',
+      '--all',
+      '--config',
+      'extensions.conflictinfo=',
+    ];
     const execOptions = {
       cwd: this._workingDirectory,
     };

@@ -20,6 +20,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 
+const testFileContent = 'this is the base file\nline 2\n\n  indented line\n';
+
 /**
  * Traverses up the parent directories looking for `fixtures/FIXTURE_NAME`.
  * When found, it's copied to $TMP. Example:
@@ -155,6 +157,73 @@ export async function generateHgRepo2Fixture(): Promise<string> {
     {cwd: repoPath},
   ).toPromise();
   return repoPath;
+}
+
+/**
+ * Generates an hg repository with the following structure:
+ *
+ *   o second commit [secondCommit]
+ *  /
+ * |
+ * |
+ * | o first commit [firstCommit]
+ * |/
+ * |
+ * |
+ * o base commit
+ *
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function generateHgRepo3Fixture(
+  fileName?: string = 'temp.txt',
+): Promise<string> {
+  const testTxt = 'this is the base file\nline 2\n\n  indented line\n';
+  const tempDir = await generateFixture(
+    'hg_repo_3',
+    new Map([['.watchmanconfig', '{}\n'], [fileName, testTxt]]),
+  );
+  const repoPath = await fsPromise.realpath(tempDir);
+  await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, '.hg', 'hgrc'),
+    '[paths]\ndefault = .\n[ui]\nusername = Test <test@mail.com>\n',
+  );
+  await fsPromise.writeFile(nuclideUri.join(repoPath, fileName), testTxt);
+  await runCommand('hg', ['commit', '-A', '-m', 'base commit'], {
+    cwd: repoPath,
+  }).toPromise();
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, fileName),
+    testTxt + '\nthis line added on first commit\n',
+  );
+  await runCommand('hg', ['bookmark', 'firstCommit'], {
+    cwd: repoPath,
+  }).toPromise();
+  await runCommand('hg', ['commit', '-A', '-m', 'first commit'], {
+    cwd: repoPath,
+  }).toPromise();
+  await runCommand('hg', ['prev'], {
+    cwd: repoPath,
+  }).toPromise();
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, fileName),
+    testTxt + '\nthis line added on second commit\n',
+  );
+  await runCommand('hg', ['bookmark', 'secondCommit'], {
+    cwd: repoPath,
+  }).toPromise();
+  await runCommand('hg', ['commit', '-A', '-m', 'second commit'], {
+    cwd: repoPath,
+  }).toPromise();
+  return repoPath;
+}
+
+export async function overwriteFileWithTestContent(
+  fileName: string,
+  repoPath: string,
+  fileContent?: string = testFileContent,
+): Promise<void> {
+  await fsPromise.writeFile(nuclideUri.join(repoPath, fileName), fileContent);
 }
 
 /**

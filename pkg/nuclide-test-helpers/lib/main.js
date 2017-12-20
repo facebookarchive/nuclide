@@ -12,8 +12,10 @@
 export {
   generateHgRepo1Fixture,
   generateHgRepo2Fixture,
+  generateHgRepo3Fixture,
   copyFixture,
   copyBuildFixture,
+  overwriteFileWithTestContent,
 } from './fixtures';
 
 export {addMatchers} from './matchers';
