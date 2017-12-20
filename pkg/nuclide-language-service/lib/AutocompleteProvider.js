@@ -113,7 +113,7 @@ export class AutocompleteProvider<T: LanguageService> {
       } else {
         track(onDidInsertSuggestionAnalyticsEventName);
       }
-      this._handleTextEdits(suggestionInsertedRequest);
+      maybeApplyTextEdits(suggestionInsertedRequest);
       if (this._onDidInsertSuggestion != null) {
         this._onDidInsertSuggestion(suggestionInsertedRequest);
       }
@@ -170,14 +170,6 @@ export class AutocompleteProvider<T: LanguageService> {
       },
       values,
     );
-  }
-
-  _handleTextEdits(arg: OnDidInsertSuggestionArgument) {
-    const {editor, suggestion} = arg;
-    const textEdits = suggestion.textEdits;
-    if (textEdits != null) {
-      applyTextEditsToBuffer(editor.getBuffer(), textEdits);
-    }
   }
 
   async _getSuggestionsFromLanguageService(
@@ -239,6 +231,16 @@ export class AutocompleteProvider<T: LanguageService> {
     });
 
     return results;
+  }
+}
+
+function maybeApplyTextEdits(
+  insertedSuggestionArgument: OnDidInsertSuggestionArgument,
+) {
+  const {editor, suggestion} = insertedSuggestionArgument;
+  const textEdits = suggestion.textEdits;
+  if (textEdits != null) {
+    applyTextEditsToBuffer(editor.getBuffer(), textEdits);
   }
 }
 
