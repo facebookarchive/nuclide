@@ -12,6 +12,7 @@
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {SwiftPMTaskRunner as SwiftPMTaskRunnerType} from './taskrunner/SwiftPMTaskRunner';
 import type {SwiftPMTaskRunnerStoreState} from './taskrunner/SwiftPMTaskRunnerStoreState';
+import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import invariant from 'assert';
 import {SwiftPMTaskRunner} from './taskrunner/SwiftPMTaskRunner';
@@ -53,8 +54,12 @@ export function serialize(): ?SwiftPMTaskRunnerStoreState {
   }
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
+    analytics: {
+      eventName: 'nuclide-swift',
+      shouldLogInsertedSuggestion: false,
+    },
     selector: '.source.swift',
     inclusionPriority: 1,
     disableForSelector: '.source.swift .comment',
