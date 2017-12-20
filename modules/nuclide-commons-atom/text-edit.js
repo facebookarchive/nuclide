@@ -87,24 +87,31 @@ export function applyTextEdits(
   path: NuclideUri,
   ...edits: Array<TextEdit>
 ): boolean {
-  // Sort the edits to be in order (For every edit, the start of its range will
-  // be after the end of the previous edit's range.)
-  edits.sort((e1, e2) => e1.oldRange.compare(e2.oldRange));
-  if (editsOverlap(edits)) {
-    getLogger('text-edit').warn(
-      'applyTextEdits was called with overlapping edits.',
-    );
-    return false;
-  }
+  const sortedEdits = sortEdits(edits);
   const editor = existingEditorForUri(path);
   invariant(editor != null);
-  return applyTextEditsToBuffer(editor.getBuffer(), edits);
+  return applySortedTextEditsToBuffer(editor.getBuffer(), sortedEdits);
 }
 
 export function applyTextEditsToBuffer(
   buffer: atom$TextBuffer,
   edits: Array<TextEdit>,
 ): boolean {
+  return applySortedTextEditsToBuffer(buffer, sortEdits(edits));
+}
+
+function applySortedTextEditsToBuffer(
+  buffer: atom$TextBuffer,
+  edits: Array<TextEdit>,
+): boolean {
+  // For every edit, the start of its range will be after the end of the
+  // previous edit's range.
+  if (editsOverlap(edits)) {
+    getLogger('text-edit').warn(
+      'applyTextEdits was called with overlapping edits.',
+    );
+    return false;
+  }
   // Special-case whole-buffer changes to minimize disruption.
   if (edits.length === 1 && edits[0].oldRange.isEqual(buffer.getRange())) {
     if (edits[0].oldText != null && edits[0].oldText !== buffer.getText()) {
@@ -159,4 +166,8 @@ function editsOverlap(sortedEdits: Array<TextEdit>): boolean {
     }
   }
   return false;
+}
+
+function sortEdits(edits: Array<TextEdit>): Array<TextEdit> {
+  return edits.slice(0).sort((e1, e2) => e1.oldRange.compare(e2.oldRange));
 }

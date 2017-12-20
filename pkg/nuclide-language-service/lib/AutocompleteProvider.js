@@ -175,10 +175,6 @@ export class AutocompleteProvider<T: LanguageService> {
     const {editor, suggestion} = arg;
     const textEdits = suggestion.textEdits;
     if (textEdits != null) {
-      textEdits.sort((edit1, edit2) => {
-        // applyTextEditsToBuffer expects reverse ordering.
-        return edit2.oldRange.compare(edit1.oldRange);
-      });
       applyTextEditsToBuffer(editor.getBuffer(), textEdits);
     }
   }
