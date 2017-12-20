@@ -2009,19 +2009,22 @@ type atom$AutocompleteProvider = {
   +selector: string,
   +getSuggestions: (
     request: atom$AutocompleteRequest,
-  ) => Promise<?Array<atom$AutocompleteSuggestion>>,
-  +onDidInsertSuggestion?: (
-    insertedSuggestion: atom$SuggestionInsertedRequest,
-  ) => void,
+  ) => Promise<?Array<atom$AutocompleteSuggestion>> | ?Array<atom$AutocompleteSuggestion>,
   +disableForSelector?: string,
   +inclusionPriority?: number,
   +excludeLowerPriority?: boolean,
+  +suggestionPriority?: number,
+  +filterSuggestions?: boolean,
+  +disposable?: () => void,
+  +onDidInsertSuggestion?: (
+    insertedSuggestion: atom$SuggestionInsertedRequest,
+  ) => void,
 };
 
 type atom$SuggestionInsertedRequest = {
-  editor: atom$TextEditor,
-  triggerPosition: atom$Point,
-  suggestion: atom$AutocompleteSuggestion,
+  +editor: atom$TextEditor,
+  +triggerPosition: atom$Point,
+  +suggestion: atom$AutocompleteSuggestion,
 };
 
 // Undocumented API.
