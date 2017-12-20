@@ -25,6 +25,7 @@ import type {
   ClangDeclarationInfoProvider,
 } from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
+import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -85,8 +86,13 @@ export function activate() {
 }
 
 /** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
+    analytics: {
+      onGetSuggestions: 'nuclide-clang-atom.autocomplete',
+      onDidInsertSuggestion: 'nuclide-clang-atom.on-did-insert-suggestion',
+      shouldLogInsertedSuggestion: false,
+    },
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
     inclusionPriority: 1,
     suggestionPriority: 5, // Higher than the snippets provider.

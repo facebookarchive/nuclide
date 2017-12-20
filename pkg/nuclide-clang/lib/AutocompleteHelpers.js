@@ -15,7 +15,7 @@ import {Point} from 'atom';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import {arrayFindLastIndex} from 'nuclide-commons/collection';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';
 
@@ -239,16 +239,14 @@ export default class AutocompleteHelpers {
     },
   );
 
-  static getAutocompleteSuggestions(
+  static async getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    return trackTiming('nuclide-clang-atom.autocomplete', async () => {
-      const results = await AutocompleteHelpers._cacher.getSuggestions(request);
-      if (results != null) {
-        return [...results];
-      }
-      return [];
-    });
+    const results = await AutocompleteHelpers._cacher.getSuggestions(request);
+    if (results != null) {
+      return [...results];
+    }
+    return [];
   }
 
   static async _getAutocompleteSuggestions(
