@@ -9,6 +9,8 @@
  * @format
  */
 
+/* eslint-env browser */
+
 import type {
   ConsolePersistedState,
   DisplayableRecord,
@@ -363,7 +365,7 @@ export class Console {
     });
 
     this._model.setState({displayableRecords: nextDisplayableRecords});
-    callback();
+    requestAnimationFrame(callback);
   };
 
   _getDisplayableRecords(): Array<DisplayableRecord> {
