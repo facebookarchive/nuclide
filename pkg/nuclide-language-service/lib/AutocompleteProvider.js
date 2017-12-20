@@ -13,6 +13,7 @@ import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCach
 
 import type {
   AutocompleteResult,
+  AutocompleteRequest,
   Completion,
   LanguageService,
 } from './LanguageService';
@@ -182,118 +183,139 @@ export class AutocompleteProvider<T: LanguageService> {
   async _getSuggestionsFromLanguageService(
     request: atom$AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
-    const {editor, activatedManually, prefix} = request;
-    // TODO(ljw): the following line uses the position of the cursor --
-    // shouldn't it be using request.bufferPosition instead?
-    const position = editor.getLastCursor().getBufferPosition();
-
-    // In case of automatic requests, we'd like to know what character triggered
-    // the autocomplete request. That information isn't provided to us, so the
-    // best we can do is find the character to the left of the position.
-    let triggerCharacter;
-    if (activatedManually != null && activatedManually) {
-      triggerCharacter = null;
-    } else if (position.column === 0) {
-      triggerCharacter = '\n';
-    } else {
-      const range = new Range([position.row, position.column - 1], position);
-      triggerCharacter = editor.getTextInBufferRange(range);
-    }
-
-    // 'prefix' has to do with what's replaced when the user accepts an
-    // autocomplete suggestion. It's based on the current word. For instance,
-    //  '$c|'      => suggestion '$compare'  => hopefully replace '$c'
-    //  'Vec\com|' => suggestion 'compare'   => hopefully replace 'com'
-    // The way autocomplete works is: the language service might say what prefix
-    // its suggestion will replace; and if it doesn't, then autocomplete will
-    // replace whatever prefix was part of the 'request' object.
-    //
-    // Atom has its own way of computing the current word (to support gestures
-    // like cursor-past-word). It bases this on 'editor.nonWordCharacters', by
-    // default roughly [a-zA-Z0-9_]. But language packages can and do override
-    // this -- e.g. PHP allows '$' in identifiers.
-    //
-    // Autocomplete doesn't use Atom's technique (I suspect because the html and
-    // css and xml packages never bothered overriding it). Instead autocomplete
-    // has its own regex, roughly the same but allowing '-' as well. It uses
-    // this to populate 'prefix'.
-    //
-    // Autocomplete's suggestion is wrong for languages like PHP which have
-    // their own regex, is right for languages like HTML which should but don't,
-    // and is wrong for languages like Java which don't provide their own
-    // regex and which don't allow hyphens.
-    //
-    // What we'll do is work around this mess right here as best we can:
-    // if the language-package provides its own regex which gives a different
-    // prefix from Autocomplete's, then we'll suggest that to the language
-    // service, and we'll patch the output of the language service to reflect
-    // this.
-
-    let langSpecificPrefix = prefix;
-    const defaultWordRules = editor.getNonWordCharacters();
-    const scope = editor.scopeDescriptorForBufferPosition(position);
-    const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
-    if (defaultWordRules !== langWordRules) {
-      langSpecificPrefix = findAtomWordPrefix(editor, position);
-    }
-
-    const path = editor.getPath();
+    const {editor} = request;
+    const languageService = this._connectionToLanguageService.getForUri(
+      editor.getPath(),
+    );
     const fileVersion = await getFileVersionOfEditor(editor);
-
-    const languageService = this._connectionToLanguageService.getForUri(path);
     if (languageService == null || fileVersion == null) {
       return {isIncomplete: false, items: []};
     }
 
+    const langSpecificPrefix = getLanguageSpecificPrefix(request);
     const results = await (await languageService).getAutocompleteSuggestions(
       fileVersion,
-      position,
-      {
-        activatedManually:
-          activatedManually == null ? false : activatedManually,
-        triggerCharacter,
-        prefix: langSpecificPrefix,
-      },
+      getPosition(request),
+      generateAutocompleteRequest(request, langSpecificPrefix),
     );
-
-    if (results != null) {
-      const uniqueIndex = Math.floor(Math.random() * 1000000000);
-      results.items.forEach((c: Completion, index) => {
-        // textEdits aren't part of autocomplete-plus - we handle it in
-        // onDidInsertSuggestion above. We need to make this suggestion a no-op otherwise.
-        // There's no perfect solution at the moment, but the two options are:
-        // 1) Make text equal to the replacement prefix.
-        // 2) Provide an empty replacementPrefix, text, and snippet.
-        //
-        // 1) has the major downside of polluting the undo stack with an extra change.
-        // `autocomplete-plus` also has a default suffix-consuming feature where any text
-        // after the replaced text that matches a suffix of `text` will be deleted!
-        //
-        // 2) has the downside of not showing match highlights in the autocomplete UI.
-        // Between the two, we'll prefer accuracy at the cost of beauty.
-        //
-        // To get a better solution, `autocomplete-plus` needs a new API for custom suggestions.
-        if (c.textEdits != null) {
-          c.text = '';
-          // Atom ignores suggestions with an empty text & snippet.
-          // However, we can provide an empty snippet to trick it!
-          // 1) This works even if snippets are disabled.
-          // 2) Empty snippets don't appear in the undo stack.
-          // 3) autocomplete-plus dedupes snippets, so use unique indexes.
-          c.snippet = `$${uniqueIndex + index}`;
-          // Don't try to replace anything.
-          c.replacementPrefix = '';
-        } else if (
-          c.replacementPrefix == null &&
-          langSpecificPrefix !== prefix
-        ) {
-          // Here's where we patch up the prefix in the results, if necessary
-          c.replacementPrefix = langSpecificPrefix;
-        }
-      });
+    if (results == null) {
+      return null;
     }
+
+    const uniqueIndex = Math.floor(Math.random() * 1000000000);
+
+    results.items.forEach((c: Completion, index) => {
+      // textEdits aren't part of autocomplete-plus - we handle it in
+      // onDidInsertSuggestion above. We need to make this suggestion a no-op otherwise.
+      // There's no perfect solution at the moment, but the two options are:
+      // 1) Make text equal to the replacement prefix.
+      // 2) Provide an empty replacementPrefix, text, and snippet.
+      //
+      // 1) has the major downside of polluting the undo stack with an extra change.
+      // `autocomplete-plus` also has a default suffix-consuming feature where any text
+      // after the replaced text that matches a suffix of `text` will be deleted!
+      //
+      // 2) has the downside of not showing match highlights in the autocomplete UI.
+      // Between the two, we'll prefer accuracy at the cost of beauty.
+      //
+      // To get a better solution, `autocomplete-plus` needs a new API for custom suggestions.
+      if (c.textEdits != null) {
+        c.text = '';
+        // Atom ignores suggestions with an empty text & snippet.
+        // However, we can provide an empty snippet to trick it!
+        // 1) This works even if snippets are disabled.
+        // 2) Empty snippets don't appear in the undo stack.
+        // 3) autocomplete-plus dedupes snippets, so use unique indexes.
+        c.snippet = `$${uniqueIndex + index}`;
+        // Don't try to replace anything.
+        c.replacementPrefix = '';
+      } else if (
+        c.replacementPrefix == null &&
+        langSpecificPrefix !== request.prefix
+      ) {
+        // Here's where we patch up the prefix in the results, if necessary
+        c.replacementPrefix = langSpecificPrefix;
+      }
+    });
+
     return results;
   }
+}
+
+// 'prefix' has to do with what's replaced when the user accepts an
+// autocomplete suggestion. It's based on the current word. For instance,
+//  '$c|'      => suggestion '$compare'  => hopefully replace '$c'
+//  'Vec\com|' => suggestion 'compare'   => hopefully replace 'com'
+// The way autocomplete works is: the language service might say what prefix
+// its suggestion will replace; and if it doesn't, then autocomplete will
+// replace whatever prefix was part of the 'request' object.
+//
+// Atom has its own way of computing the current word (to support gestures
+// like cursor-past-word). It bases this on 'editor.nonWordCharacters', by
+// default roughly [a-zA-Z0-9_]. But language packages can and do override
+// this -- e.g. PHP allows '$' in identifiers.
+//
+// Autocomplete doesn't use Atom's technique (I suspect because the html and
+// css and xml packages never bothered overriding it). Instead autocomplete
+// has its own regex, roughly the same but allowing '-' as well. It uses
+// this to populate 'prefix'.
+//
+// Autocomplete's suggestion is wrong for languages like PHP which have
+// their own regex, is right for languages like HTML which should but don't,
+// and is wrong for languages like Java which don't provide their own
+// regex and which don't allow hyphens.
+//
+// What we'll do is work around this mess right here as best we can:
+// if the language-package provides its own regex which gives a different
+// prefix from Autocomplete's, then we'll suggest that to the language
+// service, and we'll patch the output of the language service to reflect
+// this.
+function getLanguageSpecificPrefix(request: atom$AutocompleteRequest): string {
+  const {editor} = request;
+  const position = getPosition(request);
+
+  const defaultWordRules = editor.getNonWordCharacters();
+  const scope = editor.scopeDescriptorForBufferPosition(position);
+  const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
+  if (defaultWordRules !== langWordRules) {
+    return findAtomWordPrefix(editor, position);
+  }
+  return request.prefix;
+}
+
+// In case of automatic requests, we'd like to know what character triggered
+// the autocomplete request. That information isn't provided to us, so the
+// best we can do is find the character to the left of the position.
+function findTriggerCharacter(request: atom$AutocompleteRequest): ?string {
+  if (request.activatedManually != null && request.activatedManually) {
+    return null;
+  }
+
+  const position = getPosition(request);
+  if (position.column === 0) {
+    return '\n';
+  }
+
+  const range = new Range([position.row, position.column - 1], position);
+  return request.editor.getTextInBufferRange(range);
+}
+
+// TODO(ljw): the following line uses the position of the cursor --
+// shouldn't it be using request.bufferPosition instead?
+function getPosition(request: atom$AutocompleteRequest): atom$Point {
+  return request.editor.getLastCursor().getBufferPosition();
+}
+
+function generateAutocompleteRequest(
+  request: atom$AutocompleteRequest,
+  prefix: string,
+): AutocompleteRequest {
+  const {activatedManually} = request;
+  return {
+    activatedManually: activatedManually == null ? false : activatedManually,
+    triggerCharacter: findTriggerCharacter(request),
+    prefix,
+  };
 }
 
 function findAtomWordPrefix(
@@ -309,9 +331,8 @@ function findAtomWordPrefix(
   });
   if (match == null) {
     return '';
-  } else {
-    return editor.getTextInBufferRange(new Range(match.range.start, position));
   }
+  return editor.getTextInBufferRange(new Range(match.range.start, position));
 }
 
 function padEnd(s: string, targetLength: number, padString: string): string {
