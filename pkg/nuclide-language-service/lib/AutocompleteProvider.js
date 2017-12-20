@@ -17,13 +17,13 @@ import type {
   Completion,
   LanguageService,
 } from './LanguageService';
+import type {AutocompleteAnalytics} from '../../nuclide-autocomplete/lib/types';
 
 import invariant from 'assert';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import {Point, Range} from 'simple-text-buffer';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming, track} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
@@ -43,11 +43,8 @@ export type AutocompleteConfig = {|
   suggestionPriority: number,
   disableForSelector: ?string,
   excludeLowerPriority: boolean,
-  version: '2.0.0',
-  analyticsEventName: string,
-  onDidInsertSuggestionAnalyticsEventName: string,
+  analytics: AutocompleteAnalytics,
   autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
-  trackAdditionalInfo: boolean,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -57,14 +54,11 @@ export class AutocompleteProvider<T: LanguageService> {
   suggestionPriority: number;
   disableForSelector: ?string;
   excludeLowerPriority: boolean;
-  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
+  analytics: AutocompleteAnalytics;
   onDidInsertSuggestion: OnDidInsertSuggestionCallback;
-  _analyticsEventName: string;
+  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
-  // _trackAdditionalInfo enables logging of the completions chosen and the
-  // replaced prefixes.
-  _trackAdditionalInfo: boolean;
 
   constructor(
     name: string,
@@ -73,12 +67,10 @@ export class AutocompleteProvider<T: LanguageService> {
     suggestionPriority: number,
     disableForSelector: ?string,
     excludeLowerPriority: boolean,
-    analyticsEventName: string,
+    analytics: AutocompleteAnalytics,
     onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    onDidInsertSuggestionAnalyticsEventName: string,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
     connectionToLanguageService: ConnectionCache<T>,
-    trackAdditionalInfo: boolean,
   ) {
     this.name = name;
     this.selector = selector;
@@ -86,9 +78,7 @@ export class AutocompleteProvider<T: LanguageService> {
     this.suggestionPriority = suggestionPriority;
     this.disableForSelector = disableForSelector;
     this.excludeLowerPriority = excludeLowerPriority;
-    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
-    this._trackAdditionalInfo = trackAdditionalInfo;
 
     if (autocompleteCacherConfig != null) {
       this._autocompleteCacher = new AutocompleteCacher(
@@ -100,24 +90,13 @@ export class AutocompleteProvider<T: LanguageService> {
     this._onDidInsertSuggestion = onDidInsertSuggestion;
 
     this.onDidInsertSuggestion = suggestionInsertedRequest => {
-      if (this._trackAdditionalInfo) {
-        const suggestion = suggestionInsertedRequest.suggestion;
-        let suggestionText = suggestion.text;
-        if (suggestionText == null) {
-          suggestionText = suggestion.snippet;
-        }
-        track(onDidInsertSuggestionAnalyticsEventName, {
-          replacementPrefix: suggestion.replacementPrefix,
-          suggestionText,
-        });
-      } else {
-        track(onDidInsertSuggestionAnalyticsEventName);
-      }
       maybeApplyTextEdits(suggestionInsertedRequest);
       if (this._onDidInsertSuggestion != null) {
         this._onDidInsertSuggestion(suggestionInsertedRequest);
       }
     };
+
+    this.analytics = analytics;
   }
 
   static register(
@@ -128,8 +107,8 @@ export class AutocompleteProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
+      'nuclide-autocomplete.provider',
+      '0.0.0',
       new AutocompleteProvider(
         name,
         grammars.map(grammar => '.' + grammar).join(', '),
@@ -137,39 +116,24 @@ export class AutocompleteProvider<T: LanguageService> {
         config.suggestionPriority,
         config.disableForSelector,
         config.excludeLowerPriority,
-        config.analyticsEventName,
+        config.analytics,
         onDidInsertSuggestion,
-        config.onDidInsertSuggestionAnalyticsEventName,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
-        config.trackAdditionalInfo,
       ),
     );
   }
 
-  getSuggestions(
+  async getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<Completion>> {
-    const values = {};
-    return trackTiming(
-      this._analyticsEventName,
-      async () => {
-        let result;
-        if (this._autocompleteCacher != null) {
-          result = await this._autocompleteCacher.getSuggestions(request);
-        } else {
-          result = await this._getSuggestionsFromLanguageService(request);
-        }
-        if (result != null) {
-          values.isEmpty = false;
-          return result.items;
-        } else {
-          values.isEmpty = true;
-          return null;
-        }
-      },
-      values,
-    );
+    let result;
+    if (this._autocompleteCacher != null) {
+      result = await this._autocompleteCacher.getSuggestions(request);
+    } else {
+      result = await this._getSuggestionsFromLanguageService(request);
+    }
+    return result != null ? result.items : null;
   }
 
   async _getSuggestionsFromLanguageService(

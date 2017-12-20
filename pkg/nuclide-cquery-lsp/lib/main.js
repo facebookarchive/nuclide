@@ -389,7 +389,6 @@ class Activation {
       name: 'cquery',
       grammars: ['source.cpp', 'source.c', 'source.objc'],
       autocomplete: {
-        version: '2.0.0',
         inclusionPriority: 1,
         suggestionPriority: 3,
         disableForSelector: null,
@@ -398,9 +397,11 @@ class Activation {
           updateResults: updateAutocompleteResults,
           updateFirstResults: updateAutocompleteFirstResults,
         },
-        analyticsEventName: 'cquery.getAutocompleteSuggestions',
-        onDidInsertSuggestionAnalyticsEventName: 'cquery.autocomplete-chosen',
-        trackAdditionalInfo: false,
+        analytics: {
+          onGetSuggestions: 'cquery.getAutocompleteSuggestions',
+          onDidInsertSuggestion: 'cquery.autocomplete-chosen',
+          shouldLogInsertedSuggestion: false,
+        },
       },
       definition: {
         version: '0.1.0',

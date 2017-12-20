@@ -243,22 +243,22 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       definitionEventName: 'flow.get-definition',
     },
     autocomplete: {
-      version: '2.0.0',
       disableForSelector: '.source.js .comment',
       excludeLowerPriority,
       // We want to get ranked higher than the snippets provider by default,
       // but it's configurable
       suggestionPriority: flowResultsFirst ? 5 : 1,
       inclusionPriority: 1,
-      analyticsEventName: 'flow.autocomplete',
+      analytics: {
+        onGetSuggestions: 'flow.autocomplete',
+        onDidInsertSuggestion: 'nuclide-flow.autocomplete-chosen',
+        shouldLogInsertedSuggestion: false,
+      },
       autocompleteCacherConfig: {
         updateResults: (request, results) =>
           filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },
-      onDidInsertSuggestionAnalyticsEventName:
-        'nuclide-flow.autocomplete-chosen',
-      trackAdditionalInfo: false,
     },
     diagnostics: (await shouldUsePushDiagnostics())
       ? {

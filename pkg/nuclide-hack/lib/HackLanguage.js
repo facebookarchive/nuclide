@@ -140,13 +140,16 @@ async function createLanguageService(): Promise<
       matcher: {kind: 'custom', matcher: getEvaluationExpression},
     },
     autocomplete: {
-      version: '2.0.0',
       inclusionPriority: 1,
       // The context-sensitive hack autocompletions are more relevant than snippets.
       suggestionPriority: 3,
       disableForSelector: null,
       excludeLowerPriority: false,
-      analyticsEventName: 'hack.getAutocompleteSuggestions',
+      analytics: {
+        onGetSuggestions: 'hack.getAutocompleteSuggestions',
+        onDidInsertSuggestion: 'hack.autocomplete-chosen',
+        shouldLogInsertedSuggestion: true,
+      },
       autocompleteCacherConfig: usingLsp
         ? {
             updateResults: updateAutocompleteResults,
@@ -155,8 +158,6 @@ async function createLanguageService(): Promise<
         : {
             updateResults: hackUpdateAutocompleteResults,
           },
-      onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
-      trackAdditionalInfo: true,
     },
     diagnostics: {
       version: '0.2.0',

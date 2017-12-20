@@ -68,15 +68,16 @@ async function createLanguageService(): Promise<
   };
 
   const autocompleteConfig = {
-    version: '2.0.0',
     inclusionPriority: 1,
     suggestionPriority: 3,
     excludeLowerPriority: false,
-    analyticsEventName: 'graphql.getAutocompleteSuggestions',
+    analytics: {
+      onGetSuggestions: 'graphql.getAutocompleteSuggestions',
+      onDidInsertSuggestion: 'graphql.autocomplete-chosen',
+      shouldLogInsertedSuggestion: false,
+    },
     disableForSelector: null,
     autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
-    trackAdditionalInfo: false,
   };
 
   const atomConfig: AtomLanguageServiceConfig = {

@@ -74,15 +74,16 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
   };
 
   const autocompleteConfig = {
-    version: '2.0.0',
     inclusionPriority: 1,
     suggestionPriority: 3,
     excludeLowerPriority: false,
-    analyticsEventName: 'jsimports.getAutocompleteSuggestions',
+    analytics: {
+      onGetSuggestions: 'jsimports.getAutocompleteSuggestions',
+      onDidInsertSuggestion: 'jsimports.autocomplete-chosen',
+      shouldLogInsertedSuggestion: false,
+    },
     disableForSelector: null,
     autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'jsimports.autocomplete-chosen',
-    trackAdditionalInfo: false,
   };
 
   const codeActionConfig: CodeActionConfig = {

@@ -101,16 +101,17 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       analyticsEventName: 'ocaml.findReferences',
     },
     autocomplete: {
-      version: '2.0.0',
       inclusionPriority: 1,
       // OCaml completions are more relevant than snippets.
       suggestionPriority: 3,
       disableForSelector: null,
       excludeLowerPriority: false,
-      analyticsEventName: 'ocaml.getAutocompleteSuggestions',
+      analytics: {
+        onGetSuggestions: 'ocaml.getAutocompleteSuggestions',
+        onDidInsertSuggestion: 'ocaml.autocompleteChosen',
+        shouldLogInsertedSuggestion: false,
+      },
       autocompleteCacherConfig: null,
-      onDidInsertSuggestionAnalyticsEventName: 'ocaml.autocompleteChosen',
-      trackAdditionalInfo: false,
     },
     diagnostics: {
       version: '0.2.0',

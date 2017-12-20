@@ -16,6 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {jasmineAttachWorkspace} from 'nuclide-commons-atom/test-helpers';
 import {AutocompleteProvider} from '../lib/AutocompleteProvider';
 import {ConnectionCache} from '../../nuclide-remote-connection';
+import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 
 describe('AutocompleteProvider', () => {
   let editor: atom$TextEditor;
@@ -70,11 +71,12 @@ describe('AutocompleteProvider', () => {
           suggestionPriority: 99,
           disableForSelector: null,
           excludeLowerPriority: true,
-          version: '2.0.0',
-          analyticsEventName: 'test',
-          onDidInsertSuggestionAnalyticsEventName: 'test',
+          analytics: {
+            onGetSuggestions: 'test',
+            onDidInsertSuggestion: 'test',
+            shouldLogInsertedSuggestion: false,
+          },
           autocompleteCacherConfig: null,
-          trackAdditionalInfo: false,
         },
         onDidInsertSuggestionSpy,
         mockCache,
@@ -84,6 +86,10 @@ describe('AutocompleteProvider', () => {
     waitsForPromise({timeout: 10000}, async () => {
       editor = await atom.workspace.open('test.txt');
       await atom.packages.activatePackage('autocomplete-plus');
+      atom.packages.loadPackage(
+        path.join(__dirname, '../../nuclide-autocomplete'),
+      );
+      await atom.packages.activatePackage('nuclide-autocomplete');
     });
   });
 
