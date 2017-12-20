@@ -29,9 +29,10 @@ import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';
 // This code may be executed before the config has been loaded!
 // getWithDefaults is necessary to make sure that the default is 'true'.
 // (But not in tests, as it's slow to start it up every time.)
-const useLocalRpc = Boolean(
-  featureConfig.getWithDefaults('useLocalRpc', !atom.inSpecMode()),
-);
+// We disable this on Windows until fork gets fixed.
+const useLocalRpc =
+  Boolean(featureConfig.getWithDefaults('useLocalRpc', !atom.inSpecMode())) &&
+  process.platform !== 'win32';
 let localRpcClient: ?RpcConnection<Transport> = null;
 
 // Creates a local RPC client that connects to a separate process.
