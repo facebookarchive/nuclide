@@ -1,115 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.get_references = exports.get_definitions = exports.get_completions = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 // This file contains RPC definitions for jediserver.py.
 
-export type JediCompletion = {
-  type: string,
-  text: string,
-  description?: string,
-  params: ?Array<string>,
-};
+let get_completions = exports.get_completions = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (src, contents, line, column) {
+    throw new Error('RPC Stub');
+  });
 
-export type JediDefinition = {
-  type: string,
-  text: string,
-  file: NuclideUri,
-  line: number,
-  column: number,
-};
+  return function get_completions(_x, _x2, _x3, _x4) {
+    return _ref.apply(this, arguments);
+  };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       * @format
+       */
 
-export type JediReference = {
-  type: string,
-  text: string,
-  file: NuclideUri,
-  line: number,
-  column: number,
-  parentName?: string,
-};
+let get_definitions = exports.get_definitions = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (src, contents, line, column) {
+    throw new Error('RPC Stub');
+  });
 
-export type Position = {
-  line: number,
-  column: number,
-};
+  return function get_definitions(_x5, _x6, _x7, _x8) {
+    return _ref2.apply(this, arguments);
+  };
+})();
 
-export type JediFunctionItem = {
-  kind: 'function',
-  name: string,
-  start: Position,
-  end: Position,
-  children?: Array<JediOutlineItem>,
-  docblock?: string,
-  params?: Array<string>,
-};
+let get_references = exports.get_references = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (src, contents, line, column) {
+    throw new Error('RPC Stub');
+  });
 
-export type JediClassItem = {
-  kind: 'class',
-  name: string,
-  start: Position,
-  end: Position,
-  children?: Array<JediOutlineItem>,
-  docblock?: string,
-  // Class params, i.e. superclasses.
-  params?: Array<string>,
-};
+  return function get_references(_x9, _x10, _x11, _x12) {
+    return _ref3.apply(this, arguments);
+  };
+})();
 
-export type JediStatementItem = {
-  kind: 'statement',
-  name: string,
-  start: Position,
-  end: Position,
-  docblock?: string,
-};
+exports.get_outline = get_outline;
+exports.add_paths = add_paths;
 
-export type JediOutlineItem =
-  | JediFunctionItem
-  | JediClassItem
-  | JediStatementItem;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-export async function get_completions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediCompletion>> {
+function get_outline(src, contents) {
   throw new Error('RPC Stub');
 }
 
-export async function get_definitions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediDefinition>> {
-  throw new Error('RPC Stub');
-}
-
-export async function get_references(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediReference>> {
-  throw new Error('RPC Stub');
-}
-
-export function get_outline(
-  src: NuclideUri,
-  contents: string,
-): Promise<?Array<JediOutlineItem>> {
-  throw new Error('RPC Stub');
-}
-
-export function add_paths(paths: Array<string>): Promise<?Array<string>> {
+function add_paths(paths) {
   throw new Error('RPC Stub');
 }

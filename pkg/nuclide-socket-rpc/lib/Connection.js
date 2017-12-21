@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConnectionFactory = exports.Connection = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _net = _interopRequireDefault(require('net'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +30,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IRemoteSocket, TunnelHost} from './types';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getLogger} from 'log4js';
-import net from 'net';
+class Connection {
 
-export class Connection {
-  _socket: net.Socket;
-  _remoteSocket: IRemoteSocket;
-  _disposables: UniversalDisposable;
-
-  constructor(tunnelHost: TunnelHost, remoteSocket: IRemoteSocket) {
+  constructor(tunnelHost, remoteSocket) {
     trace('Connection: creating connection: ' + JSON.stringify(tunnelHost));
     this._remoteSocket = remoteSocket;
 
-    this._socket = net.createConnection(
-      {port: tunnelHost.port, family: tunnelHost.family},
-      socket => {
-        trace('Connection: connection created and ready to write data.');
-      },
-    );
+    this._socket = _net.default.createConnection({ port: tunnelHost.port, family: tunnelHost.family }, socket => {
+      trace('Connection: connection created and ready to write data.');
+    });
 
-    this._disposables = new UniversalDisposable(
-      () => this._socket.end(),
-      this._remoteSocket,
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => this._socket.end(), this._remoteSocket);
 
     this._socket.on('error', err => {
       // TODO: we should find a way to send the error back
@@ -57,31 +68,32 @@ export class Connection {
     });
   }
 
-  write(msg: Buffer): void {
+  write(msg) {
     this._socket.write(msg);
   }
 
-  dispose(): void {
+  dispose() {
     trace('Connection: disposing connection');
     this._disposables.dispose();
   }
 }
 
-export class ConnectionFactory {
+exports.Connection = Connection;
+class ConnectionFactory {
   constructor() {}
 
-  async createConnection(
-    tunnelHost: TunnelHost,
-    socket: IRemoteSocket,
-  ): Promise<Connection> {
-    return new Connection(tunnelHost, socket);
+  createConnection(tunnelHost, socket) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return new Connection(tunnelHost, socket);
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     trace('disposing connection.');
   }
 }
 
-function trace(message: string) {
-  getLogger('SocketService').trace(message);
+exports.ConnectionFactory = ConnectionFactory;
+function trace(message) {
+  (0, (_log4js || _load_log4js()).getLogger)('SocketService').trace(message);
 }

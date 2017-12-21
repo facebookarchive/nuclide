@@ -1,3 +1,8 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,38 +11,36 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-export default class Thread {
-  _id: number;
-  _name: string;
-  _selectedStackFrame: number;
+class Thread {
 
-  constructor(id: number, name: string) {
+  constructor(id, name) {
     this._id = id;
     this._name = name;
     this.clearSelectedStackFrame();
   }
 
-  id(): number {
+  id() {
     return this._id;
   }
 
-  name(): string {
+  name() {
     return this._name;
   }
 
-  clearSelectedStackFrame(): void {
+  clearSelectedStackFrame() {
     this._selectedStackFrame = 0;
   }
 
-  selectedStackFrame(): number {
+  selectedStackFrame() {
     return this._selectedStackFrame;
   }
 
-  setSelectedStackFrame(frame: number): void {
+  setSelectedStackFrame(frame) {
     this._selectedStackFrame = frame;
   }
 }
+exports.default = Thread;

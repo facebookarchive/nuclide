@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +16,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {BusySignalOptions, BusyMessage} from './types';
-import type {MessageStore} from './MessageStore';
+class BusySignalSingleton {
 
-export default class BusySignalSingleton {
-  _messageStore: MessageStore;
-
-  constructor(messageStore: MessageStore) {
+  constructor(messageStore) {
     this._messageStore = messageStore;
   }
 
   dispose() {}
 
-  reportBusy(title: string, options?: BusySignalOptions): BusyMessage {
+  reportBusy(title, options) {
     return this._messageStore.add(title, options || {});
   }
 
@@ -33,16 +39,17 @@ export default class BusySignalSingleton {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  async reportBusyWhile<T>(
-    title: string,
-    f: () => Promise<T>,
-    options?: BusySignalOptions,
-  ): Promise<T> {
-    const busySignal = this.reportBusy(title, options);
-    try {
-      return await f();
-    } finally {
-      busySignal.dispose();
-    }
+  reportBusyWhile(title, f, options) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const busySignal = _this.reportBusy(title, options);
+      try {
+        return yield f();
+      } finally {
+        busySignal.dispose();
+      }
+    })();
   }
 }
+exports.default = BusySignalSingleton;

@@ -1,29 +1,11 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.applyTextEditsForMultipleFiles = undefined;
 
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-
-import {existingEditorForUri} from './text-editor';
-import {goToLocation} from './go-to-location';
-
-export type TextEdit = {
-  oldRange: atom$Range,
-  newText: string,
-  // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string,
-};
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /**
  * Attempts to apply the given patches for multiple files. Accepts a Map as input
@@ -42,34 +24,47 @@ export type TextEdit = {
  * Returns true if the application was successful, otherwise false. If any of
  * the changes fail, for ANY file, then none of the changes are applied.
  */
-export async function applyTextEditsForMultipleFiles(
-  changes: Map<NuclideUri, Array<TextEdit>>,
-): Promise<boolean> {
-  const paths = Array.from(changes.keys());
+let applyTextEditsForMultipleFiles = exports.applyTextEditsForMultipleFiles = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (changes) {
+    const paths = Array.from(changes.keys());
 
-  // NOTE: There is a race here. If the file contents change while the
-  // editors are being opened, then the ranges of the TextEdits will be off.
-  // However, currently this is only used to applyEdits to open files.
-  const editors = await Promise.all(
-    paths.map(async path => goToLocation(path)),
-  );
-  const checkpoints = editors.map(editor => {
-    invariant(editor != null);
-    const buffer = editor.getBuffer();
-    return [buffer, buffer.createCheckpoint()];
-  });
-  const allOkay = paths.reduce((successSoFar, path) => {
-    const edits = changes.get(path);
-    return successSoFar && edits != null && applyTextEdits(path, ...edits);
-  }, true);
-  if (!allOkay) {
-    checkpoints.forEach(([buffer, checkPoint]) => {
-      buffer.revertToCheckpoint(checkPoint);
-      return false;
+    // NOTE: There is a race here. If the file contents change while the
+    // editors are being opened, then the ranges of the TextEdits will be off.
+    // However, currently this is only used to applyEdits to open files.
+    const editors = yield Promise.all(paths.map((() => {
+      var _ref2 = (0, _asyncToGenerator.default)(function* (path) {
+        return (0, (_goToLocation || _load_goToLocation()).goToLocation)(path);
+      });
+
+      return function (_x2) {
+        return _ref2.apply(this, arguments);
+      };
+    })()));
+    const checkpoints = editors.map(function (editor) {
+      if (!(editor != null)) {
+        throw new Error('Invariant violation: "editor != null"');
+      }
+
+      const buffer = editor.getBuffer();
+      return [buffer, buffer.createCheckpoint()];
     });
-  }
-  return allOkay;
-}
+    const allOkay = paths.reduce(function (successSoFar, path) {
+      const edits = changes.get(path);
+      return successSoFar && edits != null && applyTextEdits(path, ...edits);
+    }, true);
+    if (!allOkay) {
+      checkpoints.forEach(function ([buffer, checkPoint]) {
+        buffer.revertToCheckpoint(checkPoint);
+        return false;
+      });
+    }
+    return allOkay;
+  });
+
+  return function applyTextEditsForMultipleFiles(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
 /**
  * Attempts to apply the given patches to the given file.
@@ -83,28 +78,59 @@ export async function applyTextEditsForMultipleFiles(
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export function applyTextEdits(
-  path: NuclideUri,
-  ...edits: Array<TextEdit>
-): boolean {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+exports.applyTextEdits = applyTextEdits;
+exports.applyTextEditsToBuffer = applyTextEditsToBuffer;
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('./text-editor');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('./go-to-location');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function applyTextEdits(path, ...edits) {
   // Sort the edits to be in order (For every edit, the start of its range will
   // be after the end of the previous edit's range.)
   edits.sort((e1, e2) => e1.oldRange.compare(e2.oldRange));
   if (editsOverlap(edits)) {
-    getLogger('text-edit').warn(
-      'applyTextEdits was called with overlapping edits.',
-    );
+    (0, (_log4js || _load_log4js()).getLogger)('text-edit').warn('applyTextEdits was called with overlapping edits.');
     return false;
   }
-  const editor = existingEditorForUri(path);
-  invariant(editor != null);
+  const editor = (0, (_textEditor || _load_textEditor()).existingEditorForUri)(path);
+
+  if (!(editor != null)) {
+    throw new Error('Invariant violation: "editor != null"');
+  }
+
   return applyTextEditsToBuffer(editor.getBuffer(), edits);
 }
 
-export function applyTextEditsToBuffer(
-  buffer: atom$TextBuffer,
-  edits: Array<TextEdit>,
-): boolean {
+function applyTextEditsToBuffer(buffer, edits) {
   // Special-case whole-buffer changes to minimize disruption.
   if (edits.length === 1 && edits[0].oldRange.isEqual(buffer.getRange())) {
     if (edits[0].oldText != null && edits[0].oldText !== buffer.getText()) {
@@ -131,7 +157,7 @@ export function applyTextEditsToBuffer(
   return true;
 }
 
-function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
+function applyToBuffer(buffer, edit) {
   if (edit.oldRange.start.row === edit.oldRange.end.row) {
     // A little extra validation when the old range spans only one line. In particular, this helps
     // when the old range is empty so there is no old text for us to compare against. We can at
@@ -152,7 +178,7 @@ function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
 }
 
 // Returns whether an array of sorted TextEdits contain an overlapping range.
-function editsOverlap(sortedEdits: Array<TextEdit>): boolean {
+function editsOverlap(sortedEdits) {
   for (let i = 0; i < sortedEdits.length - 1; i++) {
     if (sortedEdits[i].oldRange.intersectsWith(sortedEdits[i + 1].oldRange)) {
       return true;
