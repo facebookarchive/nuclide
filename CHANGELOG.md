@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.273.0
+
+### Hotfix Release
+
+* No longer use localRpc by default on windows
+* Fix inability to connect to remote projects
+
 ## v0.272.0
 
 ### Fixathon Highlights
