@@ -17,6 +17,10 @@ import {observeProcess, runCommand} from 'nuclide-commons/process';
 
 export const DEFAULT_ADB_PORT = 5037;
 
+export type getDevicesOptions = {
+  port?: number,
+};
+
 export class DebugBridge {
   static configObs: Observable<DebugBridgeConfig>;
 
@@ -59,12 +63,14 @@ export class DebugBridge {
       }));
   }
 
-  static getDevices(): Observable<Array<DeviceId>> {
+  static getDevices(options?: getDevicesOptions): Observable<Array<DeviceId>> {
+    const {port: optionPort} = options || {};
     return this.configObs.switchMap(config => {
+      const ports = optionPort != null ? [optionPort] : config.ports;
       const commandObs =
-        config.ports.length > 0
+        ports.length > 0
           ? Observable.concat(
-              ...config.ports.map(port =>
+              ...ports.map(port =>
                 runCommand(config.path, ['-P', String(port), 'devices']).map(
                   stdout => this._parseDevicesCommandOutput(stdout, port),
                 ),

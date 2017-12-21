@@ -18,6 +18,7 @@ import type {
   Process,
   DebugBridgeFullConfig,
 } from './types';
+import type {getDevicesOptions} from './common/DebugBridge';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -67,10 +68,10 @@ export async function stopProcess(
   return new Adb(device).stopProcess(packageName, pid);
 }
 
-export function getDeviceList(): ConnectableObservable<
-  Array<DeviceDescription>,
-> {
-  return new Devices(Adb).getDeviceList().publish();
+export function getDeviceList(
+  options?: getDevicesOptions,
+): ConnectableObservable<Array<DeviceDescription>> {
+  return new Devices(Adb).getDeviceList(options).publish();
 }
 
 export async function getPidFromPackageName(

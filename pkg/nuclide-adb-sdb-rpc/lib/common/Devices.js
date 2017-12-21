@@ -10,6 +10,7 @@
  */
 
 import type {DeviceDescription} from '../types';
+import type {getDevicesOptions} from './DebugBridge';
 
 import {Adb} from '../bridges/Adb';
 import {Sdb} from '../bridges/Sdb';
@@ -24,8 +25,10 @@ export class Devices {
     this._db = db;
   }
 
-  getDeviceList(): Observable<Array<DeviceDescription>> {
-    return this._db.getDevices().switchMap(devices => {
+  getDeviceList(
+    options?: getDevicesOptions,
+  ): Observable<Array<DeviceDescription>> {
+    return this._db.getDevices(options).switchMap(devices => {
       return Observable.concat(
         ...devices.map(deviceId => {
           const db = new this._db(deviceId);
