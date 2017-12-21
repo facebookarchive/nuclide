@@ -39,7 +39,10 @@ let localRpcClient: ?RpcConnection<Transport> = null;
 function createLocalRpcClient(): RpcConnection<Transport> {
   // The Electron Node process won't support --inspect until v1.7.x.
   // In the meantime, try to find a more standard Node process.
-  const fbNodeRun = require.resolve('../../commons-node/fb-node-run.sh');
+  const fbNodeRun = nuclideUri.join(
+    __dirname,
+    '../../commons-node/fb-node-run.sh',
+  );
   const spawnOptions = {
     killTreeWhenDone: true,
     stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
