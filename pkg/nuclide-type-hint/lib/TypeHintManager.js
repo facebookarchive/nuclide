@@ -13,6 +13,7 @@ import type {TypeHintProvider} from './types';
 import type {Datatip, MarkedString} from 'atom-ide-ui';
 
 import analytics from 'nuclide-commons-atom/analytics';
+import getFragmentGrammar from 'nuclide-commons-atom/getFragmentGrammar';
 import {arrayRemove} from 'nuclide-commons/collection';
 import {getLogger} from 'log4js';
 
@@ -62,7 +63,11 @@ export default class TypeHintManager {
     const markedStrings: Array<MarkedString> = hint.map(h => {
       // Flow doesn't like it when I don't specify these as literals.
       if (h.type === 'snippet') {
-        return {type: 'snippet', value: h.value, grammar};
+        return {
+          type: 'snippet',
+          value: h.value,
+          grammar: getFragmentGrammar(grammar),
+        };
       } else {
         return {type: 'markdown', value: h.value};
       }

@@ -17,14 +17,10 @@ type FindReferencesOptions = {
   previewContext?: number,
 };
 
+import getFragmentGrammar from 'nuclide-commons-atom/getFragmentGrammar';
 import {getFileForPath} from 'nuclide-commons-atom/projects';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {getLogger} from 'log4js';
-
-const FRAGMENT_GRAMMARS = {
-  'text.html.hack': 'source.hackfragment',
-  'text.html.php': 'source.hackfragment',
-};
 
 function compareReference(x: Reference, y: Reference): number {
   return x.range.compare(y.range);
@@ -213,14 +209,11 @@ export default class FindReferencesModel {
       previewText.push(fileLines.slice(startLine, endLine + 1).join('\n'));
       return {references, startLine, endLine};
     });
-    let grammar = atom.grammars.selectGrammar(uri, fileContents);
-    const fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
-    if (fragmentGrammar) {
-      grammar = atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
-    }
     return {
       uri,
-      grammar,
+      grammar: getFragmentGrammar(
+        atom.grammars.selectGrammar(uri, fileContents),
+      ),
       previewText,
       refGroups,
     };
