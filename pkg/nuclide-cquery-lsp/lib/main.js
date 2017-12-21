@@ -347,7 +347,7 @@ async function getConnection(connection): Promise<LanguageService> {
     fileNotifier,
     host,
     logCategory: 'cquery-language-server',
-    logLevel: 'ALL', // TODO pelmers: change to WARN
+    logLevel: 'WARN',
   });
   return cqueryService != null
     ? new CqueryLSPClient(cqueryService)
