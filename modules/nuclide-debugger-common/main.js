@@ -13,10 +13,14 @@
 export type {
   AtomNotification,
   AtomNotificationType,
+  ControlButtonSpecification,
+  DebuggerCapabilities,
   DebuggerConfigAction,
+  DebuggerProperties,
   NuclideDebuggerProvider,
   NuclideEvaluationExpression,
   NuclideEvaluationExpressionProvider,
+  ThreadColumn,
   UserOutput,
   VSAdapterExecutableInfo,
 } from './types';

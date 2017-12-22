@@ -11,12 +11,12 @@
 
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 import type {
+  ControlButtonSpecification,
   DebuggerCapabilities,
   DebuggerProperties,
   ThreadColumn,
-} from '../../nuclide-debugger-base/lib/types';
+} from '../../nuclide-debugger-base';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';

@@ -17,12 +17,12 @@ import type {
 } from 'nuclide-debugger-common';
 import type {DebuggerStore} from './DebuggerStore';
 import type {
+  ControlButtonSpecification,
   DebuggerProcessInfo,
   DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
-  ControlButtonSpecification,
   DebuggerModeType,
   ExpressionResult,
   GetPropertiesResult,

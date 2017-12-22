@@ -9,17 +9,8 @@
  * @format
  */
 
-/* eslint-disable no-unused-vars */
-
-import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Observable} from 'rxjs';
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
-
-export type ControlButtonSpecification = {
-  icon: IconName,
-  title?: string,
-  onClick: () => mixed,
-};
 
 /* Evaluation & values */
 export type EvaluationResult = {

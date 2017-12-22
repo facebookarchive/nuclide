@@ -10,11 +10,14 @@
  */
 
 import type {NuclideEvaluationExpressionProvider} from 'nuclide-debugger-common';
-import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
+import type {
+  ControlButtonSpecification,
+  DebuggerInstanceBase,
+} from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
-import type {ControlButtonSpecification, DebuggerModeType} from './types';
+import type {DebuggerModeType} from './types';
 import type Bridge from './Bridge';
 
 import {Emitter} from 'atom';

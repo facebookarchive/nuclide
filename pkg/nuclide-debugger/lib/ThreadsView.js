@@ -15,7 +15,7 @@ import type DebuggerModel from './DebuggerModel';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+import type {ThreadColumn} from '../../nuclide-debugger-base';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';
 

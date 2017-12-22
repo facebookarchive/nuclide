@@ -12,6 +12,13 @@
 export {default as DebuggerInstanceBase} from './DebuggerInstance';
 export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
 export {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
+export {
+  ControlButtonSpecification,
+  DebuggerCapabilities,
+  DebuggerProperties,
+  ThreadColumn,
+} from 'nuclide-debugger-common';
+
 export {DebuggerInstance} from './DebuggerInstance';
 export {
   serializeDebuggerConfig,
@@ -26,7 +33,6 @@ export {
 } from './ChromeMessageRemoting';
 export {LaunchAttachActionsBase} from './LaunchAttachActionsBase';
 export {getDefaultEvaluationExpression} from './evaluationExpression';
-export {DebuggerCapabilities, DebuggerProperties, ThreadColumn} from './types';
 
 export {
   setOutputService,

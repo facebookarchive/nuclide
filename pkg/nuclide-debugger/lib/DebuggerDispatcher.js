@@ -14,12 +14,12 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {
+  ControlButtonSpecification,
   DebuggerProcessInfo,
   DebuggerInstanceBase,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
-  ControlButtonSpecification,
   DebuggerModeType,
   ScopeSection,
   ExpressionResult,

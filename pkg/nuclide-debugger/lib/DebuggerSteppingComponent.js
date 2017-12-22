@@ -10,7 +10,8 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
-import type {ControlButtonSpecification, DebuggerModeType} from './types';
+import type {ControlButtonSpecification} from '../../nuclide-debugger-base';
+import type {DebuggerModeType} from './types';
 import type {DebuggerStore} from './DebuggerStore';
 import {
   LoadingSpinner,

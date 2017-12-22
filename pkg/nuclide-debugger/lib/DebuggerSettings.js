@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+import type {ThreadColumn} from '../../nuclide-debugger-base';
 
 export class DebuggerSettings {
   _settings: {
