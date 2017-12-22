@@ -72,8 +72,7 @@ describe('AutocompleteProvider', () => {
           disableForSelector: null,
           excludeLowerPriority: true,
           analytics: {
-            onGetSuggestions: 'test',
-            onDidInsertSuggestion: 'test',
+            eventName: 'test',
             shouldLogInsertedSuggestion: false,
           },
           autocompleteCacherConfig: null,

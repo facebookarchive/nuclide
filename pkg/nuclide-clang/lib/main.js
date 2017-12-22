@@ -89,8 +89,7 @@ export function activate() {
 export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
     analytics: {
-      onGetSuggestions: 'nuclide-clang-atom.autocomplete',
-      onDidInsertSuggestion: 'nuclide-clang-atom.on-did-insert-suggestion',
+      eventName: 'nuclide-clang',
       shouldLogInsertedSuggestion: false,
     },
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',

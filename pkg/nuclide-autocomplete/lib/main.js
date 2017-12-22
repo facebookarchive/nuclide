@@ -15,7 +15,6 @@ import type {
   AtomSuggestionInsertedRequest,
 } from './types';
 
-import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track, trackTiming} from '../../nuclide-analytics';
 
@@ -80,22 +79,9 @@ function getAnalytics<Suggestion: atom$AutocompleteSuggestion>(
   provider: AutocompleteProvider<Suggestion>,
 ): AutocompleteAnalyticEventNames {
   const {analytics} = provider;
-  if (analytics.eventName !== undefined) {
-    const {eventName} = analytics;
-    const onGetSuggestions = `nuclide-autocomplete:${eventName}:on-get-suggestions`;
-    const onDidInsertSuggestion = `nuclide-autocomplete:${eventName}:on-did-insert-suggestion`;
-    return {
-      onGetSuggestions,
-      onDidInsertSuggestion,
-    };
-  }
-
-  const {onGetSuggestions, onDidInsertSuggestion} = analytics;
-  invariant(
-    onGetSuggestions != null && onDidInsertSuggestion != null,
-    'Expected onGetSuggestions and onDidInsertSuggestion to be informed' +
-      'since eventName was not informed',
-  );
+  const {eventName} = analytics;
+  const onGetSuggestions = `nuclide-autocomplete:${eventName}:on-get-suggestions`;
+  const onDidInsertSuggestion = `nuclide-autocomplete:${eventName}:on-did-insert-suggestion`;
   return {
     onGetSuggestions,
     onDidInsertSuggestion,

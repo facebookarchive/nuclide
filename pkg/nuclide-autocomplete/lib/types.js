@@ -44,9 +44,7 @@ export type AtomSuggestionInsertedRequest<
 };
 
 export type AutocompleteAnalytics = {|
-  +eventName?: string,
-  +onDidInsertSuggestion?: string,
-  +onGetSuggestions?: string,
+  +eventName: string,
   +shouldLogInsertedSuggestion: boolean,
 |};
 

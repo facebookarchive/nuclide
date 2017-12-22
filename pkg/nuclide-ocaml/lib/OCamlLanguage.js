@@ -109,8 +109,7 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       disableForSelector: null,
       excludeLowerPriority: false,
       analytics: {
-        onGetSuggestions: 'ocaml.getAutocompleteSuggestions',
-        onDidInsertSuggestion: 'ocaml.autocompleteChosen',
+        eventName: 'nuclide-ocaml',
         shouldLogInsertedSuggestion: false,
       },
       autocompleteCacherConfig: null,

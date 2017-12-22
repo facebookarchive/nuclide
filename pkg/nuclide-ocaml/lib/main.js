@@ -36,8 +36,7 @@ export function getHyperclickProvider() {
 export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
     analytics: {
-      onDidInsertSuggestion: 'nuclide-ocaml:onDidInsertSuggestion',
-      onGetSuggestions: 'nuclide-ocaml:getAutocompleteSuggestions',
+      eventName: 'nuclide-ocaml',
       shouldLogInsertedSuggestion: false,
     },
     selector: '.source.ocaml, .source.reason',

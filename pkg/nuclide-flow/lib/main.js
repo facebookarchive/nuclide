@@ -250,8 +250,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       suggestionPriority: flowResultsFirst ? 5 : 1,
       inclusionPriority: 1,
       analytics: {
-        onGetSuggestions: 'flow.autocomplete',
-        onDidInsertSuggestion: 'nuclide-flow.autocomplete-chosen',
+        eventName: 'nuclide-flow',
         shouldLogInsertedSuggestion: false,
       },
       autocompleteCacherConfig: {

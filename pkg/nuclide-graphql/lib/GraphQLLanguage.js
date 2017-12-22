@@ -72,8 +72,7 @@ async function createLanguageService(): Promise<
     suggestionPriority: 3,
     excludeLowerPriority: false,
     analytics: {
-      onGetSuggestions: 'graphql.getAutocompleteSuggestions',
-      onDidInsertSuggestion: 'graphql.autocomplete-chosen',
+      eventName: 'nuclide-graphql',
       shouldLogInsertedSuggestion: false,
     },
     disableForSelector: null,

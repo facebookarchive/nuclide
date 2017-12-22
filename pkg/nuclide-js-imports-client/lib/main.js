@@ -78,8 +78,7 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     suggestionPriority: 3,
     excludeLowerPriority: false,
     analytics: {
-      onGetSuggestions: 'jsimports.getAutocompleteSuggestions',
-      onDidInsertSuggestion: 'jsimports.autocomplete-chosen',
+      eventName: 'nuclide-js-imports',
       shouldLogInsertedSuggestion: false,
     },
     disableForSelector: null,

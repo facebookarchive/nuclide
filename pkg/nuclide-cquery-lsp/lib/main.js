@@ -398,8 +398,7 @@ class Activation {
           updateFirstResults: updateAutocompleteFirstResults,
         },
         analytics: {
-          onGetSuggestions: 'cquery.getAutocompleteSuggestions',
-          onDidInsertSuggestion: 'cquery.autocomplete-chosen',
+          eventName: 'nuclide-cquery-lsp',
           shouldLogInsertedSuggestion: false,
         },
       },

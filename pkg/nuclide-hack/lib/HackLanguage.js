@@ -146,8 +146,7 @@ async function createLanguageService(): Promise<
       disableForSelector: null,
       excludeLowerPriority: false,
       analytics: {
-        onGetSuggestions: 'hack.getAutocompleteSuggestions',
-        onDidInsertSuggestion: 'hack.autocomplete-chosen',
+        eventName: 'nuclide-hack',
         shouldLogInsertedSuggestion: true,
       },
       autocompleteCacherConfig: usingLsp
