@@ -22,6 +22,7 @@
     "nullthrows": "1.0.0",
     "react": "16.2.0",
     "rxjs": "5.5.5",
+    "simple-text-buffer": "9.2.11",
     "v8-compile-cache": "1.1.0",
     "vscode-debugprotocol": "1.24.0",
     "ws": "3.2.0",
@@ -30,7 +31,6 @@
   "devDependencies": {
     "babel-plugin-idx": "1.4.0",
     "dedent": "0.6.0",
-    "invariant": "2.2.2",
-    "simple-text-buffer": "9.2.11"
+    "invariant": "2.2.2"
   }
 }

@@ -52,3 +52,9 @@ export {default as FileCache} from './FileCache';
 export {VsAdapterTypes} from './constants';
 
 export {pathToUri, uriToPath} from './helpers';
+export {getDefaultEvaluationExpression} from './evaluationExpression';
+
+export {
+  deserializeDebuggerConfig,
+  serializeDebuggerConfig,
+} from './DebuggerConfigSerializer';

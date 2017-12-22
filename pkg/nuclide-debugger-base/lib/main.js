@@ -13,6 +13,9 @@ export {
   DebuggerInstance,
   DebuggerLaunchAttachProvider,
   DebuggerProcessInfo,
+  deserializeDebuggerConfig,
+  getDefaultEvaluationExpression,
+  serializeDebuggerConfig,
   translateMessageFromServer,
   translateMessageToServer,
 } from 'nuclide-debugger-common';
@@ -23,13 +26,6 @@ export type {
   DebuggerProperties,
   ThreadColumn,
 } from 'nuclide-debugger-common';
-
-export {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from './DebuggerConfigSerializer';
-
-export {getDefaultEvaluationExpression} from './evaluationExpression';
 
 export {
   setOutputService,

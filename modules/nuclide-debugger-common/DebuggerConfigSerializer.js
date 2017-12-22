@@ -1,16 +1,17 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 /* global localStorage */
 
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+import type {DebuggerConfigAction} from './types';
 
 // transientSettings will matinain configuration that should be persisted for the
 // duration of the current Nunclide session (so preserved across the configuration dialog
@@ -32,6 +33,9 @@ export function serializeDebuggerConfig(
   persistent: Object,
   transient?: Object,
 ): void {
+  if (global.localStorage == null) {
+    throw new Error('localStorage is not available in this runtime');
+  }
   const key = _getStorageKey(host, action, debuggerName);
   localStorage.setItem(key, JSON.stringify(persistent));
 
@@ -48,6 +52,9 @@ export function deserializeDebuggerConfig(
   debuggerName: string,
   callback: (transientSettings: Object, persistentSettings: Object) => void,
 ): void {
+  if (global.localStorage == null) {
+    throw new Error('localStorage is not available in this runtime');
+  }
   const key = _getStorageKey(host, action, debuggerName);
   const val = localStorage.getItem(key);
   try {
