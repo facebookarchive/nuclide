@@ -86,6 +86,7 @@ class PackageLinter(object):
             self.validate_json_extras(package)
         self.validate_dependencies(package)
         self.validate_babelrc(package)
+        self.validate_provided_services(package)
 
         if self.is_internal_name(package_name):
             self.expect_field(package_name, package, 'private', True)
@@ -224,6 +225,17 @@ class PackageLinter(object):
                     '%s should not have a "%s" field with values',
                     package['name'],
                     field)
+
+    def validate_provided_services(self, package):
+        provided_services = package.get('providedServices')
+        if provided_services is None:
+            return
+        for provided_service, _ in provided_services.items():
+            if provided_service == 'autocomplete.provider':
+                self.report_error(
+                    ('Use nuclide-autocomplete.provider instead of ' +
+                        'autocomplete.provider for %s'),
+                    package['name'])
 
     def expect_field(self, package_name, package, field, value):
         fieldValue = package.get(field, None)

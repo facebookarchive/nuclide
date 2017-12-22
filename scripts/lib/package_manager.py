@@ -80,6 +80,8 @@ def create_config_for_package(path):
     config['dependencies'] = pkg.get('dependencies', {})
     config['optionalDependencies'] = pkg.get('optionalDependencies', {})
     config['devDependencies'] = pkg.get('devDependencies', {})
+    config['providedServices'] = pkg.get('providedServices', {})
+    config['consumedServices'] = pkg.get('consumedServices', {})
     # Both spellings are acceptable:
     config['bundleDependencies'] = pkg.get('bundleDependencies', {})
     config['bundledDependencies'] = pkg.get('bundledDependencies', {})
