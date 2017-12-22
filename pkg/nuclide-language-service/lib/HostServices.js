@@ -54,11 +54,6 @@ class RootHostServices {
   // lazily created map from source, to how we'll push messages from that source
   _consoleSubjects: Map<string, Promise<Subject<Message>>> = new Map();
 
-  // _progressWrappers is a hack to work around message loss in nuclide-rpc.
-  // We wouldn't need this field, nor wrappers at all, if we could depend on it.
-  // See also a field of the same name in HostServicesAggregator.js
-  _progressWrappers: Map<Progress, Progress> = new Map();
-
   consoleNotification(
     source: string,
     level: ShowNotificationLevel,
@@ -167,41 +162,13 @@ class RootHostServices {
     options?: {|debounce?: boolean|},
   ): Promise<Progress> {
     const service = await this._getBusySignalService();
-    let busyMessage =
+    const busyMessage =
       service == null
         ? this._nullProgressMessage
         : service.reportBusy(title, {...options});
     // The BusyMessage type from atom-ide-busy-signal happens to satisfy the
     // nuclide-rpc-able interface 'Progress': thus, we can return it directly.
-    // return (busyMessage: Progress);
-    // Except: we're not going to, because we have to work around a bug in
-    // nuclide-rpc and construct wrappers:
-    const wrapper: Progress = {
-      setTitle: title2 => {
-        if (busyMessage != null) {
-          busyMessage.setTitle(title2);
-        }
-      },
-      dispose: () => {
-        if (busyMessage != null) {
-          this._progressWrappers.delete(wrapper);
-          busyMessage.dispose();
-          busyMessage = null;
-        }
-      },
-    };
-    this._progressWrappers.set(wrapper, busyMessage);
-    return wrapper;
-  }
-
-  syncProgress(expected: Set<Progress>): void {
-    // This function's goal is to compensate for flakey message loss.
-    // If we have any progress messages still hanging around but
-    for (const [wrapper] of this._progressWrappers) {
-      if (!expected.has(wrapper)) {
-        wrapper.dispose();
-      }
-    }
+    return (busyMessage: Progress);
   }
 
   showActionRequired(
