@@ -127,6 +127,7 @@ export function setActiveTaskRunnerEpic(
     .filter(
       action =>
         action.type === Actions.SET_STATES_FOR_TASK_RUNNERS ||
+        action.type === Actions.SET_STATE_FOR_TASK_RUNNER ||
         (action.type === Actions.UNREGISTER_TASK_RUNNER &&
           action.payload.taskRunner === store.getState().activeTaskRunner),
     )

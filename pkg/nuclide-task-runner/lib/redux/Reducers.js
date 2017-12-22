@@ -17,6 +17,7 @@ import type {
 } from '../../../nuclide-console/lib/types';
 
 import * as Actions from './Actions';
+import * as Immutable from 'immutable';
 
 export function taskRunnersReady(
   state: boolean = false,
@@ -30,15 +31,19 @@ export function taskRunnersReady(
   }
 }
 
-export function isUpdatingTaskRunners(
-  state: boolean = true,
+export function readyTaskRunners(
+  state: Immutable.Set<TaskRunner> = Immutable.Set(),
   action: Action,
-): boolean {
+): Immutable.Set<TaskRunner> {
   switch (action.type) {
     case Actions.SET_PROJECT_ROOT:
-      return true;
+      return Immutable.Set();
+    case Actions.SET_STATE_FOR_TASK_RUNNER:
+      return state.add(action.payload.taskRunner);
     case Actions.SET_STATES_FOR_TASK_RUNNERS:
-      return false;
+      return state.concat(action.payload.statesForTaskRunners.keys());
+    case Actions.UNREGISTER_TASK_RUNNER:
+      return state.remove(action.payload.taskRunner);
     default:
       return state;
   }

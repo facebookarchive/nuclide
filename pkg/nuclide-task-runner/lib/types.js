@@ -16,9 +16,11 @@ import type {Message} from 'nuclide-commons/process';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
 
+import * as Immutable from 'immutable';
+
 export type AppState = {
   taskRunnersReady: boolean,
-  isUpdatingTaskRunners: boolean,
+  readyTaskRunners: Immutable.Set<TaskRunner>,
   projectRoot: ?Directory,
 
   visible: boolean,
