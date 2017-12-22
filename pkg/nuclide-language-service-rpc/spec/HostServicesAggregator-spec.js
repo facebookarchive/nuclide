@@ -40,7 +40,7 @@ describe('HostServicesAggregator', () => {
     ]);
     hostObj.childRegister = jasmine
       .createSpy('childRegister')
-      .andReturn(hostRelayObj);
+      .andReturn(Promise.resolve(hostRelayObj));
     hostRelayObj.consoleNotification = jasmine
       .createSpy('consoleNotification')
       .andCallFake(hostObj.consoleNotification);
@@ -217,11 +217,31 @@ describe('HostServicesAggregator', () => {
       const wrapper = jasmine.createSpyObj('wrapper', ['setTitle', 'dispose']);
       hostRelayObj.showProgress = jasmine
         .createSpy('showProgress')
-        .andReturn(wrapper);
+        .andReturn(Promise.resolve(wrapper));
 
       const child = await forkHostServices(host, logger);
       const p = await child.showProgress('ping');
       child.dispose();
+      expect(wrapper.dispose.callCount).toEqual(1);
+      p.setTitle('a');
+      expect(wrapper.setTitle.callCount).toEqual(0);
+      p.dispose();
+      expect(wrapper.dispose.callCount).toEqual(1);
+    });
+  });
+
+  it('has no races on showProgress and child disposal', () => {
+    waitsForPromise(async () => {
+      const wrapper = jasmine.createSpyObj('wrapper', ['setTitle', 'dispose']);
+      hostRelayObj.showProgress = jasmine
+        .createSpy('showProgress')
+        .andReturn(Promise.resolve(wrapper));
+
+      const child1 = await forkHostServices(host, logger);
+      const child2 = await forkHostServices(child1, logger);
+      const pPromise = child2.showProgress('ping');
+      child2.dispose();
+      const p = await pPromise;
       expect(wrapper.dispose.callCount).toEqual(1);
       p.setTitle('a');
       expect(wrapper.setTitle.callCount).toEqual(0);

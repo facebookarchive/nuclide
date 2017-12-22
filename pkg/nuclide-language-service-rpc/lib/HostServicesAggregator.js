@@ -299,9 +299,14 @@ class HostServicesRelay {
     // Should a cancellation come while we're waiting for our parent,
     // then we'll immediately return a no-op wrapper and ensure that
     // the one from our parent will eventually be disposed.
-    // The "or" check below is in case both parentPromise and cancel were
-    // both signalled, and parentPromise happened to win the race.
-    if (progress == null || this._aggregator.isDisposed()) {
+    // The "or" check below is in case parentProgress returned something
+    // but also either the parent aggregator or the child aggregator
+    // were disposed.
+    if (
+      progress == null ||
+      this._aggregator.isDisposed() ||
+      this._disposables.disposed
+    ) {
       parentPromise.then(progress2 => progress2.dispose());
       return no_op;
     }
