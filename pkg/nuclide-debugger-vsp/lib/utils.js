@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
+import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
@@ -242,6 +243,24 @@ export async function getNodeLaunchProcessInfo(
       env,
       outFiles,
     ),
+  );
+}
+
+export async function getOCamlLaunchProcessInfo(
+  targetUri: NuclideUri,
+  launchTarget: OCamlDebugStartInfo,
+): Promise<VspProcessInfo> {
+  const adapterInfo = await getAdapterExecutableWithProperNode(
+    'ocaml',
+    targetUri,
+  );
+  return new VspProcessInfo(
+    targetUri,
+    'launch',
+    VsAdapterTypes.OCAML,
+    adapterInfo,
+    false, // showThreads
+    {config: launchTarget},
   );
 }
 

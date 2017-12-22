@@ -14,7 +14,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 
-export type Adapter = 'node' | 'python' | 'prepack' | 'react-native';
+export type Adapter = 'node' | 'python' | 'prepack' | 'react-native' | 'ocaml';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
@@ -80,6 +80,18 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(__dirname, 'VendorLib/vscode-prepack'),
+    },
+  ],
+  [
+    'ocaml',
+    {
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(__dirname, 'vscode-ocaml/vscode-debugger-entry.js'),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'vscode-ocaml'),
     },
   ],
 ]);

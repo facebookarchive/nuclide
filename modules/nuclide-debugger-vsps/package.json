@@ -23,6 +23,7 @@
     "babel-plugin-idx": "1.4.0",
     "dedent": "0.6.0",
     "invariant": "2.2.2",
+    "log4js": "1.1.1",
     "simple-text-buffer": "9.2.11"
   }
 }

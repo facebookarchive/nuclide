@@ -76,6 +76,14 @@ export default class DebuggerAdapterFactory {
         ]),
       },
     ],
+    [
+      VsAdapterTypes.OCAML,
+      {
+        key: 'ocaml',
+        type: 'ocaml',
+        customArguments: new Map(),
+      },
+    ],
   ]);
 
   _targetTypeByFileExtension: Map<string, string> = new Map([

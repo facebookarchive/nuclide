@@ -13,6 +13,7 @@ import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/se
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import passesGK from '../../commons-node/passesGK';
+import {OcamlLaunchProvider} from './OCamlLaunchProvider';
 import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
 import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
@@ -35,6 +36,7 @@ class Activation {
     this._registerNodeDebugProvider();
     this._registerReactNativeDebugProvider();
     this._registerPrepackDebugProvider();
+    this._registerOcamlDebugProvider();
   }
 
   _registerPythonDebugProvider(): void {
@@ -88,6 +90,17 @@ class Activation {
         name: 'Prepack',
         getLaunchAttachProvider: connection => {
           return new PrepackLaunchAttachProvider(connection);
+        },
+      });
+    }
+  }
+
+  async _registerOcamlDebugProvider(): Promise<void> {
+    if (await passesGK('nuclide_debugger_ocaml')) {
+      this._registerDebugProvider({
+        name: 'OCaml',
+        getLaunchAttachProvider: connection => {
+          return new OcamlLaunchProvider(connection);
         },
       });
     }

@@ -29,7 +29,8 @@ export type VsAdapterType =
   | 'node'
   | 'java'
   | 'react_native'
-  | 'prepack';
+  | 'prepack'
+  | 'ocaml';
 
 export type UserOutputLevel =
   | 'debug'
