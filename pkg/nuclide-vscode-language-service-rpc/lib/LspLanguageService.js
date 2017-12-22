@@ -41,7 +41,7 @@ import type {
   HostServices,
   Progress,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   InitializeParams,

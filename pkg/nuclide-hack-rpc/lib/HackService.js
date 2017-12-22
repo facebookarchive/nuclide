@@ -40,7 +40,7 @@ import type {
   FileDiagnosticMessage,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';

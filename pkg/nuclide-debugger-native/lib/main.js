@@ -10,7 +10,7 @@
  */
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';

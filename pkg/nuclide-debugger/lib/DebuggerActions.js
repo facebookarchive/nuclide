@@ -14,7 +14,7 @@ import type DebuggerDispatcher from './DebuggerDispatcher';
 import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
-} from '../../nuclide-debugger-interfaces/service';
+} from 'nuclide-debugger-common';
 import type {DebuggerStore} from './DebuggerStore';
 import type {
   DebuggerProcessInfo,

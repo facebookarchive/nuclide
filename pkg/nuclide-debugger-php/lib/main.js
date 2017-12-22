@@ -10,7 +10,7 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

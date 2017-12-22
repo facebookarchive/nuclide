@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {Datatip} from 'atom-ide-ui';
 import type DebuggerModel from './DebuggerModel';
 

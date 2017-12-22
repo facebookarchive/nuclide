@@ -36,7 +36,7 @@ import type {
   Outline,
   CodeAction,
 } from 'atom-ide-ui';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 
 import invariant from 'assert';
 

@@ -11,9 +11,7 @@
 
 export {default as DebuggerInstanceBase} from './DebuggerInstance';
 export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
-export {
-  default as DebuggerLaunchAttachProvider,
-} from './DebuggerLaunchAttachProvider';
+export {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 export {DebuggerInstance} from './DebuggerInstance';
 export {
   serializeDebuggerConfig,

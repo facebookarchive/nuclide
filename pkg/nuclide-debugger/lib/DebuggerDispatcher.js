@@ -12,7 +12,7 @@
 import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
-} from '../../nuclide-debugger-interfaces/service';
+} from 'nuclide-debugger-common';
 import type {
   DebuggerProcessInfo,
   DebuggerInstanceBase,

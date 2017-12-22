@@ -23,7 +23,7 @@ import type {ConnectableObservable} from 'rxjs';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {
   LanguageService,

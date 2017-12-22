@@ -14,11 +14,17 @@ export type {
   AtomNotification,
   AtomNotificationType,
   DebuggerConfigAction,
+  NuclideDebuggerProvider,
+  NuclideEvaluationExpression,
+  NuclideEvaluationExpressionProvider,
   UserOutput,
   VSAdapterExecutableInfo,
 } from './types';
 
 export {default as ClientCallback} from './ClientCallback';
+export {
+  default as DebuggerLaunchAttachProvider,
+} from './DebuggerLaunchAttachProvider';
 
 export {
   DebuggerRpcServiceBase,

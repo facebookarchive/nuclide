@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {LanguageService} from './LanguageService';
 
 import {trackTiming} from '../../nuclide-analytics';

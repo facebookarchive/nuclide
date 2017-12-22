@@ -27,7 +27,7 @@ import type {
   FileDiagnosticMap,
   FileDiagnosticMessage,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import passesGK from '../../commons-node/passesGK';
