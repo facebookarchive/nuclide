@@ -17,10 +17,16 @@ import net from 'net';
 import type {Connection, ConnectionFactory} from './Connection';
 import type {SocketEvent, TunnelDescriptor, IRemoteSocket} from './types.js';
 
+const LOG_DELTA = 500000; // log for every half megabyte of transferred data
+
 export function createTunnel(
   td: TunnelDescriptor,
   cf: ConnectionFactory,
 ): ConnectableObservable<SocketEvent> {
+  const logStatsIfNecessary = getStatLogger(LOG_DELTA);
+  let bytesReceived: number = 0;
+  let bytesWritten: number = 0;
+
   return Observable.create(observer => {
     const descriptor = td;
     trace(`Tunnel: creating tunnel -- ${tunnelDescription(descriptor)}`);
@@ -37,11 +43,13 @@ export function createTunnel(
       observer.next({type: 'client_connected', clientPort});
 
       // create outgoing connection using connection factory
-      const connectionPromise = cf.createConnection(
-        td.to,
-        new RemoteSocket(socket),
-      );
-
+      const localSocket = new LocalSocket(socket);
+      localSocket.onWrite(count => {
+        bytesWritten += count;
+        logStatsIfNecessary(bytesWritten, bytesReceived);
+      });
+      const remoteSocket = new RemoteSocket(localSocket);
+      const connectionPromise = cf.createConnection(td.to, remoteSocket);
       connections.set(clientPort, connectionPromise);
 
       // set up socket listeners
@@ -68,7 +76,11 @@ export function createTunnel(
       // on data from incoming client
       // write data to the outgoing connection
       socket.on('data', data => {
-        connectionPromise.then(connection => connection.write(data));
+        connectionPromise.then(connection => {
+          connection.write(data);
+          bytesReceived += data.length;
+          logStatsIfNecessary(bytesWritten, bytesReceived);
+        });
       });
 
       socket.on('close', () => {
@@ -129,20 +141,64 @@ export function shortenHostname(host: string): string {
   return result;
 }
 
-export class RemoteSocket implements IRemoteSocket {
+class LocalSocket {
   _socket: net.Socket;
+  _writeListener: (byteCount: number) => void;
 
   constructor(socket: net.Socket) {
     this._socket = socket;
+    this._writeListener = (byteCount: number) => {};
   }
 
-  write(data: Buffer) {
+  onWrite(listener: (byteCount: number) => void) {
+    this._writeListener = listener;
+  }
+
+  write(data: Buffer): void {
+    this._socket.write(data);
+    this._writeListener(data.length);
+  }
+
+  end(): void {
+    this._socket.end();
+  }
+}
+
+export class RemoteSocket implements IRemoteSocket {
+  _socket: LocalSocket | net.Socket;
+
+  constructor(socket: LocalSocket | net.Socket) {
+    this._socket = socket;
+  }
+
+  write(data: Buffer): void {
     this._socket.write(data);
   }
 
   dispose(): void {
     this._socket.end();
   }
+}
+
+function getStatLogger(delta): (number, number) => void {
+  let lastLoggedBytes: number = 0;
+  return (bytesWritten: number, bytesReceived: number): void => {
+    const totalBytes = bytesWritten + bytesReceived;
+    if (totalBytes > lastLoggedBytes + delta) {
+      lastLoggedBytes = totalBytes;
+      logStats(bytesWritten, bytesReceived, totalBytes);
+    }
+  };
+}
+
+function logStats(
+  bytesWritten: number,
+  bytesReceived: number,
+  totalBytes: number,
+): void {
+  trace(
+    `Tunnel: ${totalBytes} bytes transferred; ${bytesWritten} written, ${bytesReceived} received`,
+  );
 }
 
 function trace(message: string) {
