@@ -858,7 +858,7 @@ export class LspLanguageService {
     // the path is included in the error message, so we refrain from adding it.
     // In others like EACCESs, the path isn't, so we add it ourselves:
     if (command != null && command !== '' && !msg.includes(command)) {
-      msg = `${command} - ${msg}`;
+      msg = `${command} [spawn] - ${msg}`;
     }
 
     // If the error was a well-formed JsonRPC error, then there's no reason to
@@ -869,12 +869,12 @@ export class LspLanguageService {
       this._childOut.stdout != null &&
       this._childOut.stdout !== ''
     ) {
-      msg = `${msg} - ${this._childOut.stdout}`;
+      msg = `${msg} - ${this._childOut.stdout} [stdout]`;
     }
 
     // But we'll always want to show stderr stuff if there was any.
     if (this._childOut.stderr !== '') {
-      msg = `${msg} - ${this._childOut.stderr}`;
+      msg = `${msg} - ${this._childOut.stderr} [stderr]`;
     }
 
     return msg;
