@@ -13,6 +13,7 @@
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IconName} from 'nuclide-commons-ui/Icon';
+import type DebuggerProcessInfo from './DebuggerProcessInfo';
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 export type AtomNotification = {
@@ -113,3 +114,11 @@ export type DebuggerProperties = {
   +threadColumns: ?Array<ThreadColumn>,
   +threadsComponentTitle: string,
 };
+
+export interface DebuggerInstanceInterface {
+  +onSessionEnd: ?(callback: () => void) => IDisposable;
+  getDebuggerProcessInfo(): DebuggerProcessInfo;
+  getProviderName(): string;
+  getTargetUri(): NuclideUri;
+  dispose(): void;
+}

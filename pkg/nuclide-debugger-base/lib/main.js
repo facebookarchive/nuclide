@@ -9,12 +9,17 @@
  * @format
  */
 
-export {DebuggerInstanceInterface, DebuggerInstance} from './DebuggerInstance';
-export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
-export {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 export {
+  DebuggerInstance,
+  DebuggerLaunchAttachProvider,
+  DebuggerProcessInfo,
+  translateMessageFromServer,
+  translateMessageToServer,
+} from 'nuclide-debugger-common';
+export type {
   ControlButtonSpecification,
   DebuggerCapabilities,
+  DebuggerInstanceInterface,
   DebuggerProperties,
   ThreadColumn,
 } from 'nuclide-debugger-common';
@@ -22,14 +27,8 @@ export {
 export {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-  getLastUsedDebugger,
-  setLastUsedDebugger,
 } from './DebuggerConfigSerializer';
 
-export {
-  translateMessageFromServer,
-  translateMessageToServer,
-} from './ChromeMessageRemoting';
 export {getDefaultEvaluationExpression} from './evaluationExpression';
 
 export {

@@ -16,6 +16,7 @@ export type {
   ControlButtonSpecification,
   DebuggerCapabilities,
   DebuggerConfigAction,
+  DebuggerInstanceInterface,
   DebuggerProperties,
   NuclideDebuggerProvider,
   NuclideEvaluationExpression,
@@ -34,6 +35,14 @@ export {
   DebuggerRpcServiceBase,
   DebuggerRpcWebSocketService,
 } from './DebuggerRpcServiceBase';
+
+export {
+  translateMessageFromServer,
+  translateMessageToServer,
+} from './ChromeMessageRemoting';
+
+export {default as DebuggerInstance} from './DebuggerInstance';
+export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
 
 export {default as VsDebugSession} from './VsDebugSession';
 export {default as VsDebugSessionTranslator} from './VsDebugSessionTranslator';

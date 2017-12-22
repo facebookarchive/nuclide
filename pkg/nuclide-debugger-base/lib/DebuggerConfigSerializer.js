@@ -55,20 +55,3 @@ export function deserializeDebuggerConfig(
     callback(transientSettings[key] || {}, persistedSettings);
   } catch (err) {}
 }
-
-export function setLastUsedDebugger(
-  host: string,
-  action: DebuggerConfigAction,
-  debuggerDisplayName: string,
-): void {
-  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
-  localStorage.setItem(key, debuggerDisplayName);
-}
-
-export function getLastUsedDebugger(
-  host: string,
-  action: DebuggerConfigAction,
-): ?string {
-  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
-  return localStorage.getItem(key);
-}

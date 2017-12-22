@@ -8,6 +8,7 @@
  * @flow
  * @format
  */
+/* global localStorage */
 
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -17,10 +18,6 @@ import type DebuggerActions from './DebuggerActions';
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  getLastUsedDebugger,
-  setLastUsedDebugger,
-} from '../../nuclide-debugger-base';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
@@ -51,6 +48,24 @@ type StateType = {
     debuggerName: string,
   }>,
 };
+
+// TODO those should be managed by the debugger store state
+function setLastUsedDebugger(
+  host: string,
+  action: DebuggerConfigAction,
+  debuggerDisplayName: string,
+): void {
+  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
+  localStorage.setItem(key, debuggerDisplayName);
+}
+
+function getLastUsedDebugger(
+  host: string,
+  action: DebuggerConfigAction,
+): ?string {
+  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
+  return localStorage.getItem(key);
+}
 
 export class DebuggerLaunchAttachUI extends React.Component<
   PropsType,

@@ -1,21 +1,22 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
-import type {DebuggerInstanceInterface} from './DebuggerInstance';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DebuggerCapabilities,
   DebuggerProperties,
-} from '../../nuclide-debugger-base';
-import type {PausedEvent} from 'nuclide-debugger-common/protocol-types';
+  DebuggerInstanceInterface,
+} from './types';
+import type {PausedEvent} from './protocol-types';
 
 export default class DebuggerProcessInfo {
   _serviceName: string;

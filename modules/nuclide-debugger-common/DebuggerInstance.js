@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -11,7 +12,7 @@
 
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AtomNotification} from 'nuclide-debugger-common';
+import type {AtomNotification, DebuggerInstanceInterface} from './types';
 
 import {Emitter} from 'event-kit';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -25,15 +26,7 @@ import {getLogger} from 'log4js';
 const SESSION_END_EVENT = 'session-end-event';
 const RECEIVED_MESSAGE_EVENT = 'received-message-event';
 
-export interface DebuggerInstanceInterface {
-  +onSessionEnd: ?(callback: () => void) => IDisposable;
-  getDebuggerProcessInfo(): DebuggerProcessInfo;
-  getProviderName(): string;
-  getTargetUri(): NuclideUri;
-  dispose(): void;
-}
-
-export class DebuggerInstance implements DebuggerInstanceInterface {
+export default class DebuggerInstance implements DebuggerInstanceInterface {
   _rpcService: Object;
   _disposables: UniversalDisposable;
   _emitter: Emitter;
