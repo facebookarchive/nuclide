@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {SetVariableResponse} from 'nuclide-debugger-common/protocol-types';
+import type {
+  SetVariableResponse,
+  RemoteObjectId,
+} from 'nuclide-debugger-common/protocol-types';
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
@@ -23,6 +26,8 @@ import {ActionTypes} from './DebuggerDispatcher';
 import {reportError} from './Protocol/EventReporter';
 import {DebuggerStore} from './DebuggerStore';
 
+export type ScopesMap = Map<string, ScopeSection>;
+
 export default class ScopesStore {
   _bridge: Bridge;
   _disposables: IDisposable;
@@ -30,7 +35,7 @@ export default class ScopesStore {
   /**
    * Treat as immutable.
    */
-  _scopes: BehaviorSubject<Array<ScopeSection>>;
+  _scopes: BehaviorSubject<ScopesMap>;
 
   constructor(
     dispatcher: DebuggerDispatcher,
@@ -43,7 +48,7 @@ export default class ScopesStore {
     this._disposables = new UniversalDisposable(() => {
       dispatcher.unregister(dispatcherToken);
     });
-    this._scopes = new BehaviorSubject([]);
+    this._scopes = new BehaviorSubject(new Map());
   }
 
   _handlePayload = (payload: DebuggerAction): void => {
@@ -53,7 +58,7 @@ export default class ScopesStore {
         this._handleClearInterface();
         break;
       case ActionTypes.UPDATE_SCOPES:
-        this._handleUpdateScopes(payload.data);
+        this._handleUpdateScopesAsPayload(payload.data);
         break;
       default:
         return;
@@ -61,18 +66,24 @@ export default class ScopesStore {
   };
 
   _handleClearInterface(): void {
-    this._scopes.next([]);
+    this._scopes.next(new Map());
   }
 
-  _handleUpdateScopes(scopeSections: Array<ScopeSection>): void {
+  _handleUpdateScopesAsPayload(scopeSections: Array<ScopeSection>): void {
+    this._handleUpdateScopes(
+      new Map(scopeSections.map(section => [section.name, section])),
+    );
+  }
+
+  _handleUpdateScopes(scopeSections: ScopesMap): void {
     this._scopes.next(scopeSections);
   }
 
-  getScopes(): Observable<Array<ScopeSection>> {
+  getScopes(): Observable<ScopesMap> {
     return this._scopes.asObservable();
   }
 
-  getScopesNow(): Array<ScopeSection> {
+  getScopesNow(): ScopesMap {
     return this._scopes.getValue();
   }
 
@@ -82,8 +93,8 @@ export default class ScopesStore {
 
   // Returns a promise of the updated value after it has been set.
   async sendSetVariableRequest(
-    scopeNumber: number,
-    scopeObjectId: number,
+    scopeObjectId: RemoteObjectId,
+    scopeName: string,
     expression: string,
     newValue: string,
   ): Promise<string> {
@@ -108,24 +119,24 @@ export default class ScopesStore {
         }
       }
       this._bridge.sendSetVariableCommand(
-        scopeObjectId,
+        Number(scopeObjectId),
         expression,
         newValue,
         callback,
       );
     }).then(confirmedNewValue => {
-      this._setVariable(scopeNumber, expression, confirmedNewValue);
+      this._setVariable(scopeName, expression, confirmedNewValue);
       return confirmedNewValue;
     });
   }
 
   _setVariable = (
-    scopeNumber: number,
+    scopeName: string,
     expression: string,
     confirmedNewValue: string,
   ): void => {
     const scopes = this._scopes.getValue();
-    const selectedScope = nullthrows(scopes[scopeNumber]);
+    const selectedScope = nullthrows(scopes.get(scopeName));
     const variableToChangeIndex = selectedScope.scopeVariables.findIndex(
       v => v.name === expression,
     );

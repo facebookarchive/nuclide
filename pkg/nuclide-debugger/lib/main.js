@@ -529,7 +529,7 @@ class Activation {
         .getScopesNow();
       return Promise.resolve(
         arrayFlatten(
-          scopes.map(({scopeVariables}) =>
+          Array.from(scopes.values()).map(({scopeVariables}) =>
             scopeVariables.map(({name}) => ({text: name, type: 'variable'})),
           ),
         ),

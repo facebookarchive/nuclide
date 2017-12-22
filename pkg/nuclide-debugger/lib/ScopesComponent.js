@@ -10,7 +10,7 @@
  */
 
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
-import type ScopesStore from './ScopesStore';
+import type ScopesStore, {ScopesMap} from './ScopesStore';
 import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
 import invariant from 'assert';
 import {WatchExpressionStore} from './WatchExpressionStore';
@@ -22,7 +22,7 @@ import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';
 
 type Props = {|
-  +scopes: Array<ScopeSection>,
+  +scopes: ScopesMap,
   +watchExpressionStore: WatchExpressionStore,
   scopesStore: ScopesStore,
 |};
@@ -53,7 +53,7 @@ export class ScopesComponent extends React.Component<Props> {
 
   _setVariable = (
     scopeObjectId: RemoteObjectId,
-    scopeNumber: number,
+    scopeName: string,
     expression: ?string,
     newValue: ?string,
   ): void => {
@@ -61,8 +61,8 @@ export class ScopesComponent extends React.Component<Props> {
       invariant(expression != null);
       invariant(newValue != null);
       this.props.scopesStore.sendSetVariableRequest(
-        scopeNumber,
-        Number(scopeObjectId),
+        scopeObjectId,
+        scopeName,
         expression,
         newValue,
       );
@@ -105,7 +105,6 @@ export class ScopesComponent extends React.Component<Props> {
   _renderScopeSection(
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
     scope: ScopeSection,
-    scopeNumber: number,
   ): ?React.Element<any> {
     const {scopesStore} = this.props;
     const {name, scopeObjectId, scopeVariables} = scope;
@@ -121,7 +120,7 @@ export class ScopesComponent extends React.Component<Props> {
       );
 
     const setVariableHandler = scopesStore.supportsSetVariable()
-      ? this._setVariable.bind(this, scopeObjectId, scopeNumber)
+      ? this._setVariable.bind(this, scopeObjectId, name)
       : null;
 
     return (
@@ -141,13 +140,13 @@ export class ScopesComponent extends React.Component<Props> {
 
   render(): React.Node {
     const {watchExpressionStore, scopes} = this.props;
-    if (scopes == null || scopes.length === 0) {
+    if (scopes == null || scopes.size === 0) {
       return <span>(no variables)</span>;
     }
     const fetchChildren = watchExpressionStore.getProperties.bind(
       watchExpressionStore,
     );
-    const scopeSections = scopes.map(
+    const scopeSections = Array.from(scopes.values()).map(
       this._renderScopeSection.bind(this, fetchChildren),
     );
     return (
