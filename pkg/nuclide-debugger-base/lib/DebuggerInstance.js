@@ -13,14 +13,13 @@ import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomNotification} from 'nuclide-debugger-common';
 
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   translateMessageFromServer,
   translateMessageToServer,
 } from './ChromeMessageRemoting';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import NewProtocolMessageChecker from './NewProtocolMessageChecker';
 
 import {getLogger} from 'log4js';
 const SESSION_END_EVENT = 'session-end-event';
@@ -39,7 +38,6 @@ export class DebuggerInstance implements DebuggerInstanceInterface {
   _disposables: UniversalDisposable;
   _emitter: Emitter;
   _logger: log4js$Logger;
-  _newProtocolMessageChecker: NewProtocolMessageChecker;
   _disposed: boolean;
   _processInfo: DebuggerProcessInfo;
 
@@ -57,7 +55,6 @@ export class DebuggerInstance implements DebuggerInstanceInterface {
     }
     this._disposables.add(rpcService);
     this._logger = getLogger(`nuclide-debugger-${this.getProviderName()}`);
-    this._newProtocolMessageChecker = new NewProtocolMessageChecker();
     this._emitter = new Emitter();
     this._registerServerHandlers();
   }
@@ -139,7 +136,6 @@ export class DebuggerInstance implements DebuggerInstanceInterface {
       this._logger.error('sendNuclideMessage after dispose!', message);
       return;
     }
-    this._newProtocolMessageChecker.registerSentMessage(message);
     this._handleChromeSocketMessage(message);
   }
 
