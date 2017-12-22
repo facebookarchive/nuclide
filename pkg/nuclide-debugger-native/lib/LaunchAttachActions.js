@@ -24,14 +24,28 @@ import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {ActionTypes} from './LaunchAttachDispatcher';
-import {LaunchAttachActionsBase} from '../../nuclide-debugger-base';
 
-export class LaunchAttachActions extends LaunchAttachActionsBase {
+const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
+
+export class LaunchAttachActions {
   _dispatcher: LaunchAttachDispatcher;
+  _targetUri: NuclideUri;
+  _refreshTimerId: ?number;
+  _parentUIVisible: boolean;
+  _attachUIVisible: boolean;
 
   constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
-    super(targetUri);
     this._dispatcher = dispatcher;
+    this._targetUri = targetUri;
+    this._refreshTimerId = null;
+    this._parentUIVisible = true; // Visible by default.
+    this._attachUIVisible = false;
+    (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(
+      this,
+    );
+    (this: any).updateParentUIVisibility = this.updateParentUIVisibility.bind(
+      this,
+    );
     (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
   }
 
@@ -64,5 +78,55 @@ export class LaunchAttachActions extends LaunchAttachActionsBase {
       actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
       attachTargetInfos: attachTargetList,
     });
+  }
+
+  getTargetUri(): NuclideUri {
+    return this._targetUri;
+  }
+
+  updateParentUIVisibility(visible: boolean): void {
+    this._parentUIVisible = visible;
+    this._updateAutoRefresh();
+  }
+
+  updateAttachUIVisibility(visible: boolean): void {
+    this._attachUIVisible = visible;
+    this._updateAutoRefresh();
+  }
+
+  _updateAutoRefresh(): void {
+    this._killAutoRefreshTimer();
+    if (this._parentUIVisible && this._attachUIVisible) {
+      this.updateAttachTargetList();
+      this._refreshTimerId = setInterval(
+        this.updateAttachTargetList,
+        ATTACH_TARGET_LIST_REFRESH_INTERVAL,
+      );
+    }
+  }
+
+  _killAutoRefreshTimer(): void {
+    if (this._refreshTimerId != null) {
+      clearTimeout(this._refreshTimerId);
+      this._refreshTimerId = null;
+    }
+  }
+
+  toggleLaunchAttachDialog(): void {
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:toggle-launch-attach',
+    );
+  }
+
+  showDebuggerPanel(): void {
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:show',
+    );
+  }
+
+  dispose(): void {
+    this._killAutoRefreshTimer();
   }
 }

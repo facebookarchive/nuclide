@@ -30,7 +30,6 @@ export {
   translateMessageFromServer,
   translateMessageToServer,
 } from './ChromeMessageRemoting';
-export {LaunchAttachActionsBase} from './LaunchAttachActionsBase';
 export {getDefaultEvaluationExpression} from './evaluationExpression';
 
 export {
