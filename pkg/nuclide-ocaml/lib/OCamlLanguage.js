@@ -39,8 +39,10 @@ async function createOCamlLanguageService(
       logLevel: 'INFO',
       fileNotifier,
       host,
-      projectFileNames: ['.merlin'],
-      fileExtensions: ['.ml', '.mli'],
+      projectFileNames: ['esy', 'esy.json', 'package.json', '.merlin'],
+      projectFileSearchStrategy: 'priority',
+      useOriginalEnvironment: true,
+      fileExtensions: ['.ml', '.mli', '.re', '.rei'],
       initializationOptions: {
         codelens: {
           unicode: true,
@@ -62,7 +64,7 @@ async function createOCamlLanguageService(
           rtop: 'rtop',
         },
         server: {
-          languages: ['ocaml'],
+          languages: ['ocaml', 'reason'],
         },
       },
     },
@@ -73,7 +75,7 @@ async function createOCamlLanguageService(
 export function createLanguageService(): AtomLanguageService<LanguageService> {
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'OCaml',
-    grammars: ['source.ocaml'],
+    grammars: ['source.ocaml', 'source.reason'],
     outline: {
       version: '0.1.0',
       priority: 1,

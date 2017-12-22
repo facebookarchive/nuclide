@@ -16,12 +16,19 @@ import type {NuclideUri} from './nuclideUri';
 import LRU from 'lru-cache';
 import fsPromise from './fsPromise';
 
+export type SearchStrategy = 'nearest' | 'priority';
+
 export class ConfigCache {
   _configFileNames: Array<string>;
+  _searchStrategy: SearchStrategy;
   _configCache: LRUCache<NuclideUri, Promise<?NuclideUri>>;
 
-  constructor(configFileNames: Array<string>) {
+  constructor(
+    configFileNames: Array<string>,
+    searchStrategy?: SearchStrategy = 'nearest',
+  ) {
     this._configFileNames = configFileNames;
+    this._searchStrategy = searchStrategy;
     this._configCache = LRU({
       max: 200, // Want this to exceed the maximum expected number of open files + dirs.
       maxAge: 1000 * 30, // 30 seconds
@@ -43,13 +50,19 @@ export class ConfigCache {
         fsPromise.findNearestFile(configFile, path),
       ),
     );
-    // Find the result with the greatest length (the closest match).
-    return configDirs.filter(Boolean).reduce((previous, configDir) => {
-      if (previous == null || configDir.length > previous.length) {
-        return configDir;
-      }
-      return previous;
-    }, null);
+
+    if (this._searchStrategy === 'nearest') {
+      // Find the result with the greatest length (the closest match).
+      return configDirs.filter(Boolean).reduce((previous, configDir) => {
+        if (previous == null || configDir.length > previous.length) {
+          return configDir;
+        }
+        return previous;
+      }, null);
+    } else {
+      // Find the first match.
+      return configDirs.find(Boolean);
+    }
   }
 
   dispose(): void {

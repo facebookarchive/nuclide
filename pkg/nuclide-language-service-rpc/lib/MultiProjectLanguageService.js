@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
+import type {SearchStrategy} from '../../../modules/nuclide-commons/ConfigCache';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -67,12 +68,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     fileCache: FileCache,
     host: HostServices,
     projectFileNames: Array<string>,
+    projectFileSearchStrategy: ?SearchStrategy,
     fileExtensions: Array<NuclideUri>,
     languageServiceFactory: (projectDir: NuclideUri) => Promise<?T>,
   ) {
     this._logger = logger;
     this._resources = new UniversalDisposable();
-    this._configCache = new ConfigCache(projectFileNames);
+    this._configCache = new ConfigCache(
+      projectFileNames,
+      projectFileSearchStrategy != null ? projectFileSearchStrategy : undefined,
+    );
 
     this._processes = new Cache(languageServiceFactory, value => {
       value.then(process => {

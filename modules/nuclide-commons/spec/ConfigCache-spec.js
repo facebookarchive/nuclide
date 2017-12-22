@@ -53,4 +53,16 @@ describe('ConfigCache', () => {
       expect(await cache.getConfigDir(nestedFolder2)).toBe(nestedFolder2);
     });
   });
+
+  it('prefers priority matches when the search strategy is "priority"', () => {
+    waitsForPromise(async () => {
+      const cache = new ConfigCache(
+        [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
+        'priority',
+      );
+
+      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+      expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
+    });
+  });
 });

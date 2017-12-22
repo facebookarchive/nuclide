@@ -70,6 +70,7 @@ import type {
   CancellationTokenSource,
 } from './jsonrpc';
 
+import {runCommand} from '../../../modules/nuclide-commons/process';
 import invariant from 'assert';
 import {sleep, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
@@ -78,6 +79,7 @@ import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
+import {getOriginalEnvironment} from '../../../modules/nuclide-commons/process';
 import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
 import {track} from '../../nuclide-analytics';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
@@ -135,6 +137,7 @@ export class LspLanguageService {
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
   _initializationOptions: Object;
   _additionalLogFilesRetentionPeriod: number;
+  _useOriginalEnvironment: boolean;
 
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
@@ -183,6 +186,7 @@ export class LspLanguageService {
     fileExtensions: Array<string>,
     initializationOptions: Object,
     additionalLogFilesRetentionPeriod: number,
+    useOriginalEnvironment?: boolean = false,
   ) {
     this._snapshotter = new SnapshotLogger(additionalLogFilesRetentionPeriod);
     this._logger = new MemoryLogger(logger, additionalLogFilesRetentionPeriod);
@@ -198,6 +202,7 @@ export class LspLanguageService {
     this._fileExtensions = fileExtensions;
     this._initializationOptions = initializationOptions;
     this._additionalLogFilesRetentionPeriod = additionalLogFilesRetentionPeriod;
+    this._useOriginalEnvironment = useOriginalEnvironment;
   }
 
   dispose(): void {
@@ -331,11 +336,43 @@ export class LspLanguageService {
           // if we try to spawn an empty command, node itself throws a "bad
           // type" error, which is jolly confusing. So we catch it ourselves.
         }
-        const childProcessStream = spawn(this._command, this._args, {
+
+        const lspSpawnOptions = {
           cwd: this._projectRoot,
           ...this._spawnOptions,
           killTreeWhenDone: true,
-        }).publish();
+        };
+
+        if (this._useOriginalEnvironment && !lspSpawnOptions.env) {
+          // NodeJS is the one thing where we need to make sure to use Nuclide's
+          // version.
+          const originalEnvironment = await getOriginalEnvironment();
+          const nodePath = nuclideUri.dirname(
+            await runCommand('which', ['node']).toPromise(),
+          );
+          if (originalEnvironment.PATH) {
+            originalEnvironment.PATH = `${nodePath}:${
+              originalEnvironment.PATH
+            }`;
+          } else {
+            this._logger.error('No path found in original environment.');
+            originalEnvironment.PATH = nodePath;
+          }
+
+          // If they specify both useOriginalEnvironment and an env key in their
+          // spawn options, merge them with the explicitly provided keys taking
+          // precedence.
+          lspSpawnOptions.env = {
+            ...originalEnvironment,
+            ...lspSpawnOptions.env,
+          };
+        }
+
+        const childProcessStream = spawn(
+          this._command,
+          this._args,
+          lspSpawnOptions,
+        ).publish();
         // disposing of the stream will kill the process, if it still exists
         const processPromise = childProcessStream.take(1).toPromise();
         perConnectionDisposables.add(childProcessStream.connect());

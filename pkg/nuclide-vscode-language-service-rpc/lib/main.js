@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {SearchStrategy} from '../../../modules/nuclide-commons/ConfigCache';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
@@ -40,6 +41,8 @@ export async function createMultiLspLanguageService(
     fileNotifier: FileNotifier,
     host: HostServices,
     projectFileNames: Array<string>,
+    projectFileSearchStrategy?: SearchStrategy,
+    useOriginalEnvironment?: boolean,
     fileExtensions: Array<string>,
     logCategory: string,
     logLevel: LogLevel,
@@ -90,6 +93,7 @@ export async function createMultiLspLanguageService(
       params.fileExtensions,
       params.initializationOptions || {},
       Number(params.additionalLogFilesRetentionPeriod),
+      params.useOriginalEnvironment || false,
     );
 
     lsp.start(); // Kick off 'Initializing'...
@@ -108,6 +112,7 @@ export async function createMultiLspLanguageService(
     fileCache,
     params.host,
     params.projectFileNames,
+    params.projectFileSearchStrategy,
     params.fileExtensions,
     languageServiceFactory,
   );
