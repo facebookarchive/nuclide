@@ -22,10 +22,12 @@ const resolveFrom = require('resolve-from');
 // eslint-disable-next-line rulesdir/modules-dependencies
 const pkgJson = require('../../package.json');
 const {isRequire, ATOM_BUILTIN_PACKAGES} = require('./utils');
+const MODULES_DIR = path.dirname(__dirname);
 
 module.exports = function(context) {
   function checkDependency(node, id) {
     const filename = context.getFilename();
+    const resolvedPath = resolveFrom(path.dirname(filename), id);
     if (
       !id.startsWith('.') &&
       !id.includes('/') &&
@@ -35,7 +37,8 @@ module.exports = function(context) {
         !pkgJson.devDependencies.hasOwnProperty(id)) &&
       !filename.includes('/scripts/') &&
       !filename.includes('.eslintrc.js') &&
-      resolveFrom(path.dirname(filename), id) !== id
+      resolvedPath !== id &&
+      (resolvedPath == null || !resolvedPath.startsWith(MODULES_DIR))
     ) {
       context.report({
         node,

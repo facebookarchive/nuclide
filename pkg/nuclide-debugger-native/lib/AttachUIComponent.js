@@ -23,7 +23,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 
 type PropsType = {
   targetUri: NuclideUri,

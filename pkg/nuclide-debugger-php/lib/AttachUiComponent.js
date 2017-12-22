@@ -19,7 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

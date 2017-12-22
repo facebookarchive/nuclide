@@ -13,7 +13,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {
   DebuggerInstanceInterface,
   DebuggerProcessInfo,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';

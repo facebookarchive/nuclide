@@ -13,7 +13,7 @@ import type {NuclideEvaluationExpressionProvider} from 'nuclide-debugger-common'
 import type {
   ControlButtonSpecification,
   DebuggerInstanceInterface,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
@@ -24,7 +24,7 @@ import {Emitter} from 'atom';
 import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
 import {ActionTypes} from './DebuggerDispatcher';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
 
 export const DebuggerMode = Object.freeze({
   STARTING: 'starting',

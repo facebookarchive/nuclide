@@ -23,7 +23,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';

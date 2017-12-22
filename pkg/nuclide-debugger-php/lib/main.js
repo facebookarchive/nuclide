@@ -11,7 +11,7 @@
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';

@@ -16,7 +16,7 @@ import * as React from 'react';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import {
   getReactNativeAttachProcessInfo,
   getDebuggerService,

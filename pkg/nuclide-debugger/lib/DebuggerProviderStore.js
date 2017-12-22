@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import type DebuggerActions from './DebuggerActions';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';

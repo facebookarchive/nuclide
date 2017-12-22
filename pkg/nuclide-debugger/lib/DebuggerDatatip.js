@@ -14,7 +14,7 @@ import type {Datatip} from 'atom-ide-ui';
 import type DebuggerModel from './DebuggerModel';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getDefaultEvaluationExpression} from '../../nuclide-debugger-base';
+import {getDefaultEvaluationExpression} from 'nuclide-debugger-common';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 

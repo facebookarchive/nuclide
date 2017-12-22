@@ -20,12 +20,9 @@ import type {
   DebuggerInstanceInterface,
   DebuggerCapabilities,
   DebuggerProperties,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 
-import {
-  DebuggerProcessInfo,
-  DebuggerInstance,
-} from '../../nuclide-debugger-base';
+import {DebuggerProcessInfo, DebuggerInstance} from 'nuclide-debugger-common';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {registerConsoleLogging} from '../../nuclide-debugger';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import * as React from 'react';
 import NodeLaunchUiComponent from './NodeLaunchUiComponent';
 import NodeAttachUiComponent from './NodeAttachUiComponent';

@@ -20,7 +20,7 @@ import type {
   ControlButtonSpecification,
   DebuggerProcessInfo,
   DebuggerInstanceInterface,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import type {
   Callstack,
   DebuggerModeType,

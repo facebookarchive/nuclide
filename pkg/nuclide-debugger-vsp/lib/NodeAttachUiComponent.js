@@ -16,7 +16,7 @@ import nullthrows from 'nullthrows';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService, getNodeAttachProcessInfo} from './utils';

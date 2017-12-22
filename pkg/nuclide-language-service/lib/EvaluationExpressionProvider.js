@@ -15,7 +15,7 @@ import type {LanguageService} from './LanguageService';
 import {trackTiming} from '../../nuclide-analytics';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {getDefaultEvaluationExpression} from '../../nuclide-debugger-base';
+import {getDefaultEvaluationExpression} from 'nuclide-debugger-common';
 
 export type MatcherType =
   | {

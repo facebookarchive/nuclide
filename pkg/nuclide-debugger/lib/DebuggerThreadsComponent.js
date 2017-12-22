@@ -14,7 +14,7 @@ import ReactDOM from 'react-dom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';
-import type {ThreadColumn} from '../../nuclide-debugger-base';
+import type {ThreadColumn} from 'nuclide-debugger-common';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {Table} from 'nuclide-commons-ui/Table';
 import type {Row} from 'nuclide-commons-ui/Table';

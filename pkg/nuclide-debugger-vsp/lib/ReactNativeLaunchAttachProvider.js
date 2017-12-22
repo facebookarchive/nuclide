@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import React from 'react';
 import ReactNativeAttachUiComponent from './ReactNativeAttachUiComponent';
 import ReactNativeLaunchUiComponent from './ReactNativeLaunchUiComponent';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import * as React from 'react';
 import PrepackScriptLaunchUiComponent from './PrepackLaunchUIComponent';
 import invariant from 'assert';

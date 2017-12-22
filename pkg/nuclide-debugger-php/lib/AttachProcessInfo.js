@@ -16,9 +16,9 @@ import type {
   DebuggerCapabilities,
   DebuggerProperties,
   ThreadColumn,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
 import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';

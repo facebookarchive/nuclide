@@ -11,7 +11,7 @@
 
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 
-import {getDefaultEvaluationExpression} from '../../nuclide-debugger-base';
+import {getDefaultEvaluationExpression} from 'nuclide-debugger-common';
 
 const HACK_BLACKLISTED_EXPRESSIONS = new Set([
   'final',

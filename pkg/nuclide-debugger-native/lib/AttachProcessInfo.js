@@ -13,18 +13,18 @@ import type {
   DebuggerCapabilities,
   DebuggerProperties,
   DebuggerInstanceInterface,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AttachTargetInfo,
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {registerConsoleLogging} from '../../nuclide-debugger';
 import invariant from 'assert';
-import {DebuggerInstance} from '../../nuclide-debugger-base';
+import {DebuggerInstance} from 'nuclide-debugger-common';
 import {getConfig} from './utils';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

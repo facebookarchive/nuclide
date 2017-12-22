@@ -10,9 +10,9 @@
  */
 
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-import type {callbacksForAction} from '../../nuclide-debugger-base/lib/DebuggerLaunchAttachProvider';
+import type {callbacksForAction} from 'nuclide-debugger-common/DebuggerLaunchAttachProvider';
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import React from 'react';
 import {OCamlLaunchUIComponent} from './OCamlLaunchUIComponent';
 

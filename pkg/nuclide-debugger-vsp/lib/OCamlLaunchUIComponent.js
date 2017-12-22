@@ -21,7 +21,7 @@ import {Logger} from 'vscode-debugadapter';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+} from 'nuclide-debugger-common';
 import {getDebuggerService, getOCamlLaunchProcessInfo} from './utils';
 
 type PropsType = {

@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 
-import {DebuggerInstance} from '../../nuclide-debugger-base';
+import {DebuggerInstance} from 'nuclide-debugger-common';
 import {ObservableManager} from './ObservableManager';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

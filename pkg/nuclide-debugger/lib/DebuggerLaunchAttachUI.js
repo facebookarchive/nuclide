@@ -11,7 +11,7 @@
 /* global localStorage */
 
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 import type DebuggerActions from './DebuggerActions';
 

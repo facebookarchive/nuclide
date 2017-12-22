@@ -11,7 +11,7 @@
 
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
-import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
+import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import * as React from 'react';
 import {LaunchUiComponent} from './LaunchUiComponent';
 import {AttachUiComponent} from './AttachUiComponent';
