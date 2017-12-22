@@ -25,8 +25,9 @@ import type {
 import {
   DebuggerProcessInfo,
   DebuggerInstance,
-  registerConsoleLogging,
 } from '../../nuclide-debugger-base';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {registerConsoleLogging} from '../../nuclide-debugger';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';

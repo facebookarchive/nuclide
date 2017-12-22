@@ -20,10 +20,9 @@ import type {
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
-import {
-  DebuggerProcessInfo,
-  registerConsoleLogging,
-} from '../../nuclide-debugger-base';
+import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {registerConsoleLogging} from '../../nuclide-debugger';
 import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getConfig} from './utils';

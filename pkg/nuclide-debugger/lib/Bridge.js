@@ -31,7 +31,7 @@ import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import CommandDispatcher from './CommandDispatcher';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
-import {registerConsoleLogging} from '../../nuclide-debugger-base';
+import {registerConsoleLogging} from './AtomServiceContainer';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');
 

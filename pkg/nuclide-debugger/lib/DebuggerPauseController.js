@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import electron from 'electron';
 import {DebuggerStore, DebuggerMode} from './DebuggerStore';
-import {getNotificationService} from '../../nuclide-debugger-base';
+import {getNotificationService} from './AtomServiceContainer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const {remote} = electron;

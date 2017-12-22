@@ -26,11 +26,3 @@ export type {
   DebuggerProperties,
   ThreadColumn,
 } from 'nuclide-debugger-common';
-
-export {
-  setOutputService,
-  getOutputService,
-  setNotificationService,
-  getNotificationService,
-  registerConsoleLogging,
-} from './AtomServiceContainer';

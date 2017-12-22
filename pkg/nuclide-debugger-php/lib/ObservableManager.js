@@ -9,7 +9,8 @@
  * @format
  */
 
-import {registerConsoleLogging} from '../../nuclide-debugger-base';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {registerConsoleLogging} from '../../nuclide-debugger';
 import logger from './utils';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

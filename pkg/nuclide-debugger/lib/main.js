@@ -50,10 +50,7 @@ import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {
-  setNotificationService,
-  setOutputService,
-} from '../../nuclide-debugger-base';
+import {setNotificationService, setOutputService} from './AtomServiceContainer';
 import {DebuggerMode} from './DebuggerStore';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {DebuggerLayoutManager} from './DebuggerLayoutManager';
@@ -1264,3 +1261,5 @@ export function consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
   invariant(activation);
   return activation.consumeCurrentWorkingDirectory(cwdApi);
 }
+
+export {registerConsoleLogging} from './AtomServiceContainer';
