@@ -19,7 +19,7 @@ import type {
 import * as Actions from './Actions';
 import * as Immutable from 'immutable';
 
-export function taskRunnersReady(
+export function initialPackagesActivated(
   state: boolean = false,
   action: Action,
 ): boolean {

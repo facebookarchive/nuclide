@@ -19,7 +19,7 @@ import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
 import * as Immutable from 'immutable';
 
 export type AppState = {
-  taskRunnersReady: boolean,
+  initialPackagesActivated: boolean,
   readyTaskRunners: Immutable.Set<TaskRunner>,
   projectRoot: ?Directory,
 

@@ -102,8 +102,8 @@ class Activation {
       },
       applyMiddleware(createEpicMiddleware(rootEpic), trackingMiddleware),
     );
-    const states = Observable.from(this._store)
-      .filter((state: AppState) => state.taskRunnersReady)
+    const states: Observable<AppState> = Observable.from(this._store)
+      .filter((state: AppState) => state.initialPackagesActivated)
       .distinctUntilChanged()
       .share();
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
@@ -155,8 +155,11 @@ class Activation {
       syncAtomCommands(
         states
           .map(state => {
-            const {activeTaskRunner, isUpdatingTaskRunners} = state;
-            if (isUpdatingTaskRunners || !activeTaskRunner) {
+            const {activeTaskRunner, readyTaskRunners, taskRunners} = state;
+            if (
+              taskRunners.length > readyTaskRunners.count() ||
+              !activeTaskRunner
+            ) {
               return [];
             }
             const taskRunnerState = state.statesForTaskRunners.get(
@@ -277,7 +280,7 @@ class Activation {
 
     const buttonUpdatesDisposable = new UniversalDisposable(
       // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
-      Observable.from(this._store).subscribe(state => {
+      Observable.from(this._store).subscribe((state: AppState) => {
         if (state.taskRunners.length > 0) {
           element.removeAttribute('hidden');
         } else {

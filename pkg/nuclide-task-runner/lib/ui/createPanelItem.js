@@ -43,7 +43,7 @@ export function createPanelItem(store: Store): Object {
   const stickyProps = states
     .filter(
       state =>
-        state.taskRunnersReady &&
+        state.initialPackagesActivated &&
         state.readyTaskRunners.count() === state.taskRunners.length,
     )
     .startWith(store.getState())
@@ -61,7 +61,7 @@ export function createPanelItem(store: Store): Object {
   const alwaysUpToDateProps = states.map(state => ({
     ...staticProps,
     toolbarDisabled:
-      !state.taskRunnersReady ||
+      !state.initialPackagesActivated ||
       state.readyTaskRunners.count() !== state.taskRunners.length,
     progress: state.runningTask ? state.runningTask.progress : null,
     taskIsRunning: state.runningTask != null,

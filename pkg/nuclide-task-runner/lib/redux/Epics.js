@@ -46,9 +46,9 @@ export function setProjectRootForNewTaskRunnerEpic(
   return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
     invariant(action.type === Actions.REGISTER_TASK_RUNNER);
     const {taskRunner} = action.payload;
-    const {projectRoot, taskRunnersReady} = store.getState();
+    const {projectRoot, initialPackagesActivated} = store.getState();
 
-    if (!taskRunnersReady) {
+    if (!initialPackagesActivated) {
       return Observable.empty();
     }
 
@@ -65,8 +65,8 @@ export function setConsolesForTaskRunnersEpic(
   return actions
     .ofType(Actions.SET_CONSOLE_SERVICE, Actions.DID_ACTIVATE_INITIAL_PACKAGES)
     .switchMap(() => {
-      const {consoleService, taskRunnersReady} = store.getState();
-      if (consoleService == null || !taskRunnersReady) {
+      const {consoleService, initialPackagesActivated} = store.getState();
+      if (consoleService == null || !initialPackagesActivated) {
         return Observable.empty();
       }
 
@@ -87,8 +87,8 @@ export function addConsoleForTaskRunnerEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, taskRunnersReady} = store.getState();
-    if (consoleService == null || !taskRunnersReady) {
+    const {consoleService, initialPackagesActivated} = store.getState();
+    if (consoleService == null || !initialPackagesActivated) {
       return Observable.empty();
     }
 
@@ -106,8 +106,8 @@ export function removeConsoleForTaskRunnerEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.UNREGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, taskRunnersReady} = store.getState();
-    if (consoleService == null || !taskRunnersReady) {
+    const {consoleService, initialPackagesActivated} = store.getState();
+    if (consoleService == null || !initialPackagesActivated) {
       return Observable.empty();
     }
 
@@ -207,9 +207,13 @@ export function combineTaskRunnerStatesEpic(
   options: EpicOptions,
 ): Observable<Action> {
   return actions.ofType(Actions.SET_PROJECT_ROOT).switchMap(() => {
-    const {projectRoot, taskRunners, taskRunnersReady} = store.getState();
+    const {
+      projectRoot,
+      taskRunners,
+      initialPackagesActivated,
+    } = store.getState();
 
-    if (!taskRunnersReady) {
+    if (!initialPackagesActivated) {
       // We will dispatch another set project root when everyone is ready.
       return Observable.empty();
     }

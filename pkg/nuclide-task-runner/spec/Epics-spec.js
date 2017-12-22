@@ -34,8 +34,8 @@ function getRootEpic() {
 
 describe('Epics', () => {
   describe('SET_PROJECT_ROOT', () => {
-    describe('when task runners arent ready', () => {
-      const state = {taskRunnersReady: false};
+    describe('when packages arent activated', () => {
+      const state = {initialPackagesActivated: false};
 
       it('does nothing', () => {
         waitsForPromise(async () => {
@@ -48,7 +48,7 @@ describe('Epics', () => {
     });
 
     describe('when there are no task runners', () => {
-      const state = {taskRunnersReady: true, taskRunners: []};
+      const state = {initialPackagesActivated: true, taskRunners: []};
 
       it('set task runners states to an empty map', () => {
         waitsForPromise(async () => {
@@ -76,7 +76,7 @@ describe('Epics', () => {
           },
         };
         state = {
-          taskRunnersReady: true,
+          initialPackagesActivated: true,
           taskRunners: [taskRunner],
         };
       });
@@ -193,7 +193,7 @@ describe('Epics', () => {
         waitsForPromise(async () => {
           const state = {
             consoleService: null,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
           };
           const output = await runActions(
             [Actions.setConsoleService(null)],
@@ -211,7 +211,7 @@ describe('Epics', () => {
         waitsForPromise(async () => {
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: false,
+            initialPackagesActivated: false,
           };
           const output = await runActions(
             [Actions.setConsoleService(createMockConsole)],
@@ -229,7 +229,7 @@ describe('Epics', () => {
         waitsForPromise(async () => {
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [new dummy.TaskRunner()],
           };
           const output = await runActions(
@@ -258,7 +258,7 @@ describe('Epics', () => {
           const mockProjectRoot = {};
           const state = {
             consoleService: null,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             projectRoot: mockProjectRoot,
           };
           const output = await runActions(
@@ -284,7 +284,7 @@ describe('Epics', () => {
           const mockProjectRoot = {};
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: false,
+            initialPackagesActivated: false,
             projectRoot: mockProjectRoot,
           };
           const output = await runActions(
@@ -310,7 +310,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             projectRoot: mockProjectRoot,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [new dummy.TaskRunner()],
           };
           const output = await runActions(
@@ -352,7 +352,7 @@ describe('Epics', () => {
           };
           const state = {
             consoleService: null,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             projectRoot: {},
           };
           const output = await runActions(
@@ -378,7 +378,7 @@ describe('Epics', () => {
         waitsForPromise(async () => {
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: false,
+            initialPackagesActivated: false,
             projectRoot: {},
           };
           const output = await runActions(
@@ -407,7 +407,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             projectRoot: {},
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [],
           };
           const output = await runActions(
@@ -448,7 +448,7 @@ describe('Epics', () => {
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: null,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [taskRunner],
             projectRoot: {},
           };
@@ -470,7 +470,7 @@ describe('Epics', () => {
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: false,
+            initialPackagesActivated: false,
             taskRunners: [taskRunner],
             projectRoot: {},
           };
@@ -491,7 +491,7 @@ describe('Epics', () => {
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: createMockConsole,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [taskRunner],
             activeTaskRunner: taskRunner,
           };
@@ -532,7 +532,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             projectRoot: mockProjectRoot,
-            taskRunnersReady: true,
+            initialPackagesActivated: true,
             taskRunners: [taskRunner],
           };
           const output = await runActions(
