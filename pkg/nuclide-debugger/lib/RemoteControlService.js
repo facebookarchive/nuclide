@@ -11,7 +11,7 @@
 
 import type DebuggerModel from './DebuggerModel';
 import type {
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
   DebuggerProcessInfo,
 } from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -71,7 +71,7 @@ export default class RemoteControlService {
     return session != null && session.getProviderName() === providerName;
   }
 
-  getDebuggerInstance(): ?DebuggerInstanceBase {
+  getDebuggerInstance(): ?DebuggerInstanceInterface {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');

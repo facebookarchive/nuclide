@@ -9,7 +9,7 @@
  * @format
  */
 
-import type DebuggerInstanceBase from './DebuggerInstance';
+import type {DebuggerInstanceInterface} from './DebuggerInstance';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DebuggerCapabilities,
@@ -73,7 +73,7 @@ export default class DebuggerProcessInfo {
     return false;
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
+  async debug(): Promise<DebuggerInstanceInterface> {
     throw new Error('abstract method');
   }
 

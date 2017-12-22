@@ -19,7 +19,7 @@ import type {DebuggerStore} from './DebuggerStore';
 import type {
   ControlButtonSpecification,
   DebuggerProcessInfo,
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
@@ -139,7 +139,7 @@ export default class DebuggerActions {
   }
 
   async _waitForChromeConnection(
-    debuggerInstance: DebuggerInstanceBase,
+    debuggerInstance: DebuggerInstanceInterface,
   ): Promise<void> {
     this._setDebuggerInstance(debuggerInstance);
     if (debuggerInstance.onSessionEnd != null) {
@@ -161,14 +161,14 @@ export default class DebuggerActions {
     await this._store.loaderBreakpointResumePromise;
   }
 
-  _setDebuggerInstance(debuggerInstance: ?DebuggerInstanceBase): void {
+  _setDebuggerInstance(debuggerInstance: ?DebuggerInstanceInterface): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_DEBUGGER_INSTANCE,
       data: debuggerInstance,
     });
   }
 
-  _handleSessionEnd(debuggerInstance: DebuggerInstanceBase): void {
+  _handleSessionEnd(debuggerInstance: DebuggerInstanceInterface): void {
     if (this._store.getDebuggerInstance() === debuggerInstance) {
       this.stopDebugging();
     } else {

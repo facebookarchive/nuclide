@@ -17,7 +17,7 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {VSCodeDebuggerAdapterService} from '../../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService';
 import type {
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
   DebuggerCapabilities,
   DebuggerProperties,
 } from '../../nuclide-debugger-base';
@@ -84,7 +84,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     };
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
+  async debug(): Promise<DebuggerInstanceInterface> {
     const rpcService = this._getRpcService();
     const outputDisposable = registerConsoleLogging(
       this._adapterType,

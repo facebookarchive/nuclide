@@ -26,45 +26,29 @@ import {getLogger} from 'log4js';
 const SESSION_END_EVENT = 'session-end-event';
 const RECEIVED_MESSAGE_EVENT = 'received-message-event';
 
-export default class DebuggerInstanceBase {
-  _processInfo: DebuggerProcessInfo;
+export interface DebuggerInstanceInterface {
   +onSessionEnd: ?(callback: () => void) => IDisposable;
-
-  constructor(processInfo: DebuggerProcessInfo) {
-    this._processInfo = processInfo;
-  }
-
-  getDebuggerProcessInfo(): DebuggerProcessInfo {
-    return this._processInfo;
-  }
-
-  getProviderName(): string {
-    return this._processInfo.getServiceName();
-  }
-
-  getTargetUri(): NuclideUri {
-    return this._processInfo.getTargetUri();
-  }
-
-  dispose(): void {
-    throw new Error('abstract method');
-  }
+  getDebuggerProcessInfo(): DebuggerProcessInfo;
+  getProviderName(): string;
+  getTargetUri(): NuclideUri;
+  dispose(): void;
 }
 
-export class DebuggerInstance extends DebuggerInstanceBase {
+export class DebuggerInstance implements DebuggerInstanceInterface {
   _rpcService: Object;
   _disposables: UniversalDisposable;
   _emitter: Emitter;
   _logger: log4js$Logger;
   _newProtocolMessageChecker: NewProtocolMessageChecker;
   _disposed: boolean;
+  _processInfo: DebuggerProcessInfo;
 
   constructor(
     processInfo: DebuggerProcessInfo,
     rpcService: IDisposable,
     subscriptions: ?UniversalDisposable,
   ) {
-    super(processInfo);
+    this._processInfo = processInfo;
     this._disposed = false;
     this._rpcService = rpcService;
     this._disposables = new UniversalDisposable();
@@ -182,6 +166,18 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   dispose() {
     this._disposed = true;
     this._disposables.dispose();
+  }
+
+  getDebuggerProcessInfo(): DebuggerProcessInfo {
+    return this._processInfo;
+  }
+
+  getProviderName(): string {
+    return this._processInfo.getServiceName();
+  }
+
+  getTargetUri(): NuclideUri {
+    return this._processInfo.getTargetUri();
   }
 }
 

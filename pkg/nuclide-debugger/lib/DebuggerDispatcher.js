@@ -16,7 +16,7 @@ import type {
 import type {
   ControlButtonSpecification,
   DebuggerProcessInfo,
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
@@ -33,7 +33,7 @@ import Dispatcher from '../../commons-node/Dispatcher';
 export type DebuggerAction =
   | {
       actionType: 'SET_DEBUGGER_INSTANCE',
-      data: ?DebuggerInstanceBase,
+      data: ?DebuggerInstanceInterface,
     }
   | {
       actionType: 'SET_ERROR',

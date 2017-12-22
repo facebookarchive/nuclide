@@ -12,7 +12,7 @@
 import type {
   DebuggerCapabilities,
   DebuggerProperties,
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
 } from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
@@ -129,7 +129,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     );
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
+  async debug(): Promise<DebuggerInstanceInterface> {
     const rpcService = this._getRpcService();
     const remoteService = nullthrows(
       await consumeFirstProvider('nuclide-debugger.remote'),

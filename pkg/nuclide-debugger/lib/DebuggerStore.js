@@ -12,7 +12,7 @@
 import type {NuclideEvaluationExpressionProvider} from 'nuclide-debugger-common';
 import type {
   ControlButtonSpecification,
-  DebuggerInstanceBase,
+  DebuggerInstanceInterface,
 } from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
@@ -51,7 +51,7 @@ export class DebuggerStore {
 
   // Stored values
   _debuggerSettings: DebuggerSettings;
-  _debuggerInstance: ?DebuggerInstanceBase;
+  _debuggerInstance: ?DebuggerInstanceInterface;
   _error: ?string;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _debuggerMode: DebuggerModeType;
@@ -130,7 +130,7 @@ export class DebuggerStore {
     return this._model.getBridge();
   }
 
-  getDebuggerInstance(): ?DebuggerInstanceBase {
+  getDebuggerInstance(): ?DebuggerInstanceInterface {
     return this._debuggerInstance;
   }
 

@@ -9,7 +9,7 @@
  * @format
  */
 
-export {default as DebuggerInstanceBase} from './DebuggerInstance';
+export {DebuggerInstanceInterface, DebuggerInstance} from './DebuggerInstance';
 export {default as DebuggerProcessInfo} from './DebuggerProcessInfo';
 export {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 export {
@@ -19,7 +19,6 @@ export {
   ThreadColumn,
 } from 'nuclide-debugger-common';
 
-export {DebuggerInstance} from './DebuggerInstance';
 export {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
