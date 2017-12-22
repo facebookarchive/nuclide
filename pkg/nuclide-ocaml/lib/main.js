@@ -15,8 +15,8 @@ import type {
   OutlineProvider,
 } from 'atom-ide-ui';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
+import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
-import {trackTiming} from '../../nuclide-analytics';
 import HyperclickProvider from './HyperclickProvider';
 import AutoComplete from './AutoComplete';
 import {GRAMMARS} from './constants';
@@ -33,17 +33,17 @@ export function getHyperclickProvider() {
   return HyperclickProvider;
 }
 
-export function createAutocompleteProvider(): mixed {
-  const getSuggestions = request => {
-    return trackTiming('nuclide-ocaml:getAutocompleteSuggestions', () =>
-      AutoComplete.getAutocompleteSuggestions(request),
-    );
-  };
+export function createAutocompleteProvider(): AtomAutocompleteProvider {
   return {
+    analytics: {
+      onDidInsertSuggestion: 'nuclide-ocaml:onDidInsertSuggestion',
+      onGetSuggestions: 'nuclide-ocaml:getAutocompleteSuggestions',
+      shouldLogInsertedSuggestion: false,
+    },
     selector: '.source.ocaml, .source.reason',
     inclusionPriority: 1,
     disableForSelector: '.source.ocaml .comment, .source.reason .comment',
-    getSuggestions,
+    getSuggestions: AutoComplete.getAutocompleteSuggestions,
   };
 }
 
@@ -107,8 +107,8 @@ export async function activate(): Promise<void> {
         createTypeHintProvider(),
       ),
       atom.packages.serviceHub.provide(
-        'autocomplete.provider',
-        '2.0.0',
+        'nuclide-autocomplete.provider',
+        '0.0.0',
         createAutocompleteProvider(),
       ),
       atom.packages.serviceHub.provide(

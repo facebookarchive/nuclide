@@ -13,12 +13,9 @@ import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
-  async getAutocompleteSuggestions(request: {
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-    scopeDescriptor: any,
-    prefix: string,
-  }): Promise<?Array<{snippet: string, rightLabel: string}>> {
+  async getAutocompleteSuggestions(
+    request: atom$AutocompleteRequest,
+  ): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, prefix} = request;
 
     const path = editor.getPath();
