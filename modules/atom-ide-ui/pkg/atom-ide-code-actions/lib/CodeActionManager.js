@@ -16,6 +16,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
+import {getLogger} from 'log4js';
 
 import type {
   RegisterIndieLinter,
@@ -184,6 +185,13 @@ export class CodeActionManager {
         },
       )
       .distinctUntilChanged()
+      .catch((e, caught) => {
+        getLogger('code-actions').error(
+          'Error getting code actions on selection',
+          e,
+        );
+        return caught;
+      })
       .subscribe(message => {
         if (this._linterDelegate == null) {
           return;
