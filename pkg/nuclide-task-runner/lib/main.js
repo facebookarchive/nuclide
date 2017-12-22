@@ -254,12 +254,22 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeCurrentWorkingDirectory(api: CwdApi): void {
-    this._disposables.add(
-      api.observeCwd(directory => {
-        this._actionCreators.setProjectRoot(directory);
-      }),
-    );
+  consumeCurrentWorkingDirectory(api: CwdApi): IDisposable {
+    let pkg = this;
+    const cwdSubscription = api.observeCwd(directory => {
+      invariant(pkg != null, 'callback invoked after package deactivated');
+      pkg._actionCreators.setProjectRoot(directory);
+    });
+    this._disposables.add(cwdSubscription, () => {
+      pkg = null;
+    });
+    return new UniversalDisposable(() => {
+      if (pkg != null) {
+        cwdSubscription.dispose();
+        pkg._disposables.remove(cwdSubscription);
+        pkg._actionCreators.setProjectRoot(null);
+      }
+    });
   }
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
