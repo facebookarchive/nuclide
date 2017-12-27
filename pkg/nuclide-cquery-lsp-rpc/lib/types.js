@@ -18,8 +18,8 @@ export type RequestLocationsResult = Array<{
 
 export type CqueryProjectWithCompilationDb = {
   hasCompilationDb: true,
-  compilationDbDir: string,
-  flagsFile: string,
+  compilationDbDir: NuclideUri,
+  flagsFile: NuclideUri,
   projectRoot: NuclideUri,
 };
 export type CqueryProjectWithoutCompilationDb = {
