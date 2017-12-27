@@ -172,7 +172,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     file: NuclideUri,
     project: CqueryProject,
   ): Promise<void> {
-    this._projectManager.associateFileWithProject(file, project);
+    // requires await to synchronize with getLanguageServiceForFile
+    await this._projectManager.associateFileWithProject(file, project);
     this._processes.get(this._projectManager.getProjectKey(project)); // spawn the process ahead of time
   }
 
