@@ -68,9 +68,7 @@ async function getInitializationOptionsWithCompilationDb(
   return {
     ...staticInitializationOptions(),
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: await verifyOrCreateFallbackCacheDir(
-      nuclideUri.join(compilationDbDir, CQUERY_CACHE_DIR),
-    ),
+    cacheDirectory: await verifyOrCreateFallbackCacheDir(compilationDbDir),
   };
 }
 
@@ -81,18 +79,16 @@ async function getInitializationOptionsWithoutCompilationDb(
   return {
     ...staticInitializationOptions(),
     extraClangArguments: defaultFlags,
-    cacheDirectory: await verifyOrCreateFallbackCacheDir(
-      nuclideUri.join(projectRoot, CQUERY_CACHE_DIR),
-    ),
+    cacheDirectory: await verifyOrCreateFallbackCacheDir(projectRoot),
   };
 }
 
-async function verifyOrCreateFallbackCacheDir(cacheDir: string) {
+async function verifyOrCreateFallbackCacheDir(rootDir: string) {
   // If the cache directory can't be created, then we fallback to putting it
   // in the system's tempdir. This makes caching unreliable but otherwise
   // cquery would crash.
-  if (!await fsPromise.access(cacheDir, fs.W_OK + fs.R_OK)) {
-    return nuclideUri.join(os.tmpdir(), cacheDir);
+  if (!await fsPromise.access(rootDir, fs.W_OK + fs.R_OK)) {
+    return nuclideUri.join(os.tmpdir(), CQUERY_CACHE_DIR);
   }
-  return cacheDir;
+  return nuclideUri.join(rootDir, CQUERY_CACHE_DIR);
 }
