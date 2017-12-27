@@ -161,6 +161,7 @@ export type PlatformProviderUi = {
 export type BuckTaskRunnerService = {
   getBuildTarget(): ?string,
   setBuildTarget(buildTarget: string): void,
+  onDidCompleteTask((TaskInfo) => any): IDisposable,
 };
 
 export type ConsolePrinter = (message: Message) => void;

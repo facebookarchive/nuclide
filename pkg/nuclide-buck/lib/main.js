@@ -110,7 +110,7 @@ class Activation {
       getBuildTarget: () => this._taskRunner.getBuildTarget(),
       setBuildTarget: buildTarget =>
         this._taskRunner.setBuildTarget(buildTarget),
-      onDidCompleteTask: (callback: TaskInfo => void): IDisposable => {
+      onDidCompleteTask: (callback: TaskInfo => any): IDisposable => {
         return new UniversalDisposable(
           this._taskRunner.getCompletedTasks().subscribe(callback),
         );
