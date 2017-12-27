@@ -18,13 +18,14 @@ import type {
   Store,
   TaskType,
   CompilationDatabaseParams,
+  TaskInfo,
 } from './types';
 import {formatDeploymentTarget} from './DeploymentTarget';
 import {PlatformService} from './PlatformService';
 
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {createMessage, taskFromObservable} from '../../commons-node/tasks';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -96,6 +97,7 @@ export class BuckTaskRunner {
   _serializedState: ?SerializedState;
   _buildSystem: BuckBuildSystem;
   _platformService: PlatformService;
+  _completedTasksObservable: Subject<TaskInfo>;
 
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
@@ -104,6 +106,7 @@ export class BuckTaskRunner {
     this._serializedState = initialState;
     this._disposables = new UniversalDisposable();
     this._platformService = new PlatformService();
+    this._completedTasksObservable = new Subject();
   }
 
   getExtraUi(): React.ComponentType<any> {
@@ -144,6 +147,10 @@ export class BuckTaskRunner {
 
   getBuildTarget(): ?string {
     this._getStore().getState().buildTarget;
+  }
+
+  getCompletedTasks(): rxjs$Observable<TaskInfo> {
+    return this._completedTasksObservable;
   }
 
   setBuildTarget(buildTarget: string) {
@@ -332,6 +339,16 @@ export class BuckTaskRunner {
         }),
       ),
     );
+
+    task.onDidComplete(() => {
+      this._completedTasksObservable.next({
+        buckRoot,
+        buildRuleType,
+        buildTarget,
+        deploymentTarget: selectedDeploymentTarget,
+        taskSettings,
+      });
+    });
 
     return {
       ...task,

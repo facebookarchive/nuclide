@@ -53,6 +53,14 @@ export type AppState = {
   lastSessionDeviceName: ?string,
 };
 
+export type TaskInfo = {
+  buckRoot: string,
+  buildRuleType: ResolvedRuleType,
+  buildTarget: string,
+  deploymentTarget: ?DeploymentTarget,
+  taskSettings: TaskSettings,
+};
+
 export type Store = {
   dispatch(action: Action): void,
   getState(): AppState,

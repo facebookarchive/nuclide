@@ -17,6 +17,7 @@ import type {
   BuckTaskRunnerService,
   SerializedState,
   ConsolePrinter,
+  TaskInfo,
 } from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
@@ -109,6 +110,11 @@ class Activation {
       getBuildTarget: () => this._taskRunner.getBuildTarget(),
       setBuildTarget: buildTarget =>
         this._taskRunner.setBuildTarget(buildTarget),
+      onDidCompleteTask: (callback: TaskInfo => void): IDisposable => {
+        return new UniversalDisposable(
+          this._taskRunner.getCompletedTasks().subscribe(callback),
+        );
+      },
     };
   }
 
