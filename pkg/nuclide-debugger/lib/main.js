@@ -24,7 +24,6 @@ import type {
   SerializedWatchExpression,
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
@@ -169,7 +168,6 @@ export function createDebuggerView(model: mixed): ?HTMLElement {
 class Activation {
   _disposables: UniversalDisposable;
   _model: DebuggerModel;
-  _tryTriggerNux: ?TriggerNux;
   _layoutManager: DebuggerLayoutManager;
   _selectedDebugConnection: ?string;
   _visibleLaunchAttachDialogMode: ?DebuggerConfigAction;
@@ -580,12 +578,6 @@ class Activation {
     return this._model;
   }
 
-  consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
-    // TODO: No NUX at this time. Add NUX here.
-    const disposable = new Disposable();
-    return disposable;
-  }
-
   _registerCommandsContextMenuAndOpener(): UniversalDisposable {
     const disposable = new UniversalDisposable(
       atom.workspace.addOpener(uri => {
@@ -649,16 +641,6 @@ class Activation {
     );
     this._layoutManager.registerContextMenus();
     return disposable;
-  }
-
-  setTriggerNux(triggerNux: TriggerNux): void {
-    this._tryTriggerNux = triggerNux;
-  }
-
-  tryTriggerNux(id: number): void {
-    if (this._tryTriggerNux != null) {
-      this._tryTriggerNux(id);
-    }
   }
 
   _isReadonlyTarget() {
@@ -1244,17 +1226,6 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
     .setDatatipService(service);
   activation._disposables.add(disposable);
   return disposable;
-}
-
-export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
-  invariant(activation);
-  return activation.consumeRegisterNuxService(addNewNux);
-}
-
-export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
-  if (activation != null) {
-    activation.setTriggerNux(tryTriggerNux);
-  }
 }
 
 export function consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
