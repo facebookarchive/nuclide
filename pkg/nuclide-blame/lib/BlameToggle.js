@@ -68,11 +68,8 @@ class BlameToggleContainer extends React.Component<
   constructor(props) {
     super(props);
 
-    this.state = {
-      visible:
-        this.props.canBlame(this.props.editor) &&
-        !this.props.editor.isModified(),
-    };
+    this.state = {visible: false};
+    this._setVisible();
   }
 
   componentDidMount() {
