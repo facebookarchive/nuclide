@@ -36,6 +36,11 @@ type Options = {|
    * If unspecified the modal will be dismissed if the user clicks outside the modal.
    */
   shouldDismissOnClickOutsideModal?: () => boolean,
+  /**
+   * Called when the user presses the escape key, return false to prevent dismissal.
+   * If unspecified the modal will be dismissed if the user presses escape.
+   */
+  shouldDismissOnPressEscape?: () => boolean,
   /** Passed to atom's underlying addModalPanel function. */
   priority?: number,
   /** Passed to atom's underlying addModalPanel function. */
@@ -61,6 +66,8 @@ export default function showModal(
   });
   const shouldDismissOnClickOutsideModal =
     options.shouldDismissOnClickOutsideModal || (() => true);
+  const shouldDismissOnPressEscape =
+    options.shouldDismissOnPressEscape || (() => true);
 
   let panelElement = atomPanel.getElement();
   const previouslyFocusedElement = document.activeElement;
@@ -79,9 +86,11 @@ export default function showModal(
         disposable.dispose();
       }
     }),
-    atom.commands.add('atom-workspace', 'core:cancel', () =>
-      disposable.dispose(),
-    ),
+    atom.commands.add('atom-workspace', 'core:cancel', () => {
+      if (shouldDismissOnPressEscape()) {
+        disposable.dispose();
+      }
+    }),
     () => {
       // Call onDismiss before unmounting the component and destroying the panel:
       if (options.onDismiss) {
