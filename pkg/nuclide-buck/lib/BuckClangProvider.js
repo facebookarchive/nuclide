@@ -21,11 +21,13 @@ import {track} from '../../nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {BuckTaskRunner, CONSOLE_VIEW_URI} from './BuckTaskRunner';
 import {ClangFlagsFileWatcher} from '../../nuclide-clang-base/lib/ClangFlagsFileWatcher';
 
 const WARNING_HINT =
   'Hint: Try **Nuclide > Clang > Clean and Rebuild** once fixed.';
+const SHOW_NOTIFICATION_CONFIG = 'nuclide-buck.buildDbErrorNotify';
 
 // Strip off remote error, which is JSON object on last line of error message.
 function cleanupErrorMessage(message: string): string {
@@ -51,6 +53,15 @@ function constructNotificationOptions(
         }
       },
     },
+    {
+      text: 'Never show again',
+      onDidClick: () => {
+        featureConfig.set(SHOW_NOTIFICATION_CONFIG, false);
+        if (clickCallback) {
+          clickCallback();
+        }
+      },
+    },
   ];
   return {dismissable: true, buttons};
 }
@@ -63,17 +74,19 @@ function emitCompilationDbWarnings(
     if (consolePrinter) {
       db.warnings.forEach(text => consolePrinter({text, level: 'warning'}));
     }
-    const notification = atom.notifications.addWarning(
-      [
-        'Buck: warnings detected while fetching compile commands,',
-        'some language services may not work properly.',
-        WARNING_HINT,
-      ].join(' '),
-      constructNotificationOptions(() =>
-        // Notification doesn't dismiss itself on click.
-        notification.dismiss(),
-      ),
-    );
+    if (featureConfig.get(SHOW_NOTIFICATION_CONFIG)) {
+      const notification = atom.notifications.addWarning(
+        [
+          'Buck: warnings detected while fetching compile commands,',
+          'some language services may not work properly.',
+          WARNING_HINT,
+        ].join(' '),
+        constructNotificationOptions(() =>
+          // Notification doesn't dismiss itself on click.
+          notification.dismiss(),
+        ),
+      );
+    }
   }
 }
 
@@ -84,13 +97,15 @@ function emitCompilationDbError(
   if (consolePrinter) {
     consolePrinter({text: cleanupErrorMessage(errorMessage), level: 'error'});
   }
-  const notification = atom.notifications.addError(
-    [
-      'Buck error: build failed while fetching compile commands.',
-      WARNING_HINT,
-    ].join(' '),
-    constructNotificationOptions(() => notification.dismiss()),
-  );
+  if (featureConfig.get(SHOW_NOTIFICATION_CONFIG)) {
+    const notification = atom.notifications.addError(
+      [
+        'Buck error: build failed while fetching compile commands.',
+        WARNING_HINT,
+      ].join(' '),
+      constructNotificationOptions(() => notification.dismiss()),
+    );
+  }
 }
 
 class Provider {
