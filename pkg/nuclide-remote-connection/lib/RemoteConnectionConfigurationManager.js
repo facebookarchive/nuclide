@@ -16,7 +16,7 @@ import type {ServerConnectionConfiguration} from './ServerConnection';
 import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
-import keytarWrapper from '../../commons-atom/keytarWrapper';
+import keytarWrapper from '../../commons-node/keytarWrapper';
 
 const CONFIG_DIR = 'nuclide-connections';
 

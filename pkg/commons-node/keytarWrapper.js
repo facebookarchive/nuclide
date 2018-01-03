@@ -12,6 +12,12 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 
+/**
+ * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
+ * (May throw if prebuilt libs aren't available for the current platform!)
+ */
+import * as keytar from 'nuclide-prebuilt-libs/keytar';
+
 // KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
   var readline = require('readline');
@@ -91,9 +97,12 @@ function runScriptInApmNode(
 
 export default {
   async getPassword(service: string, account: string): Promise<?string> {
-    return JSON.parse(
-      await runScriptInApmNode(getPasswordScriptAsync, service, account),
-    );
+    if (typeof atom === 'object') {
+      return JSON.parse(
+        await runScriptInApmNode(getPasswordScriptAsync, service, account),
+      );
+    }
+    return keytar.getPassword(service, account);
   },
 
   async replacePassword(
@@ -101,20 +110,26 @@ export default {
     account: string,
     password: string,
   ): Promise<?boolean> {
-    return JSON.parse(
-      await runScriptInApmNode(
-        replacePasswordScriptAsync,
-        service,
-        account,
-        password,
-      ),
-    );
+    if (typeof atom === 'object') {
+      return JSON.parse(
+        await runScriptInApmNode(
+          replacePasswordScriptAsync,
+          service,
+          account,
+          password,
+        ),
+      );
+    }
+    return keytar.setPassword(service, account, password);
   },
 
   async deletePassword(service: string, account: string): Promise<?boolean> {
-    return JSON.parse(
-      await runScriptInApmNode(deletePasswordScriptAsync, service, account),
-    );
+    if (typeof atom === 'object') {
+      return JSON.parse(
+        await runScriptInApmNode(deletePasswordScriptAsync, service, account),
+      );
+    }
+    return keytar.deletePassword(service, account);
   },
 };
 
