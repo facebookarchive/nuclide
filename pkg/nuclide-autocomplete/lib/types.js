@@ -49,6 +49,8 @@ export type AutocompleteAnalytics = {|
 |};
 
 export type AutocompleteAnalyticEventNames = {|
-  +onGetSuggestions: string,
+  +errorOnGetSuggestions: string,
   +onDidInsertSuggestion: string,
+  +onGetSuggestions: string,
+  +timeoutOnGetSuggestions: string,
 |};

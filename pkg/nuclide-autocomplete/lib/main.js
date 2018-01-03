@@ -15,8 +15,16 @@ import type {
   AtomSuggestionInsertedRequest,
 } from './types';
 
+import {timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track, trackTiming} from '../../nuclide-analytics';
+
+/**
+ * Autocomplete is extremely critical to the user experience!
+ * Don't tolerate anything longer than three seconds; just fail fast and
+ * let the fallback providers provide something at least.
+ */
+const AUTOCOMPLETE_TIMEOUT = 3000;
 
 function createAutocompleteProvider<Suggestion: atom$AutocompleteSuggestion>(
   provider: AutocompleteProvider<Suggestion>,
@@ -29,15 +37,36 @@ function createAutocompleteProvider<Suggestion: atom$AutocompleteSuggestion>(
     getSuggestions(
       request: atom$AutocompleteRequest,
     ): Promise<?Array<*>> | ?Array<*> {
-      const values = {};
+      const logObject = {};
+
       return trackTiming(
         eventNames.onGetSuggestions,
         async () => {
-          const result = await provider.getSuggestions(request);
-          values.isEmpty = result == null || result.length === 0;
+          let result = null;
+          if (request.activatedManually) {
+            try {
+              result = await provider.getSuggestions(request);
+            } catch (e) {
+              track(eventNames.errorOnGetSuggestions);
+            }
+          } else {
+            try {
+              result = await timeoutPromise(
+                Promise.resolve(provider.getSuggestions(request)),
+                AUTOCOMPLETE_TIMEOUT,
+              );
+            } catch (e) {
+              if (e instanceof TimedOutError) {
+                track(eventNames.timeoutOnGetSuggestions);
+              } else {
+                track(eventNames.errorOnGetSuggestions);
+              }
+            }
+          }
+          logObject.isEmpty = result == null || result.length === 0;
           return result;
         },
-        values,
+        logObject,
       );
     },
     onDidInsertSuggestion(
@@ -78,13 +107,14 @@ function trackOnDidInsertSuggestion<Suggestion: atom$AutocompleteSuggestion>(
 function getAnalytics<Suggestion: atom$AutocompleteSuggestion>(
   provider: AutocompleteProvider<Suggestion>,
 ): AutocompleteAnalyticEventNames {
-  const {analytics} = provider;
-  const {eventName} = analytics;
-  const onGetSuggestions = `nuclide-autocomplete:${eventName}:on-get-suggestions`;
-  const onDidInsertSuggestion = `nuclide-autocomplete:${eventName}:on-did-insert-suggestion`;
+  const eventNameFor = eventType =>
+    `${provider.analytics.eventName}:autocomplete:${eventType}`;
+
   return {
-    onGetSuggestions,
-    onDidInsertSuggestion,
+    errorOnGetSuggestions: eventNameFor('error-on-get-suggestions'),
+    onDidInsertSuggestion: eventNameFor('on-did-insert-suggestion'),
+    onGetSuggestions: eventNameFor('on-get-suggestions'),
+    timeoutOnGetSuggestions: eventNameFor('timeout-on-get-suggestions'),
   };
 }
 
