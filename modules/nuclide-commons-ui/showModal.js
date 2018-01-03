@@ -77,7 +77,11 @@ export default function showModal(
         return;
       }
       invariant(target instanceof Node);
-      if (!atomPanel.getItem().contains(target)) {
+      if (
+        !atomPanel.getItem().contains(target) &&
+        // don't count clicks on notifications or tooltips as clicks 'outside'
+        target.closest('atom-notifications, .tooltip') == null
+      ) {
         atomPanel.hide();
       }
     }),

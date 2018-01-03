@@ -60,10 +60,12 @@ export class Modal extends React.Component<Props> {
   }
 
   _handleWindowClick = (event: SyntheticMouseEvent<>): void => {
-    // If the user clicks outside of the modal, close it.
+    // If the user clicks outside of the modal, and not on a tooltip or
+    // notification, close it.
     if (
       this._innerElement &&
-      !this._innerElement.contains(((event.target: any): Node))
+      !this._innerElement.contains(((event.target: any): Node)) &&
+      (event.target: any).closest('atom-notifications, .tooltip') == null
     ) {
       this.props.onDismiss();
     }
