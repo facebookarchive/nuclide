@@ -18,6 +18,12 @@
         "default": "",
         "description": "Primarily for testing new versions of hh_client."
       },
+      "legacyHackIde": {
+        "title": "Use legacy Hack IDE services.",
+        "type": "boolean",
+        "default": false,
+        "description": "Requires restart. Intended only for HHVM <= 3.22. Not supported."
+      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

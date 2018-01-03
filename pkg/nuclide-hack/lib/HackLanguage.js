@@ -48,10 +48,6 @@ import {getEvaluationExpression} from './evaluationExpression';
 
 const HACK_SERVICE_NAME = 'HackService';
 
-async function getUseLspConnection(): Promise<boolean> {
-  return passesGK('nuclide_hack_use_lsp_connection');
-}
-
 async function getUseFfpAutocomplete(): Promise<boolean> {
   return passesGK('nuclide_hack_use_ffp_autocomplete');
 }
@@ -66,7 +62,13 @@ async function connectionToHackService(
   const config = getConfig();
   const fileNotifier = await getNotifierByConnection(connection);
 
-  if (await getUseLspConnection()) {
+  if (config.legacyHackIde) {
+    return hackService.initialize(
+      config.hhClientPath,
+      config.logLevel,
+      fileNotifier,
+    );
+  } else {
     const host = await getHostServices();
     const autocompleteArg = (await getUseFfpAutocomplete())
       ? ['--ffp-autocomplete']
@@ -81,19 +83,13 @@ async function connectionToHackService(
       host,
     );
     return lspService || new NullLanguageService();
-  } else {
-    return hackService.initialize(
-      config.hhClientPath,
-      config.logLevel,
-      fileNotifier,
-    );
   }
 }
 
 async function createLanguageService(): Promise<
   AtomLanguageService<LanguageService>,
 > {
-  const usingLsp = await getUseLspConnection();
+  const usingLsp = !getConfig().legacyHackIde;
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
