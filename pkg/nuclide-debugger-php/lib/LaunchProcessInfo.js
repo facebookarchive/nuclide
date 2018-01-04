@@ -10,7 +10,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HHVMLaunchConfig} from '../../nuclide-debugger-hhvm-rpc';
+import type {
+  HHVMLaunchConfig,
+  HHVMAttachConfig,
+} from '../../nuclide-debugger-hhvm-rpc';
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {
   DebuggerCapabilities,
@@ -80,17 +83,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     const service = getHhvmDebuggerServiceByNuclideUri(this.getTargetUri());
     const hhvmDebuggerService = new service.HhvmDebuggerService();
     const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
-
     const deferLaunch =
       this._useTerminal && remoteService.getTerminal() != null;
-    if (deferLaunch) {
-      // TODO: (Ericblue) We need additional support from HHVM to launch
-      // in script mode but wait for a TCP attach before starting the script
-      // to make this work.
-      throw new Error(
-        'Launch in terminal is not supported by the HHVM debugger yet.',
-      );
-    }
 
     // Honor any PHP configuration the user has in Nuclide settings.
     const userConfig = (featureConfig.get('nuclide-debugger-php'): any);
@@ -122,7 +116,46 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     }
 
     logger.info(`Connection session config: ${JSON.stringify(config)}`);
-    const result = await hhvmDebuggerService.debug(config);
+
+    let result;
+    if (deferLaunch) {
+      const startupArgs = await hhvmDebuggerService.getLaunchArgs(config);
+
+      // Launch the script and then convert this to an attach operation.
+      const hostname = nuclideUri.getHostname(this.getTargetUri());
+      const launchUri = nuclideUri.createRemoteUri(
+        hostname,
+        this._launchTarget,
+      );
+
+      invariant(remoteService != null);
+
+      // Terminal args require everything to be a string, but debug port
+      // is typed as a number.
+      const terminalArgs = [];
+      for (const arg of startupArgs.hhvmArgs) {
+        terminalArgs.push(String(arg));
+      }
+
+      await remoteService.launchDebugTargetInTerminal(
+        launchUri,
+        startupArgs.hhvmPath,
+        terminalArgs,
+        nuclideUri.dirname(launchUri),
+        new Map(),
+      );
+
+      const attachConfig: HHVMAttachConfig = {
+        targetUri: nuclideUri.getPath(this.getTargetUri()),
+        action: 'attach',
+        debugPort: startupArgs.debugPort,
+      };
+
+      result = await hhvmDebuggerService.debug(attachConfig);
+    } else {
+      result = await hhvmDebuggerService.debug(config);
+    }
+
     logger.info(`Launch process result: ${result}`);
     return new PhpDebuggerInstance(this, hhvmDebuggerService);
   }

@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getAvailableServerPort} from '../../commons-node/serverPort';
 // eslint-disable-next-line rulesdir/no-unresolved
 import {
   DebuggerRpcServiceBase,
@@ -148,6 +149,14 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       );
     }
 
+    const deferArgs = [];
+    let debugPort = null;
+    if (config.deferLaunch) {
+      debugPort = await getAvailableServerPort();
+      deferArgs.push('--vsDebugPort');
+      deferArgs.push(debugPort);
+    }
+
     const hhvmPath = await this._getHhvmPath(config);
     const launchArgs =
       config.launchWrapperCommand != null &&
@@ -159,6 +168,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       ...config.hhvmRuntimeArgs,
       '--mode',
       'vsdebug',
+      ...deferArgs,
       ...launchArgs,
       ...config.scriptArgs,
     ];
@@ -171,6 +181,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       hhvmPath,
       hhvmArgs,
       startupDocumentPath,
+      debugPort,
     };
   }
 
