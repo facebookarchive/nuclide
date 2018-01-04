@@ -10,15 +10,20 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {HHVMLaunchConfig} from '../../nuclide-debugger-hhvm-rpc';
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {
   DebuggerCapabilities,
   DebuggerProperties,
 } from 'nuclide-debugger-common';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getPhpDebuggerServiceByNuclideUri,
+  getHhvmDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
@@ -26,6 +31,7 @@ import logger from './utils';
 import {getSessionConfig} from './utils';
 import invariant from 'assert';
 import {shellParse} from 'nuclide-commons/string';
+import passesGK from '../../commons-node/passesGK';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTarget: string;
@@ -70,7 +76,66 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return super.getDebuggerProps();
   }
 
+  async _hhvmDebug(): Promise<PhpDebuggerInstance> {
+    const service = getHhvmDebuggerServiceByNuclideUri(this.getTargetUri());
+    const hhvmDebuggerService = new service.HhvmDebuggerService();
+    const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
+
+    const deferLaunch =
+      this._useTerminal && remoteService.getTerminal() != null;
+    if (deferLaunch) {
+      // TODO: (Ericblue) We need additional support from HHVM to launch
+      // in script mode but wait for a TCP attach before starting the script
+      // to make this work.
+      throw new Error(
+        'Launch in terminal is not supported by the HHVM debugger yet.',
+      );
+    }
+
+    // Honor any PHP configuration the user has in Nuclide settings.
+    const userConfig = (featureConfig.get('nuclide-debugger-php'): any);
+    const phpRuntimePath =
+      userConfig.hhvmRuntimePath != null
+        ? String(userConfig.hhvmRuntimePath)
+        : null;
+    const hhvmRuntimeArgs = shellParse(
+      userConfig.hhvmRuntimeArgs != null
+        ? String(userConfig.hhvmRuntimeArgs)
+        : '',
+    );
+
+    const config: HHVMLaunchConfig = {
+      targetUri: nuclideUri.getPath(this.getTargetUri()),
+      action: 'launch',
+      launchScriptPath: this._launchTarget,
+      scriptArgs: shellParse(this._scriptArguments),
+      hhvmRuntimeArgs,
+      deferLaunch,
+    };
+
+    if (phpRuntimePath != null) {
+      config.hhvmRuntimePath = phpRuntimePath;
+    }
+
+    if (this._launchWrapperCommand != null) {
+      config.launchWrapperCommand = this._launchWrapperCommand;
+    }
+
+    logger.info(`Connection session config: ${JSON.stringify(config)}`);
+    const result = await hhvmDebuggerService.debug(config);
+    logger.info(`Launch process result: ${result}`);
+    return new PhpDebuggerInstance(this, hhvmDebuggerService);
+  }
+
   async debug(): Promise<PhpDebuggerInstance> {
+    const useNewDebugger = await passesGK('nuclide_hhvm_debugger_vscode');
+    if (useNewDebugger) {
+      // TODO: Ericblue - this will be cleaned up when the old debugger
+      // is removed. For now we need to leave both in place until the new
+      // one is ready.
+      return this._hhvmDebug();
+    }
+
     const rpcService = this._getRpcService();
     const sessionConfig = getSessionConfig(
       nuclideUri.getPath(this.getTargetUri()),

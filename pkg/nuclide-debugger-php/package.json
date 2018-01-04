@@ -48,6 +48,18 @@
         "default": "",
         "description": "Arguments to call the PHP runtime with, e.g. to pass a config file."
       },
+      "hhvmRuntimeArgs": {
+        "title": "Arguments for your HHVM runtime",
+        "type": "string",
+        "default": "",
+        "description": "Arguments to call the HHVM runtime with, e.g. to pass a config file."
+      },
+      "hhvmRuntimePath": {
+        "title": "Path to your HHVM runtime",
+        "type": "string",
+        "default": "/usr/local/bin/hhvm",
+        "description": "Path to the HHVM runtime on your server."
+      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

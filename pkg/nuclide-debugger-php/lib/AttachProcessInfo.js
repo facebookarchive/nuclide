@@ -20,11 +20,15 @@ import type {
 
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getPhpDebuggerServiceByNuclideUri,
+  getHhvmDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import logger from './utils';
 import {getSessionConfig} from './utils';
+import passesGK from '../../commons-node/passesGK';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
@@ -62,7 +66,33 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     } catch (_) {}
   }
 
+  async _hhvmDebug(): Promise<PhpDebuggerInstance> {
+    const service = getHhvmDebuggerServiceByNuclideUri(this.getTargetUri());
+    const hhvmDebuggerService = new service.HhvmDebuggerService();
+
+    // Note: not specifying startup document or debug port here, the backend
+    // will use the default parameters. We can surface these options in the
+    // Attach Dialog if users need to be able to customize them in the future.
+    const config = {
+      targetUri: nuclideUri.getPath(this.getTargetUri()),
+      action: 'attach',
+    };
+
+    logger.info(`Connection session config: ${JSON.stringify(config)}`);
+    const result = await hhvmDebuggerService.debug(config);
+    logger.info(`Attach process result: ${result}`);
+    return new PhpDebuggerInstance(this, hhvmDebuggerService);
+  }
+
   async debug(): Promise<PhpDebuggerInstance> {
+    const useNewDebugger = await passesGK('nuclide_hhvm_debugger_vscode');
+    if (useNewDebugger) {
+      // TODO: Ericblue - this will be cleaned up when the old debugger
+      // is removed. For now we need to leave both in place until the new
+      // one is ready.
+      return this._hhvmDebug();
+    }
+
     logger.info('Connecting to: ' + this.getTargetUri());
     this.preAttachActions();
 
@@ -73,7 +103,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     );
     logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
     const result = await rpcService.debug(sessionConfig);
-    logger.info(`Launch process result: ${result}`);
+    logger.info(`Attach process result: ${result}`);
 
     return new PhpDebuggerInstance(this, rpcService);
   }

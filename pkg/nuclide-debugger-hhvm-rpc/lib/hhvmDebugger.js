@@ -85,6 +85,7 @@ class HHVMDebuggerWrapper {
         callback(JSON.stringify(attachMessage));
         this._debuggerWriteCallback = callback;
         this._forwardBufferedMessages();
+        this._debugging = true;
 
         const attachResponse: attachResponse = {
           request_seq: attachMessage.seq,
@@ -136,16 +137,19 @@ class HHVMDebuggerWrapper {
       const block: string = chunk.toString();
       this._writeOutputEvent('stdout', block);
     });
+    targetProcess.stdout.on('error', () => {});
 
     // Wrap any stderr from the target into a VS Code stderr event.
     targetProcess.stderr.on('data', chunk => {
       const block: string = chunk.toString();
       this._writeOutputEvent('stderr', block);
     });
+    targetProcess.stderr.on('error', () => {});
 
     targetProcess.stdio[3].on('data', chunk => {
       this._processDebuggerMessage(chunk);
     });
+    targetProcess.stdio[3].on('error', () => {});
 
     // Read data from the debugger client on stdin and forward to the
     // debugger engine in the target.

@@ -89,6 +89,10 @@
     "name": "PhpDebuggerService"
   },
   {
+    "implementation": "../nuclide-debugger-hhvm-rpc/lib/main.js",
+    "name": "HhvmDebuggerService"
+  },
+  {
     "implementation": "../nuclide-pty-rpc/lib/PtyService.js",
     "name": "PtyService"
   },
