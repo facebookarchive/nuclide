@@ -65,7 +65,7 @@ RpcConnection.createServer(serviceRegistry, serverTransport);
 
 logger.info('Started local RPC server.');
 
-const HEALTH_INTERVAL = 60 * 1000;
+const HEALTH_INTERVAL = 10 * 60 * 1000;
 
 // Track RPC server memory usage.
 // $FlowIssue: process.cpuUsage doesn't exist
