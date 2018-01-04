@@ -122,14 +122,21 @@ export class ConnectionHealthNotifier {
 
     const onHeartbeatError = (error: any) => {
       const {code, message, originalCode} = error;
-      trackEvent({
-        type: 'heartbeat-error',
-        data: {
-          code: code || '',
-          message: message || '',
-          host,
-        },
-      });
+      // Don't keep tracking consecutive NETWORK_AWAY events:
+      // the user's probably offline anyway so analytics events just pile up.
+      if (
+        code !== 'NETWORK_AWAY' ||
+        this._heartbeatNetworkAwayCount < HEARTBEAT_AWAY_REPORT_COUNT
+      ) {
+        trackEvent({
+          type: 'heartbeat-error',
+          data: {
+            code: code || '',
+            message: message || '',
+            host,
+          },
+        });
+      }
       logger.info('Heartbeat network error:', code, originalCode, message);
 
       if (this._onHeartbeatError != null && this._onHeartbeatError(error)) {
