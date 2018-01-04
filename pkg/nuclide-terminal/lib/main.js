@@ -9,6 +9,8 @@
  * @format
  */
 
+// for homedir
+import os from 'os';
 import invariant from 'assert';
 import dedent from 'dedent';
 
@@ -47,6 +49,14 @@ class Activation {
         event => {
           const cwd = this._getPathOrCwd(event);
           const uri = uriFromCwd(cwd);
+          goToLocation(uri);
+        },
+      ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-terminal:new-local-terminal',
+        event => {
+          const uri = uriFromCwd(os.homedir());
           goToLocation(uri);
         },
       ),

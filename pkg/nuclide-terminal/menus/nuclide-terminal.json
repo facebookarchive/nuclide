@@ -4,8 +4,17 @@
       "label": "Nuclide",
       "submenu": [
         {
-          "label": "New Terminal Window",
-          "command": "nuclide-terminal:new-terminal"
+          "label": "Terminal",
+          "submenu": [
+            {
+              "label": "New Project Terminal Window",
+              "command": "nuclide-terminal:new-terminal"
+            },
+            {
+              "label": "New Local Terminal Window",
+              "command": "nuclide-terminal:new-local-terminal"
+            }
+          ]
         }
       ]
     }
