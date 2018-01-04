@@ -194,10 +194,12 @@ class Activation {
             }
           }
           // Then use nuclide-format-js to properly format the imports
+          const successfulEdits = (result || []).filter(
+            edit => edit.newText !== '',
+          );
           organizeRequires({
-            addedRequires: result != null,
-            missingExports:
-              (result || []).find(edit => edit.newText === '') != null,
+            addedRequires: successfulEdits.length > 0,
+            missingExports: successfulEdits.length !== (result || []).length,
           });
           buffer.groupChangesSinceCheckpoint(beforeEditsCheckpoint);
         },
