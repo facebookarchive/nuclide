@@ -35,6 +35,19 @@ export async function spawn(info: PtyInfo, client: PtyClient): Promise<Pty> {
   );
 }
 
+export async function useTitleAsPath(client: PtyClient): Promise<boolean> {
+  try {
+    const config = await readConfig();
+    if (config != null && config.useTitleAsPath != null) {
+      return config.useTitleAsPath;
+    }
+  } catch (error) {
+    client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
+  }
+
+  return false;
+}
+
 async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
   // Client-specified command is highest precedence.
   if (info.command != null) {

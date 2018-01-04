@@ -32,7 +32,7 @@ import {
   RemoteConnection,
   ServerConnection,
 } from '../../nuclide-remote-connection';
-import {spawn} from '../../nuclide-pty-rpc';
+import {spawn, useTitleAsPath} from '../../nuclide-pty-rpc';
 import {track} from '../../nuclide-analytics';
 
 import {removePrefixSink, patternCounterSink} from './sink';
@@ -68,7 +68,9 @@ type ProcessExitCallback = () => void;
 export class TerminalView implements PtyClient {
   _paneUri: string;
   _cwd: ?NuclideUri;
+  _path: ?NuclideUri;
   _command: ?Command;
+  _useTitleAsPath: boolean;
   _title: string;
   _subscriptions: UniversalDisposable;
   _emitter: Emitter;
@@ -94,9 +96,11 @@ export class TerminalView implements PtyClient {
     const cwd = (this._cwd = info.cwd == null ? null : info.cwd);
     this._command = info.command == null ? null : info.command;
     this._title = info.title == null ? 'terminal' : info.title;
+    this._path = cwd;
     this._initialInput =
       info.initialInput == null ? '' : getSafeInitialInput(info.initialInput);
     this._processExitCallback = () => {};
+    this._useTitleAsPath = false;
 
     this._startTime = performanceNow();
     this._bytesIn = 0;
@@ -217,6 +221,15 @@ export class TerminalView implements PtyClient {
     (this._div: any).blur = () => terminal.blur();
 
     this._spawn(cwd);
+    this._setUseTitleAsPath(cwd);
+  }
+
+  _setUseTitleAsPath(cwd: ?NuclideUri): void {
+    const promise =
+      cwd == null
+        ? useTitleAsPath(this)
+        : getPtyServiceByNuclideUri(cwd).useTitleAsPath(this);
+    promise.then(value => (this._useTitleAsPath = value));
   }
 
   _spawn(cwd: ?NuclideUri): void {
@@ -280,9 +293,12 @@ export class TerminalView implements PtyClient {
       Observable.fromEvent(this._terminal, 'data').subscribe(
         this._onInput.bind(this),
       ),
-      Observable.fromEvent(this._terminal, 'title').subscribe(
-        this._setTitle.bind(this),
-      ),
+      Observable.fromEvent(this._terminal, 'title').subscribe(title => {
+        this._setTitle(title);
+        if (this._useTitleAsPath) {
+          this._setPath(title);
+        }
+      }),
       Observable.interval(10 * 1000)
         .startWith(0)
         .map(() => atom.workspace.paneForItem(this))
@@ -384,7 +400,11 @@ export class TerminalView implements PtyClient {
   _setTitle(title: string) {
     this._title = title;
     this._emitter.emit('did-change-title', title);
-    this._emitter.emit('did-change-path', title);
+  }
+
+  _setPath(path: string) {
+    this._path = path;
+    this._emitter.emit('did-change-path', path);
   }
 
   _addEscapePrefix(event: Object): void {
@@ -581,8 +601,8 @@ export class TerminalView implements PtyClient {
     return this._div;
   }
 
-  getPath(): string {
-    return this._title;
+  getPath(): ?NuclideUri {
+    return this._path;
   }
 
   onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
