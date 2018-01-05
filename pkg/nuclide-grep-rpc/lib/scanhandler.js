@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {search$FileResult, search$Match} from '..';
+import type {search$FileResult} from '..';
 
 import {Observable} from 'rxjs';
 
@@ -38,12 +38,9 @@ export default function search(
   regex: RegExp,
   subdirs: Array<string>,
 ): Observable<search$FileResult> {
-  // Matches are stored in a Map of filename => Array<Match>.
-  const matchesByFile: Map<string, Array<search$Match>> = new Map();
-
   if (!subdirs || subdirs.length === 0) {
     // Since no subdirs were specified, run search on the root directory.
-    return searchInSubdir(matchesByFile, directory, '.', regex);
+    return searchInSubdir(directory, '.', regex);
   } else if (subdirs.find(subdir => subdir.includes('*'))) {
     // Mimic Atom and use minimatch for glob matching.
     const matchers = subdirs.map(subdir => {
@@ -55,7 +52,7 @@ export default function search(
       return new Minimatch(pattern, {matchBase: true, dot: true});
     });
     // TODO: This should walk the subdirectories and filter by glob before searching.
-    return searchInSubdir(matchesByFile, directory, '.', regex).filter(result =>
+    return searchInSubdir(directory, '.', regex).filter(result =>
       Boolean(matchers.find(matcher => matcher.match(result.filePath))),
     );
   } else {
@@ -67,7 +64,7 @@ export default function search(
             nuclideUri.join(directory, subdir),
           );
           if (stat.isDirectory()) {
-            return searchInSubdir(matchesByFile, directory, subdir, regex);
+            return searchInSubdir(directory, subdir, regex);
           } else {
             return Observable.empty();
           }
@@ -83,7 +80,6 @@ export default function search(
 // `subdir`, relative to `directory`. The function returns an Observable that emits
 // search$FileResult objects.
 function searchInSubdir(
-  matchesByFile: Map<string, Array<search$Match>>,
   directory: string,
   subdir: string,
   regex: RegExp,
