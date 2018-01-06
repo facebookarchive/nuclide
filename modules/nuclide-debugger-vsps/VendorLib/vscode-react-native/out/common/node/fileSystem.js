@@ -17,7 +17,7 @@ class FileSystem {
             throw new Error(`Expected ${dir} to be a directory`);
         }, (err) => {
             if (err && err.code === "ENOENT") {
-                return Q.nfcall(this.fs.mkdir, dir);
+                return this.ensureDirectory(path.dirname(dir)).then(() => Q.nfcall(this.fs.mkdir, dir));
             }
             throw err;
         });
