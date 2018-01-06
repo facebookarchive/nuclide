@@ -100,10 +100,12 @@ Nuclide supports the [iOS Simulator logs](/docs/platforms/ios#simulator-logs) an
 ## Debugging
 
 Nuclide's new React Native debugger support is ported from
-[vscode-react-native](https://github.com/Microsoft/vscode-react-native). There
-are two ways to invoke the React Native debugger. Nuclide can either attach to a
-running packager, or it can launch the debug target in a new packager for
-debugging. Note that the debugger from Nuclide can only attach if the default Chrome debugger is not already running.
+[vscode-react-native](https://github.com/Microsoft/vscode-react-native) at
+version 0.5.7 ([fork source](https://github.com/pelmers/vscode-react-native/tree/nuclide)).
+There are two ways to invoke the React Native debugger. Nuclide can either attach to
+a running packager, or it can launch the debug target in a new packager for
+debugging. Note that the debugger from Nuclide can only attach if the default
+Chrome debugger is not already running.
 
 Both cases require a workspace path which should be set to the directory
 containing the `package.json` file of the debug target. Launching the debugger
