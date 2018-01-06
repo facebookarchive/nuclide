@@ -5,15 +5,6 @@ This file was programatically generated using
 to `resources/nuclicons` and rerun the script.
 */
 
-@font-face {
-  font-family: 'nuclicons';
-  src:
-    url('atom://nuclide/modules/nuclide-commons-ui/styles/nuclicons.ttf') format('truetype'),
-    url('atom://atom-ide-ui/modules/nuclide-commons-ui/styles/nuclicons.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 [class^="icon-nuclicon-"]::before,
 [class*=" icon-nuclicon-"]::before {
   /*
