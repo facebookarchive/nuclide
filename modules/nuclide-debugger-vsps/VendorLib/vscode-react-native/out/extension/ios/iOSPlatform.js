@@ -4,6 +4,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Q = require("q");
 const path = require("path");
+const semver = require("semver");
 const childProcess_1 = require("../../common/node/childProcess");
 const commandExecutor_1 = require("../../common/commandExecutor");
 const generalMobilePlatform_1 = require("../generalMobilePlatform");
@@ -13,6 +14,7 @@ const outputVerifier_1 = require("../../common/outputVerifier");
 const errorHelper_1 = require("../../common/error/errorHelper");
 const settingsHelper_1 = require("../settingsHelper");
 const remoteExtension_1 = require("../../common/remoteExtension");
+const reactNativeProjectHelper_1 = require("../../common/reactNativeProjectHelper");
 class IOSPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
     constructor(runOptions, platformDeps = {}) {
         super(runOptions, platformDeps);
@@ -36,17 +38,24 @@ class IOSPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
         }
         this.targetType = this.runOptions.target || IOSPlatform.simulatorString;
     }
-    static showDevMenu(deviceId) {
-        return this.remote.showDevMenu(deviceId);
+    static showDevMenu(fsPath, deviceId) {
+        return this.remote(fsPath).showDevMenu(deviceId);
     }
-    static reloadApp(deviceId) {
-        return this.remote.reloadApp(deviceId);
+    static reloadApp(fsPath, deviceId) {
+        return this.remote(fsPath).reloadApp(deviceId);
     }
     runApp() {
         // Compile, deploy, and launch the app on either a simulator or a device
         const runArguments = this.getRunArgument();
-        const runIosSpawn = new commandExecutor_1.CommandExecutor(this.projectPath, this.logger).spawnReactCommand("run-ios", runArguments);
-        return new outputVerifier_1.OutputVerifier(() => this.generateSuccessPatterns(), () => Q(IOSPlatform.RUN_IOS_FAILURE_PATTERNS)).process(runIosSpawn);
+        const env = this.getEnvArgument();
+        return reactNativeProjectHelper_1.ReactNativeProjectHelper.getReactNativeVersion(this.runOptions.projectRoot)
+            .then(version => {
+            if (semver.gte(version, IOSPlatform.NO_PACKAGER_VERSION)) {
+                runArguments.push("--no-packager");
+            }
+            const runIosSpawn = new commandExecutor_1.CommandExecutor(this.projectPath, this.logger).spawnReactCommand("run-ios", runArguments, { env });
+            return new outputVerifier_1.OutputVerifier(() => this.generateSuccessPatterns(), () => Q(IOSPlatform.RUN_IOS_FAILURE_PATTERNS)).process(runIosSpawn);
+        });
     }
     enableJSDebuggingMode() {
         // Configure the app for debugging
@@ -116,7 +125,6 @@ class IOSPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
                 runArguments.push("--scheme", this.runOptions.scheme);
             }
         }
-        runArguments.push("--no-packager");
         return runArguments;
     }
     generateSuccessPatterns() {
@@ -129,13 +137,13 @@ class IOSPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
     getBundleId() {
         return this.plistBuddy.getBundleId(this.iosProjectRoot);
     }
-    static get remote() {
+    static remote(fsPath) {
         if (this.remoteExtension) {
             return this.remoteExtension;
         }
         else {
             // BEGIN MODIFIED BY PELMERS
-            return this.remoteExtension = remoteExtension_1.RemoteExtension.atProjectRootPath(settingsHelper_1.SettingsHelper.getReactNativeProjectRoot(), settingsHelper_1.SettingsHelper.getPackagerPort());
+            return this.remoteExtension = remoteExtension_1.RemoteExtension.atProjectRootPath(settingsHelper_1.SettingsHelper.getReactNativeProjectRoot(fsPath), settingsHelper_1.SettingsHelper.getPackagerPort(fsPath));
             // END MODIFIED BY PELMERS
         }
     }

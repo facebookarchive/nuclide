@@ -55,8 +55,7 @@ function getReactNativeWorkspaceForFile(file, workspace) {
     });
 }
 function getPathForRNParentWorkspace(dir) {
-    const reactNativeProjectHelper = new reactNativeProjectHelper_1.ReactNativeProjectHelper(dir);
-    return reactNativeProjectHelper.isReactNativeProject().then(isRNProject => {
+    return reactNativeProjectHelper_1.ReactNativeProjectHelper.isReactNativeProject(dir).then(isRNProject => {
         if (isRNProject) {
             return dir;
         }

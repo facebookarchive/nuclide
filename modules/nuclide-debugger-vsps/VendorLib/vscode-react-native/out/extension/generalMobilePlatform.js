@@ -2,9 +2,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 Object.defineProperty(exports, "__esModule", { value: true });
-// BEGIN MODIFIED BY PELMERS
-// END MODIFIED BY PELMERS
 const Q = require("q");
+const fs = require("fs");
 const packager_1 = require("../common/packager");
 const packagerStatusIndicator_1 = require("./packagerStatusIndicator");
 const settingsHelper_1 = require("./settingsHelper");
@@ -15,9 +14,8 @@ class GeneralMobilePlatform {
         this.platformName = this.runOptions.platform;
         this.projectPath = this.runOptions.projectRoot;
         // BEGIN MODIFIED BY PELMERS
-        this.packager = platformDeps.packager || new packager_1.Packager("", this.projectPath, settingsHelper_1.SettingsHelper.getPackagerPort());
+        this.packager = platformDeps.packager || new packager_1.Packager("", this.projectPath, settingsHelper_1.SettingsHelper.getPackagerPort(this.projectPath));
         // END MODIFIED BY PELMERS
-        this.packageStatusIndicator = platformDeps.packageStatusIndicator || new packagerStatusIndicator_1.PackagerStatusIndicator();
         this.logger = OutputChannelLogger_1.OutputChannelLogger.getChannel(`React Native: Run ${this.platformName}`, true);
         this.logger.clear();
     }
@@ -38,7 +36,7 @@ class GeneralMobilePlatform {
         return this.packager.isRunning().then((running) => {
             if (running) {
                 if (this.packager.getRunningAs() !== packager_1.PackagerRunAs.REACT_NATIVE) {
-                    return this.packager.stop().then(() => this.packageStatusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STOPPED));
+                    return this.packager.stop().then(() => this.packager.statusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STOPPED));
                 }
                 this.logger.info("Attaching to running React Native packager");
             }
@@ -47,7 +45,7 @@ class GeneralMobilePlatform {
             .then(() => {
             return this.packager.startAsReactNative();
         })
-            .then(() => this.packageStatusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STARTED));
+            .then(() => this.packager.statusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STARTED));
     }
     prewarmBundleCache() {
         // generalMobilePlatform should do nothing here. Method should be overriden by children for specific behavior.
@@ -56,9 +54,43 @@ class GeneralMobilePlatform {
     getRunArgument() {
         throw new Error("Not yet implemented: GeneralMobilePlatform.getRunArgument");
     }
+    getEnvArgument() {
+        let args = this.runOptions;
+        let env = process.env;
+        if (args.envFile) {
+            let buffer = fs.readFileSync(args.envFile, "utf8");
+            // Strip BOM
+            if (buffer && buffer[0] === "\uFEFF") {
+                buffer = buffer.substr(1);
+            }
+            buffer.split("\n").forEach((line) => {
+                const r = line.match(/^\s*([\w\.\-]+)\s*=\s*(.*)?\s*$/);
+                if (r !== null) {
+                    const key = r[1];
+                    if (!env[key]) {
+                        let value = r[2] || "";
+                        if (value.length > 0 && value.charAt(0) === "\"" && value.charAt(value.length - 1) === "\"") {
+                            value = value.replace(/\\n/gm, "\n");
+                        }
+                        env[key] = value.replace(/(^['"]|['"]$)/g, "");
+                    }
+                }
+            });
+        }
+        if (args.env) {
+            // launch config env vars overwrite .env vars
+            for (let key in args.env) {
+                if (args.env.hasOwnProperty(key)) {
+                    env[key] = args.env[key];
+                }
+            }
+        }
+        return env;
+    }
 }
 GeneralMobilePlatform.deviceString = "device";
 GeneralMobilePlatform.simulatorString = "simulator";
+GeneralMobilePlatform.NO_PACKAGER_VERSION = "0.42.0";
 exports.GeneralMobilePlatform = GeneralMobilePlatform;
 
 //# sourceMappingURL=generalMobilePlatform.js.map

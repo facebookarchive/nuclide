@@ -12,6 +12,8 @@ const package_1 = require("./node/package");
 const promise_1 = require("./node/promise");
 const request_1 = require("./node/request");
 const reactNativeProjectHelper_1 = require("./reactNativeProjectHelper");
+const packagerStatusIndicator_1 = require("../extension/packagerStatusIndicator");
+const settingsHelper_1 = require("../extension/settingsHelper");
 const Q = require("q");
 const path = require("path");
 const XDL = require("../extension/exponent/xdlInterface");
@@ -24,16 +26,23 @@ var PackagerRunAs;
 })(PackagerRunAs = exports.PackagerRunAs || (exports.PackagerRunAs = {}));
 class Packager {
     // BEGIN MODFIFIED BY PELMERS
-    constructor(workspacePath, projectPath, port) {
+    constructor(workspacePath, projectPath, packagerPort, packagerStatusIndicator) {
         this.workspacePath = workspacePath;
         this.projectPath = projectPath;
-        this.port = port;
+        this.packagerPort = packagerPort;
         this.logger = OutputChannelLogger_1.OutputChannelLogger.getChannel(OutputChannelLogger_1.OutputChannelLogger.MAIN_CHANNEL_NAME, true);
         // END MODIFIED BY PELMERS
         this.packagerRunningAs = PackagerRunAs.NOT_RUNNING;
+        this.packagerStatusIndicator = packagerStatusIndicator || new packagerStatusIndicator_1.PackagerStatusIndicator();
+    }
+    get port() {
+        return this.packagerPort || settingsHelper_1.SettingsHelper.getPackagerPort(this.workspacePath);
     }
     static getHostForPort(port) {
         return `localhost:${port}`;
+    }
+    get statusIndicator() {
+        return this.packagerStatusIndicator;
     }
     getHost() {
         return Packager.getHostForPort(this.port);
@@ -72,18 +81,22 @@ class Packager {
             return Q.reject(reason);
         });
     }
-    stop() {
+    stop(silent = false) {
         return this.isRunning()
             .then(running => {
             if (running) {
                 if (!this.packagerProcess) {
-                    this.logger.warning(errorHelper_1.ErrorHelper.getWarning("Packager is still running. If the packager was started outside VS Code, please quit the packager process using the task manager."));
+                    if (!silent) {
+                        this.logger.warning(errorHelper_1.ErrorHelper.getWarning("Packager is still running. If the packager was started outside VS Code, please quit the packager process using the task manager."));
+                    }
                     return Q.resolve(void 0);
                 }
                 return this.killPackagerProcess();
             }
             else {
-                this.logger.warning(errorHelper_1.ErrorHelper.getWarning("Packager is not running"));
+                if (!silent) {
+                    this.logger.warning(errorHelper_1.ErrorHelper.getWarning("Packager is not running"));
+                }
                 return Q.resolve(void 0);
             }
         }).then(() => {
@@ -144,8 +157,7 @@ class Packager {
             // If guessed entry point doesn't exist - skip prewarming, since it's not possible
             // at this moment to determine _real_ bundle/ entry point name anyway
             if (!exists) {
-                this.logger.info(`Entry point at ${indexFileName} ` +
-                    `doesn'tLog. exist. Skipping prewarming...`);
+                this.logger.info(`Entry point at ${indexFileName} doesn't exist. Skipping prewarming...`);
                 return;
             }
             this.logger.info("About to get: " + bundleURL);
@@ -179,7 +191,7 @@ class Packager {
                     return helper.getExpPackagerOptions()
                         .then((options) => {
                         Object.keys(options).forEach(key => {
-                            args.concat([`--${key}`, options[key]]);
+                            args = args.concat([`--${key}`, options[key]]);
                         });
                         // Patch for CRNA
                         if (args.indexOf("--assetExts") === -1) {
@@ -193,8 +205,8 @@ class Packager {
                     });
                 })
                     .then((args) => {
-                    let reactNativeProjectHelper = new reactNativeProjectHelper_1.ReactNativeProjectHelper(this.projectPath);
-                    reactNativeProjectHelper.getReactNativeVersion().then(version => {
+                    const projectRoot = settingsHelper_1.SettingsHelper.getReactNativeProjectRoot(this.workspacePath);
+                    reactNativeProjectHelper_1.ReactNativeProjectHelper.getReactNativeVersion(projectRoot).then(version => {
                         //  There is a bug with launching VSCode editor for file from stack frame in 0.38, 0.39, 0.40 versions:
                         //  https://github.com/facebook/react-native/commit/f49093f39710173620fead6230d62cc670570210
                         //  This bug will be fixed in 0.41

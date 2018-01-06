@@ -11,16 +11,10 @@ const exponentHelper_1 = require("./exponentHelper");
 const Q = require("q");
 const packager_1 = require("../../common/packager");
 const packagerStatusIndicator_1 = require("../packagerStatusIndicator");
-const settingsHelper_1 = require("../settingsHelper");
-const projectRootPath = settingsHelper_1.SettingsHelper.getReactNativeProjectRoot();
-// BEGIN MODIFIED BY PELMERS
-// END MODIFIED BY PELMERS
 class ExponentPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
-    // END MODIFIED BY PELMERS
     constructor(runOptions, platformDeps = {}) {
         super(runOptions, platformDeps);
-        // BEGIN MODIFIED BY PELMERS
-        this.exponentHelper = new exponentHelper_1.ExponentHelper(projectRootPath, projectRootPath);
+        this.exponentHelper = new exponentHelper_1.ExponentHelper(runOptions.workspaceRoot, runOptions.projectRoot);
         this.exponentTunnelPath = null;
     }
     runApp() {
@@ -37,7 +31,7 @@ class ExponentPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
         return this.packager.isRunning().then((running) => {
             if (running) {
                 if (this.packager.getRunningAs() !== packager_1.PackagerRunAs.EXPONENT) {
-                    return this.packager.stop().then(() => this.packageStatusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STOPPED));
+                    return this.packager.stop().then(() => this.packager.statusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.PACKAGER_STOPPED));
                 }
                 this.logger.info("Attaching to running Exponent packager");
             }
@@ -58,8 +52,8 @@ class ExponentPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
         })
             .then(exponentUrl => {
             // BEGIN MODIFIED BY PELMERS
+            this.packager.statusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.EXPONENT_PACKAGER_STARTED);
             // END MODIFIED BY PELMERS
-            this.packageStatusIndicator.updatePackagerStatus(packagerStatusIndicator_1.PackagerStatus.EXPONENT_PACKAGER_STARTED);
             return exponentUrl;
         })
             .then(exponentUrl => {

@@ -10,6 +10,8 @@ const Q = require("q");
 const request_1 = require("../common/node/request");
 const sourceMap_1 = require("./sourceMap");
 const url = require("url");
+const semver = require("semver");
+const reactNativeProjectHelper_1 = require("../common/reactNativeProjectHelper");
 class ScriptImporter {
     constructor(packagerAddress, packagerPort, sourcesStoragePath, packagerRemoteRoot, packagerLocalRoot) {
         this.packagerAddress = packagerAddress;
@@ -43,14 +45,22 @@ class ScriptImporter {
             });
         });
     }
-    downloadDebuggerWorker(sourcesStoragePath) {
+    downloadDebuggerWorker(sourcesStoragePath, projectRootPath) {
         const errPackagerNotRunning = new RangeError(`Cannot attach to packager. Are you sure there is a packager and it is running in the port ${this.packagerPort}? If your packager is configured to run in another port make sure to add that to the setting.json.`);
         // BEGIN MODIFIED BY PELMERS
         const fs = new fileSystem_1.FileSystem();
         return packagerStatus_1.ensurePackagerRunning(this.packagerAddress, this.packagerPort, errPackagerNotRunning)
             .then(() => fs.ensureDirectory(sourcesStoragePath))
             .then(() => {
-            let debuggerWorkerURL = `http://${this.packagerAddress}:${this.packagerPort}/${ScriptImporter.DEBUGGER_WORKER_FILENAME}`;
+            return reactNativeProjectHelper_1.ReactNativeProjectHelper.getReactNativeVersion(projectRootPath);
+        })
+            .then((rnVersion) => {
+            let newPackager = "";
+            const isHaulProject = reactNativeProjectHelper_1.ReactNativeProjectHelper.isHaulProject(projectRootPath);
+            if (semver.gte(rnVersion, "0.50.0") && !isHaulProject) {
+                newPackager = "debugger-ui/";
+            }
+            let debuggerWorkerURL = `http://${this.packagerAddress}:${this.packagerPort}/${newPackager}${ScriptImporter.DEBUGGER_WORKER_FILENAME}`;
             let debuggerWorkerLocalPath = path.join(sourcesStoragePath, ScriptImporter.DEBUGGER_WORKER_FILENAME);
             vscode_chrome_debug_core_1.logger.verbose("About to download: " + debuggerWorkerURL + " to: " + debuggerWorkerLocalPath);
             return request_1.Request.request(debuggerWorkerURL, true)

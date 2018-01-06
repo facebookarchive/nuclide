@@ -52,7 +52,7 @@ function makeSession(debugSessionClass, debugSessionOpts, telemetryReporter, app
             this.requestSetup(request.arguments);
             this.remoteExtension.launch(request)
                 .then(() => {
-                return this.remoteExtension.getPackagerPort();
+                return this.remoteExtension.getPackagerPort(request.arguments.program);
             })
                 .then((packagerPort) => {
                 this.attachRequest(Object.assign({}, request, { arguments: Object.assign({}, request.arguments, { port: packagerPort }) }));
@@ -63,9 +63,9 @@ function makeSession(debugSessionClass, debugSessionOpts, telemetryReporter, app
         }
         attach(request) {
             this.requestSetup(request.arguments);
-            this.remoteExtension.getPackagerPort()
+            this.remoteExtension.getPackagerPort(request.arguments.program)
                 .then((packagerPort) => {
-                this.attachRequest(Object.assign({}, request, { arguments: Object.assign({}, request.arguments, { port: packagerPort }) }));
+                this.attachRequest(Object.assign({}, request, { arguments: Object.assign({}, request.arguments, { port: request.arguments.port || packagerPort }) }));
             });
         }
         disconnect(request) {
@@ -170,7 +170,7 @@ function getProjectRoot(args) {
         let settingsContent = fs.readFileSync(settingsPath, "utf8");
         settingsContent = stripJsonComments(settingsContent);
         let parsedSettings = JSON.parse(settingsContent);
-        let projectRootPath = parsedSettings["react-native-tools"].projectRoot;
+        let projectRootPath = parsedSettings["react-native-tools.projectRoot"] || parsedSettings["react-native-tools"].projectRoot;
         return path.resolve(vsCodeRoot, projectRootPath);
     }
     catch (e) {

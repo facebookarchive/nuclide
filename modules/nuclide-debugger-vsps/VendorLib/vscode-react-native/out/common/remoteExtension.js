@@ -7,6 +7,7 @@ const platformResolver_1 = require("../extension/platformResolver");
 const targetPlatformHelper_1 = require("./targetPlatformHelper");
 const settingsHelper_1 = require("../extension/settingsHelper");
 const packager_1 = require("./packager");
+const vscode_uri_1 = require("vscode-uri");
 const Q = require("q");
 class RemoteExtension {
     constructor(projectRootPath, reactNativePackager) {
@@ -17,8 +18,8 @@ class RemoteExtension {
         const packager = new packager_1.Packager(projectRootPath, projectRootPath, port);
         return new RemoteExtension(projectRootPath, packager);
     }
-    getPackagerPort() {
-        return Q(this.reactNativePackager.port);
+    getPackagerPort(program) {
+        return Q(this.reactNativePackager.packagerPort);
     }
     showDevMenu(deviceId) {
         return Q(null);
@@ -51,7 +52,7 @@ class RemoteExtension {
         if (!isNullOrUndefined(request.arguments.scheme)) {
             mobilePlatformOptions.scheme = request.arguments.scheme;
         }
-        mobilePlatformOptions.packagerPort = this.reactNativePackager.port;
+        mobilePlatformOptions.packagerPort = this.reactNativePackager.packagerPort;
         const platformDeps = {
             packager: this.reactNativePackager,
         };
@@ -87,11 +88,16 @@ class RemoteExtension {
         let mobilePlatformOptions = {
             projectRoot: projectRootPath,
             platform: args.platform,
+            env: args.env,
+            envFile: args.envFile,
             target: args.target || "simulator",
         };
         if (!args.runArguments) {
-            let runArgs = settingsHelper_1.SettingsHelper.getRunArgs(args.platform, args.target || "simulator");
+            let runArgs = settingsHelper_1.SettingsHelper.getRunArgs(args.platform, args.target || "simulator", vscode_uri_1.default.file(projectRootPath));
             mobilePlatformOptions.runArguments = runArgs;
+        }
+        else {
+            mobilePlatformOptions.runArguments = args.runArguments;
         }
         return mobilePlatformOptions;
     }

@@ -70,6 +70,6 @@ function codeToRun() {
 }
 // Enable telemetry
 const entryPointHandler = new entryPointHandler_1.EntryPointHandler(entryPointHandler_1.ProcessType.Debugger);
-entryPointHandler.runApp(extensionName, () => version, errorHelper_1.ErrorHelper.getInternalError(internalErrorCode_1.InternalErrorCode.DebuggingFailed), telemetryReporter, codeToRun);
+entryPointHandler.runApp(extensionName, version, errorHelper_1.ErrorHelper.getInternalError(internalErrorCode_1.InternalErrorCode.DebuggingFailed), telemetryReporter, codeToRun);
 
 //# sourceMappingURL=reactNativeDebugEntryPoint.js.map

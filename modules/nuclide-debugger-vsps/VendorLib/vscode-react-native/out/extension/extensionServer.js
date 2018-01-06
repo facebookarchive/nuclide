@@ -16,17 +16,18 @@ const rpc = require("noice-json-rpc");
 const WebSocket = require("ws");
 var WebSocketServer = WebSocket.Server;
 class ExtensionServer {
-    constructor(projectRootPath, reactNativePackager, packagerStatusIndicator) {
+    constructor(projectRootPath, reactNativePackager) {
+        this.isDisposed = false;
         this.logCatMonitor = null;
         this.logger = OutputChannelLogger_1.OutputChannelLogger.getMainChannel();
         this.pipePath = extensionMessaging_1.MessagingHelper.getPath(projectRootPath);
         this.reactNativePackager = reactNativePackager;
-        this.reactNativePackageStatusIndicator = packagerStatusIndicator;
     }
     /**
      * Starts the server.
      */
     setup() {
+        this.isDisposed = false;
         let deferred = Q.defer();
         let launchCallback = (error) => {
             this.logger.debug(`Extension messaging server started at ${this.pipePath}.`);
@@ -34,7 +35,7 @@ class ExtensionServer {
         };
         this.serverInstance = new WebSocketServer({ port: this.pipePath });
         this.api = new rpc.Server(this.serverInstance).api();
-        this.serverInstance.on("open", launchCallback.bind(this));
+        this.serverInstance.on("listening", launchCallback.bind(this));
         this.serverInstance.on("error", this.recoverServer.bind(this));
         this.setupApiHandlers();
         return deferred.promise;
@@ -43,10 +44,13 @@ class ExtensionServer {
      * Stops the server.
      */
     dispose() {
+        this.isDisposed = true;
         if (this.serverInstance) {
             this.serverInstance.close();
             this.serverInstance = null;
         }
+        this.reactNativePackager.statusIndicator.dispose();
+        this.reactNativePackager.stop(true);
         this.stopMonitoringLogCat();
     }
     setupApiHandlers() {
@@ -93,8 +97,8 @@ class ExtensionServer {
     /**
      * Message handler for GET_PACKAGER_PORT.
      */
-    getPackagerPort() {
-        return settingsHelper_1.SettingsHelper.getPackagerPort();
+    getPackagerPort(program) {
+        return settingsHelper_1.SettingsHelper.getPackagerPort(program);
     }
     /**
      * Message handler for OPEN_FILE_AT_LOCATION
@@ -144,10 +148,9 @@ class ExtensionServer {
         if (!isNullOrUndefined(request.arguments.scheme)) {
             mobilePlatformOptions.scheme = request.arguments.scheme;
         }
-        mobilePlatformOptions.packagerPort = settingsHelper_1.SettingsHelper.getPackagerPort();
+        mobilePlatformOptions.packagerPort = settingsHelper_1.SettingsHelper.getPackagerPort(request.arguments.program);
         const platformDeps = {
             packager: this.reactNativePackager,
-            packageStatusIndicator: this.reactNativePackageStatusIndicator,
         };
         const mobilePlatform = new platformResolver_1.PlatformResolver()
             .resolveMobilePlatform(request.arguments.platform, mobilePlatformOptions, platformDeps);
@@ -171,6 +174,7 @@ class ExtensionServer {
                 })
                     .then(() => {
                     generator.step("mobilePlatform.enableJSDebuggingMode");
+                    this.logger.info("Enable JS Debugging");
                     return mobilePlatform.enableJSDebuggingMode();
                 })
                     .then(() => {
@@ -197,20 +201,27 @@ function isNullOrUndefined(value) {
     return typeof value === "undefined" || value === null;
 }
 function requestSetup(args) {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(args.program));
     const projectRootPath = getProjectRoot(args);
     let mobilePlatformOptions = {
+        workspaceRoot: workspaceFolder.uri.fsPath,
         projectRoot: projectRootPath,
         platform: args.platform,
+        env: args.env,
+        envFile: args.envFile,
         target: args.target || "simulator",
     };
     if (!args.runArguments) {
-        let runArgs = settingsHelper_1.SettingsHelper.getRunArgs(args.platform, args.target || "simulator");
+        let runArgs = settingsHelper_1.SettingsHelper.getRunArgs(args.platform, args.target || "simulator", workspaceFolder.uri);
         mobilePlatformOptions.runArguments = runArgs;
+    }
+    else {
+        mobilePlatformOptions.runArguments = args.runArguments;
     }
     return mobilePlatformOptions;
 }
 function getProjectRoot(args) {
-    return settingsHelper_1.SettingsHelper.getReactNativeProjectRoot();
+    return settingsHelper_1.SettingsHelper.getReactNativeProjectRoot(args.program);
 }
 
 //# sourceMappingURL=extensionServer.js.map

@@ -154,8 +154,7 @@ AppRegistry.registerRunnable('main', function(appParameters) {
         if (showProgress) {
             this.logger.logStream("...");
         }
-        let reactNativeProjectHelper = new reactNativeProjectHelper_1.ReactNativeProjectHelper(this.projectRootPath);
-        return reactNativeProjectHelper.getReactNativeVersion()
+        return reactNativeProjectHelper_1.ReactNativeProjectHelper.getReactNativeVersion(this.projectRootPath)
             .then(version => {
             if (showProgress)
                 this.logger.logStream(".");

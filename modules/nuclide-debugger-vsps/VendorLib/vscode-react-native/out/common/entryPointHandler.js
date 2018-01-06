@@ -3,7 +3,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 Object.defineProperty(exports, "__esModule", { value: true });
 const errorHelper_1 = require("./error/errorHelper");
-const telemetryReporters_1 = require("./telemetryReporters");
 const telemetryHelper_1 = require("./telemetryHelper");
 const telemetry_1 = require("./telemetry");
 const ConsoleLogger_1 = require("../extension/log/ConsoleLogger");
@@ -24,13 +23,8 @@ class EntryPointHandler {
         return this.handleErrors(error, telemetryHelper_1.TelemetryHelper.generate(taskName, codeToRun), /*errorsAreFatal*/ errorsAreFatal);
     }
     // This method should wrap the entry point of the whole app, so we handle telemetry and error reporting properly
-    runApp(appName, getAppVersion, error, projectRootPathOrReporterToUse, codeToRun) {
+    runApp(appName, appVersion, error, reporter, codeToRun) {
         try {
-            const appVersion = getAppVersion();
-            const reporterToUse = typeof projectRootPathOrReporterToUse !== "string" ? projectRootPathOrReporterToUse : null;
-            const reporter = reporterToUse || (this.processType === ProcessType.Extension
-                ? telemetry_1.Telemetry.defaultTelemetryReporter(appVersion)
-                : new telemetryReporters_1.ExtensionTelemetryReporter(telemetry_1.Telemetry.appName, appVersion, telemetry_1.Telemetry.APPINSIGHTS_INSTRUMENTATIONKEY, projectRootPathOrReporterToUse));
             telemetry_1.Telemetry.init(appName, appVersion, reporter);
             return this.runFunction(appName, error, codeToRun, true);
         }

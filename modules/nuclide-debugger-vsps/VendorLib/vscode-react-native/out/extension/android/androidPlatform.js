@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 Object.defineProperty(exports, "__esModule", { value: true });
 const Q = require("q");
+const semver = require("semver");
 const generalMobilePlatform_1 = require("../generalMobilePlatform");
 const adb_1 = require("./adb");
 const package_1 = require("../../common/node/package");
@@ -12,6 +13,7 @@ const outputVerifier_1 = require("../../common/outputVerifier");
 const telemetryHelper_1 = require("../../common/telemetryHelper");
 const commandExecutor_1 = require("../../common/commandExecutor");
 const logCatMonitor_1 = require("./logCatMonitor");
+const reactNativeProjectHelper_1 = require("../../common/reactNativeProjectHelper");
 /**
  * Android specific platform implementation for debugging RN applications.
  */
@@ -40,25 +42,32 @@ class AndroidPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
     runApp(shouldLaunchInAllDevices = false) {
         return telemetryHelper_1.TelemetryHelper.generate("AndroidPlatform.runApp", () => {
             const runArguments = this.getRunArgument();
-            const runAndroidSpawn = new commandExecutor_1.CommandExecutor(this.projectPath, this.logger).spawnReactCommand("run-android", runArguments);
-            const output = new outputVerifier_1.OutputVerifier(() => Q(AndroidPlatform.RUN_ANDROID_SUCCESS_PATTERNS), () => Q(AndroidPlatform.RUN_ANDROID_FAILURE_PATTERNS)).process(runAndroidSpawn);
-            return output
-                .finally(() => {
-                return this.initializeTargetDevicesAndPackageName();
-            }).then(() => [this.debugTarget], reason => {
-                if (reason.message === AndroidPlatform.MULTIPLE_DEVICES_ERROR && this.devices.length > 1 && this.debugTarget) {
-                    /* If it failed due to multiple devices, we'll apply this workaround to make it work anyways */
-                    this.needsToLaunchApps = true;
-                    return shouldLaunchInAllDevices
-                        ? adb_1.AdbHelper.getOnlineDevices()
-                        : Q([this.debugTarget]);
+            const env = this.getEnvArgument();
+            return reactNativeProjectHelper_1.ReactNativeProjectHelper.getReactNativeVersion(this.runOptions.projectRoot)
+                .then(version => {
+                if (semver.gte(version, AndroidPlatform.NO_PACKAGER_VERSION)) {
+                    runArguments.push("--no-packager");
                 }
-                else {
-                    return Q.reject(reason);
-                }
-            }).then(devices => {
-                return new promise_1.PromiseUtil().forEach(devices, device => {
-                    return this.launchAppWithADBReverseAndLogCat(device);
+                const runAndroidSpawn = new commandExecutor_1.CommandExecutor(this.projectPath, this.logger).spawnReactCommand("run-android", runArguments, { env });
+                const output = new outputVerifier_1.OutputVerifier(() => Q(AndroidPlatform.RUN_ANDROID_SUCCESS_PATTERNS), () => Q(AndroidPlatform.RUN_ANDROID_FAILURE_PATTERNS)).process(runAndroidSpawn);
+                return output
+                    .finally(() => {
+                    return this.initializeTargetDevicesAndPackageName();
+                }).then(() => [this.debugTarget], reason => {
+                    if (reason.message === AndroidPlatform.MULTIPLE_DEVICES_ERROR && this.devices.length > 1 && this.debugTarget) {
+                        /* If it failed due to multiple devices, we'll apply this workaround to make it work anyways */
+                        this.needsToLaunchApps = true;
+                        return shouldLaunchInAllDevices
+                            ? adb_1.AdbHelper.getOnlineDevices()
+                            : Q([this.debugTarget]);
+                    }
+                    else {
+                        return Q.reject(reason);
+                    }
+                }).then(devices => {
+                    return new promise_1.PromiseUtil().forEach(devices, device => {
+                        return this.launchAppWithADBReverseAndLogCat(device);
+                    });
                 });
             });
         });
@@ -85,7 +94,6 @@ class AndroidPlatform extends generalMobilePlatform_1.GeneralMobilePlatform {
                 runArguments.push("--deviceId", this.runOptions.target);
             }
         }
-        runArguments.push("--no-packager");
         return runArguments;
     }
     initializeTargetDevicesAndPackageName() {

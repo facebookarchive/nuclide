@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const source_map_1 = require("source-map");
 const sourceMapResolve = require("source-map-resolve");
-const DISK_LETTER_RE = /^[a-z]:/i;
+const DISK_LETTER_RE = /^(?:[a-z]{2,}:\/\/\/)?[a-z]:/i;
 class SourceMapsCombinator {
     convert(rawBundleSourcemap) {
         // Find user files from bundle files list

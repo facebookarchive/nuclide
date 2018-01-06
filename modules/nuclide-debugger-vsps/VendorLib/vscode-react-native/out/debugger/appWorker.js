@@ -13,6 +13,7 @@ const executionsLimiter_1 = require("../common/executionsLimiter");
 const fileSystem_1 = require("../common/node/fileSystem");
 const forkedAppWorker_1 = require("./forkedAppWorker");
 const scriptImporter_1 = require("./scriptImporter");
+const reactNativeProjectHelper_1 = require("../common/reactNativeProjectHelper");
 function printDebuggingError(message, reason) {
     const nestedError = errorHelper_1.ErrorHelper.getNestedWarning(reason, `${message}. Debugging won't work: Try reloading the JS from inside the app, or Reconnect the VS Code debugger`);
     vscode_chrome_debug_core_1.logger.error(nestedError.message);
@@ -58,13 +59,18 @@ class MultipleLifetimesAppWorker extends events_1.EventEmitter {
     }
     downloadAndPatchDebuggerWorker() {
         let scriptToRunPath = path.resolve(this.sourcesStoragePath, scriptImporter_1.ScriptImporter.DEBUGGER_WORKER_FILENAME);
-        return this.scriptImporter.downloadDebuggerWorker(this.sourcesStoragePath)
+        return this.scriptImporter.downloadDebuggerWorker(this.sourcesStoragePath, this.projectRootPath)
             .then(() => this.nodeFileSystem.readFile(scriptToRunPath, "utf8"))
             .then((workerContent) => {
+            const isHaulProject = reactNativeProjectHelper_1.ReactNativeProjectHelper.isHaulProject(this.projectRootPath);
             // Add our customizations to debugger worker to get it working smoothly
             // in Node env and polyfill WebWorkers API over Node's IPC.
-            const modifiedDebuggeeContent = [MultipleLifetimesAppWorker.WORKER_BOOTSTRAP,
-                workerContent, MultipleLifetimesAppWorker.WORKER_DONE].join("\n");
+            const modifiedDebuggeeContent = [
+                MultipleLifetimesAppWorker.WORKER_BOOTSTRAP,
+                isHaulProject ? MultipleLifetimesAppWorker.FETCH_STUB : null,
+                workerContent,
+                MultipleLifetimesAppWorker.WORKER_DONE,
+            ].join("\n");
             return this.nodeFileSystem.writeFile(scriptToRunPath, modifiedDebuggeeContent);
         });
     }
@@ -215,6 +221,11 @@ process.on("message", function (message) {
 var postMessage = function(message){
     process.send(message);
 };
+
+if (!self.postMessage) {
+    self.postMessage = postMessage;
+}
+
 var importScripts = (function(){
     var fs=require('fs'), vm=require('vm');
     return function(scriptUrl){
@@ -225,6 +236,27 @@ var importScripts = (function(){
 MultipleLifetimesAppWorker.WORKER_DONE = `// Notify debugger that we're done with loading
 // and started listening for IPC messages
 postMessage({workerLoaded:true});`;
+MultipleLifetimesAppWorker.FETCH_STUB = `(function(self) {
+        'use strict';
+
+        if (self.fetch) {
+          return
+        }
+
+        self.fetch = fetch;
+
+        function fetch(url) {
+            return new Promise((resolve, reject) => {
+                var data = require("fs").readFileSync(url, 'utf8');
+                resolve(
+                    {
+                        text: function () {
+                            return data;
+                        }
+                    });
+            });
+        }
+      })(global);`;
 exports.MultipleLifetimesAppWorker = MultipleLifetimesAppWorker;
 
 //# sourceMappingURL=appWorker.js.map
