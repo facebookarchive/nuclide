@@ -109,8 +109,11 @@ Chrome debugger is not already running.
 
 Both cases require a workspace path which should be set to the directory
 containing the `package.json` file of the debug target. Launching the debugger
-also requires specifying the platform to debug, either `ios` or `android`. In
-most cases the default port setting of 8081 will be correct.
+also requires specifying the platform to debug, either `ios` or `android` as
+well as the target, either `simulator` or `device`. Note that debugging on an
+iOS device requires some manual setup; see
+[these instructions](https://github.com/Microsoft/vscode-react-native/blob/master/doc/debugging.md#debugging-on-ios-device).
+In most cases the default port setting of 8081 will be correct.
 
 > Changing the port setting in the debugger may require external setup, see
 > [the issue on GitHub](https://github.com/facebook/react-native/issues/9145)
