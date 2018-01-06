@@ -18,6 +18,7 @@ import type {
 } from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {Adapter} from 'nuclide-debugger-vsps/main';
+import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
 
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -305,55 +306,31 @@ function getNodeScriptConfig(
   };
 }
 
-function getReactNativeScriptConfig(
-  scriptPath: NuclideUri,
-  port: string,
-  platform?: string,
-): Object {
-  return {
-    protocol: 'inspector',
-    stopOnEntry: false,
-    platform,
-    program: scriptPath,
-    // TODO(pelmers): do we need to supply outdir?,
-    port,
-  };
-}
-
 export async function getReactNativeAttachProcessInfo(
-  workspacePath: NuclideUri,
-  port: string,
+  args: ReactNativeAttachArgs,
 ): Promise<VspProcessInfo> {
-  const scriptPath = nuclideUri.getPath(
-    nuclideUri.join(workspacePath, '.vscode/launchReactNative.js'),
-  );
-  const adapterInfo = await getReactNativeAdapterInfo(scriptPath);
+  const adapterInfo = await getReactNativeAdapterInfo(args.program);
   return new VspProcessInfo(
-    scriptPath,
+    args.program,
     'attach',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
     false, // showThreads
-    getReactNativeScriptConfig(scriptPath, port),
+    args,
   );
 }
 
 export async function getReactNativeLaunchProcessInfo(
-  workspacePath: NuclideUri,
-  port: string,
-  platform: string,
+  args: ReactNativeLaunchArgs,
 ): Promise<VspProcessInfo> {
-  const scriptPath = nuclideUri.getPath(
-    nuclideUri.join(workspacePath, '.vscode/launchReactNative.js'),
-  );
-  const adapterInfo = await getReactNativeAdapterInfo(scriptPath);
+  const adapterInfo = await getReactNativeAdapterInfo(args.program);
   return new VspProcessInfo(
-    scriptPath,
+    args.program,
     'launch',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
     false, // showThreads
-    getReactNativeScriptConfig(scriptPath, port, platform),
+    args,
   );
 }
 

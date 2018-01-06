@@ -9,128 +9,70 @@
  * @format
  */
 
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import type {
+  CommonPropsType,
+  CommonStateType,
+} from './ReactNativeCommonUiComponent';
 
-import * as React from 'react';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
+import ReactNativeCommonUiComponent from './ReactNativeCommonUiComponent';
 import {
-  getReactNativeAttachProcessInfo,
   getDebuggerService,
+  getReactNativeAttachProcessInfo,
   REACT_NATIVE_PACKAGER_DEFAULT_PORT,
 } from './utils';
 
-type PropsType = {
-  configIsValidChanged: (valid: boolean) => void,
-};
-
-type StateType = {
-  workspacePath: string,
-  port: string,
-};
-
-export default class ReactAttachLaunchUiComponent extends React.Component<
-  PropsType,
-  StateType,
+export default class ReactNativeAttachUiComponent extends ReactNativeCommonUiComponent<
+  CommonStateType,
 > {
-  props: PropsType;
-  state: StateType;
-  _disposables: UniversalDisposable;
-
-  constructor(props: PropsType) {
+  constructor(props: CommonPropsType) {
     super(props);
-
-    this._disposables = new UniversalDisposable();
     this.state = {
       workspacePath: '',
+      outDir: '',
       port: REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString(),
+      sourceMaps: true,
+      sourceMapPathOverrides: '',
     };
   }
 
   _getSerializationArgs() {
-    return ['local', 'launch', 'React Native'];
+    return ['local', 'attach', 'React Native'];
   }
 
-  componentDidMount(): void {
+  deserializeState() {
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(),
       (transientSettings, savedSettings) => {
         this.setState({
           workspacePath: savedSettings.workspacePath || '',
-          port: savedSettings.port || '',
+          outDir: savedSettings.outDir || '',
+          port:
+            savedSettings.port || REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString(),
+          sourceMaps: savedSettings.sourceMaps || true,
+          sourceMapPathOverrides: savedSettings.sourceMapPathOverrides || '',
         });
       },
     );
+  }
 
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleLaunchClick();
-          }
-        },
-      }),
+  handleLaunchClick = async (): Promise<void> => {
+    const launchInfo = await getReactNativeAttachProcessInfo(
+      this.stateToArgs(),
     );
-  }
-
-  componentWillUnmount() {
-    this._disposables.dispose();
-  }
-
-  setState(newState: Object): void {
-    super.setState(newState);
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
-  }
-
-  _debugButtonShouldEnable = (): boolean => {
-    return this.state.workspacePath.trim() !== '';
-  };
-
-  render(): React.Node {
-    return (
-      <div className="block">
-        <label>Workspace path (should contain package.json): </label>
-        <AtomInput
-          placeholderText="Path containing package.json"
-          value={this.state.workspacePath}
-          onDidChange={value => this.setState({workspacePath: value})}
-          autofocus={true}
-        />
-        <label>Debug port number: </label>
-        <AtomInput
-          tabIndex="1"
-          placeholderText={`React Native packager port (default ${REACT_NATIVE_PACKAGER_DEFAULT_PORT})`}
-          value={this.state.port}
-          onDidChange={port => this.setState({port})}
-        />
-        {this.state.port !== REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString() && (
-          <label>
-            Note: first consult{' '}
-            <a href="https://github.com/facebook/react-native/issues/9145">
-              React Native issue #9145
-            </a>{' '}
-            for setting a port other than 8081.
-          </label>
-        )}
-      </div>
-    );
-  }
-
-  _handleLaunchClick = async (): Promise<void> => {
-    const workspace = this.state.workspacePath.trim();
-    const port = this.state.port;
-
-    const launchInfo = await getReactNativeAttachProcessInfo(workspace, port);
 
     const debuggerService = await getDebuggerService();
     debuggerService.startDebugging(launchInfo);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       workspacePath: this.state.workspacePath,
+      outDir: this.state.outDir,
       port: this.state.port,
+      sourceMaps: this.state.sourceMaps,
+      sourceMapPathOverrides: this.state.sourceMapPathOverrides,
     });
   };
 }

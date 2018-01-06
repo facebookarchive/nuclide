@@ -9,9 +9,13 @@
  * @format
  */
 
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import type {
+  CommonStateType,
+  CommonPropsType,
+} from './ReactNativeCommonUiComponent';
+import type {ReactNativeLaunchArgs} from './types';
+
 import RadioGroup from 'nuclide-commons-ui/RadioGroup';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
 import {
@@ -23,35 +27,52 @@ import {
   getDebuggerService,
   REACT_NATIVE_PACKAGER_DEFAULT_PORT,
 } from './utils';
+import ReactNativeCommonUiComponent from './ReactNativeCommonUiComponent';
 
 type Platform = 'Android' | 'iOS';
+type Target = 'Device' | 'Simulator';
 
-type PropsType = {
-  configIsValidChanged: (valid: boolean) => void,
-};
-
-type StateType = {
-  workspacePath: string,
+type StateType = CommonStateType & {
   platform: Platform,
-  port: string,
+  target: Target,
 };
 
-export default class ReactNativeLaunchUiComponent extends React.Component<
-  PropsType,
+// Directly calling string.toLowerCase would lose the specific type.
+function checkedLowerCasePlatform(platform: Platform): 'android' | 'ios' {
+  switch (platform) {
+    case 'Android':
+      return 'android';
+    case 'iOS':
+      return 'ios';
+    default:
+      throw new Error('Unexpected platform case');
+  }
+}
+
+function checkedLowerCaseTarget(target: Target): 'device' | 'simulator' {
+  switch (target) {
+    case 'Device':
+      return 'device';
+    case 'Simulator':
+      return 'simulator';
+    default:
+      throw new Error('Unexpected target case');
+  }
+}
+
+export default class ReactNativeLaunchUiComponent extends ReactNativeCommonUiComponent<
   StateType,
 > {
-  props: PropsType;
-  state: StateType;
-  _disposables: UniversalDisposable;
-
-  constructor(props: PropsType) {
+  constructor(props: CommonPropsType) {
     super(props);
-
-    this._disposables = new UniversalDisposable();
     this.state = {
       workspacePath: '',
+      outDir: '',
       platform: 'Android',
+      target: 'Simulator',
       port: REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString(),
+      sourceMaps: true,
+      sourceMapPathOverrides: '',
     };
   }
 
@@ -59,90 +80,60 @@ export default class ReactNativeLaunchUiComponent extends React.Component<
     return ['local', 'launch', 'React Native'];
   }
 
-  componentDidMount(): void {
+  deserializeState() {
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(),
       (transientSettings, savedSettings) => {
         this.setState({
           workspacePath: savedSettings.workspacePath || '',
-          platform: savedSettings.platform || '',
-          port: savedSettings.port || '',
+          outDir: savedSettings.outDir || '',
+          port:
+            savedSettings.port || REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString(),
+          sourceMaps: savedSettings.sourceMaps || true,
+          sourceMapPathOverrides: savedSettings.sourceMapPathOverrides || '',
+          platform: savedSettings.platform || 'Android',
+          target: savedSettings.target || 'Simulator',
         });
       },
     );
-
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleLaunchClick();
-          }
-        },
-      }),
-    );
   }
-
-  componentWillUnmount() {
-    this._disposables.dispose();
-  }
-
-  setState(newState: Object): void {
-    super.setState(newState);
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
-  }
-
-  _debugButtonShouldEnable = (): boolean => {
-    return this.state.workspacePath.trim() !== '';
-  };
 
   render(): React.Node {
     const platforms = ['Android', 'iOS'];
+    const targets = ['Simulator', 'Device'];
     return (
-      <div className="block">
-        <label>Workspace path (should contain package.json): </label>
-        <AtomInput
-          placeholderText="Path containing package.json"
-          value={this.state.workspacePath}
-          onDidChange={value => this.setState({workspacePath: value})}
-          autofocus={true}
-        />
-        <label>Platform: </label>
-        <RadioGroup
-          selectedIndex={platforms.indexOf(this.state.platform)}
-          optionLabels={platforms}
-          onSelectedChange={index =>
-            this.setState({platform: platforms[index]})
-          }
-        />
-        <label>Debug port number: </label>
-        <AtomInput
-          tabIndex="1"
-          placeholderText="React Native packager port (default 8081)"
-          value={this.state.port}
-          onDidChange={port => this.setState({port})}
-        />
-        {this.state.port !== REACT_NATIVE_PACKAGER_DEFAULT_PORT.toString() && (
-          <label>
-            Note: first consult{' '}
-            <a href="https://github.com/facebook/react-native/issues/9145">
-              React Native issue #9145
-            </a>{' '}
-            for setting a port other than 8081.
-          </label>
-        )}
-      </div>
+      <span>
+        {super.render()}
+        <div className="block">
+          <label>Launch platform: </label>
+          <RadioGroup
+            selectedIndex={platforms.indexOf(this.state.platform)}
+            optionLabels={platforms}
+            onSelectedChange={index =>
+              this.setState({platform: platforms[index]})
+            }
+          />
+          <label>Launch target: </label>
+          <RadioGroup
+            selectedIndex={targets.indexOf(this.state.target)}
+            optionLabels={targets}
+            onSelectedChange={index => this.setState({target: targets[index]})}
+          />
+        </div>
+      </span>
     );
   }
 
-  _handleLaunchClick = async (): Promise<void> => {
-    const workspace = this.state.workspacePath.trim();
-    const platform = this.state.platform.trim().toLowerCase();
-    const port = this.state.port;
+  stateToArgs(): ReactNativeLaunchArgs {
+    const attachArgs = super.stateToArgs();
+    const platform = checkedLowerCasePlatform(this.state.platform);
+    const target = checkedLowerCaseTarget(this.state.target);
+    return {...attachArgs, platform, target};
+  }
 
+  handleLaunchClick = async (): Promise<void> => {
     const launchInfo = await getReactNativeLaunchProcessInfo(
-      workspace,
-      port,
-      platform,
+      this.stateToArgs(),
     );
 
     const debuggerService = await getDebuggerService();
@@ -150,8 +141,12 @@ export default class ReactNativeLaunchUiComponent extends React.Component<
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       workspacePath: this.state.workspacePath,
-      platform: this.state.platform,
+      outDir: this.state.outDir,
       port: this.state.port,
+      sourceMaps: this.state.sourceMaps,
+      sourceMapPathOverrides: this.state.sourceMapPathOverrides,
+      platform: this.state.platform,
+      target: this.state.target,
     });
   };
 }
