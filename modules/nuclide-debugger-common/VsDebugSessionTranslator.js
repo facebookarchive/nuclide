@@ -22,6 +22,7 @@ import type {
 import type ClientCallback from './ClientCallback';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import * as NuclideDebugProtocol from './protocol-types';
+import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
 import FileCache from './FileCache';
@@ -617,6 +618,23 @@ export default class VsDebugSessionTranslator {
     this._configDoneSent = true;
   }
 
+  _tryUpdateBreakpoint(
+    breakpoint: TranslatorBreakpoint,
+    vsBreakpoint: DebugProtocol.Breakpoint,
+  ): void {
+    if (!breakpoint.resolved && vsBreakpoint.verified) {
+      breakpoint.resolved = true;
+    }
+
+    if (vsBreakpoint.line != null) {
+      const lineNumber = parseInt(vsBreakpoint.line, 10);
+      if (!Number.isNaN(lineNumber) && lineNumber !== breakpoint.line) {
+        // Breakpoint resolved to a different line number by the engine.
+        breakpoint.lineNumber = lineNumber;
+      }
+    }
+  }
+
   async _syncBreakpointsForFilePath(
     path: NuclideUri,
     breakpoints: Array<TranslatorBreakpoint>,
@@ -644,10 +662,12 @@ export default class VsDebugSessionTranslator {
       throw new Error(errorMessage);
     }
     vsBreakpoints.forEach((vsBreakpoint, i) => {
-      breakpoints[i].resolved = vsBreakpoint.verified;
-      breakpoints[i].breakpointId = String(
-        vsBreakpoint.id == null ? this._nextBreakpointId() : vsBreakpoint.id,
-      );
+      if (breakpoints[i].breakpointId == null) {
+        breakpoints[i].breakpointId = String(
+          vsBreakpoint.id == null ? this._nextBreakpointId() : vsBreakpoint.id,
+        );
+      }
+      this._tryUpdateBreakpoint(breakpoints[i], vsBreakpoint);
     });
   }
 
@@ -752,10 +772,25 @@ export default class VsDebugSessionTranslator {
         });
       }),
       this._session.observeBreakpointEvents().subscribe(({body}) => {
-        const {breakpoint} = body;
+        const {breakpoint} = (body: {
+          reason: string,
+          breakpoint: DebugProtocol.Breakpoint,
+        });
         const bpId = String(breakpoint.id == null ? -1 : breakpoint.id);
+
+        // Find an existing breakpoint. Note the protocol doesn't provide
+        // an original line here, only the resolved line. If the bp had to
+        // be moved by the backend, this fails to find a match.
         const existingBreakpoint = this._breakpoints.find(
-          bp => bp.breakpointId === bpId,
+          bp =>
+            bp.breakpointId === bpId ||
+            (bp.breakpointId == null &&
+              bp.lineNumber ===
+                (breakpoint.originalLine != null
+                  ? breakpoint.originalLine
+                  : breakpoint.line) &&
+              breakpoint.source != null &&
+              bp.path === breakpoint.source.path),
         );
         const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
 
@@ -764,8 +799,8 @@ export default class VsDebugSessionTranslator {
             'Received a breakpoint event, but cannot find the breakpoint',
           );
           return;
-        } else if (!existingBreakpoint.resolved && breakpoint.verified) {
-          existingBreakpoint.resolved = true;
+        } else if (breakpoint.verified) {
+          this._tryUpdateBreakpoint(existingBreakpoint, breakpoint);
           this._sendMessageToClient({
             method: 'Debugger.breakpointResolved',
             params: {
