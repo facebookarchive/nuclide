@@ -191,4 +191,8 @@ export default class CommandDispatcher {
         );
     }
   }
+
+  getBridgeAdapter(): ?BridgeAdapter {
+    return this._bridgeAdapter;
+  }
 }

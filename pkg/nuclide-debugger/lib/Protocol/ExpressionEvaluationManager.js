@@ -18,7 +18,7 @@ import type {
   EvaluateResponse,
   GetPropertiesResponse,
 } from 'nuclide-debugger-common/protocol-types';
-import type {ObjectGroup, ExpansionResult} from '../types';
+import type {ExpansionResult, ObjectGroup, ScopeSectionPayload} from '../types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
@@ -211,28 +211,37 @@ export default class ExpressionEvaluationManager {
       });
   }
 
+  async getScopeVariablesFor(
+    remoteObject: RemoteObjectProxy,
+  ): Promise<ExpansionResult> {
+    const response = await remoteObject.getProperties();
+
+    // TODO: deal with response.exceptionDetails.
+    return this._propertiesToExpansionResult(response.result) || [];
+  }
+
+  _getScopeSectionPayloadFor = async (
+    scope: Scope,
+  ): Promise<ScopeSectionPayload> => {
+    const scopeObjectId = scope.object.objectId;
+    invariant(
+      scopeObjectId != null,
+      'Engine returns a scope without objectId?',
+    );
+    const name = scope.object.description || '';
+    this._remoteObjectManager.addObject(scopeObjectId);
+    return {
+      name,
+      scopeObjectId,
+    };
+  };
+
   updateCurrentFrameScope(scopes: Array<Scope>): void {
-    const scopesPromises = scopes.map(async scope => {
-      const scopeObjectId = scope.object.objectId;
-      invariant(
-        scopeObjectId != null,
-        'Engine returns a scope without objectId?',
-      );
-      const remoteObject = this._remoteObjectManager.addObject(scopeObjectId);
-      const response = await remoteObject.getProperties();
-
-      // TODO: deal with response.exceptionDetails.
-      const scopeVariables = this._propertiesToExpansionResult(response.result);
-      return {
-        name: scope.object.description,
-        scopeVariables,
-        scopeObjectId,
-      };
-    });
-
-    Promise.all(scopesPromises).then(scopesData => {
-      this._raiseIPCEvent('ScopesUpdate', scopesData);
-    });
+    Promise.all(scopes.map(this._getScopeSectionPayloadFor)).then(
+      scopesData => {
+        this._raiseIPCEvent('ScopesUpdate', scopesData);
+      },
+    );
   }
 
   clearPauseStates(): void {
@@ -247,5 +256,9 @@ export default class ExpressionEvaluationManager {
   // across bridge boundary.
   _raiseIPCEvent(...args: Array<mixed>): void {
     this._evalutionEvent$.next(args);
+  }
+
+  getRemoteObjectManager(): RemoteObjectManager {
+    return this._remoteObjectManager;
   }
 }

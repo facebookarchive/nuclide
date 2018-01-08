@@ -13,7 +13,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {
   Callstack,
   EvalCommand,
-  ScopeSection,
+  ScopeSectionPayload,
   NuclideThreadData,
   ThreadItem,
   BreakpointUserChangeArgType,
@@ -232,7 +232,7 @@ export default class Bridge {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleScopesUpdate(scopeSections: Array<ScopeSection>): void {
+  _handleScopesUpdate(scopeSections: Array<ScopeSectionPayload>): void {
     this._debuggerModel.getActions().updateScopes(scopeSections);
   }
 
@@ -529,5 +529,9 @@ export default class Bridge {
 
   setupNuclideChannel(debuggerInstance: Object): Promise<void> {
     return this._commandDispatcher.setupNuclideChannel(debuggerInstance);
+  }
+
+  getCommandDispatcher(): CommandDispatcher {
+    return this._commandDispatcher;
   }
 }

@@ -15,7 +15,7 @@ import type {
 } from 'nuclide-debugger-common/protocol-types';
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {ScopeSection} from './types';
+import type {ScopeSection, ScopeSectionPayload} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
@@ -36,6 +36,7 @@ export default class ScopesStore {
    * Treat as immutable.
    */
   _scopes: BehaviorSubject<ScopesMap>;
+  _expandedState: Map<string, boolean>;
 
   constructor(
     dispatcher: DebuggerDispatcher,
@@ -49,6 +50,7 @@ export default class ScopesStore {
       dispatcher.unregister(dispatcherToken);
     });
     this._scopes = new BehaviorSubject(new Map());
+    this._expandedState = new Map();
   }
 
   _handlePayload = (payload: DebuggerAction): void => {
@@ -66,17 +68,65 @@ export default class ScopesStore {
   };
 
   _handleClearInterface(): void {
+    this._expandedState.clear();
+    this.getScopesNow().forEach(scope => {
+      this._expandedState.set(scope.name, scope.expanded);
+    });
     this._scopes.next(new Map());
   }
 
-  _handleUpdateScopesAsPayload(scopeSections: Array<ScopeSection>): void {
+  _handleUpdateScopesAsPayload(
+    scopeSectionsPayload: Array<ScopeSectionPayload>,
+  ): void {
     this._handleUpdateScopes(
-      new Map(scopeSections.map(section => [section.name, section])),
+      new Map(
+        scopeSectionsPayload
+          .map(this._convertScopeSectionPayloadToScopeSection)
+          .map(section => [section.name, section]),
+      ),
     );
   }
 
+  _convertScopeSectionPayloadToScopeSection = (
+    scopeSectionPayload: ScopeSectionPayload,
+  ): ScopeSection => {
+    const expandedState = this._expandedState.get(scopeSectionPayload.name);
+    return {
+      ...scopeSectionPayload,
+      scopeVariables: [],
+      loaded: false,
+      expanded:
+        expandedState != null
+          ? expandedState
+          : ScopesStore.isLocalScopeName(scopeSectionPayload.name),
+    };
+  };
+
   _handleUpdateScopes(scopeSections: ScopesMap): void {
     this._scopes.next(scopeSections);
+    scopeSections.forEach(scopeSection => {
+      const {expanded, loaded, name} = scopeSection;
+      if (expanded && !loaded) {
+        this._loadScopeVariablesFor(name);
+      }
+    });
+  }
+
+  async _loadScopeVariablesFor(scopeName: string): Promise<void> {
+    const scopes = this.getScopesNow();
+    const selectedScope = nullthrows(scopes.get(scopeName));
+    const expressionEvaluationManager = nullthrows(
+      this._bridge.getCommandDispatcher().getBridgeAdapter(),
+    ).getExpressionEvaluationManager();
+    selectedScope.scopeVariables = await expressionEvaluationManager.getScopeVariablesFor(
+      nullthrows(
+        expressionEvaluationManager
+          .getRemoteObjectManager()
+          .getRemoteObjectFromId(selectedScope.scopeObjectId),
+      ),
+    );
+    selectedScope.loaded = true;
+    this._handleUpdateScopes(scopes);
   }
 
   getScopes(): Observable<ScopesMap> {
@@ -85,6 +135,16 @@ export default class ScopesStore {
 
   getScopesNow(): ScopesMap {
     return this._scopes.getValue();
+  }
+
+  setExpanded(scopeName: string, expanded: boolean) {
+    const scopes = this.getScopesNow();
+    const selectedScope = nullthrows(scopes.get(scopeName));
+    selectedScope.expanded = expanded;
+    if (expanded) {
+      selectedScope.loaded = false;
+    }
+    this._handleUpdateScopes(scopes);
   }
 
   supportsSetVariable(): boolean {
@@ -157,5 +217,9 @@ export default class ScopesStore {
 
   dispose(): void {
     this._disposables.dispose();
+  }
+
+  static isLocalScopeName(scopeName: string): boolean {
+    return ['Local', 'Locals'].indexOf(scopeName) !== -1;
   }
 }

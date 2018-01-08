@@ -28,9 +28,14 @@ export type ExpansionResult = Array<{
   value: EvaluationResult,
 }>;
 
-export type ScopeSection = {
+export type ScopeSectionPayload = {
   name: string,
   scopeObjectId: RemoteObjectId,
+};
+
+export type ScopeSection = ScopeSectionPayload & {
+  expanded: boolean,
+  loaded: boolean,
   scopeVariables: ExpansionResult,
 };
 

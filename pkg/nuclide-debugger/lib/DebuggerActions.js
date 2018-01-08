@@ -27,7 +27,7 @@ import type {
   ExpressionResult,
   GetPropertiesResult,
   NuclideThreadData,
-  ScopeSection,
+  ScopeSectionPayload,
   ThreadItem,
 } from './types';
 
@@ -601,7 +601,7 @@ export default class DebuggerActions {
     });
   }
 
-  updateScopes(scopeSections: Array<ScopeSection>): void {
+  updateScopes(scopeSections: Array<ScopeSectionPayload>): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UPDATE_SCOPES,
       data: scopeSections,

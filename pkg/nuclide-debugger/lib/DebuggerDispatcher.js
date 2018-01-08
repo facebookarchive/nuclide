@@ -21,10 +21,10 @@ import type {
 import type {
   Callstack,
   DebuggerModeType,
-  ScopeSection,
   ExpressionResult,
   GetPropertiesResult,
   NuclideThreadData,
+  ScopeSectionPayload,
   ThreadItem,
 } from './types';
 
@@ -171,7 +171,7 @@ export type DebuggerAction =
     }
   | {
       actionType: 'UPDATE_SCOPES',
-      data: Array<ScopeSection>,
+      data: Array<ScopeSectionPayload>,
     }
   | {
       actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',

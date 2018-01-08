@@ -10,9 +10,10 @@
  */
 
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
-import type ScopesStore, {ScopesMap} from './ScopesStore';
+import type {ScopesMap} from './ScopesStore';
 import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
 import invariant from 'assert';
+import ScopesStore from './ScopesStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
@@ -27,9 +28,21 @@ type Props = {|
   scopesStore: ScopesStore,
 |};
 
-function isLocalScopeName(scopeName: string): boolean {
-  return ['Local', 'Locals'].indexOf(scopeName) !== -1;
-}
+const NO_VARIABLES = (
+  <div className="nuclide-debugger-expression-value-row">
+    <span className="nuclide-debugger-expression-value-content">
+      (no variables)
+    </span>
+  </div>
+);
+
+const LOADING = (
+  <div className="nuclide-debugger-expression-value-row">
+    <span className="nuclide-debugger-expression-value-content">
+      Loading...
+    </span>
+  </div>
+);
 
 export class ScopesComponent extends React.Component<Props> {
   _expansionStates: Map<
@@ -107,17 +120,8 @@ export class ScopesComponent extends React.Component<Props> {
     scope: ScopeSection,
   ): ?React.Element<any> {
     const {scopesStore} = this.props;
-    const {name, scopeObjectId, scopeVariables} = scope;
+    const {loaded, expanded, name, scopeObjectId, scopeVariables} = scope;
     // Non-local scopes should be collapsed by default since users typically care less about them.
-    const collapsedByDefault = !isLocalScopeName(name);
-    const noLocals =
-      collapsedByDefault || scopeVariables.length > 0 ? null : (
-        <div className="nuclide-debugger-expression-value-row">
-          <span className="nuclide-debugger-expression-value-content">
-            (no variables)
-          </span>
-        </div>
-      );
 
     const setVariableHandler = scopesStore.supportsSetVariable()
       ? this._setVariable.bind(this, scopeObjectId, name)
@@ -127,13 +131,23 @@ export class ScopesComponent extends React.Component<Props> {
       // $FlowFixMe(>=0.53.0) Flow suppress
       <Section
         collapsable={true}
+        collapsed={!expanded}
+        onChange={isCollapsed => scopesStore.setExpanded(name, !isCollapsed)}
         headline={name}
-        size="small"
-        collapsedByDefault={collapsedByDefault}>
-        {noLocals}
-        {scopeVariables.map(
-          this._renderExpression.bind(this, fetchChildren, setVariableHandler),
-        )}
+        size="small">
+        {!expanded
+          ? null
+          : !loaded
+            ? LOADING
+            : scopeVariables.length > 0
+              ? scopeVariables.map(
+                  this._renderExpression.bind(
+                    this,
+                    fetchChildren,
+                    setVariableHandler,
+                  ),
+                )
+              : NO_VARIABLES}
       </Section>
     );
   }

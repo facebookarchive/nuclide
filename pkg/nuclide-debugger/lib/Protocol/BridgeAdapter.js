@@ -345,4 +345,8 @@ export default class BridgeAdapter {
   dispose(): void {
     this._subscriptions.dispose();
   }
+
+  getExpressionEvaluationManager(): ExpressionEvaluationManager {
+    return this._expressionEvaluationManager;
+  }
 }
