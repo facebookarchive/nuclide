@@ -118,6 +118,7 @@ type ThreadState = 'running' | 'paused';
 type ThreadInfo = {
   state: ThreadState,
   callFrames?: NuclideDebugProtocol.CallFrame[],
+  callStackLoaded: boolean,
   stopReason?: string,
 };
 
@@ -353,14 +354,26 @@ export default class VsDebugSessionTranslator {
           return getEmptyResponse(command.id);
         }),
       ),
-      this._commandsOfType('Debugger.getThreadStack').map(command => {
+      this._commandsOfType('Debugger.getThreadStack').flatMap(async command => {
         invariant(command.method === 'Debugger.getThreadStack');
         const {threadId} = command.params;
         const threadInfo = this._threadsById.get(threadId);
-        const callFrames =
-          threadInfo != null && threadInfo.state === 'paused'
-            ? threadInfo.callFrames
-            : null;
+        let callFrames = null;
+        if (threadInfo != null && threadInfo.state === 'paused') {
+          callFrames = threadInfo.callFrames;
+          if (
+            threadInfo.callFrames == null ||
+            threadInfo.callFrames.length === 0 ||
+            !threadInfo.callStackLoaded
+          ) {
+            // Need to fetch this thread's frames.
+            threadInfo.callFrames = await this._getTranslatedCallFramesForThread(
+              command.params.threadId,
+              null,
+            );
+            callFrames = threadInfo.callFrames;
+          }
+        }
         const result: NuclideDebugProtocol.GetThreadStackResponse = {
           callFrames: callFrames || [],
         };
@@ -997,7 +1010,7 @@ export default class VsDebugSessionTranslator {
     for (const threadId of threadIds) {
       const threadInfo = this._threadsById.get(threadId);
       if (threadInfo == null || state === 'running') {
-        this._threadsById.set(threadId, {state});
+        this._threadsById.set(threadId, {state, callStackLoaded: false});
       } else {
         this._threadsById.set(threadId, {
           ...threadInfo,
@@ -1067,8 +1080,18 @@ export default class VsDebugSessionTranslator {
     levels: ?number = null,
   ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
     try {
+      const options = {};
+      if (
+        levels != null &&
+        this._session.getCapabilities().supportsDelayedStackTraceLoading ===
+          true
+      ) {
+        options.levels = levels;
+        options.startFrame = 0;
+      }
       const {body: {stackFrames}} = await this._session.stackTrace({
         threadId,
+        ...options,
       });
       // $FlowFixMe(>=0.55.0) Flow suppress
       return Promise.all(
@@ -1090,9 +1113,7 @@ export default class VsDebugSessionTranslator {
               frame.column - 1,
             ),
             hasSource: frame.source != null,
-            scopeChain: await this._getScopesForFrame(frame.id).catch(
-              error => [],
-            ),
+            scopeChain: await this._getScopesForFrame(frame.id),
             this: (undefined: any),
           };
         }),
@@ -1110,16 +1131,23 @@ export default class VsDebugSessionTranslator {
   async _getScopesForFrame(
     frameId: number,
   ): Promise<Array<NuclideDebugProtocol.Scope>> {
-    const {body: {scopes}} = await this._session.scopes({frameId});
-    return scopes.map(scope => ({
-      type: (scope.name: any),
-      name: scope.name,
-      object: {
-        type: 'object',
-        description: scope.name,
-        objectId: String(scope.variablesReference),
-      },
-    }));
+    try {
+      const {body: {scopes}} = await this._session.scopes({frameId});
+      return scopes.map(scope => ({
+        type: (scope.name: any),
+        name: scope.name,
+        object: {
+          type: 'object',
+          description: scope.name,
+          objectId: String(scope.variablesReference),
+        },
+      }));
+    } catch (e) {
+      // This is expected in some situations, such as if scopes were requested
+      // asynchronously but the target resumed before the request was received.
+      this._logger.error('Could not get frame scopes: ', e.message);
+      return [];
+    }
   }
 
   async _getProperties(
