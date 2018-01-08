@@ -1,5 +1,7 @@
 # Nuclide Changelog
 
+**Changelogs for v0.274.0 and onward have moved to https://github.com/facebook/nuclide/releases.**
+
 ## v0.273.0
 
 ### Hotfix Release
