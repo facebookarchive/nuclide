@@ -113,7 +113,7 @@ class HHVMDebuggerWrapper {
 
     const hhvmArgs = args.hhvmArgs;
     const options = {
-      cwd: process.cwd(),
+      cwd: args.cwd != null ? args.cwd : process.cwd(),
       // FD[3] is used for communicating with the debugger extension.
       // STDIN, STDOUT and STDERR are the actual PHP streams.
       // If launchMessage.noDebug is specified, start the child but don't

@@ -182,6 +182,10 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       hhvmArgs,
       startupDocumentPath,
       debugPort,
+      cwd:
+        config.launchWrapperCommand != null
+          ? nuclideUri.dirname(config.launchWrapperCommand)
+          : cwd,
     };
   }
 
