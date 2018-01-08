@@ -34,10 +34,6 @@ import {VsAdapterTypes} from './constants';
 import {Observable, Subject} from 'rxjs';
 import util from 'util';
 
-function translateStopReason(stopReason: string): string {
-  return stopReason;
-}
-
 function nuclideDebuggerLocation(
   scriptId: string,
   lineNumber: number,
@@ -144,14 +140,13 @@ export default class VsDebugSessionTranslator {
   _configDoneSent: boolean;
   _lastBreakpointId: number;
   _threadsById: Map<number, ThreadInfo>;
-  _mainThreadId: ?number;
   _debuggerArgs: Object;
   _debugMode: DebuggerConfigAction;
   _exceptionFilters: Array<string>;
 
   // Session state.
   _pausedThreadId: ?number;
-  _previousPauseMsgThreadId: ?number;
+  _pausedThreadIdPrevious: ?number;
 
   constructor(
     adapterType: VsAdapterType,
@@ -171,10 +166,10 @@ export default class VsDebugSessionTranslator {
     this._handledCommands = new Set();
     this._breakpoints = [];
     this._threadsById = new Map();
-    this._mainThreadId = null;
     this._lastBreakpointId = 0;
     this._configDoneSent = false;
     this._exceptionFilters = [];
+    this._pausedThreadId = null;
     this._files = new FileCache((method, params) =>
       this._sendMessageToClient(({method, params}: any)),
     );
@@ -189,6 +184,14 @@ export default class VsDebugSessionTranslator {
     );
   }
 
+  _updatePausedThreadId(newPausedThreadId: ?number) {
+    if (this._pausedThreadId != null) {
+      this._pausedThreadIdPrevious = this._pausedThreadId;
+    }
+
+    this._pausedThreadId = newPausedThreadId;
+  }
+
   _handleCommands(): Observable<
     NuclideDebugProtocol.DebuggerResponse | NuclideDebugProtocol.DebuggerEvent,
   > {
@@ -201,23 +204,30 @@ export default class VsDebugSessionTranslator {
       ),
       this._commandsOfType('Debugger.pause').flatMap(
         catchCommandError(async command => {
-          const mainThreadId =
-            // flowlint-next-line sketchy-null-number:off
-            this._mainThreadId || Array.from(this._threadsById.keys())[0] || -1;
-          await this._session.pause({threadId: mainThreadId});
+          const pausedThreadId =
+            this._pausedThreadId != null
+              ? this._pausedThreadId
+              : Array.from(this._threadsById.keys())[0] || -1;
+          this._updatePausedThreadId(null);
+          await this._session.pause({threadId: pausedThreadId});
           return getEmptyResponse(command.id);
         }),
       ),
       // Skip the fake resume command.
       resumeCommands.skip(1).flatMap(
         catchCommandError(async command => {
-          if (this._pausedThreadId == null) {
-            return getErrorResponse(command.id, 'No paused thread to resume!');
-          }
-          await this._session.continue({threadId: this._pausedThreadId});
+          const threadId =
+            this._pausedThreadId != null ? this._pausedThreadId : -1;
+          await this._session.continue({threadId});
           return getEmptyResponse(command.id);
         }),
       ),
+      // Select thread.
+      this._commandsOfType('Debugger.selectThread').flatMap(command => {
+        invariant(command.method === 'Debugger.selectThread');
+        this._updatePausedThreadId(command.params.threadId);
+        return Observable.of(getEmptyResponse(command.id));
+      }),
       // Step over
       this._commandsOfType('Debugger.stepOver').flatMap(
         catchCommandError(async command => {
@@ -413,18 +423,22 @@ export default class VsDebugSessionTranslator {
   async _continueToLocation(
     location: NuclideDebugProtocol.Location,
   ): Promise<void> {
-    const {columnNumber, lineNumber, scriptId} = location;
+    const {columnNumber, lineNumber, scriptId, threadId} = location;
     const source = {
       path: nuclideUri.getPath(scriptId),
       name: nuclideUri.basename(scriptId),
     };
     await this._files.registerFile(pathToUri(scriptId));
-    await this._session.nuclide_continueToLocation({
+    const args: Object = {
       // flowlint-next-line sketchy-null-number:off
       column: columnNumber || 1,
       line: lineNumber + 1,
       source,
-    });
+    };
+    if (threadId != null) {
+      args.threadId = threadId;
+    }
+    await this._session.nuclide_continueToLocation(args);
   }
 
   _handleSetBreakpointsCommands(): Observable<
@@ -709,17 +723,11 @@ export default class VsDebugSessionTranslator {
       this._session.observeThreadEvents().subscribe(({body}) => {
         const {reason, threadId} = body;
         if (reason === 'started') {
-          if (this._mainThreadId == null) {
-            this._mainThreadId = threadId;
-          }
           this._updateThreadsState([threadId], 'running');
         } else if (reason === 'exited') {
           this._threadsById.delete(threadId);
           if (this._pausedThreadId === threadId) {
-            this._pausedThreadId = null;
-          }
-          if (this._mainThreadId === threadId) {
-            this._mainThreadId = null;
+            this._updatePausedThreadId(null);
           }
         } else {
           this._logger.error('Unknown thread event:', body);
@@ -729,35 +737,6 @@ export default class VsDebugSessionTranslator {
           method: 'Debugger.threadsUpdated',
           params: threadsUpdatedEvent,
         });
-      }),
-      this._session.observeStopEvents().subscribe(({body}) => {
-        const {threadId, allThreadsStopped, reason} = body;
-        if (allThreadsStopped) {
-          this._updateThreadsState(this._threadsById.keys(), 'paused');
-          this._pausedThreadId = Array.from(this._threadsById.keys())[0];
-          if (this._pausedThreadId == null) {
-            this._pausedThreadId =
-              threadId != null
-                ? threadId
-                : Array.from(this._threadsById.keys())[0];
-          }
-        }
-        if (threadId != null) {
-          this._updateThreadsState([threadId], 'paused');
-          if (this._pausedThreadId == null) {
-            this._pausedThreadId = threadId;
-          }
-        }
-        // Even though the python debugger engine pauses all threads,
-        // It only reports the main thread as paused.
-        if (
-          this._adapterType === VsAdapterTypes.PYTHON &&
-          reason === 'user request'
-        ) {
-          Array.from(this._threadsById.values()).forEach(
-            threadInfo => (threadInfo.stopReason = reason),
-          );
-        }
       }),
       this._session.observeBreakpointEvents().subscribe(({body}) => {
         const {breakpoint} = body;
@@ -804,41 +783,143 @@ export default class VsDebugSessionTranslator {
       }),
       this._session
         .observeStopEvents()
-        .concatMap(async ({body}) => {
+        .flatMap(({body}) => {
           const {threadId, reason} = body;
-          let callFrames = [];
-          const translatedStopReason = translateStopReason(reason);
-          if (threadId != null) {
-            callFrames = await this._getTranslatedCallFramesForThread(threadId);
-            this._threadsById.set(threadId, {
-              state: 'paused',
-              callFrames,
-              stopReason: translatedStopReason,
-            });
-          }
-          const pausedEvent: NuclideDebugProtocol.PausedEvent = {
-            callFrames,
-            reason: translatedStopReason,
-            stopThreadId:
-              this._pausedThreadId != null ? this._pausedThreadId : threadId,
-            threadSwitchMessage: null,
-          };
+          let {allThreadsStopped} = body;
 
-          const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
-          return {pausedEvent, threadsUpdatedEvent};
+          // Compatibility work around:
+          //   Even though the python debugger engine pauses all threads,
+          //   It only reports the main thread as paused. For this engine,
+          //   behave as if allThreadsStopped == true.
+          if (
+            this._adapterType === VsAdapterTypes.PYTHON &&
+            reason === 'user request'
+          ) {
+            allThreadsStopped = true;
+          }
+
+          const stoppedThreadIds = [];
+          if (threadId != null && threadId >= 0) {
+            // If a threadId was specified, always ask for the stack for that
+            // thread.
+            stoppedThreadIds.push(threadId);
+          }
+
+          if (allThreadsStopped) {
+            // If all threads are stopped or no stop thread was specified, ask
+            // for updated stacks from any thread that is not already paused.
+            const allStoppedIds = Array.from(this._threadsById.keys()).filter(
+              id => {
+                const threadInfo = this._threadsById.get(id);
+                return (
+                  id !== threadId &&
+                  threadInfo != null &&
+                  threadInfo.state !== 'paused'
+                );
+              },
+            );
+
+            if (allStoppedIds.length > 0) {
+              stoppedThreadIds.push(...allStoppedIds);
+            }
+          }
+
+          // If this is the first thread to stop, use the stop thread ID
+          // from this event as the currently selected thread in the UX.
+          if (this._pausedThreadId == null && stoppedThreadIds.length > 0) {
+            this._updatePausedThreadId(stoppedThreadIds[0]);
+          }
+
+          return Observable.fromPromise(
+            Promise.all(
+              stoppedThreadIds.map(async id => {
+                let callFrames = [];
+                try {
+                  callFrames =
+                    this._pausedThreadId === threadId
+                      ? await this._getTranslatedCallFramesForThread(id, null)
+                      : await this._getTranslatedCallFramesForThread(id, 1);
+                } catch (e) {
+                  callFrames = [];
+                }
+                const threadSwitchMessage =
+                  this._pausedThreadIdPrevious != null &&
+                  this._pausedThreadId != null &&
+                  this._pausedThreadIdPrevious !== this._pausedThreadId
+                    ? `Active thread switched from thread #${
+                        this._pausedThreadIdPrevious
+                      } to thread #${this._pausedThreadId}`
+                    : null;
+                const pausedEvent: NuclideDebugProtocol.PausedEvent = {
+                  callFrames,
+                  reason,
+                  stopThreadId: id,
+                  threadSwitchMessage,
+                };
+                return pausedEvent;
+              }),
+            ),
+          )
+            .takeUntil(
+              // Stop processing this stop event if a continue event is seen before
+              // the stop event is completely processed and sent to the UX.
+              this._session
+                .observeContinuedEvents()
+                .filter(
+                  e =>
+                    e.body.allThreadsContinued === true ||
+                    e.body.threadId == null ||
+                    e.body.threadId === threadId,
+                ),
+            )
+            .take(1);
         })
         .subscribe(
-          ({pausedEvent, threadsUpdatedEvent}) => {
-            if (this._previousPauseMsgThreadId !== this._pausedThreadId) {
-              this._previousPauseMsgThreadId = this._pausedThreadId;
+          pausedEvents => {
+            for (const pausedEvent of pausedEvents) {
+              // Mark the affected threads as paused and update their call frames.
+              const {stopThreadId} = pausedEvent;
+              if (stopThreadId != null && stopThreadId >= 0) {
+                this._threadsById.set(stopThreadId, {
+                  state: 'paused',
+                  callFrames: pausedEvent.callFrames,
+                  stopReason: pausedEvent.reason,
+                  callStackLoaded: this._pausedThreadId === stopThreadId,
+                });
+              }
+            }
+
+            let pausedEvent: ?NuclideDebugProtocol.PausedEvent = null;
+            if (pausedEvents.length === 0) {
+              // This is expected in the case of an async-break where the
+              // target has no threads running. We need to raise a Chrome
+              // event or the UX spins forever and hangs.
+              pausedEvent = {
+                callFrames: [],
+                reason: 'Async-Break',
+                stopThreadId: -1,
+                threadSwitchMessage: null,
+              };
+            } else if (
+              this._pausedThreadId === pausedEvents[0].stopThreadId &&
+              pausedEvents[0].stopThreadId != null
+            ) {
+              // Only send Debugger.Paused for the first thread that stops
+              // the debugger. Otherwise, we cause the selected thread in the
+              // UX to jump around as additional threads pause.
+              pausedEvent = pausedEvents[0];
+            }
+
+            if (pausedEvent != null) {
               this._sendMessageToClient({
                 method: 'Debugger.paused',
                 params: pausedEvent,
               });
-              if (this._pausedThreadId != null) {
-                threadsUpdatedEvent.stopThreadId = this._pausedThreadId;
-              }
             }
+
+            const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
+            threadsUpdatedEvent.stopThreadId =
+              this._pausedThreadId != null ? this._pausedThreadId : -1;
             this._sendMessageToClient({
               method: 'Debugger.threadsUpdated',
               params: threadsUpdatedEvent,
@@ -851,18 +932,25 @@ export default class VsDebugSessionTranslator {
             ),
         ),
       this._session.observeContinuedEvents().subscribe(({body}) => {
-        const {allThreadsContinued, threadId} = body;
-        if (allThreadsContinued || threadId === this._pausedThreadId) {
-          this._pausedThreadId = null;
-          this._previousPauseMsgThreadId = null;
+        const {threadId} = body;
+        let {allThreadsContinued} = body;
+
+        if (threadId == null || threadId < 0) {
+          allThreadsContinued = true;
         }
 
-        if (allThreadsContinued) {
-          this._updateThreadsState(this._threadsById.keys(), 'running');
+        if (allThreadsContinued || threadId === this._pausedThreadId) {
+          this._updatePausedThreadId(null);
         }
-        if (threadId != null) {
-          this._updateThreadsState([threadId], 'running');
-        }
+
+        const continuedThreadIds = allThreadsContinued
+          ? Array.from(this._threadsById.keys()).filter(id => {
+              const threadInfo = this._threadsById.get(id);
+              return threadInfo != null && threadInfo.state !== 'running';
+            })
+          : [threadId];
+
+        this._updateThreadsState(continuedThreadIds, 'running');
         this._sendMessageToClient({method: 'Debugger.resumed'});
       }),
       this._session.observeOutputEvents().subscribe(({body}) => {
@@ -976,6 +1064,7 @@ export default class VsDebugSessionTranslator {
 
   async _getTranslatedCallFramesForThread(
     threadId: number,
+    levels: ?number = null,
   ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
     try {
       const {body: {stackFrames}} = await this._session.stackTrace({
