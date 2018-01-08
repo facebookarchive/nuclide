@@ -233,8 +233,16 @@ export class DebuggerStore {
       case ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION:
         const pauseOnException = payload.data;
         this._togglePauseOnException = pauseOnException;
+        if (!this._togglePauseOnException) {
+          this._togglePauseOnCaughtException = false;
+        }
         if (this.isDebugging()) {
           this.getBridge().setPauseOnException(pauseOnException);
+          if (!pauseOnException) {
+            this.getBridge().setPauseOnCaughtException(
+              this._togglePauseOnCaughtException,
+            );
+          }
         }
         break;
       case ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
