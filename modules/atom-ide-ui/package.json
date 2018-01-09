@@ -20,7 +20,7 @@
     "fuzzaldrin-plus": "0.4.1",
     "idx": "1.2.0",
     "log4js": "1.1.1",
-    "marked": "0.3.6",
+    "marked": "0.3.9",
     "nuclide-commons": "0.4.0",
     "nuclide-commons-atom": "0.4.0",
     "nuclide-commons-ui": "0.4.0",
