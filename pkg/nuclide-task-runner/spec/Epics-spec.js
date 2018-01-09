@@ -24,6 +24,7 @@ import * as Epics from '../lib/redux/Epics';
 import * as dummy from './dummy';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
+import * as Immutable from 'immutable';
 
 function getRootEpic() {
   const epics = Object.keys(Epics)
@@ -48,7 +49,10 @@ describe('Epics', () => {
     });
 
     describe('when there are no task runners', () => {
-      const state = {initialPackagesActivated: true, taskRunners: []};
+      const state = {
+        initialPackagesActivated: true,
+        taskRunners: Immutable.List(),
+      };
 
       it('set task runners states to an empty map', () => {
         waitsForPromise(async () => {
@@ -56,7 +60,7 @@ describe('Epics', () => {
             .first()
             .toPromise();
           invariant(output.type === Actions.SET_STATES_FOR_TASK_RUNNERS);
-          expect(output.payload.statesForTaskRunners).toEqual(new Map());
+          expect(output.payload.statesForTaskRunners).toEqual(Immutable.Map());
         });
       });
     });
@@ -77,7 +81,7 @@ describe('Epics', () => {
         };
         state = {
           initialPackagesActivated: true,
-          taskRunners: [taskRunner],
+          taskRunners: Immutable.List([taskRunner]),
         };
       });
 
@@ -111,7 +115,7 @@ describe('Epics', () => {
         getPriority: () => 1,
       };
 
-      newStates = new Map([
+      newStates = Immutable.Map([
         [disabledTaskRunner, {enabled: false, tasks: []}],
         [loPriTaskRunner, {enabled: true, tasks: []}],
         [hiPriTaskRunner, {enabled: true, tasks: []}],
@@ -119,7 +123,11 @@ describe('Epics', () => {
 
       state = {
         projectRoot: {getPath: () => 'foo'},
-        taskRunners: [disabledTaskRunner, loPriTaskRunner, hiPriTaskRunner],
+        taskRunners: Immutable.List([
+          disabledTaskRunner,
+          loPriTaskRunner,
+          hiPriTaskRunner,
+        ]),
         statesForTaskRunners: newStates,
       };
     });
@@ -230,7 +238,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: true,
-            taskRunners: [new dummy.TaskRunner()],
+            taskRunners: Immutable.List([new dummy.TaskRunner()]),
           };
           const output = await runActions(
             [Actions.setConsoleService(createMockConsole)],
@@ -311,7 +319,7 @@ describe('Epics', () => {
             consoleService: createMockConsole,
             projectRoot: mockProjectRoot,
             initialPackagesActivated: true,
-            taskRunners: [new dummy.TaskRunner()],
+            taskRunners: Immutable.List([new dummy.TaskRunner()]),
           };
           const output = await runActions(
             [Actions.didActivateInitialPackages()],
@@ -408,7 +416,7 @@ describe('Epics', () => {
             consoleService: createMockConsole,
             projectRoot: {},
             initialPackagesActivated: true,
-            taskRunners: [],
+            taskRunners: Immutable.List([]),
           };
           const output = await runActions(
             [Actions.registerTaskRunner(mockTaskRunner)],
@@ -449,7 +457,7 @@ describe('Epics', () => {
           const state = {
             consoleService: null,
             initialPackagesActivated: true,
-            taskRunners: [taskRunner],
+            taskRunners: Immutable.List([taskRunner]),
             projectRoot: {},
           };
           const output = await runActions(
@@ -471,7 +479,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: false,
-            taskRunners: [taskRunner],
+            taskRunners: Immutable.List([taskRunner]),
             projectRoot: {},
           };
           const output = await runActions(
@@ -492,7 +500,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: true,
-            taskRunners: [taskRunner],
+            taskRunners: Immutable.List([taskRunner]),
             activeTaskRunner: taskRunner,
           };
 
@@ -533,7 +541,7 @@ describe('Epics', () => {
             consoleService: createMockConsole,
             projectRoot: mockProjectRoot,
             initialPackagesActivated: true,
-            taskRunners: [taskRunner],
+            taskRunners: Immutable.List([taskRunner]),
           };
           const output = await runActions(
             [Actions.unregisterTaskRunner(taskRunner)],
@@ -562,7 +570,7 @@ describe('Epics', () => {
         spyOn(task, 'cancel');
         const state = {
           activeTaskRunner: taskRunner,
-          taskRunners: [taskRunner],
+          taskRunners: Immutable.List([taskRunner]),
         };
         const taskMeta = dummy.createTask('test');
 
@@ -601,7 +609,7 @@ describe('Epics', () => {
 
         const state = {
           activeTaskRunner: taskRunner,
-          taskRunners: [taskRunner],
+          taskRunners: Immutable.List([taskRunner]),
         };
         const taskMeta = dummy.createTask('test');
 

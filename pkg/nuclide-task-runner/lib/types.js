@@ -27,8 +27,8 @@ export type AppState = {
 
   // selected task runner, won't be null as long as there's at least one runner enabled
   activeTaskRunner: ?TaskRunner,
-  taskRunners: Array<TaskRunner>,
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+  taskRunners: Immutable.List<TaskRunner>,
+  statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
 
   runningTask: ?TaskStatus,
 
@@ -138,7 +138,7 @@ export type SetStateForTaskRunnerAction = {
 export type SetStatesForTaskRunnersAction = {
   type: 'SET_STATES_FOR_TASK_RUNNERS',
   payload: {
-    statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+    statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
   },
 };
 

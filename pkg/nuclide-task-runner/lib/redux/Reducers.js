@@ -50,21 +50,21 @@ export function readyTaskRunners(
 }
 
 export function taskRunners(
-  state: Array<TaskRunner> = [],
+  state: Immutable.List<TaskRunner> = Immutable.List(),
   action: Action,
-): Array<TaskRunner> {
+): Immutable.List<TaskRunner> {
   switch (action.type) {
     case Actions.REGISTER_TASK_RUNNER: {
       const {taskRunner} = action.payload;
       return state
-        .concat(taskRunner)
+        .push(taskRunner)
         .sort((a, b) =>
           a.name.toUpperCase().localeCompare(b.name.toUpperCase()),
         );
     }
     case Actions.UNREGISTER_TASK_RUNNER: {
       const {taskRunner} = action.payload;
-      return state.slice().filter(element => element !== taskRunner);
+      return state.delete(state.indexOf(taskRunner));
     }
     default: {
       return state;
@@ -73,24 +73,19 @@ export function taskRunners(
 }
 
 export function statesForTaskRunners(
-  state: Map<TaskRunner, TaskRunnerState> = new Map(),
+  state: Immutable.Map<TaskRunner, TaskRunnerState> = Immutable.Map(),
   action: Action,
-): Map<TaskRunner, TaskRunnerState> {
+): Immutable.Map<TaskRunner, TaskRunnerState> {
   switch (action.type) {
     case Actions.SET_PROJECT_ROOT:
-      return new Map();
+      return Immutable.Map();
     case Actions.UNREGISTER_TASK_RUNNER:
-      const newMap = new Map(state.entries());
-      newMap.delete(action.payload.taskRunner);
-      return newMap;
+      return state.delete(action.payload.taskRunner);
     case Actions.SET_STATES_FOR_TASK_RUNNERS:
-      return new Map([
-        ...state.entries(),
-        ...action.payload.statesForTaskRunners.entries(),
-      ]);
+      return state.merge(action.payload.statesForTaskRunners);
     case Actions.SET_STATE_FOR_TASK_RUNNER:
       const {taskRunner, taskRunnerState} = action.payload;
-      return new Map(state.entries()).set(taskRunner, taskRunnerState);
+      return state.set(taskRunner, taskRunnerState);
     default:
       return state;
   }

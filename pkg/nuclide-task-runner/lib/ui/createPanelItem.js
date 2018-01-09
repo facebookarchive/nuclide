@@ -44,7 +44,7 @@ export function createPanelItem(store: Store): Object {
     .filter(
       state =>
         state.initialPackagesActivated &&
-        state.readyTaskRunners.count() === state.taskRunners.length,
+        state.readyTaskRunners.count() === state.taskRunners.count(),
     )
     .startWith(store.getState())
     .map(state => ({
@@ -62,7 +62,7 @@ export function createPanelItem(store: Store): Object {
     ...staticProps,
     toolbarDisabled:
       !state.initialPackagesActivated ||
-      state.readyTaskRunners.count() !== state.taskRunners.length,
+      state.readyTaskRunners.count() !== state.taskRunners.count(),
     progress: state.runningTask ? state.runningTask.progress : null,
     taskIsRunning: state.runningTask != null,
     runningTaskIsCancelable: state.runningTask

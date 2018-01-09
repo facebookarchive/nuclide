@@ -26,6 +26,7 @@ import {observableFromTask} from '../../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import * as Actions from './Actions';
+import * as Immutable from 'immutable';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
@@ -218,8 +219,8 @@ export function combineTaskRunnerStatesEpic(
       return Observable.empty();
     }
 
-    if (taskRunners.length === 0) {
-      return Observable.of(Actions.setStatesForTaskRunners(new Map()));
+    if (taskRunners.count() === 0) {
+      return Observable.of(Actions.setStatesForTaskRunners(Immutable.Map()));
     }
 
     const runnersAndStates = taskRunners.map(taskRunner =>
@@ -240,7 +241,9 @@ export function combineTaskRunnerStatesEpic(
               );
             }
           });
-          return Actions.setStatesForTaskRunners(statesForTaskRunners);
+          return Actions.setStatesForTaskRunners(
+            Immutable.Map(statesForTaskRunners),
+          );
         })
     );
   });
@@ -663,8 +666,8 @@ function createTaskObservable(
 }
 
 function getBestEffortTaskRunner(
-  taskRunners: Array<TaskRunner>,
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+  taskRunners: Immutable.List<TaskRunner>,
+  statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
 ): ?TaskRunner {
   return taskRunners.reduce((memo, runner) => {
     const state = statesForTaskRunners.get(runner);

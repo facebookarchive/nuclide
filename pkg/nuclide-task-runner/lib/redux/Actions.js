@@ -36,6 +36,8 @@ import type {
   UnregisterTaskRunnerAction,
 } from '../types';
 
+import * as Immutable from 'immutable';
+
 export const DID_ACTIVATE_INITIAL_PACKAGES = 'DID_ACTIVATE_INITIAL_PACKAGES';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const REQUEST_TOGGLE_TOOLBAR_VISIBILITY =
@@ -109,7 +111,7 @@ export function setStateForTaskRunner(
 
 // Only sets the states for task runners that have keys in the map
 export function setStatesForTaskRunners(
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+  statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
 ): SetStatesForTaskRunnersAction {
   return {
     type: SET_STATES_FOR_TASK_RUNNERS,

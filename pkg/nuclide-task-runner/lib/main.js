@@ -157,7 +157,7 @@ class Activation {
           .map(state => {
             const {activeTaskRunner, readyTaskRunners, taskRunners} = state;
             if (
-              taskRunners.length > readyTaskRunners.count() ||
+              taskRunners.count() > readyTaskRunners.count() ||
               !activeTaskRunner
             ) {
               return [];
@@ -291,7 +291,7 @@ class Activation {
     const buttonUpdatesDisposable = new UniversalDisposable(
       // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
       Observable.from(this._store).subscribe((state: AppState) => {
-        if (state.taskRunners.length > 0) {
+        if (state.taskRunners.count() > 0) {
           element.removeAttribute('hidden');
         } else {
           element.setAttribute('hidden', 'hidden');

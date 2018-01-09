@@ -20,11 +20,12 @@ import FullWidthProgressBar from '../../../nuclide-ui/FullWidthProgressBar';
 import classnames from 'classnames';
 import * as React from 'react';
 import invariant from 'assert';
+import * as Immutable from 'immutable';
 
 type Props = {
   toolbarDisabled: boolean,
-  taskRunners: Array<TaskRunner>,
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
+  taskRunners: Immutable.List<TaskRunner>,
+  statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
   activeTaskRunner: ?TaskRunner,
   iconComponent: ?React.ComponentType<any>,
   extraUiComponent: ?React.ComponentType<any>,
@@ -46,7 +47,7 @@ export class Toolbar extends React.Component<Props> {
     let taskRunnerOptions = [];
     let taskRunnerSpecificContent = null;
     let dropdownVisibility = {visibility: 'hidden'};
-    if (taskRunners.length === 0 && !this.props.toolbarDisabled) {
+    if (taskRunners.count() === 0 && !this.props.toolbarDisabled) {
       dropdownVisibility = {display: 'none'};
       taskRunnerSpecificContent = <NoTaskRunnersMessage />;
     } else if (activeTaskRunner) {
@@ -81,7 +82,7 @@ export class Toolbar extends React.Component<Props> {
             <Dropdown
               buttonComponent={ButtonComponent}
               value={activeTaskRunner}
-              options={taskRunnerOptions}
+              options={Array.from(taskRunnerOptions)}
               onChange={value => {
                 this.props.selectTaskRunner(value);
               }}
@@ -151,9 +152,9 @@ function tooltip(title: string): atom$TooltipsAddOptions {
 }
 
 function getTaskRunnerOptions(
-  taskRunners: Array<TaskRunner>,
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
-): Array<Option> {
+  taskRunners: Immutable.List<TaskRunner>,
+  statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
+): Immutable.List<Option> {
   return taskRunners.map(runner => {
     const state = statesForTaskRunners.get(runner);
     return {
