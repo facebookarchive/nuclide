@@ -1246,6 +1246,8 @@ declare class atom$Workspace {
   addTopPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
   getModalPanels(): Array<atom$Panel>,
   addModalPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
+  getHeaderPanels(): Array<atom$Panel>,
+  addHeaderPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
 
   getLeftDock(): atom$Dock,
   getRightDock(): atom$Dock,
