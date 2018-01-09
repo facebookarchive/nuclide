@@ -151,7 +151,10 @@ export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
         role="treeitem"
         tabIndex={selected ? '0' : '-1'}>
         {title == null ? null : (
-          <div className="list-item" ref={node => (this._itemNode = node)}>
+          <div
+            tabIndex={-1}
+            className="native-key-bindings list-item"
+            ref={node => (this._itemNode = node)}>
             {title}
           </div>
         )}

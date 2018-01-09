@@ -113,7 +113,11 @@ export default class SimpleValueComponent extends React.Component<Props> {
       displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {
-      return <span>{displayValue}</span>;
+      return (
+        <span tabIndex={-1} className="native-key-bindings">
+          {displayValue}
+        </span>
+      );
     }
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
     // (t11408154)
@@ -121,7 +125,7 @@ export default class SimpleValueComponent extends React.Component<Props> {
       <span className={ValueComponentClassNames.identifier}>{expression}</span>
     );
     return (
-      <span>
+      <span tabIndex={-1} className="native-key-bindings">
         {renderedExpression}
         : {displayValue}
       </span>
