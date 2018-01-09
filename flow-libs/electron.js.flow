@@ -258,7 +258,7 @@ declare class electron$BrowserWindow {
   static getDevToolsExtensions(): {[name: string]: {[name: string]: string}},
 
   webContents: electron$WebContents,
-  id: string,
+  id: number,
   destroy(): void,
   close(): void,
   focus(): void,
