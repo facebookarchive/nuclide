@@ -13,11 +13,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
-import {
-  runCommandDetailed,
-  scriptifyCommand,
-  ProcessExitError,
-} from 'nuclide-commons/process';
+import {runCommandDetailed, ProcessExitError} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {
@@ -78,7 +74,6 @@ export function hgObserveExecution(
   return Observable.fromPromise(
     getHgExecParams(args_, {
       ...(options_: any),
-      // Ensure that the hg command gets scriptified.
       TTY_OUTPUT: process.platform !== 'win32',
     }),
   ).switchMap(({command, args, options}) => {
@@ -171,7 +166,7 @@ async function getHgExecParams(
   if (EXCLUDE_FROM_HG_BLACKBOX_COMMANDS.has(hgCommandName)) {
     args.push('--config', 'extensions.blackbox=!');
   }
-  let options = {
+  const options = {
     ...options_,
     env: {
       ...(await getOriginalEnvironment()),
@@ -186,14 +181,11 @@ async function getHgExecParams(
     options.env.HGEDITOR = options.HGEDITOR;
   }
 
-  let command;
+  const command = 'hg';
   if (options.TTY_OUTPUT) {
-    [command, args, options] = scriptifyCommand('hg', args, options);
     // HG commit/amend have unconventional ways of escaping slashes from messages.
     // We have to 'unescape' to make it work correctly.
     args = args.map(arg => arg.replace(/\\\\/g, '\\'));
-  } else {
-    command = 'hg';
   }
   return {command, args, options};
 }
