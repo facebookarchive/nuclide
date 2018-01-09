@@ -1,20 +1,66 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {ROOT_FS} from '../../nuclide-fs';
-import {ArchiveFileSystem} from './ArchiveFileSystem';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ROOT_ARCHIVE_FS = exports.ArchiveFileSystem = exports.ArchiveFileAsDirectory = exports.ArchiveFile = exports.ArchiveDirectory = undefined;
 
-export {ArchiveDirectory} from './ArchiveDirectory';
-export {ArchiveFile} from './ArchiveFile';
-export {ArchiveFileAsDirectory} from './ArchiveFileAsDirectory';
-export {ArchiveFileSystem} from './ArchiveFileSystem';
+var _ArchiveDirectory;
 
-export const ROOT_ARCHIVE_FS = new ArchiveFileSystem(ROOT_FS);
+function _load_ArchiveDirectory() {
+  return _ArchiveDirectory = require('./ArchiveDirectory');
+}
+
+Object.defineProperty(exports, 'ArchiveDirectory', {
+  enumerable: true,
+  get: function () {
+    return (_ArchiveDirectory || _load_ArchiveDirectory()).ArchiveDirectory;
+  }
+});
+
+var _ArchiveFile;
+
+function _load_ArchiveFile() {
+  return _ArchiveFile = require('./ArchiveFile');
+}
+
+Object.defineProperty(exports, 'ArchiveFile', {
+  enumerable: true,
+  get: function () {
+    return (_ArchiveFile || _load_ArchiveFile()).ArchiveFile;
+  }
+});
+
+var _ArchiveFileAsDirectory;
+
+function _load_ArchiveFileAsDirectory() {
+  return _ArchiveFileAsDirectory = require('./ArchiveFileAsDirectory');
+}
+
+Object.defineProperty(exports, 'ArchiveFileAsDirectory', {
+  enumerable: true,
+  get: function () {
+    return (_ArchiveFileAsDirectory || _load_ArchiveFileAsDirectory()).ArchiveFileAsDirectory;
+  }
+});
+
+var _ArchiveFileSystem;
+
+function _load_ArchiveFileSystem() {
+  return _ArchiveFileSystem = require('./ArchiveFileSystem');
+}
+
+Object.defineProperty(exports, 'ArchiveFileSystem', {
+  enumerable: true,
+  get: function () {
+    return (_ArchiveFileSystem || _load_ArchiveFileSystem()).ArchiveFileSystem;
+  }
+});
+
+var _nuclideFs;
+
+function _load_nuclideFs() {
+  return _nuclideFs = require('../../nuclide-fs');
+}
+
+const ROOT_ARCHIVE_FS = exports.ROOT_ARCHIVE_FS = new (_ArchiveFileSystem || _load_ArchiveFileSystem()).ArchiveFileSystem((_nuclideFs || _load_nuclideFs()).ROOT_FS);

@@ -1,48 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-// $FlowFB
-import type {ProjectSymbol} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
-import type {AtomLanguageService} from '../../nuclide-language-service';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export default class Omni2ProjectSymbolProvider {
-  _languageService: AtomLanguageService<LanguageService>;
+var _UniversalDisposable;
 
-  constructor(languageService: AtomLanguageService<LanguageService>) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Omni2ProjectSymbolProvider {
+
+  constructor(languageService) {
     this._languageService = languageService;
   }
 
-  searchSymbolsForDirectory(
-    query: string,
-    directory: atom$Directory,
-    callback: (Array<ProjectSymbol>) => mixed,
-  ): IDisposable {
+  searchSymbolsForDirectory(query, directory, callback) {
     const directoryPath = directory.getPath();
 
-    const results = Observable.defer(() =>
-      this._languageService.getLanguageServiceForUri(directoryPath),
-    )
-      .switchMap(
-        service =>
-          service == null
-            ? Observable.of([])
-            : service.symbolSearch(query, [directoryPath]),
-      )
-      .map(searchResults => searchResults || [])
-      .catch(() => Observable.of([]));
+    const results = _rxjsBundlesRxMinJs.Observable.defer(() => this._languageService.getLanguageServiceForUri(directoryPath)).switchMap(service => service == null ? _rxjsBundlesRxMinJs.Observable.of([]) : service.symbolSearch(query, [directoryPath])).map(searchResults => searchResults || []).catch(() => _rxjsBundlesRxMinJs.Observable.of([]));
 
-    return new UniversalDisposable(results.subscribe(callback));
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(results.subscribe(callback));
   }
 }
+exports.default = Omni2ProjectSymbolProvider; /**
+                                               * Copyright (c) 2015-present, Facebook, Inc.
+                                               * All rights reserved.
+                                               *
+                                               * This source code is licensed under the license found in the LICENSE file in
+                                               * the root directory of this source tree.
+                                               *
+                                               * 
+                                               * @format
+                                               */
+
+// $FlowFB

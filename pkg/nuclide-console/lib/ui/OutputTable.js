@@ -1,242 +1,220 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  DisplayableRecord,
-  Executor,
-  OutputProvider,
-  Record,
-  RecordHeightChangeHandler,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import Hasher from 'nuclide-commons/Hasher';
-import * as React from 'react';
-import List from 'react-virtualized/dist/commonjs/List';
-import RecordView from './RecordView';
-import recordsChanged from '../recordsChanged';
-import {ResizeSensitiveContainer} from '../../../nuclide-ui/ResizeSensitiveContainer';
+var _Hasher;
 
-type Props = {
-  displayableRecords: Array<DisplayableRecord>,
-  showSourceLabels: boolean,
-  fontSize: number,
-  getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
-  onScroll: (
-    offsetHeight: number,
-    scrollHeight: number,
-    scrollTop: number,
-  ) => void,
-  onDisplayableRecordHeightChange: RecordHeightChangeHandler,
-  shouldScrollToBottom: () => boolean,
-};
+function _load_Hasher() {
+  return _Hasher = _interopRequireDefault(require('nuclide-commons/Hasher'));
+}
 
-type State = {
-  width: number,
-  height: number,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-type RowRendererParams = {
-  index: number,
-  key: string,
-  style: Object,
-  isScrolling: boolean,
-};
+var _List;
 
-type RowHeightParams = {
-  index: number,
-};
+function _load_List() {
+  return _List = _interopRequireDefault(require('react-virtualized/dist/commonjs/List'));
+}
 
-/* eslint-disable react/no-unused-prop-types */
-type OnScrollParams = {
-  clientHeight: number,
-  scrollHeight: number,
-  scrollTop: number,
-};
+var _RecordView;
+
+function _load_RecordView() {
+  return _RecordView = _interopRequireDefault(require('./RecordView'));
+}
+
+var _recordsChanged;
+
+function _load_recordsChanged() {
+  return _recordsChanged = _interopRequireDefault(require('../recordsChanged'));
+}
+
+var _ResizeSensitiveContainer;
+
+function _load_ResizeSensitiveContainer() {
+  return _ResizeSensitiveContainer = require('../../../nuclide-ui/ResizeSensitiveContainer');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /* eslint-enable react/no-unused-prop-types */
 
 // The number of extra rows to render beyond what is visible
-const OVERSCAN_COUNT = 5;
 
-export default class OutputTable extends React.Component<Props, State> {
-  _hasher: Hasher<Record>;
-  // This is a <List> from react-virtualized (untyped library)
-  _list: ?React.Element<any>;
-  _wrapper: ?HTMLElement;
-  _renderedRecords: Map<Record, RecordView>;
+
+/* eslint-disable react/no-unused-prop-types */
+const OVERSCAN_COUNT = 5; /**
+                           * Copyright (c) 2015-present, Facebook, Inc.
+                           * All rights reserved.
+                           *
+                           * This source code is licensed under the license found in the LICENSE file in
+                           * the root directory of this source tree.
+                           *
+                           * 
+                           * @format
+                           */
+
+class OutputTable extends _react.Component {
 
   // The currently rendered range.
-  _startIndex: number;
-  _stopIndex: number;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._hasher = new Hasher();
+
+    this._handleListRender = opts => {
+      this._startIndex = opts.startIndex;
+      this._stopIndex = opts.stopIndex;
+    };
+
+    this._getExecutor = id => {
+      return this.props.getExecutor(id);
+    };
+
+    this._getProvider = id => {
+      return this.props.getProvider(id);
+    };
+
+    this._renderRow = rowMetadata => {
+      const { index, style } = rowMetadata;
+      const displayableRecord = this.props.displayableRecords[index];
+      const { record } = displayableRecord;
+      return _react.createElement(
+        'div',
+        {
+          key: this._hasher.getHash(displayableRecord.record),
+          className: 'nuclide-console-table-row-wrapper',
+          style: style },
+        _react.createElement((_RecordView || _load_RecordView()).default, {
+          ref: view => {
+            if (view != null) {
+              this._renderedRecords.set(record, view);
+            } else {
+              this._renderedRecords.delete(record);
+            }
+          },
+          getExecutor: this._getExecutor,
+          getProvider: this._getProvider,
+          displayableRecord: displayableRecord,
+          showSourceLabel: this.props.showSourceLabels,
+          onHeightChange: this._handleRecordHeightChange
+        })
+      );
+    };
+
+    this._getRowHeight = ({ index }) => {
+      return this.props.displayableRecords[index].height;
+    };
+
+    this._handleTableWrapper = tableWrapper => {
+      this._wrapper = tableWrapper;
+    };
+
+    this._handleListRef = listRef => {
+      this._list = listRef;
+    };
+
+    this._handleResize = (height, width) => {
+      this.setState({
+        width,
+        height
+      });
+
+      // When this component resizes, the inner records will
+      // also resize and potentially have their heights change
+      // So we measure all of their heights again here
+      this._renderedRecords.forEach(recordView => recordView.measureAndNotifyHeight());
+    };
+
+    this._handleRecordHeightChange = (recordId, newHeight) => {
+      this.props.onDisplayableRecordHeightChange(recordId, newHeight, () => {
+        // The react-virtualized List component is provided the row heights
+        // through a function, so it has no way of knowing that a row's height
+        // has changed unless we explicitly notify it to recompute the heights.
+        if (this._list == null) {
+          return;
+        }
+        // $FlowIgnore Untyped react-virtualized List component method
+        this._list.recomputeRowHeights();
+
+        // If we are already scrolled to the bottom, scroll to ensure that the scrollbar remains at
+        // the bottom. This is important not just for if the last record changes height through user
+        // interaction (e.g. expanding a debugger variable), but also because this is the mechanism
+        // through which the record's true initial height is reported. Therefore, we may have scrolled
+        // to the bottom, and only afterwards received its true height. In this case, it's important
+        // that we then scroll to the new bottom.
+        if (this.props.shouldScrollToBottom()) {
+          this.scrollToBottom();
+        }
+      });
+    };
+
+    this._onScroll = ({
+      clientHeight,
+      scrollHeight,
+      scrollTop
+    }) => {
+      this.props.onScroll(clientHeight, scrollHeight, scrollTop);
+    };
+
+    this._hasher = new (_Hasher || _load_Hasher()).default();
     this._renderedRecords = new Map();
     this.state = {
       width: 0,
-      height: 0,
+      height: 0
     };
     this._startIndex = 0;
     this._stopIndex = 0;
   }
+  // This is a <List> from react-virtualized (untyped library)
 
-  componentDidUpdate(prevProps: Props, prevState: State): void {
-    if (
-      this._list != null &&
-      recordsChanged(
-        prevProps.displayableRecords,
-        this.props.displayableRecords,
-      )
-    ) {
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this._list != null && (0, (_recordsChanged || _load_recordsChanged()).default)(prevProps.displayableRecords, this.props.displayableRecords)) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.recomputeRowHeights();
     }
     if (prevProps.fontSize !== this.props.fontSize) {
-      this._renderedRecords.forEach(recordView =>
-        recordView.measureAndNotifyHeight(),
-      );
+      this._renderedRecords.forEach(recordView => recordView.measureAndNotifyHeight());
     }
   }
 
-  render(): React.Node {
+  render() {
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
-      <ResizeSensitiveContainer
-        className="nuclide-console-table-wrapper native-key-bindings"
-        onResize={this._handleResize}
-        tabIndex="1">
-        {this._containerRendered() ? (
-          <List
-            // $FlowFixMe(>=0.53.0) Flow suppress
-            ref={this._handleListRef}
-            height={this.state.height}
-            width={this.state.width}
-            rowCount={this.props.displayableRecords.length}
-            rowHeight={this._getRowHeight}
-            rowRenderer={this._renderRow}
-            overscanRowCount={OVERSCAN_COUNT}
-            onScroll={this._onScroll}
-            onRowsRendered={this._handleListRender}
-          />
-        ) : null}
-      </ResizeSensitiveContainer>
+      _react.createElement(
+        (_ResizeSensitiveContainer || _load_ResizeSensitiveContainer()).ResizeSensitiveContainer,
+        {
+          className: 'nuclide-console-table-wrapper native-key-bindings',
+          onResize: this._handleResize,
+          tabIndex: '1' },
+        this._containerRendered() ? _react.createElement((_List || _load_List()).default
+        // $FlowFixMe(>=0.53.0) Flow suppress
+        , { ref: this._handleListRef,
+          height: this.state.height,
+          width: this.state.width,
+          rowCount: this.props.displayableRecords.length,
+          rowHeight: this._getRowHeight,
+          rowRenderer: this._renderRow,
+          overscanRowCount: OVERSCAN_COUNT,
+          onScroll: this._onScroll,
+          onRowsRendered: this._handleListRender
+        }) : null
+      )
     );
   }
 
-  _handleListRender = (opts: {startIndex: number, stopIndex: number}): void => {
-    this._startIndex = opts.startIndex;
-    this._stopIndex = opts.stopIndex;
-  };
-
-  scrollToBottom(): void {
+  scrollToBottom() {
     if (this._list != null) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.scrollToRow(this.props.displayableRecords.length - 1);
     }
   }
 
-  _getExecutor = (id: string): ?Executor => {
-    return this.props.getExecutor(id);
-  };
-
-  _getProvider = (id: string): ?OutputProvider => {
-    return this.props.getProvider(id);
-  };
-
-  _renderRow = (rowMetadata: RowRendererParams): React.Element<any> => {
-    const {index, style} = rowMetadata;
-    const displayableRecord = this.props.displayableRecords[index];
-    const {record} = displayableRecord;
-    return (
-      <div
-        key={this._hasher.getHash(displayableRecord.record)}
-        className="nuclide-console-table-row-wrapper"
-        style={style}>
-        <RecordView
-          ref={(view: ?RecordView) => {
-            if (view != null) {
-              this._renderedRecords.set(record, view);
-            } else {
-              this._renderedRecords.delete(record);
-            }
-          }}
-          getExecutor={this._getExecutor}
-          getProvider={this._getProvider}
-          displayableRecord={displayableRecord}
-          showSourceLabel={this.props.showSourceLabels}
-          onHeightChange={this._handleRecordHeightChange}
-        />
-      </div>
-    );
-  };
-
-  _containerRendered(): boolean {
+  _containerRendered() {
     return this.state.width !== 0 && this.state.height !== 0;
   }
 
-  _getRowHeight = ({index}: RowHeightParams): number => {
-    return this.props.displayableRecords[index].height;
-  };
-
-  _handleTableWrapper = (tableWrapper: HTMLElement): void => {
-    this._wrapper = tableWrapper;
-  };
-
-  _handleListRef = (listRef: React.Element<any>): void => {
-    this._list = listRef;
-  };
-
-  _handleResize = (height: number, width: number): void => {
-    this.setState({
-      width,
-      height,
-    });
-
-    // When this component resizes, the inner records will
-    // also resize and potentially have their heights change
-    // So we measure all of their heights again here
-    this._renderedRecords.forEach(recordView =>
-      recordView.measureAndNotifyHeight(),
-    );
-  };
-
-  _handleRecordHeightChange = (recordId: number, newHeight: number): void => {
-    this.props.onDisplayableRecordHeightChange(recordId, newHeight, () => {
-      // The react-virtualized List component is provided the row heights
-      // through a function, so it has no way of knowing that a row's height
-      // has changed unless we explicitly notify it to recompute the heights.
-      if (this._list == null) {
-        return;
-      }
-      // $FlowIgnore Untyped react-virtualized List component method
-      this._list.recomputeRowHeights();
-
-      // If we are already scrolled to the bottom, scroll to ensure that the scrollbar remains at
-      // the bottom. This is important not just for if the last record changes height through user
-      // interaction (e.g. expanding a debugger variable), but also because this is the mechanism
-      // through which the record's true initial height is reported. Therefore, we may have scrolled
-      // to the bottom, and only afterwards received its true height. In this case, it's important
-      // that we then scroll to the new bottom.
-      if (this.props.shouldScrollToBottom()) {
-        this.scrollToBottom();
-      }
-    });
-  };
-
-  _onScroll = ({
-    clientHeight,
-    scrollHeight,
-    scrollTop,
-  }: OnScrollParams): void => {
-    this.props.onScroll(clientHeight, scrollHeight, scrollTop);
-  };
 }
+exports.default = OutputTable;

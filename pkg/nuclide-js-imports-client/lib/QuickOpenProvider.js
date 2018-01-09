@@ -1,109 +1,129 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AtomLanguageService} from '../../nuclide-language-service';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import humanizePath from 'nuclide-commons-atom/humanizePath';
-import {arrayCompact, collect, arrayFlatten} from 'nuclide-commons/collection';
-import {asyncFind} from 'nuclide-commons/promise';
-import * as React from 'react';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class QuickOpenProvider {
-  providerType = 'GLOBAL';
-  name = 'JSImportsService';
-  display = {
-    title: 'JS Symbols',
-    prompt: 'Search JavaScript symbols...',
-    action: 'nuclide-js-imports:toggle-provider',
-  };
+var _humanizePath;
 
-  _languageService: AtomLanguageService<LanguageService>;
+function _load_humanizePath() {
+  return _humanizePath = _interopRequireDefault(require('nuclide-commons-atom/humanizePath'));
+}
 
-  constructor(languageService: AtomLanguageService<LanguageService>) {
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class QuickOpenProvider {
+
+  constructor(languageService) {
+    this.providerType = 'GLOBAL';
+    this.name = 'JSImportsService';
+    this.display = {
+      title: 'JS Symbols',
+      prompt: 'Search JavaScript symbols...',
+      action: 'nuclide-js-imports:toggle-provider'
+    };
+
     this._languageService = languageService;
   }
 
-  async _getDirectoriesByService(
-    directories: Array<atom$Directory>,
-  ): Promise<Map<LanguageService, Array<string>>> {
-    return collect(
-      arrayCompact(
-        await Promise.all(
-          // Flow's inference engine blows up without the annotation :(
-          directories.map(async (directory): Promise<?[
-            LanguageService,
-            string,
-          ]> => {
-            const path = directory.getPath();
-            const service = await this._languageService.getLanguageServiceForUri(
-              path,
-            );
-            return service != null ? [service, path] : null;
-          }),
-        ),
-      ),
-    );
+  _getDirectoriesByService(directories) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_collection || _load_collection()).collect)((0, (_collection || _load_collection()).arrayCompact)((yield Promise.all(
+      // Flow's inference engine blows up without the annotation :(
+      directories.map((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (directory) {
+          const path = directory.getPath();
+          const service = yield _this._languageService.getLanguageServiceForUri(path);
+          return service != null ? [service, path] : null;
+        });
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      })())))));
+    })();
   }
 
-  async isEligibleForDirectories(
-    directories: Array<atom$Directory>,
-  ): Promise<boolean> {
-    const directoriesByService = await this._getDirectoriesByService(
-      directories,
-    );
-    return (
-      (await asyncFind(Array.from(directoriesByService), ([service, paths]) =>
-        service.supportsSymbolSearch(paths),
-      )) != null
-    );
+  isEligibleForDirectories(directories) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const directoriesByService = yield _this2._getDirectoriesByService(directories);
+      return (yield (0, (_promise || _load_promise()).asyncFind)(Array.from(directoriesByService), function ([service, paths]) {
+        return service.supportsSymbolSearch(paths);
+      })) != null;
+    })();
   }
 
-  async executeQuery(
-    query: string,
-    directories: Array<atom$Directory>,
-  ): Promise<Array<SymbolResult>> {
-    if (query.length === 0) {
-      return [];
-    }
+  executeQuery(query, directories) {
+    var _this3 = this;
 
-    const directoriesByService = await this._getDirectoriesByService(
-      directories,
-    );
-    const results = await Promise.all(
-      Array.from(directoriesByService).map(([service, paths]) =>
-        service.symbolSearch(query, paths),
-      ),
-    );
-    return arrayFlatten(arrayCompact(results));
+    return (0, _asyncToGenerator.default)(function* () {
+      if (query.length === 0) {
+        return [];
+      }
+
+      const directoriesByService = yield _this3._getDirectoriesByService(directories);
+      const results = yield Promise.all(Array.from(directoriesByService).map(function ([service, paths]) {
+        return service.symbolSearch(query, paths);
+      }));
+      return (0, (_collection || _load_collection()).arrayFlatten)((0, (_collection || _load_collection()).arrayCompact)(results));
+    })();
   }
 
   // TODO: Standardize on a generic SymbolResult renderer.
-  getComponentForItem(item: SymbolResult): React.Element<any> {
+  getComponentForItem(item) {
     const name = item.name || '';
 
     // flowlint-next-line sketchy-null-string:off
-    const symbolClasses = item.icon
-      ? `file icon icon-${item.icon}`
-      : 'file icon no-icon';
-    return (
-      <div title={item.hoverText || ''}>
-        <span className={symbolClasses}>
-          <code>{name}</code>
-        </span>
-        <span className="omnisearch-symbol-result-filename">
-          {humanizePath(item.path)}
-        </span>
-      </div>
+    const symbolClasses = item.icon ? `file icon icon-${item.icon}` : 'file icon no-icon';
+    return _react.createElement(
+      'div',
+      { title: item.hoverText || '' },
+      _react.createElement(
+        'span',
+        { className: symbolClasses },
+        _react.createElement(
+          'code',
+          null,
+          name
+        )
+      ),
+      _react.createElement(
+        'span',
+        { className: 'omnisearch-symbol-result-filename' },
+        (0, (_humanizePath || _load_humanizePath()).default)(item.path)
+      )
     );
   }
 }
+exports.default = QuickOpenProvider; /**
+                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the license found in the LICENSE file in
+                                      * the root directory of this source tree.
+                                      *
+                                      * 
+                                      * @format
+                                      */
