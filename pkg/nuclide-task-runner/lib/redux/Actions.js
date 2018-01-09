@@ -136,7 +136,7 @@ export function setConsoleService(
 }
 
 export function setConsolesForTaskRunners(
-  consolesForTaskRunners: Map<TaskRunner, ConsoleApi>,
+  consolesForTaskRunners: Immutable.Map<TaskRunner, ConsoleApi>,
 ): SetConsolesForTaskRunnersAction {
   return {
     type: SET_CONSOLES_FOR_TASK_RUNNERS,

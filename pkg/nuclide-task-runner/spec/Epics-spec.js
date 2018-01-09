@@ -214,25 +214,7 @@ describe('Epics', () => {
       });
     });
 
-    describe('if the task runners arent ready', () => {
-      it('does nothing', () => {
-        waitsForPromise(async () => {
-          const state = {
-            consoleService: createMockConsole,
-            initialPackagesActivated: false,
-          };
-          const output = await runActions(
-            [Actions.setConsoleService(createMockConsole)],
-            state,
-          )
-            .toArray()
-            .toPromise();
-          expect(output).toEqual([]);
-        });
-      });
-    });
-
-    describe('if the task runners are ready and the console service exists', () => {
+    describe('if the console service exists', () => {
       it('sets consoles for all registered task runners', () => {
         waitsForPromise(async () => {
           const state = {
@@ -253,94 +235,34 @@ describe('Epics', () => {
             setConsolesAction.type === Actions.SET_CONSOLES_FOR_TASK_RUNNERS,
           );
           const {consolesForTaskRunners} = setConsolesAction.payload;
-          expect(consolesForTaskRunners.size).toEqual(1);
+          expect(consolesForTaskRunners.count()).toEqual(1);
         });
       });
     });
   });
 
   describe('DID_ACTIVATE_INITIAL_PACKAGES', () => {
-    describe('if the console service is null', () => {
-      it('sends another project root message', () => {
-        waitsForPromise(async () => {
-          const mockProjectRoot = {};
-          const state = {
-            consoleService: null,
-            initialPackagesActivated: true,
-            projectRoot: mockProjectRoot,
-          };
-          const output = await runActions(
-            [Actions.didActivateInitialPackages()],
-            state,
-          )
-            .toArray()
-            .toPromise();
+    it('sends another project root message', () => {
+      waitsForPromise(async () => {
+        const mockProjectRoot = {};
+        const state = {
+          consoleService: null,
+          initialPackagesActivated: true,
+          projectRoot: mockProjectRoot,
+        };
+        const output = await runActions(
+          [Actions.didActivateInitialPackages()],
+          state,
+        )
+          .toArray()
+          .toPromise();
 
-          expect(output.length).toEqual(1);
-          const setProjectRootAction = output[0];
-          invariant(setProjectRootAction.type === Actions.SET_PROJECT_ROOT);
-          expect(setProjectRootAction.payload.projectRoot).toEqual(
-            mockProjectRoot,
-          );
-        });
-      });
-    });
-
-    describe('if the task runners arent ready', () => {
-      it('sets the project root', () => {
-        waitsForPromise(async () => {
-          const mockProjectRoot = {};
-          const state = {
-            consoleService: createMockConsole,
-            initialPackagesActivated: false,
-            projectRoot: mockProjectRoot,
-          };
-          const output = await runActions(
-            [Actions.didActivateInitialPackages()],
-            state,
-          )
-            .toArray()
-            .toPromise();
-          expect(output.length).toEqual(1);
-          const setProjectRootAction = output[0];
-          invariant(setProjectRootAction.type === Actions.SET_PROJECT_ROOT);
-          expect(setProjectRootAction.payload.projectRoot).toEqual(
-            mockProjectRoot,
-          );
-        });
-      });
-    });
-
-    describe('if the task runners are ready and the console service exists', () => {
-      it('sets the project root, sets consoles for all registered task runners', () => {
-        waitsForPromise(async () => {
-          const mockProjectRoot = {};
-          const state = {
-            consoleService: createMockConsole,
-            projectRoot: mockProjectRoot,
-            initialPackagesActivated: true,
-            taskRunners: Immutable.List([new dummy.TaskRunner()]),
-          };
-          const output = await runActions(
-            [Actions.didActivateInitialPackages()],
-            state,
-          )
-            .toArray()
-            .toPromise();
-
-          expect(output.length).toEqual(2);
-          const setConsolesAction = output[1];
-          const setProjectRootAction = output[0];
-          invariant(
-            setConsolesAction.type === Actions.SET_CONSOLES_FOR_TASK_RUNNERS,
-          );
-          invariant(setProjectRootAction.type === Actions.SET_PROJECT_ROOT);
-          const {consolesForTaskRunners} = setConsolesAction.payload;
-          expect(consolesForTaskRunners.size).toEqual(1);
-          expect(setProjectRootAction.payload.projectRoot).toEqual(
-            mockProjectRoot,
-          );
-        });
+        expect(output.length).toEqual(1);
+        const setProjectRootAction = output[0];
+        invariant(setProjectRootAction.type === Actions.SET_PROJECT_ROOT);
+        expect(setProjectRootAction.payload.projectRoot).toEqual(
+          mockProjectRoot,
+        );
       });
     });
   });
@@ -382,20 +304,26 @@ describe('Epics', () => {
     });
 
     describe('if the task runners arent ready', () => {
-      it('does nothing', () => {
+      it('sets the console service for the runner', () => {
         waitsForPromise(async () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: false,
             projectRoot: {},
           };
+          const mockTaskRunner = new dummy.TaskRunner();
           const output = await runActions(
-            [Actions.registerTaskRunner(new dummy.TaskRunner())],
+            [Actions.registerTaskRunner(mockTaskRunner)],
             state,
           )
             .toArray()
             .toPromise();
-          expect(output.length).toEqual(0);
+          expect(output.length).toEqual(1);
+          const addConsoleAction = output[0];
+          invariant(
+            addConsoleAction.type === Actions.ADD_CONSOLE_FOR_TASK_RUNNER,
+          );
+          expect(addConsoleAction.payload.taskRunner).toEqual(mockTaskRunner);
         });
       });
     });
@@ -472,27 +400,6 @@ describe('Epics', () => {
       });
     });
 
-    describe('if the task runners arent ready', () => {
-      it('does nothing', () => {
-        waitsForPromise(async () => {
-          const taskRunner = new dummy.TaskRunner();
-          const state = {
-            consoleService: createMockConsole,
-            initialPackagesActivated: false,
-            taskRunners: Immutable.List([taskRunner]),
-            projectRoot: {},
-          };
-          const output = await runActions(
-            [Actions.unregisterTaskRunner(taskRunner)],
-            state,
-          )
-            .toArray()
-            .toPromise();
-          expect(output.length).toEqual(0);
-        });
-      });
-    });
-
     describe('if the task runner to be removed is the active task runner', () => {
       it('removes the active task runner and the old task runner console', () => {
         waitsForPromise(async () => {
@@ -532,7 +439,7 @@ describe('Epics', () => {
       });
     });
 
-    describe('if the task runners are ready and the console service exists', () => {
+    describe('if the console service exists', () => {
       it('sets consoles for all registered task runners', () => {
         waitsForPromise(async () => {
           const mockProjectRoot = {};

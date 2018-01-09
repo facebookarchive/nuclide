@@ -33,7 +33,7 @@ export type AppState = {
   runningTask: ?TaskStatus,
 
   consoleService: ?ConsoleService,
-  consolesForTaskRunners: Map<TaskRunner, ConsoleApi>,
+  consolesForTaskRunners: Immutable.Map<TaskRunner, ConsoleApi>,
 };
 
 export type ToolbarStatePreference = {
@@ -227,7 +227,7 @@ export type SetConsoleServiceAction = {
 export type SetConsolesForTaskRunnersAction = {
   type: 'SET_CONSOLES_FOR_TASK_RUNNERS',
   payload: {
-    consolesForTaskRunners: Map<TaskRunner, ConsoleApi>,
+    consolesForTaskRunners: Immutable.Map<TaskRunner, ConsoleApi>,
   },
 };
 

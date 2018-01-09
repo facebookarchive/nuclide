@@ -159,28 +159,25 @@ export function consoleService(
 }
 
 export function consolesForTaskRunners(
-  state: Map<TaskRunner, ConsoleApi> = new Map(),
+  state: Immutable.Map<TaskRunner, ConsoleApi> = Immutable.Map(),
   action: Action,
-): Map<TaskRunner, ConsoleApi> {
+): Immutable.Map<TaskRunner, ConsoleApi> {
   switch (action.type) {
     case Actions.SET_CONSOLES_FOR_TASK_RUNNERS:
-      state.forEach((value, key) => {
-        value.dispose();
-      });
+      state.forEach(value => value.dispose());
       return action.payload.consolesForTaskRunners;
-    case Actions.SET_CONSOLE_SERVICE:
-      return new Map();
     case Actions.ADD_CONSOLE_FOR_TASK_RUNNER:
       const {consoleApi, taskRunner} = action.payload;
-      return new Map(state.entries()).set(taskRunner, consoleApi);
+      return state.set(taskRunner, consoleApi);
     case Actions.REMOVE_CONSOLE_FOR_TASK_RUNNER:
       const previous = state.get(action.payload.taskRunner);
-      const newState = new Map(state.entries());
       if (previous) {
         previous.dispose();
-        newState.delete(action.payload.taskRunner);
       }
-      return newState;
+      return state.delete(action.payload.taskRunner);
+    case Actions.SET_CONSOLE_SERVICE:
+      state.forEach(value => value.dispose());
+      return Immutable.Map();
     default:
       return state;
   }

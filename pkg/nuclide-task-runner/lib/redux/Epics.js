@@ -48,11 +48,9 @@ export function setProjectRootForNewTaskRunnerEpic(
     invariant(action.type === Actions.REGISTER_TASK_RUNNER);
     const {taskRunner} = action.payload;
     const {projectRoot, initialPackagesActivated} = store.getState();
-
-    if (!initialPackagesActivated) {
+    if (!initialPackagesActivated || !projectRoot) {
       return Observable.empty();
     }
-
     return getTaskRunnerState(taskRunner, projectRoot).map(result =>
       Actions.setStateForTaskRunner(result.taskRunner, result.taskRunnerState),
     );
@@ -63,24 +61,22 @@ export function setConsolesForTaskRunnersEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions
-    .ofType(Actions.SET_CONSOLE_SERVICE, Actions.DID_ACTIVATE_INITIAL_PACKAGES)
-    .switchMap(() => {
-      const {consoleService, initialPackagesActivated} = store.getState();
-      if (consoleService == null || !initialPackagesActivated) {
-        return Observable.empty();
-      }
+  return actions.ofType(Actions.SET_CONSOLE_SERVICE).switchMap(() => {
+    const {consoleService} = store.getState();
+    if (consoleService == null) {
+      return Observable.empty();
+    }
 
-      const consolesForTaskRunners = store
-        .getState()
-        .taskRunners.map(runner => [
-          runner,
-          consoleService({id: runner.name, name: runner.name}),
-        ]);
-      return Observable.of(
-        Actions.setConsolesForTaskRunners(new Map(consolesForTaskRunners)),
-      );
-    });
+    const consolesForTaskRunners = store
+      .getState()
+      .taskRunners.map(runner => [
+        runner,
+        consoleService({id: runner.name, name: runner.name}),
+      ]);
+    return Observable.of(
+      Actions.setConsolesForTaskRunners(Immutable.Map(consolesForTaskRunners)),
+    );
+  });
 }
 
 export function addConsoleForTaskRunnerEpic(
@@ -88,8 +84,8 @@ export function addConsoleForTaskRunnerEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, initialPackagesActivated} = store.getState();
-    if (consoleService == null || !initialPackagesActivated) {
+    const {consoleService} = store.getState();
+    if (consoleService == null) {
       return Observable.empty();
     }
 
@@ -107,8 +103,8 @@ export function removeConsoleForTaskRunnerEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.UNREGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, initialPackagesActivated} = store.getState();
-    if (consoleService == null || !initialPackagesActivated) {
+    const {consoleService} = store.getState();
+    if (consoleService == null) {
       return Observable.empty();
     }
 

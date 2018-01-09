@@ -317,8 +317,16 @@ class Activation {
   }
 
   consumeConsole(service: ConsoleService): IDisposable {
+    let pkg = this;
+    this._disposables.add(() => {
+      pkg = null;
+    });
     this._actionCreators.setConsoleService(service);
-    return new Disposable(() => this._actionCreators.setConsoleService(null));
+    return new Disposable(() => {
+      if (pkg != null) {
+        pkg._actionCreators.setConsoleService(null);
+      }
+    });
   }
 
   provideTaskRunnerServiceApi(): TaskRunnerServiceApi {
