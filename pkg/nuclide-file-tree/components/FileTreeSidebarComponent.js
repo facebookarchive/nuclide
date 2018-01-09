@@ -563,11 +563,12 @@ All the changes across your entire stacked diff.
 
   _monitorActiveUri(): IDisposable {
     const activeEditors = observableFromSubscribeFunction(
-      atom.workspace.onDidStopChangingActivePaneItem.bind(atom.workspace),
+      atom.workspace.observeActiveTextEditor.bind(atom.workspace),
     );
 
     return new UniversalDisposable(
       activeEditors
+        .debounceTime(100)
         .let(toggle(this._showOpenConfigValues))
         .subscribe(editor => {
           if (

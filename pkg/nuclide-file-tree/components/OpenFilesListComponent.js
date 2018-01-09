@@ -43,6 +43,7 @@ type Props = {
 
 type State = {
   hoveredUri: ?NuclideUri,
+  selectedUri: ?NuclideUri,
 };
 
 export class OpenFilesListComponent extends React.PureComponent<Props, State> {
@@ -52,12 +53,17 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       hoveredUri: null,
+      selectedUri: null,
     };
   }
 
   componentDidUpdate(prevProps: Props): void {
     const selectedRow = this._selectedRow;
-    if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
+    if (
+      selectedRow != null &&
+      this.state.selectedUri !== this.props.activeUri &&
+      prevProps.activeUri !== this.props.activeUri
+    ) {
       // Our lint rule isn't smart enough to recognize that this is a custom method and not the one
       // on HTMLElements, so we just have to squelch the error.
       // eslint-disable-next-line rulesdir/dom-apis
@@ -74,6 +80,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
       rootNode != null
     ) {
       getActions().setTargetNode(rootNode.rootUri, entry.uri);
+      this.setState({selectedUri: entry.uri});
     }
   }
 
