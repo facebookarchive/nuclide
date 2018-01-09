@@ -111,7 +111,7 @@ export type DebuggerCapabilities = {
 export type DebuggerProperties = {
   +customControlButtons: Array<ControlButtonSpecification>,
   +targetDescription: () => ?string,
-  +threadColumns: ?Array<ThreadColumn>,
+  +threadColumns: Array<ThreadColumn>,
   +threadsComponentTitle: string,
 };
 

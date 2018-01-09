@@ -79,21 +79,15 @@ export default class DebuggerActions {
       const debuggerCapabilities = processInfo.getDebuggerCapabilities();
       const debuggerProps = processInfo.getDebuggerProps();
       const supportThreadsWindow = debuggerCapabilities.threads;
-      this._store
-        .getSettings()
-        .set('SupportThreadsWindow', supportThreadsWindow);
+      this._store.getSettings().supportThreadsWindow = supportThreadsWindow;
       if (supportThreadsWindow) {
-        this._store
-          .getSettings()
-          .set('CustomThreadColumns', debuggerProps.threadColumns);
-        this._store
-          .getSettings()
-          .set('threadsComponentTitle', debuggerProps.threadsComponentTitle);
+        this._store.getSettings().customThreadColumns =
+          debuggerProps.threadColumns;
+        this._store.getSettings().threadsComponentTitle =
+          debuggerProps.threadsComponentTitle;
       }
       const singleThreadStepping = debuggerCapabilities.singleThreadStepping;
-      this._store
-        .getSettings()
-        .set('SingleThreadStepping', singleThreadStepping);
+      this._store.getSettings().singleThreadStepping = singleThreadStepping;
       this.toggleSingleThreadStepping(singleThreadStepping);
 
       const customControlButtons = debuggerProps.customControlButtons;

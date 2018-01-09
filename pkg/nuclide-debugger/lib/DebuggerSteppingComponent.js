@@ -105,7 +105,7 @@ export class DebuggerSteppingComponent extends React.Component<
     const {debuggerStore} = props;
     this.state = {
       allowSingleThreadStepping: Boolean(
-        debuggerStore.getSettings().get('SingleThreadStepping'),
+        debuggerStore.getSettings().singleThreadStepping,
       ),
       debuggerMode: debuggerStore.getDebuggerMode(),
       pauseOnException: debuggerStore.getTogglePauseOnException(),
@@ -121,9 +121,8 @@ export class DebuggerSteppingComponent extends React.Component<
     this._disposables.add(
       debuggerStore.onChange(() => {
         this.setState({
-          allowSingleThreadStepping: Boolean(
-            debuggerStore.getSettings().get('SingleThreadStepping'),
-          ),
+          allowSingleThreadStepping: debuggerStore.getSettings()
+            .singleThreadStepping,
           debuggerMode: debuggerStore.getDebuggerMode(),
           pauseOnException: debuggerStore.getTogglePauseOnException(),
           pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),

@@ -38,11 +38,10 @@ export class ThreadsView extends React.PureComponent<
     this._disposables = new UniversalDisposable();
     const debuggerStore = props.model.getStore();
     this.state = {
-      customThreadColumns:
-        (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
+      customThreadColumns: debuggerStore.getSettings().customThreadColumns,
       mode: debuggerStore.getDebuggerMode(),
       threadsComponentTitle: String(
-        debuggerStore.getSettings().get('threadsComponentTitle'),
+        debuggerStore.getSettings().threadsComponentTitle,
       ),
     };
   }
@@ -52,12 +51,10 @@ export class ThreadsView extends React.PureComponent<
     this._disposables.add(
       debuggerStore.onChange(() => {
         this.setState({
-          customThreadColumns:
-            (debuggerStore.getSettings().get('CustomThreadColumns'): any) || [],
+          customThreadColumns: debuggerStore.getSettings().customThreadColumns,
           mode: debuggerStore.getDebuggerMode(),
-          threadsComponentTitle: String(
-            debuggerStore.getSettings().get('threadsComponentTitle'),
-          ),
+          threadsComponentTitle: debuggerStore.getSettings()
+            .threadsComponentTitle,
         });
       }),
     );

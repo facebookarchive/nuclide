@@ -17,11 +17,10 @@ import type {
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
-import type {DebuggerModeType} from './types';
+import type {DebuggerModeType, DebuggerSettings} from './types';
 import type Bridge from './Bridge';
 
 import {Emitter} from 'atom';
-import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
 import {ActionTypes} from './DebuggerDispatcher';
 import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
@@ -80,7 +79,12 @@ export class DebuggerStore {
       this._handlePayload.bind(this),
     );
 
-    this._debuggerSettings = new DebuggerSettings();
+    this._debuggerSettings = {
+      supportThreadsWindow: false,
+      singleThreadStepping: false,
+      customThreadColumns: [],
+      threadsComponentTitle: 'Threads',
+    };
     this._debuggerInstance = null;
     this._error = null;
     this._evaluationExpressionProviders = new Set();

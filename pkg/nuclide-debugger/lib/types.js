@@ -11,6 +11,14 @@
 
 import type {Observable} from 'rxjs';
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
+import type {ThreadColumn} from 'nuclide-debugger-common';
+
+export type DebuggerSettings = {
+  supportThreadsWindow: boolean,
+  singleThreadStepping: boolean,
+  customThreadColumns: Array<ThreadColumn>,
+  threadsComponentTitle: string,
+};
 
 /* Evaluation & values */
 export type EvaluationResult = {

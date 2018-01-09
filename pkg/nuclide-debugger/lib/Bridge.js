@@ -328,16 +328,6 @@ export default class Bridge {
     logger.warn(outputMessage);
   }
 
-  _updateDebuggerSettings(): void {
-    this._commandDispatcher.send(
-      'UpdateSettings',
-      this._debuggerModel
-        .getStore()
-        .getSettings()
-        .getSerializedData(),
-    );
-  }
-
   _syncDebuggerState(): void {
     const store = this._debuggerModel.getStore();
     this.setPauseOnException(store.getTogglePauseOnException());

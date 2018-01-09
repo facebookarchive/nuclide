@@ -113,7 +113,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new service.PhpDebuggerService();
   }
 
-  _getThreadColumns(): ?Array<ThreadColumn> {
+  _getThreadColumns(): Array<ThreadColumn> {
     return [
       {
         key: 'id',
