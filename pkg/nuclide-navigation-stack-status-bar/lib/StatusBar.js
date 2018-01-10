@@ -74,6 +74,7 @@ class NavStackStatusBarTile extends React.Component<Props> {
             title: 'Navigate Backwards',
             keyBindingCommand: 'nuclide-navigation-stack:navigate-backwards',
           }}
+          className="nuclide-navigation-stack-button"
         />
         <Button
           icon="chevron-right"
@@ -83,6 +84,7 @@ class NavStackStatusBarTile extends React.Component<Props> {
             title: 'Navigate Forwards',
             keyBindingCommand: 'nuclide-navigation-stack:navigate-forwards',
           }}
+          className="nuclide-navigation-stack-button"
         />
       </ButtonGroup>
     );
