@@ -23,7 +23,7 @@ import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
-import {MergeConflictStatus} from './hg-constants';
+import {MergeConflictStatus, HisteditActions} from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
@@ -139,6 +139,8 @@ export type SuccessorTypeValue =
   | 'split'
   | 'fold'
   | 'histedit';
+
+export type HisteditActionsValue = 'pick';
 
 export type RevisionSuccessorInfo = {
   hash: string,
@@ -1621,6 +1623,38 @@ export class HgService {
       // on the user's default editor from attempting to open up when needed.
     };
     return this._hgObserveExecution(args, execOptions).publish();
+  }
+
+  /**
+   *  Given a list of the new order of revisions, use histedit to rearrange
+   *  history to match the input. Note that you must be checked out on the
+   *  stack above where any reordering takes place, and there can be no
+   *  branches off of any revision in the stack except the top one.
+   */
+  reorderWithinStack(
+    orderedRevisions: Array<string>,
+  ): ConnectableObservable<string> {
+    const args = [
+      'histedit',
+      '--commands',
+      '-', // read from stdin instead of a file
+      '--config',
+      'ui.merge=:merge',
+    ];
+    const commandsJson = JSON.stringify({
+      histedit: orderedRevisions.map(hash => {
+        return {
+          node: hash,
+          action: HisteditActions.PICK,
+        };
+      }),
+    });
+
+    const execOptions = {
+      cwd: this._workingDirectory,
+      input: commandsJson,
+    };
+    return this._hgRunCommand(args, execOptions).publish();
   }
 
   pull(options: Array<string>): ConnectableObservable<LegacyProcessMessage> {

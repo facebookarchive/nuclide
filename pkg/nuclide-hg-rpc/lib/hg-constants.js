@@ -19,6 +19,7 @@ import type {
   StatusCodeIdValue,
   StatusCodeNumberValue,
   SuccessorTypeValue,
+  HisteditActionsValue,
 } from './HgService';
 
 const StatusCodeId = Object.freeze({
@@ -112,6 +113,13 @@ const MergeConflictFileStatus = Object.freeze({
 const HEAD_REVISION_EXPRESSION = '.';
 const PARENT_REVISION_EXPRESSION = '.^';
 
+const HisteditActions = Object.freeze({
+  PICK: 'pick',
+});
+
+// This is to work around flow's missing support of enums.
+(HisteditActions: {[key: string]: HisteditActionsValue});
+
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
   AmendMode,
@@ -124,4 +132,5 @@ module.exports = {
   StatusCodeIdToNumber,
   StatusCodeNumber,
   SuccessorType,
+  HisteditActions,
 };

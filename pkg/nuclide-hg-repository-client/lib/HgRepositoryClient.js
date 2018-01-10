@@ -1276,6 +1276,10 @@ export class HgRepositoryClient {
     return this._service.rebase(destination, source).refCount();
   }
 
+  reorderWithinStack(orderedRevisions: Array<string>): Observable<string> {
+    return this._service.reorderWithinStack(orderedRevisions).refCount();
+  }
+
   pull(options?: Array<string> = []): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._service.pull(options).refCount();

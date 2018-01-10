@@ -227,6 +227,79 @@ export async function overwriteFileWithTestContent(
 }
 
 /**
+ * Generates an hg repository with the following structure:
+ *
+ * @ other commit
+ * |
+ * |  o commit 4   <- you are here
+ * |  |
+ * |  o commit 3
+ * |  |
+ * |  o commit 2
+ * |  |
+ * |  o commit 1
+ * | /
+ * |/
+ * o base commit
+ *
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function generateHgRepo4Fixture(): Promise<string> {
+  const testTxt = 'this is a test file\n';
+
+  const tempDir = await generateFixture(
+    'hg_repo_4',
+    new Map([
+      ['.watchmanconfig', '{}\n'],
+      ['test.txt', testTxt],
+      ['test_1.txt', ''],
+      ['test_2.txt', ''],
+      ['test_3.txt', ''],
+      ['test_4.txt', ''],
+    ]),
+  );
+  const repoPath = await fsPromise.realpath(tempDir);
+  await runCommand('hg', ['init'], {cwd: repoPath}).toPromise();
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, '.hg', 'hgrc'),
+    '[paths]\ndefault = .\n[ui]\nusername = Test <test@mail.com>\n\n' +
+      '[extensions]\nhistedit =\nfbhistedit =\n',
+  );
+  await runCommand('hg', ['commit', '-A', '-m', 'base commit'], {
+    cwd: repoPath,
+  }).toPromise();
+  // make the base a public commit so that smartlog shows all children
+  await runCommand('hg', ['phase', '-p'], {
+    cwd: repoPath,
+  }).toPromise();
+
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, 'test.txt'),
+    testTxt + '\n\nmore added here',
+  );
+  await runCommand('hg', ['commit', '-A', '-m', 'other commit'], {
+    cwd: repoPath,
+  }).toPromise();
+  await runCommand('hg', ['update', '.^'], {
+    cwd: repoPath,
+  }).toPromise();
+
+  for (let i = 1; i < 5; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await fsPromise.writeFile(
+      nuclideUri.join(repoPath, `test_${i}.txt`),
+      `this is test file ${i}`,
+    );
+    // eslint-disable-next-line no-await-in-loop
+    await runCommand('hg', ['commit', '-A', '-m', `commit ${i}`], {
+      cwd: repoPath,
+    }).toPromise();
+  }
+
+  return repoPath;
+}
+
+/**
  * Like `copyMercurialFixture` but looks in the entire fixture directory for
  * `BUCK-rename` and `TARGETS-rename` and inserts a .buckversion if applicable.
  *
