@@ -18,13 +18,13 @@ export type State =
   // Physical currently always have an Unknown state
   | 'Unknown';
 
-export type Device = {
+export type Device = {|
   name: string,
   udid: string,
   state: State,
   os: string,
   arch: string,
   type: DeviceType,
-};
+|};
 
 export type DeviceType = 'simulator' | 'physical_device';

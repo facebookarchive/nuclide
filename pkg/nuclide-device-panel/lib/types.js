@@ -133,14 +133,14 @@ export type Store = {
 
 export type DeviceArchitecture = 'x86' | 'x86_64' | 'arm' | 'arm64' | '';
 
-export type Device = {
+export type Device = {|
   name: string,
   port: number,
   displayName: string,
   architecture: DeviceArchitecture,
   rawArchitecture: string,
   ignoresSelection?: boolean,
-};
+|};
 
 export type Process = {
   user: string,
