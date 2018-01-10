@@ -11,8 +11,9 @@
 
 import type {CodeSearchResult} from './types';
 import type {ProcessMessage} from 'nuclide-commons/process';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
+import invariant from 'assert';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
 const ACK_PARSE_REGEX = /^(.+):(\d+):(\d+):(.*)$/;
@@ -39,7 +40,7 @@ export function parseAgAckRgLine(
 export function parseGrepLine(
   event: ProcessMessage,
   cwd: string,
-  query: string,
+  regex: RegExp,
 ): Observable<CodeSearchResult> {
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(GREP_PARSE_REGEX);
@@ -47,7 +48,12 @@ export function parseGrepLine(
       const [file, row, line] = matches.slice(1);
       // Grep does not have a --column option so we have to do our own.
       // Finding the first index is consistent with the other 'ack'-like tools.
-      const column = line.indexOf(query);
+      const match = regex.exec(line);
+      // match cannot be null because grep used the regex to find this line.
+      invariant(match != null);
+      const column = match.index;
+      // Then reset the regex for the next search.
+      regex.lastIndex = 0;
       // Note: the vcs-grep searches return paths rooted from their cwd,
       // so join the paths to make them absolute.
       return Observable.of({

@@ -33,19 +33,19 @@ describe('GrepSearch', () => {
 
     waitsForPromise(async () => {
       const FIND_IN_PROJECT_SERVICE_PATH = require.resolve(
-        '../../../nuclide-grep-rpc',
+        '../../../nuclide-code-search-rpc',
       );
 
       // Start the integration test helper.
       await testHelper.start([
         {
-          name: 'GrepService',
+          name: 'CodeSearchService',
           definition: FIND_IN_PROJECT_SERVICE_PATH,
           implementation: FIND_IN_PROJECT_SERVICE_PATH,
         },
       ]);
 
-      const remoteService = testHelper.getRemoteService('GrepService');
+      const remoteService = testHelper.getRemoteService('CodeSearchService');
 
       // Search in the fixtures/basic directory.
       const input_dir = nuclideUri.join(__dirname, 'fixtures', 'basic');
@@ -53,7 +53,7 @@ describe('GrepSearch', () => {
 
       // Do search.
       const updates = await remoteService
-        .grepSearch(uri, /hello world/i, [])
+        .remoteAtomSearch(uri, /hello world/i, [], false, 'grep')
         .refCount()
         .toArray()
         .toPromise();

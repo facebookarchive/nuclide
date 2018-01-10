@@ -20,6 +20,7 @@ import * as React from 'react';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Subject} from 'rxjs';
+import escapeRegExp from 'escape-string-regexp';
 
 type CodeSearchFileResult = {|
   path: string,
@@ -80,13 +81,14 @@ export const CodeSearchProvider: Provider<FileResult> = {
     const config: NuclideCodeSearchConfig = (featureConfig.get(
       'nuclide-code-search',
     ): any);
+    const regexp = new RegExp(escapeRegExp(query), 'i');
 
     return getCodeSearchServiceByNuclideUri(projectRoot)
       .codeSearch(
-        config.tool.length === 0 ? null : config.tool,
-        config.useVcsSearch,
         projectRoot,
-        query,
+        regexp,
+        config.useVcsSearch,
+        config.tool.length === 0 ? null : config.tool,
         config.maxResults,
       )
       .refCount()

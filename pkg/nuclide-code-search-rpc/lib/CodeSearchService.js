@@ -9,33 +9,22 @@
  * @format
  */
 
+import type {search$FileResult, CodeSearchResult} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CodeSearchResult} from './types';
 
-import {search as agAckSearch} from './AgAckService';
-import {search as rgSearch} from './RgService';
-import {search as grepSearch} from './GrepService';
-import {search as vcsSearch} from './VcsService';
-import {ConnectableObservable, Observable} from 'rxjs';
-import {asyncFind} from 'nuclide-commons/promise';
-import which from 'nuclide-commons/which';
 import {
-  isNfs,
+  resolveTool,
+  searchInDirectory,
+  searchInDirectories,
+} from './searchInDirectory';
+import {
   isFuse,
+  isNfs,
 } from '../../nuclide-server/lib/services/FileSystemService';
-import os from 'os';
+import {ConnectableObservable, Observable} from 'rxjs';
 
-const WINDOWS_TOOLS = ['rg', 'grep'];
-const POSIX_TOOLS = ['ag', 'rg', 'ack', 'grep'];
-
-async function resolveTool(tool: ?string): Promise<?string> {
-  if (tool != null) {
-    return tool;
-  }
-  return asyncFind(os.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, t =>
-    which(t).then(cmd => (cmd != null ? t : null)),
-  );
-}
+// Limit the total result size to avoid overloading the Nuclide server + Atom.
+const MATCH_BYTE_LIMIT = 2 * 1024 * 1024;
 
 export async function isEligibleForDirectory(
   rootDirectory: NuclideUri,
@@ -52,46 +41,123 @@ export async function isEligibleForDirectory(
   return true;
 }
 
-const searchToolHandlers = new Map([
-  [
-    'ag',
-    (directory: string, query: string) => agAckSearch(directory, query, 'ag'),
-  ],
-  [
-    'ack',
-    (directory: string, query: string) => agAckSearch(directory, query, 'ack'),
-  ],
-  ['rg', rgSearch],
-  ['grep', grepSearch],
-]);
-
+/**
+ * @param directory - The directory in which to perform a search.
+ * @param regex - The pattern to match.
+ * @param useVcsSearch - Whether to try to use hg/git grep to find the pattern.
+ * @param tool - Which tool to use from POSIX_TOOLS or WINDOWS_TOOLS,
+ *   default to first one available.
+ * @param maxResults - Maximum number of results to emit.
+ * @returns An observable that emits results.
+ */
 export function codeSearch(
-  tool: ?string,
-  useVcsSearch: boolean,
   directory: NuclideUri,
-  query: string,
+  regex: RegExp,
+  useVcsSearch: boolean,
+  tool: ?string,
   maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
-  return (useVcsSearch
-    ? vcsSearch(directory, query).catch(() =>
-        searchWithTool(tool, directory, query),
-      )
-    : searchWithTool(tool, directory, query)
-  )
+  return searchInDirectory(directory, regex, tool, useVcsSearch)
     .take(maxResults)
     .publish();
 }
 
-function searchWithTool(
-  tool: ?string,
+/**
+ * Searches for all instances of a pattern in subdirectories.
+ * @param directory - The directory in which to perform a search.
+ * @param regex - The pattern to match.
+ * @param subdirs - An array of subdirectories to search within `directory`. If subdirs is an
+ *   empty array, then simply search in directory.
+ * @param useVcsSearch - Whether to try to use hg/git grep to find the pattern.
+ * @param tool - Which tool to use from POSIX_TOOLS or WINDOWS_TOOLS,
+ *   default to first one available.
+ * @returns An observable that emits match events.
+ */
+export function remoteAtomSearch(
   directory: NuclideUri,
-  query: string,
-): Observable<CodeSearchResult> {
-  return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
-    const handler = searchToolHandlers.get(actualTool);
-    if (handler != null) {
-      return handler(directory, query);
-    }
-    return Observable.empty();
-  });
+  regex: RegExp,
+  subdirs: Array<string>,
+  useVcsSearch: boolean,
+  tool?: string,
+): ConnectableObservable<search$FileResult> {
+  return mergeSearchResults(
+    searchInDirectories(directory, regex, subdirs, useVcsSearch, tool),
+    regex,
+  ).publish();
+}
+
+// Convert CodeSearchResults into search$FileResult.
+function mergeSearchResults(
+  codeSearchResults: Observable<CodeSearchResult>,
+  regex: RegExp,
+): Observable<search$FileResult> {
+  const results = codeSearchResults
+    .flatMap((searchResult: CodeSearchResult) => {
+      const {file, row, line} = searchResult;
+
+      // Try to extract all actual "matched" texts on the same line.
+      const result = [];
+      // Loop through each matched text on a line
+      let matchTextResult;
+      // Note: Atom will auto-insert 'g' flag, so, we can loop through all matches.
+      while ((matchTextResult = regex.exec(line)) != null) {
+        const matchText = matchTextResult[0];
+        const matchIndex = matchTextResult.index;
+
+        result.push({
+          filePath: file,
+          match: {
+            lineText: line,
+            lineTextOffset: 0,
+            matchText,
+            range: [[row, matchIndex], [row, matchIndex + matchText.length]],
+          },
+        });
+
+        // Handle corner case if 'g' flag is not provided
+        if (!regex.global) {
+          break;
+        }
+      }
+
+      // IMPORTANT: reset the regex for the next search
+      regex.lastIndex = 0;
+
+      return result;
+    })
+    .share();
+
+  return (
+    results
+      // Limit the total result size.
+      .merge(
+        results
+          .scan(
+            (size, {match}) =>
+              size + match.lineText.length + match.matchText.length,
+            0,
+          )
+          .filter(size => size > MATCH_BYTE_LIMIT)
+          .switchMapTo(
+            Observable.throw(
+              Error(
+                `Too many results, truncating to ${MATCH_BYTE_LIMIT} bytes`,
+              ),
+            ),
+          )
+          .ignoreElements(),
+      )
+      // Buffer results by file. Flush when the file changes, or on completion.
+      .buffer(
+        Observable.concat(
+          results.distinct(result => result.filePath),
+          Observable.of(null),
+        ),
+      )
+      .filter(buffer => buffer.length > 0)
+      .map(buffer => ({
+        filePath: buffer[0].filePath,
+        matches: buffer.map(x => x.match),
+      }))
+  );
 }

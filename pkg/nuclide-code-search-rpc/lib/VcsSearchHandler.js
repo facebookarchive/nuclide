@@ -18,15 +18,15 @@ import {parseGrepLine} from './parser';
 
 export function search(
   directory: NuclideUri,
-  query: string,
+  regex: RegExp,
 ): Observable<CodeSearchResult> {
-  const sharedArgs = [
-    // ignore case, print line number
-    '-i',
+  const sharedArgs = (regex.ignoreCase ? ['-i'] : []).concat([
+    // print line number
     '-n',
-    query,
+    '-E',
+    regex.source,
     directory,
-  ];
+  ]);
   const parseGrepResults = (command, args) => {
     return observeProcess(command, args, {
       cwd: directory,
@@ -38,7 +38,7 @@ export function search(
           !signal && (exitCode == null || (exitCode > 1 && exitCode !== 123))
         );
       },
-    }).flatMap(event => parseGrepLine(event, directory, query));
+    }).flatMap(event => parseGrepLine(event, directory, regex));
   };
   // Try running search commands, falling through to the next if there is an error.
   return parseGrepResults('git', ['grep'].concat(sharedArgs)).catch(() =>

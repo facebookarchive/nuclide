@@ -1,0 +1,42 @@
+[
+  {
+    "matches": [
+      {
+        "lineText": "const foo = 1;",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": [
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "filePath": ".foo.js"
+  },
+  {
+    "matches": [
+      {
+        "lineText": "const foo = 1;",
+        "lineTextOffset": 0,
+        "matchText": "foo",
+        "range": [
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "filePath": "test/.foo.js"
+  }
+]

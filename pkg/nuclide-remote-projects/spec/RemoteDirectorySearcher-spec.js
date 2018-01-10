@@ -16,7 +16,7 @@ import RemoteDirectorySearcher from '../lib/RemoteDirectorySearcher';
 import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
 
 describe('RemoteDirectorySearcher.processPaths', () => {
-  const serviceSpy: any = {grepSearch: () => null};
+  const serviceSpy: any = {remoteAtomSearch: () => null};
   const workingSetsStore: any = {getApplicableDefinitions: () => []};
   const searcher = new RemoteDirectorySearcher(
     _ => serviceSpy,
@@ -51,7 +51,7 @@ describe('RemoteDirectorySearcher.processPaths', () => {
   });
 
   it('does not search directories excluded by working set', () => {
-    spyOn(serviceSpy, 'grepSearch').andReturn({
+    spyOn(serviceSpy, 'remoteAtomSearch').andReturn({
       refCount: () => Observable.empty(),
     });
     const workingSetPaths = ['nuclide://host/a/b'];
@@ -63,10 +63,12 @@ describe('RemoteDirectorySearcher.processPaths', () => {
       path => new RemoteDirectory(connection, path),
     );
     searcher.search(directories, /./, {inclusions: [WORKING_SET_PATH_MARKER]});
-    expect(serviceSpy.grepSearch).toHaveBeenCalledWith(
+    expect(serviceSpy.remoteAtomSearch).toHaveBeenCalledWith(
       'nuclide://host/a',
       /./,
       ['b'],
+      true,
+      'grep',
     );
   });
 });

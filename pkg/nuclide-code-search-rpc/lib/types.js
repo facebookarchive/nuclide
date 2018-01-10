@@ -9,9 +9,23 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 export type CodeSearchResult = {
-  file: string,
+  file: NuclideUri,
   row: number,
   column: number,
   line: string,
+};
+
+export type search$Match = {
+  lineText: string,
+  lineTextOffset: number,
+  matchText: string,
+  range: Array<Array<number>>,
+};
+
+export type search$FileResult = {
+  filePath: NuclideUri,
+  matches: Array<search$Match>,
 };

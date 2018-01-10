@@ -18,15 +18,16 @@ import {parseGrepLine} from './parser';
 
 export function search(
   directory: NuclideUri,
-  query: string,
+  regex: RegExp,
 ): Observable<CodeSearchResult> {
-  const args = [
-    // ignore case, recursive, always print filename, print line number
-    '-i',
+  const args = (regex.ignoreCase ? ['-i'] : []).concat([
+    // recursive, always print filename, print line number, use regex
     '-rHn',
-    query,
+    '-E',
+    '-e',
+    regex.source,
     directory,
-  ];
+  ]);
   return observeProcess('grep', args, {
     cwd: directory,
     // An exit code of 0 or 1 is perfectly normal for grep (1 = no results).
@@ -36,5 +37,5 @@ export function search(
         !signal && (exitCode == null || exitCode > 1)
       );
     },
-  }).flatMap(event => parseGrepLine(event, directory, query));
+  }).flatMap(event => parseGrepLine(event, directory, regex));
 }

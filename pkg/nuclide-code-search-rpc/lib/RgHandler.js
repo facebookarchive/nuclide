@@ -18,16 +18,22 @@ import {parseAgAckRgLine} from './parser';
 
 export function search(
   directory: NuclideUri,
-  query: string,
-  tool: 'ag' | 'ack',
+  regex: RegExp,
 ): Observable<CodeSearchResult> {
-  return observeProcess(tool, [
-    '--nocolor',
-    '--column',
-    '--nogroup',
-    '--literal',
-    '--ignore-case',
-    query,
-    directory,
-  ]).flatMap(event => parseAgAckRgLine(event));
+  return observeProcess(
+    'rg',
+    (regex.ignoreCase ? ['--ignore-case'] : []).concat([
+      // no colors, show line number, search hidden files,
+      // show column number, one result per line
+      '--color',
+      'never',
+      '--line-number',
+      '--hidden',
+      '--column',
+      '--no-heading',
+      '-e',
+      regex.source,
+      directory,
+    ]),
+  ).flatMap(event => parseAgAckRgLine(event));
 }

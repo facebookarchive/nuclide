@@ -37,7 +37,7 @@ import {
   RemoteDirectory,
   RemoteFile,
   ServerConnection,
-  getGrepServiceByNuclideUri,
+  getCodeSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
@@ -576,7 +576,7 @@ export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
 
 export function createRemoteDirectorySearcher(): RemoteDirectorySearcher {
   return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
-    return getGrepServiceByNuclideUri(dir.getPath());
+    return getCodeSearchServiceByNuclideUri(dir.getPath());
   }, () => workingSetsStore);
 }
 
