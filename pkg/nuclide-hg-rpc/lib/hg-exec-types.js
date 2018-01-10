@@ -9,8 +9,11 @@
  * @format
  */
 
+import type {Observable} from 'rxjs';
+
 export type HgExecOptions = {|
   cwd: string,
+  input?: ?(string | Observable<string>),
   NO_HGPLAIN?: boolean,
   TTY_OUTPUT?: boolean,
   HGEDITOR?: string,
