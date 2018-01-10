@@ -387,7 +387,7 @@ class Activation {
   initializeLsp(): IDisposable {
     const atomConfig: AtomLanguageServiceConfig = {
       name: 'cquery',
-      grammars: ['source.cpp', 'source.c', 'source.objc'],
+      grammars: ['source.cpp', 'source.c', 'source.objc', 'source.objcpp'],
       autocomplete: {
         inclusionPriority: 1,
         suggestionPriority: 3,
