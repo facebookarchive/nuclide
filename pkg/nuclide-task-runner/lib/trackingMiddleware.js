@@ -54,7 +54,7 @@ function trackTaskAction(
     | TaskErroredAction,
 ): void {
   const {activeTaskRunner, projectRoot} = store.getState();
-  invariant(projectRoot);
+  invariant(projectRoot != null);
   invariant(activeTaskRunner);
   const {taskStatus} = action.payload;
   const {task} = taskStatus;
@@ -71,7 +71,7 @@ function trackTaskAction(
     type,
     data: {
       ...taskTrackingData,
-      projectRoot: projectRoot.getPath(),
+      projectRoot,
       taskRunnerId: activeTaskRunner.id,
       taskType: taskStatus.metadata.type,
       errorMessage: error != null ? error.message : null,

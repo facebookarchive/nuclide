@@ -9,11 +9,11 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Task} from '../../commons-node/tasks';
 import type {Message} from 'nuclide-commons/process';
-import type {Directory} from '../../nuclide-remote-connection';
 import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
 
 import * as Immutable from 'immutable';
@@ -21,7 +21,7 @@ import * as Immutable from 'immutable';
 export type AppState = {
   initialPackagesActivated: boolean,
   readyTaskRunners: Immutable.Set<TaskRunner>,
-  projectRoot: ?Directory,
+  projectRoot: ?NuclideUri,
 
   visible: boolean,
 
@@ -79,7 +79,7 @@ export type TaskRunner = {
   // Returns a callback that executes when the task runner determines whether it should be enabled
   // or when the task list changes for the project root
   +setProjectRoot: (
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ) => IDisposable,
   // Priority to decide which task runner to select when multiple are available for a project
@@ -100,7 +100,7 @@ export type Store = {
 export type BoundActionCreators = {
   registerTaskRunner(taskRunner: TaskRunner): void,
   runTask(taskId: TaskMetadata): void,
-  setProjectRoot(dir: ?Directory): void,
+  setProjectRoot(dir: ?NuclideUri): void,
   setConsoleService(service: ?ConsoleService): void,
   setToolbarVisibility(visible: boolean): void,
   stopTask(): void,
@@ -213,7 +213,7 @@ export type RunTaskAction = {
 export type SetProjectRootAction = {
   type: 'SET_PROJECT_ROOT',
   payload: {
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
   },
 };
 

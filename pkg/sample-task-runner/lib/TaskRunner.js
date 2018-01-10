@@ -9,8 +9,8 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
-import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 
 import createExampleObservableTask from './createExampleObservableTask';
@@ -32,7 +32,7 @@ export default class TaskRunner {
   }
 
   setProjectRoot(
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
     // Invoke the callback whenever the tasks change. For the purpose of the example, we'll assume

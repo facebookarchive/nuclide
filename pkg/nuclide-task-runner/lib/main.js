@@ -258,7 +258,9 @@ class Activation {
     let pkg = this;
     const cwdSubscription = api.observeCwd(directory => {
       invariant(pkg != null, 'callback invoked after package deactivated');
-      pkg._actionCreators.setProjectRoot(directory);
+      pkg._actionCreators.setProjectRoot(
+        directory == null ? null : directory.getPath(),
+      );
     });
     this._disposables.add(cwdSubscription, () => {
       pkg = null;

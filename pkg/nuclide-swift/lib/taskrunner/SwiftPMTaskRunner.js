@@ -9,9 +9,9 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../../commons-node/tasks';
 import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
-import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
@@ -183,17 +183,15 @@ export class SwiftPMTaskRunner {
   }
 
   setProjectRoot(
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
-    const path = projectRoot == null ? null : projectRoot.getPath();
-
     const storeReady = observableFromSubscribeFunction(
       this._getFlux().store.subscribe.bind(this._getFlux().store),
     )
       .map(() => this._getFlux().store)
       .startWith(this._getFlux().store)
-      .filter(store => store.getProjectRoot() === path)
+      .filter(store => store.getProjectRoot() === projectRoot)
       .share();
 
     const enabledObservable = storeReady
@@ -217,7 +215,7 @@ export class SwiftPMTaskRunner {
       tasksObservable,
     ).subscribe(([enabled, tasks]) => callback(enabled, tasks));
 
-    this._projectRoot.next(path);
+    this._projectRoot.next(projectRoot);
 
     return new UniversalDisposable(subscription);
   }

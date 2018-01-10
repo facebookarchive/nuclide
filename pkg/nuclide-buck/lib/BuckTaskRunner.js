@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Directory} from '../../nuclide-remote-connection';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Task} from '../../commons-node/tasks';
 import type {
@@ -158,17 +158,15 @@ export class BuckTaskRunner {
   }
 
   setProjectRoot(
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
-    const path = projectRoot == null ? null : projectRoot.getPath();
-
     // $FlowFixMe: type symbol-observable
     const storeReady: Observable<AppState> = Observable.from(this._getStore())
       .distinctUntilChanged()
       .filter(
         (state: AppState) =>
-          !state.isLoadingBuckProject && state.projectRoot === path,
+          !state.isLoadingBuckProject && state.projectRoot === projectRoot,
       )
       .share();
 
@@ -218,7 +216,7 @@ export class BuckTaskRunner {
       tasksObservable,
     ).subscribe(([enabled, tasks]) => callback(enabled, tasks));
 
-    this._getStore().dispatch(Actions.setProjectRoot(path));
+    this._getStore().dispatch(Actions.setProjectRoot(projectRoot));
 
     return new UniversalDisposable(subscription);
   }

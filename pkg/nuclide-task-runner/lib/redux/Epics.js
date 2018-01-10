@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Action,
   AppState,
@@ -18,7 +19,6 @@ import type {
   TaskRunner,
   TaskRunnerState,
 } from '../types';
-import type {Directory} from '../../../nuclide-remote-connection';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
 import {ProcessExitError} from 'nuclide-commons/process';
@@ -31,15 +31,6 @@ import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 
-export function setProjectRootEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.DID_ACTIVATE_INITIAL_PACKAGES)
-    .map(() => Actions.setProjectRoot(store.getState().projectRoot));
-}
-
 export function setProjectRootForNewTaskRunnerEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -48,7 +39,7 @@ export function setProjectRootForNewTaskRunnerEpic(
     invariant(action.type === Actions.REGISTER_TASK_RUNNER);
     const {taskRunner} = action.payload;
     const {projectRoot, initialPackagesActivated} = store.getState();
-    if (!initialPackagesActivated || !projectRoot) {
+    if (!initialPackagesActivated || projectRoot == null) {
       return Observable.empty();
     }
     return getTaskRunnerState(taskRunner, projectRoot).map(result =>
@@ -131,7 +122,7 @@ export function setActiveTaskRunnerEpic(
     .switchMap(action => {
       const {projectRoot} = store.getState();
 
-      if (!projectRoot) {
+      if (projectRoot == null) {
         return Observable.of(Actions.selectTaskRunner(null, false));
       }
 
@@ -141,9 +132,7 @@ export function setActiveTaskRunnerEpic(
         statesForTaskRunners,
       } = store.getState();
       const {preferencesForWorkingRoots} = options;
-      const preference = preferencesForWorkingRoots.getItem(
-        projectRoot.getPath(),
-      );
+      const preference = preferencesForWorkingRoots.getItem(projectRoot);
 
       let visibilityAction;
       let taskRunner = activeTaskRunner;
@@ -203,46 +192,47 @@ export function combineTaskRunnerStatesEpic(
   store: Store,
   options: EpicOptions,
 ): Observable<Action> {
-  return actions.ofType(Actions.SET_PROJECT_ROOT).switchMap(() => {
-    const {
-      projectRoot,
-      taskRunners,
-      initialPackagesActivated,
-    } = store.getState();
+  return actions
+    .ofType(Actions.SET_PROJECT_ROOT, Actions.DID_ACTIVATE_INITIAL_PACKAGES)
+    .switchMap(() => {
+      const {
+        projectRoot,
+        taskRunners,
+        initialPackagesActivated,
+      } = store.getState();
 
-    if (!initialPackagesActivated) {
-      // We will dispatch another set project root when everyone is ready.
-      return Observable.empty();
-    }
+      if (!initialPackagesActivated) {
+        return Observable.empty();
+      }
 
-    if (taskRunners.count() === 0) {
-      return Observable.of(Actions.setStatesForTaskRunners(Immutable.Map()));
-    }
+      if (taskRunners.count() === 0) {
+        return Observable.of(Actions.setStatesForTaskRunners(Immutable.Map()));
+      }
 
-    const runnersAndStates = taskRunners.map(taskRunner =>
-      getTaskRunnerState(taskRunner, projectRoot),
-    );
+      const runnersAndStates = taskRunners.map(taskRunner =>
+        getTaskRunnerState(taskRunner, projectRoot),
+      );
 
-    return (
-      Observable.from(runnersAndStates)
-        // $FlowFixMe: type combineAll
-        .combineAll()
-        .map(tuples => {
-          const statesForTaskRunners = new Map();
-          tuples.forEach(result => {
-            if (store.getState().taskRunners.includes(result.taskRunner)) {
-              statesForTaskRunners.set(
-                result.taskRunner,
-                result.taskRunnerState,
-              );
-            }
-          });
-          return Actions.setStatesForTaskRunners(
-            Immutable.Map(statesForTaskRunners),
-          );
-        })
-    );
-  });
+      return (
+        Observable.from(runnersAndStates)
+          // $FlowFixMe: type combineAll
+          .combineAll()
+          .map(tuples => {
+            const statesForTaskRunners = new Map();
+            tuples.forEach(result => {
+              if (store.getState().taskRunners.includes(result.taskRunner)) {
+                statesForTaskRunners.set(
+                  result.taskRunner,
+                  result.taskRunnerState,
+                );
+              }
+            });
+            return Actions.setStatesForTaskRunners(
+              Immutable.Map(statesForTaskRunners),
+            );
+          })
+      );
+    });
 }
 
 export function toggleToolbarVisibilityEpic(
@@ -304,7 +294,7 @@ export function updatePreferredVisibilityEpic(
       ) {
         // The user explicitly changed the visibility, remember this state
         const {preferencesForWorkingRoots} = options;
-        preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
+        preferencesForWorkingRoots.setItem(projectRoot, {
           taskRunnerId: activeTaskRunner.id,
           visible,
         });
@@ -325,17 +315,14 @@ export function updatePreferredTaskRunnerEpic(
       const {updateUserPreferences} = action.payload;
       const {projectRoot, activeTaskRunner} = store.getState();
 
-      if (updateUserPreferences && projectRoot && activeTaskRunner) {
+      if (updateUserPreferences && projectRoot != null && activeTaskRunner) {
         // The user explicitly selected this task runner, remember this state
         const {preferencesForWorkingRoots} = options;
         const updatedPreference = {
           visible: true,
           taskRunnerId: activeTaskRunner.id,
         };
-        preferencesForWorkingRoots.setItem(
-          projectRoot.getPath(),
-          updatedPreference,
-        );
+        preferencesForWorkingRoots.setItem(projectRoot, updatedPreference);
       }
     })
     .ignoreElements();
@@ -739,7 +726,7 @@ function promptForShouldSave(taskMeta: TaskMetadata): Observable<boolean> {
 
 function getTaskRunnerState(
   taskRunner: TaskRunner,
-  projectRoot: ?Directory,
+  projectRoot: ?NuclideUri,
 ): Observable<{taskRunner: TaskRunner, taskRunnerState: TaskRunnerState}> {
   return (
     Observable.create(

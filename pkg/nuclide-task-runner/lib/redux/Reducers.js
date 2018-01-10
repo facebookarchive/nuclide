@@ -9,8 +9,8 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Action, TaskRunner, TaskRunnerState, TaskStatus} from '../types';
-import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   ConsoleApi,
   ConsoleService,
@@ -92,9 +92,9 @@ export function statesForTaskRunners(
 }
 
 export function projectRoot(
-  state: ?Directory = null,
+  state: ?NuclideUri = null,
   action: Action,
-): ?Directory {
+): ?NuclideUri {
   switch (action.type) {
     case Actions.SET_PROJECT_ROOT:
       return action.payload.projectRoot;

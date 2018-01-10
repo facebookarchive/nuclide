@@ -9,8 +9,8 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
-import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 
 import {Observable} from 'rxjs';
@@ -80,19 +80,18 @@ export default class HhvmBuildSystem {
   }
 
   setProjectRoot(
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
-    const path = projectRoot == null ? null : projectRoot.getPath();
-
     const enabledObservable = observableFromSubscribeFunction(
       this._projectStore.onChange.bind(this._projectStore),
     )
       .map(() => this._projectStore)
       .filter(
         store =>
+          store.getProjectRoot() === projectRoot &&
           // eslint-disable-next-line eqeqeq
-          store.getProjectRoot() === path && store.isHHVMProject() !== null,
+          store.isHHVMProject() !== null,
       )
       .map(store => store.isHHVMProject() === true)
       .distinctUntilChanged();
@@ -112,7 +111,7 @@ export default class HhvmBuildSystem {
       tasksObservable,
     ).subscribe(([enabled, tasks]) => callback(enabled, tasks));
 
-    this._projectStore.setProjectRoot(path);
+    this._projectStore.setProjectRoot(projectRoot);
 
     return new UniversalDisposable(subscription);
   }

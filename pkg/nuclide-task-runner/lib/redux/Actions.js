@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Directory} from '../../../nuclide-remote-connection';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ConsoleApi,
   ConsoleService,
@@ -119,7 +119,7 @@ export function setStatesForTaskRunners(
   };
 }
 
-export function setProjectRoot(projectRoot: ?Directory): SetProjectRootAction {
+export function setProjectRoot(projectRoot: ?NuclideUri): SetProjectRootAction {
   return {
     type: SET_PROJECT_ROOT,
     payload: {projectRoot},

@@ -9,9 +9,9 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata, ToolbarStatePreference} from '../lib/types';
-import type {Directory} from '../../nuclide-remote-connection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {Subject} from 'rxjs';
@@ -37,7 +37,7 @@ export class TaskRunner {
   }
 
   setProjectRoot(
-    projectRoot: ?Directory,
+    projectRoot: ?NuclideUri,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
   ): IDisposable {
     return new UniversalDisposable();

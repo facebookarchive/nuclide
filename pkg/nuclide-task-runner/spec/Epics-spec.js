@@ -122,7 +122,7 @@ describe('Epics', () => {
       ]);
 
       state = {
-        projectRoot: {getPath: () => 'foo'},
+        projectRoot: 'foo',
         taskRunners: Immutable.List([
           disabledTaskRunner,
           loPriTaskRunner,
@@ -244,10 +244,11 @@ describe('Epics', () => {
   describe('DID_ACTIVATE_INITIAL_PACKAGES', () => {
     it('sends another project root message', () => {
       waitsForPromise(async () => {
-        const mockProjectRoot = {};
+        const mockProjectRoot = 'foo';
         const state = {
           consoleService: null,
           initialPackagesActivated: true,
+          taskRunners: Immutable.List(),
           projectRoot: mockProjectRoot,
         };
         const output = await runActions(
@@ -259,10 +260,12 @@ describe('Epics', () => {
 
         expect(output.length).toEqual(1);
         const setProjectRootAction = output[0];
-        invariant(setProjectRootAction.type === Actions.SET_PROJECT_ROOT);
-        expect(setProjectRootAction.payload.projectRoot).toEqual(
-          mockProjectRoot,
+        invariant(
+          setProjectRootAction.type === Actions.SET_STATES_FOR_TASK_RUNNERS,
         );
+        expect(
+          setProjectRootAction.payload.statesForTaskRunners.count(),
+        ).toEqual(0);
       });
     });
   });
@@ -283,7 +286,7 @@ describe('Epics', () => {
           const state = {
             consoleService: null,
             initialPackagesActivated: true,
-            projectRoot: {},
+            projectRoot: 'foo',
           };
           const output = await runActions(
             [Actions.registerTaskRunner(mockTaskRunner)],
@@ -309,7 +312,7 @@ describe('Epics', () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: false,
-            projectRoot: {},
+            projectRoot: 'foo',
           };
           const mockTaskRunner = new dummy.TaskRunner();
           const output = await runActions(
@@ -342,7 +345,7 @@ describe('Epics', () => {
           };
           const state = {
             consoleService: createMockConsole,
-            projectRoot: {},
+            projectRoot: 'foo',
             initialPackagesActivated: true,
             taskRunners: Immutable.List([]),
           };
@@ -386,7 +389,7 @@ describe('Epics', () => {
             consoleService: null,
             initialPackagesActivated: true,
             taskRunners: Immutable.List([taskRunner]),
-            projectRoot: {},
+            projectRoot: 'foo',
           };
           const output = await runActions(
             [Actions.unregisterTaskRunner(taskRunner)],
@@ -442,7 +445,7 @@ describe('Epics', () => {
     describe('if the console service exists', () => {
       it('sets consoles for all registered task runners', () => {
         waitsForPromise(async () => {
-          const mockProjectRoot = {};
+          const mockProjectRoot = 'foo';
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: createMockConsole,
