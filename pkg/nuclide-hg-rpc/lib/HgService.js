@@ -1131,9 +1131,6 @@ export class HgService {
     let editMergeConfigs;
     return Observable.fromPromise(
       (async () => {
-        // prevent user-specified merge tools from attempting to
-        // open interactive editors
-        args.push('--config', 'ui.merge=:merge');
         if (message == null) {
           return args;
         } else {
@@ -1216,7 +1213,7 @@ export class HgService {
   }
 
   restack(): ConnectableObservable<LegacyProcessMessage> {
-    const args = ['rebase', '--restack', '--config', 'ui.merge=:merge'];
+    const args = ['rebase', '--restack'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -1571,13 +1568,10 @@ export class HgService {
   }
 
   continueOperation(
-    commandWithOptions: Array<string>,
+    args: Array<string>,
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
 
-    // prevent user-specified merge tools from attempting to
-    // open interactive editors
-    const args = [...commandWithOptions, '--config', 'ui.merge=:merge'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -1611,16 +1605,12 @@ export class HgService {
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
 
-    // prevent user-specified merge tools from attempting to
-    // open interactive editors
-    const args = ['rebase', '-d', destination, '--config', 'ui.merge=:merge'];
+    const args = ['rebase', '-d', destination];
     if (source != null) {
       args.push('-s', source);
     }
     const execOptions = {
       cwd: this._workingDirectory,
-      // Setting the editor to a non-existent tool to prevent operations that rely
-      // on the user's default editor from attempting to open up when needed.
     };
     return this._hgObserveExecution(args, execOptions).publish();
   }
@@ -1638,8 +1628,6 @@ export class HgService {
       'histedit',
       '--commands',
       '-', // read from stdin instead of a file
-      '--config',
-      'ui.merge=:merge',
     ];
     const commandsJson = JSON.stringify({
       histedit: orderedRevisions.map(hash => {

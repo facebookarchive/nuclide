@@ -160,6 +160,10 @@ async function getHgExecParams(
       // Without assuming hg is being run in a tty, the progress extension won't get used
       '--config',
       'progress.assume-tty=1',
+      // Prevent user-specified merge tools from attempting to
+      // open interactive editors.
+      '--config',
+      'ui.merge=:merge',
     );
   }
   const [hgCommandName] = args;
