@@ -103,7 +103,12 @@ function mergeSearchResults(
       while ((matchTextResult = regex.exec(line)) != null) {
         const matchText = matchTextResult[0];
         const matchIndex = matchTextResult.index;
-
+        // Some invalid regex (e.g. /||/g) will always match,
+        // but with an empty match string, so the exec loop becomes infinite.
+        // Check for this case and abort early.
+        if (matchText.length === 0) {
+          break;
+        }
         result.push({
           filePath: file,
           match: {
