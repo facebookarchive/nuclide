@@ -19,9 +19,16 @@
           { "value": "", "description": "Let Nuclide use any available tool" },
           { "value": "rg", "description": "ripgrep (rg)" },
           { "value": "ag", "description": "silversearcher (ag)" },
-          { "value": "ack", "description": "ack" }
+          { "value": "ack", "description": "ack" },
+          { "value": "grep", "description": "grep" }
         ],
         "description": "The chosen tool must be available in your PATH. On windows only rg is supported."
+      },
+      "useVcsSearch": {
+        "title": "Use git/hg grep if possible",
+        "type": "boolean",
+        "default": true,
+        "description": "If in a git or hg repository, favor using git/hg grep over the search tool above."
       },
       "maxResults": {
         "title": "Maximum number of results per project folder",

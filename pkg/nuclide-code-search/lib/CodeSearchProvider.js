@@ -34,6 +34,7 @@ type CodeSearchFileResult = {|
 
 type NuclideCodeSearchConfig = {
   tool: string,
+  useVcsSearch: boolean,
   maxResults: number,
 };
 
@@ -81,8 +82,9 @@ export const CodeSearchProvider: Provider<FileResult> = {
     ): any);
 
     return getCodeSearchServiceByNuclideUri(projectRoot)
-      .searchWithTool(
+      .codeSearch(
         config.tool.length === 0 ? null : config.tool,
+        config.useVcsSearch,
         projectRoot,
         query,
         config.maxResults,

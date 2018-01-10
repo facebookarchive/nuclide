@@ -14,6 +14,8 @@ import type {CodeSearchResult} from './types';
 
 import {search as agAckSearch} from './AgAckService';
 import {search as rgSearch} from './RgService';
+import {search as grepSearch} from './GrepService';
+import {search as vcsSearch} from './VcsService';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {asyncFind} from 'nuclide-commons/promise';
 import which from 'nuclide-commons/which';
@@ -23,8 +25,8 @@ import {
 } from '../../nuclide-server/lib/services/FileSystemService';
 import os from 'os';
 
-const WINDOWS_TOOLS = ['rg'];
-const POSIX_TOOLS = ['ag', 'rg', 'ack'];
+const WINDOWS_TOOLS = ['rg', 'grep'];
+const POSIX_TOOLS = ['ag', 'rg', 'ack', 'grep'];
 
 async function resolveTool(tool: ?string): Promise<?string> {
   if (tool != null) {
@@ -60,21 +62,36 @@ const searchToolHandlers = new Map([
     (directory: string, query: string) => agAckSearch(directory, query, 'ack'),
   ],
   ['rg', rgSearch],
+  ['grep', grepSearch],
 ]);
 
-export function searchWithTool(
+export function codeSearch(
   tool: ?string,
+  useVcsSearch: boolean,
   directory: NuclideUri,
   query: string,
   maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
-  return Observable.defer(() => resolveTool(tool))
-    .switchMap(actualTool => {
-      const handler = searchToolHandlers.get(actualTool);
-      if (handler != null) {
-        return handler(directory, query).take(maxResults);
-      }
-      return Observable.empty();
-    })
+  return (useVcsSearch
+    ? vcsSearch(directory, query).catch(() =>
+        searchWithTool(tool, directory, query),
+      )
+    : searchWithTool(tool, directory, query)
+  )
+    .take(maxResults)
     .publish();
+}
+
+function searchWithTool(
+  tool: ?string,
+  directory: NuclideUri,
+  query: string,
+): Observable<CodeSearchResult> {
+  return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
+    const handler = searchToolHandlers.get(actualTool);
+    if (handler != null) {
+      return handler(directory, query);
+    }
+    return Observable.empty();
+  });
 }
