@@ -19,6 +19,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
 import {guessBuildFile} from '../../nuclide-clang-rpc/lib/utils';
 import {convertBuckClangCompilationDatabase} from './types';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 const logger = getLogger('nuclide-buck');
 const BUCK_TIMEOUT = 10 * 60 * 1000;
@@ -30,6 +31,7 @@ const TARGET_KIND_REGEX = [
   'cxx_library',
   'cxx_test',
 ].join('|');
+const MAX_DB_SIZE_IN_BYTES_FOR_CACHING = 100000000; // 100 MB
 
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
@@ -73,7 +75,7 @@ class BuckClangCompilationDatabaseHandler {
         })
         .then(db => {
           if (db != null) {
-            this._cacheAllTheFilesInTheSameDB(db, buckRoot);
+            this._cacheFilesToCompilationDB(db, buckRoot, src);
           }
           return db;
         });
@@ -208,10 +210,14 @@ class BuckClangCompilationDatabaseHandler {
     return db;
   }
 
-  async _cacheAllTheFilesInTheSameDB(
+  async _cacheFilesToCompilationDB(
     db: BuckClangCompilationDatabase,
     buckRoot: ?string,
+    src: string,
   ): Promise<void> {
+    if (await this._isDbTooBigForFullCaching(db)) {
+      return;
+    }
     const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
       {
         compilationDatabase: convertBuckClangCompilationDatabase(db),
@@ -221,6 +227,14 @@ class BuckClangCompilationDatabaseHandler {
     pathToFlags.forEach((fullFlags, path) => {
       this._sourceCache.set(path, Promise.resolve(db));
     });
+  }
+
+  async _isDbTooBigForFullCaching(
+    db: BuckClangCompilationDatabase,
+  ): Promise<boolean> {
+    return db.file == null
+      ? false
+      : (await fsPromise.stat(db.file)).size > MAX_DB_SIZE_IN_BYTES_FOR_CACHING;
   }
 }
 
