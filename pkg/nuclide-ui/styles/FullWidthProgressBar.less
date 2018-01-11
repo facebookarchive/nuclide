@@ -47,13 +47,13 @@
 }
 
 @keyframes animate-indeterminate-bar {
-   0% { background-position: 0 0; }
-   100% { background-position: @nuclide-ui-fullwidthprogressbar-indeterminate-bar-1-size 0; }
+   0% { transform: translateX(0); }
+   100% { transform: translateX(@nuclide-ui-fullwidthprogressbar-indeterminate-bar-1-size); }
 }
 
 @keyframes animate-indeterminate-bar-2 {
-   0% { background-position: 0 0; }
-   100% { background-position: @nuclide-ui-fullwidthprogressbar-indeterminate-bar-2-size 0; }
+   0% { transform: translateX(0); }
+   100% { transform: translateX(@nuclide-ui-fullwidthprogressbar-indeterminate-bar-2-size); }
 }
 
 .nuclide-ui-full-width-progress-bar-bar {
