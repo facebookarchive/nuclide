@@ -77,6 +77,7 @@ def create_config_for_package(path):
     config['description'] = pkg.get('description')
     config['license'] = pkg.get('license')
     config['main'] = pkg.get('main')
+    config['author'] = pkg.get('author', '')
     config['dependencies'] = pkg.get('dependencies', {})
     config['optionalDependencies'] = pkg.get('optionalDependencies', {})
     config['devDependencies'] = pkg.get('devDependencies', {})

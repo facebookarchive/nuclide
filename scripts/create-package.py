@@ -86,6 +86,7 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
+  "author": "Replace this with the name of the team responsible for maintaining this package",
   "atomTestRunner": "%s",
   "nuclide": {
     "packageType": "Atom",
@@ -102,6 +103,7 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
+  "author": "Replace this with the name of the team responsible for maintaining this package",
   "atomTestRunner": "%s",
   "nuclide": {
     "packageType": "Node",
@@ -116,6 +118,7 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "",
+  "author": "Replace this with the name of the team responsible for maintaining this package",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

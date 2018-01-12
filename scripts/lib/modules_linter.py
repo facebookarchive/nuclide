@@ -35,6 +35,8 @@ class ModulesLinter(PackageLinter):
             self.report_error(
                 'FB-only package %s should have "private": true.', package_name)
 
+        self.verify_author_property(package_name, package)
+
         if not package['private']:
             self.verify_main_property(package_name, package)
 

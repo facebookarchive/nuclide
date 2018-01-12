@@ -16,6 +16,7 @@ DEPENDENCIES_FIELDS = [
     'bundledDependencies'
 ]
 EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
+DEFAULT_AUTHOR = 'Replace this with the name of the team responsible for maintaining this package'
 
 
 # Detects errors in Nuclide package.json files.
@@ -52,6 +53,7 @@ class PackageLinter(object):
 
         self.verify_package_name(package_name, package)
         self.verify_main_property(package_name, package)
+        self.verify_author_property(package_name, package)
 
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
@@ -130,6 +132,18 @@ class PackageLinter(object):
         if not package_main.endswith('.js'):
             self.report_error(
                 'Package %s should have a "main" file with a ".js" extension',
+                package_name)
+
+    def verify_author_property(self, package_name, package):
+        if 'author' not in package or not package['author'] or package['author'] == DEFAULT_AUTHOR:
+            self.report_error(
+                ('Package %s should have an "author" property that indicates the team who ' +
+                    'maintains the package'),
+                package_name)
+        elif re.match('^Nuclide(\s*<.+>\s*)?$', package['author']):
+            self.report_error(
+                ('Package %s requires a more specific author. Use one of the Nuclide working ' +
+                    'groups or another team.'),
                 package_name)
 
     def verify_npm_package(self, package):
