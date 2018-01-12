@@ -360,6 +360,18 @@ function chown(path: string, uid: number, gid: number): Promise<void> {
   });
 }
 
+function close(fd: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.close(fd, err => {
+      if (err == null) {
+        resolve();
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 function lstat(path: string): Promise<fs.Stats> {
   return new Promise((resolve, reject) => {
     fs.lstat(path, (err, result) => {
@@ -408,6 +420,40 @@ function mv(
         reject(error);
       } else {
         resolve();
+      }
+    });
+  });
+}
+
+function open(
+  path: string | Buffer | URL,
+  flags: string | number,
+  mode: number = 0o666,
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    fs.open(path, flags, mode, (err, fd) => {
+      if (err == null) {
+        resolve(fd);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function read(
+  fd: number,
+  buffer: Buffer,
+  offset: number,
+  length: number,
+  position: number | null,
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    fs.read(fd, buffer, offset, length, position, (err, bytesRead) => {
+      if (err == null) {
+        resolve(bytesRead);
+      } else {
+        reject(err);
       }
     });
   });
@@ -507,6 +553,46 @@ function symlink(source: string, dest: string, type?: string): Promise<void> {
   });
 }
 
+/**
+ * A utility function to grab the last N bytes from a file. Attempts to do so
+ * without reading the entire file.
+ */
+async function tailBytes(file: string, maxBytes: number): Promise<Buffer> {
+  if (maxBytes <= 0) {
+    throw new Error('tailbytes expects maxBytes > 0');
+  }
+
+  // Figure out the size so we know what strategy to use
+  const {size: file_size} = await stat(file);
+
+  if (file_size > maxBytes) {
+    const fd = await open(file, 'r');
+    const buffer = Buffer.alloc(maxBytes);
+    const bytesRead = await read(
+      fd,
+      buffer,
+      0, // buffer offset
+      maxBytes, // length to read
+      file_size - maxBytes, // file offset
+    );
+    await close(fd);
+
+    /* If we meant to read the last 100 bytes but only read 50 bytes, then we've
+     * failed to read the last 100 bytes. So throw. In the future, someone
+     * could update this code to keep calling `read` until we read maxBytes.
+     */
+    if (bytesRead !== maxBytes) {
+      throw new Error(
+        `Failed to tail file. Intended to read ${maxBytes} bytes but ` +
+          `only read ${bytesRead} bytes`,
+      );
+    }
+    return buffer;
+  } else {
+    return readFile(file);
+  }
+}
+
 function unlink(path: string): Promise<void> {
   return new Promise((resolve, reject) => {
     fs.unlink(path, (err, result) => {
@@ -568,15 +654,19 @@ export default {
 
   chmod,
   chown,
+  close,
   lstat,
   mkdir,
   mv,
+  open,
+  read,
   readFile,
   readdir,
   readlink,
   realpath,
   stat,
   symlink,
+  tailBytes,
   unlink,
   utimes,
   rmdir,
