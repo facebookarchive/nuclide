@@ -27,30 +27,6 @@ type Props = {|
 |};
 
 export class DeviceTable extends React.Component<Props> {
-  _emptyComponent: () => React.Element<any>;
-
-  constructor(props: Props) {
-    super(props);
-    this._emptyComponent = () => {
-      if (this.props.devices.isError) {
-        return (
-          <div className="padded nuclide-device-panel-device-list-error">
-            {this.props.devices.error.message}
-          </div>
-        );
-      }
-      return (
-        <div className="padded">
-          {this.props.devices.isPending ? (
-            <LoadingSpinner size="EXTRA_SMALL" />
-          ) : (
-            'No devices connected'
-          )}
-        </div>
-      );
-    };
-  }
-
   _getActionsForDevice(
     device: Device,
     actionProviders: Set<DeviceActionProvider>,
@@ -118,13 +94,50 @@ export class DeviceTable extends React.Component<Props> {
         columns={columns}
         fixedHeader={true}
         maxBodyHeight="99999px"
-        emptyComponent={this._emptyComponent}
+        emptyComponent={this._getEmptyComponent()}
         selectable={true}
         onSelect={this._handleDeviceTableSelection}
         onWillSelect={this._handleDeviceWillSelect}
         rows={rows}
       />
     );
+  }
+
+  // Passes down identical stateless components so === for them works as expected
+  _getEmptyComponent(): () => React.Element<any> {
+    if (this.props.devices.isError) {
+      return this._getErrorComponent(this.props.devices.error.message);
+    } else if (this.props.devices.isPending) {
+      return this._pendingComponent;
+    } else {
+      return this._noDevicesComponent;
+    }
+  }
+
+  _pendingComponent = (): React.Element<any> => {
+    return (
+      <div className="padded">
+        <LoadingSpinner size="EXTRA_SMALL" />
+      </div>
+    );
+  };
+
+  _noDevicesComponent = (): React.Element<any> => {
+    return <div className="padded">No devices connected</div>;
+  };
+
+  _lastErrorMessage: string;
+  _lastErrorComponent: () => React.Element<any>;
+  _getErrorComponent(message: string): () => React.Element<any> {
+    if (this._lastErrorMessage !== message) {
+      this._lastErrorMessage = message;
+      this._lastErrorComponent = () => (
+        <div className="padded nuclide-device-panel-device-list-error">
+          {message}
+        </div>
+      );
+    }
+    return this._lastErrorComponent;
   }
 
   _handleDeviceWillSelect = (
