@@ -9,15 +9,10 @@
  * @format
  */
 
-/* global localStorage */
 import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {getRuntimeInformation} from '../../commons-node/runtime-info';
-import {getAtomNuclideDir} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
@@ -39,22 +34,6 @@ class Activation {
   constructor(state: ?Object) {
     this._subscriptions = this._registerCommandAndOpener();
     this._considerDisplayingHome();
-    const runtimeInfo = getRuntimeInformation();
-    if (
-      !runtimeInfo.isDevelopment &&
-      featureConfig.get('nuclide-home.showChangelogs')
-    ) {
-      const key = `nuclide-home.changelog-shown-${runtimeInfo.nuclideVersion}`;
-      // Only display the changelog if this is the first time loading this version.
-      // Note that displaying the Home page blocks the changelog for the version:
-      // the intention here is to avoid showing the changelog for new users.
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(key, 'true');
-        if (!featureConfig.get('nuclide-home.showHome')) {
-          this._displayChangelog();
-        }
-      }
-    }
     this._subscriptions.add(
       // eslint-disable-next-line rulesdir/atom-apis
       atom.commands.add('atom-workspace', 'nuclide-home:open-docs', e => {
@@ -86,31 +65,6 @@ class Activation {
     if (showHome) {
       // eslint-disable-next-line rulesdir/atom-apis
       atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
-    }
-  }
-
-  async _displayChangelog() {
-    const markdownPreviewPkg = atom.packages.getLoadedPackage(
-      'markdown-preview',
-    );
-    if (markdownPreviewPkg != null) {
-      await atom.packages.activatePackage('markdown-preview');
-      const fbChangelogPath = nuclideUri.join(
-        getAtomNuclideDir(),
-        'fb-CHANGELOG.md',
-      );
-      const osChangelogPath = nuclideUri.join(
-        getAtomNuclideDir(),
-        'CHANGELOG.md',
-      );
-      const fbChangeLogExists = await fsPromise.exists(fbChangelogPath);
-      const changelogPath = fbChangeLogExists
-        ? fbChangelogPath
-        : osChangelogPath;
-      // eslint-disable-next-line rulesdir/atom-apis
-      await atom.workspace.open(
-        encodeURI(`markdown-preview://${changelogPath}`),
-      );
     }
   }
 
