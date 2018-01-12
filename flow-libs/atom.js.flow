@@ -401,6 +401,12 @@ type atom$PaneSplitSide = 'before' | 'after';
 // Undocumented class
 declare class atom$applicationDelegate {
   focusWindow(): Promise<mixed>,
+  open(params: {
+    pathsToOpen: Array<string>,
+    newWindow?: boolean,
+    devMode?: boolean,
+    safeMode?: boolean,
+  }): void,
 }
 
 type atom$PaneParams = {
@@ -1615,7 +1621,11 @@ declare class atom$Project {
 
   // Managing Paths
   getPaths(): Array<string>,
-  addPath(projectPath: string): void,
+  addPath(projectPath: string, options?: {
+    emitEvent?: boolean,
+    exact?: boolean,
+    mustExist?: boolean,
+  }): void,
   setPaths(paths: Array<string>): void,
   removePath(projectPath: string): void,
   getDirectories(): Array<atom$Directory>,

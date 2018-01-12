@@ -15,18 +15,26 @@ import type {ConnectableObservable} from 'rxjs';
 export type AtomFileEvent = 'open' | 'close';
 export interface AtomCommands {
   openFile(
+    // Path local to the machine that made the call to openFile().
     filePath: NuclideUri,
     line: number,
     column: number,
     isWaiting: boolean,
   ): ConnectableObservable<AtomFileEvent>;
   openRemoteFile(
+    // This is a remote NuclideUri. It is typed as a string so that it does not
+    // get converted as part of Nuclide-RPC.
     uri: string,
     line: number,
     column: number,
     isWaiting: boolean,
   ): ConnectableObservable<AtomFileEvent>;
-  addProject(projectPath: NuclideUri): Promise<void>;
+
+  /**
+   * The returned Promise may resolve before the project is added to Atom if
+   * newWindow is true.
+   */
+  addProject(projectPath: NuclideUri, newWindow: boolean): Promise<void>;
   dispose(): void;
 }
 

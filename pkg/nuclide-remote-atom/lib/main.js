@@ -16,30 +16,38 @@ import type {
 } from '../../nuclide-remote-atom-rpc/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
+import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
+import invariant from 'assert';
+import querystring from 'querystring';
+import {Disposable} from 'atom';
 import {
   getServiceByConnection,
   ConnectionCache,
 } from '../../nuclide-remote-connection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {getLogger} from 'log4js';
 import {observeEditorDestroy} from 'nuclide-commons-atom/text-editor';
 import {Observable} from 'rxjs';
-import {
-  RemoteConnection,
-  ServerConnection,
-} from '../../nuclide-remote-connection';
+import {ServerConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getNotifierByConnection} from '../../nuclide-open-files';
+import {shell} from 'electron';
 
 const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
+const ATOM_URI_ADD_PATH = 'add-path';
 
 class Activation {
-  _disposables: IDisposable;
+  _disposables: UniversalDisposable;
   _commands: AtomCommands;
+  _remoteProjectsService: ?RemoteProjectsService;
 
   constructor() {
+    this._disposables = new UniversalDisposable();
     this._commands = {
       openFile(
         uri: NuclideUri,
@@ -62,47 +70,97 @@ class Activation {
         }
         return openFile(uri, line, column, isWaiting);
       },
-      async addProject(projectPath: NuclideUri): Promise<void> {
+      async addProject(
+        projectPath: NuclideUri,
+        newWindow: boolean,
+      ): Promise<void> {
         if (nuclideUri.isLocal(projectPath)) {
-          atom.project.addPath(projectPath);
+          atom.applicationDelegate.open({
+            pathsToOpen: [projectPath],
+            newWindow,
+            devMode: atom.devMode,
+            safeMode: atom.inSafeMode(),
+          });
         } else {
-          // As of Atom 1.12 atom.project.addPath won't work for remote dirs.
-          const serverConnection = ServerConnection.getForUri(projectPath);
-          if (serverConnection != null) {
-            // Creating the RemoteConnection should add it to the FileTree
-            await RemoteConnection.findOrCreateFromConnection(
-              serverConnection,
-              nuclideUri.getPath(projectPath),
-              '',
-            );
+          let queryParams = {
+            path: projectPath,
+          };
+          if (newWindow) {
+            queryParams = {...queryParams, target: '_blank'};
           }
+          const url =
+            `atom://nuclide/${ATOM_URI_ADD_PATH}?` +
+            querystring.stringify(queryParams);
+          shell.openExternal(url);
         }
       },
       dispose(): void {},
     };
 
-    this._disposables = new ConnectionCache(async connection => {
-      // If connection is null, this indicates a local connection. Because usage
-      // of the local command server is low and it introduces the cost of
-      // starting an extra process when Atom starts up, only enable it if the
-      // user has explicitly opted-in.
-      if (
-        connection == null &&
-        !featureConfig.get('nuclide-remote-atom.enableLocalCommandService')
-      ) {
-        return {dispose: () => {}};
-      }
+    this._disposables.add(
+      new ConnectionCache(async connection => {
+        // If connection is null, this indicates a local connection. Because usage
+        // of the local command server is low and it introduces the cost of
+        // starting an extra process when Atom starts up, only enable it if the
+        // user has explicitly opted-in.
+        if (
+          connection == null &&
+          !featureConfig.get('nuclide-remote-atom.enableLocalCommandService')
+        ) {
+          return {dispose: () => {}};
+        }
 
-      const service: RemoteCommandServiceType = getServiceByConnection(
-        REMOTE_COMMAND_SERVICE,
-        connection,
-      );
-      const fileNotifier = await getNotifierByConnection(connection);
-      return service.RemoteCommandService.registerAtomCommands(
-        fileNotifier,
-        this._commands,
-      );
+        const service: RemoteCommandServiceType = getServiceByConnection(
+          REMOTE_COMMAND_SERVICE,
+          connection,
+        );
+        const fileNotifier = await getNotifierByConnection(connection);
+        return service.RemoteCommandService.registerAtomCommands(
+          fileNotifier,
+          this._commands,
+        );
+      }),
+    );
+  }
+
+  consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
+    this._remoteProjectsService = service;
+    const disposable = new Disposable(() => {
+      this._remoteProjectsService = null;
     });
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  consumeDeepLinkService(service: DeepLinkService): IDisposable {
+    const disposable = service.subscribeToPath(
+      ATOM_URI_ADD_PATH,
+      async params => {
+        const {path: projectPath} = params;
+        invariant(typeof projectPath === 'string');
+        if (!nuclideUri.isRemote(projectPath)) {
+          getLogger(`Expected remote Nuclide URI but got ${projectPath}.`);
+          return;
+        }
+
+        const remoteProjectsService = this._remoteProjectsService;
+        if (remoteProjectsService == null) {
+          getLogger('No provider for nuclide-remote-projects was found.');
+          return;
+        }
+
+        getLogger().info(`Attempting to addProject(${projectPath}).`);
+        const hostname = nuclideUri.getHostname(projectPath);
+        const cwd = nuclideUri.getPath(projectPath);
+        await remoteProjectsService.createRemoteConnection({
+          host: hostname,
+          cwd,
+          displayTitle: hostname,
+        });
+      },
+    );
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   dispose(): void {

@@ -167,10 +167,10 @@ class ServiceAtomCommands {
     }
   }
 
-  addProject(projectPath: NuclideUri): Promise<void> {
+  addProject(projectPath: NuclideUri, newWindow: boolean): Promise<void> {
     const commands = CommandServer.getAtomCommandsByPath(projectPath);
     if (commands != null) {
-      return commands.addProject(projectPath);
+      return commands.addProject(projectPath, newWindow);
     } else {
       throw new Error('No connected Atom windows');
     }
