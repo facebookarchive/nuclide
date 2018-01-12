@@ -5,6 +5,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides the ability to view references to a symbol",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "atomConfig": {
     "defaultLocationForPane": {

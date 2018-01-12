@@ -2,6 +2,7 @@
   "name": "nuclide-autocomplete",
   "version": "0.0.0",
   "description": "A wrapper on autocomplete-plus to provide timeout and tracking when using autocomplete-plus",
+  "author": "NEEDS OWNER",
   "main": "./lib/main.js",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {

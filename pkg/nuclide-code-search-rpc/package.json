@@ -3,6 +3,7 @@
   "main": "./lib/CodeSearchService.js",
   "version": "0.0.0",
   "description": "Rpc side of the nuclide-code-search package",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

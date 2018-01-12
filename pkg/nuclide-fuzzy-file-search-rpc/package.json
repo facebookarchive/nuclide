@@ -3,6 +3,7 @@
   "main": "./lib/FuzzyFileSearchService.js",
   "version": "0.0.0",
   "description": "Definition and implementation of Fuzzy File Search service",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

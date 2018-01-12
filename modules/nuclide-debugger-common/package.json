@@ -2,6 +2,7 @@
   "name": "nuclide-debugger-common",
   "version": "0.4.0",
   "description": "Provides common Node functionality for the Nuclide debugger",
+  "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-debugger-common",

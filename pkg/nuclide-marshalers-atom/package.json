@@ -3,6 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Marshalers for Nuclide in the Atom process",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"

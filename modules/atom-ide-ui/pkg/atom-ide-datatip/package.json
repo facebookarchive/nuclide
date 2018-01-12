@@ -5,6 +5,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides persistent tooltips and overlays",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "nuclide": {
     "configMetadata": {

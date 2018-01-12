@@ -3,6 +3,7 @@
   "main": "./lib/PythonService.js",
   "version": "0.0.0",
   "description": "Provides base support for Python language features.",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testsCannotBeRunInParallel": true,

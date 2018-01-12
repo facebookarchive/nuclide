@@ -3,6 +3,7 @@
   "main": "./lib/NativeDebuggerServiceImplementation.js",
   "version": "0.0.0",
   "description": "Nuclide lldb debugging server",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

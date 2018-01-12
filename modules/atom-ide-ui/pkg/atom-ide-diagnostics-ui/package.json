@@ -5,6 +5,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays linter results, useful information, and problems with your code",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "deserializers": {
     "nuclide.DiagnosticsPanelModel": "deserializeDiagnosticsViewModel",

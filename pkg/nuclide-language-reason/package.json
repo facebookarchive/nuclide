@@ -2,6 +2,7 @@
   "name": "nuclide-language-reason",
   "version": "0.0.0",
   "description": "Reason language support in Atom",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",

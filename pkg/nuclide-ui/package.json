@@ -3,6 +3,7 @@
   "main": "./main.js",
   "version": "0.0.0",
   "description": "Nuclide user interface components",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",

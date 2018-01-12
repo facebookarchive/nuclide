@@ -3,6 +3,7 @@
   "main": "./src/index.js",
   "version": "0.0.0",
   "description": "A server for providing diagnostics for JS auto-imports",
+  "author": "NEEDS OWNER",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

@@ -1,6 +1,7 @@
 {
   "name": "nuclide-definition-preview",
   "description": "Show preview of definitions while browsing code",
+  "author": "NEEDS OWNER",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "atomTestRunner": "../../lib/test-runner-entry.js",

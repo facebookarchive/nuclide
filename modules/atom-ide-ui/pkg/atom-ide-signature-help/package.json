@@ -4,6 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays signature help as datatips.",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "consumedServices": {
     "datatip": {

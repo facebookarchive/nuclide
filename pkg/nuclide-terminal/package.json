@@ -3,6 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A terminal integrated into nuclide.",
+  "author": "NEEDS OWNER",
   "private": true,
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "deserializers": {

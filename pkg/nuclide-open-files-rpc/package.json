@@ -2,6 +2,7 @@
   "name": "nuclide-open-files-rpc",
   "version": "0.0.0",
   "description": "Provides open file notifications in Nuclide server",
+  "author": "NEEDS OWNER",
   "main": "./lib/main.js",
   "nuclide": {
     "packageType": "Node",

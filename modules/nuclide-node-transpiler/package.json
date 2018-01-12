@@ -2,6 +2,7 @@
   "name": "nuclide-node-transpiler",
   "version": "0.4.0",
   "description": "Transpiles JavaScript files",
+  "author": "NEEDS OWNER",
   "main": "./lib/main.js",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",

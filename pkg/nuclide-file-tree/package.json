@@ -3,6 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides the new file tree panel for Nuclide",
+  "author": "NEEDS OWNER",
   "consumedServices": {
     "nuclide-current-working-directory": {
       "versions": {

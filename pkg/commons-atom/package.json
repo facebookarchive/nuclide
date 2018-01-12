@@ -2,6 +2,7 @@
   "name": "commons-atom",
   "version": "0.0.0",
   "description": "Provides common helper functions for Nuclide packages in Atom",
+  "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Node",

@@ -2,6 +2,7 @@
   "name": "nuclide-filewatcher-rpc",
   "version": "0.0.0",
   "description": "Watches files and directories on a remote directory using watchman.",
+  "author": "NEEDS OWNER",
   "main": "./lib/FileWatcherService.js",
   "nuclide": {
     "packageType": "Node",
