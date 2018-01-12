@@ -3505,6 +3505,10 @@ nuclide-prebuilt-libs@0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.3.3.tgz#179659b7531384fb46390914497b555f34e572aa"
 
+nuclide-prebuilt-libs@0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.3.2.tgz#883f2b88e06a1c9767fb4756d2ba6ad87d192191"
+
 nullthrows@1.0.0, nullthrows@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/nullthrows/-/nullthrows-1.0.0.tgz#34715e53b9debe0750a77233fd494a5835a2d999"
