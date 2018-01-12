@@ -25,7 +25,10 @@ import TabbableContainer from './TabbableContainer';
  * Given a function to dismiss the modal, return a React element for the content.
  * Call the function when e.g. the user clicks a Cancel or Submit button.
  */
-type ContentFactory = (dismiss: () => void) => React.Node;
+type ContentFactory = ({
+  dismiss(): void,
+  element: Element,
+}) => React.Node;
 
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
@@ -57,7 +60,7 @@ type Options = {|
 export default function showModal(
   contentFactory: ContentFactory,
   options: Options = defaults,
-): IDisposable & {getElement(): ?HTMLElement} {
+): IDisposable {
   const hostElement = document.createElement('div');
   const atomPanel = atom.workspace.addModalPanel({
     item: hostElement,
@@ -69,7 +72,7 @@ export default function showModal(
   const shouldDismissOnPressEscape =
     options.shouldDismissOnPressEscape || (() => true);
 
-  let panelElement = atomPanel.getElement();
+  const element = atomPanel.getElement();
   const previouslyFocusedElement = document.activeElement;
   const disposable = new UniversalDisposable(
     Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
@@ -101,7 +104,6 @@ export default function showModal(
         options.onDismiss();
       }
       ReactDOM.unmountComponentAtNode(hostElement);
-      panelElement = null;
       atomPanel.destroy();
       if (previouslyFocusedElement != null) {
         previouslyFocusedElement.focus();
@@ -109,16 +111,14 @@ export default function showModal(
     },
   );
 
-  (disposable: any).getElement = () => panelElement;
-
   ReactDOM.render(
     <ModalContainer>
-      {contentFactory(disposable.dispose.bind(disposable))}
+      {contentFactory({dismiss: disposable.dispose.bind(disposable), element})}
     </ModalContainer>,
     hostElement,
   );
 
-  return (disposable: any);
+  return disposable;
 }
 
 /** Flow makes {} an unsealed object (eyeroll) */

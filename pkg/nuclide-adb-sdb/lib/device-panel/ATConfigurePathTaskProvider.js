@@ -39,7 +39,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
       fullConfig => {
         return Observable.create(observer => {
           const disposable = showModal(
-            dismiss => (
+            ({dismiss}) => (
               <ATCustomDBPathModal
                 dismiss={dismiss}
                 activePath={fullConfig.active}

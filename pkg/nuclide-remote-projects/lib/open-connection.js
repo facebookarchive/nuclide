@@ -50,7 +50,7 @@ export function openConnectionDialog(
 ): Promise<?RemoteConnection> {
   return new Promise(resolve => {
     showModal(
-      dismiss => {
+      ({dismiss}) => {
         const StatefulModal = bindObservableAsProps(
           createPropsStream({dismiss, onConnected: resolve, dialogOptions}),
           RemoteProjectConnectionModal,
