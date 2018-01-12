@@ -164,6 +164,9 @@ async function getHgExecParams(
       // open interactive editors.
       '--config',
       'ui.merge=:merge',
+      // Prevent scary error message on amend in the middle of a stack
+      '--config',
+      'fbamend.education=',
     );
   }
   const [hgCommandName] = args;
