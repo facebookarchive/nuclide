@@ -426,52 +426,94 @@ export default class ClangFlagsManager {
     return result;
   }
 
+  _assertCompilationDatabaseEntry(entry: Object): void {
+    invariant(
+      typeof entry.file === 'string' &&
+        typeof entry.directory === 'string' &&
+        (typeof entry.command === 'string' || Array.isArray(entry.arguments)),
+      'The compilation database entry is invalid and does not comply with the spec.',
+    );
+  }
+
+  async _processCompilationDatabaseEntry(
+    entry: Object,
+    dbDir: string,
+    flagsFile: ?string,
+    dbFile: string,
+  ): Promise<[string, ClangFlags]> {
+    this._assertCompilationDatabaseEntry(entry);
+    const directory = await fsPromise.realpath(
+      // Relative directories aren't part of the spec, but resolving them
+      // relative to the compile_commands.json location seems reasonable.
+      nuclideUri.resolve(dbDir, entry.directory),
+      this._realpathCache,
+    );
+    const filename = nuclideUri.resolve(directory, entry.file);
+    const realpath = await fsPromise.realpath(filename, this._realpathCache);
+    const clangFlags = {
+      rawData: {
+        command: entry.command,
+        file: entry.file,
+        directory,
+        arguments: entry.arguments,
+      },
+      flagsFile: flagsFile == null ? dbFile : flagsFile,
+    };
+    return [realpath, clangFlags];
+  }
+
   async _loadFlagsFromCompilationDatabase(
     dbFile: string,
     flagsFile: ?string,
     requestSettings: ClangRequestSettings,
   ): Promise<Map<string, ClangFlags>> {
     const flags = new Map();
+    let contents = null;
     try {
-      const contents = await fsPromise.readFile(dbFile, 'utf8');
-      const data = JSON.parse(contents);
-      const dbDir = nuclideUri.dirname(dbFile);
-      await Promise.all(
-        data.map(async entry => {
-          const {command, file} = entry;
-          const directory = await fsPromise.realpath(
-            // Relative directories aren't part of the spec, but resolving them
-            // relative to the compile_commands.json location seems reasonable.
-            nuclideUri.resolve(dbDir, entry.directory),
-            this._realpathCache,
-          );
-          const filename = nuclideUri.resolve(directory, file);
-          if (await fsPromise.exists(filename)) {
-            const realpath = await fsPromise.realpath(
-              filename,
-              this._realpathCache,
-            );
-            const result = {
-              rawData: {
-                command,
-                file,
-                directory,
-                arguments: entry.arguments,
-              },
-              // flowlint-next-line sketchy-null-string:off
-              flagsFile: flagsFile || dbFile,
-            };
-            flags.set(realpath, result);
-            this._pathToFlags.set(
-              [realpath, requestSettings],
-              Promise.resolve(result),
-            );
-          }
-        }),
-      );
+      contents = await fsPromise.readFile(dbFile, 'utf8');
     } catch (e) {
-      logger.error(`Error reading compilation flags from ${dbFile}`, e);
+      logger.error(
+        `Error reading the compilation database ${dbFile} before parsing. It might be too big or have corrupted data.`,
+        e,
+      );
+      return flags;
     }
+    let data = null;
+    try {
+      data = JSON.parse(contents);
+    } catch (e) {
+      logger.error(
+        `Error parsing as JSON object the compilation database ${dbFile}`,
+        e,
+      );
+      return flags;
+    }
+    const dbDir = nuclideUri.dirname(dbFile);
+    await Promise.all(
+      data.map(async entry => {
+        try {
+          const [
+            realpath,
+            clangFlags,
+          ] = await this._processCompilationDatabaseEntry(
+            entry,
+            dbDir,
+            flagsFile,
+            dbFile,
+          );
+          flags.set(realpath, clangFlags);
+          this._pathToFlags.set(
+            [realpath, requestSettings],
+            Promise.resolve(clangFlags),
+          );
+        } catch (e) {
+          logger.error(
+            `Error processing entry for compilation database ${dbFile}: ${entry}`,
+            e,
+          );
+        }
+      }),
+    );
     return flags;
   }
 
