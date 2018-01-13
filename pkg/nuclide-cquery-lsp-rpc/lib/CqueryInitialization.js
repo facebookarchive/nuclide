@@ -14,7 +14,6 @@ import type {CqueryProject} from './types';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
-import fs from 'fs';
 
 const CQUERY_CACHE_DIR = '.cquery_cache';
 
@@ -68,7 +67,7 @@ async function getInitializationOptionsWithCompilationDb(
   return {
     ...staticInitializationOptions(),
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: await verifyOrCreateFallbackCacheDir(compilationDbDir),
+    cacheDirectory: await createCacheDir(compilationDbDir),
   };
 }
 
@@ -79,16 +78,17 @@ async function getInitializationOptionsWithoutCompilationDb(
   return {
     ...staticInitializationOptions(),
     extraClangArguments: defaultFlags,
-    cacheDirectory: await verifyOrCreateFallbackCacheDir(projectRoot),
+    cacheDirectory: await createCacheDir(projectRoot),
   };
 }
 
-async function verifyOrCreateFallbackCacheDir(rootDir: string) {
-  // If the cache directory can't be created, then we fallback to putting it
-  // in the system's tempdir. This makes caching unreliable but otherwise
-  // cquery would crash.
-  if (!await fsPromise.access(rootDir, fs.W_OK + fs.R_OK)) {
-    return nuclideUri.join(os.tmpdir(), CQUERY_CACHE_DIR);
-  }
-  return nuclideUri.join(rootDir, CQUERY_CACHE_DIR);
+async function createCacheDir(rootDir: string) {
+  const dir = nuclideUri.join(
+    os.tmpdir(),
+    'cquery',
+    nuclideUri.split(rootDir).join('@'),
+    CQUERY_CACHE_DIR,
+  );
+  await fsPromise.mkdirp(dir);
+  return dir;
 }

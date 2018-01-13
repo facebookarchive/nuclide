@@ -416,7 +416,9 @@ export class LspLanguageService {
         }
       };
       childProcess.stdout.pipe(through(data => accumulate('stdout', data)));
-      childProcess.stderr.pipe(through(data => accumulate('stderr', data)));
+      if (childProcess.stderr != null) {
+        childProcess.stderr.pipe(through(data => accumulate('stderr', data)));
+      }
 
       const jsonRpcConnection: JsonRpcConnection = rpc.createMessageConnection(
         new SafeStreamMessageReader(childProcess.stdout),

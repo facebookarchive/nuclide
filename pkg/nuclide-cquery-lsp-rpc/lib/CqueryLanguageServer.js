@@ -18,6 +18,8 @@ import type {
 } from './types';
 import type {CqueryLanguageService} from '..';
 
+import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   MultiProjectLanguageService,
@@ -115,6 +117,10 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       forkHostServices(this._host, this._logger),
     ]);
 
+    const stderrFd = await fsPromise.open(
+      nuclideUri.join(initalizationOptions.cacheDirectory, '..', 'stderr'),
+      'a',
+    );
     const lsp = new CqueryLanguageClient(
       this._logger,
       this._fileCache,
@@ -124,9 +130,15 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       [
         '--language-server',
         '--log-file',
-        `${initalizationOptions.cacheDirectory}/diagnostics`,
+        nuclideUri.join(
+          initalizationOptions.cacheDirectory,
+          '..',
+          'diagnostics',
+        ),
       ], // args
-      {}, // spawnOptions
+      {
+        stdio: ['pipe', 'pipe', stderrFd],
+      }, // spawnOptions
       project.projectRoot,
       ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'],
       initalizationOptions,
