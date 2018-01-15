@@ -68,6 +68,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
       ...super.getDebuggerCapabilities(),
+      completionsRequest: true,
       conditionalBreakpoints: true,
       continueToLocation: true,
       setVariable: true,
