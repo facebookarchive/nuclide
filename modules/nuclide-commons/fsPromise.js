@@ -61,18 +61,6 @@ function tempfile(options: any): Promise<string> {
   });
 }
 
-function open(file: string, options: any): Promise<number> {
-  return new Promise((resolve, reject) => {
-    fs.open(file, options, (err, fd) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(fd);
-      }
-    });
-  });
-}
-
 /**
  * Searches upward through the filesystem from pathToDirectory to find a file with
  * fileName.
@@ -653,7 +641,6 @@ export default {
   getCommonAncestorDirectory,
   exists,
   mkdirp,
-  open,
   rimraf: rimrafWrapper,
   isNfs,
   isFuse,
