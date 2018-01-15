@@ -24,6 +24,7 @@ import nullthrows from 'nullthrows';
 import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {createPasteFromContents} from '../../fb-pastebin';
+import {runCommand} from 'nuclide-commons/process';
 
 export type HHVMLaunchConfig = {
   action: 'launch',
@@ -210,7 +211,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       );
   }
 
-  async _getAttachArgs(config: HHVMAttachConfig): Object {
+  async _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
     const startupDocumentPath: ?string = await this._getStartupDocumentPath(
       config,
     );
@@ -275,6 +276,27 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
     } catch (error) {
       return DEFAULT_HHVM_PATH;
     }
+  }
+
+  async getAttachTargetList(): Promise<Array<{pid: number, command: string}>> {
+    const commands = await runCommand(
+      'ps',
+      ['-e', '-o', 'pid,args'],
+      {},
+    ).toPromise();
+    return commands
+      .toString()
+      .split('\n')
+      .filter(line => line.indexOf('vsDebugPort') > 0)
+      .map(line => {
+        const words = line.trim().split(' ');
+        const pid = Number(words[0]);
+        const command = words.slice(1).join(' ');
+        return {
+          pid,
+          command,
+        };
+      });
   }
 
   dispose(): Promise<void> {

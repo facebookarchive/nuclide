@@ -31,8 +31,11 @@ import {getSessionConfig} from './utils';
 import passesGK from '../../commons-node/passesGK';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
-  constructor(targetUri: NuclideUri) {
+  _debugPort: ?number;
+
+  constructor(targetUri: NuclideUri, debugPort: ?number) {
     super('hhvm', targetUri);
+    this._debugPort = debugPort;
   }
 
   clone(): AttachProcessInfo {
@@ -74,10 +77,23 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     // Note: not specifying startup document or debug port here, the backend
     // will use the default parameters. We can surface these options in the
     // Attach Dialog if users need to be able to customize them in the future.
-    const config = {
+    const config: Object = {
       targetUri: nuclideUri.getPath(this.getTargetUri()),
       action: 'attach',
     };
+
+    let debugPort = this._debugPort;
+    if (debugPort == null) {
+      try {
+        // $FlowFB
+        const fetch = require('../../commons-node/fb-sitevar').fetchSitevarOnce;
+        debugPort = await fetch('NUCLIDE_HHVM_DEBUG_PORT');
+      } catch (e) {}
+    }
+
+    if (debugPort != null) {
+      config.debugPort = debugPort;
+    }
 
     logger.info(`Connection session config: ${JSON.stringify(config)}`);
     const result = await hhvmDebuggerService.debug(config);
