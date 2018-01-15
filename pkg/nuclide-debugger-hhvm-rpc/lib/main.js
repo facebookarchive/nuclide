@@ -22,6 +22,8 @@ import {
 import type {AtomNotification} from 'nuclide-debugger-common';
 import nullthrows from 'nullthrows';
 import fsPromise from 'nuclide-commons/fsPromise';
+import os from 'os';
+import {createPasteFromContents} from '../../fb-pastebin';
 
 export type HHVMLaunchConfig = {
   action: 'launch',
@@ -177,10 +179,13 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       config,
     );
 
+    const logFilePath = this._getHHVMLogFilePath();
+
     return {
       hhvmPath,
       hhvmArgs,
       startupDocumentPath,
+      logFilePath,
       debugPort,
       cwd:
         config.launchWrapperCommand != null
@@ -189,13 +194,31 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
     };
   }
 
+  _getHHVMLogFilePath(): string {
+    return nuclideUri.join(
+      os.tmpdir(),
+      `nuclide-${os.userInfo().username}-logs`,
+      'hhvm-debugger.log',
+    );
+  }
+
+  async createLogFilePaste(): Promise<string> {
+    return fsPromise
+      .readFile(this._getHHVMLogFilePath(), 'utf8')
+      .then(contents =>
+        createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
+      );
+  }
+
   async _getAttachArgs(config: HHVMAttachConfig): Object {
     const startupDocumentPath: ?string = await this._getStartupDocumentPath(
       config,
     );
+    const logFilePath = this._getHHVMLogFilePath();
     return {
       debugPort: config.debugPort,
       startupDocumentPath,
+      logFilePath,
     };
   }
 

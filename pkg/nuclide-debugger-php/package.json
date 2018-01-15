@@ -94,6 +94,12 @@
         "0.0.0": "createDebuggerProvider"
       }
     },
+    "additional-log-files": {
+      "description": "HHVM debugger log files",
+      "versions": {
+        "0.0.0": "createAdditionalLogFilesProvider"
+      }
+    },
     "nuclide-home.homeFragments": {
       "versions": {
         "0.0.0": "getHomeFragments"
