@@ -49,7 +49,7 @@ class HHVMDebuggerWrapper {
     });
   }
 
-  _attachTarget(attachMessage: attachRequest) {
+  _attachTarget(attachMessage: attachRequest, retries: number = 0) {
     const args = attachMessage.arguments || {};
     const attachPort =
       args.debugPort != null
@@ -95,10 +95,21 @@ class HHVMDebuggerWrapper {
         this._writeResponseMessage(attachResponse);
       })
       .on('error', error => {
-        process.stderr.write(
-          'Error communicating with debugger target: ' + error.toString(),
-        );
-        process.exit(error.code);
+        if (retries >= 5) {
+          process.stderr.write(
+            'Error communicating with debugger target: ' + error.toString(),
+          );
+          process.exit(error.code);
+        } else {
+          // When reconnecting to a target we just disconnected from, especially
+          // in the case of an unclean disconnection, it may take a moment
+          // for HHVM to receive a TCP socket error and realize the client is
+          // gone. Rather than failing to reconnect, wait a moment and try
+          // again to provide a better user experience.
+          setTimeout(() => {
+            this._attachTarget(attachMessage, retries + 1);
+          }, 1000);
+        }
       });
 
     socket.connect({port: attachPort, host: 'localhost'});
