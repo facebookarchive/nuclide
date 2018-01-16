@@ -21,6 +21,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject, Observable} from 'rxjs';
 import {reportError} from './EventReporter';
 
+const LOCAL_PATH_URI_PREFIX = 'file://';
+
 /**
  * Bridge between Nuclide IPC and RPC execution control protocols.
  */
@@ -77,8 +79,14 @@ export default class ExecutionManager {
       // Chrome's continueToLocation implementation incorrect
       // uses source uri instead of scriptId as the location ScriptId
       // field, we mirror the same behavior for compatibility reason.
-      const sourceUri = this._debuggerDispatcher.getSourceUriFromUri(fileUri);
-      if (sourceUri != null) {
+      const sourceUriOrFileUri = this._debuggerDispatcher.getSourceUriFromUri(
+        fileUri,
+      );
+      if (sourceUriOrFileUri != null) {
+        const sourceUri =
+          sourceUriOrFileUri.indexOf(LOCAL_PATH_URI_PREFIX) === 0
+            ? sourceUriOrFileUri.substr(LOCAL_PATH_URI_PREFIX.length)
+            : sourceUriOrFileUri;
         const scriptId = nuclideUri.getPath(sourceUri);
         this._debuggerDispatcher.continueToLocation({
           scriptId,
