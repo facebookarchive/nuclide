@@ -23,7 +23,7 @@ export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
   _lastHeartbeat: ?('here' | 'away');
   _lastHeartbeatTime: ?number;
-  _heartbeatInterval: ?number;
+  _heartbeatInterval: ?IntervalID;
   _emitter: Emitter;
   _options: RequestOptions;
 

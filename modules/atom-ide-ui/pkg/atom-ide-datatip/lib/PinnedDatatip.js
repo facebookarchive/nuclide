@@ -61,7 +61,7 @@ export class PinnedDatatip {
   _boundHandleMouseEnter: Function;
   _boundHandleMouseLeave: Function;
   _boundHandleCapturedClick: Function;
-  _mouseUpTimeout: ?number;
+  _mouseUpTimeout: ?TimeoutID;
   _hostElement: HTMLElement;
   _marker: ?atom$Marker;
   _rangeDecoration: ?atom$Decoration;

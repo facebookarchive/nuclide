@@ -46,7 +46,7 @@ export class HistogramTracker {
   _maxValue: number;
   _bucketSize: number;
   _buckets: Array<Bucket>;
-  _intervalId: number;
+  _intervalId: IntervalID;
 
   constructor(
     eventName: string,

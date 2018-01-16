@@ -48,7 +48,7 @@ export class LoadingSpinner extends React.Component<
   Props,
   {shouldRender: boolean},
 > {
-  _timeout: ?number;
+  _timeout: ?TimeoutID;
 
   constructor(props: Props) {
     super(props);

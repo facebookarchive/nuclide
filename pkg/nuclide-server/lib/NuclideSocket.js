@@ -59,9 +59,9 @@ export class NuclideSocket {
 
   _serverUri: string;
   _options: ?AgentOptions;
-  _pingTimer: ?number;
+  _pingTimer: ?TimeoutID;
   _reconnectTime: number;
-  _reconnectTimer: ?number; // ID from a setTimeout() call.
+  _reconnectTimer: ?TimeoutID; // ID from a setTimeout() call.
   _previouslyConnected: boolean;
   _websocketUri: string;
   _emitter: Emitter;
@@ -241,7 +241,6 @@ export class NuclideSocket {
   }
 
   _scheduleReconnect() {
-    // flowlint-next-line sketchy-null-number:off
     if (this._reconnectTimer) {
       return;
     }
@@ -259,7 +258,6 @@ export class NuclideSocket {
   }
 
   _clearReconnectTimer() {
-    // flowlint-next-line sketchy-null-number:off
     if (this._reconnectTimer) {
       clearTimeout(this._reconnectTimer);
       this._reconnectTimer = null;

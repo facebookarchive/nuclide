@@ -576,11 +576,11 @@ export class SshHandshake {
         displayTitle: this._config.displayTitle,
       });
     } else {
-      /* $FlowIssue t9212378 */
       this._forwardingServer = net
         .createServer(sock => {
           this._forwardSocket(sock);
         })
+        // $FlowFixMe
         .listen(0, 'localhost', () => {
           const localPort = this._getLocalPort();
           // flowlint-next-line sketchy-null-number:off

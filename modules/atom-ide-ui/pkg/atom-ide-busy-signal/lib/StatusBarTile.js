@@ -55,7 +55,7 @@ export default class StatusBarTile {
   _messages: Array<BusyMessageInstance> = [];
   _isMouseOverItem: boolean = false;
   _isMouseOverTooltip: number = 0;
-  _leaveTimeoutId: ?number;
+  _leaveTimeoutId: ?TimeoutID;
 
   constructor(
     statusBar: atom$StatusBar,

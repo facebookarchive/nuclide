@@ -22,7 +22,7 @@ const _createdTooltips: Map<
   {options: atom$TooltipsAddOptions, disposable: IDisposable},
 > = new Map();
 const _toDispose: Set<Element> = new Set();
-let _timeoutHandle: ?number;
+let _timeoutHandle: ?TimeoutID;
 
 /**
  * Adds a self-disposing Atom's tooltip to a react element.

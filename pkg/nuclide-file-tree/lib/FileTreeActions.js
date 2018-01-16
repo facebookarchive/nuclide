@@ -329,8 +329,8 @@ export default class FileTreeActions {
     const rootKeys = rootDirectories.map(directory =>
       FileTreeHelpers.dirPathToKey(directory.getPath()),
     );
+    // $FlowFixMe
     const rootRepos: Array<?atom$Repository> = await Promise.all(
-      // $FlowFixMe(>=0.55.0) Flow suppress
       rootDirectories.map(directory => repositoryForPath(directory.getPath())),
     );
 

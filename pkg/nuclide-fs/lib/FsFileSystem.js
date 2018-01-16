@@ -90,7 +90,6 @@ export class FsFileSystem implements FileSystem {
   }
 
   async readdir(path: NuclideUri): Promise<Array<DirectoryEntry>> {
-    // $FlowFixMe(>=0.55.0) Flow suppress
     const files = await fsPromise.readdir(path);
     const entries = await Promise.all(
       files.map(async file => {
@@ -109,6 +108,7 @@ export class FsFileSystem implements FileSystem {
       }),
     );
     // TODO: Return entries directly and change client to handle error.
+    // $FlowFixMe
     return arrayCompact(entries).map(entry => {
       return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
     });

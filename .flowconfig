@@ -25,7 +25,6 @@ experimental.const_params=true
 experimental.strict_type_args=true
 module.use_strict=true
 module.system.node.resolve_dirname=node_modules
-unsafe.enable_getters_and_setters=true
 
 suppress_comment=.*\\$FlowFixMe.*
 suppress_comment=.*\\$FlowIssue.*
@@ -40,4 +39,4 @@ sketchy-null=error
 sketchy-null-bool=off
 
 [version]
-0.61.0
+0.63.1

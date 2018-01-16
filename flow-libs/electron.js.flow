@@ -14,12 +14,15 @@ declare module 'electron' {
   // Main process:
   declare var app: ?electron$app;
   declare var autoUpdater: ?electron$autoUpdater;
+  // $FlowFixMe
   declare var BrowserWindow: ?typeof electron$BrowserWindow;
   declare var contentTracing: ?electron$contentTracing;
   declare var dialog: ?electron$dialog;
   declare var globalShortcut: ?electron$globalShortcut;
   declare var ipcMain: ?electron$IpcMain;
+  // $FlowFixMe
   declare var Menu: ?typeof electron$Menu;
+  // $FlowFixMe
   declare var MenuItem: ?typeof electron$MenuItem;
   declare var powerMonitor: ?electron$powerMonitor;
   declare var powerSaveBlocker: ?electron$powerSaveBlocker;

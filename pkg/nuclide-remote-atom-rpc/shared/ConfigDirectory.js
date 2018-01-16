@@ -132,9 +132,9 @@ export async function getServer(): Promise<?ServerInfo> {
 async function getServerInfos(
   configDirectory: NuclideUri,
 ): Promise<Array<ServerInfo>> {
-  // $FlowFixMe(>=0.55.0) Flow suppress
   const entries = await fs.readdir(configDirectory);
   return arrayCompact(
+    // $FlowFixMe
     await Promise.all(
       entries.map(async entry => {
         const subdir = nuclideUri.join(configDirectory, entry);

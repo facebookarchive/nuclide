@@ -33,7 +33,7 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
 export default class RelativeDate extends React.Component<Props> {
-  _interval: ?number;
+  _interval: ?IntervalID;
 
   static defaultProps: DefaultProps = {
     delay: DEFAULT_RERENDER_DELAY,

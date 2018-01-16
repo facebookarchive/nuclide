@@ -38,7 +38,7 @@ export function highlightOnUpdate<
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component<P, void> {
     showFlash: boolean;
-    timeout: ?number;
+    timeout: ?TimeoutID;
 
     constructor(props: P) {
       super(props);

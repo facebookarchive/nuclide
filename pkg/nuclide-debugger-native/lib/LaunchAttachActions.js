@@ -30,7 +30,7 @@ const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
 export class LaunchAttachActions {
   _dispatcher: LaunchAttachDispatcher;
   _targetUri: NuclideUri;
-  _refreshTimerId: ?number;
+  _refreshTimerId: ?IntervalID;
   _parentUIVisible: boolean;
   _attachUIVisible: boolean;
 
@@ -107,7 +107,7 @@ export class LaunchAttachActions {
 
   _killAutoRefreshTimer(): void {
     if (this._refreshTimerId != null) {
-      clearTimeout(this._refreshTimerId);
+      clearInterval(this._refreshTimerId);
       this._refreshTimerId = null;
     }
   }

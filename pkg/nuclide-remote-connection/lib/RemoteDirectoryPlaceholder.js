@@ -106,6 +106,7 @@ export default class RemoteDirectoryPlaceholder {
   getEntries(
     callback: (
       error: ?atom$GetEntriesError,
+      // $FlowFixMe
       entries: ?Array<atom$Directory | atom$File>,
     ) => mixed,
   ): void {

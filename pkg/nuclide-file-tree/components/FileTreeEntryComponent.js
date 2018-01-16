@@ -54,7 +54,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   // the duration of one user interaction.
   _arrowContainer: ?HTMLElement;
   dragEventCount: number;
-  _loadingTimeout: ?number;
+  _loadingTimeout: ?TimeoutID;
   _disposables: ?UniversalDisposable;
   _pathContainer: ?HTMLElement;
 

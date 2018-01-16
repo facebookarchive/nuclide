@@ -118,7 +118,7 @@ class Call {
   _resolve: (result: any) => void;
   _cleanup: () => void;
   _complete: boolean;
-  _timerId: ?number;
+  _timerId: ?TimeoutID;
 
   constructor(
     message: RequestMessage,
@@ -157,6 +157,7 @@ class Call {
   cleanup(): void {
     if (!this._complete) {
       this._complete = true;
+      // $FlowFixMe
       clearTimeout(this._timerId);
       this._timerId = null;
       this._cleanup();

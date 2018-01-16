@@ -65,8 +65,8 @@ export class QueuedAckTransport {
   _messageProcessor: Subject<string>;
   _lastSendId: number = 0;
   _lastProcessedId: number = 0;
-  _pendingMessageTimer: ?number;
-  _ackTimer: ?number;
+  _pendingMessageTimer: ?TimeoutID;
+  _ackTimer: ?TimeoutID;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
     this.id = clientId;

@@ -32,7 +32,7 @@ export default class ScribeProcess {
   _scribeCategory: string;
   _childPromise: ?Promise<child_process$ChildProcess>;
   _subscription: ?rxjs$ISubscription;
-  _joinTimer: ?number;
+  _joinTimer: ?TimeoutID;
   _joinInterval: ?number;
 
   constructor(

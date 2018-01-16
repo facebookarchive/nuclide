@@ -247,7 +247,6 @@ class Activation {
               ),
       );
 
-      // $FlowFixMe: exceeds number of args defined in flow-typed definition
       this._globalViewStates = Observable.combineLatest(
         diagnosticsStream,
         filterByActiveTextEditorStream,
@@ -257,6 +256,7 @@ class Activation {
         autoVisibilityStream,
         supportedMessageKindsStream,
         uiConfigStream,
+        // $FlowFixMe
         (
           diagnostics,
           filterByActiveTextEditor,
