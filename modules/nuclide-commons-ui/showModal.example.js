@@ -19,7 +19,7 @@ function ModalButton() {
 }
 
 function showExampleModal() {
-  showModal(dismiss => {
+  showModal(({dismiss}) => {
     return (
       <div>
         <div>
