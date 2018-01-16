@@ -25,23 +25,26 @@ export function registerDevicePanelProviders(
   android: AndroidBridge,
   tizen: TizenBridge,
 ): IDisposable {
-  return new UniversalDisposable(
-    // list
+  const disposable = new UniversalDisposable(
     api.registerListProvider(new ATDeviceListProvider(android)),
-    api.registerListProvider(new ATDeviceListProvider(tizen)),
-    // info
     api.registerInfoProvider(new ATDeviceInfoProvider(android)),
-    api.registerInfoProvider(new ATDeviceInfoProvider(tizen)),
-    // processes
     api.registerProcessesProvider(new ATDeviceProcessesProvider(android)),
-    api.registerProcessesProvider(new ATDeviceProcessesProvider(tizen)),
-    // process tasks
     api.registerProcessTaskProvider(new ATDeviceStopProcessProvider(android)),
-    api.registerProcessTaskProvider(new ATDeviceStopProcessProvider(tizen)),
-    // device type tasks
     api.registerDeviceTypeTaskProvider(
       new ATConfigurePathTaskProvider(android),
     ),
-    api.registerDeviceTypeTaskProvider(new ATConfigurePathTaskProvider(tizen)),
   );
+
+  if (atom.config.get('nuclide.nuclide-adb-sdb.tizen')) {
+    disposable.add(
+      api.registerListProvider(new ATDeviceListProvider(tizen)),
+      api.registerInfoProvider(new ATDeviceInfoProvider(tizen)),
+      api.registerProcessesProvider(new ATDeviceProcessesProvider(tizen)),
+      api.registerProcessTaskProvider(new ATDeviceStopProcessProvider(tizen)),
+      api.registerDeviceTypeTaskProvider(
+        new ATConfigurePathTaskProvider(tizen),
+      ),
+    );
+  }
+  return disposable;
 }

@@ -7,9 +7,21 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
-  },
-  "activationCommands": {
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "IDE Settings",
+        "Tizen"
+      ]
+    },
+    "config": {
+      "tizen": {
+        "title": "Show Tizen devices",
+        "type": "boolean",
+        "default": "true",
+        "description": "Whether to show a Tizen tab in the Devices panel. Restart required."
+      }
+    }
   },
   "consumedServices": {
     "nuclide.devices": {
