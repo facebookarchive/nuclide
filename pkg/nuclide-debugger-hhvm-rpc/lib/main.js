@@ -23,7 +23,6 @@ import type {AtomNotification} from 'nuclide-debugger-common';
 import nullthrows from 'nullthrows';
 import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
-import {createPasteFromContents} from '../../fb-pastebin';
 import {runCommand} from 'nuclide-commons/process';
 
 export type HHVMLaunchConfig = {
@@ -204,11 +203,17 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
   }
 
   async createLogFilePaste(): Promise<string> {
-    return fsPromise
-      .readFile(this._getHHVMLogFilePath(), 'utf8')
-      .then(contents =>
-        createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
-      );
+    try {
+      // $FlowFB
+      const fbPaste = require('../../fb-pastebin');
+      return fsPromise
+        .readFile(this._getHHVMLogFilePath(), 'utf8')
+        .then(contents =>
+          fbPaste.createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
+        );
+    } catch (error) {
+      return '';
+    }
   }
 
   async _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
