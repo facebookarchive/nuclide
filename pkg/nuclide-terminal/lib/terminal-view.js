@@ -15,8 +15,7 @@ import {shell, clipboard} from 'electron';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import url from 'url';
-import {Terminal} from 'xterm';
-import * as Fit from 'xterm/lib/addons/fit/fit';
+import Terminal from 'xterm';
 
 import {getPtyServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -65,10 +64,6 @@ export interface TerminalViewState {
 }
 
 type ProcessExitCallback = () => void;
-
-// The 'fit' add-on resizes the terminal based on the container size
-// and the font size such that the terminal fills the container.
-Terminal.applyAddon(Fit);
 
 export class TerminalView implements PtyClient {
   _paneUri: string;
@@ -154,7 +149,7 @@ export class TerminalView implements PtyClient {
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
-    terminal.open(this._div);
+    terminal.open(this._div, false);
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
@@ -382,6 +377,9 @@ export class TerminalView implements PtyClient {
   }
 
   _fitAndResize(): void {
+    // The 'fit' add-on resizes the terminal based on the container size
+    // and the font size such that the terminal fills the container.
+    Terminal.loadAddon('fit');
     this._terminal.fit();
     if (this._pty != null) {
       this._pty.resize(this._terminal.cols, this._terminal.rows);
