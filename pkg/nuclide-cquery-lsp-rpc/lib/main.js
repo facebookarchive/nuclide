@@ -192,6 +192,7 @@ export async function createCqueryService(params: {|
   host: HostServices,
   logCategory: string,
   logLevel: LogLevel,
+  enableLibclangLogs: boolean,
 |}): Promise<?CqueryLanguageService> {
   const command = 'cquery';
   const languageId = 'cquery';
@@ -210,5 +211,6 @@ export async function createCqueryService(params: {|
     logger,
     fileCache,
     params.host,
+    params.enableLibclangLogs,
   );
 }

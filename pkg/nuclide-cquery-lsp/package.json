@@ -21,6 +21,12 @@
         "type": "boolean",
         "default": "false",
         "description": "Still in early development. You need cquery in your PATH and a restart is required"
+      },
+      "enable-libclang-logs": {
+        "title": "Enable libclang logs (for developers)",
+        "type": "boolean",
+        "default": "false",
+        "description": "Enable libclang logs to be printed to the cquery's stderr file"
       }
     }
   },

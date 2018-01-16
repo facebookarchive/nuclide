@@ -348,6 +348,8 @@ async function getConnection(connection): Promise<LanguageService> {
     host,
     logCategory: 'cquery-language-server',
     logLevel: 'WARN',
+    enableLibclangLogs:
+      featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true,
   });
   return cqueryService != null
     ? new CqueryLSPClient(cqueryService)

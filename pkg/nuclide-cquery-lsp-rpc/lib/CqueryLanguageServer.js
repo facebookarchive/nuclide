@@ -20,6 +20,7 @@ import type {CqueryLanguageService} from '..';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getOriginalEnvironment} from 'nuclide-commons/process';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   MultiProjectLanguageService,
@@ -51,6 +52,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
+    enableLibclangLogs: boolean,
   ) {
     super();
 
@@ -63,7 +65,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
     this._processes = new Cache(
       (projectKey: CqueryProjectKey) =>
-        this._createCqueryLanguageClient(projectKey),
+        this._createCqueryLanguageClient(projectKey, enableLibclangLogs),
       value => {
         value.then(service => {
           if (service != null) {
@@ -97,6 +99,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
   async _createCqueryLanguageClient(
     projectKey: CqueryProjectKey,
+    enableLibclangLogs: boolean,
   ): Promise<?CqueryLanguageClient> {
     const project = await this._projectManager.getProjectFromKey(projectKey);
     if (project == null) {
@@ -121,6 +124,13 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       nuclideUri.join(initalizationOptions.cacheDirectory, '..', 'stderr'),
       'a',
     );
+    const spawnOptions = {
+      stdio: ['pipe', 'pipe', stderrFd],
+      env: {...(await getOriginalEnvironment())},
+    };
+    if (enableLibclangLogs) {
+      spawnOptions.env.LIBCLANG_LOGGING = 1;
+    }
     const lsp = new CqueryLanguageClient(
       this._logger,
       this._fileCache,
@@ -135,10 +145,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
           '..',
           'diagnostics',
         ),
-      ], // args
-      {
-        stdio: ['pipe', 'pipe', stderrFd],
-      }, // spawnOptions
+      ],
+      spawnOptions,
       project.projectRoot,
       ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'],
       initalizationOptions,
