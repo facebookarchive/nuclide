@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Option} from '../../../nuclide-ui/Dropdown';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
@@ -46,7 +47,7 @@ export class Selectors extends React.Component<Props> {
       : hostName;
   }
 
-  _getHostOptions(): Array<{value: ?string, label: string}> {
+  _getHostOptions(): Array<Option> {
     return this.props.hosts.map(host => {
       return {value: host, label: this._getLabelForHost(host)};
     });
@@ -98,7 +99,6 @@ export class Selectors extends React.Component<Props> {
     return (
       <div>
         <div className="nuclide-device-panel-host-selector">
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <Dropdown
             options={this._getHostOptions()}
             onChange={host => {
