@@ -31,7 +31,7 @@ describe('Mercurial fold Integration Tests', () => {
   });
 
   it('can fold commits', () => {
-    waitsForPromise({timeout: 30000}, async () => {
+    waitsForPromise({timeout: 60000}, async () => {
       const repoPath = await generateHgRepo2Fixture();
 
       atom.project.setPaths([repoPath]);
@@ -62,7 +62,7 @@ describe('Mercurial fold Integration Tests', () => {
   });
 
   it('can fail when folding commits', () => {
-    waitsForPromise({timeout: 30000}, async () => {
+    waitsForPromise({timeout: 60000}, async () => {
       const repoPath = await generateHgRepo2Fixture();
 
       atom.project.setPaths([repoPath]);
