@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {OutputProviderStatus} from '../../nuclide-console/lib/types';
+
 export type TunnelBehavior =
   | 'open_tunnel_if_needed'
   | 'ask_about_tunnel'
@@ -18,4 +20,6 @@ export type TunnelBehavior =
 // Use this service instead of starting Metro via nuclide-metro-rpc yourself.
 export type MetroAtomService = {
   start(tunnelBehavior: TunnelBehavior): Promise<void>,
+  stop(): void,
+  observeStatus(status: (OutputProviderStatus) => void): IDisposable,
 };

@@ -174,6 +174,8 @@ class Activation {
   provideMetroAtomService(): MetroAtomService {
     return {
       start: tunnelBehavior => this.start(tunnelBehavior),
+      stop: () => this.stop(),
+      observeStatus: callback => this._logTailer.observeStatus(callback),
     };
   }
 
