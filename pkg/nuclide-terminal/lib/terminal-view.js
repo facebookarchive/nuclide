@@ -12,10 +12,10 @@
 import invariant from 'assert';
 import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
-import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import url from 'url';
-import Terminal from 'xterm';
+import {Terminal} from 'xterm';
+import * as Fit from 'xterm/lib/addons/fit/fit';
 
 import {getPtyServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -49,7 +49,6 @@ import type {
 import type {Sink} from './sink';
 import type {TerminalInfo} from '../../commons-node/nuclide-terminal-uri';
 
-const RESIZE_EVENT_DEBOUNCE_MS = 100;
 const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
@@ -90,6 +89,13 @@ export class TerminalView implements PtyClient {
   _initialInput: string;
 
   constructor(paneUri: string) {
+    if (Terminal.fit == null) {
+      // The 'fit' add-on resizes the terminal based on the container size
+      // and the font size such that the terminal fills the container.
+      // Load the addon on-demand the first time we create a terminal.
+      Terminal.applyAddon(Fit);
+    }
+
     this._paneUri = paneUri;
     const info = infoFromUri(paneUri);
     this._terminalInfo = info;
@@ -149,7 +155,7 @@ export class TerminalView implements PtyClient {
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
-    terminal.open(this._div, false);
+    terminal.open(this._div);
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
@@ -185,6 +191,11 @@ export class TerminalView implements PtyClient {
         .observeAsStream(SCROLLBACK_CONFIG)
         .skip(1)
         .subscribe(scrollback => terminal.setOption('scrollback', scrollback)),
+      Observable.merge(
+        Observable.fromEvent(this._terminal, 'focus'),
+        Observable.fromEvent(window, 'resize'),
+        new ResizeObservable(this._div),
+      ).subscribe(this._fitAndResize.bind(this)),
     );
 
     if (process.platform === 'win32') {
@@ -283,13 +294,6 @@ export class TerminalView implements PtyClient {
 
     this._subscriptions.add(
       this.dispose.bind(this),
-      Observable.merge(
-        Observable.fromEvent(this._terminal, 'focus'),
-        Observable.fromEvent(window, 'resize'),
-        new ResizeObservable(this._div),
-      )
-        .let(fastDebounce(RESIZE_EVENT_DEBOUNCE_MS))
-        .subscribe(() => this._fitAndResize()),
       Observable.fromEvent(this._terminal, 'data').subscribe(
         this._onInput.bind(this),
       ),
@@ -377,9 +381,8 @@ export class TerminalView implements PtyClient {
   }
 
   _fitAndResize(): void {
-    // The 'fit' add-on resizes the terminal based on the container size
-    // and the font size such that the terminal fills the container.
-    Terminal.loadAddon('fit');
+    // Force character measure before 'fit' runs.
+    this._terminal.resize(this._terminal.cols, this._terminal.rows);
     this._terminal.fit();
     if (this._pty != null) {
       this._pty.resize(this._terminal.cols, this._terminal.rows);
