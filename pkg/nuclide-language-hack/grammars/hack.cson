@@ -1200,12 +1200,19 @@
         'include': '#literal-collections'
       }
       {
-        'match': '\\{'
-        'name': 'punctuation.section.scope.begin.php'
-      }
-      {
-        'match': '\\}'
-        'name': 'punctuation.section.scope.end.php'
+        'begin': '\\{'
+        'beginCaptures':
+            '0':
+              'name': 'punctuation.section.scope.begin.php'
+        'end': '\\}'
+        'endCaptures':
+          '0':
+            'name': 'punctuation.section.scope.end.php'
+        'patterns': [
+          {
+            'include': '#language'
+          }
+        ]
       }
       {
         'include': '#constants'
