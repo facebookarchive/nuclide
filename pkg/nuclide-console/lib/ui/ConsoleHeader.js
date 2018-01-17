@@ -57,12 +57,7 @@ export default class ConsoleHeader extends React.Component<Props> {
     let label;
     let icon;
     switch (source.status) {
-      case 'starting': {
-        action = source.stop;
-        label = 'Starting...';
-        icon = 'primitive-square';
-        break;
-      }
+      case 'starting':
       case 'running': {
         action = source.stop;
         label = 'Stop Process';
