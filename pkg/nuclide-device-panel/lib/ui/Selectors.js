@@ -85,6 +85,20 @@ export class Selectors extends React.Component<Props> {
     );
   }
 
+  _getHostSelector(): React.Element<any> {
+    return (
+      <Dropdown
+        options={this._getHostOptions()}
+        onChange={host => {
+          this.props.setHost(host);
+          this._updateDeviceType();
+        }}
+        value={this.props.host}
+        key="connection"
+      />
+    );
+  }
+
   _updateDeviceType(): void {
     if (this.props.deviceTypes.length > 0) {
       this._setDeviceType(
@@ -97,19 +111,9 @@ export class Selectors extends React.Component<Props> {
 
   render(): React.Node {
     return (
-      <div>
-        <div className="nuclide-device-panel-host-selector">
-          <Dropdown
-            options={this._getHostOptions()}
-            onChange={host => {
-              this.props.setHost(host);
-              this._updateDeviceType();
-            }}
-            value={this.props.host}
-            key="connection"
-          />
-        </div>
+      <div className="nuclide-device-panel-host-type-row">
         {this._getTypesSelector()}
+        {this._getHostSelector()}
       </div>
     );
   }
