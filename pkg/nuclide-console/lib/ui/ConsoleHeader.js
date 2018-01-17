@@ -12,6 +12,7 @@
 import type {Source} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
 import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -56,7 +57,12 @@ export default class ConsoleHeader extends React.Component<Props> {
     let label;
     let icon;
     switch (source.status) {
-      case 'starting':
+      case 'starting': {
+        action = source.stop;
+        label = 'Starting...';
+        icon = 'primitive-square';
+        break;
+      }
       case 'running': {
         action = source.stop;
         label = 'Stop Process';
@@ -94,9 +100,17 @@ export default class ConsoleHeader extends React.Component<Props> {
     const {option} = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
     invariant(source != null);
+    const startingSpinner =
+      source.status !== 'starting' ? null : (
+        <LoadingSpinner
+          className="inline-block nuclide-console-process-starting-spinner"
+          size="EXTRA_SMALL"
+        />
+      );
     return (
       <span>
         {option.label}
+        {startingSpinner}
         {this._renderProcessControlButton(source)}
       </span>
     );
