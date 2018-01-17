@@ -45,6 +45,12 @@
         "type": "boolean",
         "default": "false",
         "description": "Enable diagnostics even while using default flags. May lead to inaccurate results."
+      },
+      "serverProcessMemoryLimit": {
+        "title": "Clang server process memory limit",
+        "type": "integer",
+        "default": 15,
+        "description": "Total memory usage of all clang server processes may not exceed this percentage of total memory."
       }
     }
   },

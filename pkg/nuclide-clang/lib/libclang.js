@@ -32,6 +32,7 @@ import {
 type NuclideClangConfig = {
   enableDefaultFlags: boolean,
   defaultFlags: Array<string>,
+  serverProcessMemoryLimit: number,
 };
 
 const clangProviders: Set<ClangConfigurationProvider> = new Set();
@@ -100,8 +101,13 @@ module.exports = {
 
     // When we fetch diagnostics for the first time, reset the server state.
     // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
+    // At this time we also set the memory limit of the service.
     if (!clangServices.has(service)) {
+      const config: NuclideClangConfig = (featureConfig.get(
+        'nuclide-clang',
+      ): any);
       clangServices.add(service);
+      await service.setMemoryLimit(config.serverProcessMemoryLimit);
       await service.reset();
     }
 

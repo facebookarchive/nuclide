@@ -336,3 +336,7 @@ export function reset(): void {
 export function dispose(): void {
   serverManager.dispose();
 }
+
+export function setMemoryLimit(percent: number): void {
+  serverManager.setMemoryLimit(percent);
+}

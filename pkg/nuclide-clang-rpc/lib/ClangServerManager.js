@@ -26,7 +26,7 @@ import findClangServerArgs from './find-clang-server-args';
 const SERVER_LIMIT = 20;
 
 // Limit the total memory usage of all Clang servers.
-const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
+const DEFAULT_MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
 
 let _getDefaultFlags;
 async function augmentDefaultFlags(
@@ -52,7 +52,7 @@ export default class ClangServerManager {
   _flagsManager: ClangFlagsManager;
   _servers: LRUCache<string, ClangServer>;
   _checkMemoryUsage: () => Promise<number>;
-  _memoryLimit: number = MEMORY_LIMIT;
+  _memoryLimit: number = DEFAULT_MEMORY_LIMIT;
 
   constructor() {
     this._flagsManager = new ClangFlagsManager();
@@ -70,6 +70,11 @@ export default class ClangServerManager {
 
   getClangFlagsManager(): ClangFlagsManager {
     return this._flagsManager;
+  }
+
+  setMemoryLimit(percent: number) {
+    this._memoryLimit = Math.round(Math.abs(os.totalmem() * percent / 100));
+    this._checkMemoryUsage();
   }
 
   /**
@@ -211,9 +216,5 @@ export default class ClangServerManager {
     }
 
     return total;
-  }
-
-  setMemoryLimit(limit: number): void {
-    this._memoryLimit = limit;
   }
 }

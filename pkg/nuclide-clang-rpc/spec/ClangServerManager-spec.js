@@ -98,6 +98,7 @@ describe('ClangServerManager', () => {
   it('has a hard limit on server count', () => {
     waitsForPromise(async () => {
       const servers = [];
+      // ClangServerManager.SERVER_LIMIT + 1 = 21
       for (let i = 0; i < 21; i++) {
         // eslint-disable-next-line no-await-in-loop
         servers.push(
@@ -135,7 +136,7 @@ describe('ClangServerManager', () => {
     let server3;
 
     runs(() => {
-      serverManager.setMemoryLimit(1);
+      serverManager.setMemoryLimit(0);
       server = serverManager.getClangServer('test.cpp', '', null, []);
 
       // We're still over the limit, but keep the last one alive.
