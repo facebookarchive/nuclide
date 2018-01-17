@@ -177,6 +177,21 @@ export class BreakpointListComponent extends React.Component<Props, State> {
                       );
                     }}
                   />
+                  <Icon
+                    icon="x"
+                    className="nuclide-debugger-breakpoint-condition-control"
+                    data-path={path}
+                    data-line={line}
+                    onClick={event => {
+                      track(
+                        AnalyticsEvents.DEBUGGER_DELETE_BREAKPOINT_FROM_ICON,
+                      );
+                      atom.commands.dispatch(
+                        event.target,
+                        'nuclide-debugger:remove-breakpoint',
+                      );
+                    }}
+                  />
                 </div>
                 {label}
               </span>
