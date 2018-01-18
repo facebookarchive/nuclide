@@ -1113,6 +1113,7 @@ function registerConsoleExecutor(
     registerExecutor({
       id: 'debugger',
       name: 'Debugger',
+      scopeName: 'text.plain',
       send,
       output,
       getProperties: watchExpressionStore.getProperties.bind(

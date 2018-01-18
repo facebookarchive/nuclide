@@ -9,11 +9,9 @@
  * @format
  */
 
-import type {Executor} from '../lib/types';
-
 import getCurrentExecutorId from '../lib/getCurrentExecutorId';
 import * as Immutable from 'immutable';
-import {Observable} from 'rxjs';
+import {createDummyExecutor} from './Reducers-spec';
 
 const baseAppState = {
   createPasteFunction: null,
@@ -39,12 +37,3 @@ describe('getCurrentExecutorId', () => {
     expect(getCurrentExecutorId(appState)).toBe('a');
   });
 });
-
-function createDummyExecutor(id: string): Executor {
-  return {
-    id,
-    name: id,
-    send: (code: string) => {},
-    output: Observable.create(observer => {}),
-  };
-}
