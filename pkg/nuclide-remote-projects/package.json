@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Manages remote projects",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Remote",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {

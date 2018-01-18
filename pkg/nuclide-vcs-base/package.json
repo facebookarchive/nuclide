@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Utilities for interacting with Atom repositories.",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Source Control",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Node",

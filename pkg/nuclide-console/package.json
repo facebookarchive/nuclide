@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Aggregate and display output from various sources and provide an user interface for REPL-like functionality.",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide: Core UI",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "deserializers": {
     "nuclide.ConsoleContainer": "deserializeConsole",

@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Client side of command-line interface for communicating with nuclide-server",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Remote",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",

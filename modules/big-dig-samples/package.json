@@ -1,7 +1,7 @@
 {
   "name": "big-dig-samples",
   "description": "Sample library that uses big-dig.",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Remote",
   "version": "0.4.0",
   "private": true,
   "dependencies": {

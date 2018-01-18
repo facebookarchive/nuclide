@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "General display mechanism for the VCS log of a file",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Source Control",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {

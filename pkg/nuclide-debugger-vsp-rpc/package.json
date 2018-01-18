@@ -3,7 +3,7 @@
   "main": "./lib/VSCodeDebuggerAdapterService.js",
   "version": "0.0.0",
   "description": "VSCode deug protocol adapter",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Debugging",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

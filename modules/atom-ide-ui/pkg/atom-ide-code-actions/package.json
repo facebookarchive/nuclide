@@ -5,7 +5,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides code actions for diagnostics",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Diagnostics",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "consumedServices": {
     "code-actions": {

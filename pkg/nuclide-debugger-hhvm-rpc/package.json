@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Server side implementation of the Nuclide HHVM debugger",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Debugging",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

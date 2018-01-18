@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides fuzzy-search for filenames in project",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Search",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",

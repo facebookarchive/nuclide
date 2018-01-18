@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "A package that adds utilities for testing diagnostics",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Core UI",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "deserializers": {
     "nuclide.DiagnosticsTester": "deserializeDiagnosticsTester"

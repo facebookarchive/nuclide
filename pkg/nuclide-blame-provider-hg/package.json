@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Makes Hg blame information available to the nuclide-blame feature.",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Source Control",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "configMetadata": {

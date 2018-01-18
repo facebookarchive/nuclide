@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Wire Atom notifications up to the Nuclide console",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Core UI",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
