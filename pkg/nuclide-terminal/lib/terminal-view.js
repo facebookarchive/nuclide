@@ -156,6 +156,7 @@ export class TerminalView implements PtyClient {
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
     terminal.open(this._div);
+    this._syncAtomStyle();
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
@@ -377,7 +378,17 @@ export class TerminalView implements PtyClient {
   // before we measure and resize, so we setTimeout to run on the tick after config
   // notifications go out.
   _syncAtomStyle(): void {
+    ['fontFamily', 'fontSize', 'lineHeight'].forEach(
+      this._syncAtomStyleItem.bind(this),
+    );
     setTimeout(this._fitAndResize.bind(this), 0);
+  }
+
+  _syncAtomStyleItem(name: string): void {
+    const item = atom.config.get(`editor.${name}`);
+    if (item != null && item !== '') {
+      this._terminal.setOption(name, item);
+    }
   }
 
   _fitAndResize(): void {
