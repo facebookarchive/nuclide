@@ -10,7 +10,9 @@
  */
 
 export type NuclideCodeSearchConfig = {
-  tool: string,
-  useVcsSearch: boolean,
+  localTool: string,
+  localUseVcsSearch: boolean,
+  remoteTool: string,
+  remoteUseVcsSearch: boolean,
   maxResults: number,
 };

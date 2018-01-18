@@ -55,7 +55,10 @@ describe('RemoteDirectorySearcher.processPaths', () => {
     spyOn(serviceSpy, 'remoteAtomSearch').andReturn({
       refCount: () => Observable.empty(),
     });
-    spyOn(featureConfig, 'get').andReturn({tool: 'grep', useVcsSearch: true});
+    spyOn(featureConfig, 'get').andReturn({
+      remoteTool: 'grep',
+      remoteUseVcsSearch: true,
+    });
     const workingSetPaths = ['nuclide://host/a/b'];
     spyOn(workingSetsStore, 'getApplicableDefinitions').andReturn([
       {name: 'foo', active: true, uris: workingSetPaths},

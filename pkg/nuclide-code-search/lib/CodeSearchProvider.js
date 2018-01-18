@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {NuclideCodeSearchConfig} from './types';
 import type {Provider, FileResult} from '../../nuclide-quick-open/lib/types';
 
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
@@ -19,9 +18,9 @@ import {getCodeSearchServiceByNuclideUri} from '../../nuclide-remote-connection'
 import {Observable} from 'rxjs';
 import * as React from 'react';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Subject} from 'rxjs';
 import escapeRegExp from 'escape-string-regexp';
+import {pickConfigByUri} from './utils';
 
 type CodeSearchFileResult = {|
   path: string,
@@ -73,9 +72,7 @@ export const CodeSearchProvider: Provider<FileResult> = {
     }
     const projectRoot = directory.getPath();
     let lastPath = null;
-    const config: NuclideCodeSearchConfig = (featureConfig.get(
-      'nuclide-code-search',
-    ): any);
+    const config = pickConfigByUri(projectRoot);
     const regexp = new RegExp(escapeRegExp(query), 'i');
 
     return getCodeSearchServiceByNuclideUri(projectRoot)

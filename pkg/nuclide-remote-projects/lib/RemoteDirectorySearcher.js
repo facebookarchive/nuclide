@@ -77,8 +77,8 @@ export default class RemoteDirectorySearcher {
                 directories[index].getPath(),
                 regex,
                 inclusion,
-                config.useVcsSearch,
-                config.tool.length === 0 ? null : config.tool,
+                config.remoteUseVcsSearch,
+                config.remoteTool.length === 0 ? null : config.remoteTool,
               )
               .refCount()
           : Observable.empty(),
