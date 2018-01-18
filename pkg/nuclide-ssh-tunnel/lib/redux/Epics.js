@@ -71,6 +71,10 @@ export function openTunnelEpic(
       const subscription = events.refCount().subscribe({
         next: event => {
           if (event.type === 'server_started') {
+            store.getState().consoleOutput.next({
+              text: `Opened tunnel: ${friendlyString}`,
+              level: 'info',
+            });
             store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
             onOpen();
           } else if (event.type === 'client_connected') {
@@ -83,11 +87,7 @@ export function openTunnelEpic(
             }
           }
         },
-      });
-
-      store.getState().consoleOutput.next({
-        text: `Opened tunnel: ${friendlyString}`,
-        level: 'info',
+        error: error => store.dispatch(Actions.closeTunnel(tunnel, error)),
       });
 
       return Actions.addOpenTunnel(tunnel, error => {
