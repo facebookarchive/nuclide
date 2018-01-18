@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideCodeSearchConfig} from './types';
 import type {Provider, FileResult} from '../../nuclide-quick-open/lib/types';
 
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
@@ -32,12 +33,6 @@ type CodeSearchFileResult = {|
   isFirstResultForPath: boolean,
   resultType: 'FILE',
 |};
-
-type NuclideCodeSearchConfig = {
-  tool: string,
-  useVcsSearch: boolean,
-  maxResults: number,
-};
 
 const directoriesObs: Subject<atom$Directory> = new Subject();
 

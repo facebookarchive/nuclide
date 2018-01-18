@@ -12,6 +12,7 @@
 import typeof * as CodeSearchService from '../../nuclide-code-search-rpc';
 import type {search$FileResult} from '../../nuclide-code-search-rpc/lib/types';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
+import type {NuclideCodeSearchConfig} from '../../nuclide-code-search/lib/types';
 
 import {RemoteDirectory} from '../../nuclide-remote-connection';
 import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
@@ -19,6 +20,7 @@ import {logger} from './constants';
 import invariant from 'assert';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Observable, ReplaySubject} from 'rxjs';
 
 type RemoteDirectorySearch = {
@@ -49,6 +51,9 @@ export default class RemoteDirectorySearcher {
     regex: RegExp,
     options: Object,
   ): RemoteDirectorySearch {
+    const config: NuclideCodeSearchConfig = (featureConfig.get(
+      'nuclide-code-search',
+    ): any);
     // Track the files that we have seen updates for.
     const seenFiles = new Set();
 
@@ -72,8 +77,8 @@ export default class RemoteDirectorySearcher {
                 directories[index].getPath(),
                 regex,
                 inclusion,
-                true,
-                'grep',
+                config.useVcsSearch,
+                config.tool.length === 0 ? null : config.tool,
               )
               .refCount()
           : Observable.empty(),

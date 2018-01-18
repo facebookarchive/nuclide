@@ -78,7 +78,7 @@ export function remoteAtomSearch(
   regex: RegExp,
   subdirs: Array<string>,
   useVcsSearch: boolean,
-  tool?: string,
+  tool: ?string,
 ): ConnectableObservable<search$FileResult> {
   return mergeSearchResults(
     searchInDirectories(directory, regex, subdirs, useVcsSearch, tool),

@@ -11,6 +11,7 @@
 
 import {Observable} from 'rxjs';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
 import RemoteDirectorySearcher from '../lib/RemoteDirectorySearcher';
 import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
@@ -54,6 +55,7 @@ describe('RemoteDirectorySearcher.processPaths', () => {
     spyOn(serviceSpy, 'remoteAtomSearch').andReturn({
       refCount: () => Observable.empty(),
     });
+    spyOn(featureConfig, 'get').andReturn({tool: 'grep', useVcsSearch: true});
     const workingSetPaths = ['nuclide://host/a/b'];
     spyOn(workingSetsStore, 'getApplicableDefinitions').andReturn([
       {name: 'foo', active: true, uris: workingSetPaths},

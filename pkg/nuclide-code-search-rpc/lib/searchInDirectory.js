@@ -89,7 +89,7 @@ export function searchInDirectories(
   regex: RegExp,
   subdirs: Array<string>,
   useVcsSearch: boolean,
-  tool?: string,
+  tool: ?string,
 ): Observable<CodeSearchResult> {
   // Resolve tool once here so we do not call 'which' for each subdir.
   return Observable.defer(() => resolveToolWithDefault(tool, '')).switchMap(
