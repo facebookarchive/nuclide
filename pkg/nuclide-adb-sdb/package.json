@@ -10,7 +10,7 @@
     "testRunner": "apm",
     "configMetadata": {
       "pathComponents": [
-        "IDE Settings",
+        "IDE",
         "Tizen"
       ]
     },
