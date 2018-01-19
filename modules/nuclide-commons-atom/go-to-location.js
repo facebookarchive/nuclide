@@ -16,7 +16,7 @@ import {Subject} from 'rxjs';
 import invariant from 'assert';
 import idx from 'idx';
 
-type Options = {|
+export type GoToLocationOptions = {|
   line?: number,
   column?: number,
   center?: boolean,
@@ -51,7 +51,7 @@ type Options = {|
  */
 export async function goToLocation(
   file: string,
-  options?: ?Options,
+  options?: ?GoToLocationOptions,
 ): Promise<atom$TextEditor> {
   const center_ = idx(options, _ => _.center);
   const center = center_ == null ? true : center_;
