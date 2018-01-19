@@ -462,6 +462,7 @@ declare class atom$Pane {
 
   // Undocumented Methods
   constructor(params: atom$PaneParams): atom$Pane,
+  getPendingItem(): atom$PaneItem,
   clearPendingItem(): void,
   getFlexScale(): number,
   getParent(): Object,
@@ -1041,6 +1042,11 @@ declare class atom$TextEditorComponent {
   invalidateBlockDecorationDimensions(decoration: atom$Decoration): void,
   element: atom$TextEditorElement,
   didFocus(): void,
+  setScrollTop(scrollTop: number): void,
+  getScrollTop(): number,
+
+  setScrollLeft(scrollLeft: number): void,
+  getScrollLeft(): number,
 }
 
 /**
