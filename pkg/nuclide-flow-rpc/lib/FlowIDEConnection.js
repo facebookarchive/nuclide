@@ -14,7 +14,6 @@ import type {FlowStatusOutput, FlowAutocompleteOutput} from './flowOutputTypes';
 import type {FileCache} from '../../nuclide-open-files-rpc';
 import type {LocalFileEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
-import {Disposable} from 'event-kit';
 import {Observable} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
 import through from 'through';
@@ -188,7 +187,7 @@ export class FlowIDEConnection {
 
   onWillDispose(callback: () => mixed): IDisposable {
     this._disposables.add(callback);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._disposables.remove(callback);
     });
   }

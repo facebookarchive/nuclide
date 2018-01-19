@@ -31,7 +31,6 @@ import removeProjectPath from '../../commons-atom/removeProjectPath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WORKSPACE_VIEW_URI} from './Constants';
 
-import {Disposable} from 'atom';
 import os from 'os';
 import {shell} from 'electron';
 
@@ -56,7 +55,7 @@ class ProjectSelectionManager {
 
   addExtraContent(content: React.Element<any>): IDisposable {
     this._actions.addExtraProjectSelectionContent(content);
-    return new Disposable(() =>
+    return new UniversalDisposable(() =>
       this._actions.removeExtraProjectSelectionContent(content),
     );
   }

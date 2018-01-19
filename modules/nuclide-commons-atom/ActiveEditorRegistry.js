@@ -15,7 +15,6 @@
  * on text editor contents.
  */
 
-import {Disposable} from 'atom';
 import {Observable, Subject} from 'rxjs';
 
 import {
@@ -23,6 +22,7 @@ import {
   editorChangesDebounced,
 } from './debounced';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
@@ -148,7 +148,7 @@ export default class ActiveEditorRegistry<T: Provider, V> {
   consumeProvider(provider: T): IDisposable {
     this._providerRegistry.addProvider(provider);
     this._newProviderEvents.next();
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._providerRegistry.removeProvider(provider);
     });
   }

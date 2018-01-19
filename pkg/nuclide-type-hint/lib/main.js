@@ -14,7 +14,6 @@ import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type TypeHintManagerType from './TypeHintManager';
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import TypeHintManager from './TypeHintManager';
 
@@ -34,7 +33,7 @@ class Activation {
   consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
     invariant(this.typeHintManager);
     this.typeHintManager.addProvider(provider);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       if (this.typeHintManager != null) {
         this.typeHintManager.removeProvider(provider);
       }

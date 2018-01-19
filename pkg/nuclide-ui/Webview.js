@@ -9,7 +9,6 @@
  * @format
  */
 
-import {Disposable} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -42,7 +41,7 @@ export class Webview extends React.Component<Props, void> {
     // $FlowFixMe
     element.addEventListener('did-finish-load', this._handleDidFinishLoad);
     this._disposables.add(
-      new Disposable(() =>
+      new UniversalDisposable(() =>
         // $FlowFixMe
         element.removeEventListener(
           'did-finish-load',

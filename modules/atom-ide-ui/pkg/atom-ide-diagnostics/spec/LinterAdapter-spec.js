@@ -12,10 +12,11 @@
 
 import type {LinterProvider} from '../lib/types';
 
-import {Disposable, Range} from 'atom';
+import {Range} from 'atom';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {
   LinterAdapter,
@@ -59,7 +60,7 @@ describe('LinterAdapter', () => {
     const fakeBuffer = {
       onDidDestroy(callback) {
         bufferDestroyCallback = callback;
-        return new Disposable(() => {});
+        return new UniversalDisposable();
       },
       isDestroyed: () => false,
     };

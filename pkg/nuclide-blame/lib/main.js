@@ -13,9 +13,7 @@ import type {BlameProvider} from './types';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
 
-import {Disposable} from 'atom';
 import invariant from 'assert';
-
 import BlameGutter from './BlameGutter';
 import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
@@ -237,7 +235,7 @@ class Activation {
 
   consumeBlameProvider(provider: BlameProvider): IDisposable {
     this._registeredProviders.add(provider);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       if (this._registeredProviders) {
         this._registeredProviders.delete(provider);
       }
@@ -268,7 +266,7 @@ class Activation {
     // We don't need to dispose of the contextDisposable when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() =>
+    return new UniversalDisposable(() =>
       this._packageDisposables.remove(contextDisposable),
     );
   }

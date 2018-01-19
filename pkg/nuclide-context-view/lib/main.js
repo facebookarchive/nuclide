@@ -15,7 +15,6 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ContextViewManager, WORKSPACE_VIEW_URI} from './ContextViewManager';
-import {Disposable} from 'atom';
 import invariant from 'assert';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
@@ -49,11 +48,11 @@ function getContextViewManager(): ContextViewManager {
  * nuclide-context-view service and register themselves as a provider.
  */
 const Service: NuclideContextView = {
-  registerProvider(provider: ContextProvider): Disposable {
+  registerProvider(provider: ContextProvider): IDisposable {
     invariant(provider != null, 'Cannot register null context provider');
     const contextViewManager = getContextViewManager();
     contextViewManager.registerProvider(provider);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       contextViewManager.unregisterProvider(provider.id);
     });
   },

@@ -13,7 +13,6 @@ import type {DOMCounters} from './getDOMCounters';
 import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
-import {Disposable} from 'atom';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 
@@ -113,7 +112,7 @@ class Activation {
       }),
     ).element;
     this._healthButton.classList.add('nuclide-health-jewel');
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       this._healthButton = null;
       toolBar.removeItems();
     });

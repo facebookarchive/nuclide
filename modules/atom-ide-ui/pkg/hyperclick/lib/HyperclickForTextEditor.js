@@ -15,7 +15,7 @@
 import type {HyperclickSuggestion} from './types';
 import type Hyperclick from './Hyperclick';
 
-import {Disposable, Point} from 'atom';
+import {Point} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {isPositionInRange} from 'nuclide-commons/range';
@@ -120,7 +120,7 @@ export default class HyperclickForTextEditor {
       }
       linesDomNode.addEventListener('mousedown', this._onMouseDown);
       linesDomNode.addEventListener('mousemove', this._onMouseMove);
-      const removalDisposable = new Disposable(() => {
+      const removalDisposable = new UniversalDisposable(() => {
         linesDomNode.removeEventListener('mousedown', this._onMouseDown);
         linesDomNode.removeEventListener('mousemove', this._onMouseMove);
       });

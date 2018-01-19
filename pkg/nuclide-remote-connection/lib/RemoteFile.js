@@ -14,11 +14,12 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
-import {Disposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {getLogger} from 'log4js';
 import Stream from 'stream';
 
@@ -63,7 +64,7 @@ export class RemoteFile {
 
   onDidRename(callback: () => mixed): IDisposable {
     // TODO: this is not supported by the Watchman API.
-    return new Disposable();
+    return new UniversalDisposable();
   }
 
   onDidDelete(callback: () => mixed): IDisposable {
@@ -157,7 +158,7 @@ export class RemoteFile {
    * When the number of subscriptions reach 0, the file is unwatched.
    */
   _trackUnsubscription(subscription: IDisposable): IDisposable {
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
     });

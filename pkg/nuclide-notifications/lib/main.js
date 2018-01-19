@@ -13,7 +13,6 @@ import invariant from 'assert';
 import electron from 'electron';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {Disposable} from 'atom';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -85,7 +84,7 @@ function raiseNativeNotification(
         clearTimeout(timeoutId);
       });
 
-      return new Disposable(() => clearTimeout(timeoutId));
+      return new UniversalDisposable(() => clearTimeout(timeoutId));
     }
   }
 

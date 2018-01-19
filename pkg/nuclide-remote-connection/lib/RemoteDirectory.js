@@ -10,6 +10,7 @@
  */
 
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {ServerConnection} from './ServerConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
@@ -17,7 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Disposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-remote-connection');
@@ -96,7 +97,7 @@ export class RemoteDirectory {
    * However, for the time being, we don't get any benefits from doing so.
    */
   onDidChangeFiles(callback: () => mixed): IDisposable {
-    return new Disposable();
+    return new UniversalDisposable();
   }
 
   _willAddSubscription(): void {
@@ -154,7 +155,7 @@ export class RemoteDirectory {
   }
 
   _trackUnsubscription(subscription: IDisposable): IDisposable {
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
     });

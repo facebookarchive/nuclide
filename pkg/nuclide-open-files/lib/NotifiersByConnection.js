@@ -18,6 +18,8 @@ import {
   ServerConnection,
   ConnectionCache,
 } from '../../nuclide-remote-connection';
+
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import os from 'os';
 import {getLogger} from 'log4js';
@@ -25,7 +27,6 @@ import {FileEventKind} from '../../nuclide-open-files-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subscription} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {Disposable} from 'atom';
 import {areSetsEqual} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
 
@@ -88,7 +89,9 @@ export class NotifiersByConnection {
             notifier.onDirectoriesChanged(dirs);
           });
         });
-      return Promise.resolve(new Disposable(() => subscription.unsubscribe()));
+      return Promise.resolve(
+        new UniversalDisposable(() => subscription.unsubscribe()),
+      );
     });
     const user = os.userInfo().username;
     this._bufferTracking = Observable.timer(TEN_MINUTES, TWO_HOURS)

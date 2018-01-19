@@ -30,8 +30,8 @@ import {
   toCancellablePromise,
   toggle,
 } from '../observable';
-import {Disposable} from 'event-kit';
 import nullthrows from 'nullthrows';
+import UniversalDisposable from '../UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 
 const setsAreEqual = (a, b) =>
@@ -39,7 +39,7 @@ const setsAreEqual = (a, b) =>
 const diffsAreEqual = (a, b) =>
   setsAreEqual(a.added, b.added) && setsAreEqual(a.removed, b.removed);
 const createDisposable = () => {
-  const disposable = new Disposable(() => {});
+  const disposable = new UniversalDisposable();
   spyOn(disposable, 'dispose');
   return disposable;
 };
@@ -257,7 +257,9 @@ describe('nuclide-commons/observable', () => {
   describe('reconcileSetDiffs', () => {
     it("calls the add action for each item that's added", () => {
       const diffs = new Subject();
-      const addAction = jasmine.createSpy().andReturn(new Disposable(() => {}));
+      const addAction = jasmine
+        .createSpy()
+        .andReturn(new UniversalDisposable());
       reconcileSetDiffs(diffs, addAction);
       diffs.next({
         added: new Set(['a', 'b']),

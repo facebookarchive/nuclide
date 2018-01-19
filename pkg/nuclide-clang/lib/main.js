@@ -27,7 +27,6 @@ import type {
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
-import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AutocompleteHelpers from './AutocompleteHelpers';
@@ -189,7 +188,7 @@ export function provideRelatedFiles(): RelatedFilesProvider {
 
 export function consumeClangConfigurationProvider(
   provider: ClangConfigurationProvider,
-): Disposable {
+): IDisposable {
   return registerClangProvider(provider);
 }
 

@@ -9,11 +9,10 @@
  * @format
  */
 
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {DiagnosticsProviderBase} from '../lib/DiagnosticsProviderBase';
 
 const grammar = 'testgrammar';
-
-import {DiagnosticsProviderBase} from '../lib/DiagnosticsProviderBase';
 
 describe('DiagnosticsProviderBase', () => {
   let providerBase: any;
@@ -27,13 +26,13 @@ describe('DiagnosticsProviderBase', () => {
   class FakeEventDispatcher {
     onFileChange(grammars, callback) {
       eventCallback = callback;
-      return new Disposable(() => {});
+      return new UniversalDisposable();
     }
 
     onAnyFileChange(callback) {
       subscribedToAny = true;
       eventCallback = callback;
-      return new Disposable(() => {});
+      return new UniversalDisposable();
     }
   }
 

@@ -17,7 +17,6 @@ type Position = {
   y: number,
 };
 
-import {Disposable} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
@@ -87,7 +86,9 @@ export class PinnedDatatip {
     params: PinnedDatatipParams,
   ) {
     this._subscriptions = new UniversalDisposable();
-    this._subscriptions.add(new Disposable(() => params.onDispose(this)));
+    this._subscriptions.add(
+      new UniversalDisposable(() => params.onDispose(this)),
+    );
     this._datatip = datatip;
     this._editor = editor;
     this._marker = null;
@@ -122,7 +123,7 @@ export class PinnedDatatip {
       this._boundHandleMouseLeave,
     );
     this._subscriptions.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         this._hostElement.removeEventListener(
           'mouseenter',
           this._boundHandleMouseEnter,

@@ -38,7 +38,6 @@ import {BreakpointConfigComponent} from './BreakpointConfigComponent';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import {track} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
@@ -1135,11 +1134,11 @@ export function consumeRegisterExecutor(
         registerExecutor,
       );
     model.getActions().addConsoleRegisterFunction(register);
-    return new Disposable(() =>
+    return new UniversalDisposable(() =>
       model.getActions().removeConsoleRegisterFunction(register),
     );
   } else {
-    return new Disposable();
+    return new UniversalDisposable();
   }
 }
 
@@ -1152,7 +1151,7 @@ export function consumeDebuggerProvider(
       .getActions()
       .addDebuggerProvider(provider);
   }
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     if (activation) {
       activation
         .getModel()
@@ -1171,7 +1170,7 @@ export function consumeEvaluationExpressionProvider(
       .getActions()
       .addEvaluationExpressionProvider(provider);
   }
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     if (activation) {
       activation
         .getModel()
@@ -1192,7 +1191,7 @@ export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
       priority: 500,
     }),
   ).element;
-  const disposable = new Disposable(() => {
+  const disposable = new UniversalDisposable(() => {
     toolBar.removeItems();
   });
   invariant(activation);

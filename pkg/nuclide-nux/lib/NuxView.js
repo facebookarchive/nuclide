@@ -12,7 +12,6 @@
 /* global getComputedStyle */
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import debounce from 'nuclide-commons/debounce';
 import {maybeToString} from 'nuclide-commons/string';
 import {track} from '../../nuclide-analytics';
@@ -115,7 +114,7 @@ export class NuxView {
         ATTACHMENT_RETRY_TIMEOUT,
       );
       this._disposables.add(
-        new Disposable(() => {
+        new UniversalDisposable(() => {
           // eslint-disable-next-line eqeqeq
           if (attachmentTimeout !== null) {
             clearTimeout(attachmentTimeout);
@@ -172,7 +171,7 @@ export class NuxView {
       POLL_ELEMENT_INTERVAL,
     );
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         // eslint-disable-next-line eqeqeq
         if (pollElementInterval !== null) {
           clearInterval(pollElementInterval);
@@ -186,7 +185,7 @@ export class NuxView {
     );
     this._modifiedElem.addEventListener('click', boundClickListener);
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         this._modifiedElem.removeEventListener('click', boundClickListener);
         window.removeEventListener('resize', debouncedWindowResizeListener);
       }),
@@ -269,7 +268,7 @@ export class NuxView {
       invariant(nextElement != null);
       nextElement.addEventListener('click', nextElementClickListener);
       this._disposables.add(
-        new Disposable(() =>
+        new UniversalDisposable(() =>
           nextElement.removeEventListener('click', nextElementClickListener),
         ),
       );
@@ -293,7 +292,7 @@ export class NuxView {
     dismissElement.addEventListener('click', dismissElementClickListener);
 
     this._disposables.add(
-      new Disposable(() =>
+      new UniversalDisposable(() =>
         dismissElement.removeEventListener(
           'click',
           dismissElementClickListener,

@@ -10,7 +10,7 @@
  * @format
  */
 
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 
 type Item = {
@@ -126,7 +126,7 @@ export default class ContextMenu {
 
     // TODO(mbolin): Ideally, this Disposable should be garbage-collected if this ContextMenu is
     // disposed.
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       const index = this._items.indexOf(value);
       this._items.splice(index, 1);
 

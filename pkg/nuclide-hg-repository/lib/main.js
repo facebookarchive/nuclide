@@ -26,7 +26,6 @@ import {
 } from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import registerGrammar from '../../commons-atom/register-grammar';
-import {Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {addPath, confirmAndRevertPath} from '../../nuclide-vcs-base';
 import HgRepositoryProvider from './HgRepositoryProvider';
@@ -209,7 +208,7 @@ export function addItemsToFileTreeContextMenu(
   );
   subscriptions.add(addContextDisposable);
 
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     if (subscriptions != null) {
       subscriptions.remove(revertContextDisposable);
       subscriptions.remove(addContextDisposable);

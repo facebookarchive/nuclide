@@ -9,8 +9,7 @@
  * @format
  */
 
-import {Disposable, Emitter} from 'atom';
-
+import {Emitter} from 'atom';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {arrayCompact} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -76,9 +75,9 @@ export class NuxManager {
 
   // Routes new NUX through the NuxStore so that the store can deal with
   // registering of previously completed or existing NUXes.
-  addNewNux(nux: NuxTourModel): Disposable {
+  addNewNux(nux: NuxTourModel): IDisposable {
     this._nuxStore.addNewNux(nux);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._removeNux(nux.id);
     });
   }
@@ -253,7 +252,7 @@ export class NuxManager {
    */
   _canTriggerNux(gkID: ?string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      const cleanupDisposable = new Disposable(() => {
+      const cleanupDisposable = new UniversalDisposable(() => {
         gkDisposable.dispose();
         reject(new Error('NuxManager was disposed while waiting on GKs.'));
       });

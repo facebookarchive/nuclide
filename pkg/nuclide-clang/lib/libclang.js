@@ -22,7 +22,7 @@ import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangConfigurationProvider} from './types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   getClangServiceByNuclideUri,
@@ -77,9 +77,9 @@ const clangServices = new WeakSet();
 module.exports = {
   getDefaultFlags,
   getClangRequestSettings,
-  registerClangProvider(provider: ClangConfigurationProvider): Disposable {
+  registerClangProvider(provider: ClangConfigurationProvider): IDisposable {
     clangProviders.add(provider);
-    return new Disposable(() => clangProviders.delete(provider));
+    return new UniversalDisposable(() => clangProviders.delete(provider));
   },
 
   async getRelatedSourceOrHeader(src: string): Promise<?string> {

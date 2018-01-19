@@ -14,7 +14,6 @@ import type {TestRunner} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
@@ -138,12 +137,12 @@ class Activation {
     );
     this._disposables.add(menuItemSubscriptions);
 
-    return new Disposable(() =>
+    return new UniversalDisposable(() =>
       this._disposables.remove(menuItemSubscriptions),
     );
   }
 
-  consumeTestRunner(testRunner: TestRunner): ?Disposable {
+  consumeTestRunner(testRunner: TestRunner): ?UniversalDisposable {
     if (this._testRunners.has(testRunner)) {
       logger.info(
         `Attempted to add test runner "${
@@ -163,7 +162,7 @@ class Activation {
       this.getController().didUpdateTestRunners();
     }
 
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._testRunners.delete(testRunner);
       // Tell the controller to re-render only if it exists so test runner services won't force
       // construction if the panel is still invisible.
@@ -184,7 +183,7 @@ class Activation {
         priority: 600,
       }),
     );
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);

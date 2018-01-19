@@ -15,7 +15,6 @@ import {
   DevicePanelWorkspaceView,
   WORKSPACE_VIEW_URI,
 } from './DevicePanelWorkspaceView';
-import {Disposable} from 'atom';
 import invariant from 'assert';
 import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 import {
@@ -91,7 +90,7 @@ class Activation {
   _createProviderRegistration<T>(
     providers: Set<T>,
     onDispose?: () => void,
-  ): (provider: T) => Disposable {
+  ): (provider: T) => UniversalDisposable {
     return (provider: T) => {
       invariant(
         activation != null,
@@ -101,7 +100,7 @@ class Activation {
       if (onDispose != null) {
         onDispose();
       }
-      return new Disposable(() => {
+      return new UniversalDisposable(() => {
         if (activation != null) {
           providers.delete(provider);
         }

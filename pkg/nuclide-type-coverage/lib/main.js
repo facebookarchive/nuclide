@@ -16,8 +16,6 @@ import type {ObservableDiagnosticProvider} from 'atom-ide-ui';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-import {Disposable} from 'atom';
-
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
@@ -99,7 +97,7 @@ class Activation {
       />,
       item,
     );
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       ReactDOM.unmountComponentAtNode(item);
       statusBarTile.destroy();
     });

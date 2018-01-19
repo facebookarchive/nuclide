@@ -11,7 +11,7 @@
 
 import type {PlatformGroup} from './types';
 
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 
@@ -25,10 +25,10 @@ export class PlatformService {
   _registeredProviders: Array<PlatformProvider> = [];
   _providersChanged: Subject<void> = new Subject();
 
-  register(platformProvider: PlatformProvider): Disposable {
+  register(platformProvider: PlatformProvider): IDisposable {
     this._registeredProviders.push(platformProvider);
     this._providersChanged.next();
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       const index = this._registeredProviders.indexOf(platformProvider);
       this._registeredProviders.splice(index, 1);
       this._providersChanged.next();

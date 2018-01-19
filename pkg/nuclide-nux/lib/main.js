@@ -9,7 +9,6 @@
  * @format
  */
 
-import {Disposable} from 'atom';
 import invariant from 'assert';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -18,7 +17,7 @@ import {NuxStore} from './NuxStore';
 
 import type {NuxTourModel} from './NuxModel';
 
-export type RegisterNux = (nux: NuxTourModel) => Disposable;
+export type RegisterNux = (nux: NuxTourModel) => IDisposable;
 export type TriggerNux = (id: number) => void;
 export type SyncCompletedNux = (id: number) => void;
 
@@ -49,7 +48,7 @@ class Activation {
     this._nuxStore.serialize();
   }
 
-  addNewNux(nux: NuxTourModel): Disposable {
+  addNewNux(nux: NuxTourModel): IDisposable {
     return this._nuxManager.addNewNux(nux);
   }
 
@@ -85,7 +84,7 @@ export function deactivate(): void {
 }
 
 export function provideRegisterNuxService(): RegisterNux {
-  return (nux: NuxTourModel): Disposable => {
+  return (nux: NuxTourModel): IDisposable => {
     if (activation == null) {
       throw new Error('An error occurred when instantiating the NUX package.');
     }

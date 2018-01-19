@@ -14,7 +14,6 @@
 
 import type SuggestionListType from './SuggestionList';
 
-import {Disposable} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -109,7 +108,7 @@ class SuggestionList extends React.Component<Props, State> {
     invariant(scroller != null);
     scroller.addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         scroller.removeEventListener('mousewheel', stopPropagation);
       }),
     );
@@ -123,7 +122,7 @@ class SuggestionList extends React.Component<Props, State> {
     };
     textEditorView.addEventListener('keydown', keydown);
     this._subscriptions.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         textEditorView.removeEventListener('keydown', keydown);
       }),
     );

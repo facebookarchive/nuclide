@@ -21,7 +21,6 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
 import invariant from 'assert';
 import querystring from 'querystring';
-import {Disposable} from 'atom';
 import {
   getServiceByConnection,
   ConnectionCache,
@@ -125,7 +124,7 @@ class Activation {
 
   consumeRemoteProjectsService(service: RemoteProjectsService): IDisposable {
     this._remoteProjectsService = service;
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       this._remoteProjectsService = null;
     });
     this._disposables.add(disposable);

@@ -40,7 +40,6 @@ import * as Reducers from './redux/Reducers';
 import {trackingMiddleware} from './trackingMiddleware';
 import {createPanelItem} from './ui/createPanelItem';
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import {
   applyMiddleware,
   bindActionCreators,
@@ -302,7 +301,7 @@ class Activation {
     );
 
     // Remove the button from the toolbar.
-    const buttonPresenceDisposable = new Disposable(() => {
+    const buttonPresenceDisposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });
 
@@ -311,7 +310,7 @@ class Activation {
 
     // If tool-bar is disabled, stop updating the button state and remove tool-bar related cleanup
     // from this package's disposal actions.
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       buttonUpdatesDisposable.dispose();
       this._disposables.remove(buttonUpdatesDisposable);
       this._disposables.remove(buttonPresenceDisposable);
@@ -324,7 +323,7 @@ class Activation {
       pkg = null;
     });
     this._actionCreators.setConsoleService(service);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       if (pkg != null) {
         pkg._actionCreators.setConsoleService(null);
       }
@@ -343,7 +342,7 @@ class Activation {
           'Task runner service API used after deactivation',
         );
         pkg._actionCreators.registerTaskRunner(taskRunner);
-        return new Disposable(() => {
+        return new UniversalDisposable(() => {
           if (pkg != null) {
             pkg._actionCreators.unregisterTaskRunner(taskRunner);
           }

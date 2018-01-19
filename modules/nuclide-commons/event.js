@@ -10,7 +10,7 @@
  * @format
  */
 
-import {Disposable} from 'event-kit';
+import UniversalDisposable from './UniversalDisposable';
 import {Observable} from 'rxjs';
 
 /**
@@ -22,9 +22,9 @@ export function attachEvent(
   emitter: events$EventEmitter,
   eventName: string,
   callback: Function,
-): Disposable {
+): IDisposable {
   emitter.addListener(eventName, callback);
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     emitter.removeListener(eventName, callback);
   });
 }

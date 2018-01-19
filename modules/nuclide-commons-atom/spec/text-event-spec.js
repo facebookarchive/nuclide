@@ -10,7 +10,7 @@
  * @format
  */
 
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {sleep} from 'nuclide-commons/promise';
 
 import {
@@ -82,7 +82,7 @@ describe('TextEventDispatcher', () => {
   function fakeObserveEditors(callback) {
     callback(fakeTextEditor);
     callback(fakeTextEditor2);
-    return new Disposable(() => {});
+    return new UniversalDisposable();
   }
 
   function makeFakeEditor(path?: string = '') {
@@ -94,7 +94,7 @@ describe('TextEventDispatcher', () => {
         textEventCallbacks.set(editor, set);
       }
       set.add(callback);
-      return new Disposable(() => {
+      return new UniversalDisposable(() => {
         set.delete(callback);
       });
     };
@@ -144,7 +144,7 @@ describe('TextEventDispatcher', () => {
     ]);
     spyOn(atom.workspace, 'onDidChangeActivePaneItem').andCallFake(callback => {
       paneSwitchCallbacks.add(callback);
-      return new Disposable(() => {});
+      return new UniversalDisposable(() => {});
     });
     textEventDispatcher = new TextEventDispatcher();
   });

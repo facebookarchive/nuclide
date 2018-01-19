@@ -19,11 +19,10 @@ import {SUPPORTED_RULE_TYPES} from './types';
 import {getDevicePlatform, getSimulatorPlatform} from './Platforms';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-let disposable: ?Disposable = null;
+let disposable: ?IDisposable = null;
 
 export function deactivate(): void {
   if (disposable != null) {

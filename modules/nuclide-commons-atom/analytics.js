@@ -12,7 +12,7 @@
 
 import type {Observable} from 'rxjs';
 
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 class NullTimingTracker {
   constructor(name: string) {}
@@ -34,7 +34,7 @@ const NullService = {
   track(eventName: string, values?: {[key: string]: mixed}): void {},
   trackEvent(event: TrackingEvent): void {},
   trackEvents(events: Observable<TrackingEvent>): IDisposable {
-    return new Disposable();
+    return new UniversalDisposable();
   },
   trackImmediate(
     eventName: string,

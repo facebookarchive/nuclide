@@ -14,7 +14,7 @@ import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import type DebuggerActions from './DebuggerActions';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
-import {Disposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -52,7 +52,9 @@ export class DebuggerProviderStore {
     const dispatcherToken = this._dispatcher.register(
       this._handlePayload.bind(this),
     );
-    return new Disposable(() => this._dispatcher.unregister(dispatcherToken));
+    return new UniversalDisposable(() =>
+      this._dispatcher.unregister(dispatcherToken),
+    );
   }
 
   _listenForProjectChange(): IDisposable {

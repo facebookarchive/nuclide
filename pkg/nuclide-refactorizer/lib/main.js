@@ -25,7 +25,6 @@ import type {
 
 import type {Store} from './types';
 
-import {Disposable} from 'atom';
 import invariant from 'assert';
 
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
@@ -180,7 +179,7 @@ class Activation {
   consumeRefactorProvider(provider: RefactorProvider): IDisposable {
     this._providerRegistry.addProvider(provider);
     this._checkAllEditorContextMenus();
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._providerRegistry.removeProvider(provider);
       this._checkAllEditorContextMenus();
     });

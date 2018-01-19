@@ -10,7 +10,7 @@
  */
 
 import installErrorReporter from '../lib/installErrorReporter';
-import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 let disposable;
 
@@ -23,7 +23,7 @@ const install = () => {
 describe('installErrorReporter', () => {
   let onWillThrowErrorDisposable;
   beforeEach(() => {
-    onWillThrowErrorDisposable = new Disposable();
+    onWillThrowErrorDisposable = new UniversalDisposable();
     spyOn(onWillThrowErrorDisposable, 'dispose');
     spyOn(atom, 'onWillThrowError').andReturn(onWillThrowErrorDisposable);
     spyOn(window, 'addEventListener');

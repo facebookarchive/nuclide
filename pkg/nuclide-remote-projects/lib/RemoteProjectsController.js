@@ -14,7 +14,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import {Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -103,7 +102,7 @@ export default class RemoteProjectsController {
     });
 
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         invariant(this._statusBarDiv);
         const parentNode = this._statusBarDiv.parentNode;
         if (parentNode) {

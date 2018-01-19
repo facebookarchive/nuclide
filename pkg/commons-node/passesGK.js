@@ -10,7 +10,7 @@
  */
 
 import once from './once';
-import {Disposable} from 'event-kit';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**
  * Get the actual Gatekeeper constructor or stub the relevant methods for OSS
@@ -35,7 +35,7 @@ const getGatekeeper = once(() => {
         process.nextTick(() => {
           callback();
         });
-        return new Disposable();
+        return new UniversalDisposable();
       }
 
       getCacheEntries(): Iterable<[string, boolean]> {

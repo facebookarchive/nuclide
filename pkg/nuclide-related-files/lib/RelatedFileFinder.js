@@ -12,10 +12,10 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RelatedFilesProvider} from './types';
 
-import {Disposable} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutPromise} from 'nuclide-commons/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const relatedFilesProviders: Set<RelatedFilesProvider> = new Set();
 
@@ -31,13 +31,15 @@ const relatedFilesProviders: Set<RelatedFilesProvider> = new Set();
 export default class RelatedFileFinder {
   static registerRelatedFilesProvider(
     provider: RelatedFilesProvider,
-  ): Disposable {
+  ): IDisposable {
     relatedFilesProviders.add(provider);
-    return new Disposable(() => relatedFilesProviders.delete(provider));
+    return new UniversalDisposable(() =>
+      relatedFilesProviders.delete(provider),
+    );
   }
 
-  static getRelatedFilesProvidersDisposable(): Disposable {
-    return new Disposable(() => relatedFilesProviders.clear());
+  static getRelatedFilesProvidersDisposable(): IDisposable {
+    return new UniversalDisposable(() => relatedFilesProviders.clear());
   }
 
   static async _findRelatedFilesFromProviders(

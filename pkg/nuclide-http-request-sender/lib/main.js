@@ -11,7 +11,6 @@
 
 import type {Store, BoundActionCreators, PartialAppState} from './types';
 
-import {Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
@@ -102,7 +101,7 @@ class Activation {
       container,
     );
     this._disposables.add(
-      new Disposable(() => {
+      new UniversalDisposable(() => {
         requestEditDialog.destroy();
         this._requestEditDialog = null;
         ReactDOM.unmountComponentAtNode(container);

@@ -9,7 +9,6 @@
  * @format
  */
 
-import {Disposable} from 'atom';
 import invariant from 'assert';
 import analytics from 'nuclide-commons-atom/analytics';
 
@@ -86,7 +85,7 @@ class Activation {
         priority: 901,
       }),
     );
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);

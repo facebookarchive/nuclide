@@ -10,7 +10,6 @@
  */
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
@@ -41,14 +40,14 @@ class Activation {
       }),
     );
     element.classList.add('sample-nux-toolbar-button');
-    const disposable = new Disposable(() => {
+    const disposable = new UniversalDisposable(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);
     return disposable;
   }
 
-  addDisposable(disposable: Disposable) {
+  addDisposable(disposable: IDisposable) {
     this._disposables.add(disposable);
   }
 }
@@ -121,7 +120,7 @@ function generateTestNuxTour(
   };
 }
 
-export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+export function consumeRegisterNuxService(addNewNux: RegisterNux): IDisposable {
   invariant(activation != null);
   const disposable = addNewNux(
     generateTestNuxTour(SAMPLE_NUX_ID, SAMPLE_NUX_NAME, 2),

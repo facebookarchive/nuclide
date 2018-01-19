@@ -11,7 +11,6 @@
  */
 
 import invariant from 'assert';
-import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import debounce from 'nuclide-commons/debounce';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -202,7 +201,7 @@ export class TextEventDispatcher {
       events,
       debouncedCallback,
     );
-    const disposables = new Disposable(() => {
+    const disposables = new UniversalDisposable(() => {
       this._callbackContainer.removeCallback(
         grammarScopes,
         events,

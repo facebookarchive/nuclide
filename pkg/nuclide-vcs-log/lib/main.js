@@ -14,7 +14,6 @@
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
-import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import VcsLogComponent from './VcsLogComponent';
 import VcsLogGadget from './VcsLogGadget';
@@ -136,7 +135,9 @@ class Activation {
     // We don't need to dispose of the contextDisposable when the provider is disabled -
     // it needs to be handled by the provider itself. We only should remove it from the list
     // of the disposables we maintain.
-    return new Disposable(() => this._subscriptions.remove(contextDisposable));
+    return new UniversalDisposable(() =>
+      this._subscriptions.remove(contextDisposable),
+    );
   }
 
   dispose() {

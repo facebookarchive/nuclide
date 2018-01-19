@@ -13,12 +13,12 @@ import type {NavigationStackService} from '../../nuclide-navigation-stack';
 
 import * as React from 'react';
 import {Observable} from 'rxjs';
-import {Disposable} from 'atom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import shallowEqual from 'shallowequal';
 
 type Props = {
@@ -57,7 +57,7 @@ export function consumeStatusBar(
     priority: STATUS_BAR_PRIORITY,
   });
 
-  return new Disposable(() => {
+  return new UniversalDisposable(() => {
     statusBarTile.destroy();
   });
 }
