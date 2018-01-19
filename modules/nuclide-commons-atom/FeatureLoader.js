@@ -29,7 +29,7 @@ type FeaturePkg = {
 };
 
 export type Feature = {
-  dirname: string,
+  path: string,
   pkg: FeaturePkg,
 };
 
@@ -97,7 +97,7 @@ export default class FeatureLoader {
     //
     this._features.forEach(feature => {
       const featurePkg = feature.pkg;
-      const name = packageNameFromPath(feature.dirname);
+      const name = packageNameFromPath(feature.path);
 
       // Sample packages are disabled by default. They are meant for development
       // use only, and aren't included in Nuclide builds.
@@ -170,12 +170,12 @@ export default class FeatureLoader {
         const enabled = atom.config.get(this.useKeyPathForFeature(feature));
         const shouldEnable =
           enabled == null
-            ? this._config.use.properties[packageNameFromPath(feature.dirname)]
+            ? this._config.use.properties[packageNameFromPath(feature.path)]
                 .default
             : enabled;
 
         if (shouldEnable) {
-          atom.packages.loadPackage(feature.dirname);
+          atom.packages.loadPackage(feature.path);
         }
       });
 
@@ -202,7 +202,7 @@ export default class FeatureLoader {
 
     this._features.forEach(feature => {
       if (atom.config.get(this.useKeyPathForFeature(feature))) {
-        atom.packages.activatePackage(feature.dirname);
+        atom.packages.activatePackage(feature.path);
       }
     });
 
@@ -211,7 +211,7 @@ export default class FeatureLoader {
       ...this._features.map(feature =>
         atom.config.onDidChange(this.useKeyPathForFeature(feature), event => {
           if (event.newValue === true) {
-            atom.packages.activatePackage(feature.dirname);
+            atom.packages.activatePackage(feature.path);
           } else if (event.newValue === false) {
             safeDeactivate(feature);
           }
@@ -250,7 +250,7 @@ export default class FeatureLoader {
   }
 
   useKeyPathForFeature(feature: Feature): string {
-    return `${this._pkgName}.use.${packageNameFromPath(feature.dirname)}`;
+    return `${this._pkgName}.use.${packageNameFromPath(feature.path)}`;
   }
 }
 
@@ -258,7 +258,7 @@ function safeDeactivate(
   feature: Feature,
   suppressSerialization: boolean = false,
 ) {
-  const name = packageNameFromPath(feature.dirname);
+  const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getLoadedPackage(name);
     if (pack != null) {
@@ -271,7 +271,7 @@ function safeDeactivate(
 }
 
 function safeSerialize(feature: Feature) {
-  const name = packageNameFromPath(feature.dirname);
+  const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getActivePackage(name);
     if (pack != null) {

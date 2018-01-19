@@ -43,7 +43,7 @@ describe('FeatureLoader', () => {
       pkgName: rootName,
       features: [
         {
-          dirname: FEATURE_PACKAGE_PATH,
+          path: FEATURE_PACKAGE_PATH,
           pkg: featurePkg,
         },
       ],
