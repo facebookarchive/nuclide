@@ -1,5 +1,5 @@
 {
-  "name": "atom-ide-ui",
+  "name": "root-package",
   "version": "0.0.1",
   "description": "A suite of language service UIs for Atom.",
   "author": "NEEDS OWNER",

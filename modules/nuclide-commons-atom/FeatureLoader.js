@@ -15,13 +15,13 @@
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from './feature-config';
+import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 
 type FeaturePkg = {
   atomConfig?: Object,
   consumedServices?: Object,
   description?: string,
   displayName?: string,
-  name: string,
   nuclide?: {
     config?: Object,
   },
@@ -34,7 +34,7 @@ export type Feature = {
 };
 
 type FeatureLoaderParams = {
-  pkgName: string,
+  path: string,
   features: Array<Feature>,
 };
 
@@ -47,11 +47,14 @@ export default class FeatureLoader {
   _config: Object;
   _features: Array<Feature>;
   _pkgName: string;
+  _path: string;
 
-  constructor({config, features, pkgName}: FeatureLoaderParams) {
+  constructor({features, path: _path}: FeatureLoaderParams) {
+    this._path = _path;
     this._features = features;
+
     this._loadDisposable = new UniversalDisposable();
-    this._pkgName = pkgName;
+    this._pkgName = packageNameFromPath(this._path);
     this._config = {
       use: {
         title: 'Enabled Features',
@@ -94,7 +97,7 @@ export default class FeatureLoader {
     //
     this._features.forEach(feature => {
       const featurePkg = feature.pkg;
-      const name = featurePkg.name;
+      const name = packageNameFromPath(feature.dirname);
 
       // Sample packages are disabled by default. They are meant for development
       // use only, and aren't included in Nuclide builds.
@@ -167,7 +170,8 @@ export default class FeatureLoader {
         const enabled = atom.config.get(this.useKeyPathForFeature(feature));
         const shouldEnable =
           enabled == null
-            ? this._config.use.properties[feature.pkg.name].default
+            ? this._config.use.properties[packageNameFromPath(feature.dirname)]
+                .default
             : enabled;
 
         if (shouldEnable) {
@@ -246,7 +250,7 @@ export default class FeatureLoader {
   }
 
   useKeyPathForFeature(feature: Feature): string {
-    return `${this._pkgName}.use.${feature.pkg.name}`;
+    return `${this._pkgName}.use.${packageNameFromPath(feature.dirname)}`;
   }
 }
 
@@ -254,7 +258,7 @@ function safeDeactivate(
   feature: Feature,
   suppressSerialization: boolean = false,
 ) {
-  const name = feature.pkg.name;
+  const name = packageNameFromPath(feature.dirname);
   try {
     const pack = atom.packages.getLoadedPackage(name);
     if (pack != null) {
@@ -267,7 +271,7 @@ function safeDeactivate(
 }
 
 function safeSerialize(feature: Feature) {
-  const name = feature.pkg.name;
+  const name = packageNameFromPath(feature.dirname);
   try {
     const pack = atom.packages.getActivePackage(name);
     if (pack != null) {
@@ -278,4 +282,10 @@ function safeSerialize(feature: Feature) {
     // eslint-disable-next-line no-console
     console.error(`Error serializing "${name}": ${err.message}`);
   }
+}
+
+// this could be inlined into its use above, but this makes the intent more
+// explicit, and unifies it in the case this ever needs to change.
+function packageNameFromPath(pkgPath: string): string {
+  return path.basename(pkgPath);
 }

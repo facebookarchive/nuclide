@@ -17,38 +17,48 @@ import path from 'path';
 
 import FeatureLoader from '../FeatureLoader';
 
-const FEATURE_PACKAGE_DIR = path.join(__dirname, 'fixtures', 'feature-package');
+const FEATURE_PACKAGE_PATH = path.join(
+  __dirname,
+  'fixtures',
+  'feature-package',
+);
 const featurePkg = JSON.parse(
-  fs.readFileSync(path.join(FEATURE_PACKAGE_DIR, 'package.json')).toString(),
+  fs.readFileSync(path.join(FEATURE_PACKAGE_PATH, 'package.json')).toString(),
 );
-const featureName = featurePkg.name;
+const featureName = path.basename(FEATURE_PACKAGE_PATH);
 
-const ROOT_PACKAGE_DIR = path.join(__dirname, 'fixtures', 'root-package');
-const rootPkg = JSON.parse(
-  fs.readFileSync(path.join(ROOT_PACKAGE_DIR, 'package.json')).toString(),
+const ROOT_PACKAGE_DIRNAME = 'root-package';
+const ROOT_PACKAGE_PATH = path.join(
+  __dirname,
+  'fixtures',
+  ROOT_PACKAGE_DIRNAME,
 );
+const rootName = path.basename(ROOT_PACKAGE_PATH);
 
 describe('FeatureLoader', () => {
   let loader;
   beforeEach(() => {
     loader = new FeatureLoader({
-      pkgName: rootPkg.name,
+      path: ROOT_PACKAGE_PATH,
+      pkgName: rootName,
       features: [
         {
-          dirname: FEATURE_PACKAGE_DIR,
+          dirname: FEATURE_PACKAGE_PATH,
           pkg: featurePkg,
         },
       ],
     });
-    atom.packages.loadPackage(ROOT_PACKAGE_DIR);
+    atom.packages.loadPackage(ROOT_PACKAGE_PATH);
   });
 
   describe('load', () => {
     beforeEach(() => {
       spyOn(atom.packages, 'loadPackage');
-      atom.config.set(`${rootPkg.name}.use.${featurePkg.name}`, true);
+      atom.config.set(`${rootName}.use.${featureName}`, true);
       loader.load();
-      atom.packages.emitter.emit('did-load-package', {name: rootPkg.name});
+      atom.packages.emitter.emit('did-load-package', {
+        name: ROOT_PACKAGE_DIRNAME,
+      });
     });
 
     it('sets a description including provided and consumed services', () => {
@@ -68,7 +78,7 @@ describe('FeatureLoader', () => {
     it('loads the feature package when the root package loads', () => {
       runs(() => {
         expect(atom.packages.loadPackage).toHaveBeenCalledWith(
-          FEATURE_PACKAGE_DIR,
+          FEATURE_PACKAGE_PATH,
         );
       });
     });
@@ -79,13 +89,15 @@ describe('FeatureLoader', () => {
       spyOn(atom.packages, 'activatePackage');
 
       loader.load();
-      atom.config.set(`${rootPkg.name}.use.${featurePkg.name}`, true);
-      atom.packages.emitter.emit('did-load-package', {name: rootPkg.name});
+      atom.config.set(`${rootName}.use.${featureName}`, true);
+      atom.packages.emitter.emit('did-load-package', {
+        name: ROOT_PACKAGE_DIRNAME,
+      });
       loader.activate();
 
       runs(() => {
         expect(atom.packages.activatePackage).toHaveBeenCalledWith(
-          FEATURE_PACKAGE_DIR,
+          FEATURE_PACKAGE_PATH,
         );
       });
     });
@@ -97,23 +109,25 @@ describe('FeatureLoader', () => {
       spyOn(atom.packages, 'deactivatePackage');
 
       loader.load();
-      atom.config.set(`${rootPkg.name}.use.${featurePkg.name}`, true);
-      atom.packages.emitter.emit('did-load-package', {name: rootPkg.name});
+      atom.config.set(`${rootName}.use.${featureName}`, true);
+      atom.packages.emitter.emit('did-load-package', {
+        name: ROOT_PACKAGE_DIRNAME,
+      });
       loader.activate();
 
       expect(atom.packages.activatePackage).toHaveBeenCalledWith(
-        FEATURE_PACKAGE_DIR,
+        FEATURE_PACKAGE_PATH,
       );
 
       loader.deactivate();
       expect(atom.packages.deactivatePackage).toHaveBeenCalledWith(
-        featurePkg.name,
+        featureName,
         true,
       );
 
       loader.activate();
       expect(atom.packages.activatePackage).toHaveBeenCalledWith(
-        FEATURE_PACKAGE_DIR,
+        FEATURE_PACKAGE_PATH,
       );
     });
   });
