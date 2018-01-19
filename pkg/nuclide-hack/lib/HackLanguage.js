@@ -52,6 +52,10 @@ async function getUseFfpAutocomplete(): Promise<boolean> {
   return passesGK('nuclide_hack_use_ffp_autocomplete');
 }
 
+async function getUseEnhancedHover(): Promise<boolean> {
+  return passesGK('nuclide_hack_use_enhanced_hover');
+}
+
 async function connectionToHackService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
@@ -73,9 +77,12 @@ async function connectionToHackService(
     const autocompleteArg = (await getUseFfpAutocomplete())
       ? ['--ffp-autocomplete']
       : [];
+    const enhancedHoverArg = (await getUseEnhancedHover())
+      ? ['--enhanced-hover']
+      : [];
     const lspService = await hackService.initializeLsp(
       config.hhClientPath, // command
-      ['lsp', '--from', 'nuclide', ...autocompleteArg], // arguments
+      ['lsp', '--from', 'nuclide', ...autocompleteArg, ...enhancedHoverArg], // arguments
       [HACK_CONFIG_FILE_NAME], // project file
       HACK_FILE_EXTENSIONS, // which file-notifications should be sent to LSP
       config.logLevel,
