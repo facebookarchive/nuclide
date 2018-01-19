@@ -15,7 +15,6 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
 import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
-import {Icon} from 'nuclide-commons-ui/Icon';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
@@ -137,9 +136,6 @@ export default class ConsoleHeader extends React.Component<Props> {
     return (
       <Toolbar location="top">
         <ToolbarLeft>
-          <span className="nuclide-console-header-filter-icon inline-block">
-            <Icon icon="nuclicon-funnel" />
-          </span>
           <ModalMultiSelect
             labelComponent={MultiSelectLabel}
             optionComponent={MultiSelectOption}

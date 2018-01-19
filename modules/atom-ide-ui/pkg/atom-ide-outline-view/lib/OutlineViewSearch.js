@@ -152,7 +152,6 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
   render(): React.Node {
     return (
       <div className="outline-view-search-bar">
-        <Icon icon="search" className="outline-view-search-icon" />
         <AtomInput
           className="outline-view-search-pane"
           onConfirm={this._onConfirm}
