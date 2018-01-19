@@ -142,6 +142,8 @@ export class TerminalView implements PtyClient {
         'editor.lineHeight',
         this._syncAtomStyle.bind(this),
       ),
+      atom.config.onDidChange('core.themes', this._syncAtomTheme.bind(this)),
+      atom.themes.onDidChangeActiveThemes(this._syncAtomTheme.bind(this)),
     );
 
     const div = (this._div = document.createElement('div'));
@@ -378,10 +380,12 @@ export class TerminalView implements PtyClient {
   // before we measure and resize, so we setTimeout to run on the tick after config
   // notifications go out.
   _syncAtomStyle(): void {
-    ['fontFamily', 'fontSize', 'lineHeight'].forEach(
-      this._syncAtomStyleItem.bind(this),
-    );
-    setTimeout(this._fitAndResize.bind(this), 0);
+    for (const attr of ['fontFamily', 'fontSize', 'lineHeight']) {
+      this._syncAtomStyleItem(attr);
+    }
+    setTimeout(() => {
+      this._fitAndResize();
+    }, 0);
   }
 
   _syncAtomStyleItem(name: string): void {
@@ -398,6 +402,13 @@ export class TerminalView implements PtyClient {
     if (this._pty != null) {
       this._pty.resize(this._terminal.cols, this._terminal.rows);
     }
+    this._syncAtomTheme();
+  }
+
+  _syncAtomTheme(): void {
+    const terminal = this._terminal;
+    const div = this._div;
+    terminal.setOption('theme', getTerminalTheme(div));
   }
 
   _clear(): void {
@@ -706,4 +717,35 @@ export function getSafeInitialInput(initialInput: string): string {
     }
   }
   return initialInput;
+}
+
+function getTerminalTheme(div: HTMLDivElement): any {
+  const style = window.getComputedStyle(div);
+  const foreground = convertRgbToHash(style.getPropertyValue('color'));
+  const background = convertRgbToHash(
+    style.getPropertyValue('background-color'),
+  );
+  return {
+    foreground,
+    background,
+    cursor: foreground,
+  };
+}
+
+// Terminal only allows colors of the form '#rrggbb' or '#rgb' and falls back
+// to black otherwise. https://git.io/vNE8a  :-(
+const rgbRegex = / *rgb *\( *([0-9]+) *, *([0-9]+) *, *([0-9]+) *\) */;
+function convertRgbToHash(rgb: string): string {
+  const matches = rgb.match(rgbRegex);
+  if (matches == null) {
+    return rgb;
+  }
+  return (
+    '#' +
+    matches
+      .slice(1, 4)
+      .map(Number)
+      .map(n => (n < 0x10 ? '0' : '') + n.toString(16))
+      .join('')
+  );
 }
