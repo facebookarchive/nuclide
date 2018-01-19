@@ -23,7 +23,7 @@ import {shellQuote} from 'nuclide-commons/string';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from 'log4js';
 import {readFile as readRemoteFile} from './RemoteCommand';
-import {getVersion} from '../../nuclide-version';
+import {getNuclideVersion} from '../../commons-node/system-info';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -418,7 +418,7 @@ export class SshHandshake {
       ];
       // Append the client version if not already provided.
       if (!command.includes('--version=')) {
-        flags.push(`--version=${getVersion()}`);
+        flags.push(`--version=${getNuclideVersion()}`);
       }
       // We'll take the user-provided command literally.
       const cmd = command + ' ' + shellQuote(flags);
