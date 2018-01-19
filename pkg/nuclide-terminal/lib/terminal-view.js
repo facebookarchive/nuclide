@@ -158,6 +158,7 @@ export class TerminalView implements PtyClient {
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
     terminal.open(this._div);
+    terminal.setHypertextLinkHandler((e, u) => shell.openExternal(u));
     this._syncAtomStyle();
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
