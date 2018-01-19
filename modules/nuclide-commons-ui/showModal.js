@@ -33,7 +33,8 @@ type ContentFactory = ({
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
   /** Called when the modal is dismissed (just before it is destroyed). */
-  onDismiss?: () => void,
+  onDismiss?: () => mixed,
+  onOpen?: () => mixed,
   /**
    * Called when the user clicks outside the modal, return false to prevent dismissal.
    * If unspecified the modal will be dismissed if the user clicks outside the modal.
@@ -116,6 +117,11 @@ export default function showModal(
       {contentFactory({dismiss: disposable.dispose.bind(disposable), element})}
     </ModalContainer>,
     hostElement,
+    () => {
+      if (options.onOpen) {
+        options.onOpen();
+      }
+    },
   );
 
   return disposable;
