@@ -23,6 +23,7 @@ export type GoToLocationOptions = {|
   activateItem?: boolean,
   activatePane?: boolean,
   pending?: boolean,
+  moveCursor?: boolean,
 |};
 
 /**
@@ -55,6 +56,8 @@ export async function goToLocation(
 ): Promise<atom$TextEditor> {
   const center_ = idx(options, _ => _.center);
   const center = center_ == null ? true : center_;
+  const moveCursor_ = idx(options, _ => _.moveCursor);
+  const moveCursor = moveCursor_ == null ? true : moveCursor_;
   const activatePane_ = idx(options, _ => _.activatePane);
   const activatePane = activatePane_ == null ? true : activatePane_;
   const activateItem = idx(options, _ => _.activateItem);
@@ -75,6 +78,7 @@ export async function goToLocation(
         line,
         column: column == null ? 0 : column,
         center,
+        moveCursor,
       });
     } else {
       invariant(column == null, 'goToLocation: Cannot specify just column');
@@ -105,6 +109,7 @@ type GotoLocationInEditorOptions = {|
   line: number,
   column: number,
   center?: boolean,
+  moveCursor?: boolean,
 |};
 
 // Scrolls to the given line/column at the given editor
@@ -115,9 +120,12 @@ export function goToLocationInEditor(
   options: GotoLocationInEditorOptions,
 ): void {
   const center = options.center == null ? true : options.center;
+  const moveCursor = options.moveCursor == null ? true : options.moveCursor;
   const {line, column} = options;
 
-  editor.setCursorBufferPosition([line, column]);
+  if (moveCursor) {
+    editor.setCursorBufferPosition([line, column]);
+  }
   if (center) {
     editor.scrollToBufferPosition([line, column], {center: true});
   }
