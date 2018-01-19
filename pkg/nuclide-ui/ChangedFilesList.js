@@ -33,8 +33,6 @@ type Props = {
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion: boolean,
   enableInlineActions: boolean,
-  // `null` values for FileDiffs for a given key are assumed to be in "loading" state.
-  fileChanges: ?Map<NuclideUri, ?diffparser$FileDiff>,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
@@ -73,7 +71,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       commandPrefix,
       enableFileExpansion,
       enableInlineActions,
-      fileChanges,
       fileStatuses,
       onAddFile,
       onDeleteFile,
@@ -143,9 +140,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                 commandPrefix={commandPrefix}
                 enableFileExpansion={enableFileExpansion}
                 enableInlineActions={enableInlineActions}
-                fileChanges={
-                  fileChanges == null ? null : fileChanges.get(filePath)
-                }
                 filePath={filePath}
                 fileStatus={fileStatus}
                 isChecked={

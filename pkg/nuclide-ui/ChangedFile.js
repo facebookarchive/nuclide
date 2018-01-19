@@ -37,10 +37,6 @@ type Props = {
   // eslint-disable-next-line react/no-unused-prop-types
   enableFileExpansion: boolean,
   enableInlineActions: boolean,
-  // `null` values for FileDiffs for a given key are assumed to be in "loading" state.
-  // TODO: remove disable
-  // eslint-disable-next-line react/no-unused-prop-types
-  fileChanges: ?diffparser$FileDiff,
   filePath: NuclideUri,
   fileStatus: FileChangeStatusValue,
   // Determines status of checkbox to left of the component. null -> no checkbox

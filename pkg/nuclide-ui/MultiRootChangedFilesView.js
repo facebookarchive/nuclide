@@ -37,8 +37,6 @@ type Props = {
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion?: true,
   enableInlineActions?: true,
-  // `null` values for FileDiffs for a given key are assumed to be in "loading" state.
-  fileChanges?: Map<NuclideUri, Map<NuclideUri, ?diffparser$FileDiff>>,
   fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
@@ -328,7 +326,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
       commandPrefix,
       enableFileExpansion,
       enableInlineActions,
-      fileChanges: fileChangesByRoot,
       fileStatuses: fileStatusesByRoot,
       hideEmptyFolders,
       onFileChecked,
@@ -351,8 +348,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
       <div className="nuclide-ui-multi-root-file-tree-container">
         {Array.from(fileStatusesByRoot.entries()).map(
           ([root, fileStatuses]) => {
-            const fileChanges =
-              fileChangesByRoot == null ? null : fileChangesByRoot.get(root);
             const checkedFiles =
               checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
             return (
@@ -362,7 +357,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 commandPrefix={commandPrefix}
                 enableFileExpansion={enableFileExpansion === true}
                 enableInlineActions={enableInlineActions === true}
-                fileChanges={fileChanges}
                 fileStatuses={fileStatuses}
                 hideEmptyFolders={hideEmptyFolders}
                 key={root}
