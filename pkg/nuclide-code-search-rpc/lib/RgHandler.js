@@ -20,6 +20,10 @@ export function search(
   directory: NuclideUri,
   regex: RegExp,
 ): Observable<CodeSearchResult> {
+  // Javascript escapes the slash when constructing the regexp,
+  // but Rust's regex library is picky about extra escapes:
+  // see https://github.com/rust-lang/regex/issues/93#issuecomment-196022003
+  const source = regex.source.replace('\\/', '/');
   return observeProcess(
     'rg',
     (regex.ignoreCase ? ['--ignore-case'] : []).concat([
@@ -32,7 +36,7 @@ export function search(
       '--column',
       '--no-heading',
       '-e',
-      regex.source,
+      source,
       directory,
     ]),
   ).flatMap(event => parseAgAckRgLine(event));
