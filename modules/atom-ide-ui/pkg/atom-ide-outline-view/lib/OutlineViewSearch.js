@@ -55,7 +55,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     };
   }
 
-  SEARCH_PLACEHOLDER = 'Search Outline';
+  SEARCH_PLACEHOLDER = 'Filter';
   DEBOUNCE_TIME = 100;
 
   _handleInputRef = (element: ?React.ElementRef<typeof AtomInput>) => {
