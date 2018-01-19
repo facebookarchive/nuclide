@@ -463,6 +463,7 @@ declare class atom$Pane {
   // Undocumented Methods
   constructor(params: atom$PaneParams): atom$Pane,
   getPendingItem(): atom$PaneItem,
+  setPendingItem(item: atom$PaneItem): void,
   clearPendingItem(): void,
   getFlexScale(): number,
   getParent(): Object,
@@ -480,7 +481,7 @@ declare interface atom$PaneItem {
   +getTitle: () => string,
   +getLongTitle?: () => string,
   +getIconName?: () => string,
-  +getURI?: () => string,
+  +getURI?: () => ?string,
   +onDidChangeIcon?: (cb: (icon: string) => void) => IDisposable,
   +onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
   +serialize?: () => Object,
@@ -799,6 +800,9 @@ declare class atom$TextEditor extends atom$Model {
   setEncoding(encoding: string): void,
   getTabLength() : number,
   getSoftTabs(): boolean,
+  getIconName(): string,
+  onDidChangeIcon(cb: (icon: string) => void): IDisposable,
+  onDidChangeTitle(cb: (title: string) => void): IDisposable,
 
   // File Operations
   save(): Promise<void>,
@@ -1012,7 +1016,7 @@ declare class atom$TextEditor extends atom$Model {
   moveToTop(): void,
   tokenForBufferPosition(position: atom$Point | [?number, ?number]): atom$Token,
   onDidConflict(callback: () => void): IDisposable,
-  serialize: () => mixed,
+  serialize(): Object,
   foldBufferRowRange(startRow: number, endRow: number): void,
   getNonWordCharacters(scope?: atom$ScopeDescriptor): string,
 }

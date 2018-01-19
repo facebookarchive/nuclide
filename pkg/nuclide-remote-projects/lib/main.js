@@ -253,6 +253,7 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
     // Add a custom serializer that deserializes to a placeholder TextEditor
     // that we have total control over. The usual Atom deserialization flow for editors
     // typically involves attempting to load the file from disk, which tends to throw.
+    // $FlowIgnore
     textEditor.serialize = function(): RemoteTextEditorPlaceholderState {
       return {
         deserializer: 'RemoteTextEditorPlaceholder',
