@@ -11,11 +11,21 @@
 
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {SshTunnelService, Store} from './types';
+import type {
+  AppState,
+  OpenTunnel,
+  SshTunnelService,
+  Store,
+  Tunnel,
+  TunnelState,
+} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import * as Immutable from 'immutable';
+import {mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 import {getSocketServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {TunnelsPanel, WORKSPACE_VIEW_URI} from './ui/TunnelsPanel';
 import * as Actions from './redux/Actions';
@@ -30,6 +40,7 @@ import {
 class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
+  _tunnels: Observable<Immutable.Map<Tunnel, TunnelState>>;
 
   constructor(rawState: ?Object) {
     const epics = Object.keys(Epics)
@@ -69,6 +80,20 @@ class Activation {
   }
 
   provideSshTunnelService(): SshTunnelService {
+    if (this._tunnels == null) {
+      // $FlowFixMe: Teach flow about Symbol.observable
+      const states: Observable<AppState> = Observable.from(this._store);
+      this._tunnels = states
+        .map(state => state.openTunnels)
+        // $FlowFixMe teach mapEqual to accept Immutable.Map
+        .distinctUntilChanged(mapEqual)
+        .map((tunnelMap: Immutable.Map<Tunnel, OpenTunnel>) =>
+          tunnelMap.map(openTunnel => openTunnel.state),
+        )
+        .publishReplay(1)
+        .refCount();
+    }
+
     return {
       openTunnel: (tunnel, onOpen, onClose) => {
         this._store.dispatch(Actions.openTunnel(tunnel, onOpen, onClose));
@@ -78,6 +103,11 @@ class Activation {
       },
       getOpenTunnels: () => {
         return new Set(this._store.getState().openTunnels.keys());
+      },
+      observeTunnels: callback => {
+        return new UniversalDisposable(
+          this._tunnels.subscribe(tunnels => callback(tunnels)),
+        );
       },
       getAvailableServerPort: async nuclideUri => {
         return getSocketServiceByNuclideUri(
