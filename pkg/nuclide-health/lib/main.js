@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {ProcessSummary} from './getChildProcesses';
 import type {DOMCounters} from './getDOMCounters';
 import type {HealthStats, PaneItemState} from './types';
 
@@ -26,7 +27,11 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';
-import getChildProcessesTree from './getChildProcessesTree';
+import {
+  queryPs,
+  childProcessTree,
+  childProcessSummary,
+} from './getChildProcesses';
 import getStats from './getStats';
 import getDOMCounters from './getDOMCounters';
 import trackStalls from './trackStalls';
@@ -59,9 +64,16 @@ class Activation {
       .publishReplay(1)
       .refCount();
 
-    const childProcessesTreeStream = Observable.of(null)
+    const processTreeStream = Observable.of(null)
       .concat(viewTimeouts.switchMap(Observable.interval))
-      .switchMap(getChildProcessesTree)
+      .switchMap(() => queryPs('command'))
+      .map(childProcessTree)
+      .share();
+
+    // Sample analytics streams at about the same time by sharing
+    // the timer stream.
+    const analyticsInterval = analyticsTimeouts
+      .switchMap(Observable.interval)
       .share();
 
     // These aren't really aggregated because they're too expensive to fetch.
@@ -76,7 +88,7 @@ class Activation {
     this._paneItemStates = Observable.combineLatest(
       statsStream,
       domCounterStream,
-      Observable.of(null).concat(childProcessesTreeStream),
+      Observable.of(null).concat(processTreeStream),
       (stats, domCounters, childProcessesTree) => ({
         stats,
         domCounters,
@@ -85,13 +97,15 @@ class Activation {
     );
 
     this._subscriptions = new UniversalDisposable(
-      // Buffer the stats and send analytics periodically.
-      statsStream
-        .buffer(analyticsTimeouts.switchMap(Observable.interval))
-        .withLatestFrom(domCounterStream)
-        .subscribe(([buffer, domCounters]) => {
-          this._updateAnalytics(buffer, domCounters);
-        }),
+      Observable.zip(
+        statsStream.buffer(analyticsInterval),
+        analyticsInterval.switchMap(getDOMCounters),
+        analyticsInterval.switchMap(() =>
+          queryPs('comm').map(childProcessSummary),
+        ),
+      ).subscribe(([buffer, domCounters, processes]) => {
+        this._updateAnalytics(buffer, domCounters, processes);
+      }),
       trackStalls(),
       this._registerCommandAndOpener(),
     );
@@ -136,22 +150,27 @@ class Activation {
     );
   }
 
-  _updateAnalytics(
+  async _updateAnalytics(
     analyticsBuffer: Array<HealthStats>,
     domCounters: ?DOMCounters,
-  ): void {
+    subProcesses: ?Array<ProcessSummary>,
+  ): Promise<void> {
     if (analyticsBuffer.length === 0) {
       return;
     }
 
     // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-    const aggregateStats = {};
+    const state = {};
 
     // We don't have aggregates for these - these are just the most recent numbers.
     if (domCounters != null) {
-      aggregateStats.attachedDomNodes = domCounters.attachedNodes;
-      aggregateStats.domNodes = domCounters.nodes;
-      aggregateStats.domListeners = domCounters.jsEventListeners;
+      state.attachedDomNodes = domCounters.attachedNodes;
+      state.domNodes = domCounters.nodes;
+      state.domListeners = domCounters.jsEventListeners;
+    }
+
+    if (subProcesses != null) {
+      state.subProcesses = subProcesses;
     }
 
     // All analyticsBuffer entries have the same keys; we use the first entry to know what they
@@ -162,7 +181,7 @@ class Activation {
         return;
       }
 
-      const aggregates = aggregate(
+      const aggregates = aggregateHealth(
         analyticsBuffer.map(
           stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
         ),
@@ -170,15 +189,15 @@ class Activation {
       Object.keys(aggregates).forEach(aggregatesKey => {
         const value = aggregates[aggregatesKey];
         if (value != null) {
-          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+          state[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
         }
       });
     });
-    track('nuclide-health', aggregateStats);
+    track('nuclide-health', state);
   }
 }
 
-function aggregate(
+function aggregateHealth(
   values: Array<number>,
 ): {avg: ?number, min: ?number, max: ?number} {
   const sum = values.reduce((acc, value) => acc + value, 0);
