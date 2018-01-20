@@ -9,7 +9,7 @@
  * @format
  */
 
-type PanelLocation = 'top' | 'right' | 'bottom' | 'left';
+type PanelLocation = 'top' | 'right' | 'bottom' | 'left' | 'header';
 type Options = {
   location: PanelLocation,
   createItem: () => Object,
@@ -72,6 +72,8 @@ function addPanel(
       return atom.workspace.addBottomPanel(options);
     case 'left':
       return atom.workspace.addLeftPanel(options);
+    case 'header':
+      return atom.workspace.addHeaderPanel(options);
     default:
       throw new Error(`Invalid location: ${location}`);
   }
