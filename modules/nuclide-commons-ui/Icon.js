@@ -39,7 +39,8 @@ export type Nuclicon =
   // nuclicon-error makes it wayyyy more obvious.
   | 'nuclicon-warning'
   | 'nuclicon-kebab-horizontal'
-  | 'nuclicon-cs';
+  | 'nuclicon-cs'
+  | 'nuclicon-metro';
 
 export type IconName = Nuclicon | atom$Octicon;
 

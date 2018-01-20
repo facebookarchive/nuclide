@@ -103,3 +103,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-cs::before {
   content: "\f119";
 }
+.icon-nuclicon-metro::before {
+  content: "\f11a";
+}
