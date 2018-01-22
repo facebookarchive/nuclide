@@ -89,8 +89,12 @@ export function uriFromInfo(info: TerminalInfo): string {
   return uri;
 }
 
-export function infoFromUri(paneUri: string): TerminalInfo {
+export function infoFromUri(
+  paneUri: string,
+  uriFromTrustedSource: boolean = false,
+): TerminalInfo {
   const {query} = url.parse(paneUri, true);
+
   if (query == null) {
     return TERMINAL_DEFAULT_INFO;
   } else {
@@ -138,7 +142,7 @@ export function infoFromUri(paneUri: string): TerminalInfo {
       key,
     };
 
-    const isTrusted = query.trustToken === trustToken;
+    const isTrusted = uriFromTrustedSource || query.trustToken === trustToken;
     return {
       ...untrustedFields,
       ...(isTrusted ? trustedFields : {}),

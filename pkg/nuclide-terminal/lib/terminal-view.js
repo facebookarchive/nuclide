@@ -236,15 +236,6 @@ export class TerminalView implements PtyClient {
     (this._div: any).blur = () => terminal.blur();
 
     this._spawn(cwd);
-    this._setUseTitleAsPath(cwd);
-  }
-
-  _setUseTitleAsPath(cwd: ?NuclideUri): void {
-    const promise =
-      cwd == null
-        ? useTitleAsPath(this)
-        : getPtyServiceByNuclideUri(cwd).useTitleAsPath(this);
-    promise.then(value => (this._useTitleAsPath = value));
   }
 
   _spawn(cwd: ?NuclideUri): void {
@@ -259,6 +250,7 @@ export class TerminalView implements PtyClient {
       nuclideUri.isLocal(cwd) ||
       RemoteConnection.getByHostname(nuclideUri.getHostname(cwd)).length > 0
     ) {
+      this._setUseTitleAsPath(cwd);
       const promise =
         cwd == null
           ? spawn(info, this)
@@ -282,6 +274,14 @@ export class TerminalView implements PtyClient {
       );
       this._subscriptions.add(subscription);
     }
+  }
+
+  _setUseTitleAsPath(cwd: ?NuclideUri): void {
+    const promise =
+      cwd == null
+        ? useTitleAsPath(this)
+        : getPtyServiceByNuclideUri(cwd).useTitleAsPath(this);
+    promise.then(value => (this._useTitleAsPath = value));
   }
 
   _onPtyFulfill(pty: Pty): void {
@@ -655,7 +655,7 @@ export function deserializeTerminalView(
   state: TerminalViewState,
 ): TerminalView {
   // Convert from/to uri to generate a new unique id.
-  const info = infoFromUri(state.paneUri);
+  const info = infoFromUri(state.paneUri, true);
   const paneUri = uriFromInfo(info);
   return new TerminalView(paneUri);
 }
