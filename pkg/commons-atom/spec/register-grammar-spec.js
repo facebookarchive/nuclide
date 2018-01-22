@@ -21,7 +21,7 @@ describe('registerGrammar', () => {
       );
       registerGrammar('source.js', ['cats']);
       const textEditor = await atom.workspace.open(
-        `${await fsPromise.tempfile()}.js`,
+        `${await fsPromise.tempfile()}.cats`,
       );
       expect(textEditor.getGrammar().scopeName).toBe('source.js');
       textEditor.destroy();
