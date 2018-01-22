@@ -13,7 +13,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
-import {getReferences} from '../lib/PythonService';
+import {_getReferences} from '../lib/PythonService';
 import {getDefinition} from '../lib/DefinitionHelpers';
 import {getCompletions} from '../lib/AutocompleteHelpers';
 import JediServerManager from '../lib/JediServerManager';
@@ -38,6 +38,8 @@ describe('PythonService', () => {
 
   beforeEach(function() {
     serverManager = new JediServerManager();
+    // Don't try to retrieve additional paths from Buck/etc.
+    spyOn(serverManager, 'getSysPath').andReturn([]);
     addMatchers(this);
   });
 
@@ -169,7 +171,7 @@ describe('PythonService', () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
           const service = await serverManager.getJediService(TEST_FILE);
-          await service.get_definitions('potato', 'tomato', 6, 15);
+          await service.get_definitions('potato', 'tomato', [], 6, 15);
           // Fail - this line should not be reachable.
           invariant(false);
         } catch (e) {
@@ -258,7 +260,13 @@ describe('PythonService', () => {
     it('can find the references of locally defined variables', () => {
       waitsForPromise(async () => {
         // line 13: potato = 5
-        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 12, 2);
+        const response = await _getReferences(
+          serverManager,
+          TEST_FILE,
+          FILE_CONTENTS,
+          12,
+          2,
+        );
         invariant(response);
 
         expect(response).diffJson([
@@ -283,7 +291,13 @@ describe('PythonService', () => {
     it('can find the references of imported modules', () => {
       waitsForPromise(async () => {
         // line 29: import decorated
-        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 28, 8);
+        const response = await _getReferences(
+          serverManager,
+          TEST_FILE,
+          FILE_CONTENTS,
+          28,
+          8,
+        );
         invariant(response);
 
         expect(response).diffJson([
@@ -322,7 +336,13 @@ describe('PythonService', () => {
     it('displays the caller name for references within functions', () => {
       waitsForPromise(async () => {
         // line 13: potato = 5
-        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 19, 2);
+        const response = await _getReferences(
+          serverManager,
+          TEST_FILE,
+          FILE_CONTENTS,
+          19,
+          2,
+        );
         invariant(response);
 
         expect(response).diffJson([
@@ -432,6 +452,7 @@ describe('PythonService', () => {
         const response = await service.get_hover(
           TEST_FILE,
           FILE_CONTENTS,
+          [],
           'Test',
           30,
           16,

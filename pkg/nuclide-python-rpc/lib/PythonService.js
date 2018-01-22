@@ -200,7 +200,8 @@ class PythonSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    const result = await getReferences(
+    const result = await _getReferences(
+      serverManager,
       filePath,
       buffer.getText(),
       position.row,
@@ -273,6 +274,7 @@ class PythonSingleFileLanguageService {
     const result = await service.get_hover(
       filePath,
       buffer.getText(),
+      serverManager.getSysPath(filePath),
       word.wordMatch[0],
       position.row,
       position.column,
@@ -401,14 +403,22 @@ const getFormatterCommandImpl = once(() => {
   }
 });
 
-export async function getReferences(
+// Exported for testing.
+export async function _getReferences(
+  manager: JediServerManager,
   src: NuclideUri,
   contents: string,
   line: number,
   column: number,
 ): Promise<?Array<PythonReference>> {
-  const service = await serverManager.getJediService(src);
-  return service.get_references(src, contents, line, column);
+  const service = await manager.getJediService(src);
+  return service.get_references(
+    src,
+    contents,
+    manager.getSysPath(src),
+    line,
+    column,
+  );
 }
 
 // Set to false if flake8 isn't found, so we don't repeatedly fail.

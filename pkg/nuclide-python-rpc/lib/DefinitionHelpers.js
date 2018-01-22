@@ -42,6 +42,7 @@ export async function getDefinition(
   const result = await service.get_definitions(
     filePath,
     contents,
+    serverManager.getSysPath(filePath),
     line,
     column,
   );

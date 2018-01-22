@@ -28,7 +28,7 @@ class JediServer:
 
     def __init__(self, src, paths):
         self.src = src
-        self.sys_path = self.get_filtered_sys_path() + paths
+        self.additional_paths = paths
         self.logger = logging.getLogger()
         self.input_stream = sys.stdin
         self.output_stream = sys.stdout
@@ -43,13 +43,13 @@ class JediServer:
             self.output_stream.write('\n')
             self.output_stream.flush()
 
-    def get_filtered_sys_path(self):
+    def get_filtered_sys_path(self, src):
         # Retrieves the sys.path with VendorLib filtered out, so symbols from
         # jedi don't appear in user's autocompletions or hyperclicks.
         # Don't filter out VendorLib if we're working in the jediserver's dir. :)
         return [path for path in sys.path
                 if (path != LIB_DIR and path != WORKING_DIR) or
-                self.src.startswith(WORKING_DIR)]
+                src.startswith(WORKING_DIR)]
 
     def generate_log_name(self, value):
         hash = hashlib.md5(value.encode('utf-8')).hexdigest()[:10]
@@ -87,10 +87,6 @@ class JediServer:
                 res['result'] = outline.get_outline(self.src, data['contents'])
             elif method == 'get_hover':
                 res['result'] = self.get_hover(self.make_script(data), data['word'])
-            # Allow deferred injection of additional paths
-            elif method == 'add_paths':
-                self.sys_path = self.sys_path + data['paths']
-                res['result'] = self.sys_path
             else:
                 res['type'] = 'error-response'
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
@@ -107,10 +103,19 @@ class JediServer:
         return res
 
     def make_script(self, req_data):
+        src = req_data['src']
+        sys_path = (
+            self.get_filtered_sys_path(src) +
+            self.additional_paths +
+            # While non-existent paths don't cause any harm,
+            # paths may sometimes not exist but then be built after.
+            # Doing so should invalidate Jedi's cache.
+            list(filter(os.path.exists, req_data['sysPath']))
+        )
         return jedi.api.Script(
             source=req_data['contents'], line=req_data['line'] + 1,
-            column=req_data['column'], path=self.src,
-            sys_path=self.sys_path)
+            column=req_data['column'], path=src,
+            sys_path=sys_path)
 
     def is_func_or_class(self, completion):
         return completion.type == 'function' or completion.type == 'class'
@@ -223,7 +228,8 @@ class JediServer:
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-s', '--source', dest='src', default='', type=str)
-    parser.add_argument('-p', '--paths', dest='paths', default=[], type=str, nargs='+')
+    parser.add_argument('-p', '--paths', dest='paths', default=[], type=str, nargs='+',
+                        help='Additional Python module resolution paths.')
     args = parser.parse_args()
 
     JediServer(args.src, args.paths).run()

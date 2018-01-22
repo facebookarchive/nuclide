@@ -79,6 +79,7 @@ export type JediOutlineItem =
 export async function get_completions(
   src: NuclideUri,
   contents: string,
+  sysPath: Array<string>,
   line: number,
   column: number,
 ): Promise<?Array<JediCompletion>> {
@@ -88,6 +89,7 @@ export async function get_completions(
 export async function get_definitions(
   src: NuclideUri,
   contents: string,
+  sysPath: Array<string>,
   line: number,
   column: number,
 ): Promise<?Array<JediDefinition>> {
@@ -97,6 +99,7 @@ export async function get_definitions(
 export async function get_references(
   src: NuclideUri,
   contents: string,
+  sysPath: Array<string>,
   line: number,
   column: number,
 ): Promise<?Array<JediReference>> {
@@ -106,6 +109,7 @@ export async function get_references(
 export async function get_hover(
   src: NuclideUri,
   contents: string,
+  sysPath: Array<string>,
   // It's much easier to get the current word from JavaScript.
   word: string,
   line: number,
@@ -118,9 +122,5 @@ export function get_outline(
   src: NuclideUri,
   contents: string,
 ): Promise<?Array<JediOutlineItem>> {
-  throw new Error('RPC Stub');
-}
-
-export function add_paths(paths: Array<string>): Promise<?Array<string>> {
   throw new Error('RPC Stub');
 }

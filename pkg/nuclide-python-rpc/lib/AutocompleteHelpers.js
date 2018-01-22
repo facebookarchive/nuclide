@@ -121,5 +121,11 @@ export async function getCompletions(
   column: number,
 ): Promise<?Array<PythonCompletion>> {
   const service = await serverManager.getJediService(src);
-  return service.get_completions(src, contents, line, column);
+  return service.get_completions(
+    src,
+    contents,
+    serverManager.getSysPath(src),
+    line,
+    column,
+  );
 }

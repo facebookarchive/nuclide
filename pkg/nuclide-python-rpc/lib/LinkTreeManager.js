@@ -73,7 +73,6 @@ export default class LinkTreeManager {
     return [];
   }
 
-  // TODO: memoize this function
   async getLinkTreePaths(src: string): Promise<Array<string>> {
     try {
       const buckRoot = await BuckService.getRootForPath(src);
@@ -104,8 +103,4 @@ export default class LinkTreeManager {
       return [];
     }
   }
-
-  reset(src: string): void {}
-
-  dispose() {}
 }
