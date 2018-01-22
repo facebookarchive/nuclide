@@ -60,6 +60,9 @@ export default class JediServerManager {
       this._linkTreeManager.getLinkTreePaths(src).then(result => {
         sysPath.push(...result);
       });
+      getCustomSysPath(src).then(result => {
+        sysPath.push(...result);
+      });
       return sysPath;
     }
     return cachedSysPath;
@@ -82,4 +85,15 @@ function getTopLevelModulePath(src: string): Promise<?string> {
     nuclideUri.dirname(src),
     true /* stopOnMissing */,
   );
+}
+
+async function getCustomSysPath(src: string): Promise<Array<string>> {
+  try {
+    // $FlowFB
+    const fbCustomSysPath = require('./fb/custom-sys-path').default;
+    return await fbCustomSysPath(src);
+  } catch (err) {
+    // Ignore.
+  }
+  return [];
 }
