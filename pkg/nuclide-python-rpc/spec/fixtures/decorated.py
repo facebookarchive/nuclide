@@ -8,7 +8,7 @@ from banana import Test2
 
 
 class Test:
-
+    """This is a *test class."""
     @property
     def test(self):
         print('test')

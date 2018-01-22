@@ -32,10 +32,12 @@ import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
 import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {maybeToString} from 'nuclide-commons/string';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import once from '../../commons-node/once';
+import {IDENTIFIER_REGEXP} from './constants';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';
@@ -258,12 +260,35 @@ class PythonSingleFileLanguageService {
     };
   }
 
-  typeHint(
+  async typeHint(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    throw new Error('Not Yet Implemented');
+    const word = wordAtPositionFromBuffer(buffer, position, IDENTIFIER_REGEXP);
+    if (word == null) {
+      return null;
+    }
+    const service = await serverManager.getJediService(filePath);
+    const result = await service.get_hover(
+      filePath,
+      buffer.getText(),
+      word.wordMatch[0],
+      position.row,
+      position.column,
+    );
+    if (result == null) {
+      return null;
+    }
+    return {
+      hint: [
+        {
+          type: 'markdown',
+          value: result,
+        },
+      ],
+      range: word.range,
+    };
   }
 
   highlight(

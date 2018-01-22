@@ -16,7 +16,7 @@ import traceback
 from logging import FileHandler
 from argparse import ArgumentParser
 import jedi
-from parso.python.tree import Function, ImportFrom
+from parso.python.tree import ImportFrom
 import outline
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
@@ -85,6 +85,8 @@ class JediServer:
                 res['result'] = self.get_references(self.make_script(data))
             elif method == 'get_outline':
                 res['result'] = outline.get_outline(self.src, data['contents'])
+            elif method == 'get_hover':
+                res['result'] = self.get_hover(self.make_script(data), data['word'])
             # Allow deferred injection of additional paths
             elif method == 'add_paths':
                 self.sys_path = self.sys_path + data['paths']
@@ -96,7 +98,7 @@ class JediServer:
         # See https://github.com/davidhalter/jedi/issues/590
         except KeyError:
             res['result'] = []
-        except:
+        except Exception:
             res['type'] = 'error-response'
             res['error'] = traceback.format_exc()
 
@@ -181,6 +183,22 @@ class JediServer:
                 result['parentName'] = parent.name
             results.append(result)
         return results
+
+    # It'd be nice if this could return the actual types.
+    # As the next best thing, displaying method/class docblocks is pretty useful.
+    def get_hover(self, script, word):
+        # Jedi is loose with definitions when > 1 is possible (e.g: os.path).
+        # For the purposes of hovering, only allow exact matches.
+        definitions = [d for d in script.goto_definitions() if d.name == word]
+        if not definitions:
+            return None
+
+        docstring = definitions[0].docstring()
+        # The return value will be interpreted as Markdown.
+        # Make some adjustments for better Markdown formatting.
+        docstring = docstring.replace('\t', ' ' * 4)
+        docstring = docstring.replace('*', '\\*')
+        return docstring
 
     def serialize_definition(self, definition):
         return {

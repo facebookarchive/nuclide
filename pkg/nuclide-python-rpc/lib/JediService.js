@@ -103,6 +103,17 @@ export async function get_references(
   throw new Error('RPC Stub');
 }
 
+export async function get_hover(
+  src: NuclideUri,
+  contents: string,
+  // It's much easier to get the current word from JavaScript.
+  word: string,
+  line: number,
+  column: number,
+): Promise<?string> {
+  throw new Error('RPC Stub');
+}
+
 export function get_outline(
   src: NuclideUri,
   contents: string,

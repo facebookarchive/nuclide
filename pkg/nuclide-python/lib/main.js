@@ -90,6 +90,11 @@ const atomConfig: AtomLanguageServiceConfig = {
     analyticsEventName: 'python.evaluationExpression',
     matcher: {kind: 'default'},
   },
+  typeHint: {
+    version: '0.0.0',
+    priority: 1,
+    analyticsEventName: 'python.hover',
+  },
 };
 
 class Activation {

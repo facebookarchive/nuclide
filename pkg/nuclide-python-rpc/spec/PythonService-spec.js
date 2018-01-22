@@ -424,4 +424,21 @@ describe('PythonService', () => {
       });
     });
   });
+
+  describe('Hover', () => {
+    it('displays the docblock for a definition', () => {
+      waitsForPromise(async () => {
+        const service = await serverManager.getJediService(TEST_FILE);
+        const response = await service.get_hover(
+          TEST_FILE,
+          FILE_CONTENTS,
+          'Test',
+          30,
+          16,
+        );
+        invariant(response != null);
+        expect(response).toBe('This is a \\*test class.');
+      });
+    });
+  });
 });
