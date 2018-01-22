@@ -26,8 +26,7 @@ WORKING_DIR = os.getcwd()
 
 class JediServer:
 
-    def __init__(self, src, paths):
-        self.src = src
+    def __init__(self, paths):
         self.additional_paths = paths
         self.logger = logging.getLogger()
         self.input_stream = sys.stdin
@@ -57,16 +56,13 @@ class JediServer:
 
     def init_logging(self):
         # Be consistent with the main Nuclide logs.
-        log_dir = os.path.join(tempfile.gettempdir(), LOGGING_DIR)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        handler = FileHandler(os.path.join(log_dir, self.generate_log_name(self.src)))
+        log_path = os.path.join(tempfile.gettempdir(), 'nuclide-jedi.log')
+        handler = FileHandler(log_path)
         handler.setFormatter(logging.Formatter(
             'nuclide-jedi-py %(asctime)s: [%(name)s] %(message)s'
         ))
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
-        self.logger.info('starting for ' + self.src)
 
     def process_request(self, line):
         start_time = time.time()
@@ -84,7 +80,7 @@ class JediServer:
             elif method == 'get_references':
                 res['result'] = self.get_references(self.make_script(data))
             elif method == 'get_outline':
-                res['result'] = outline.get_outline(self.src, data['contents'])
+                res['result'] = outline.get_outline(data['src'], data['contents'])
             elif method == 'get_hover':
                 res['result'] = self.get_hover(self.make_script(data), data['word'])
             else:
@@ -98,8 +94,8 @@ class JediServer:
             res['type'] = 'error-response'
             res['error'] = traceback.format_exc()
 
-        self.logger.info('Finished %s request in %.2lf seconds.',
-                         method, time.time() - start_time)
+        self.logger.info('Finished %s request for %s in %.2lf seconds.',
+                         method, data.get('src'), time.time() - start_time)
         return res
 
     def make_script(self, req_data):
@@ -227,9 +223,8 @@ class JediServer:
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('-s', '--source', dest='src', default='', type=str)
     parser.add_argument('-p', '--paths', dest='paths', default=[], type=str, nargs='+',
                         help='Additional Python module resolution paths.')
     args = parser.parse_args()
 
-    JediServer(args.src, args.paths).run()
+    JediServer(args.paths).run()

@@ -38,7 +38,7 @@ export async function getDefinition(
   const column = position.column;
   const contents = buffer.getText();
 
-  const service = await serverManager.getJediService(filePath);
+  const service = await serverManager.getJediService();
   const result = await service.get_definitions(
     filePath,
     contents,

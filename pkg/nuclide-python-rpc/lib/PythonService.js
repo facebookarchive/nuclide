@@ -248,7 +248,7 @@ class PythonSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    const service = await serverManager.getJediService(filePath);
+    const service = await serverManager.getJediService();
     const items = await service.get_outline(filePath, buffer.getText());
 
     if (items == null) {
@@ -270,7 +270,7 @@ class PythonSingleFileLanguageService {
     if (word == null) {
       return null;
     }
-    const service = await serverManager.getJediService(filePath);
+    const service = await serverManager.getJediService();
     const result = await service.get_hover(
       filePath,
       buffer.getText(),
@@ -411,7 +411,7 @@ export async function _getReferences(
   line: number,
   column: number,
 ): Promise<?Array<PythonReference>> {
-  const service = await manager.getJediService(src);
+  const service = await manager.getJediService();
   return service.get_references(
     src,
     contents,

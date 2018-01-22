@@ -43,14 +43,14 @@ function getServiceRegistry(): ServiceRegistry {
   return serviceRegistry;
 }
 
-async function getServerArgs(src: string) {
+async function getServerArgs() {
   let overrides = {};
   try {
     // Override the python path and additional sys paths
     // if override script is present.
     // $FlowFB
     const findJediServerArgs = require('./fb/find-jedi-server-args').default;
-    overrides = await findJediServerArgs(src);
+    overrides = await findJediServerArgs();
   } catch (e) {
     // Ignore.
   }
@@ -85,12 +85,10 @@ export default class JediServer {
   _process: RpcProcess;
   _isDisposed: boolean;
 
-  constructor(src: string) {
-    // Generate a name for this server using the src file name, used to namespace logs
-    const name = `JediServer-${nuclideUri.basename(src)}`;
-    const processStream = Observable.fromPromise(getServerArgs(src)).switchMap(
+  constructor() {
+    const processStream = Observable.fromPromise(getServerArgs()).switchMap(
       ({pythonPath, paths}) => {
-        let args = [PROCESS_PATH, '-s', src];
+        let args = [PROCESS_PATH];
         if (paths.length > 0) {
           args.push('-p');
           args = args.concat(paths);
@@ -98,7 +96,11 @@ export default class JediServer {
         return spawn(pythonPath, args, OPTS);
       },
     );
-    this._process = new RpcProcess(name, getServiceRegistry(), processStream);
+    this._process = new RpcProcess(
+      'JediServer',
+      getServiceRegistry(),
+      processStream,
+    );
     this._isDisposed = false;
   }
 

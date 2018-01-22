@@ -11,7 +11,6 @@
 
 import typeof * as JediService from './JediService';
 
-import LRUCache from 'lru-cache';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import JediServer from './JediServer';
@@ -19,28 +18,19 @@ import LinkTreeManager from './LinkTreeManager';
 
 export default class JediServerManager {
   _linkTreeManager: LinkTreeManager;
-  _servers: LRUCache<string, JediServer>;
   _sysPathMap: Map<string, Array<string>>;
+  _server: ?JediServer;
 
   constructor() {
     this._linkTreeManager = new LinkTreeManager();
-    this._servers = new LRUCache({
-      max: 20,
-      dispose(key: string, val: JediServer) {
-        val.dispose();
-      },
-    });
     this._sysPathMap = new Map();
   }
 
-  getJediService(src: string): Promise<JediService> {
-    let server = this._servers.get(src);
-    if (server == null) {
-      server = new JediServer(src);
-      this._servers.set(src, server);
+  getJediService(): Promise<JediService> {
+    if (this._server == null) {
+      this._server = new JediServer();
     }
-
-    return server.getService();
+    return this._server.getService();
   }
 
   /**
@@ -68,13 +58,11 @@ export default class JediServerManager {
     return cachedSysPath;
   }
 
-  reset(src: string): void {
-    this._servers.del(src);
-    this._linkTreeManager = new LinkTreeManager();
-  }
-
   dispose(): void {
-    this._servers.reset();
+    if (this._server != null) {
+      this._server.dispose();
+      this._server = null;
+    }
     this._sysPathMap.clear();
   }
 }

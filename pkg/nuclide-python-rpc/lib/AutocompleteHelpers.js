@@ -120,7 +120,7 @@ export async function getCompletions(
   line: number,
   column: number,
 ): Promise<?Array<PythonCompletion>> {
-  const service = await serverManager.getJediService(src);
+  const service = await serverManager.getJediService();
   return service.get_completions(
     src,
     contents,

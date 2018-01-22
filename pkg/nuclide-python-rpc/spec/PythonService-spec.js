@@ -170,7 +170,7 @@ describe('PythonService', () => {
       waitsForPromise(async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
-          const service = await serverManager.getJediService(TEST_FILE);
+          const service = await serverManager.getJediService();
           await service.get_definitions('potato', 'tomato', [], 6, 15);
           // Fail - this line should not be reachable.
           invariant(false);
@@ -368,7 +368,7 @@ describe('PythonService', () => {
 
   describe('Outlines', () => {
     async function getOutline(src, contents) {
-      const service = await serverManager.getJediService(src);
+      const service = await serverManager.getJediService();
       return service.get_outline(src, contents);
     }
 
@@ -448,7 +448,7 @@ describe('PythonService', () => {
   describe('Hover', () => {
     it('displays the docblock for a definition', () => {
       waitsForPromise(async () => {
-        const service = await serverManager.getJediService(TEST_FILE);
+        const service = await serverManager.getJediService();
         const response = await service.get_hover(
           TEST_FILE,
           FILE_CONTENTS,
