@@ -9,9 +9,8 @@
  * @format
  */
 
-import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {FileChange, WatchmanSubscription} from 'nuclide-watchman-helpers';
 import type {PathSet} from './PathSet';
-import type {WatchmanSubscription} from '../../../nuclide-watchman-helpers';
 
 import fs from 'nuclide-commons/fsPromise';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -21,7 +20,7 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 
 import {hgRunCommand} from '../../../nuclide-hg-rpc/lib/hg-utils';
-import {WatchmanClient} from '../../../nuclide-watchman-helpers';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 
 // TODO: This probably won't work on Windows, but we'll worry about that
 // when Watchman officially supports Windows.

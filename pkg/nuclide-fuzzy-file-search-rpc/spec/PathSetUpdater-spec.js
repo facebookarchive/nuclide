@@ -13,7 +13,7 @@ import invariant from 'assert';
 
 import {Observable} from 'rxjs';
 import {generateHgRepo1Fixture} from '../../nuclide-test-helpers';
-import {WatchmanSubscription} from '../../nuclide-watchman-helpers';
+import {WatchmanSubscription} from 'nuclide-watchman-helpers';
 
 import {PathSet} from '../lib/process/PathSet';
 import PathSetUpdater from '../lib/process/PathSetUpdater';

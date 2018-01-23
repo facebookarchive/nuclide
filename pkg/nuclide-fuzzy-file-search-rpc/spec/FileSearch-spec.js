@@ -15,7 +15,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import {fileSearchForDirectory} from '../lib/process/FileSearch';
-import * as watchmanHelpers from '../../nuclide-watchman-helpers';
+import * as watchmanHelpers from 'nuclide-watchman-helpers';
 
 function aFileSearchShould(typename, dirPathFn) {
   describe(`A ${typename} folder`, () => {

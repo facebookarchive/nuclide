@@ -20,7 +20,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import fs from 'fs';
 
 import {MergeConflictStatus, HisteditActions} from './hg-constants';

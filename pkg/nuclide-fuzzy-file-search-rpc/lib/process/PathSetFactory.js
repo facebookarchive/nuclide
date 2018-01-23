@@ -11,7 +11,7 @@
 
 import child_process from 'child_process';
 import split from 'split';
-import {WatchmanClient} from '../../../nuclide-watchman-helpers';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';

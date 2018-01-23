@@ -31,7 +31,7 @@ import {watchDirectory, getFileIndex} from './file-index';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HasteSettings} from '../Config';
 import type {JSExport} from './types';
-import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {FileChange} from 'nuclide-watchman-helpers';
 import type {FileIndex} from './file-index';
 
 initializeLoggerForWorker();

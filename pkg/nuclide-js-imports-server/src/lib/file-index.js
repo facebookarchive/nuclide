@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {FileChange} from 'nuclide-watchman-helpers';
 import type {ConfigFromFlow} from '../Config';
 
 import {getLogger} from 'log4js';
@@ -21,7 +21,7 @@ import {asyncLimit} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {Observable} from 'rxjs';
-import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import ExportCache from './ExportCache';
 
 const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];

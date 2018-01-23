@@ -10,8 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
-import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {FileChange, WatchmanSubscription} from 'nuclide-watchman-helpers';
 import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -20,7 +19,7 @@ import fs from 'fs';
 import {Observable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import debounceDeletes from './debounceDeletes';
 
 export type WatchResult = {
