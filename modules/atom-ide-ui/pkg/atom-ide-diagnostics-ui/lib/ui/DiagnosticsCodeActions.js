@@ -12,6 +12,7 @@
 
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
+import {TextEditor} from 'atom';
 import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -35,7 +36,16 @@ export default function DiagnosticsCodeActions(props: {
                 size="EXTRA_SMALL"
                 onClick={() => {
                   // TODO: (seansegal) T21130332 Display CodeAction status indicators
-                  codeAction.apply().catch(handleCodeActionFailure);
+                  codeAction
+                    .apply()
+                    .catch(handleCodeActionFailure)
+                    .then(() => {
+                      // Return focus to the editor after clicking.
+                      const activeItem = atom.workspace.getActivePaneItem();
+                      if (activeItem && activeItem instanceof TextEditor) {
+                        activeItem.element.focus();
+                      }
+                    });
                 }}>
                 <span className="inline-block">{title}</span>
               </Button>
