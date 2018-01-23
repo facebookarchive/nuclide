@@ -1,93 +1,101 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classnames from 'classnames';
-import type DebuggerModel from './DebuggerModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ThreadsView = undefined;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
-import type {ThreadColumn} from 'nuclide-debugger-common';
-import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
+var _classnames;
 
-type Props = {
-  model: DebuggerModel,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export class ThreadsView extends React.PureComponent<
-  Props,
-  {
-    customThreadColumns: Array<ThreadColumn>,
-    mode: DebuggerModeType,
-    threadsComponentTitle: string,
-  },
-> {
-  _disposables: UniversalDisposable;
+var _UniversalDisposable;
 
-  constructor(props: Props) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _DebuggerThreadsComponent;
+
+function _load_DebuggerThreadsComponent() {
+  return _DebuggerThreadsComponent = require('./DebuggerThreadsComponent');
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ThreadsView extends _react.PureComponent {
+
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     const debuggerStore = props.model.getStore();
     this.state = {
       customThreadColumns: debuggerStore.getSettings().customThreadColumns,
       mode: debuggerStore.getDebuggerMode(),
-      threadsComponentTitle: String(
-        debuggerStore.getSettings().threadsComponentTitle,
-      ),
+      threadsComponentTitle: String(debuggerStore.getSettings().threadsComponentTitle)
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const debuggerStore = this.props.model.getStore();
-    this._disposables.add(
-      debuggerStore.onChange(() => {
-        this.setState({
-          customThreadColumns: debuggerStore.getSettings().customThreadColumns,
-          mode: debuggerStore.getDebuggerMode(),
-          threadsComponentTitle: debuggerStore.getSettings()
-            .threadsComponentTitle,
-        });
-      }),
-    );
+    this._disposables.add(debuggerStore.onChange(() => {
+      this.setState({
+        customThreadColumns: debuggerStore.getSettings().customThreadColumns,
+        mode: debuggerStore.getDebuggerMode(),
+        threadsComponentTitle: debuggerStore.getSettings().threadsComponentTitle
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    const {model} = this.props;
-    const {mode, threadsComponentTitle, customThreadColumns} = this.state;
-    const disabledClass =
-      mode !== DebuggerMode.RUNNING
-        ? ''
-        : ' nuclide-debugger-container-new-disabled';
+  render() {
+    const { model } = this.props;
+    const { mode, threadsComponentTitle, customThreadColumns } = this.state;
+    const disabledClass = mode !== (_DebuggerStore || _load_DebuggerStore()).DebuggerMode.RUNNING ? '' : ' nuclide-debugger-container-new-disabled';
 
-    return (
-      <div
-        className={classnames('nuclide-debugger-container-new', disabledClass)}>
-        <div className="nuclide-debugger-pane-content">
-          <DebuggerThreadsComponent
-            bridge={this.props.model.getBridge()}
-            threadStore={model.getThreadStore()}
-            customThreadColumns={customThreadColumns}
-            threadName={threadsComponentTitle}
-          />
-        </div>
-      </div>
+    return _react.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-container-new', disabledClass) },
+      _react.createElement(
+        'div',
+        { className: 'nuclide-debugger-pane-content' },
+        _react.createElement((_DebuggerThreadsComponent || _load_DebuggerThreadsComponent()).DebuggerThreadsComponent, {
+          bridge: this.props.model.getBridge(),
+          threadStore: model.getThreadStore(),
+          customThreadColumns: customThreadColumns,
+          threadName: threadsComponentTitle
+        })
+      )
     );
   }
 }
+exports.ThreadsView = ThreadsView; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    * @format
+                                    */

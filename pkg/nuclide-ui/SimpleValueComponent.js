@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.STRING_REGEX = undefined;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _ValueComponentClassNames;
+
+function _load_ValueComponentClassNames() {
+  return _ValueComponentClassNames = require('./ValueComponentClassNames');
+}
+
+var _TextRenderer;
+
+function _load_TextRenderer() {
+  return _TextRenderer = require('./TextRenderer');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,102 +28,93 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
-import type {EvaluationResult} from '../nuclide-debugger/lib/types';
-
-import * as React from 'react';
-import {ValueComponentClassNames} from './ValueComponentClassNames';
-import {TextRenderer} from './TextRenderer';
-
-type Props = {
-  expression: ?string,
-  evaluationResult: EvaluationResult,
-};
-
 const booleanRegex = /^true|false$/i;
-export const STRING_REGEX = /^(['"]).*\1$/;
+const STRING_REGEX = exports.STRING_REGEX = /^(['"]).*\1$/;
 
-function renderNullish(
-  evaluationResult: EvaluationResult,
-): ?React.Element<any> {
-  const {type} = evaluationResult;
-  return type === 'undefined' || type === 'null' ? (
-    <span className={ValueComponentClassNames.nullish}>{type}</span>
+function renderNullish(evaluationResult) {
+  const { type } = evaluationResult;
+  return type === 'undefined' || type === 'null' ? _react.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.nullish },
+    type
   ) : null;
 }
 
-function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderString(evaluationResult) {
+  const { type, value } = evaluationResult;
   if (value == null) {
     return null;
   }
   if (STRING_REGEX.test(value)) {
-    return <span className={ValueComponentClassNames.string}>{value}</span>;
+    return _react.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.string },
+      value
+    );
   } else if (type === 'string') {
-    return (
-      <span className={ValueComponentClassNames.string}>
-        <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
-        {value}
-        <span className={ValueComponentClassNames.stringClosingQuote}>"</span>
-      </span>
+    return _react.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.string },
+      _react.createElement(
+        'span',
+        { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.stringOpeningQuote },
+        '"'
+      ),
+      value,
+      _react.createElement(
+        'span',
+        { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.stringClosingQuote },
+        '"'
+      )
     );
   } else {
     return null;
   }
 }
 
-function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderNumber(evaluationResult) {
+  const { type, value } = evaluationResult;
   if (value == null) {
     return null;
   }
-  return type === 'number' || !isNaN(Number(value)) ? (
-    <span className={ValueComponentClassNames.number}>{String(value)}</span>
+  return type === 'number' || !isNaN(Number(value)) ? _react.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.number },
+    String(value)
   ) : null;
 }
 
-function renderBoolean(
-  evaluationResult: EvaluationResult,
-): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function renderBoolean(evaluationResult) {
+  const { type, value } = evaluationResult;
   if (value == null) {
     return null;
   }
-  return type === 'boolean' || booleanRegex.test(value) ? (
-    <span className={ValueComponentClassNames.boolean}>{String(value)}</span>
+  return type === 'boolean' || booleanRegex.test(value) ? _react.createElement(
+    'span',
+    { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.boolean },
+    String(value)
   ) : null;
 }
 
-function renderDefault(evaluationResult: EvaluationResult): ?string {
+function renderDefault(evaluationResult) {
   return evaluationResult.value;
 }
 
-const valueRenderers = [
-  TextRenderer,
-  renderString,
-  renderNumber,
-  renderNullish,
-  renderBoolean,
-  renderDefault,
-];
+const valueRenderers = [(_TextRenderer || _load_TextRenderer()).TextRenderer, renderString, renderNumber, renderNullish, renderBoolean, renderDefault];
 
-export default class SimpleValueComponent extends React.Component<Props> {
-  shouldComponentUpdate(nextProps: Props): boolean {
-    const {expression, evaluationResult} = this.props;
-    return (
-      expression !== nextProps.expression ||
-      evaluationResult.type !== nextProps.evaluationResult.type ||
-      evaluationResult.value !== nextProps.evaluationResult.value ||
-      evaluationResult.description !== nextProps.evaluationResult.description
-    );
+class SimpleValueComponent extends _react.Component {
+  shouldComponentUpdate(nextProps) {
+    const { expression, evaluationResult } = this.props;
+    return expression !== nextProps.expression || evaluationResult.type !== nextProps.evaluationResult.type || evaluationResult.value !== nextProps.evaluationResult.value || evaluationResult.description !== nextProps.evaluationResult.description;
   }
 
-  render(): React.Node {
-    const {expression, evaluationResult} = this.props;
+  render() {
+    const { expression, evaluationResult } = this.props;
     let displayValue;
     for (const renderer of valueRenderers) {
       displayValue = renderer(evaluationResult);
@@ -113,22 +127,26 @@ export default class SimpleValueComponent extends React.Component<Props> {
       displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {
-      return (
-        <span tabIndex={-1} className="native-key-bindings">
-          {displayValue}
-        </span>
+      return _react.createElement(
+        'span',
+        { tabIndex: -1, className: 'native-key-bindings' },
+        displayValue
       );
     }
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
     // (t11408154)
-    const renderedExpression = (
-      <span className={ValueComponentClassNames.identifier}>{expression}</span>
+    const renderedExpression = _react.createElement(
+      'span',
+      { className: (_ValueComponentClassNames || _load_ValueComponentClassNames()).ValueComponentClassNames.identifier },
+      expression
     );
-    return (
-      <span tabIndex={-1} className="native-key-bindings">
-        {renderedExpression}
-        : {displayValue}
-      </span>
+    return _react.createElement(
+      'span',
+      { tabIndex: -1, className: 'native-key-bindings' },
+      renderedExpression,
+      ': ',
+      displayValue
     );
   }
 }
+exports.default = SimpleValueComponent;

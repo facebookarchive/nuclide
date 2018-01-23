@@ -1,45 +1,42 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DispatcherInterface} from './DispatcherInterface';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class HelpCommand implements Command {
-  name = 'help';
-  helpText = 'Give help about the debugger command set.';
-  _console: ConsoleIO;
-  _dispatcher: DispatcherInterface;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-  constructor(con: ConsoleIO, dispatcher: DispatcherInterface) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class HelpCommand {
+
+  constructor(con, dispatcher) {
+    this.name = 'help';
+    this.helpText = 'Give help about the debugger command set.';
+
     this._console = con;
     this._dispatcher = dispatcher;
   }
 
-  async execute(args: string[]): Promise<void> {
-    const [command] = args;
+  execute(args) {
+    var _this = this;
 
-    if (command != null) {
-      this._displayDetailedHelp(command);
-      return;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const [command] = args;
 
-    this._displayHelp();
+      if (command != null) {
+        _this._displayDetailedHelp(command);
+        return;
+      }
+
+      _this._displayHelp();
+    })();
   }
 
-  _displayHelp(): void {
+  _displayHelp() {
     const commands = this._dispatcher.getCommands();
     const commandDict = {};
-    commands.forEach(x => (commandDict[x.name] = x));
+    commands.forEach(x => commandDict[x.name] = x);
 
     const commandNames = commands.map(x => x.name).sort();
 
@@ -48,7 +45,7 @@ export default class HelpCommand implements Command {
     });
   }
 
-  _displayDetailedHelp(cmd: string): void {
+  _displayDetailedHelp(cmd) {
     const commands = this._dispatcher.getCommandsMatching(cmd);
     if (commands.length === 0) {
       throw new Error(`There is no command "${cmd}"`);
@@ -69,3 +66,14 @@ export default class HelpCommand implements Command {
     this._console.outputLine(command.helpText);
   }
 }
+exports.default = HelpCommand; /**
+                                * Copyright (c) 2017-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the BSD-style license found in the
+                                * LICENSE file in the root directory of this source tree. An additional grant
+                                * of patent rights can be found in the PATENTS file in the same directory.
+                                *
+                                * 
+                                * @format
+                                */

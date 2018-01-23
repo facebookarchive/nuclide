@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConfigCache = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _lruCache;
+
+function _load_lruCache() {
+  return _lruCache = _interopRequireDefault(require('lru-cache'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('./fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,36 +29,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {LRUCache} from 'lru-cache';
-import type {NuclideUri} from './nuclideUri';
+class ConfigCache {
 
-import LRU from 'lru-cache';
-import fsPromise from './fsPromise';
-
-export type SearchStrategy = 'nearest' | 'priority';
-
-export class ConfigCache {
-  _configFileNames: Array<string>;
-  _searchStrategy: SearchStrategy;
-  _configCache: LRUCache<NuclideUri, Promise<?NuclideUri>>;
-
-  constructor(
-    configFileNames: Array<string>,
-    searchStrategy?: SearchStrategy = 'nearest',
-  ) {
+  constructor(configFileNames, searchStrategy = 'nearest') {
     this._configFileNames = configFileNames;
     this._searchStrategy = searchStrategy;
-    this._configCache = LRU({
+    this._configCache = (0, (_lruCache || _load_lruCache()).default)({
       max: 200, // Want this to exceed the maximum expected number of open files + dirs.
-      maxAge: 1000 * 30, // 30 seconds
+      maxAge: 1000 * 30 // 30 seconds
     });
   }
 
-  getConfigDir(path: NuclideUri): Promise<?NuclideUri> {
+  getConfigDir(path) {
     let result = this._configCache.get(path);
     if (result == null) {
       result = this._findConfigDir(path);
@@ -44,28 +53,31 @@ export class ConfigCache {
     return result;
   }
 
-  async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
-    const configDirs = await Promise.all(
-      this._configFileNames.map(configFile =>
-        fsPromise.findNearestFile(configFile, path),
-      ),
-    );
+  _findConfigDir(path) {
+    var _this = this;
 
-    if (this._searchStrategy === 'nearest') {
-      // Find the result with the greatest length (the closest match).
-      return configDirs.filter(Boolean).reduce((previous, configDir) => {
-        if (previous == null || configDir.length > previous.length) {
-          return configDir;
-        }
-        return previous;
-      }, null);
-    } else {
-      // Find the first match.
-      return configDirs.find(Boolean);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const configDirs = yield Promise.all(_this._configFileNames.map(function (configFile) {
+        return (_fsPromise || _load_fsPromise()).default.findNearestFile(configFile, path);
+      }));
+
+      if (_this._searchStrategy === 'nearest') {
+        // Find the result with the greatest length (the closest match).
+        return configDirs.filter(Boolean).reduce(function (previous, configDir) {
+          if (previous == null || configDir.length > previous.length) {
+            return configDir;
+          }
+          return previous;
+        }, null);
+      } else {
+        // Find the first match.
+        return configDirs.find(Boolean);
+      }
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._configCache.reset();
   }
 }
+exports.ConfigCache = ConfigCache;

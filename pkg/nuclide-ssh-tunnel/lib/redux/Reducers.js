@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.openTunnels = openTunnels;
+exports.currentWorkingDirectory = currentWorkingDirectory;
+exports.consoleOutput = consoleOutput;
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireWildcard(require('immutable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,31 +30,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Message} from '../../../nuclide-console/lib/types';
-import type {Action, Tunnel, OpenTunnel} from '../types';
-import type {Directory} from '../../../nuclide-remote-connection';
-
-import * as Actions from './Actions';
-import * as Immutable from 'immutable';
-import invariant from 'assert';
-import {Subject} from 'rxjs';
-
-export function openTunnels(
-  state: Immutable.Map<Tunnel, OpenTunnel> = Immutable.Map(),
-  action: Action,
-) {
+function openTunnels(state = (_immutable || _load_immutable()).Map(), action) {
   switch (action.type) {
-    case Actions.ADD_OPEN_TUNNEL:
-      const {close, tunnel} = action.payload;
+    case (_Actions || _load_Actions()).ADD_OPEN_TUNNEL:
+      const { close, tunnel } = action.payload;
       return state.set(tunnel, {
         close,
-        state: 'initializing',
+        state: 'initializing'
       });
-    case Actions.CLOSE_TUNNEL:
+    case (_Actions || _load_Actions()).CLOSE_TUNNEL:
       const toClose = action.payload.tunnel;
       const openTunnel = state.get(toClose);
       if (openTunnel == null) {
@@ -37,32 +50,28 @@ export function openTunnels(
       }
       openTunnel.close(action.payload.error);
       return state.delete(toClose);
-    case Actions.SET_TUNNEL_STATE:
-      invariant(state.get(action.payload.tunnel) != null);
-      return state.update(action.payload.tunnel, value => ({
-        ...value,
-        state: action.payload.state,
+    case (_Actions || _load_Actions()).SET_TUNNEL_STATE:
+      if (!(state.get(action.payload.tunnel) != null)) {
+        throw new Error('Invariant violation: "state.get(action.payload.tunnel) != null"');
+      }
+
+      return state.update(action.payload.tunnel, value => Object.assign({}, value, {
+        state: action.payload.state
       }));
     default:
       return state;
   }
 }
 
-export function currentWorkingDirectory(
-  state: ?Directory = null,
-  action: Action,
-) {
+function currentWorkingDirectory(state = null, action) {
   switch (action.type) {
-    case Actions.SET_CURRENT_WORKING_DIRECTORY:
+    case (_Actions || _load_Actions()).SET_CURRENT_WORKING_DIRECTORY:
       return action.payload.directory;
     default:
       return state;
   }
 }
 
-export function consoleOutput(
-  state: Subject<Message> = new Subject(),
-  action: Action,
-) {
+function consoleOutput(state = new _rxjsBundlesRxMinJs.Subject(), action) {
   return state;
 }

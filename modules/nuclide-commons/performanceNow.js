@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +11,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -22,9 +27,7 @@
  *   const timeItTookInMilliseconds = performanceNow() - now;
  */
 
-export default (typeof performance !== 'undefined'
-  ? (): number => performance.now()
-  : (): number => {
-      const [seconds, nanoseconds] = process.hrtime();
-      return seconds * 1000 + nanoseconds / 1000000;
-    });
+exports.default = typeof performance !== 'undefined' ? () => performance.now() : () => {
+  const [seconds, nanoseconds] = process.hrtime();
+  return seconds * 1000 + nanoseconds / 1000000;
+};

@@ -1,37 +1,70 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Store, RefactorState} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MainRefactorComponent = undefined;
 
-import * as React from 'react';
-import invariant from 'assert';
+var _react = _interopRequireWildcard(require('react'));
 
-import {Button} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+var _Button;
 
-import {ConfirmRefactorComponent} from './ConfirmRefactorComponent';
-import {DiffPreviewComponent} from './DiffPreviewComponent';
-import {FreeformRefactorComponent} from './FreeformRefactorComponent';
-import {PickRefactorComponent} from './PickRefactorComponent';
-import {ProgressComponent} from './ProgressComponent';
-import {RenameComponent} from './RenameComponent';
-import * as Actions from '../refactorActions';
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
 
-type Props = {
-  appState: RefactorState,
-  store: Store,
-};
+var _ButtonGroup;
 
-export class MainRefactorComponent extends React.Component<Props> {
-  render(): React.Element<any> | null {
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+var _ConfirmRefactorComponent;
+
+function _load_ConfirmRefactorComponent() {
+  return _ConfirmRefactorComponent = require('./ConfirmRefactorComponent');
+}
+
+var _DiffPreviewComponent;
+
+function _load_DiffPreviewComponent() {
+  return _DiffPreviewComponent = require('./DiffPreviewComponent');
+}
+
+var _FreeformRefactorComponent;
+
+function _load_FreeformRefactorComponent() {
+  return _FreeformRefactorComponent = require('./FreeformRefactorComponent');
+}
+
+var _PickRefactorComponent;
+
+function _load_PickRefactorComponent() {
+  return _PickRefactorComponent = require('./PickRefactorComponent');
+}
+
+var _ProgressComponent;
+
+function _load_ProgressComponent() {
+  return _ProgressComponent = require('./ProgressComponent');
+}
+
+var _RenameComponent;
+
+function _load_RenameComponent() {
+  return _RenameComponent = require('./RenameComponent');
+}
+
+var _refactorActions;
+
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('../refactorActions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class MainRefactorComponent extends _react.Component {
+  render() {
     if (this.props.appState.type === 'closed') {
       return null;
     } else {
@@ -41,75 +74,100 @@ export class MainRefactorComponent extends React.Component<Props> {
     }
   }
 
-  _render(): React.Element<any> {
-    return (
-      <div>
-        {this.getHeaderElement()}
-        {this.getInnerElement()}
-      </div>
+  _render() {
+    return _react.createElement(
+      'div',
+      null,
+      this.getHeaderElement(),
+      this.getInnerElement()
     );
   }
 
-  _getBackButton(): React.Node {
+  _getBackButton() {
     const appState = this.props.appState;
-    const previousPhase =
-      (appState.phase && appState.phase.previousPhase) || null;
-    return previousPhase ? (
-      <Button
-        onClick={() =>
-          this.props.store.dispatch(Actions.backFromDiffPreview(previousPhase))
-        }>
-        Back
-      </Button>
+    const previousPhase = appState.phase && appState.phase.previousPhase || null;
+    return previousPhase ? _react.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        onClick: () => this.props.store.dispatch((_refactorActions || _load_refactorActions()).backFromDiffPreview(previousPhase)) },
+      'Back'
     ) : null;
   }
 
-  getHeaderElement(): React.Element<any> {
+  getHeaderElement() {
     const appState = this.props.appState;
-    invariant(appState.type === 'open');
-    return (
-      <div className="nuclide-refactorizer-header">
-        <span>Refactor</span>
-        <ButtonGroup>
-          {this._getBackButton()}
-          <Button onClick={() => this.props.store.dispatch(Actions.close())}>
-            Close
-          </Button>
-        </ButtonGroup>
-      </div>
+
+    if (!(appState.type === 'open')) {
+      throw new Error('Invariant violation: "appState.type === \'open\'"');
+    }
+
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-refactorizer-header' },
+      _react.createElement(
+        'span',
+        null,
+        'Refactor'
+      ),
+      _react.createElement(
+        (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+        null,
+        this._getBackButton(),
+        _react.createElement(
+          (_Button || _load_Button()).Button,
+          { onClick: () => this.props.store.dispatch((_refactorActions || _load_refactorActions()).close()) },
+          'Close'
+        )
+      )
     );
   }
 
-  getInnerElement(): React.Element<any> {
+  getInnerElement() {
     const appState = this.props.appState;
-    invariant(appState.type === 'open');
+
+    if (!(appState.type === 'open')) {
+      throw new Error('Invariant violation: "appState.type === \'open\'"');
+    }
+
     const phase = appState.phase;
     switch (phase.type) {
       case 'get-refactorings':
-        return <div>Waiting for refactorings...</div>;
+        return _react.createElement(
+          'div',
+          null,
+          'Waiting for refactorings...'
+        );
       case 'pick':
-        return (
-          <PickRefactorComponent pickPhase={phase} store={this.props.store} />
-        );
+        return _react.createElement((_PickRefactorComponent || _load_PickRefactorComponent()).PickRefactorComponent, { pickPhase: phase, store: this.props.store });
       case 'rename':
-        return <RenameComponent phase={phase} store={this.props.store} />;
+        return _react.createElement((_RenameComponent || _load_RenameComponent()).RenameComponent, { phase: phase, store: this.props.store });
       case 'freeform':
-        return (
-          <FreeformRefactorComponent phase={phase} store={this.props.store} />
-        );
+        return _react.createElement((_FreeformRefactorComponent || _load_FreeformRefactorComponent()).FreeformRefactorComponent, { phase: phase, store: this.props.store });
       case 'execute':
-        return <div>Executing refactoring...</div>;
-      case 'confirm':
-        return (
-          <ConfirmRefactorComponent phase={phase} store={this.props.store} />
+        return _react.createElement(
+          'div',
+          null,
+          'Executing refactoring...'
         );
+      case 'confirm':
+        return _react.createElement((_ConfirmRefactorComponent || _load_ConfirmRefactorComponent()).ConfirmRefactorComponent, { phase: phase, store: this.props.store });
       case 'progress':
-        return <ProgressComponent phase={phase} />;
+        return _react.createElement((_ProgressComponent || _load_ProgressComponent()).ProgressComponent, { phase: phase });
       case 'diff-preview':
-        return <DiffPreviewComponent phase={phase} />;
+        return _react.createElement((_DiffPreviewComponent || _load_DiffPreviewComponent()).DiffPreviewComponent, { phase: phase });
       default:
-        (phase: empty);
-        return <div />;
+        phase;
+        return _react.createElement('div', null);
     }
   }
 }
+exports.MainRefactorComponent = MainRefactorComponent; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        * @format
+                                                        */
