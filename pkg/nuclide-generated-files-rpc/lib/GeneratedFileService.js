@@ -53,6 +53,12 @@ export async function getGeneratedFileType(
   return tag;
 }
 
+export async function invalidateFileTypeCache(
+  filePath: NuclideUri,
+): Promise<void> {
+  cache.del(filePath);
+}
+
 export async function getGeneratedFileTypes(
   dirPath: NuclideUri,
 ): Promise<Map<NuclideUri, GeneratedFileType>> {
