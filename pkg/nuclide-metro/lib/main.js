@@ -18,8 +18,7 @@ import invariant from 'assert';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {BehaviorSubject, Observable} from 'rxjs';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {LogTailer} from '../../nuclide-console/lib/LogTailer';
+import {LogTailer} from '../../nuclide-console-base/lib/LogTailer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   NO_METRO_PROJECT_ERROR,

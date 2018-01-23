@@ -9,14 +9,18 @@
  * @format
  */
 
-import type {Message, OutputProviderStatus} from './types';
+import type {
+  Message,
+  OutputProviderStatus,
+} from '../../nuclide-console/lib/types';
 import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
-import {WORKSPACE_VIEW_URI as CONSOLE_VIEW_URI} from './ui/Console';
+
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 type TrackingEventNames = {
   start: string,
