@@ -1,34 +1,38 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
+// eslint-disable-next-line rulesdir/modules-dependencies
 import type {
   EvaluationResult,
   ExpansionResult,
-} from '../nuclide-debugger/lib/types';
+} from '../../pkg/nuclide-debugger/lib/types';
 import type {Observable} from 'rxjs';
 
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Icon} from 'nuclide-commons-ui/Icon';
+import {AtomInput} from './AtomInput';
+import {Icon} from './Icon';
 import * as React from 'react';
 import invariant from 'assert';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {track} from '../nuclide-analytics';
+import {bindObservableAsProps} from './bindObservableAsProps';
+import analytics from 'nuclide-commons-atom/analytics';
 import {highlightOnUpdate} from './highlightOnUpdate';
 import {STRING_REGEX} from './SimpleValueComponent';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
-import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
+import {TreeList, TreeItem, NestedTreeItem} from './Tree';
+import {LoadingSpinner} from './LoadingSpinner';
+import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
 import classnames from 'classnames';
+
+const {track} = analytics;
 
 const EDIT_VALUE_FROM_ICON = 'edit-value-from-icon';
 const NOT_AVAILABLE_MESSAGE = '<not available>';

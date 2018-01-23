@@ -14,8 +14,8 @@ import type {EvaluationResult} from './types';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 
 type Props = {|
   +expression: string,

@@ -18,8 +18,8 @@ import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
 import * as React from 'react';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';
 
 type Props = {|

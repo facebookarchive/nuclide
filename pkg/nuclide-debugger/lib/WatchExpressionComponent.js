@@ -22,8 +22,8 @@ import classnames from 'classnames';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nullthrows from 'nullthrows';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {

@@ -20,10 +20,10 @@ import type {
 import classnames from 'classnames';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import * as React from 'react';
-import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
+import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
+import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
-import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
+import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
 import debounce from 'nuclide-commons/debounce';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {URL_REGEX} from 'nuclide-commons/string';
