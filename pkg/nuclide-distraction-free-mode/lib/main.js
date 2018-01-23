@@ -15,7 +15,7 @@ import analytics from 'nuclide-commons-atom/analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DistractionFreeMode} from './DistractionFreeMode';
 import {getBuiltinProviders} from './BuiltinProviders';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 export type DistractionFreeModeProvider = {
   // Should be the unique to all providers. Recommended to be the package name. This string is not

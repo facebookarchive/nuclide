@@ -35,7 +35,7 @@ import {
 import getStats from './getStats';
 import getDOMCounters from './getDOMCounters';
 import trackStalls from './trackStalls';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 class Activation {
   _paneItemStates: Observable<PaneItemState>;

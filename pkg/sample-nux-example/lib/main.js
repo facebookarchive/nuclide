@@ -14,7 +14,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const SAMPLE_NUX_ID = 0;
 const SAMPLE_NUX_NAME = 'sample-nux-example.sample-nux-id';

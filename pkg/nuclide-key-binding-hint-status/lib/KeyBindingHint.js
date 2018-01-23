@@ -13,7 +13,7 @@ import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
+import humanizeKeystroke from 'nuclide-commons/humanizeKeystroke';
 import humanizeEventName from '../../commons-node/humanizeEventName';
 
 /* global KeyboardEvent */

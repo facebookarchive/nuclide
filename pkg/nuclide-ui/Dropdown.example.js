@@ -13,8 +13,8 @@
 
 import * as React from 'react';
 import {Dropdown} from './Dropdown';
-import {ModalMultiSelect} from './ModalMultiSelect';
 import {SplitButtonDropdown} from './SplitButtonDropdown';
+import {ModalMultiSelect} from 'nuclide-commons-ui/ModalMultiSelect';
 
 const DropdownExample = (() => {
   const options = [

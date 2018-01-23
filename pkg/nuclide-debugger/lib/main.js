@@ -57,7 +57,7 @@ import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import os from 'os';
 import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,

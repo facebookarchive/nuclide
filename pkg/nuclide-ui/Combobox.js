@@ -14,7 +14,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Portal} from './Portal';
+import {Portal} from 'nuclide-commons-ui/Portal';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';

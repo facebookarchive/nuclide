@@ -18,7 +18,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
 import {getLogger} from 'log4js';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const logger = getLogger('nuclide-test-runner');
 

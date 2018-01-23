@@ -21,7 +21,7 @@ import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import BreakpointStore from './BreakpointStore';
-import {Modal} from '../../nuclide-ui/Modal';
+import {Modal} from 'nuclide-commons-ui/Modal';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 

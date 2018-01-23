@@ -22,7 +22,7 @@ import * as React from 'react';
 import url from 'url';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 let subscriptions: UniversalDisposable = (null: any);
 

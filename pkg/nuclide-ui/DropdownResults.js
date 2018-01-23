@@ -14,7 +14,7 @@ import invariant from 'assert';
 import classnames from 'classnames';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {Portal} from './Portal';
+import {Portal} from 'nuclide-commons-ui/Portal';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

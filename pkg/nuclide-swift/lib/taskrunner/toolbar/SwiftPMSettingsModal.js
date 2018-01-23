@@ -14,7 +14,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../../../nuclide-ui/Dropdown';
-import {Modal} from '../../../../nuclide-ui/Modal';
+import {Modal} from 'nuclide-commons-ui/Modal';
 
 type Props = {
   configuration: string,

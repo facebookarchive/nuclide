@@ -42,7 +42,7 @@ import Reducers from './redux/Reducers';
 import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
-import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
+import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =

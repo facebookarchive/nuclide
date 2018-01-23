@@ -14,7 +14,7 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
-import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
+import {ModalMultiSelect} from 'nuclide-commons-ui/ModalMultiSelect';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';

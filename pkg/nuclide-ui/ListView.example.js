@@ -13,7 +13,7 @@ import * as React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
 import {ListView, ListViewItem} from './ListView';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {MultiSelectList} from './MultiSelectList';
+import {MultiSelectList} from 'nuclide-commons-ui/MultiSelectList';
 
 const NOOP = () => {};
 
