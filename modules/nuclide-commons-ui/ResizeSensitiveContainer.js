@@ -12,7 +12,9 @@
 
 import * as React from 'react';
 import classnames from 'classnames';
+import nullthrows from 'nullthrows';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
+import {Subject} from 'rxjs';
 
 type SensorProps = {
   targetHeight: number,
@@ -136,7 +138,8 @@ type State = {
  */
 export class ResizeSensitiveContainer extends React.Component<Props, State> {
   _container: ?HTMLElement;
-  _rafDisposable: ?rxjs$Subscription;
+  _resizeEvents: Subject<void> = new Subject();
+  _resizeSubscription: ?rxjs$Subscription;
 
   constructor(props: Props) {
     super(props);
@@ -146,10 +149,16 @@ export class ResizeSensitiveContainer extends React.Component<Props, State> {
     };
   }
 
+  componentDidMount(): void {
+    this._resizeSubscription = this._resizeEvents
+      .switchMap(() => nextAnimationFrame)
+      .subscribe(() => {
+        this._updateContainerSize();
+      });
+  }
+
   componentWillUnmount(): void {
-    if (this._rafDisposable != null) {
-      this._rafDisposable.unsubscribe();
-    }
+    nullthrows(this._resizeSubscription).unsubscribe();
   }
 
   _containerRendered(): boolean {
@@ -180,12 +189,7 @@ export class ResizeSensitiveContainer extends React.Component<Props, State> {
   };
 
   _handleResize = (): void => {
-    if (this._rafDisposable != null) {
-      this._rafDisposable.unsubscribe();
-    }
-    this._rafDisposable = nextAnimationFrame.subscribe(
-      this._updateContainerSize,
-    );
+    this._resizeEvents.next();
   };
 
   render(): React.Node {
