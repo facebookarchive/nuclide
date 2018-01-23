@@ -10,7 +10,7 @@
  */
 
 import * as React from 'react';
-import {MeasuredComponent} from './MeasuredComponent';
+import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import {Button} from 'nuclide-commons-ui/Button';
 
 type Props = {

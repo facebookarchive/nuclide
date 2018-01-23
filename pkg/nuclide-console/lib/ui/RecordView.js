@@ -18,12 +18,12 @@ import type {
 } from '../types';
 
 import classnames from 'classnames';
+import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import * as React from 'react';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
 import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
-import {MeasuredComponent} from '../../../nuclide-ui/MeasuredComponent';
 import debounce from 'nuclide-commons/debounce';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {URL_REGEX} from 'nuclide-commons/string';
