@@ -23,7 +23,7 @@ import type {
   WatchEditorFunction,
   Store,
 } from './types';
-import type {CreatePasteFunction} from '../../nuclide-paste-base';
+import type {CreatePasteFunction} from './types';
 
 import {List} from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';

@@ -17,8 +17,6 @@ import type {
   ExpansionResult,
 } from '../../nuclide-debugger/lib/types';
 
-import type {CreatePasteFunction} from '../../nuclide-paste-base';
-
 export type Level = TaskLevelType | Color;
 type Color =
   | 'red'
@@ -175,6 +173,17 @@ export type WatchEditorFunction = (
   editor: atom$TextEditor,
   labels?: Array<string>,
 ) => IDisposable;
+
+export type PasteOptions = {
+  language?: ?string,
+  title?: ?string,
+};
+
+export type CreatePasteFunction = (
+  message: string,
+  options: PasteOptions,
+  source: string,
+) => Promise<string>;
 
 export type Store = {
   getState(): AppState,

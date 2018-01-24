@@ -20,7 +20,7 @@ import type {
   Store,
   SourceInfo,
 } from '../types';
-import type {CreatePasteFunction} from '../../../nuclide-paste-base';
+import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';

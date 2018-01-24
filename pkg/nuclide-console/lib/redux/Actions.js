@@ -20,7 +20,7 @@ import type {
   WatchEditorFunction,
 } from '../types';
 
-import type {CreatePasteFunction} from '../../../nuclide-paste-base';
+import type {CreatePasteFunction} from '../types';
 
 export const CLEAR_RECORDS = 'CLEAR_RECORDS';
 export const SET_CREATE_PASTE_FUNCTION = 'SET_CREATE_PASTE_FUNCTION';
