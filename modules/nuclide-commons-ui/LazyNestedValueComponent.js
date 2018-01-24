@@ -11,11 +11,7 @@
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
-// eslint-disable-next-line rulesdir/modules-dependencies
-import type {
-  EvaluationResult,
-  ExpansionResult,
-} from '../../pkg/nuclide-debugger/lib/types';
+import type {EvaluationResult} from './TextRenderer';
 import type {Observable} from 'rxjs';
 
 import {AtomInput} from './AtomInput';
@@ -31,6 +27,11 @@ import {TreeList, TreeItem, NestedTreeItem} from './Tree';
 import {LoadingSpinner} from './LoadingSpinner';
 import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
 import classnames from 'classnames';
+
+export type ExpansionResult = Array<{
+  name: string,
+  value: EvaluationResult,
+}>;
 
 const {track} = analytics;
 

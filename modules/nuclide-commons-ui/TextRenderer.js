@@ -12,8 +12,16 @@
 
 import * as React from 'react';
 
-// eslint-disable-next-line rulesdir/modules-dependencies
-import type {EvaluationResult} from '../../pkg/nuclide-debugger/lib/types';
+/* Evaluation & values */
+export type EvaluationResult = {
+  type: string,
+  // Either:
+  value?: string,
+  // Or:
+  description?: string,
+  objectId?: string,
+  subtype?: string,
+};
 
 export function TextRenderer(
   evaluationResult: EvaluationResult,

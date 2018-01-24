@@ -12,10 +12,8 @@
 import type {Observable} from 'rxjs';
 import type {Level as TaskLevelType} from 'nuclide-commons/process';
 import type {List} from 'immutable';
-import type {
-  EvaluationResult,
-  ExpansionResult,
-} from '../../nuclide-debugger/lib/types';
+import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
+import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
 export type Level = TaskLevelType | Color;
 type Color =

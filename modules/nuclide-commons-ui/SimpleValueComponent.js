@@ -11,8 +11,7 @@
  */
 
 // TODO @jxg export debugger typedefs from main module. (t11406963)
-// eslint-disable-next-line rulesdir/modules-dependencies
-import type {EvaluationResult} from '../../pkg/nuclide-debugger/lib/types';
+import type {EvaluationResult} from './TextRenderer';
 
 import * as React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';

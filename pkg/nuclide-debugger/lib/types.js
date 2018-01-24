@@ -12,6 +12,10 @@
 import type {Observable} from 'rxjs';
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
 import type {ThreadColumn} from 'nuclide-debugger-common';
+// eslint-disable-next-line rulesdir/import-type-style
+import type {EvaluationResult as EvaluationResult_} from 'nuclide-commons-ui/TextRenderer';
+// eslint-disable-next-line rulesdir/import-type-style
+import type {ExpansionResult as ExpansionResult_} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
 export type DebuggerSettings = {
   supportThreadsWindow: boolean,
@@ -20,21 +24,8 @@ export type DebuggerSettings = {
   threadsComponentTitle: string,
 };
 
-/* Evaluation & values */
-export type EvaluationResult = {
-  type: string,
-  // Either:
-  value?: string,
-  // Or:
-  description?: string,
-  objectId?: string,
-  subtype?: string,
-};
-
-export type ExpansionResult = Array<{
-  name: string,
-  value: EvaluationResult,
-}>;
+export type EvaluationResult = EvaluationResult_;
+export type ExpansionResult = ExpansionResult_;
 
 export type ScopeSectionPayload = {
   name: string,
