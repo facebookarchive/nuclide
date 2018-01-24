@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-artillery",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "author": "devobs",
+  "description": "Provides a simple API for sending traces to Artillery",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  },
+  "private": true
+}

@@ -27,6 +27,7 @@ import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject} from 'rxjs';
 import {createMessage, taskFromObservable} from '../../commons-node/tasks';
+import {NuclideArtilleryTrace} from '../../nuclide-artillery';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -314,25 +315,44 @@ export class BuckTaskRunner {
           'log',
         ),
         Observable.defer(() => {
+          const trace = NuclideArtilleryTrace.begin('nuclide_buck', taskType);
           if (selectedDeploymentTarget) {
             const {platform, device} = selectedDeploymentTarget;
-            return platform.runTask(
-              this._buildSystem,
-              taskType,
-              buildRuleType.buildTarget,
-              taskSettings,
-              device,
-            );
+            return platform
+              .runTask(
+                this._buildSystem,
+                taskType,
+                buildRuleType.buildTarget,
+                taskSettings,
+                device,
+              )
+              .do({
+                error() {
+                  trace.end();
+                },
+                complete() {
+                  trace.end();
+                },
+              });
           } else {
             const subcommand = taskType === 'debug' ? 'build' : taskType;
-            return this._buildSystem.runSubcommand(
-              buckRoot,
-              subcommand,
-              buildRuleType.buildTarget,
-              taskSettings,
-              taskType === 'debug',
-              null,
-            );
+            return this._buildSystem
+              .runSubcommand(
+                buckRoot,
+                subcommand,
+                buildRuleType.buildTarget,
+                taskSettings,
+                taskType === 'debug',
+                null,
+              )
+              .do({
+                error() {
+                  trace.end();
+                },
+                complete() {
+                  trace.end();
+                },
+              });
           }
         }),
       ),
