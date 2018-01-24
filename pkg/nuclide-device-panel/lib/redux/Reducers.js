@@ -21,7 +21,6 @@ export function app(state: AppState, action: Action): AppState {
       const {host} = action.payload;
       return {
         ...state,
-        deviceType: null,
         device: null,
         devices: Expect.pendingValue([]),
         infoTables: Expect.pendingValue(new Map()),
