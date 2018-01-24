@@ -35,7 +35,8 @@ export type VsAdapterType =
   | 'java'
   | 'react_native'
   | 'prepack'
-  | 'ocaml';
+  | 'ocaml'
+  | 'mobilejs';
 
 export type UserOutputLevel =
   | 'debug'
