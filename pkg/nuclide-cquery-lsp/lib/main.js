@@ -50,8 +50,6 @@ import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
 import {
   AtomLanguageService,
   getHostServices,
-  updateAutocompleteResults,
-  updateAutocompleteFirstResults,
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -395,10 +393,7 @@ class Activation {
         suggestionPriority: 3,
         disableForSelector: null,
         excludeLowerPriority: false,
-        autocompleteCacherConfig: {
-          updateResults: updateAutocompleteResults,
-          updateFirstResults: updateAutocompleteFirstResults,
-        },
+        autocompleteCacherConfig: null,
         analytics: {
           eventName: 'nuclide-cquery-lsp',
           shouldLogInsertedSuggestion: false,
@@ -424,6 +419,18 @@ class Activation {
         analyticsEventName: 'cquery.outline',
         updateOnEdit: true,
         priority: 1,
+      },
+      codeFormat: {
+        version: '0.1.0',
+        priority: 1,
+        analyticsEventName: 'cquery.codeFormat',
+        canFormatAtPosition: false,
+        canFormatRanges: true,
+      },
+      typeHint: {
+        version: '0.0.0',
+        priority: 1,
+        analyticsEventName: 'cquery.typeHint',
       },
       findReferences: {
         version: '0.1.0',

@@ -161,7 +161,8 @@ export class CqueryLanguageClient extends LspLanguageService {
     }
   }
 
-  // TODO pelmers: remove this when cquery implements workspace/applyEdit
+  // TODO pelmers(T25418348): remove when cquery implements workspace/applyEdit
+  // track https://github.com/jacobdufault/cquery/issues/283
   async _applyEdit(file: string, edits: Array<TextEdit>): Promise<boolean> {
     return this._host.applyTextEditsForMultipleFiles(
       new Map([
