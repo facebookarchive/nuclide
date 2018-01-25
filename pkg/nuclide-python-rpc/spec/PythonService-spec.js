@@ -44,7 +44,7 @@ describe('PythonService', () => {
   });
 
   afterEach(() => {
-    serverManager.dispose();
+    serverManager.reset();
     serverManager = (null: any);
   });
 

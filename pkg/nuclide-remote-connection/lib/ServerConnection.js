@@ -478,6 +478,10 @@ export class ServerConnection {
       Observable.of(null), // so subscribers get a full list immediately
     ).map(() => Array.from(ServerConnection._connections.values()));
   }
+
+  static getAllConnections(): Array<ServerConnection> {
+    return Array.from(ServerConnection._connections.values());
+  }
 }
 
 export const __test__ = {

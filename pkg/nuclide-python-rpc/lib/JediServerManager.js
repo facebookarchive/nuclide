@@ -58,12 +58,13 @@ export default class JediServerManager {
     return cachedSysPath;
   }
 
-  dispose(): void {
+  reset(): void {
     if (this._server != null) {
       this._server.dispose();
       this._server = null;
     }
     this._sysPathMap.clear();
+    this._linkTreeManager = new LinkTreeManager();
   }
 }
 

@@ -204,6 +204,12 @@ export function getPythonServiceByNuclideUri(uri: NuclideUri): PythonService {
   return nullthrows(getServiceByNuclideUri('PythonService', uri));
 }
 
+export function getPythonServiceByConnection(
+  connection: ?ServerConnection,
+): PythonService {
+  return getServiceByConnection('PythonService', connection);
+}
+
 export function getReasonServiceByNuclideUri(uri: NuclideUri): ReasonService {
   return nullthrows(getServiceByNuclideUri('ReasonService', uri));
 }

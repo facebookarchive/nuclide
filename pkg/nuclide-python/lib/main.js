@@ -11,15 +11,16 @@
 
 import type {LinterProvider} from 'atom-ide-ui';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
-import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
 import LintHelpers from './LintHelpers';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {
+  getPythonServiceByConnection,
+  ServerConnection,
+} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -31,15 +32,10 @@ import {
 import {providePythonPlatformGroup} from './pythonPlatform';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-const PYTHON_SERVICE_NAME = 'PythonService';
-
 async function connectionToPythonService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const pythonService: PythonService = getServiceByConnection(
-    PYTHON_SERVICE_NAME,
-    connection,
-  );
+  const pythonService = getPythonServiceByConnection(connection);
   const fileNotifier = await getNotifierByConnection(connection);
   const languageService = await pythonService.initialize(fileNotifier, {
     showGlobalVariables: getShowGlobalVariables(),
@@ -97,6 +93,13 @@ const atomConfig: AtomLanguageServiceConfig = {
   },
 };
 
+function resetServices(): void {
+  getPythonServiceByConnection(null).reset();
+  ServerConnection.getAllConnections().forEach(conn => {
+    getPythonServiceByConnection(conn).reset();
+  });
+}
+
 class Activation {
   _pythonLanguageService: AtomLanguageService<LanguageService>;
   _subscriptions: UniversalDisposable;
@@ -107,7 +110,14 @@ class Activation {
       atomConfig,
     );
     this._pythonLanguageService.activate();
-    this._subscriptions = new UniversalDisposable(this._pythonLanguageService);
+    this._subscriptions = new UniversalDisposable(
+      this._pythonLanguageService,
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-python:reset-language-services',
+        resetServices,
+      ),
+    );
   }
 
   provideLint(): LinterProvider {

@@ -498,3 +498,7 @@ async function runLinterCommand(
     isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
   }).toPromise();
 }
+
+export function reset(): void {
+  serverManager.reset();
+}
