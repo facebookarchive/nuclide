@@ -12,6 +12,7 @@
 import type {ConfigEntry, ReliableTransport} from '../../nuclide-rpc';
 
 import invariant from 'assert';
+import os from 'os';
 import {getLogger} from 'log4js';
 import WS from 'ws';
 import {attachEvent} from 'nuclide-commons/event';
@@ -29,6 +30,7 @@ import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {protocolLogger} from './utils';
+import {track} from '../../nuclide-analytics';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 const connect: connect$module = require('connect');
@@ -75,7 +77,10 @@ export default class NuclideServer {
     this._version = getVersion().toString();
     this._app = connect();
     this._attachUtilHandlers();
-    if (serverKey && serverCertificate && certificateAuthorityCertificate) {
+    const isHttps = Boolean(
+      serverKey && serverCertificate && certificateAuthorityCertificate,
+    );
+    if (isHttps) {
       const webServerOptions = {
         key: serverKey,
         cert: serverCertificate,
@@ -114,6 +119,8 @@ export default class NuclideServer {
       getServerSideMarshalers,
       services,
     );
+
+    track('server-created', {port, isHttps, host: os.hostname()});
   }
 
   _attachUtilHandlers() {
