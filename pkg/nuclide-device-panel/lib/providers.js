@@ -9,7 +9,7 @@
  * @format
  */
 
-import {
+import type {
   DeviceListProvider,
   DeviceInfoProvider,
   DeviceProcessesProvider,
@@ -18,6 +18,7 @@ import {
   DeviceTypeTaskProvider,
   DeviceActionProvider,
   DeviceAppInfoProvider,
+  DeviceTypeComponentProvider,
 } from './types';
 
 type DeviceProviders = {
@@ -29,6 +30,7 @@ type DeviceProviders = {
   deviceTypeTask: Set<DeviceTypeTaskProvider>,
   deviceAction: Set<DeviceActionProvider>,
   appInfo: Set<DeviceAppInfoProvider>,
+  deviceTypeComponent: Set<DeviceTypeComponentProvider>,
 };
 
 const providers: DeviceProviders = {
@@ -40,6 +42,7 @@ const providers: DeviceProviders = {
   deviceTypeTask: new Set(),
   deviceAction: new Set(),
   appInfo: new Set(),
+  deviceTypeComponent: new Set(),
 };
 
 export function getProviders(): DeviceProviders {

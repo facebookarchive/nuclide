@@ -30,5 +30,6 @@ export function createEmptyAppState(): AppState {
     supportedPidsPerTask: new Map(),
     deviceTypeTasks: [],
     isPollingDevices: false,
+    deviceTypeComponents: [],
   };
 }

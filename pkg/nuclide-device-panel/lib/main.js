@@ -141,6 +141,9 @@ class Activation {
       registerAppInfoProvider: this._createProviderRegistration(
         providers.appInfo,
       ),
+      registerDeviceTypeComponentProvider: this._createProviderRegistration(
+        providers.deviceTypeComponent,
+      ),
     };
   }
 }

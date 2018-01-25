@@ -23,12 +23,14 @@ import type {
   SetProcessesAction,
   SetProcessTasksAction,
   SetDeviceTypeTasksAction,
+  SetDeviceTypeComponentsAction,
   ToggleDevicePollingAction,
   ToggleProcessPollingAction,
   Device,
   Process,
   ProcessTask,
   AppInfoRow,
+  DeviceTypeComponent,
 } from '../types';
 import type {Expected} from '../../../commons-node/expected';
 
@@ -48,6 +50,7 @@ export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
 export const TOGGLE_DEVICE_POLLING = 'TOGGLE_DEVICE_POLLING';
 export const TOGGLE_PROCESS_POLLING = 'TOGGLE_PROCESS_POLLING';
 export const SET_DEVICE_TYPE_TASKS = 'SET_DEVICE_TYPE_TASKS';
+export const SET_DEVICE_TYPE_COMPONENTS = 'SET_DEVICE_TYPE_COMPONENTS';
 
 export function toggleDevicePolling(
   isActive: boolean,
@@ -159,4 +162,10 @@ export function setDeviceTypeTasks(
     type: SET_DEVICE_TYPE_TASKS,
     payload: {deviceTypeTasks},
   };
+}
+
+export function setDeviceTypeComponents(
+  components: Array<DeviceTypeComponent>,
+): SetDeviceTypeComponentsAction {
+  return {type: SET_DEVICE_TYPE_COMPONENTS, payload: {components}};
 }

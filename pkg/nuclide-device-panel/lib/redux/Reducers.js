@@ -27,6 +27,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: Expect.pendingValue([]),
         actions: [],
         processTasks: [],
+        deviceTypeComponents: [],
         isDeviceConnected: false,
         host,
       };
@@ -45,6 +46,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: Expect.pendingValue([]),
         actions: [],
         processTasks: [],
+        deviceTypeComponents: [],
         isDeviceConnected: false,
       };
 
@@ -118,6 +120,13 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         deviceTypeTasks,
+      };
+
+    case Actions.SET_DEVICE_TYPE_COMPONENTS:
+      const deviceTypeComponents = action.payload.components;
+      return {
+        ...state,
+        deviceTypeComponents,
       };
 
     case Actions.TOGGLE_DEVICE_POLLING:

@@ -78,6 +78,7 @@ export class DevicePanelWorkspaceView {
       processTasks: state.processTasks,
       isDeviceConnected: state.isDeviceConnected,
       deviceTypeTasks: state.deviceTypeTasks,
+      deviceTypeComponents: state.deviceTypeComponents,
       toggleDevicePolling,
       toggleProcessPolling,
       setHost,

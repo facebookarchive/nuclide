@@ -10,7 +10,13 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessTask, AppInfoRow} from '../types';
+import type {
+  Device,
+  Process,
+  ProcessTask,
+  AppInfoRow,
+  DeviceTypeComponent,
+} from '../types';
 import type {Expected} from '../../../commons-node/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Props as TaskButtonPropsType} from './TaskButton';
@@ -44,6 +50,7 @@ export type Props = {|
   processes: Expected<Process[]>,
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
+  deviceTypeComponents: Array<DeviceTypeComponent>,
 |};
 
 export class RootPanel extends React.Component<Props> {
@@ -87,7 +94,7 @@ export class RootPanel extends React.Component<Props> {
     };
   }
 
-  _getTasks(): React.Element<any> {
+  _getTasks(): ?React.Element<any> {
     const tasks = Array.from(this.props.deviceTypeTasks).map(task => {
       const StreamedTaskButton = bindObservableAsProps(
         task
@@ -98,8 +105,27 @@ export class RootPanel extends React.Component<Props> {
       );
       return <StreamedTaskButton key={task.getName()} />;
     });
+    if (tasks.length < 1) {
+      return null;
+    }
     return (
       <div className="block nuclide-device-panel-tasks-container">{tasks}</div>
+    );
+  }
+
+  _getDeviceTypeComponents(): ?React.Element<any> {
+    const components = this.props.deviceTypeComponents.map(component => {
+      const Type = component.type;
+      return <Type key={component.key} devices={this.props.devices} />;
+    });
+    if (components.length < 1) {
+      return null;
+    }
+
+    return (
+      <div className="block nuclide-device-panel-additional-components">
+        {components}
+      </div>
     );
   }
 
@@ -139,6 +165,7 @@ export class RootPanel extends React.Component<Props> {
         </div>
         <div className="block">{this._createDeviceTable()}</div>
         {this._getTasks()}
+        {this._getDeviceTypeComponents()}
       </div>
     );
   }

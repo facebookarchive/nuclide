@@ -34,6 +34,9 @@ export type DevicePanelServiceApi = {
   ) => IDisposable,
   registerDeviceActionProvider: (provider: DeviceActionProvider) => IDisposable,
   registerAppInfoProvider: (provider: DeviceAppInfoProvider) => IDisposable,
+  registerDeviceTypeComponentProvider: (
+    provider: DeviceTypeComponentProvider,
+  ) => IDisposable,
 };
 
 export interface DeviceListProvider {
@@ -101,6 +104,30 @@ export interface DeviceActionProvider {
   getActionsForDevice(device: Device): Array<DeviceAction>;
 }
 
+export type DevicesProps = {
+  devices: Expected<Array<Device>>,
+};
+
+export type DeviceTypeOrderedComponent = {
+  component: React$ComponentType<DevicesProps>,
+  order: number,
+};
+
+export interface DeviceTypeComponentProvider {
+  getType(): string;
+  getName(): string;
+  observe(
+    host: NuclideUri,
+    callback: (?DeviceTypeOrderedComponent) => void,
+  ): IDisposable;
+}
+
+// This is just a type internal to this package, it conveniently includes the React key
+export type DeviceTypeComponent = {
+  type: React$ComponentType<DevicesProps>,
+  key: string,
+};
+
 //
 // Store
 //
@@ -120,6 +147,7 @@ export type AppState = {
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
   isPollingDevices: boolean,
+  deviceTypeComponents: Array<DeviceTypeComponent>,
 };
 
 export type Store = {
@@ -269,6 +297,13 @@ export type SetDeviceTypeTasksAction = {
   },
 };
 
+export type SetDeviceTypeComponentsAction = {
+  type: 'SET_DEVICE_TYPE_COMPONENTS',
+  payload: {
+    components: Array<DeviceTypeComponent>,
+  },
+};
+
 export type Action =
   | ToggleDevicePollingAction
   | ToggleProcessPollingAction
@@ -283,4 +318,5 @@ export type Action =
   | SetProcessTasksAction
   | SetDeviceTasksAction
   | SetDeviceTypeTasksAction
-  | SetDeviceAction;
+  | SetDeviceAction
+  | SetDeviceTypeComponentsAction;

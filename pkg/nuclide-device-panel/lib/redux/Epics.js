@@ -9,6 +9,7 @@
  * @format
  */
 
+import log4js from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import {track} from '../../../nuclide-analytics';
@@ -29,6 +30,7 @@ import type {
   Process,
   AppInfoRow,
   DeviceAppInfoProvider,
+  DeviceTypeOrderedComponent,
 } from '../types';
 import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
 
@@ -192,6 +194,65 @@ export function setAppInfoEpic(
       return observeAppInfoTables(processNames, providers, host, device);
     })
     .map(appInfoTables => Actions.setAppInfoTables(appInfoTables));
+}
+
+export function setDeviceTypeComponentsEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_DEVICE_TYPE).switchMap(action => {
+    invariant(action.type === Actions.SET_DEVICE_TYPE);
+    const {deviceType} = action.payload;
+    const {host} = store.getState();
+    if (deviceType == null) {
+      return Observable.empty();
+    }
+
+    const providers = Array.from(getProviders().deviceTypeComponent).filter(
+      provider => provider.getType() === deviceType,
+    );
+    if (providers.length === 0) {
+      return Observable.empty();
+    }
+
+    const gatheredComponents: Observable<
+      Array<?{ordered: DeviceTypeOrderedComponent, key: string}>,
+    > = Observable.from(
+      providers.map(provider =>
+        Observable.create(observer => {
+          const disposable = provider.observe(host, component => {
+            observer.next(component);
+          });
+          return () => {
+            disposable.dispose();
+          };
+        })
+          .startWith(null)
+          .catch(e => {
+            log4js.getLogger().error(e);
+            return Observable.of(null);
+          })
+          .map(
+            ordered =>
+              ordered == null ? null : {ordered, key: provider.getName()},
+          ),
+      ),
+      // $FlowFixMe add combineAll to flow
+    ).combineAll();
+
+    const components = gatheredComponents.map(array =>
+      array
+        .filter(value => value != null)
+        .map(value => {
+          invariant(value != null);
+          return value;
+        })
+        .sort((a, b) => a.ordered.order - a.ordered.order)
+        .map(value => ({type: value.ordered.component, key: value.key})),
+    );
+
+    return components.map(value => Actions.setDeviceTypeComponents(value));
+  });
 }
 
 function uniqueArray<T>(array: Array<T>): Array<T> {
