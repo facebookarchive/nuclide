@@ -55,7 +55,7 @@ describe('LinkTreeManager', () => {
       expect(spy).toHaveBeenCalledWith(
         projectDir,
         'kind("python_binary|python_unittest", rdeps(//test:, //test:a))',
-        ['buck.type'],
+        ['buck.type', 'deps'],
       );
       // Properly resolve a link-tree path based on the source's firstly found
       // binary dependency.

@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import {memoize} from 'lodash';
 import {getLogger} from 'log4js';
-import {objectEntries} from 'nuclide-commons/collection';
+import {objectEntries, objectValues} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
 import * as BuckService from '../../nuclide-buck-rpc';
@@ -67,17 +67,37 @@ export default class LinkTreeManager {
       const dependents = await BuckService.queryWithAttributes(
         buckRoot,
         `kind(${kinds}, rdeps(${universe}, ${target}))`,
-        ['buck.type'],
+        ['buck.type', 'deps'],
       );
+      // Python binaries/unit tests often come with many 'helper targets'.
+      // (e.g. a binary might have a version built for ipython use).
+      // We'll restrict ourselves to only using the top level targets.
+      const nonToplevel = new Set();
+      objectValues(dependents).forEach(attrs => {
+        if (Array.isArray(attrs.deps)) {
+          attrs.deps.forEach(dep => {
+            if (typeof dep !== 'string') {
+              return;
+            }
+            // Resolve relative dependencies, e.g. :dep
+            const resolvedDep = dep.startsWith(':')
+              ? universe + dep.slice(1)
+              : dep;
+            nonToplevel.add(resolvedDep);
+          });
+        }
+      });
       return new Map(
-        objectEntries(dependents).map(([dep, attrs]) => {
-          const buckType = String(attrs['buck.type']);
-          invariant(
-            LINK_TREE_SUFFIXES.hasOwnProperty(buckType),
-            'got invalid buck.type',
-          );
-          return [dep, buckType];
-        }),
+        objectEntries(dependents)
+          .filter(([dep]) => !nonToplevel.has(dep))
+          .map(([dep, attrs]) => {
+            const buckType = String(attrs['buck.type']);
+            invariant(
+              LINK_TREE_SUFFIXES.hasOwnProperty(buckType),
+              'got invalid buck.type',
+            );
+            return [dep, buckType];
+          }),
       );
     } catch (err) {
       logger.error(`Failed to get dependents of target ${target}`, err);
@@ -104,7 +124,7 @@ export default class LinkTreeManager {
           return [];
         }
         const dependents = await this.getDependents(buckRoot, owner);
-        return Array.from(dependents).map(([target, kind]) => {
+        const paths = Array.from(dependents).map(([target, kind]) => {
           const linkTreeSuffix = LINK_TREE_SUFFIXES[kind];
           // Turn //test/target:a into test/target/a.
           const binPath = target.substr(2).replace(':', '/');
@@ -114,6 +134,8 @@ export default class LinkTreeManager {
             binPath + linkTreeSuffix,
           );
         });
+        logger.info(`Resolved link trees for ${src}`, paths);
+        return paths;
       },
       {src},
     );

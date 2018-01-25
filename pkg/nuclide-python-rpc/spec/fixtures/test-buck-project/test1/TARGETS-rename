@@ -9,5 +9,14 @@ python_binary(
     name="testbin1",
     deps=[
         ":test1",
+        ":testbin1-ipython",
+    ],
+)
+
+# A mock "helper" binary. Should be ignored.
+python_binary(
+    name="testbin1-ipython",
+    deps=[
+        ":test1",
     ],
 )
