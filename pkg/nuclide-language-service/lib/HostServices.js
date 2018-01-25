@@ -73,7 +73,11 @@ class RootHostServices {
           });
           resolve(subject);
         };
-        atom.packages.serviceHub.consume('nuclide-output', '0.0.0', consumer);
+        atom.packages.serviceHub.consume(
+          'DEPRECATED-nuclide-output',
+          '0.0.0',
+          consumer,
+        );
       });
       this._consoleSubjects.set(source, subjectPromise);
     }

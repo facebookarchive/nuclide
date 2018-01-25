@@ -47,7 +47,7 @@
     }
   },
   "consumedServices": {
-    "nuclide-output": {
+    "DEPRECATED-nuclide-output": {
       "versions": {
         "0.0.0": "consumeOutputService"
       }
