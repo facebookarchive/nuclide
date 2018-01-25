@@ -80,7 +80,13 @@
     }
   },
   "providedServices": {
+    "console": {
+      "versions": {
+        "0.0.0": "provideConsole"
+      }
+    },
     "nuclide-console": {
+      "//": "This is left in for backwards compatibility. Prefer \"console\".",
       "versions": {
         "0.0.0": "provideConsole"
       }
