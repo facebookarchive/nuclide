@@ -73,6 +73,7 @@ declare class atom$Package {
   onDidDeactivate(cb: () => mixed): IDisposable,
   activateNow(): void,
   // Undocumented
+  bundledPackage: boolean,
   getCanDeferMainModuleRequireStorageKey(): string,
 }
 
