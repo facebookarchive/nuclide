@@ -10,7 +10,7 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "nuclide.registerExecutor": {
+    "DEPRECATED-nuclide.registerExecutor": {
       "versions": {
         "0.0.0": "consumeRegisterExecutor"
       }

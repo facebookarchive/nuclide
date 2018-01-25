@@ -90,7 +90,7 @@
         "0.0.0": "provideOutputService"
       }
     },
-    "nuclide.registerExecutor": {
+    "DEPRECATED-nuclide.registerExecutor": {
       "description": "Register an object that can execute code.",
       "versions": {
         "0.0.0": "provideRegisterExecutor"
