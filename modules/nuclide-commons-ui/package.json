@@ -24,6 +24,7 @@
     "react": "16.2.0",
     "react-dom": "16.2.0",
     "rxjs": "5.5.5",
+    "semver": "5.3.0",
     "shallowequal": "0.2.2",
     "tabbable": "1.1.0"
   }

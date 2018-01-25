@@ -1678,6 +1678,10 @@ type atom$AggregatedTextEditEvent = {
   changes: Array<atom$TextEditEvent>,
 };
 
+declare class atom$LanguageMode {
+  getLanguageId(): string,
+}
+
 declare class atom$TextBuffer {
   constructor(text?: string): atom$TextBuffer,
   constructor(params?: {
@@ -1719,6 +1723,7 @@ declare class atom$TextBuffer {
   getEncoding(): string,
   getUri(): string,
   getId(): string,
+  getLanguageMode(): atom$LanguageMode,
 
   // Reading Text
   isEmpty(): boolean,
