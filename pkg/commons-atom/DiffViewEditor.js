@@ -15,9 +15,12 @@ import {Range} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {concatIterators} from 'nuclide-commons/collection';
+import semver from 'semver';
+import {getAtomVersion} from '../commons-node/system-info';
 import {syncBlockDecorations} from './block-decorations';
 
 export type EditorElementsMap = Map<number, React.Element<any>>;
+const ATOM_VERSION_CHECK_FOR_SET_GRAMMAR = '1.24.0-beta0';
 
 function renderLineOffset(
   lineCount: number,
@@ -140,7 +143,12 @@ export default class DiffViewEditor {
       buffer.setText(contents);
     }
     const grammar = atom.grammars.selectGrammar(filePath, contents);
-    this._editor.setGrammar(grammar);
+    const version = getAtomVersion();
+    if (semver.lt(version, ATOM_VERSION_CHECK_FOR_SET_GRAMMAR)) {
+      this._editor.setGrammar(grammar);
+    } else {
+      atom.grammars.assignLanguageMode(buffer, grammar.scopeName);
+    }
   }
 
   getModel(): Object {
