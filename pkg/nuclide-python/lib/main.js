@@ -22,7 +22,11 @@ import {
   ServerConnection,
 } from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from '../../nuclide-language-service';
+import {
+  AtomLanguageService,
+  updateAutocompleteFirstResults,
+  updateAutocompleteResults,
+} from '../../nuclide-language-service';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   getShowGlobalVariables,
@@ -74,7 +78,10 @@ const atomConfig: AtomLanguageServiceConfig = {
       eventName: 'nuclide-python',
       shouldLogInsertedSuggestion: false,
     },
-    autocompleteCacherConfig: null,
+    autocompleteCacherConfig: {
+      updateResults: updateAutocompleteResults,
+      updateFirstResults: updateAutocompleteFirstResults,
+    },
   },
   definition: {
     version: '0.1.0',

@@ -157,7 +157,7 @@ class JediServer:
                 lambda x: x != '...' and x != 'args' and x != 'kwargs',
                 names,
             ))
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             return None
 
     def get_definitions(self, script):
