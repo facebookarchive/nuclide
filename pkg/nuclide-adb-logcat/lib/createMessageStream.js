@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from '../../nuclide-console/lib/types';
+import type {Message} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {fastDebounce} from 'nuclide-commons/observable';

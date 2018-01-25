@@ -17,7 +17,7 @@ import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type {
   RegisterExecutorFunction,
   OutputService,
-} from '../../nuclide-console/lib/types';
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {
   EvaluationResult,
   SerializedBreakpoint,

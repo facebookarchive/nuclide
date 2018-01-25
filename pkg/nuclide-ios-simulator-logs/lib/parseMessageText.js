@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Level} from '../../nuclide-console/lib/types';
+import type {Level} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 type Parsed = {
   text: string,

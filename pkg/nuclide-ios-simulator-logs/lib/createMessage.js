@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {Level, Message} from '../../nuclide-console/lib/types';
+import type {
+  Level,
+  Message,
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {AslLevel, AslRecord} from './types';
 
 import {parseMessageText} from './parseMessageText';

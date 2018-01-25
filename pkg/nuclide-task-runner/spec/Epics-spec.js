@@ -11,7 +11,10 @@
 
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {Action, Store, ToolbarStatePreference} from '../lib/types';
-import type {ConsoleApi, SourceInfo} from '../../nuclide-console/lib/types';
+import type {
+  ConsoleApi,
+  SourceInfo,
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import {
   ActionsObservable,

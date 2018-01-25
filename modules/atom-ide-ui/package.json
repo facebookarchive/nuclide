@@ -20,6 +20,7 @@
     "classnames": "2.2.5",
     "fuzzaldrin-plus": "0.4.1",
     "idx": "1.2.0",
+    "immutable": "4.0.0-rc.9",
     "log4js": "1.1.1",
     "marked": "0.3.9",
     "nuclide-commons": "0.4.0",
@@ -27,10 +28,12 @@
     "nuclide-commons-ui": "0.4.0",
     "react": "16.2.0",
     "react-dom": "16.2.0",
+    "react-virtualized": "9.13.0",
     "redux": "3.6.0",
     "reselect": "3.0.1",
     "rxjs": "5.5.5",
-    "semver": "5.3.0"
+    "semver": "5.3.0",
+    "shallowequal": "0.2.2"
   },
   "devDependencies": {
     "temp": "0.8.3"

@@ -14,7 +14,10 @@ import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTab
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Task} from '../../commons-node/tasks';
 import type {Message} from 'nuclide-commons/process';
-import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
+import type {
+  ConsoleApi,
+  ConsoleService,
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import * as Immutable from 'immutable';
 

@@ -21,7 +21,7 @@ import type {
 } from './types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {ConsoleService} from '../../nuclide-console/lib/types';
+import type {ConsoleService} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from 'nuclide-commons-atom/createPackage';

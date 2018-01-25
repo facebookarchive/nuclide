@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
+import type {OutputService} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
 import {createProcessStream} from './createProcessStream';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
+import type {RegisterExecutorFunction} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

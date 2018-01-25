@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ConsoleApi,
   ConsoleService,
-} from '../../../nuclide-console/lib/types';
+} from '../../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {
   DidActivateInitialPackagesAction,
   RegisterTaskRunnerAction,

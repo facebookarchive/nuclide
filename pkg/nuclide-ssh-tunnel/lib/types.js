@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {Subject} from 'rxjs';
-import type {Message} from '../../nuclide-console/lib/types';
+import type {Message} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {Directory} from '../../nuclide-remote-connection';
 
 import * as Immutable from 'immutable';

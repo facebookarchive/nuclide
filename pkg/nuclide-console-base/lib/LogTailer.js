@@ -12,7 +12,7 @@
 import type {
   Message,
   OutputProviderStatus,
-} from '../../nuclide-console/lib/types';
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

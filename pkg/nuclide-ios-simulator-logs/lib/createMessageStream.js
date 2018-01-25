@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from '../../nuclide-console/lib/types';
+import type {Message} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import {bufferUntil} from 'nuclide-commons/observable';
 import featureConfig from 'nuclide-commons-atom/feature-config';

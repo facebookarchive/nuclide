@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {Level, ConsoleService} from '../../nuclide-console/lib/types';
+import type {
+  Level,
+  ConsoleService,
+} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import marked from 'marked';

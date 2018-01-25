@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {OutputService} from '../../nuclide-console/lib/types';
+import type {OutputService} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import stripAnsi from 'strip-ansi';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
