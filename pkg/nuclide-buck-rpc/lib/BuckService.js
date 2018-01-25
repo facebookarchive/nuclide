@@ -584,6 +584,36 @@ export async function queryWithArgs(
   return json;
 }
 
+/**
+ * Executes a query with additional attributes.
+ * Example output:
+ *   queryWithAttributes(rootPath, 'owner(foo.py)', ['buck.type', 'deps']) =>
+ *   {
+ *      "//foo:foo": {
+ *        "buck.type": "python_library",
+ *        "deps": [],
+ *      }
+ *   }
+ */
+export async function queryWithAttributes(
+  rootPath: NuclideUri,
+  queryString: string,
+  attributes: Array<string>,
+): Promise<{[aliasOrTarget: string]: {[attribute: string]: mixed}}> {
+  const completeArgs = [
+    'query',
+    '--json',
+    queryString,
+    '--output-attributes',
+    ...attributes,
+  ];
+  const result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
+    rootPath,
+    completeArgs,
+  );
+  return JSON.parse(result);
+}
+
 // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover
 // all possible message types. For now, we'll manually typecast at the callsite.
 export function getWebSocketStream(

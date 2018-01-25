@@ -32,43 +32,34 @@ describe('LinkTreeManager', () => {
 
   it('correctly builds a link tree path given a source file path (mocked project)', () => {
     waitsForPromise(async () => {
-      spyOn(BuckService, 'getOwners').andReturn(['//test', '//test2']);
-      const spy = spyOn(BuckService, 'query').andReturn([
-        '//testbin',
-        '//testbin2',
-      ]);
+      spyOn(BuckService, 'getOwners').andReturn(
+        Promise.resolve(['//test:a', '//test2:a']),
+      );
+      const spy = spyOn(BuckService, 'queryWithAttributes').andReturn({
+        '//test:x': {
+          'buck.type': 'python_binary',
+        },
+        '//test:y': {
+          'buck.type': 'python_unittest',
+        },
+      });
       const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
       const expectedPaths = [
-        nuclideUri.join(projectDir, 'buck-out/gen/testbin#link-tree'),
-        nuclideUri.join(projectDir, 'buck-out/gen/testbin2#link-tree'),
+        nuclideUri.join(projectDir, 'buck-out/gen/test/x#link-tree'),
+        nuclideUri.join(projectDir, 'buck-out/gen/test/y#binary,link-tree'),
       ];
 
       const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       // rdeps query should be executed with the first owner found, and scoped to
-      // the target of the source path's directory.
+      // the target's immediate neighbors.
       expect(spy).toHaveBeenCalledWith(
         projectDir,
-        `kind(python_binary, rdeps(//test1:, owner(${srcPath})))`,
+        'kind("python_binary|python_unittest", rdeps(//test:, //test:a))',
+        ['buck.type'],
       );
       // Properly resolve a link-tree path based on the source's firstly found
       // binary dependency.
       expect(linkTreePaths).toEqual(expectedPaths);
-    });
-  });
-
-  it('queries for python_unittest targets if no python_binary was found', () => {
-    waitsForPromise(async () => {
-      spyOn(BuckService, 'getOwners').andReturn(['//test', '//test2']);
-      // Return an empty array for results, in which case the manager should try
-      // querying for python_unittest targets too.
-      const spy = spyOn(BuckService, 'query').andReturn([]);
-      const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
-      const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
-      expect(spy).toHaveBeenCalledWith(
-        projectDir,
-        `kind(python_unittest, rdeps(//test1:, owner(${srcPath})))`,
-      );
-      expect(linkTreePaths).toEqual([]);
     });
   });
 
@@ -80,6 +71,14 @@ describe('LinkTreeManager', () => {
       expect(linkTreePaths).toEqual([
         nuclideUri.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree'),
       ]);
+    });
+  });
+
+  it('ignores TARGETS files', () => {
+    waitsForPromise(async () => {
+      spyOn(BuckService, 'getOwners').andThrow(Error('test'));
+      const srcPath = nuclideUri.join(projectDir, 'test1/TARGETS');
+      expect(await linkTreeManager.getLinkTreePaths(srcPath)).toEqual([]);
     });
   });
 });
