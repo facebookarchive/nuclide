@@ -43,7 +43,6 @@ import {Console, WORKSPACE_VIEW_URI} from './ui/Console';
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
-import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
   'nuclide-console.maximumSerializedMessages';
@@ -155,13 +154,9 @@ class Activation {
     });
   }
 
-  provideAutocomplete(): AtomAutocompleteProvider {
+  provideAutocomplete(): atom$AutocompleteProvider {
     const activation = this;
     return {
-      analytics: {
-        eventName: 'nuclide-console',
-        shouldLogInsertedSuggestion: false,
-      },
       labels: ['nuclide-console'],
       selector: '*',
       // Copies Chrome devtools and puts history suggestions at the bottom.

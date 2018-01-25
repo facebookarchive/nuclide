@@ -96,9 +96,9 @@
         "0.0.0": "provideRegisterExecutor"
       }
     },
-    "nuclide-autocomplete.provider": {
+    "autocomplete.provider": {
       "versions": {
-        "0.0.0": "provideAutocomplete"
+        "2.0.0": "provideAutocomplete"
       }
     }
   }
