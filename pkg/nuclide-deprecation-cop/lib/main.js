@@ -44,6 +44,9 @@ const DEPRECATED_COMMANDS = {
   'nuclide-diagnostics-ui:toggle-table': 'diagnostics:toggle-table',
   'nuclide-find-references:activate': 'find-references:activate',
   'nuclide-outline-view:toggle': 'outline-view:toggle',
+  'nuclide-console:toggle': 'console:toggle',
+  'nuclide-console:clear': 'console:clear',
+  'nuclide-console:copy-message': 'console:copy-message',
 };
 
 class Activation {

@@ -62,13 +62,13 @@ class Activation {
         '.nuclide-console-record': [
           {
             label: 'Copy Message',
-            command: 'nuclide-console:copy-message',
+            command: 'console:copy-message',
           },
         ],
       }),
       atom.commands.add(
         '.nuclide-console-record',
-        'nuclide-console:copy-message',
+        'console:copy-message',
         event => {
           const el = event.target;
           if (el == null || typeof el.innerText !== 'string') {
@@ -77,7 +77,7 @@ class Activation {
           atom.clipboard.write(el.innerText);
         },
       ),
-      atom.commands.add('atom-workspace', 'nuclide-console:clear', () =>
+      atom.commands.add('atom-workspace', 'console:clear', () =>
         this._getStore().dispatch(Actions.clearRecords()),
       ),
       featureConfig.observe(
@@ -126,7 +126,7 @@ class Activation {
     toolBar.addButton(
       makeToolbarButtonSpec({
         icon: 'terminal',
-        callback: 'nuclide-console:toggle',
+        callback: 'console:toggle',
         tooltip: 'Toggle Console',
         priority: 700,
       }),
@@ -183,7 +183,7 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof Console),
-      atom.commands.add('atom-workspace', 'nuclide-console:toggle', () => {
+      atom.commands.add('atom-workspace', 'console:toggle', () => {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );

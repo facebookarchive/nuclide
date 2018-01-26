@@ -5,7 +5,7 @@
       "submenu": [
         {
           "label": "Toggle Console",
-          "command": "nuclide-console:toggle"
+          "command": "console:toggle"
         }
       ]
     },
@@ -17,7 +17,7 @@
           "submenu": [
             {
               "label": "Clear",
-              "command": "nuclide-console:clear"
+              "command": "console:clear"
             }
           ]
         }
