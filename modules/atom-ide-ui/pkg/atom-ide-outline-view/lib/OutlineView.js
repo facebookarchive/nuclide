@@ -15,6 +15,7 @@ import type {TextToken} from 'nuclide-commons/tokenized-text';
 import type {TreeNode, NodePath} from 'nuclide-commons-ui/SelectableTree';
 
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
+import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
@@ -235,11 +236,11 @@ class OutlineViewCore extends React.PureComponent<
   OutlineViewCoreProps,
   {
     searchResults: Map<OutlineTreeForUi, SearchResult>,
+    collapsedPaths: Array<NodePath>,
   },
 > {
-  state: {
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  } = {
+  state = {
+    collapsedPaths: [],
     searchResults: new Map(),
   };
 
@@ -254,6 +255,27 @@ class OutlineViewCore extends React.PureComponent<
       this._searchRef.focus();
     }
   }
+
+  _handleCollapse = (nodePath: NodePath) => {
+    this.setState(prevState => {
+      const existing = this.state.collapsedPaths.find(path =>
+        arrayEqual(path, nodePath),
+      );
+      if (existing == null) {
+        return {
+          collapsedPaths: [...this.state.collapsedPaths, nodePath],
+        };
+      }
+    });
+  };
+
+  _handleExpand = (nodePath: NodePath) => {
+    this.setState(prevState => ({
+      collapsedPaths: prevState.collapsedPaths.filter(
+        path => !arrayEqual(path, nodePath),
+      ),
+    }));
+  };
 
   _handleSelect = (nodePath: NodePath) => {
     analytics.track('atom-ide-outline-view:go-to-location');
@@ -342,10 +364,13 @@ class OutlineViewCore extends React.PureComponent<
         <div className="outline-view-trees-scroller">
           <Tree
             className="outline-view-trees"
+            collapsedPaths={this.state.collapsedPaths}
             itemClassName="outline-view-item"
             items={outline.outlineTrees.map(this._outlineTreeToNode)}
-            onSelect={this._handleSelect}
+            onCollapse={this._handleCollapse}
             onConfirm={this._handleConfirm}
+            onExpand={this._handleExpand}
+            onSelect={this._handleSelect}
             onTripleClick={this._handleTripleClick}
             selectedPaths={outline.highlightedPaths}
           />

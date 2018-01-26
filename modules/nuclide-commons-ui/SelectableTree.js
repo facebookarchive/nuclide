@@ -12,11 +12,13 @@
 
 /* eslint-env browser */
 
+import {arrayEqual} from 'nuclide-commons/collection';
 import * as React from 'react';
 import classnames from 'classnames';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 import {scrollIntoView} from './scrollIntoView';
+import {TreeList} from './Tree';
 
 export type NodePath = Array<number>;
 export type TreeNode = TreeLeafNode | TreeNestedNode;
@@ -42,6 +44,9 @@ type TreeProps = {|
   onConfirm: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
   selectedPaths: Array<NodePath>,
+  collapsedPaths: Array<NodePath>,
+  onCollapse: (path: NodePath) => mixed,
+  onExpand: (path: NodePath) => mixed,
 |};
 
 export class Tree extends React.Component<TreeProps> {
@@ -54,11 +59,22 @@ export class Tree extends React.Component<TreeProps> {
   };
 
   render() {
-    const {className, itemClassName, items: nodes, selectedPaths} = this.props;
+    const {
+      className,
+      collapsedPaths,
+      itemClassName,
+      items: nodes,
+      selectedPaths,
+    } = this.props;
 
     return (
       <ol
-        className={classnames('list-tree', className)}
+        className={classnames(
+          'list-tree',
+          'nuclide-selectable-tree',
+          'has-collapsable-children',
+          className,
+        )}
         role="tree"
         style={{position: 'relative'}}>
         {nodes.map((node, i) => (
@@ -66,11 +82,14 @@ export class Tree extends React.Component<TreeProps> {
             key={i}
             node={node}
             path={[i]}
+            collapsedPaths={collapsedPaths}
             selectedPaths={selectedPaths}
             className={itemClassName}
             onSelect={this._handleSelect}
             onConfirm={this._handleConfirm}
             onTripleClick={this.props.onTripleClick}
+            onCollapse={this.props.onCollapse}
+            onExpand={this.props.onExpand}
           />
         ))}
       </ol>
@@ -80,17 +99,23 @@ export class Tree extends React.Component<TreeProps> {
 
 function AbstractTreeItem({
   className,
+  collapsedPaths,
   onConfirm,
   onSelect,
   onTripleClick,
+  onCollapse,
+  onExpand,
   node,
   path,
   selectedPaths,
 }: {
   className: ?string,
+  collapsedPaths: Array<NodePath>,
   onConfirm: (path: NodePath) => mixed,
   onSelect: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
+  onCollapse: (path: NodePath) => mixed,
+  onExpand: (path: NodePath) => mixed,
   node: TreeNode,
   path: NodePath,
   selectedPaths: Array<NodePath>,
@@ -124,7 +149,10 @@ function AbstractTreeItem({
       onConfirm={onConfirm}
       onSelect={onSelect}
       onTripleClick={onTripleClick}
+      onCollapse={onCollapse}
+      onExpand={onExpand}
       path={path}
+      collapsedPaths={collapsedPaths}
       selectedPaths={selectedPaths}
       label={node.label}>
       {node.children.map((child, i) => {
@@ -132,11 +160,14 @@ function AbstractTreeItem({
         return (
           <AbstractTreeItem
             className={className}
+            collapsedPaths={collapsedPaths}
             key={childPath.join('.')}
             node={child}
             onConfirm={onConfirm}
             onSelect={onSelect}
             onTripleClick={onTripleClick}
+            onCollapse={onCollapse}
+            onExpand={onExpand}
             path={childPath}
             selectedPaths={selectedPaths}
           />
@@ -192,13 +223,9 @@ class TreeItem extends React.Component<TreeItemProps> {
     return (
       <li
         aria-selected={isSelected}
-        className={classnames(
-          className,
-          {
-            selected: isSelected,
-          },
-          'list-item',
-        )}
+        className={classnames('list-item', className, {
+          selected: isSelected,
+        })}
         onClick={this._handleClick}
         ref={liNode => (this._liNode = liNode)}
         role="treeitem"
@@ -222,8 +249,11 @@ type NestedTreeItemProps = {
   onSelect: (path: NodePath) => mixed,
   onConfirm: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
+  onCollapse: (path: NodePath) => mixed,
+  onExpand: (path: NodePath) => mixed,
   path: NodePath,
   selectedPaths: Array<NodePath>,
+  collapsedPaths: Array<NodePath>,
 };
 
 class NestedTreeItem extends React.Component<NestedTreeItemProps> {
@@ -235,23 +265,49 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
     }
 
     invariant(e.target instanceof Element);
-    if (e.target.closest('.list-item') === itemNode) {
-      const {onSelect, onConfirm, onTripleClick} = this.props;
+    if (e.target.closest('.list-item') !== itemNode) {
+      // this was a click on a descendant node in the inner list
+      return;
+    }
 
-      const numberOfClicks = e.detail;
-      switch (numberOfClicks) {
-        case 1:
-          onSelect && onSelect(this.props.path);
-          break;
-        case 2:
-          onConfirm && onConfirm(this.props.path);
-          break;
-        case 3:
-          onTripleClick && onTripleClick(this.props.path);
-          break;
-        default:
-          break;
+    // TODO: This is gross. It assumes that the expand chevron is present in the
+    // `before` pseudoelement (as is with most themes), and measures the space
+    // it occupies using computed style properties, not actual measurements.
+    // The toggle chevron should be reimplemented as a true dom node instead,
+    // bypassing themes. Though this is more visually consistent, it's probably
+    // not worth the hassle.
+    const beforeStyle = window.getComputedStyle(this._itemNode, ':before');
+    const itemStyle = window.getComputedStyle(this._itemNode);
+    const chevronWidth =
+      parsePx(itemStyle.paddingLeft) +
+      parsePx(beforeStyle.paddingLeft) +
+      parsePx(beforeStyle.paddingRight) +
+      parsePx(beforeStyle.marginLeft) +
+      parsePx(beforeStyle.marginRight) +
+      parsePx(beforeStyle.width) +
+      parsePx(beforeStyle.left);
+
+    const {path, collapsedPaths} = this.props;
+    invariant(e.nativeEvent instanceof MouseEvent);
+    if (e.nativeEvent.offsetX <= chevronWidth) {
+      if (
+        collapsedPaths.some(collapsedPath => arrayEqual(path, collapsedPath))
+      ) {
+        this.props.onExpand(path);
+      } else {
+        this.props.onCollapse(path);
       }
+      return;
+    }
+
+    const {onSelect, onConfirm, onTripleClick} = this.props;
+    const numberOfClicks = e.detail;
+    if (numberOfClicks === 1 && onSelect != null) {
+      onSelect(path);
+    } else if (numberOfClicks === 2 && onConfirm != null) {
+      onConfirm(path);
+    } else if (numberOfClicks === 3 && onTripleClick != null) {
+      onTripleClick(path);
     }
   };
 
@@ -260,6 +316,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
       className,
       hasFlatChildren,
       selectedPaths,
+      collapsedPaths,
       path,
       label,
       children,
@@ -267,12 +324,16 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
     const isSelected = selectedPaths.some(selectedPath =>
       shallowEqual(path, selectedPath),
     );
+    const isCollapsed = collapsedPaths.some(collapsedPath =>
+      shallowEqual(path, collapsedPath),
+    );
 
     return (
       <li
         aria-selected={isSelected}
-        aria-expanded={true}
+        aria-expanded={!isCollapsed}
         className={classnames('list-nested-item', className, {
+          collapsed: isCollapsed,
           selected: isSelected,
         })}
         onClick={this._handleClick}
@@ -289,24 +350,6 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
   }
 }
 
-type TreeListProps = {
-  className?: string,
-  /* typically, instances of TreeItem or NestedTreeItem. */
-  children?: React.Node,
-  showArrows?: boolean,
-  hasFlatChildren?: boolean,
-};
-const TreeList = (props: TreeListProps) => (
-  <ul
-    className={classnames(
-      props.className,
-      {
-        'has-collapsable-children': props.showArrows,
-        'has-flat-children': props.hasFlatChildren,
-      },
-      'list-tree',
-    )}
-    role="group">
-    {props.children}
-  </ul>
-);
+function parsePx(px: string): number {
+  return px.length === 0 ? 0 : Number(px.replace('px', ''));
+}
