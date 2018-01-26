@@ -123,10 +123,23 @@ const HisteditActions = Object.freeze({
 // These are the files that hg creates while working and deletes when done,
 // we can use them to track the state of onging histedits, rebases, grafts, etc.
 const LockFiles = Object.freeze({
-  WLOCK: '.hg/wlock',
+  GRAFT: '.hg/graftstate',
+  UPDATE: '.hg/updatestate',
+  REBASE: '.hg/rebasestate',
+  MERGE: '.hg/merge', // TODO(T25449730): actual state is in .hg/merge/state
+  SHELVED: '.hg/shelvedstate',
   HISTEDIT: '.hg/histedit-state',
+  WLOCK: '.hg/wlock',
 });
-const LockFilesList: Array<string> = [LockFiles.WLOCK, LockFiles.HISTEDIT];
+const LockFilesList: Array<string> = [
+  LockFiles.GRAFT,
+  LockFiles.UPDATE,
+  LockFiles.REBASE,
+  LockFiles.MERGE,
+  LockFiles.SHELVED,
+  LockFiles.HISTEDIT,
+  LockFiles.WLOCK,
+];
 
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
