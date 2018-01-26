@@ -11,7 +11,11 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
+import {
+  findTargetLocation,
+  parseTarget,
+  resolveLoadTargetPath,
+} from '../lib/HyperclickProvider';
 
 describe('HyperclickProvider', () => {
   let projectPath: string = (null: any);
@@ -57,6 +61,37 @@ describe('HyperclickProvider', () => {
           path: projectPath + 'Apps/TestApp/BUCK',
           name: 'w3ird',
         });
+      });
+    });
+  });
+
+  describe('parseLoadTarget', () => {
+    it('resolves a path for //pkg/subpkg:ext.bzl', () => {
+      waitsForPromise(async () => {
+        const target = await resolveLoadTargetPath(
+          (['//pkg/subpkg:ext.bzl', '', '//pkg/subpkg', 'ext.bzl']: Array<
+            string,
+          >),
+          projectPath,
+        );
+        expect(target).toEqual(projectPath + 'pkg/subpkg/ext.bzl');
+      });
+    });
+
+    it('resolves a path for @cell//pkg/subpkg:ext.bzl', () => {
+      waitsForPromise(async () => {
+        const target = await resolveLoadTargetPath(
+          ([
+            '@cell//pkg/subpkg:ext.bzl',
+            '@cell',
+            '//pkg/subpkg',
+            'ext.bzl',
+          ]: Array<string>),
+          projectPath,
+        );
+        expect(target).toEqual(
+          nuclideUri.join(projectPath, '..', 'cell_path/pkg/subpkg/ext.bzl'),
+        );
       });
     });
   });
