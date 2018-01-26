@@ -23,8 +23,12 @@ import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from 'nuclide-watchman-helpers';
 import fs from 'fs';
 
-import {MergeConflictStatus, HisteditActions} from './hg-constants';
-import {Subject} from 'rxjs';
+import {
+  MergeConflictStatus,
+  HisteditActions,
+  LockFilesList,
+} from './hg-constants';
+import {Subject, ReplaySubject} from 'rxjs';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
   expressionForCommonAncestor,
@@ -53,6 +57,7 @@ import invariant from 'assert';
 import {fetchActiveBookmark, fetchBookmarks} from './hg-bookmark-helpers';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
+import {subscribeToFilesCreateAndDelete} from './watchFileCreationAndDeletion';
 
 const logger = getLogger('nuclide-hg-rpc');
 const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
@@ -69,6 +74,8 @@ const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS =
   'hg-repository-watchman-subscription-conflicts';
 const WATCHMAN_SUBSCRIPTION_NAME_PROGRESS =
   'hg-repository-watchman-subscription-progress';
+const WATCHMAN_SUBSCRIPTION_NAME_LOCK_FILES =
+  'hg-repository-watchman-subscription-lock-files';
 
 const CHECK_CONFLICT_DELAY_MS = 2000;
 const COMMIT_CHANGE_DEBOUNCE_MS = 1000;
@@ -319,6 +326,7 @@ export class HgService {
   _workingDirectory: string;
   _filesDidChangeObserver: Subject<any>;
   _hgActiveBookmarkDidChangeObserver: Subject<any>;
+  _lockFilesDidChange: Observable<Map<string, boolean>>;
   _hgBookmarksDidChangeObserver: Subject<any>;
   _hgRepoStateDidChangeObserver: Subject<any>;
   _hgRepoCommitsDidChangeObserver: Subject<void>;
@@ -327,11 +335,13 @@ export class HgService {
   _hgOperationProgressDidChangeObserver: Subject<void>;
   _debouncedCheckConflictChange: () => void;
   _hgStoreDirWatcher: ?fs.FSWatcher;
+  _disposeObserver: Subject<void>; // used to limit lifespan of other observables
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
     this._filesDidChangeObserver = new Subject();
     this._hgActiveBookmarkDidChangeObserver = new Subject();
+    this._lockFilesDidChange = Observable.empty();
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
@@ -341,6 +351,7 @@ export class HgService {
     this._debouncedCheckConflictChange = debounce(() => {
       this._checkConflictChange();
     }, CHECK_CONFLICT_DELAY_MS);
+    this._disposeObserver = new ReplaySubject();
     this._watchmanSubscriptionPromise = this._subscribeToWatchman();
   }
 
@@ -349,6 +360,8 @@ export class HgService {
   }
 
   async dispose(): Promise<void> {
+    this._disposeObserver.next();
+    this._disposeObserver.complete();
     this._filesDidChangeObserver.complete();
     this._hgRepoStateDidChangeObserver.complete();
     this._hgActiveBookmarkDidChangeObserver.complete();
@@ -637,6 +650,15 @@ export class HgService {
       WATCHMAN_SUBSCRIPTION_NAME_PROGRESS,
     );
 
+    this._lockFilesDidChange = subscribeToFilesCreateAndDelete(
+      watchmanClient,
+      workingDirectory,
+      LockFilesList,
+      WATCHMAN_SUBSCRIPTION_NAME_LOCK_FILES,
+    )
+      .publish()
+      .refCount();
+
     // Those files' changes indicate a commit-changing action has been applied to the repository,
     // Watchman currently (v4.7) ignores `.hg/store` file updates.
     // Hence, we here use node's filesystem watchers instead.
@@ -922,6 +944,13 @@ export class HgService {
    */
   observeActiveBookmarkDidChange(): ConnectableObservable<void> {
     return this._hgActiveBookmarkDidChangeObserver.publish();
+  }
+
+  /**
+   * Observes that the Mercurial working directory lock has changed.
+   */
+  observeLockFilesDidChange(): ConnectableObservable<Map<string, boolean>> {
+    return this._lockFilesDidChange.takeUntil(this._disposeObserver).publish();
   }
 
   /**

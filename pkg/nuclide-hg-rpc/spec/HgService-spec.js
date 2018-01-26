@@ -17,7 +17,7 @@ import {
   MergeConflictStatus,
 } from '../lib/hg-constants';
 import invariant from 'assert';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {CommandServer} from '../../nuclide-remote-atom-rpc/lib/CommandServer';
 
 const mockOutput = `
@@ -491,6 +491,32 @@ describe('HgService', () => {
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
       hgService && hgService.dispose();
+    });
+  });
+
+  describe('::_disposeObserver', () => {
+    it('should end published observables when disposed', () => {
+      waitsForPromise({timeout: 1000}, async () => {
+        const subject: Subject<Map<string, boolean>> = new Subject();
+        hgService._lockFilesDidChange = subject;
+
+        const locksObservable = hgService
+          .observeLockFilesDidChange()
+          .refCount()
+          .toArray()
+          .toPromise();
+        const m1 = new Map([['hello', true]]);
+        const m2 = new Map([['goodbye', false]]);
+        subject.next(m1);
+        subject.next(m2);
+        hgService.dispose();
+        // after disposing, we shouldn't see any more emitted events
+        subject.next(m1);
+        subject.next(m2);
+        // await goes through even though we never called subject.complete()
+        const result = await locksObservable;
+        expect(result).toEqual([m1, m2]);
+      });
     });
   });
 });

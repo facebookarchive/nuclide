@@ -120,6 +120,14 @@ const HisteditActions = Object.freeze({
 // This is to work around flow's missing support of enums.
 (HisteditActions: {[key: string]: HisteditActionsValue});
 
+// These are the files that hg creates while working and deletes when done,
+// we can use them to track the state of onging histedits, rebases, grafts, etc.
+const LockFiles = Object.freeze({
+  WLOCK: '.hg/wlock',
+  HISTEDIT: '.hg/histedit-state',
+});
+const LockFilesList: Array<string> = [LockFiles.WLOCK, LockFiles.HISTEDIT];
+
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
   AmendMode,
@@ -133,4 +141,5 @@ module.exports = {
   StatusCodeNumber,
   SuccessorType,
   HisteditActions,
+  LockFilesList,
 };

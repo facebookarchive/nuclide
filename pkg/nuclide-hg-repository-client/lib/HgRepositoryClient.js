@@ -507,6 +507,10 @@ export class HgRepositoryClient {
     return this._emitter.on('did-change-interactive-mode', callback);
   }
 
+  observeLockFiles(): Observable<Map<string, boolean>> {
+    return this._service.observeLockFilesDidChange().refCount();
+  }
+
   /**
    *
    * Section: Repository Details
