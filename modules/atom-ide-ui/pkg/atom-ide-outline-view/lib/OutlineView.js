@@ -255,15 +255,19 @@ class OutlineViewCore extends React.PureComponent<
     }
   }
 
-  _handleSelect = (outline: OutlineTreeForUi) => {
+  _handleSelect = (nodePath: NodePath) => {
+    analytics.track('atom-ide-outline-view:go-to-location');
+
     invariant(this.props.outline.kind === 'outline');
     const {editor} = this.props.outline;
-    // single click moves the cursor, but does not focus the editor
-    analytics.track('atom-ide-outline-view:go-to-location');
+    const outlineNode = selectNodeFromPath(this.props.outline, nodePath);
+
     const landingPosition =
-      outline.landingPosition != null
-        ? outline.landingPosition
-        : outline.startPosition;
+      outlineNode.landingPosition != null
+        ? outlineNode.landingPosition
+        : outlineNode.startPosition;
+
+    // single click moves the cursor, but does not focus the editor
     goToLocationInEditor(editor, {
       line: landingPosition.row,
       column: landingPosition.column,
@@ -274,11 +278,13 @@ class OutlineViewCore extends React.PureComponent<
     this._focusEditor();
   };
 
-  _handleTripleClick = (outline: OutlineTreeForUi) => {
+  _handleTripleClick = (nodePath: NodePath) => {
     invariant(this.props.outline.kind === 'outline');
     const {editor} = this.props.outline;
+    const outlineNode = selectNodeFromPath(this.props.outline, nodePath);
+
     // triple click selects the symbol's region
-    const endPosition = outline.endPosition;
+    const endPosition = outlineNode.endPosition;
     if (endPosition != null) {
       editor.selectToBufferPosition(endPosition);
     }
@@ -339,12 +345,12 @@ class OutlineTree extends React.PureComponent<{
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
   path: NodePath,
-  onSelect: (outlineTree: OutlineTreeForUi) => mixed,
+  onSelect: (nodePath: NodePath) => mixed,
   onConfirm: () => mixed,
-  onTripleClick: (outlineTree: OutlineTreeForUi) => mixed,
+  onTripleClick: (nodePath: NodePath) => mixed,
 }> {
   _handleSelect = () => {
-    this.props.onSelect(this.props.outline);
+    this.props.onSelect(this.props.path);
   };
 
   _handleConfirm = () => {
@@ -352,7 +358,7 @@ class OutlineTree extends React.PureComponent<{
   };
 
   _handleTripleClick = () => {
-    this.props.onTripleClick(this.props.outline);
+    this.props.onTripleClick(this.props.path);
   };
 
   render(): React.Node {
@@ -498,9 +504,9 @@ function renderTrees({
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
   path: NodePath,
-  onSelect: (outline: OutlineTreeForUi) => mixed,
+  onSelect: (nodePath: NodePath) => mixed,
   onConfirm: () => mixed,
-  onTripleClick: (outline: OutlineTreeForUi) => mixed,
+  onTripleClick: (nodePath: NodePath) => mixed,
 }): Array<?React.Element<any>> {
   return outlines.map((outline, index) => {
     const result = searchResults.get(outline);
@@ -519,6 +525,19 @@ function renderTrees({
       />
     ) : null;
   });
+}
+
+function selectNodeFromPath(
+  outline: OutlineForUi,
+  path: NodePath,
+): OutlineTreeForUi {
+  invariant(outline.kind === 'outline');
+
+  let node = outline.outlineTrees[path[0]];
+  for (let i = 1; i < path.length; i++) {
+    node = node.children[path[i]];
+  }
+  return node;
 }
 
 const OUTLINE_KIND_TO_ICON = {
