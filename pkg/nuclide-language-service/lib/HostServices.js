@@ -16,16 +16,18 @@ import type {
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
-  OutputService,
-  Message,
+  ConsoleApi,
+  ConsoleService,
 } from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import invariant from 'assert';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {getLogger} from 'log4js';
-import {Subject, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
+import {memoize} from 'lodash';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {forkHostServices} from '../../nuclide-language-service-rpc/lib/HostServicesAggregator';
 import {applyTextEditsForMultipleFiles} from 'nuclide-commons-atom/text-edit';
@@ -54,38 +56,27 @@ class RootHostServices {
     dispose: () => {},
   };
 
-  // lazily created map from source, to how we'll push messages from that source
-  _consoleSubjects: Map<string, Promise<Subject<Message>>> = new Map();
+  _getConsoleService = memoize((): Promise<ConsoleService> =>
+    consumeFirstProvider('console', '0.0.0'),
+  );
+
+  // This method creates registers sources with the atom-ide-console service, but never disposes
+  // those registrations; there's not much point. The now-defunct sources will be visible in the
+  // Sources UI.
+  _getConsoleApi = memoize((source: string): Promise<ConsoleApi> =>
+    this._getConsoleService().then(createApi =>
+      createApi({id: source, name: source}),
+    ),
+  );
 
   consoleNotification(
     source: string,
     level: ShowNotificationLevel,
     text: string,
   ): void {
-    let subjectPromise = this._consoleSubjects.get(source);
-    if (subjectPromise == null) {
-      subjectPromise = new Promise((resolve, reject) => {
-        const subject: Subject<Message> = new Subject();
-        const consumer = (service: OutputService) => {
-          service.registerOutputProvider({
-            messages: subject,
-            id: source,
-          });
-          resolve(subject);
-        };
-        atom.packages.serviceHub.consume(
-          'DEPRECATED-nuclide-output',
-          '0.0.0',
-          consumer,
-        );
-      });
-      this._consoleSubjects.set(source, subjectPromise);
-    }
-    subjectPromise.then(subject => subject.next({level, text}));
-
-    // This method creates registrations to the nuclide-output service,
-    // but never disposes those registrations; there's not much point. The
-    // now-defunct sources will be visible in the Sources UI.
+    this._getConsoleApi(source).then(api => {
+      api.append({text, level});
+    });
   }
 
   dialogNotification(
