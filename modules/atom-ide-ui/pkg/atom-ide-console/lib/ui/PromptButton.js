@@ -34,12 +34,8 @@ export default class PromptButton extends React.Component<Props> {
 
   render(): React.Node {
     return (
-      <span
-        className="nuclide-console-prompt-wrapper"
-        onClick={this._handleClick}>
-        <span className="nuclide-console-prompt-label">
-          {this.props.children}
-        </span>
+      <span className="console-prompt-wrapper" onClick={this._handleClick}>
+        <span className="console-prompt-label">{this.props.children}</span>
         <span className="icon icon-chevron-right" />
       </span>
     );

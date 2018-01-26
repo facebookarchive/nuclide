@@ -183,12 +183,12 @@ export default class ConsoleView extends React.Component<Props, State> {
 
   render(): React.Node {
     return (
-      <div className="nuclide-console">
+      <div className="console">
         <StyleSheet
-          sourcePath="nuclide-console-font-style"
+          sourcePath="console-font-style"
           priority={-1}
           css={`
-            #nuclide-console-font-size-${this._id} {
+            #console-font-size-${this._id} {
               font-size: ${this.props.fontSize}px;
             }
           `}
@@ -208,12 +208,10 @@ export default class ConsoleView extends React.Component<Props, State> {
           We need an extra wrapper element here in order to have the new messages notification stick
           to the bottom of the scrollable area (and not scroll with it).
 
-          nuclide-console-font-size is defined in main.js and updated via a user setting
+          console-font-size is defined in main.js and updated via a user setting
         */}
-        <div
-          className="nuclide-console-body"
-          id={'nuclide-console-font-size-' + this._id}>
-          <div className="nuclide-console-scroll-pane-wrapper">
+        <div className="console-body" id={'console-font-size-' + this._id}>
+          <div className="console-scroll-pane-wrapper">
             <FilteredMessagesReminder
               filteredRecordCount={this.props.filteredRecordCount}
               onReset={this.props.resetAllFilters}
@@ -249,7 +247,7 @@ export default class ConsoleView extends React.Component<Props, State> {
       return;
     }
     return (
-      <div className="nuclide-console-prompt">
+      <div className="console-prompt">
         {this._renderPromptButton()}
         <InputArea
           scopeName={currentExecutor.scopeName}

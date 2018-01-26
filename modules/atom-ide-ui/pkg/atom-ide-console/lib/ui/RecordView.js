@@ -102,7 +102,7 @@ export default class RecordView extends React.Component<Props> {
     const simpleValueComponent = getComponent(type);
     return (
       <LazyNestedValueComponent
-        className="nuclide-console-lazy-nested-value"
+        className="console-lazy-nested-value"
         evaluationResult={record.data}
         fetchChildren={getProperties}
         simpleValueComponent={simpleValueComponent}
@@ -117,21 +117,17 @@ export default class RecordView extends React.Component<Props> {
     const {record} = displayableRecord;
     const {level, kind, timestamp, sourceId} = record;
 
-    const classNames = classnames(
-      'nuclide-console-record',
-      `level-${level || 'log'}`,
-      {
-        request: kind === 'request',
-        response: kind === 'response',
-      },
-    );
+    const classNames = classnames('console-record', `level-${level || 'log'}`, {
+      request: kind === 'request',
+      response: kind === 'response',
+    });
 
     const iconName = getIconName(record);
     // flowlint-next-line sketchy-null-string:off
     const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
     const sourceLabel = this.props.showSourceLabel ? (
       <span
-        className={`nuclide-console-record-source-label ${getHighlightClassName(
+        className={`console-record-source-label ${getHighlightClassName(
           level,
         )}`}>
         {sourceId}
@@ -144,7 +140,7 @@ export default class RecordView extends React.Component<Props> {
           ? timestamp.toLocaleString()
           : timestamp.toLocaleTimeString();
       renderedTimestamp = (
-        <div className="nuclide-console-record-timestamp">{timestampLabel}</div>
+        <div className="console-record-timestamp">{timestampLabel}</div>
       );
     }
     return (
@@ -153,13 +149,13 @@ export default class RecordView extends React.Component<Props> {
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <div ref={this._handleRecordWrapper} className={classNames}>
           {icon}
-          <div className="nuclide-console-record-content-wrapper">
+          <div className="console-record-content-wrapper">
             {displayableRecord.record.repeatCount > 1 && (
-              <div className="nuclide-console-record-duplicate-number">
+              <div className="console-record-duplicate-number">
                 {displayableRecord.record.repeatCount}
               </div>
             )}
-            <div className="nuclide-console-record-content">
+            <div className="console-record-content">
               {this._renderContent(displayableRecord)}
             </div>
           </div>

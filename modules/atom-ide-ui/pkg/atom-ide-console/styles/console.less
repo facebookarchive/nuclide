@@ -1,43 +1,43 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-@nuclide-console-border-size: 0.1em;
-@nuclide-console-record-background-color-normal: @syntax-background-color;
-@nuclide-console-record-text-color-normal: @syntax-text-color;
+@console-border-size: 0.1em;
+@console-record-background-color-normal: @syntax-background-color;
+@console-record-text-color-normal: @syntax-text-color;
 // Don't use @base-border-color because that's a UI color, and makes light/dark
 // combinations look bad.
-@nuclide-console-record-border-color-normal: darken(@syntax-background-color, 5%);
-@nuclide-console-record-text-color-error: @text-color-error;
-@nuclide-console-record-border-color-error: @background-color-error;
-@nuclide-console-record-text-color-warning: @text-color-warning;
-@nuclide-console-record-border-color-warning: @background-color-warning;
-@nuclide-console-record-text-color-success: @text-color-success;
-@nuclide-console-record-border-color-success: @background-color-success;
-@nuclide-console-record-vertical-padding: 0.1em;
-@nuclide-console-record-horizontal-padding: 0.5em;
-@nuclide-console-icon-size: 11px;
+@console-record-border-color-normal: darken(@syntax-background-color, 5%);
+@console-record-text-color-error: @text-color-error;
+@console-record-border-color-error: @background-color-error;
+@console-record-text-color-warning: @text-color-warning;
+@console-record-border-color-warning: @background-color-warning;
+@console-record-text-color-success: @text-color-success;
+@console-record-border-color-success: @background-color-success;
+@console-record-vertical-padding: 0.1em;
+@console-record-horizontal-padding: 0.5em;
+@console-icon-size: 11px;
 
 // Color variables for `level-color` classes.
-@nuclide-console-record-background-color-red: lighten(@background-color-error, 25%);
-@nuclide-console-record-text-color-red: darken(@text-color-error, 40%);
-@nuclide-console-record-background-color-orange: lighten(@ui-site-color-3, 25%);
-@nuclide-console-record-text-color-orange: darken(@ui-site-color-3, 40%);
-@nuclide-console-record-background-color-yellow: lighten(@ui-site-color-5, 25%);
-@nuclide-console-record-text-color-yellow: darken(@ui-site-color-5, 50%);
-@nuclide-console-record-background-color-green: lighten(@ui-site-color-2, 25%);
-@nuclide-console-record-text-color-green: darken(@ui-site-color-2, 40%);
-@nuclide-console-record-background-color-blue: lighten(@ui-site-color-1, 25%);
-@nuclide-console-record-text-color-blue: darken(@ui-site-color-1, 40%);
-@nuclide-console-record-background-color-purple: lighten(@ui-site-color-4, 25%);
-@nuclide-console-record-text-color-purple: darken(@ui-site-color-4, 40%);
-@nuclide-console-record-background-color-violet: lighten(@ui-site-color-4, 35%);
-@nuclide-console-record-text-color-violet: darken(@ui-site-color-4, 30%);
-@nuclide-console-record-text-color-rainbow: #000;
+@console-record-background-color-red: lighten(@background-color-error, 25%);
+@console-record-text-color-red: darken(@text-color-error, 40%);
+@console-record-background-color-orange: lighten(@ui-site-color-3, 25%);
+@console-record-text-color-orange: darken(@ui-site-color-3, 40%);
+@console-record-background-color-yellow: lighten(@ui-site-color-5, 25%);
+@console-record-text-color-yellow: darken(@ui-site-color-5, 50%);
+@console-record-background-color-green: lighten(@ui-site-color-2, 25%);
+@console-record-text-color-green: darken(@ui-site-color-2, 40%);
+@console-record-background-color-blue: lighten(@ui-site-color-1, 25%);
+@console-record-text-color-blue: darken(@ui-site-color-1, 40%);
+@console-record-background-color-purple: lighten(@ui-site-color-4, 25%);
+@console-record-text-color-purple: darken(@ui-site-color-4, 40%);
+@console-record-background-color-violet: lighten(@ui-site-color-4, 35%);
+@console-record-text-color-violet: darken(@ui-site-color-4, 30%);
+@console-record-text-color-rainbow: #000;
 
 // Console text should be smaller than normal text. Gotta fit more!
-@nuclide-console-record-font-size: @font-size * 0.9;
+@console-record-font-size: @font-size * 0.9;
 
-.nuclide-console {
+.console {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -45,7 +45,7 @@
 
 // If the console is displayed in a pane, change the color of the header to
 // match.
-.nuclide-ui-toolbar {
+.ui-toolbar {
   background-color: @pane-item-background-color;
 
   atom-dock &,
@@ -54,24 +54,24 @@
   }
 }
 
-.nuclide-console-body {
+.console-body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  font-size: @nuclide-console-record-font-size;
+  font-size: @console-record-font-size;
   background-color: @syntax-background-color;
   line-height: 1.5;
   min-height: 0;
 }
 
-.nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+.console-lazy-nested-value div, .console-lazy-nested-value span {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
   white-space: pre-wrap;
   word-break: normal;
   word-wrap: break-word;
 }
 
-.nuclide-console-lazy-nested-value {
+.console-lazy-nested-value {
   display: flex;
 
   // The following selectors style the tree components inside of the LazyNestedValueComponent
@@ -92,7 +92,7 @@
   }
 }
 
-.nuclide-console-table-wrapper {
+.console-table-wrapper {
   display: flex;
   flex: 1;
   overflow-x: hidden;
@@ -102,30 +102,30 @@
   -webkit-user-select: text;
 }
 
-.nuclide-console-record {
+.console-record {
   display: flex;
-  padding: @nuclide-console-record-vertical-padding @nuclide-console-record-horizontal-padding;
-  padding-left: 2 * @nuclide-console-record-horizontal-padding;
+  padding: @console-record-vertical-padding @console-record-horizontal-padding;
+  padding-left: 2 * @console-record-horizontal-padding;
 
   &::before {
-    width: @nuclide-console-record-horizontal-padding;
+    width: @console-record-horizontal-padding;
     position: absolute;
     left: 0;
-    bottom: @nuclide-console-border-size;
+    bottom: @console-border-size;
     top: 0;
     content: '';
   }
 
-  background-color: @nuclide-console-record-background-color-normal;
+  background-color: @console-record-background-color-normal;
   border-radius: 0;
-  border-top: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
-  color: @nuclide-console-record-text-color-normal;
+  border-top: @console-border-size solid @console-record-border-color-normal;
+  color: @console-record-text-color-normal;
 
   &,
   // Make sure the specificity is high enough to override list item styling.
   // (List items are used in the debugger records.)
-  &.nuclide-console-record.nuclide-console-record .list-item {
-    color: @nuclide-console-record-text-color-normal;
+  &.console-record.console-record .list-item {
+    color: @console-record-text-color-normal;
   }
 
   cursor: text;
@@ -141,11 +141,11 @@
 
   pre,
   pre a {
-    color: @nuclide-console-record-text-color-normal;
+    color: @console-record-text-color-normal;
   }
 
   .icon {
-    color: fadeout(@nuclide-console-record-text-color-normal, 70%);
+    color: fadeout(@console-record-text-color-normal, 70%);
     font-size: inherit;
     text-align: center;
   }
@@ -159,7 +159,7 @@
   }
 
   &:last-child {
-    border-bottom: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
+    border-bottom: @console-border-size solid @console-record-border-color-normal;
   }
 
   &.level-info {
@@ -170,134 +170,134 @@
 
   &.level-warning {
     &::before {
-      background-color: @nuclide-console-record-border-color-warning;
+      background-color: @console-record-border-color-warning;
     }
 
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-warning;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-warning;
     }
 
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-warning;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-warning;
     }
 
     .icon {
-      color: @nuclide-console-record-border-color-warning;
+      color: @console-record-border-color-warning;
     }
   }
 
   &.level-success {
     &::before {
-      background-color: @nuclide-console-record-border-color-success;
+      background-color: @console-record-border-color-success;
     }
 
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-success;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-success;
     }
 
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-success;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-success;
     }
 
     .icon {
-      color: @nuclide-console-record-border-color-success;
+      color: @console-record-border-color-success;
     }
   }
 
   &.level-error {
     &::before {
-      background-color: @nuclide-console-record-border-color-error;
+      background-color: @console-record-border-color-error;
     }
 
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-error;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-error;
     }
 
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-error;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-error;
     }
 
     .icon {
-      color: @nuclide-console-record-border-color-error;
+      color: @console-record-border-color-error;
     }
 
   }
 
   // Console record colors for `level-color` classes.
   &.level-red {
-    background-color: @nuclide-console-record-background-color-red;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-red;
+    background-color: @console-record-background-color-red;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-red;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-red;
-      color: @nuclide-console-record-background-color-red;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-red;
+      color: @console-record-background-color-red;
     }
   }
 
   &.level-orange {
-    background-color: @nuclide-console-record-background-color-orange;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-orange;
+    background-color: @console-record-background-color-orange;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-orange;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-orange;
-      color: @nuclide-console-record-background-color-orange;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-orange;
+      color: @console-record-background-color-orange;
     }
   }
 
   &.level-yellow {
-    background-color: @nuclide-console-record-background-color-yellow;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-yellow;
+    background-color: @console-record-background-color-yellow;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-yellow;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-yellow;
-      color: @nuclide-console-record-background-color-yellow;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-yellow;
+      color: @console-record-background-color-yellow;
     }
   }
 
   &.level-green {
-    background-color: @nuclide-console-record-background-color-green;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-green;
+    background-color: @console-record-background-color-green;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-green;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-green;
-      color: @nuclide-console-record-background-color-green;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-green;
+      color: @console-record-background-color-green;
     }
   }
 
   &.level-blue {
-    background-color: @nuclide-console-record-background-color-blue;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-blue;
+    background-color: @console-record-background-color-blue;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-blue;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-blue;
-      color: @nuclide-console-record-background-color-blue;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-blue;
+      color: @console-record-background-color-blue;
     }
   }
 
   &.level-purple {
-    background-color: @nuclide-console-record-background-color-purple;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-purple;
+    background-color: @console-record-background-color-purple;
+    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
+      color: @console-record-text-color-purple;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-purple;
-      color: @nuclide-console-record-background-color-purple;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-purple;
+      color: @console-record-background-color-purple;
     }
   }
 
   &.level-violet {
-    background-color: @nuclide-console-record-background-color-violet;
-    pre, pre a, .nuclide-console-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
-      color: @nuclide-console-record-text-color-violet;
+    background-color: @console-record-background-color-violet;
+    pre, pre a, .console-lazy-nested-value div, .ui-lazy-nested-value span {
+      color: @console-record-text-color-violet;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-violet;
-      color: @nuclide-console-record-background-color-violet;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-violet;
+      color: @console-record-background-color-violet;
     }
   }
 
@@ -314,16 +314,16 @@
     );
     pre,
     pre a,
-    .nuclide-console-lazy-nested-value div,
-    .nuclide-ui-lazy-nested-value span,
+    .console-lazy-nested-value div,
+    .ui-lazy-nested-value span,
     .list-group li:not(.list-nested-item),
     .list-tree li:not(.list-nested-item),
     .list-group li.list-nested-item > .list-item,
     .list-tree li.list-nested-item > .list-item {
-      color: @nuclide-console-record-text-color-rainbow;
+      color: @console-record-text-color-rainbow;
     }
-    .nuclide-console-record-duplicate-number {
-      background-color: @nuclide-console-record-text-color-rainbow;
+    .console-record-duplicate-number {
+      background-color: @console-record-text-color-rainbow;
       color: #fff,
     }
   }
@@ -351,7 +351,7 @@
 
 }
 
-.nuclide-console-record-content-wrapper {
+.console-record-content-wrapper {
   display: flex;
   width: 100%;
 
@@ -360,7 +360,7 @@
   padding-top: 1px;
   padding-bottom: 1px;
 
-  .nuclide-ui-lazy-nested-value-treelist {
+  .ui-lazy-nested-value-treelist {
 
     // Inherit the line-height so that it's the same as other records. If we
     // don't do this, the expandable items will be taller.
@@ -371,10 +371,10 @@
   }
 }
 
-.nuclide-console-record-duplicate-number {
-  background: @nuclide-console-record-text-color-normal;
+.console-record-duplicate-number {
+  background: @console-record-text-color-normal;
   border-radius: 1em;
-  color: @nuclide-console-record-background-color-normal;
+  color: @console-record-background-color-normal;
   display: flex;
   flex-direction: column;
   font-weight: bold;
@@ -388,12 +388,12 @@
   text-align: center;
 }
 
-.nuclide-console-record-content {
+.console-record-content {
   flex: 1;
 }
 
-.nuclide-console-record-source-label,
-.nuclide-console-record-timestamp {
+.console-record-source-label,
+.console-record-timestamp {
   align-self: flex-start;
   margin: 2px 0 0 4px;
   white-space: nowrap;
@@ -406,26 +406,26 @@
   }
 }
 
-.nuclide-console-record-timestamp {
-  background-color: @nuclide-console-record-background-color-normal;
+.console-record-timestamp {
+  background-color: @console-record-background-color-normal;
   padding: 1px 2px;
 }
 
-.nuclide-console-input-wrapper {
+.console-input-wrapper {
   display: flex;
   background-color: @syntax-background-color;
-  padding: @nuclide-console-record-vertical-padding 0;
+  padding: @console-record-vertical-padding 0;
   flex-grow: 1;
 
   // Make the text in the input field the same size as the records'.
   atom-text-editor {
-    font-size: @nuclide-console-record-font-size;
+    font-size: @console-record-font-size;
   }
 }
 
-.nuclide-console-prompt {
+.console-prompt {
   display: flex;
-  padding: 5px @nuclide-console-record-horizontal-padding;
+  padding: 5px @console-record-horizontal-padding;
   border-top: 1px solid @pane-item-border-color;
   background-color: @syntax-background-color;
   color: @syntax-text-color;
@@ -433,20 +433,20 @@
   margin-top: auto;
 }
 
-.nuclide-console-prompt-wrapper {
+.console-prompt-wrapper {
   display: flex;
   align-items: center;
   white-space: nowrap;
 }
 
-.nuclide-console-prompt-label {
+.console-prompt-label {
   text-transform: uppercase;
   font-weight: bold;
   font-size: 0.8em;
   padding-right: 1em;
 }
 
-.nuclide-console-scroll-pane-wrapper {
+.console-scroll-pane-wrapper {
   position: relative;
   display: flex;
   flex: 1 0;
@@ -454,7 +454,7 @@
   overflow: hidden;
 }
 
-.nuclide-console-new-messages-notification {
+.console-new-messages-notification {
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -480,7 +480,7 @@
   }
 }
 
-.nuclide-console-new-messages-notification-icon {
+.console-new-messages-notification-icon {
   display: inline-block;
   vertical-align: middle;
   text-align: left;
@@ -490,7 +490,7 @@
   }
 }
 
-.nuclide-console-filtered-reminder {
+.console-filtered-reminder {
   display: flex;
   font-style: italic;
 
@@ -503,10 +503,10 @@
 // There is an issue with chrome rendering where the button is not redrawn when
 // its surrounding <li> is selected. This causes the background color of the
 // <li> to cover up the button. This is a workaround that forces a redraw
-.nuclide-console-process-control-button {
+.console-process-control-button {
   transform: translate3d(0,0,0);
 }
 
-.nuclide-console-process-starting-spinner {
+.console-process-starting-spinner {
   margin: 0 0.5em 0 0.5em;
 }

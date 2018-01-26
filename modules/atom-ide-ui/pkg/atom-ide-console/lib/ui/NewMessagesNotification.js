@@ -21,7 +21,7 @@ type Props = {
 export default class NewMessagesNotification extends React.Component<Props> {
   render(): React.Node {
     const className = classnames(
-      'nuclide-console-new-messages-notification',
+      'console-new-messages-notification',
       'badge',
       'badge-info',
       {
@@ -30,7 +30,7 @@ export default class NewMessagesNotification extends React.Component<Props> {
     );
     return (
       <div className={className} onClick={this.props.onClick}>
-        <span className="nuclide-console-new-messages-notification-icon icon icon-nuclicon-arrow-down" />
+        <span className="console-new-messages-notification-icon icon icon-nuclicon-arrow-down" />
         New Messages
       </div>
     );

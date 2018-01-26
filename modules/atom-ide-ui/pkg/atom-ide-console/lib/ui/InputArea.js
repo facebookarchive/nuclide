@@ -145,7 +145,7 @@ export default class InputArea extends React.Component<Props, State> {
         ? null
         : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (
-      <div className="nuclide-console-input-wrapper">
+      <div className="console-input-wrapper">
         <AtomTextEditor
           ref={this._handleTextEditor}
           grammar={grammar}

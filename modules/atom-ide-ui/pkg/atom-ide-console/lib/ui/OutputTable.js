@@ -112,7 +112,7 @@ export default class OutputTable extends React.Component<Props, State> {
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
       <ResizeSensitiveContainer
-        className="nuclide-console-table-wrapper native-key-bindings"
+        className="console-table-wrapper native-key-bindings"
         onResize={this._handleResize}
         tabIndex="1">
         {this._containerRendered() ? (
@@ -160,7 +160,7 @@ export default class OutputTable extends React.Component<Props, State> {
     return (
       <div
         key={this._hasher.getHash(displayableRecord.record)}
-        className="nuclide-console-table-row-wrapper"
+        className="console-table-row-wrapper"
         style={style}>
         <RecordView
           ref={(view: ?RecordView) => {

@@ -81,7 +81,7 @@ export default class ConsoleHeader extends React.Component<Props> {
     };
     return (
       <Button
-        className="pull-right nuclide-console-process-control-button"
+        className="pull-right console-process-control-button"
         icon={icon}
         onClick={clickHandler}>
         {label}
@@ -98,7 +98,7 @@ export default class ConsoleHeader extends React.Component<Props> {
     const startingSpinner =
       source.status !== 'starting' ? null : (
         <LoadingSpinner
-          className="inline-block nuclide-console-process-starting-spinner"
+          className="inline-block console-process-starting-spinner"
           size="EXTRA_SMALL"
         />
       );

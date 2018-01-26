@@ -59,24 +59,20 @@ class Activation {
     this._rawState = rawState;
     this._disposables = new UniversalDisposable(
       atom.contextMenu.add({
-        '.nuclide-console-record': [
+        '.console-record': [
           {
             label: 'Copy Message',
             command: 'console:copy-message',
           },
         ],
       }),
-      atom.commands.add(
-        '.nuclide-console-record',
-        'console:copy-message',
-        event => {
-          const el = event.target;
-          if (el == null || typeof el.innerText !== 'string') {
-            return;
-          }
-          atom.clipboard.write(el.innerText);
-        },
-      ),
+      atom.commands.add('.console-record', 'console:copy-message', event => {
+        const el = event.target;
+        if (el == null || typeof el.innerText !== 'string') {
+          return;
+        }
+        atom.clipboard.write(el.innerText);
+      }),
       atom.commands.add('atom-workspace', 'console:clear', () =>
         this._getStore().dispatch(Actions.clearRecords()),
       ),

@@ -30,7 +30,7 @@ export default class FilteredMessagesReminder extends React.Component<Props> {
     }
 
     return (
-      <div className="nuclide-console-filtered-reminder">
+      <div className="console-filtered-reminder">
         <div style={{flex: 1}}>
           <pre>
             {filteredRecordCount}{' '}
