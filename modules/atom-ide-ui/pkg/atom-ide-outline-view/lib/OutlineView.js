@@ -254,6 +254,51 @@ class OutlineViewCore extends React.PureComponent<
     }
   }
 
+  _handleSelect = (outline: OutlineTreeForUi) => {
+    invariant(this.props.outline.kind === 'outline');
+    const {editor} = this.props.outline;
+    // single click moves the cursor, but does not focus the editor
+    analytics.track('atom-ide-outline-view:go-to-location');
+    const landingPosition =
+      outline.landingPosition != null
+        ? outline.landingPosition
+        : outline.startPosition;
+    goToLocationInEditor(editor, {
+      line: landingPosition.row,
+      column: landingPosition.column,
+    });
+  };
+
+  _handleConfirm = () => {
+    this._focusEditor();
+  };
+
+  _handleTripleClick = (outline: OutlineTreeForUi) => {
+    invariant(this.props.outline.kind === 'outline');
+    const {editor} = this.props.outline;
+    // triple click selects the symbol's region
+    const endPosition = outline.endPosition;
+    if (endPosition != null) {
+      editor.selectToBufferPosition(endPosition);
+    }
+    this._focusEditor();
+  };
+
+  _focusEditor = () => {
+    invariant(this.props.outline.kind === 'outline');
+    const {editor} = this.props.outline;
+    // double and triple clicks focus the editor afterwards
+    const pane = atom.workspace.paneForItem(editor);
+    if (pane == null) {
+      return;
+    }
+
+    // Assumes that the click handler has already run, which moves the
+    // cursor to the start of the symbol. Let's activate the pane now.
+    pane.activate();
+    pane.activateItem(editor);
+  };
+
   render() {
     const {outline} = this.props;
     invariant(outline.kind === 'outline');
@@ -275,6 +320,9 @@ class OutlineViewCore extends React.PureComponent<
               outlines: outline.outlineTrees,
               searchResults: this.state.searchResults,
               highlightedPaths: outline.highlightedPaths,
+              onSelect: this._handleSelect,
+              onConfirm: this._handleConfirm,
+              onTripleClick: this._handleTripleClick,
             })}
           </Tree>
         </div>
@@ -289,47 +337,20 @@ class OutlineTree extends React.PureComponent<{
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
   isHighlighted?: boolean,
+  onSelect: (outlineTree: OutlineTreeForUi) => mixed,
+  onConfirm: () => mixed,
+  onTripleClick: (outlineTree: OutlineTreeForUi) => mixed,
 }> {
   _handleSelect = () => {
-    const {editor, outline} = this.props;
-    // single click moves the cursor, but does not focus the editor
-    analytics.track('atom-ide-outline-view:go-to-location');
-    const landingPosition =
-      outline.landingPosition != null
-        ? outline.landingPosition
-        : outline.startPosition;
-    goToLocationInEditor(editor, {
-      line: landingPosition.row,
-      column: landingPosition.column,
-    });
+    this.props.onSelect(this.props.outline);
   };
 
   _handleConfirm = () => {
-    this._focusEditor();
+    this.props.onConfirm();
   };
 
   _handleTripleClick = () => {
-    const {editor, outline} = this.props;
-    // triple click selects the symbol's region
-    const endPosition = outline.endPosition;
-    if (endPosition != null) {
-      editor.selectToBufferPosition(endPosition);
-    }
-    this._focusEditor();
-  };
-
-  _focusEditor = () => {
-    const {editor} = this.props;
-    // double and triple clicks focus the editor afterwards
-    const pane = atom.workspace.paneForItem(editor);
-    if (pane == null) {
-      return;
-    }
-
-    // Assumes that the click handler has already run, which moves the
-    // cursor to the start of the symbol. Let's activate the pane now.
-    pane.activate();
-    pane.activateItem(editor);
+    this.props.onTripleClick(this.props.outline);
   };
 
   render(): React.Node {
@@ -339,6 +360,9 @@ class OutlineTree extends React.PureComponent<{
       isHighlighted,
       outline,
       searchResults,
+      onSelect,
+      onConfirm,
+      onTripleClick,
     } = this.props;
 
     const classes = classnames(
@@ -354,6 +378,9 @@ class OutlineTree extends React.PureComponent<{
       outlines: outline.children,
       searchResults,
       highlightedPaths,
+      onSelect,
+      onConfirm,
+      onTripleClick,
     });
     const itemContent = renderItem(outline, searchResults.get(outline));
 
@@ -456,11 +483,17 @@ function renderTrees({
   outlines,
   searchResults,
   highlightedPaths,
+  onSelect,
+  onConfirm,
+  onTripleClick,
 }: {
   editor: atom$TextEditor,
   outlines: Array<OutlineTreeForUi>,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
+  onSelect: (outline: OutlineTreeForUi) => mixed,
+  onConfirm: () => mixed,
+  onTripleClick: (outline: OutlineTreeForUi) => mixed,
 }): Array<?React.Element<any>> {
   return outlines.map((outline, index) => {
     const result = searchResults.get(outline);
@@ -477,6 +510,9 @@ function renderTrees({
         outline={outline}
         key={index}
         searchResults={searchResults}
+        onSelect={onSelect}
+        onConfirm={onConfirm}
+        onTripleClick={onTripleClick}
       />
     ) : null;
   });
