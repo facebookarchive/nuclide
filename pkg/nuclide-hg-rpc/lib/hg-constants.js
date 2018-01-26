@@ -141,5 +141,6 @@ module.exports = {
   StatusCodeNumber,
   SuccessorType,
   HisteditActions,
+  LockFiles,
   LockFilesList,
 };
