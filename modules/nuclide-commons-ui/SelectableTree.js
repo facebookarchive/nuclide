@@ -12,11 +12,14 @@
 
 /* eslint-env browser */
 
-import {arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual, arrayFindLastIndex} from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import classnames from 'classnames';
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 import shallowEqual from 'shallowequal';
+import nullthrows from 'nullthrows';
 import {scrollIntoView} from './scrollIntoView';
 import {TreeList} from './Tree';
 
@@ -49,7 +52,113 @@ type TreeProps = {|
   onExpand: (path: NodePath) => mixed,
 |};
 
-export class Tree extends React.Component<TreeProps> {
+type TreeState = {|
+  focusedPath: ?NodePath,
+  isFocused: boolean,
+|};
+
+export class Tree extends React.Component<TreeProps, TreeState> {
+  _rootNode: ?HTMLOListElement;
+  _subscriptions: UniversalDisposable;
+  state = {
+    isFocused: false,
+    focusedPath: null,
+  };
+
+  componentDidMount() {
+    const rootNode = nullthrows(this._rootNode);
+    this._subscriptions = new UniversalDisposable(
+      atom.commands.add(rootNode, {
+        'core:move-up': this._selectPrev,
+        'core:move-down': this._selectNext,
+        'core:move-left': this._collapseNodeViaKeyboard,
+        'core:move-right': this._expandNodeViaKeyboard,
+      }),
+      Observable.merge(
+        Observable.fromEvent(rootNode, 'focusin').mapTo(true),
+        Observable.fromEvent(rootNode, 'focusout').mapTo(false),
+      ).subscribe(isFocused => this.setState({isFocused})),
+    );
+  }
+
+  componentWillUnmount() {
+    this._subscriptions.dispose();
+  }
+
+  componentWillReceiveProps() {
+    this.setState((state, props) => ({
+      focusedPath: props.selectedPaths[props.selectedPaths.length - 1],
+    }));
+  }
+
+  _selectNext = () => {
+    let nextNodePath;
+    if (this.state.focusedPath == null) {
+      nextNodePath = [0];
+    } else {
+      nextNodePath = getNextNodePath(
+        this.props.items,
+        this.state.focusedPath,
+        this.props.collapsedPaths,
+      );
+    }
+    if (nextNodePath != null) {
+      this.props.onSelect(nextNodePath);
+      this.setState({focusedPath: nextNodePath});
+    }
+  };
+
+  _selectPrev = () => {
+    let prevNodePath;
+    if (this.state.focusedPath == null) {
+      prevNodePath = [0];
+    } else {
+      prevNodePath = getPrevNodePath(
+        this.props.items,
+        this.state.focusedPath,
+        this.props.collapsedPaths,
+      );
+    }
+    if (prevNodePath != null) {
+      this.props.onSelect(prevNodePath);
+    }
+  };
+
+  _collapseNodeViaKeyboard = (e: atom$CustomEvent) => {
+    if (this.state.focusedPath == null) {
+      return;
+    }
+
+    let collapsablePath = [...this.state.focusedPath];
+    let collapsableNode = selectNodeAtPath(this.props.items, collapsablePath);
+    while (collapsableNode != null && collapsableNode.type !== 'NESTED') {
+      collapsablePath = collapsablePath.slice(0, collapsablePath.length - 1);
+      collapsableNode = selectNodeAtPath(this.props.items, collapsablePath);
+    }
+
+    if (collapsableNode == null) {
+      return;
+    }
+
+    this.props.onCollapse(collapsablePath);
+    // if a descendant of this node was selected when this node was collapsed,
+    // moving selection to this node seems like intuitive behavior (see Chrome's
+    // Elements tree)
+    this.props.onSelect(collapsablePath);
+  };
+
+  _expandNodeViaKeyboard = (e: atom$CustomEvent) => {
+    const {focusedPath} = this.state;
+    if (focusedPath == null) {
+      return;
+    }
+
+    const focusedNode = selectNodeAtPath(this.props.items, focusedPath);
+    if (focusedNode != null && focusedNode.type === 'NESTED') {
+      this.props.onExpand(focusedPath);
+    }
+  };
+
   _handleSelect = (path: NodePath) => {
     this.props.onSelect(path);
   };
@@ -66,6 +175,7 @@ export class Tree extends React.Component<TreeProps> {
       items: nodes,
       selectedPaths,
     } = this.props;
+    const {focusedPath, isFocused} = this.state;
 
     return (
       <ol
@@ -74,14 +184,18 @@ export class Tree extends React.Component<TreeProps> {
           'nuclide-selectable-tree',
           'has-collapsable-children',
           className,
+          {focused: isFocused},
         )}
+        ref={node => (this._rootNode = node)}
         role="tree"
-        style={{position: 'relative'}}>
+        style={{position: 'relative'}}
+        tabIndex="0">
         {nodes.map((node, i) => (
           <AbstractTreeItem
             key={i}
             node={node}
             path={[i]}
+            focusedPath={focusedPath}
             collapsedPaths={collapsedPaths}
             selectedPaths={selectedPaths}
             className={itemClassName}
@@ -100,6 +214,7 @@ export class Tree extends React.Component<TreeProps> {
 function AbstractTreeItem({
   className,
   collapsedPaths,
+  focusedPath,
   onConfirm,
   onSelect,
   onTripleClick,
@@ -111,6 +226,7 @@ function AbstractTreeItem({
 }: {
   className: ?string,
   collapsedPaths: Array<NodePath>,
+  focusedPath: ?NodePath,
   onConfirm: (path: NodePath) => mixed,
   onSelect: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
@@ -129,6 +245,7 @@ function AbstractTreeItem({
       // $FlowIgnore
       <TreeItem
         className={className}
+        isFocused={focusedPath && arrayEqual(focusedPath, path)}
         onConfirm={onConfirm}
         onSelect={onSelect}
         onTripleClick={onTripleClick}
@@ -146,6 +263,7 @@ function AbstractTreeItem({
       className={className}
       collapsed={false}
       hasFlatChildren={hasFlatChildren}
+      focusedPath={focusedPath}
       onConfirm={onConfirm}
       onSelect={onSelect}
       onTripleClick={onTripleClick}
@@ -161,6 +279,7 @@ function AbstractTreeItem({
           <AbstractTreeItem
             className={className}
             collapsedPaths={collapsedPaths}
+            focusedPath={focusedPath}
             key={childPath.join('.')}
             node={child}
             onConfirm={onConfirm}
@@ -180,6 +299,7 @@ function AbstractTreeItem({
 type TreeItemProps = {|
   children?: React.Node,
   className?: ?string,
+  isFocused: boolean,
   onSelect: (path: NodePath) => mixed,
   onConfirm: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
@@ -215,21 +335,21 @@ class TreeItem extends React.Component<TreeItemProps> {
   }
 
   render() {
-    const {className, path, selectedPaths, children} = this.props;
+    const {className, isFocused, path, selectedPaths, children} = this.props;
     const isSelected = selectedPaths.some(selectedPath =>
       shallowEqual(path, selectedPath),
     );
 
     return (
       <li
+        aria-activedescendant={isFocused}
         aria-selected={isSelected}
         className={classnames('list-item', className, {
           selected: isSelected,
         })}
         onClick={this._handleClick}
         ref={liNode => (this._liNode = liNode)}
-        role="treeitem"
-        tabIndex={isSelected ? '0' : '-1'}>
+        role="treeitem">
         {isSelected && typeof children === 'string' ? (
           // String children must be wrapped to receive correct styles when selected.
           <span>{children}</span>
@@ -246,6 +366,7 @@ type NestedTreeItemProps = {
   children?: React.Node,
   className?: ?string,
   hasFlatChildren?: boolean, // passthrough to inner TreeList
+  focusedPath: NodePath,
   onSelect: (path: NodePath) => mixed,
   onConfirm: (path: NodePath) => mixed,
   onTripleClick: (path: NodePath) => mixed,
@@ -258,6 +379,8 @@ type NestedTreeItemProps = {
 
 class NestedTreeItem extends React.Component<NestedTreeItemProps> {
   _itemNode: ?HTMLDivElement;
+  _subscriptions: UniversalDisposable;
+
   _handleClick = (e: SyntheticMouseEvent<>) => {
     const itemNode = this._itemNode;
     if (itemNode == null) {
@@ -315,12 +438,14 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
     const {
       className,
       hasFlatChildren,
+      focusedPath,
       selectedPaths,
       collapsedPaths,
       path,
       label,
       children,
     } = this.props;
+    const isFocused = focusedPath && arrayEqual(path, focusedPath);
     const isSelected = selectedPaths.some(selectedPath =>
       shallowEqual(path, selectedPath),
     );
@@ -330,6 +455,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
 
     return (
       <li
+        aria-activedescendant={isFocused}
         aria-selected={isSelected}
         aria-expanded={!isCollapsed}
         className={classnames('list-nested-item', className, {
@@ -337,8 +463,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
           selected: isSelected,
         })}
         onClick={this._handleClick}
-        role="treeitem"
-        tabIndex={isSelected ? '0' : '-1'}>
+        role="treeitem">
         {label == null ? null : (
           <div className="list-item" ref={node => (this._itemNode = node)}>
             {label}
@@ -347,6 +472,125 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
         <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
       </li>
     );
+  }
+}
+
+function selectNodeAtPath(roots: Array<TreeNode>, path: NodePath): ?TreeNode {
+  if (path.length === 0) {
+    return;
+  }
+
+  let node = roots[path[0]];
+  for (let i = 1; i < path.length; i++) {
+    invariant(node.type === 'NESTED');
+    node = node.children[path[i]];
+  }
+  return node;
+}
+
+function getNextNodePath(
+  roots: Array<TreeNode>,
+  path: NodePath,
+  collapsedPaths: Array<NodePath>,
+): ?NodePath {
+  if (path.length === 0) {
+    return null;
+  }
+
+  const currentNode = selectNodeAtPath(roots, path);
+  if (currentNode == null) {
+    return;
+  }
+
+  if (
+    currentNode.type === 'NESTED' &&
+    currentNode.children.length > 0 &&
+    // don't traverse children of collapsed nodes
+    !collapsedPaths.find(collapsedPath => arrayEqual(collapsedPath, path))
+  ) {
+    // 'down' was pressed on a nested item. most of the time we want go to its
+    // first child, but we need to make sure it's not hidden (eg filtered by
+    // a search) first
+    const firstVisibleChildIndex = currentNode.children.findIndex(
+      n => !n.hidden,
+    );
+    if (firstVisibleChildIndex >= 0) {
+      return path.concat([firstVisibleChildIndex]);
+    }
+  }
+
+  return findNextSibling(roots, path, collapsedPaths);
+}
+
+function findNextSibling(
+  roots: Array<TreeNode>,
+  path: NodePath,
+  collapsedPaths: Array<NodePath>,
+): ?NodePath {
+  if (path.length === 0) {
+    return null;
+  }
+
+  const leadingIndexes = path.slice(0, path.length - 1);
+  const tailIndex = path[path.length - 1];
+  const nextSiblingPath = [...leadingIndexes, tailIndex + 1];
+  const nextSibling = selectNodeAtPath(roots, nextSiblingPath);
+  if (nextSibling != null) {
+    if (nextSibling.hidden) {
+      // skip over next hidden nodes by finding *their* next sibling
+      return findNextSibling(roots, nextSiblingPath, collapsedPaths);
+    }
+    return nextSiblingPath;
+  }
+
+  // there's no next sibling. let's navigate to this node's parent's siblings
+  return findNextSibling(roots, leadingIndexes, collapsedPaths);
+}
+
+function getPrevNodePath(
+  roots: Array<TreeNode>,
+  path: NodePath,
+  collapsedPaths: Array<NodePath>,
+): ?NodePath {
+  if (path.length === 0) {
+    return null;
+  }
+
+  const leadingIndexes = path.slice(0, path.length - 1);
+  const tailIndex = path[path.length - 1];
+  const prevSiblingPath = [...leadingIndexes, tailIndex - 1];
+  const prevSibling = selectNodeAtPath(roots, prevSiblingPath);
+  if (prevSibling != null) {
+    if (prevSibling.hidden) {
+      return getPrevNodePath(roots, prevSiblingPath, collapsedPaths);
+    }
+
+    if (
+      prevSibling.type === 'NESTED' &&
+      prevSibling.children.length > 0 &&
+      // don't traverse children of collapsed nodes
+      !collapsedPaths.find(collapsedPath =>
+        arrayEqual(collapsedPath, prevSiblingPath),
+      )
+    ) {
+      // pressed 'up' on a node just after an expanded nested item. Normally this
+      // should take us to the last item inside the expanded node, but some may
+      // be hidden. Find the last in the list that's visible.
+      const lastVisibleChildIndex = arrayFindLastIndex(
+        prevSibling.children,
+        n => !n.hidden,
+      );
+      if (lastVisibleChildIndex >= 0) {
+        return prevSiblingPath.concat([lastVisibleChildIndex]);
+      }
+    }
+
+    return prevSiblingPath;
+  }
+
+  // return the parent if it's a valid path
+  if (leadingIndexes.length > 0) {
+    return leadingIndexes;
   }
 }
 
