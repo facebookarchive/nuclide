@@ -23,11 +23,12 @@ import type ActiveEditorRegistry, {
 
 import {Observable} from 'rxjs';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import invariant from 'assert';
-
 import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
+import {arrayEqual} from 'nuclide-commons/collection';
 
 const LOADING_DELAY_MS = 500;
+
+export type NodePath = Array<number>;
 
 export type OutlineTreeForUi = {
   icon?: string, // from atom$Octicon, but we use string for convenience of remoting
@@ -39,7 +40,6 @@ export type OutlineTreeForUi = {
   endPosition?: atom$Point,
   landingPosition?: atom$Point,
   children: Array<OutlineTreeForUi>,
-  highlighted: boolean,
 };
 
 /**
@@ -72,6 +72,7 @@ export type OutlineForUi =
   | {
       kind: 'outline',
       outlineTrees: Array<OutlineTreeForUi>,
+      highlightedPaths: Array<NodePath>,
       /**
        * Use a TextEditor instead of a path so that:
        * - If there are multiple editors for a file, we always jump to outline item
@@ -116,7 +117,7 @@ function uiOutlinesForResult(
       if (outline == null) {
         return Observable.of({kind: 'provider-no-outline'});
       }
-      return highlightedOutlines(outline, result.editor);
+      return rootOutline(outline, result.editor);
     case 'provider-error':
       return Observable.of({kind: 'provider-no-outline'});
     default:
@@ -126,22 +127,21 @@ function uiOutlinesForResult(
   }
 }
 
-function highlightedOutlines(
+function rootOutline(
   outline: Outline,
   editor: atom$TextEditor,
 ): Observable<OutlineForUi> {
   const nameOnly = featureConfig.get('atom-ide-outline-view.nameOnly');
-  const outlineForUi = {
-    kind: 'outline',
-    outlineTrees: outline.outlineTrees.map(outlineTree =>
-      treeToUiTree(outlineTree, Boolean(nameOnly)),
-    ),
-    editor,
-  };
-
-  return getCursorPositions(editor).map(cursorLocation =>
-    highlightCurrentNode(outlineForUi, cursorLocation),
+  const outlineTrees = outline.outlineTrees.map(outlineTree =>
+    treeToUiTree(outlineTree, Boolean(nameOnly)),
   );
+
+  return getHighlightedPaths(outline, editor).map(highlightedPaths => ({
+    kind: 'outline',
+    highlightedPaths,
+    outlineTrees,
+    editor,
+  }));
 }
 
 function treeToUiTree(
@@ -159,57 +159,53 @@ function treeToUiTree(
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
     landingPosition: outlineTree.landingPosition,
-    highlighted: false,
     children: outlineTree.children.map(tree => treeToUiTree(tree, nameOnly)),
   };
 }
 
-// Return an outline object with the node under the cursor highlighted. Does not mutate the
-// original.
-function highlightCurrentNode(
-  outline: OutlineForUi,
-  cursorLocation: atom$Point,
-): OutlineForUi {
-  invariant(outline.kind === 'outline');
-  // $FlowIssue
-  return {
-    ...outline,
-    outlineTrees: highlightCurrentNodeInTrees(
-      outline.outlineTrees,
-      cursorLocation,
-    ),
-  };
+function getHighlightedPaths(
+  outline: Outline,
+  editor: atom$TextEditor,
+): Observable<Array<NodePath>> {
+  return (
+    getCursorPositions(editor)
+      // optimization: the outline never needs to update when navigating within a row
+      .distinctUntilChanged((p1, p2) => p1.row === p2.row)
+      .map(position => {
+        return highlightedPathsForOutline(outline, position);
+      })
+      .distinctUntilChanged((p1, p2) => arrayEqual(p1, p2, arrayEqual))
+  );
 }
 
-function highlightCurrentNodeInTrees(
-  outlineTrees: Array<OutlineTreeForUi>,
-  cursorLocation: atom$Point,
-): Array<OutlineTreeForUi> {
-  // The corresponding UI component uses React.PureComponent.
-  // Minimize the amount of re-rendering per keystroke by only copying on change.
-  let changed = false;
-  const newTrees = outlineTrees.map(tree => {
-    const highlighted = shouldHighlightNode(tree, cursorLocation);
-    const children = highlightCurrentNodeInTrees(tree.children, cursorLocation);
-    if (highlighted === tree.highlighted && children === tree.children) {
-      return tree;
+function highlightedPathsForOutline(
+  outline: Outline,
+  position: atom$Point,
+): Array<NodePath> {
+  const paths = [];
+  function findHighlightedNodes(
+    currentNode: OutlineTree,
+    currentPath: NodePath,
+  ) {
+    if (shouldHighlightNode(currentNode, position)) {
+      paths.push(currentPath);
     }
-    changed = true;
-    return {
-      ...tree,
-      highlighted,
-      children,
-    };
-  });
-  return changed ? newTrees : outlineTrees;
+    if (currentNode.children) {
+      currentNode.children.forEach((n, i) =>
+        findHighlightedNodes(n, currentPath.concat([i])),
+      );
+    }
+  }
+  outline.outlineTrees.forEach((o, i) => findHighlightedNodes(o, [i]));
+
+  return paths;
 }
 
 function shouldHighlightNode(
-  outlineTree: OutlineTreeForUi,
+  outlineTree: OutlineTree,
   cursorLocation: atom$Point,
 ): boolean {
-  const startPosition = outlineTree.startPosition;
-  const endPosition = outlineTree.endPosition;
+  const {startPosition, endPosition} = outlineTree;
   if (endPosition == null) {
     return false;
   }

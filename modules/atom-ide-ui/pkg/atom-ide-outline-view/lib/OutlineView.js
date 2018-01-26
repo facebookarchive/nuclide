@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
+import type {OutlineForUi, OutlineTreeForUi, NodePath} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -270,11 +270,12 @@ class OutlineViewCore extends React.PureComponent<
         />
         <div className="outline-view-trees-scroller">
           <Tree className="outline-view-trees">
-            {renderTrees(
-              outline.editor,
-              outline.outlineTrees,
-              this.state.searchResults,
-            )}
+            {renderTrees({
+              editor: outline.editor,
+              outlines: outline.outlineTrees,
+              searchResults: this.state.searchResults,
+              highlightedPaths: outline.highlightedPaths,
+            })}
           </Tree>
         </div>
       </div>
@@ -286,6 +287,8 @@ class OutlineTree extends React.PureComponent<{
   editor: atom$TextEditor,
   outline: OutlineTreeForUi,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
+  highlightedPaths: Array<NodePath>,
+  isHighlighted?: boolean,
 }> {
   _handleSelect = () => {
     const {editor, outline} = this.props;
@@ -330,17 +333,28 @@ class OutlineTree extends React.PureComponent<{
   };
 
   render(): React.Node {
-    const {editor, outline, searchResults} = this.props;
+    const {
+      editor,
+      highlightedPaths,
+      isHighlighted,
+      outline,
+      searchResults,
+    } = this.props;
 
     const classes = classnames(
       'outline-view-item',
       outline.kind ? `kind-${outline.kind}` : null,
       {
-        selected: outline.highlighted,
+        selected: isHighlighted,
       },
     );
 
-    const childTrees = renderTrees(editor, outline.children, searchResults);
+    const childTrees = renderTrees({
+      editor,
+      outlines: outline.children,
+      searchResults,
+      highlightedPaths,
+    });
     const itemContent = renderItem(outline, searchResults.get(outline));
 
     if (childTrees.length === 0) {
@@ -437,16 +451,29 @@ function renderTextToken(
   );
 }
 
-function renderTrees(
+function renderTrees({
+  editor,
+  outlines,
+  searchResults,
+  highlightedPaths,
+}: {
   editor: atom$TextEditor,
   outlines: Array<OutlineTreeForUi>,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
-): Array<?React.Element<any>> {
+  highlightedPaths: Array<NodePath>,
+}): Array<?React.Element<any>> {
   return outlines.map((outline, index) => {
     const result = searchResults.get(outline);
+
     return !result || result.visible ? (
       <OutlineTree
         editor={editor}
+        highlightedPaths={highlightedPaths
+          .filter(p => p[0] === index && p.length > 1)
+          .map(p => p.slice(1))}
+        isHighlighted={highlightedPaths.some(
+          p => p.length === 1 && p[0] === index,
+        )}
         outline={outline}
         key={index}
         searchResults={searchResults}
