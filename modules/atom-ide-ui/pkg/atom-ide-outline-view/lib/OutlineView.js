@@ -33,6 +33,7 @@ import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 import {NestedTreeItem, Tree, TreeItem} from 'nuclide-commons-ui/Tree';
 
 import type {SearchResult} from './OutlineViewSearch';
+import shallowEqual from 'shallowequal';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
 
 type State = {
@@ -320,6 +321,7 @@ class OutlineViewCore extends React.PureComponent<
               outlines: outline.outlineTrees,
               searchResults: this.state.searchResults,
               highlightedPaths: outline.highlightedPaths,
+              path: [],
               onSelect: this._handleSelect,
               onConfirm: this._handleConfirm,
               onTripleClick: this._handleTripleClick,
@@ -336,7 +338,7 @@ class OutlineTree extends React.PureComponent<{
   outline: OutlineTreeForUi,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
-  isHighlighted?: boolean,
+  path: NodePath,
   onSelect: (outlineTree: OutlineTreeForUi) => mixed,
   onConfirm: () => mixed,
   onTripleClick: (outlineTree: OutlineTreeForUi) => mixed,
@@ -357,7 +359,7 @@ class OutlineTree extends React.PureComponent<{
     const {
       editor,
       highlightedPaths,
-      isHighlighted,
+      path,
       outline,
       searchResults,
       onSelect,
@@ -369,7 +371,9 @@ class OutlineTree extends React.PureComponent<{
       'outline-view-item',
       outline.kind ? `kind-${outline.kind}` : null,
       {
-        selected: isHighlighted,
+        selected: highlightedPaths.some(highlightedPath =>
+          shallowEqual(path, highlightedPath),
+        ),
       },
     );
 
@@ -378,6 +382,7 @@ class OutlineTree extends React.PureComponent<{
       outlines: outline.children,
       searchResults,
       highlightedPaths,
+      path,
       onSelect,
       onConfirm,
       onTripleClick,
@@ -483,6 +488,7 @@ function renderTrees({
   outlines,
   searchResults,
   highlightedPaths,
+  path,
   onSelect,
   onConfirm,
   onTripleClick,
@@ -491,6 +497,7 @@ function renderTrees({
   outlines: Array<OutlineTreeForUi>,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
   highlightedPaths: Array<NodePath>,
+  path: NodePath,
   onSelect: (outline: OutlineTreeForUi) => mixed,
   onConfirm: () => mixed,
   onTripleClick: (outline: OutlineTreeForUi) => mixed,
@@ -501,12 +508,8 @@ function renderTrees({
     return !result || result.visible ? (
       <OutlineTree
         editor={editor}
-        highlightedPaths={highlightedPaths
-          .filter(p => p[0] === index && p.length > 1)
-          .map(p => p.slice(1))}
-        isHighlighted={highlightedPaths.some(
-          p => p.length === 1 && p[0] === index,
-        )}
+        highlightedPaths={highlightedPaths}
+        path={path.concat([index])}
         outline={outline}
         key={index}
         searchResults={searchResults}
