@@ -26,6 +26,7 @@
     "nuclide-commons": "0.4.0",
     "nuclide-commons-atom": "0.4.0",
     "nuclide-commons-ui": "0.4.0",
+    "nullthrows": "1.0.0",
     "react": "16.2.0",
     "react-dom": "16.2.0",
     "react-virtualized": "9.13.0",

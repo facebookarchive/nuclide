@@ -20,6 +20,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 
 import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -103,7 +104,7 @@ export class OutlineView extends React.PureComponent<Props, State> {
 
   focus() {
     if (this._outlineViewRef != null) {
-      this._outlineViewRef.focus();
+      this._outlineViewRef.focusSearch();
     }
   }
 
@@ -153,9 +154,9 @@ class OutlineViewComponent extends React.PureComponent<
     this._outlineViewCoreRef = element;
   };
 
-  focus() {
+  focusSearch() {
     if (this._outlineViewCoreRef != null) {
-      this._outlineViewCoreRef.focus();
+      this._outlineViewCoreRef.focusSearch();
     }
   }
 
@@ -239,18 +240,35 @@ class OutlineViewCore extends React.PureComponent<
     collapsedPaths: Array<NodePath>,
   },
 > {
+  _scrollerNode: ?HTMLDivElement;
+  _searchRef: ?React.ElementRef<typeof OutlineViewSearchComponent>;
+  _subscriptions: ?UniversalDisposable;
   state = {
     collapsedPaths: [],
     searchResults: new Map(),
   };
 
-  _searchRef: ?React.ElementRef<typeof OutlineViewSearchComponent>;
+  componentDidMount() {
+    this._subscriptions = new UniversalDisposable(
+      atom.commands.add(nullthrows(this._scrollerNode), 'atom-ide:filter', () =>
+        this.focusSearch(),
+      ),
+    );
+  }
+
+  componentWillUnmount() {
+    nullthrows(this._subscriptions).dispose();
+  }
+
+  _setScrollerNode = node => {
+    this._scrollerNode = node;
+  };
 
   _setSearchRef = element => {
     this._searchRef = element;
   };
 
-  focus() {
+  focusSearch() {
     if (this._searchRef != null) {
       this._searchRef.focus();
     }
@@ -361,9 +379,11 @@ class OutlineViewCore extends React.PureComponent<
           }}
           ref={this._setSearchRef}
         />
-        <div className="outline-view-trees-scroller">
+        <div
+          className="outline-view-trees-scroller"
+          ref={this._setScrollerNode}>
           <Tree
-            className="outline-view-trees"
+            className="outline-view-trees atom-ide-filterable"
             collapsedPaths={this.state.collapsedPaths}
             itemClassName="outline-view-item"
             items={outline.outlineTrees.map(this._outlineTreeToNode)}
