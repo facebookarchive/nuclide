@@ -73,6 +73,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         'core:move-down': this._selectNext,
         'core:move-left': this._collapseNodeViaKeyboard,
         'core:move-right': this._expandNodeViaKeyboard,
+        'core:confirm': () =>
+          this.state.focusedPath && this._handleConfirm(this.state.focusedPath),
       }),
       Observable.merge(
         Observable.fromEvent(rootNode, 'focusin').mapTo(true),
