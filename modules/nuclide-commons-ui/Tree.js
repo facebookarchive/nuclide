@@ -21,6 +21,7 @@ export function Tree({className, style, ...props}: Object) {
   return (
     <ol
       className={classnames('list-tree', className)}
+      role="tree"
       style={{position: 'relative', ...style}}
       {...props}
     />

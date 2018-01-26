@@ -10,14 +10,15 @@
  * @format
  */
 
-import type {OutlineForUi, OutlineTreeForUi, NodePath} from './createOutlines';
+import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
+import type {TreeNode, NodePath} from 'nuclide-commons-ui/SelectableTree';
+
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
 import invariant from 'assert';
-import classnames from 'classnames';
 
 import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -30,10 +31,9 @@ import {
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
-import {NestedTreeItem, Tree, TreeItem} from 'nuclide-commons-ui/Tree';
+import {Tree} from 'nuclide-commons-ui/SelectableTree';
 
 import type {SearchResult} from './OutlineViewSearch';
-import shallowEqual from 'shallowequal';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
 
 type State = {
@@ -306,6 +306,25 @@ class OutlineViewCore extends React.PureComponent<
     pane.activateItem(editor);
   };
 
+  _outlineTreeToNode = (outlineTree: OutlineTreeForUi): TreeNode => {
+    const searchResult = this.state.searchResults.get(outlineTree);
+
+    if (outlineTree.children.length === 0) {
+      return {
+        type: 'LEAF',
+        label: renderItem(outlineTree),
+        hidden: searchResult && !searchResult.visible,
+      };
+    }
+
+    return {
+      type: 'NESTED',
+      label: renderItem(outlineTree),
+      children: outlineTree.children.map(this._outlineTreeToNode),
+      hidden: searchResult && !searchResult.visible,
+    };
+  };
+
   render() {
     const {outline} = this.props;
     invariant(outline.kind === 'outline');
@@ -321,102 +340,17 @@ class OutlineViewCore extends React.PureComponent<
           ref={this._setSearchRef}
         />
         <div className="outline-view-trees-scroller">
-          <Tree className="outline-view-trees">
-            {renderTrees({
-              editor: outline.editor,
-              outlines: outline.outlineTrees,
-              searchResults: this.state.searchResults,
-              highlightedPaths: outline.highlightedPaths,
-              path: [],
-              onSelect: this._handleSelect,
-              onConfirm: this._handleConfirm,
-              onTripleClick: this._handleTripleClick,
-            })}
-          </Tree>
+          <Tree
+            className="outline-view-trees"
+            itemClassName="outline-view-item"
+            items={outline.outlineTrees.map(this._outlineTreeToNode)}
+            onSelect={this._handleSelect}
+            onConfirm={this._handleConfirm}
+            onTripleClick={this._handleTripleClick}
+            selectedPaths={outline.highlightedPaths}
+          />
         </div>
       </div>
-    );
-  }
-}
-
-class OutlineTree extends React.PureComponent<{
-  editor: atom$TextEditor,
-  outline: OutlineTreeForUi,
-  searchResults: Map<OutlineTreeForUi, SearchResult>,
-  highlightedPaths: Array<NodePath>,
-  path: NodePath,
-  onSelect: (nodePath: NodePath) => mixed,
-  onConfirm: () => mixed,
-  onTripleClick: (nodePath: NodePath) => mixed,
-}> {
-  _handleSelect = () => {
-    this.props.onSelect(this.props.path);
-  };
-
-  _handleConfirm = () => {
-    this.props.onConfirm();
-  };
-
-  _handleTripleClick = () => {
-    this.props.onTripleClick(this.props.path);
-  };
-
-  render(): React.Node {
-    const {
-      editor,
-      highlightedPaths,
-      path,
-      outline,
-      searchResults,
-      onSelect,
-      onConfirm,
-      onTripleClick,
-    } = this.props;
-
-    const classes = classnames(
-      'outline-view-item',
-      outline.kind ? `kind-${outline.kind}` : null,
-      {
-        selected: highlightedPaths.some(highlightedPath =>
-          shallowEqual(path, highlightedPath),
-        ),
-      },
-    );
-
-    const childTrees = renderTrees({
-      editor,
-      outlines: outline.children,
-      searchResults,
-      highlightedPaths,
-      path,
-      onSelect,
-      onConfirm,
-      onTripleClick,
-    });
-    const itemContent = renderItem(outline, searchResults.get(outline));
-
-    if (childTrees.length === 0) {
-      return (
-        <TreeItem
-          className={classes}
-          onConfirm={this._handleConfirm}
-          onSelect={this._handleSelect}
-          onTripleClick={this._handleTripleClick}>
-          {itemContent}
-        </TreeItem>
-      );
-    }
-    return (
-      // Set fontSize for the li to make the highlighted region of selected
-      // lines (set equal to 2em) look reasonable relative to size of the font.
-      <NestedTreeItem
-        className={classes}
-        onConfirm={this._handleConfirm}
-        onSelect={this._handleSelect}
-        onTripleClick={this._handleTripleClick}
-        title={itemContent}>
-        {childTrees}
-      </NestedTreeItem>
     );
   }
 }
@@ -487,44 +421,6 @@ function renderTextToken(
       )}
     </span>
   );
-}
-
-function renderTrees({
-  editor,
-  outlines,
-  searchResults,
-  highlightedPaths,
-  path,
-  onSelect,
-  onConfirm,
-  onTripleClick,
-}: {
-  editor: atom$TextEditor,
-  outlines: Array<OutlineTreeForUi>,
-  searchResults: Map<OutlineTreeForUi, SearchResult>,
-  highlightedPaths: Array<NodePath>,
-  path: NodePath,
-  onSelect: (nodePath: NodePath) => mixed,
-  onConfirm: () => mixed,
-  onTripleClick: (nodePath: NodePath) => mixed,
-}): Array<?React.Element<any>> {
-  return outlines.map((outline, index) => {
-    const result = searchResults.get(outline);
-
-    return !result || result.visible ? (
-      <OutlineTree
-        editor={editor}
-        highlightedPaths={highlightedPaths}
-        path={path.concat([index])}
-        outline={outline}
-        key={index}
-        searchResults={searchResults}
-        onSelect={onSelect}
-        onConfirm={onConfirm}
-        onTripleClick={onTripleClick}
-      />
-    ) : null;
-  });
 }
 
 function selectNodeFromPath(

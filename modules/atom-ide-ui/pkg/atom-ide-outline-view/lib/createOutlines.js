@@ -28,7 +28,7 @@ import {arrayEqual} from 'nuclide-commons/collection';
 
 const LOADING_DELAY_MS = 500;
 
-export type NodePath = Array<number>;
+import type {NodePath} from 'nuclide-commons-ui/SelectableTree';
 
 export type OutlineTreeForUi = {
   icon?: string, // from atom$Octicon, but we use string for convenience of remoting
