@@ -14,10 +14,7 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
-import type {
-  RegisterExecutorFunction,
-  OutputService,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {RegisterExecutorFunction, OutputService} from 'atom-ide-ui';
 import type {
   EvaluationResult,
   SerializedBreakpoint,

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ConsoleApi} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleApi} from 'atom-ide-ui';
 
 import * as Actions from '../lib/redux/Actions';
 import {consolesForTaskRunners} from '../lib/redux/Reducers';

@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  Level,
-  ConsoleService,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleLevel, ConsoleService} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -53,7 +50,7 @@ class Activation {
   }
 }
 
-function getLevel(atomNotificationType: string): Level {
+function getLevel(atomNotificationType: string): ConsoleLevel {
   switch (atomNotificationType) {
     case 'debug':
     case 'error':

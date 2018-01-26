@@ -11,10 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Action, TaskRunner, TaskRunnerState, TaskStatus} from '../types';
-import type {
-  ConsoleApi,
-  ConsoleService,
-} from '../../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
 
 import * as Actions from './Actions';
 import * as Immutable from 'immutable';

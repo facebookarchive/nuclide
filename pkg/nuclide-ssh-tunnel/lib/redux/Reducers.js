@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from '../../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleMessage} from 'atom-ide-ui';
 import type {Action, Tunnel, OpenTunnel} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
@@ -61,7 +61,7 @@ export function currentWorkingDirectory(
 }
 
 export function consoleOutput(
-  state: Subject<Message> = new Subject(),
+  state: Subject<ConsoleMessage> = new Subject(),
   action: Action,
 ) {
   return state;

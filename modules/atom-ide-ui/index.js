@@ -95,3 +95,14 @@ export type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from './pkg/hyperclick/lib/types';
+
+export type {
+  ConsoleApi,
+  ConsoleService,
+  Level as ConsoleLevel,
+  Message as ConsoleMessage,
+  OutputProviderStatus,
+  OutputService,
+  RegisterExecutorFunction,
+  SourceInfo as ConsoleSourceInfo,
+} from './pkg/atom-ide-console/lib/types';

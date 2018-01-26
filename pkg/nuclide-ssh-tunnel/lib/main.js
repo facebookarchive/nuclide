@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputService} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {OutputService} from 'atom-ide-ui';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   AppState,

@@ -11,10 +11,7 @@
 
 import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {Action, Store, ToolbarStatePreference} from '../lib/types';
-import type {
-  ConsoleApi,
-  SourceInfo,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleApi, ConsoleSourceInfo} from 'atom-ide-ui';
 
 import {
   ActionsObservable,
@@ -580,7 +577,7 @@ function createMockPreferences(
   ): any): LocalStorageJsonTable<?ToolbarStatePreference>);
 }
 
-function createMockConsole(source: SourceInfo): ConsoleApi {
+function createMockConsole(source: ConsoleSourceInfo): ConsoleApi {
   const consoleApi = {};
   return ((consoleApi: any): ConsoleApi);
 }

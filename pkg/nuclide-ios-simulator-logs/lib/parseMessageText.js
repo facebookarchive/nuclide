@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {Level} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleLevel} from 'atom-ide-ui';
 
 type Parsed = {
   text: string,
-  level: ?Level,
+  level: ?ConsoleLevel,
   tags: Array<string>,
 };
 

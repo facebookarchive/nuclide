@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  Message,
-  OutputProviderStatus,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleMessage, OutputProviderStatus} from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -30,7 +27,7 @@ type TrackingEventNames = {
 
 type Options = {
   name: string,
-  messages: Observable<Message>,
+  messages: Observable<ConsoleMessage>,
   trackingEvents: TrackingEventNames,
 
   // Signals that the source is ready ("running"). This allows us to account for sources that need
@@ -66,7 +63,7 @@ export class LogTailer {
   _name: string;
   _eventNames: TrackingEventNames;
   _subscription: ?rxjs$ISubscription;
-  _messages: ConnectableObservable<Message>;
+  _messages: ConnectableObservable<ConsoleMessage>;
   _ready: ?Observable<void>;
   _runningCallbacks: Array<(err?: Error) => mixed>;
   _errorHandler: ?(err: Error) => void;
@@ -270,7 +267,7 @@ export class LogTailer {
     this._statuses.next('stopped');
   }
 
-  getMessages(): Observable<Message> {
+  getMessages(): Observable<ConsoleMessage> {
     return this._messages;
   }
 }

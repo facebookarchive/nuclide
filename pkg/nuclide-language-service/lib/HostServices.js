@@ -15,10 +15,7 @@ import type {
   ShowNotificationLevel,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {
-  ConsoleApi,
-  ConsoleService,
-} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleApi, ConsoleService} from 'atom-ide-ui';
 import type {BusySignalService} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';

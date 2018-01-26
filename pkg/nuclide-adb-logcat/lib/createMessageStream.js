@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {ConsoleMessage} from 'atom-ide-ui';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {fastDebounce} from 'nuclide-commons/observable';
@@ -20,7 +20,7 @@ import {Observable} from 'rxjs';
 
 export default function createMessageStream(
   line$: Observable<string>,
-): Observable<Message> {
+): Observable<ConsoleMessage> {
   // Separate the lines into groups, beginning with metadata lines.
   const messages = Observable.create(observer => {
     let buffer = [];
@@ -88,7 +88,9 @@ export default function createMessageStream(
   return filter(messages).share();
 }
 
-function filter(messages: Observable<Message>): Observable<Message> {
+function filter(
+  messages: Observable<ConsoleMessage>,
+): Observable<ConsoleMessage> {
   const patterns = (featureConfig.observeAsStream(
     'nuclide-adb-logcat.whitelistedTags',
   ): Observable<any>).map(source => {

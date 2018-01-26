@@ -16,7 +16,7 @@ import type {
 } from 'nuclide-debugger-common';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {RegisterExecutorFunction} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {RegisterExecutorFunction} from 'atom-ide-ui';
 import type {DebuggerModeType, DebuggerSettings} from './types';
 import type Bridge from './Bridge';
 

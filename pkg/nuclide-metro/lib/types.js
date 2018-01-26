@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OutputProviderStatus} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {OutputProviderStatus} from 'atom-ide-ui';
 
 export type TunnelBehavior =
   | 'open_tunnel_if_needed'
