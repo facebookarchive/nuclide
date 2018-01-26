@@ -381,6 +381,7 @@ export default class CodeFormatManager {
       return busySignalService.reportBusyWhile(
         `Formatting code in ${displayPath}`,
         () => promise,
+        {revealTooltip: true},
       );
     }
     return promise;

@@ -271,6 +271,7 @@ class Activation {
       return busySignalService.reportBusyWhile(
         `Finding references for ${displayPath}:${point.row}:${point.column}`,
         () => resultPromise,
+        {revealTooltip: true},
       );
     }
     return resultPromise;
