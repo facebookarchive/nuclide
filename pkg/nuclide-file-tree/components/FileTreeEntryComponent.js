@@ -189,12 +189,18 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
     return (
       <li
-        className={`${outerClassName} ${statusClass} ${generatedClass}`}
+        className={classnames(outerClassName, statusClass, generatedClass, {
+          // `atom/find-and-replace` looks for this class to determine if a
+          // data-path is a directory or not:
+          directory: node.isContainer,
+        })}
         style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
         draggable={true}
         onMouseDown={this._onMouseDown}
         onClick={this._onClick}
-        onDoubleClick={this._onDoubleClick}>
+        onDoubleClick={this._onDoubleClick}
+        data-name={node.name}
+        data-path={node.uri}>
         <div
           className={listItemClassName}
           ref={el => {
