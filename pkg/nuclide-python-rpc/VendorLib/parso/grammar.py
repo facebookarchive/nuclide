@@ -112,9 +112,6 @@ class Grammar(object):
                                 "to use this option.")
             try:
                 module_cache_item = parser_cache[self._hashed][path]
-            except KeyError:
-                pass
-            else:
                 module_node = module_cache_item.node
                 old_lines = module_cache_item.lines
                 if old_lines == lines:
@@ -131,6 +128,8 @@ class Grammar(object):
                             pickling=cache and not is_pypy,
                             cache_path=cache_path)
                 return new_node
+            except Exception:
+                pass
 
         tokens = self._tokenizer(lines, start_pos)
 

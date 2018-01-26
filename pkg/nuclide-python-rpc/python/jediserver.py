@@ -157,7 +157,9 @@ class JediServer:
                 lambda x: x != '...' and x != 'args' and x != 'kwargs',
                 names,
             ))
-        except (AttributeError, RuntimeError):
+        except Exception:
+            # ".params" appears to be quite flaky.
+            # e.g: https://github.com/davidhalter/jedi/issues/1031
             return None
 
     def get_definitions(self, script):
@@ -227,4 +229,10 @@ if __name__ == '__main__':
                         help='Additional Python module resolution paths.')
     args = parser.parse_args()
 
+    # By default, Jedi uses ~/.cache or similar.
+    # Let's use a temporary directory instead so it doesn't grow forever.
+    jedi.settings.cache_directory = os.path.join(
+        tempfile.gettempdir(),
+        'jedi-cache',
+    )
     JediServer(args.paths).run()

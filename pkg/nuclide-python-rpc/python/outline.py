@@ -24,8 +24,9 @@ def serialize_name(name, visited):
         result['name'] = name.name
         try:
             result['params'] = [p.name for p in name.params]
-        except AttributeError:
-            # Properties don't have params.
+        except Exception:
+            # ".params" appears to be quite flaky.
+            # e.g: https://github.com/davidhalter/jedi/issues/1031
             result['params'] = []
         result['children'] = (
             serialize_names(name.defined_names(), visited)
