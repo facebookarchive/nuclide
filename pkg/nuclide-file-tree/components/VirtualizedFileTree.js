@@ -105,8 +105,9 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     this._remeasureHeights();
   }
 
-  componentWillUpdate(nextProps: Props, nextState: State): void {
-    if (this.state.shownNodes !== nextState.shownNodes) {
+  componentDidUpdate(prevProps: Props, prevState: State): void {
+    this._remeasureHeights();
+    if (this.state.shownNodes !== prevState.shownNodes) {
       // Some folder was expanded/collaplsed or roots were modified.
       // In some themes the height of a root node is different from the height of plain node
       // The indices of root nodes could have changed -- we'll better recompute the heights
@@ -115,10 +116,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
         this._listRef.recomputeRowHeights();
       }
     }
-  }
-
-  componentDidUpdate(): void {
-    this._remeasureHeights();
   }
 
   componentWillUnmount(): void {
