@@ -12,7 +12,7 @@
   "consumedServices": {
     "console": {
       "versions": {
-        "0.0.0": "consumeConsole"
+        "0.1.0": "consumeConsole"
       }
     }
   }

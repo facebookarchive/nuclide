@@ -82,7 +82,7 @@
   "providedServices": {
     "console": {
       "versions": {
-        "0.0.0": "provideConsole"
+        "0.1.0": "provideConsole"
       }
     },
     "nuclide-console": {

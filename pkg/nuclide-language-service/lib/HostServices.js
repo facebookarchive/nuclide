@@ -54,7 +54,7 @@ class RootHostServices {
   };
 
   _getConsoleService = memoize((): Promise<ConsoleService> =>
-    consumeFirstProvider('console', '0.0.0'),
+    consumeFirstProvider('console', '0.1.0'),
   );
 
   // This method creates registers sources with the atom-ide-console service, but never disposes
