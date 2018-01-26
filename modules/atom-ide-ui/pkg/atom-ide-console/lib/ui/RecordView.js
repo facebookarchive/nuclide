@@ -266,13 +266,17 @@ function parseText(text: string): Array<string | React.Element<any>> {
     let href;
     if (match[1] != null) {
       // It's a diff
-      const url = toString(featureConfig.get('nuclide-console.diffUrlPattern'));
+      const url = toString(
+        featureConfig.get('atom-ide-console.diffUrlPattern'),
+      );
       if (url !== '') {
         href = url.replace('%s', matchedText);
       }
     } else if (match[2] != null) {
       // It's a task
-      const url = toString(featureConfig.get('nuclide-console.taskUrlPattern'));
+      const url = toString(
+        featureConfig.get('atom-ide-console.taskUrlPattern'),
+      );
       if (url !== '') {
         href = url.replace('%s', matchedText.slice(1));
       }

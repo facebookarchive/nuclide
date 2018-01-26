@@ -46,9 +46,9 @@ import {applyMiddleware, createStore} from 'redux';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
-  'nuclide-console.maximumSerializedMessages';
+  'atom-ide-console.maximumSerializedMessages';
 const MAXIMUM_SERIALIZED_HISTORY_CONFIG =
-  'nuclide-console.maximumSerializedHistory';
+  'atom-ide-console.maximumSerializedHistory';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -77,7 +77,7 @@ class Activation {
         this._getStore().dispatch(Actions.clearRecords()),
       ),
       featureConfig.observe(
-        'nuclide-console.maximumMessageCount',
+        'atom-ide-console.maximumMessageCount',
         (maxMessageCount: any) => {
           this._getStore().dispatch(
             Actions.setMaxMessageCount(maxMessageCount),
@@ -88,7 +88,7 @@ class Activation {
         observableFromSubscribeFunction(cb =>
           atom.config.observe('editor.fontSize', cb),
         ),
-        featureConfig.observeAsStream('nuclide-console.consoleFontScale'),
+        featureConfig.observeAsStream('atom-ide-console.consoleFontScale'),
         (fontSize, consoleFontScale) => fontSize * parseFloat(consoleFontScale),
       )
         .map(Actions.setFontSize)
