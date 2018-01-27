@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
+import type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAvailableServerPort} from '../../commons-node/serverPort';
@@ -25,24 +25,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
 
-export type HHVMLaunchConfig = {
-  action: 'launch',
-  targetUri: NuclideUri,
-  startupDocumentPath?: string,
-  launchScriptPath: NuclideUri,
-  scriptArgs: Array<string>,
-  hhvmRuntimePath?: string,
-  hhvmRuntimeArgs: Array<string>,
-  deferLaunch: boolean,
-  launchWrapperCommand?: string,
-};
-
-export type HHVMAttachConfig = {
-  action: 'attach',
-  targetUri: NuclideUri,
-  startupDocumentPath?: string,
-  debugPort?: number,
-};
+export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
 
 const DEFAULT_HHVM_PATH = '/usr/local/bin/hhvm';
 
@@ -166,8 +149,15 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
         ? [config.launchWrapperCommand, config.launchScriptPath]
         : [config.launchScriptPath];
 
+    let hhvmRuntimeArgs = config.hhvmRuntimeArgs;
+    try {
+      // $FlowFB
+      const fbConfig = require('./fbConfig');
+      hhvmRuntimeArgs = fbConfig.getHHVMRuntimeArgs(config);
+    } catch (_) {}
+
     const hhvmArgs = [
-      ...config.hhvmRuntimeArgs,
+      ...hhvmRuntimeArgs,
       '--mode',
       'vsdebug',
       ...deferArgs,
