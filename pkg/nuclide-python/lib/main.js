@@ -9,13 +9,16 @@
  * @format
  */
 
-import type {LinterProvider} from 'atom-ide-ui';
+import type {LinterProvider, RegisterIndieLinter} from 'atom-ide-ui';
+import type {BuckTaskRunnerService} from '../../nuclide-buck/lib/types';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
+import LinkTreeLinter from './LinkTreeLinter';
 import LintHelpers from './LintHelpers';
 import {
   getPythonServiceByConnection,
@@ -109,6 +112,7 @@ function resetServices(): void {
 
 class Activation {
   _pythonLanguageService: AtomLanguageService<LanguageService>;
+  _linkTreeLinter: LinkTreeLinter;
   _subscriptions: UniversalDisposable;
 
   constructor(rawState: ?Object) {
@@ -117,6 +121,7 @@ class Activation {
       atomConfig,
     );
     this._pythonLanguageService.activate();
+    this._linkTreeLinter = new LinkTreeLinter();
     this._subscriptions = new UniversalDisposable(
       this._pythonLanguageService,
       atom.commands.add(
@@ -137,8 +142,34 @@ class Activation {
     };
   }
 
-  consumePlatformService(service: PlatformService): void {
-    this._subscriptions.add(service.register(providePythonPlatformGroup));
+  consumeLinterIndie(register: RegisterIndieLinter): IDisposable {
+    const linter = register({name: 'Python'});
+    const disposable = new UniversalDisposable(
+      linter,
+      this._linkTreeLinter
+        .observeMessages()
+        .subscribe(messages => linter.setAllMessages(messages)),
+    );
+    this._subscriptions.add(disposable);
+    return new UniversalDisposable(disposable, () =>
+      this._subscriptions.remove(disposable),
+    );
+  }
+
+  consumePlatformService(service: PlatformService): IDisposable {
+    const disposable = service.register(providePythonPlatformGroup);
+    this._subscriptions.add(disposable);
+    return new UniversalDisposable(() => {
+      this._subscriptions.remove(disposable);
+    });
+  }
+
+  consumeBuckTaskRunner(service: BuckTaskRunnerService): IDisposable {
+    return this._linkTreeLinter.consumeBuckTaskRunner(service);
+  }
+
+  consumeCwdApi(api: CwdApi): IDisposable {
+    return this._linkTreeLinter.consumeCwdApi(api);
   }
 
   dispose(): void {

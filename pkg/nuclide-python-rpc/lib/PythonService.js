@@ -32,6 +32,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
 import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+import {asyncSome} from 'nuclide-commons/promise';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {maybeToString} from 'nuclide-commons/string';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -497,6 +498,30 @@ async function runLinterCommand(
     // 1 indicates unclean lint result (i.e. has errors/warnings).
     isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
   }).toPromise();
+}
+
+/**
+ * Retrieves a list of buildable targets to obtain link trees for a given file.
+ * (This won't return anything if a link tree is already available.)
+ */
+export async function getBuildableTargets(
+  src: NuclideUri,
+): Promise<Array<string>> {
+  const linkTreeManager = serverManager._linkTreeManager;
+  const linkTrees = await linkTreeManager.getLinkTreePaths(src);
+  if (linkTrees.length === 0) {
+    return [];
+  }
+  if (await asyncSome(linkTrees, fsPromise.exists)) {
+    return [];
+  }
+  const buckRoot = await linkTreeManager.getBuckRoot(src);
+  const owner = await linkTreeManager.getOwner(src);
+  if (buckRoot == null || owner == null) {
+    return [];
+  }
+  const dependents = await linkTreeManager.getDependents(buckRoot, owner);
+  return Array.from(dependents.keys());
 }
 
 export function reset(): void {

@@ -69,13 +69,27 @@
     "testRunner": "apm"
   },
   "consumedServices": {
+    "linter-indie": {
+      "versions": {
+        "2.0.0": "consumeLinterIndie"
+      }
+    },
     "nuclide.buck-platforms": {
       "versions": {
         "0.0.0": "consumePlatformService"
       }
+    },
+    "nuclide.buck-task-runner": {
+      "versions": {
+        "0.0.0": "consumeBuckTaskRunner"
+      }
+    },
+    "nuclide-current-working-directory": {
+      "versions": {
+        "0.0.0": "consumeCwdApi"
+      }
     }
   },
-
   "providedServices": {
     "linter": {
       "versions": {
