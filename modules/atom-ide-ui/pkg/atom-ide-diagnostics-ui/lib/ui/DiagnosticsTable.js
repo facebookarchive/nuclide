@@ -164,6 +164,14 @@ export default class DiagnosticsTable extends React.PureComponent<
     this._disposables.dispose();
   }
 
+  componentDidUpdate(prevProps: Props, prevState: State): void {
+    if (this._table != null && this.state.focused !== prevState.focused) {
+      // The row renderers depend on this state but the Table component doesn't know it about it, so
+      // we have to force it to rerender its rows.
+      this._table.forceUpdate();
+    }
+  }
+
   _handleSort = (sortedColumn: ColumnName, sortDescending: boolean): void => {
     this.setState({
       sortedColumn,
