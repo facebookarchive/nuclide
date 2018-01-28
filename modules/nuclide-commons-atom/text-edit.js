@@ -161,7 +161,11 @@ function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
 // Returns whether an array of sorted TextEdits contain an overlapping range.
 function editsOverlap(sortedEdits: Array<TextEdit>): boolean {
   for (let i = 0; i < sortedEdits.length - 1; i++) {
-    if (sortedEdits[i].oldRange.intersectsWith(sortedEdits[i + 1].oldRange)) {
+    if (
+      sortedEdits[i].oldRange.end.isGreaterThan(
+        sortedEdits[i + 1].oldRange.start,
+      )
+    ) {
       return true;
     }
   }
@@ -169,5 +173,9 @@ function editsOverlap(sortedEdits: Array<TextEdit>): boolean {
 }
 
 function sortEdits(edits: Array<TextEdit>): Array<TextEdit> {
-  return edits.slice(0).sort((e1, e2) => e1.oldRange.compare(e2.oldRange));
+  // stable sort (preserve order of edits starting in the same location)
+  return edits
+    .map((edit, i) => [edit, i])
+    .sort(([e1, i1], [e2, i2]) => e1.oldRange.compare(e2.oldRange) || i1 - i2)
+    .map(([edit]) => edit);
 }
