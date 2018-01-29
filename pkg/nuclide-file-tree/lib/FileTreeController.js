@@ -28,6 +28,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
 import removeProjectPath from '../../commons-atom/removeProjectPath';
+import {isRunningInWindows} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WORKSPACE_VIEW_URI} from './Constants';
 
@@ -487,7 +488,10 @@ export default class FileTreeController {
         const nodePath = FileTreeHelpers.keyToPath(node.uri);
         const parentOfRoot = nuclideUri.dirname(node.rootUri);
 
-        return nuclideUri.relative(parentOfRoot, nodePath);
+        // Fix Windows paths to avoid end of filename truncation
+        return isRunningInWindows()
+          ? nuclideUri.relative(parentOfRoot, nodePath).replace(/\//g, '\\')
+          : nuclideUri.relative(parentOfRoot, nodePath);
       });
       const message =
         'Are you sure you want to delete the following ' +
