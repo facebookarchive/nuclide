@@ -26,7 +26,7 @@ import {
   compareLspRange,
   lspPositionToAtomPoint,
   lspRangeToAtomRange,
-} from './utils/util';
+} from './lsp-utils';
 
 export default class TextDocument {
   buffer: SimpleTextBuffer;

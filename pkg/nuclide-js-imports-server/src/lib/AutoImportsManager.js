@@ -15,7 +15,8 @@ import {UndefinedSymbolManager} from './UndefinedSymbolManager';
 import * as babylon from 'babylon';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {babelLocationToAtomRange, lspRangeToAtomRange} from '../utils/util';
+import {babelLocationToAtomRange} from '../utils/util';
+import {lspRangeToAtomRange} from '../../../nuclide-lsp-implementation-common/lsp-utils';
 import {Range} from 'simple-text-buffer';
 import {IRange} from 'vscode-languageserver';
 

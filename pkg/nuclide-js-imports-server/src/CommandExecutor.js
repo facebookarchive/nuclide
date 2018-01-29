@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AutoImportsManager} from './lib/AutoImportsManager';
 import type {JSExport, JSImport} from './lib/types';
-import type TextDocuments from './TextDocuments';
+import type TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import type {
   WorkspaceEdit,
   TextEdit,
@@ -24,11 +24,8 @@ import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {parseFile} from './lib/AutoImportsManager';
 import {Range} from 'simple-text-buffer';
-import {
-  atomRangeToLSPRange,
-  compareForInsertion,
-  getRequiredModule,
-} from './utils/util';
+import {compareForInsertion, getRequiredModule} from './utils/util';
+import {atomRangeToLSPRange} from '../../nuclide-lsp-implementation-common/lsp-utils';
 
 export type AddImportCommandParams = [JSExport, NuclideUri];
 

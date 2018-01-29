@@ -14,7 +14,7 @@ import {IConnection} from 'vscode-languageserver';
 import {
   type LogMessageParams,
   MessageType,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+} from '../nuclide-vscode-language-service-rpc/lib/protocol';
 
 function getMessageType(levelStr: string) {
   switch (levelStr) {

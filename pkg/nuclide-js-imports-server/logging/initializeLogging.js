@@ -35,7 +35,9 @@ export default function initializeLogging(connection: IConnection) {
         level: 'DEBUG',
         appender: {
           connection,
-          type: require.resolve('./connectionConsoleAppender'),
+          type: require.resolve(
+            '../../nuclide-lsp-implementation-common/connectionConsoleAppender',
+          ),
         },
       },
     ],

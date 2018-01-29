@@ -15,7 +15,7 @@ import type {
   DidOpenTextDocumentParams,
   DidSaveTextDocumentParams,
   TextDocumentItem,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+} from '../nuclide-vscode-language-service-rpc/lib/protocol';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 // flowlint-next-line untyped-type-import:off

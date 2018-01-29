@@ -22,7 +22,7 @@ import {ImportFormatter, createImportStatement} from './lib/ImportFormatter';
 import {compareForSuggestion} from './utils/util';
 import {setIntersect} from 'nuclide-commons/collection';
 
-import type TextDocuments from './TextDocuments';
+import type TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JSExport} from './lib/types';
 

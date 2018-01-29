@@ -17,7 +17,8 @@ import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {DIAGNOSTIC_SOURCE} from './Diagnostics';
-import {babelLocationToAtomRange, lspRangeToAtomRange} from './utils/util';
+import {babelLocationToAtomRange} from './utils/util';
+import {lspRangeToAtomRange} from '../../nuclide-lsp-implementation-common/lsp-utils';
 import {compareForSuggestion} from './utils/util';
 
 const CODE_ACTIONS_LIMIT = 10;

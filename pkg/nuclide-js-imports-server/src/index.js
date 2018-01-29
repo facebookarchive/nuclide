@@ -17,7 +17,7 @@ import {getLogger} from 'log4js';
 
 import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
 import {AutoImportsManager} from './lib/AutoImportsManager';
-import TextDocuments from './TextDocuments';
+import TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import {ImportFormatter} from './lib/ImportFormatter';
 import {Completions} from './Completions';
 import {Diagnostics} from './Diagnostics';
