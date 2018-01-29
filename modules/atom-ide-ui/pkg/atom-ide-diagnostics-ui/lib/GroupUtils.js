@@ -64,7 +64,7 @@ export function getDisplayName(group: DiagnosticGroup): string {
     case 'review':
       return 'Review';
     case 'action':
-      return 'Action';
+      return 'Actions';
     default:
       (group: empty);
       throw new Error(`Invalid group: ${group}`);
