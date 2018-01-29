@@ -20,6 +20,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {compact} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
+import shallowEqual from 'shallowequal';
 import {track} from '../../nuclide-analytics';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {GRAMMAR_SET} from './constants';
@@ -59,12 +60,12 @@ export default class LinkTreeLinter {
           this._disposedPaths.has(path) ||
           !GRAMMAR_SET.has(editor.getGrammar().scopeName)
         ) {
-          return Observable.empty();
+          return Observable.of([]);
         }
         // If the CWD doesn't contain the file, Buck isn't going to work.
         const cwd = this._cwdApi == null ? null : this._cwdApi.getCwd();
         if (cwd != null && !nuclideUri.contains(cwd.getPath(), path)) {
-          return Observable.empty();
+          return Observable.of([]);
         }
         const pythonService = getPythonServiceByNuclideUri(path);
         return Observable.fromPromise(pythonService.getBuildableTargets(path))
@@ -72,7 +73,7 @@ export default class LinkTreeLinter {
           .switchMap(targets => {
             const buckService = this._buckTaskRunnerService;
             if (buckService == null || editor.getLineCount() === 0) {
-              return Observable.empty();
+              return Observable.of([]);
             }
             const position = [
               [0, 0],
@@ -139,6 +140,7 @@ export default class LinkTreeLinter {
       .catch((err, continuation) => {
         getLogger('LinkTreeLinter').error(err);
         return continuation;
-      });
+      })
+      .distinctUntilChanged(shallowEqual);
   }
 }
