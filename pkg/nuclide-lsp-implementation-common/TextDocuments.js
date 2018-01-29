@@ -110,11 +110,11 @@ export default class TextDocuments {
     return Array.from(this._documents.values());
   }
 
-  onDidChangeContent(handler: (e: {document: TextDocument}) => void): void {
+  onDidChangeContent(handler: (e: {textDocument: TextDocument}) => void): void {
     this._emitter.on('didChangeContent', handler);
   }
 
-  onDidSave(handler: (e: {document: TextDocument}) => void): void {
+  onDidSave(handler: (e: {textDocument: TextDocument}) => void): void {
     this._emitter.on('didSave', handler);
   }
 
@@ -128,11 +128,11 @@ export default class TextDocuments {
     this._emitter.on('didClose', handler);
   }
 
-  _handleDidStopChanging = (document: TextDocument) => {
-    this._emitter.emit('didChangeContent', {document});
+  _handleDidStopChanging = (textDocument: TextDocument) => {
+    this._emitter.emit('didChangeContent', {textDocument});
   };
 
-  _handleDidSave = (document: TextDocument) => {
-    this._emitter.emit('didSave', {document});
+  _handleDidSave = (textDocument: TextDocument) => {
+    this._emitter.emit('didSave', {textDocument});
   };
 }

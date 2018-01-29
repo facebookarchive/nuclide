@@ -124,10 +124,10 @@ documents.onDidOpenTextDocument(params => {
 
 documents.onDidChangeContent(params => {
   try {
-    const uri = nuclideUri.uriToNuclideUri(params.document.uri);
+    const uri = nuclideUri.uriToNuclideUri(params.textDocument.uri);
     if (uri != null) {
-      autoImportsManager.workerIndexFile(uri, params.document.getText());
-      findAndSendDiagnostics(params.document.getText(), uri);
+      autoImportsManager.workerIndexFile(uri, params.textDocument.getText());
+      findAndSendDiagnostics(params.textDocument.getText(), uri);
     }
   } catch (e) {
     logger.error(e);
