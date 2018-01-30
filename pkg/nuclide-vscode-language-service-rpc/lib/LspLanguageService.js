@@ -1457,7 +1457,16 @@ export class LspLanguageService {
     };
   }
 
-  async findReferences(
+  findReferences(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.fromPromise(
+      this._findReferences(fileVersion, position),
+    ).publish();
+  }
+
+  async _findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {

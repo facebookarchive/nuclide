@@ -31,6 +31,7 @@ import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 import {runCommand, ProcessExitError} from 'nuclide-commons/process';
 import {asyncSome} from 'nuclide-commons/promise';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
@@ -196,7 +197,17 @@ class PythonSingleFileLanguageService {
     return getDefinition(serverManager, filePath, buffer, position);
   }
 
-  async findReferences(
+  findReferences(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Observable<?FindReferencesReturn> {
+    return Observable.fromPromise(
+      this._findReferences(filePath, buffer, position),
+    );
+  }
+
+  async _findReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,

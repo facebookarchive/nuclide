@@ -80,7 +80,10 @@ export class FindReferencesProvider<T: LanguageService> {
         return null;
       }
 
-      return (await languageService).findReferences(fileVersion, position);
+      return (await languageService)
+        .findReferences(fileVersion, position)
+        .refCount()
+        .toPromise();
     });
   }
 }

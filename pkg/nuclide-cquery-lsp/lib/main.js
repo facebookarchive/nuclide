@@ -44,6 +44,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 // TODO pelmers: maybe don't import from libclang
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
@@ -182,14 +183,17 @@ class CqueryLSPClient {
       : this._service.getDefinition(fileVersion, position);
   }
 
-  async findReferences(
+  findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.findReferences(fileVersion, position);
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.fromPromise(this.ensureProject(fileVersion.filePath))
+      .concatMap(project => {
+        return project == null
+          ? Observable.of(null)
+          : this._service.findReferences(fileVersion, position).refCount();
+      })
+      .publish();
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

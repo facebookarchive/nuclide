@@ -604,9 +604,11 @@ export class FlowSingleProjectLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
+  ): Observable<?FindReferencesReturn> {
     // TODO check flow version
-    return this._findRefs(filePath, buffer, position, true);
+    return Observable.fromPromise(
+      this._findRefs(filePath, buffer, position, true),
+    );
   }
 
   getEvaluationExpression(

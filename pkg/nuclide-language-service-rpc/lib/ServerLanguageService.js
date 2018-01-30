@@ -69,7 +69,7 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
+  ): Observable<?FindReferencesReturn>,
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
@@ -208,16 +208,19 @@ export class ServerLanguageService<
     return this._service.getDefinition(filePath, buffer, position);
   }
 
-  async findReferences(
+  findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
+  ): ConnectableObservable<?FindReferencesReturn> {
     const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    if (buffer == null) {
-      return null;
-    }
-    return this._service.findReferences(filePath, buffer, position);
+    return Observable.fromPromise(getBufferAtVersion(fileVersion))
+      .concatMap(buffer => {
+        if (buffer == null) {
+          return Observable.of(null);
+        }
+        return this._service.findReferences(filePath, buffer, position);
+      })
+      .publish();
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

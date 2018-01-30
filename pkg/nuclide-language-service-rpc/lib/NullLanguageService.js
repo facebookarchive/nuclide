@@ -65,8 +65,8 @@ export class NullLanguageService {
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    return Promise.resolve(null);
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.of(null).publish();
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {

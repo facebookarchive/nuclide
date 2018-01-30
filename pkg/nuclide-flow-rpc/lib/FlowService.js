@@ -201,7 +201,7 @@ export interface FlowLanguageServiceType {
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn>;
+  ): ConnectableObservable<?FindReferencesReturn>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 

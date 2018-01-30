@@ -299,7 +299,17 @@ class HackSingleFileLanguageService {
     return convertDefinitions(hackDefinitions, filePath, projectRoot);
   }
 
-  async findReferences(
+  findReferences(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Observable<?FindReferencesReturn> {
+    return Observable.fromPromise(
+      this._findReferences(filePath, buffer, position),
+    );
+  }
+
+  async _findReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,

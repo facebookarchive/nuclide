@@ -129,7 +129,7 @@ export interface LanguageService {
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn>;
+  ): ConnectableObservable<?FindReferencesReturn>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 

@@ -256,13 +256,15 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     )).getDefinition(fileVersion, position);
   }
 
-  async findReferences(
+  findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).findReferences(fileVersion, position);
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.fromPromise(
+      this._getLanguageServiceForFile(fileVersion.filePath),
+    )
+      .concatMap(ls => ls.findReferences(fileVersion, position).refCount())
+      .publish();
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
