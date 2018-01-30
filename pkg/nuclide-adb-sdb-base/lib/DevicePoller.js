@@ -106,16 +106,13 @@ class DevicePoller {
         break;
       }
     }
-    let displayArch = deviceArchitecture;
     if (deviceArchitecture.length === 0) {
       track('nuclide-adb-sdb-base.unknown_device_arch', {deviceArchitecture});
-      displayArch = device.architecture;
     }
 
-    const displayName = (device.name.startsWith('emulator')
+    const displayName = device.name.startsWith('emulator')
       ? device.name
-      : device.model
-    ).concat(` (${displayArch}, API ${device.apiVersion})`);
+      : device.model;
 
     return {
       name: device.name,
