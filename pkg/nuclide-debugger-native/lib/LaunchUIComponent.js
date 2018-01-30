@@ -185,22 +185,12 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
               this.setState({launchEnvironmentVariables: value})
             }
           />
-          <label>Source path: </label>
-          <AtomInput
-            ref={input => {
-              this._launchSourcePath = input;
-            }}
-            tabIndex="16"
-            placeholderText="Optional base path for sources"
-            value={this.state.launchSourcePath}
-            onDidChange={value => this.setState({launchSourcePath: value})}
-          />
           <label>Working directory: </label>
           <AtomInput
             ref={input => {
               this._launchWorkingDirectory = input;
             }}
-            tabIndex="17"
+            tabIndex="15"
             disabled={this.state.coreDump !== ''}
             placeholderText="Working directory for the launched executable"
             value={this.state.launchWorkingDirectory}
@@ -213,13 +203,23 @@ export class LaunchUIComponent extends React.Component<PropsType, StateType> {
             ref={input => {
               this._stdinFilePath = input;
             }}
-            tabIndex="18"
+            tabIndex="16"
             disabled={this.state.coreDump !== ''}
             placeholderText="Redirect stdin to this file"
             value={this.state.stdinFilePath}
             onDidChange={value => this.setState({stdinFilePath: value})}
           />
         </div>
+        <label>Source path: </label>
+        <AtomInput
+          ref={input => {
+            this._launchSourcePath = input;
+          }}
+          tabIndex="17"
+          placeholderText="Optional base path for sources"
+          value={this.state.launchSourcePath}
+          onDidChange={value => this.setState({launchSourcePath: value})}
+        />
       </div>
     );
   }
