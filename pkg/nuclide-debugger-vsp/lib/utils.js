@@ -36,6 +36,7 @@ import {Observable} from 'rxjs';
 import {VSP_DEBUGGER_SERVICE_NAME} from './VspProcessInfo';
 import {track} from '../../nuclide-analytics';
 import {isRunningInTest} from '../../commons-node/system-info';
+import {getNodeBinaryPath} from '../../commons-node/node-info';
 
 const DEFAULT_DEBUG_OPTIONS = new Set([
   'WaitOnAbnormalExit',
@@ -77,15 +78,6 @@ export async function getPythonScriptLaunchProcessInfo(
     true, // showThreads
     getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env),
   );
-}
-
-async function getNodeBinaryPath(path: NuclideUri): Promise<string> {
-  try {
-    // $FlowFB
-    return require('./fb-config').getNodeBinaryPath(path);
-  } catch (error) {
-    return 'node';
-  }
 }
 
 async function getAdapterExecutableWithProperNode(
