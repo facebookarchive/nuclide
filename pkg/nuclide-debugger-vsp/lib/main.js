@@ -69,7 +69,7 @@ class Activation {
 
   async _registerReactNativeDebugProvider(): Promise<void> {
     const isOpenSource = !await fsPromise.exists(
-      path.join(__dirname, 'fb-config.js'),
+      path.join(__dirname, 'fb-marker'),
     );
     if ((await passesGK('nuclide_debugger_reactnative')) || isOpenSource) {
       this._registerDebugProvider({
@@ -83,7 +83,7 @@ class Activation {
 
   async _registerPrepackDebugProvider(): Promise<void> {
     const isOpenSource = !await fsPromise.exists(
-      path.join(__dirname, 'fb-config.js'),
+      path.join(__dirname, 'fb-marker'),
     );
     if ((await passesGK('nuclide_debugger_prepack')) || isOpenSource) {
       this._registerDebugProvider({
