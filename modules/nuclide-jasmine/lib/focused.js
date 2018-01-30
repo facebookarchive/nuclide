@@ -1,3 +1,10 @@
+'use strict';
+
+// eslint-disable-next-line rulesdir/no-commonjs
+require('jasmine-node');
+
+// These are undocumented APIs. The type of jasmine is redefined here, so that
+// we don't pollute the real lib def with this nonsense.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -15,26 +22,7 @@
  * https://github.com/atom/jasmine-focused/blob/c922330/src/jasmine-focused.coffee
  */
 
-import invariant from 'assert';
-
-// eslint-disable-next-line rulesdir/no-commonjs
-require('jasmine-node');
-
-// These are undocumented APIs. The type of jasmine is redefined here, so that
-// we don't pollute the real lib def with this nonsense.
-const jasmine: {
-  getEnv(): {
-    focusPriority?: number,
-    specFilter?: (spec: any) => boolean,
-  },
-  Env: {
-    prototype: {
-      ddescribe?: () => void,
-      iit?: () => void,
-    },
-  },
-} =
-  global.jasmine;
+const jasmine = global.jasmine;
 
 function setGlobalFocusPriority(priority) {
   const env = jasmine.getEnv();
@@ -51,7 +39,11 @@ function fdescribe(description, specDefinitions, priority_) {
   const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const suite = describe(description, specDefinitions);
-  invariant(suite != null);
+
+  if (!(suite != null)) {
+    throw new Error('Invariant violation: "suite != null"');
+  }
+
   suite.focusPriority = priority;
   return suite;
 }
@@ -71,7 +63,11 @@ function fit(description, definition, priority_) {
   const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const spec = it(description, definition);
-  invariant(spec != null);
+
+  if (!(spec != null)) {
+    throw new Error('Invariant violation: "spec != null"');
+  }
+
   spec.focusPriority = priority;
   return spec;
 }
@@ -87,7 +83,7 @@ function fffit(description, specDefinitions) {
 }
 global.fffit = fffit;
 
-jasmine.getEnv().specFilter = function(spec) {
+jasmine.getEnv().specFilter = function (spec) {
   const env = jasmine.getEnv();
   const globalFocusPriority = env.focusPriority;
   const parent = spec.parentSuite != null ? spec.parentSuite : spec.suite;
@@ -99,7 +95,10 @@ jasmine.getEnv().specFilter = function(spec) {
   } else if (!parent) {
     return false;
   } else {
-    invariant(typeof env.specFilter === 'function');
+    if (!(typeof env.specFilter === 'function')) {
+      throw new Error('Invariant violation: "typeof env.specFilter === \'function\'"');
+    }
+
     return env.specFilter(parent);
   }
 };

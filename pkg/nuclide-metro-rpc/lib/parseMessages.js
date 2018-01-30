@@ -1,28 +1,37 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {MetroEvent} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseMessages = parseMessages;
 
-import {parseRegularLine} from './parseRegularLine';
-import {Observable} from 'rxjs';
+var _parseRegularLine;
 
-const PORT_LINE = /.*(?:Running.*|Listening )on port\s+(\d+)/;
+function _load_parseRegularLine() {
+  return _parseRegularLine = require('./parseRegularLine');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+const PORT_LINE = /.*(?:Running.*|Listening )on port\s+(\d+)/; /**
+                                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                                * All rights reserved.
+                                                                *
+                                                                * This source code is licensed under the license found in the LICENSE file in
+                                                                * the root directory of this source tree.
+                                                                *
+                                                                * 
+                                                                * @format
+                                                                */
+
 const SOURCE_LIST_START = /Looking for (?:JS|JavaScript) files in/;
 const READY_LINE = /(packager|server) ready|<END> {3}Starting Facebook Packager Server/i;
 
 /**
  * Parses output from Metro into messages.
  */
-export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
-  return Observable.create(observer => {
+function parseMessages(raw) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     let sawPreamble = false;
     let sawPortLine = false;
     let sawSourcesStart = false;
@@ -31,12 +40,11 @@ export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
     const sourceDirectories = [];
 
     return raw.subscribe({
-      next: (line: string) => {
+      next: line => {
         // If we've seen the port and the sources, that's the preamble! Or, if we get to a line that
         // starts with a "[", we probably missed the closing of the preamble somehow. (Like the
         // output changed).
-        sawPreamble =
-          sawPreamble || (sawPortLine && sawSourcesEnd) || line.startsWith('[');
+        sawPreamble = sawPreamble || sawPortLine && sawSourcesEnd || line.startsWith('[');
         if (!sawPortLine && !sawPreamble) {
           const match = line.match(PORT_LINE);
           if (match != null) {
@@ -45,8 +53,8 @@ export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
               type: 'message',
               message: {
                 level: 'info',
-                text: `Running Metro on port ${match[1]}.`,
-              },
+                text: `Running Metro on port ${match[1]}.`
+              }
             });
             return;
           }
@@ -70,8 +78,8 @@ export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
               type: 'message',
               message: {
                 level: 'info',
-                text: `Looking for JS files in: ${sourceDirectories.join(',')}`,
-              },
+                text: `Looking for JS files in: ${sourceDirectories.join(',')}`
+              }
             });
             return;
           }
@@ -83,11 +91,11 @@ export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
             return;
           }
 
-          observer.next({type: 'message', message: parseRegularLine(line)});
+          observer.next({ type: 'message', message: (0, (_parseRegularLine || _load_parseRegularLine()).parseRegularLine)(line) });
 
           if (!sawReadyMessage && READY_LINE.test(line)) {
             sawReadyMessage = true;
-            observer.next({type: 'ready'});
+            observer.next({ type: 'ready' });
           }
 
           return;
@@ -96,8 +104,8 @@ export function parseMessages(raw: Observable<string>): Observable<MetroEvent> {
         // If we've gotten here, it means that we have an unhandled line in the preamble. Those are
         // the lines we want to ignore, so don't do anything.
       },
-      error: (observer.error.bind(observer): (e: mixed) => mixed),
-      complete: (observer.complete.bind(observer): () => mixed),
+      error: observer.error.bind(observer),
+      complete: observer.complete.bind(observer)
     });
   });
 }

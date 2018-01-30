@@ -1,3 +1,57 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = require('./DebuggerDispatcher');
+}
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./Protocol/EventReporter');
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,69 +59,64 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  SetVariableResponse,
-  RemoteObjectId,
-} from 'nuclide-debugger-common/protocol-types';
-import type Bridge from './Bridge';
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {ScopeSection, ScopeSectionPayload} from './types';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nullthrows from 'nullthrows';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {track} from '../../nuclide-analytics';
-import {AnalyticsEvents} from './constants';
-import {ActionTypes} from './DebuggerDispatcher';
-import {reportError} from './Protocol/EventReporter';
-import {DebuggerStore} from './DebuggerStore';
-
-export type ScopesMap = Map<string, ScopeSection>;
-
-export default class ScopesStore {
-  _bridge: Bridge;
-  _disposables: IDisposable;
-  _debuggerStore: DebuggerStore;
+class ScopesStore {
   /**
    * Treat as immutable.
    */
-  _scopes: BehaviorSubject<ScopesMap>;
-  _expandedState: Map<string, boolean>;
+  constructor(dispatcher, bridge, debuggerStore) {
+    this._handlePayload = payload => {
+      switch (payload.actionType) {
+        case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.CLEAR_INTERFACE:
+        case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
+          this._handleClearInterface();
+          break;
+        case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.UPDATE_SCOPES:
+          this._handleUpdateScopesAsPayload(payload.data);
+          break;
+        default:
+          return;
+      }
+    };
 
-  constructor(
-    dispatcher: DebuggerDispatcher,
-    bridge: Bridge,
-    debuggerStore: DebuggerStore,
-  ) {
+    this._convertScopeSectionPayloadToScopeSection = scopeSectionPayload => {
+      const expandedState = this._expandedState.get(scopeSectionPayload.name);
+      return Object.assign({}, scopeSectionPayload, {
+        scopeVariables: [],
+        loaded: false,
+        expanded: expandedState != null ? expandedState : ScopesStore.isLocalScopeName(scopeSectionPayload.name)
+      });
+    };
+
+    this._setVariable = (scopeName, expression, confirmedNewValue) => {
+      const scopes = this._scopes.getValue();
+      const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
+      const variableToChangeIndex = selectedScope.scopeVariables.findIndex(v => v.name === expression);
+      const variableToChange = (0, (_nullthrows || _load_nullthrows()).default)(selectedScope.scopeVariables[variableToChangeIndex]);
+      const newVariable = Object.assign({}, variableToChange, {
+        value: Object.assign({}, variableToChange.value, {
+          value: confirmedNewValue,
+          description: confirmedNewValue
+        })
+      });
+      selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
+      this._handleUpdateScopes(scopes);
+    };
+
     this._bridge = bridge;
     this._debuggerStore = debuggerStore;
     const dispatcherToken = dispatcher.register(this._handlePayload);
-    this._disposables = new UniversalDisposable(() => {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       dispatcher.unregister(dispatcherToken);
     });
-    this._scopes = new BehaviorSubject(new Map());
+    this._scopes = new _rxjsBundlesRxMinJs.BehaviorSubject(new Map());
     this._expandedState = new Map();
   }
 
-  _handlePayload = (payload: DebuggerAction): void => {
-    switch (payload.actionType) {
-      case ActionTypes.CLEAR_INTERFACE:
-      case ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
-        this._handleClearInterface();
-        break;
-      case ActionTypes.UPDATE_SCOPES:
-        this._handleUpdateScopesAsPayload(payload.data);
-        break;
-      default:
-        return;
-    }
-  };
-
-  _handleClearInterface(): void {
+  _handleClearInterface() {
     this._expandedState.clear();
     this.getScopesNow().forEach(scope => {
       this._expandedState.set(scope.name, scope.expanded);
@@ -75,71 +124,44 @@ export default class ScopesStore {
     this._scopes.next(new Map());
   }
 
-  _handleUpdateScopesAsPayload(
-    scopeSectionsPayload: Array<ScopeSectionPayload>,
-  ): void {
-    this._handleUpdateScopes(
-      new Map(
-        scopeSectionsPayload
-          .map(this._convertScopeSectionPayloadToScopeSection)
-          .map(section => [section.name, section]),
-      ),
-    );
+  _handleUpdateScopesAsPayload(scopeSectionsPayload) {
+    this._handleUpdateScopes(new Map(scopeSectionsPayload.map(this._convertScopeSectionPayloadToScopeSection).map(section => [section.name, section])));
   }
 
-  _convertScopeSectionPayloadToScopeSection = (
-    scopeSectionPayload: ScopeSectionPayload,
-  ): ScopeSection => {
-    const expandedState = this._expandedState.get(scopeSectionPayload.name);
-    return {
-      ...scopeSectionPayload,
-      scopeVariables: [],
-      loaded: false,
-      expanded:
-        expandedState != null
-          ? expandedState
-          : ScopesStore.isLocalScopeName(scopeSectionPayload.name),
-    };
-  };
-
-  _handleUpdateScopes(scopeSections: ScopesMap): void {
+  _handleUpdateScopes(scopeSections) {
     this._scopes.next(scopeSections);
     scopeSections.forEach(scopeSection => {
-      const {expanded, loaded, name} = scopeSection;
+      const { expanded, loaded, name } = scopeSection;
       if (expanded && !loaded) {
         this._loadScopeVariablesFor(name);
       }
     });
   }
 
-  async _loadScopeVariablesFor(scopeName: string): Promise<void> {
-    const scopes = this.getScopesNow();
-    const selectedScope = nullthrows(scopes.get(scopeName));
-    const expressionEvaluationManager = nullthrows(
-      this._bridge.getCommandDispatcher().getBridgeAdapter(),
-    ).getExpressionEvaluationManager();
-    selectedScope.scopeVariables = await expressionEvaluationManager.getScopeVariablesFor(
-      nullthrows(
-        expressionEvaluationManager
-          .getRemoteObjectManager()
-          .getRemoteObjectFromId(selectedScope.scopeObjectId),
-      ),
-    );
-    selectedScope.loaded = true;
-    this._handleUpdateScopes(scopes);
+  _loadScopeVariablesFor(scopeName) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const scopes = _this.getScopesNow();
+      const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
+      const expressionEvaluationManager = (0, (_nullthrows || _load_nullthrows()).default)(_this._bridge.getCommandDispatcher().getBridgeAdapter()).getExpressionEvaluationManager();
+      selectedScope.scopeVariables = yield expressionEvaluationManager.getScopeVariablesFor((0, (_nullthrows || _load_nullthrows()).default)(expressionEvaluationManager.getRemoteObjectManager().getRemoteObjectFromId(selectedScope.scopeObjectId)));
+      selectedScope.loaded = true;
+      _this._handleUpdateScopes(scopes);
+    })();
   }
 
-  getScopes(): Observable<ScopesMap> {
+  getScopes() {
     return this._scopes.asObservable();
   }
 
-  getScopesNow(): ScopesMap {
+  getScopesNow() {
     return this._scopes.getValue();
   }
 
-  setExpanded(scopeName: string, expanded: boolean) {
+  setExpanded(scopeName, expanded) {
     const scopes = this.getScopesNow();
-    const selectedScope = nullthrows(scopes.get(scopeName));
+    const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
     selectedScope.expanded = expanded;
     if (expanded) {
       selectedScope.loaded = false;
@@ -147,79 +169,49 @@ export default class ScopesStore {
     this._handleUpdateScopes(scopes);
   }
 
-  supportsSetVariable(): boolean {
+  supportsSetVariable() {
     return this._debuggerStore.supportsSetVariable();
   }
 
   // Returns a promise of the updated value after it has been set.
-  async sendSetVariableRequest(
-    scopeObjectId: RemoteObjectId,
-    scopeName: string,
-    expression: string,
-    newValue: string,
-  ): Promise<string> {
-    const debuggerInstance = this._debuggerStore.getDebuggerInstance();
-    if (debuggerInstance == null) {
-      const errorMsg = 'setVariable failed because debuggerInstance is null';
-      reportError(errorMsg);
-      return Promise.reject(new Error(errorMsg));
-    }
-    track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
-      language: debuggerInstance.getProviderName(),
-    });
-    return new Promise((resolve, reject) => {
-      function callback(error: Error, response: SetVariableResponse) {
-        if (error != null) {
-          const message = JSON.stringify(error);
-          reportError(`setVariable failed with ${message}`);
-          atom.notifications.addError(message);
-          reject(error);
-        } else {
-          resolve(response.value);
-        }
+  sendSetVariableRequest(scopeObjectId, scopeName, expression, newValue) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerInstance = _this2._debuggerStore.getDebuggerInstance();
+      if (debuggerInstance == null) {
+        const errorMsg = 'setVariable failed because debuggerInstance is null';
+        (0, (_EventReporter || _load_EventReporter()).reportError)(errorMsg);
+        return Promise.reject(new Error(errorMsg));
       }
-      this._bridge.sendSetVariableCommand(
-        Number(scopeObjectId),
-        expression,
-        newValue,
-        callback,
-      );
-    }).then(confirmedNewValue => {
-      this._setVariable(scopeName, expression, confirmedNewValue);
-      return confirmedNewValue;
-    });
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)((_constants || _load_constants()).AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
+        language: debuggerInstance.getProviderName()
+      });
+      return new Promise(function (resolve, reject) {
+        function callback(error, response) {
+          if (error != null) {
+            const message = JSON.stringify(error);
+            (0, (_EventReporter || _load_EventReporter()).reportError)(`setVariable failed with ${message}`);
+            atom.notifications.addError(message);
+            reject(error);
+          } else {
+            resolve(response.value);
+          }
+        }
+        _this2._bridge.sendSetVariableCommand(Number(scopeObjectId), expression, newValue, callback);
+      }).then(function (confirmedNewValue) {
+        _this2._setVariable(scopeName, expression, confirmedNewValue);
+        return confirmedNewValue;
+      });
+    })();
   }
 
-  _setVariable = (
-    scopeName: string,
-    expression: string,
-    confirmedNewValue: string,
-  ): void => {
-    const scopes = this._scopes.getValue();
-    const selectedScope = nullthrows(scopes.get(scopeName));
-    const variableToChangeIndex = selectedScope.scopeVariables.findIndex(
-      v => v.name === expression,
-    );
-    const variableToChange = nullthrows(
-      selectedScope.scopeVariables[variableToChangeIndex],
-    );
-    const newVariable = {
-      ...variableToChange,
-      value: {
-        ...variableToChange.value,
-        value: confirmedNewValue,
-        description: confirmedNewValue,
-      },
-    };
-    selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
-    this._handleUpdateScopes(scopes);
-  };
-
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  static isLocalScopeName(scopeName: string): boolean {
+  static isLocalScopeName(scopeName) {
     return ['Local', 'Locals'].indexOf(scopeName) !== -1;
   }
 }
+exports.default = ScopesStore;

@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerDatatipComponent = undefined;
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('nuclide-commons-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('nuclide-commons-ui/SimpleValueComponent'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,46 +36,35 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {EvaluationResult} from './types';
-
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import * as React from 'react';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-
-type Props = {|
-  +expression: string,
-  +evaluationResult: ?EvaluationResult,
-  +watchExpressionStore: WatchExpressionStore,
-|};
-
-export class DebuggerDatatipComponent extends React.Component<Props> {
-  render(): React.Node {
-    const {expression, evaluationResult, watchExpressionStore} = this.props;
-    const fetchChildren = watchExpressionStore.getProperties.bind(
-      watchExpressionStore,
-    );
+class DebuggerDatatipComponent extends _react.Component {
+  render() {
+    const { expression, evaluationResult, watchExpressionStore } = this.props;
+    const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     let datatipElement;
     if (evaluationResult == null) {
-      datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
+      datatipElement = _react.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, { delay: 100, size: 'EXTRA_SMALL' });
     } else {
-      datatipElement = (
-        <span className="nuclide-debugger-datatip-value">
-          <LazyNestedValueComponent
-            evaluationResult={evaluationResult}
-            expression={expression}
-            fetchChildren={fetchChildren}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this}
-          />
-        </span>
+      datatipElement = _react.createElement(
+        'span',
+        { className: 'nuclide-debugger-datatip-value' },
+        _react.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+          evaluationResult: evaluationResult,
+          expression: expression,
+          fetchChildren: fetchChildren,
+          simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default,
+          expansionStateId: this
+        })
       );
     }
-    return <div className="nuclide-debugger-datatip">{datatipElement}</div>;
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-debugger-datatip' },
+      datatipElement
+    );
   }
 }
+exports.DebuggerDatatipComponent = DebuggerDatatipComponent;

@@ -1,41 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TypeHintProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type TypeHintConfig = {|
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-|};
+var _nuclideRemoteConnection;
 
-export class TypeHintProvider<T: LanguageService> {
-  providerName: string;
-  selector: string;
-  inclusionPriority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class TypeHintProvider {
+
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService) {
     this.providerName = name;
     this.selector = selector;
     this.inclusionPriority = priority;
@@ -43,39 +37,33 @@ export class TypeHintProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: TypeHintConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-type-hint.provider',
-      config.version,
-      new TypeHintProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-type-hint.provider', config.version, new TypeHintProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService));
   }
 
-  async typeHint(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
-      if (languageService == null || fileVersion == null) {
-        return null;
-      }
+  typeHint(editor, position) {
+    var _this = this;
 
-      return (await languageService).typeHint(fileVersion, position);
-    });
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(_this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+        const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+        const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
+        if (languageService == null || fileVersion == null) {
+          return null;
+        }
+
+        return (yield languageService).typeHint(fileVersion, position);
+      }));
+    })();
   }
 }
+exports.TypeHintProvider = TypeHintProvider; /**
+                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                              * All rights reserved.
+                                              *
+                                              * This source code is licensed under the license found in the LICENSE file in
+                                              * the root directory of this source tree.
+                                              *
+                                              * 
+                                              * @format
+                                              */

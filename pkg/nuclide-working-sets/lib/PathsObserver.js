@@ -1,40 +1,33 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PathsObserver = undefined;
 
-import type {WorkingSetsStore} from './WorkingSetsStore';
+var _nuclideUri;
 
-export class PathsObserver {
-  _prevPaths: Array<string>;
-  _workingSetsStore: WorkingSetsStore;
-  _disposable: IDisposable;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-  constructor(workingSetsStore: WorkingSetsStore) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class PathsObserver {
+
+  constructor(workingSetsStore) {
     this._prevPaths = atom.project.getPaths();
     this._workingSetsStore = workingSetsStore;
 
-    this._disposable = atom.project.onDidChangePaths(
-      this._didChangePaths.bind(this),
-    );
+    this._disposable = atom.project.onDidChangePaths(this._didChangePaths.bind(this));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposable.dispose();
   }
 
-  _didChangePaths(_paths: Array<string>): void {
-    const paths = _paths.filter(
-      p => nuclideUri.isRemote(p) || nuclideUri.isAbsolute(p),
-    );
+  _didChangePaths(_paths) {
+    const paths = _paths.filter(p => (_nuclideUri || _load_nuclideUri()).default.isRemote(p) || (_nuclideUri || _load_nuclideUri()).default.isAbsolute(p));
     this._workingSetsStore.updateApplicability();
 
     const prevPaths = this._prevPaths;
@@ -57,3 +50,13 @@ export class PathsObserver {
     }
   }
 }
+exports.PathsObserver = PathsObserver; /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        * @format
+                                        */
