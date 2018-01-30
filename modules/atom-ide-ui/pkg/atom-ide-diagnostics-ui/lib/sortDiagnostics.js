@@ -34,7 +34,8 @@ export default function sortDiagnostics(
 ): Array<Row<DisplayDiagnostic>> {
   const compare = SORT_FUNCTIONS[sortedColumnName];
   invariant(compare != null);
-  const sorted = diagnostics.sort(compare);
+  // Don't sort in place.
+  const sorted = diagnostics.slice().sort(compare);
   // We can't just reverse the sign of the comparison function because that would maintain the
   // ordering of "equal" items with respect to eachother.
   return sortDescending ? sorted.reverse() : sorted;
