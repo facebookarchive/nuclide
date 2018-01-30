@@ -329,6 +329,7 @@ export class TerminalView implements PtyClient {
         this._blurred.bind(this),
       ),
     );
+    this._fitAndResize();
   }
 
   _focused(): void {
@@ -384,9 +385,7 @@ export class TerminalView implements PtyClient {
     for (const attr of ['fontFamily', 'fontSize', 'lineHeight']) {
       this._syncAtomStyleItem(attr);
     }
-    setTimeout(() => {
-      this._fitAndResize();
-    }, 0);
+    this._fitAndResize();
   }
 
   _syncAtomStyleItem(name: string): void {
