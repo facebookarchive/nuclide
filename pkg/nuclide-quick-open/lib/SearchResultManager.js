@@ -42,7 +42,7 @@ type ResultRenderer<T> = (
 
 import invariant from 'assert';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {track} from '../../nuclide-analytics';
+import {trackSampled} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Subject} from 'rxjs';
@@ -67,6 +67,8 @@ const OMNISEARCH_PROVIDER = {
 };
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
+// Quick-open generates a *ton* of queries - sample the tracking.
+const TRACK_SOURCE_RATE = 10;
 
 function getQueryDebounceDelay(provider: Provider<ProviderResult>) {
   return provider.debounceDelay != null
@@ -416,7 +418,7 @@ export default class SearchResultManager {
         LOADING_EVENT_DELAY,
         loadingFn,
       ).then(result => {
-        track('quickopen-query-source-provider', {
+        trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
           'quickopen-source-provider': globalProvider.name,
           'quickopen-query-duration': (
             performance.now() - startTime
@@ -444,7 +446,7 @@ export default class SearchResultManager {
       LOADING_EVENT_DELAY,
       loadingFn,
     ).then(result => {
-      track('quickopen-query-source-provider', {
+      trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
         'quickopen-source-provider': provider.name,
         'quickopen-query-duration': (performance.now() - startTime).toString(),
         'quickopen-result-count': result.length.toString(),

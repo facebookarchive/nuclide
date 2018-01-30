@@ -63,6 +63,19 @@ export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
   return new UniversalDisposable(events.subscribe(trackEvent));
 }
 
+/**
+ * A sampled version of track that only tracks every 1/sampleRate calls.
+ */
+export function trackSampled(
+  eventName: string,
+  sampleRate: number,
+  values?: {[key: string]: mixed},
+): void {
+  if (Math.random() * sampleRate <= 1) {
+    rawTrack(eventName, values || {});
+  }
+}
+
 const PERFORMANCE_EVENT = 'performance';
 const canMeasure = typeof performance !== 'undefined';
 export class TimingTracker {
