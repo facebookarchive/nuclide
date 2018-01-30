@@ -306,7 +306,6 @@ export function throttle<T>(
     let audit;
     switch (typeof duration) {
       case 'number':
-        // $FlowFixMe: Add `auditTime()` to Flow defs
         audit = obs => obs.auditTime(duration);
         break;
       case 'function':
