@@ -121,7 +121,7 @@ class Activation {
       makeToolbarButtonSpec({
         icon: 'dashboard',
         callback: 'nuclide-health:toggle',
-        tooltip: 'Toggle Nuclide health stats',
+        tooltip: 'Toggle Nuclide Health Stats',
         priority: -400,
       }),
     ).element;
