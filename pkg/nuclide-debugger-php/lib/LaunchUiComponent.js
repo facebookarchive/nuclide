@@ -39,16 +39,19 @@ type State = {
   recentlyLaunchedScripts: Array<{label: string, value: string}>,
   recentlyLaunchedScript: ?string,
   runInTerminal: boolean,
+  cwd: ?string,
 };
 
 export class LaunchUiComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable = new UniversalDisposable();
   _scriptPath: ?AtomInput;
+  _cwdPath: ?AtomInput;
 
   state = {
     recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
     recentlyLaunchedScript: null,
     runInTerminal: false,
+    cwd: this._getLastCwd(),
   };
 
   _getSerializationArgs() {
@@ -123,6 +126,17 @@ export class LaunchUiComponent extends React.Component<Props, State> {
           value={this.state.recentlyLaunchedScript || ''}
           onDidChange={value => this.setState({recentlyLaunchedScript: value})}
         />
+        <label>Current Working Directory: </label>
+        <AtomInput
+          tabIndex="12"
+          ref={input => {
+            this._cwdPath = input;
+          }}
+          placeholderText="Optional. Working directory to launch script in."
+          initialValue=""
+          value={this.state.cwd || ''}
+          onDidChange={value => this.setState({cwd: value})}
+        />
         <Checkbox
           checked={this.state.runInTerminal}
           label="Run in Terminal"
@@ -136,6 +150,16 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   _getRecentlyLaunchedKey() {
     const hostname = nuclideUri.getHostname(this.props.targetUri);
     return 'nuclide-debugger-php.recentlyLaunchedScripts:' + hostname;
+  }
+
+  _getCwdKey() {
+    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    return 'nuclide-debugger-php.Cwd:' + hostname;
+  }
+
+  _getLastCwd(): ?string {
+    const lastCwd = localStorage.getItem(this._getCwdKey());
+    return lastCwd;
   }
 
   _getRecentlyLaunchedScripts(): Array<{label: string, value: string}> {
@@ -158,6 +182,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   _setRecentlyLaunchedScript(
     script: string,
     recentlyLaunched: Array<{label: string, value: string}>,
+    cwd: string,
   ): void {
     // Act like a simple MRU cache, move the script being launched to the front.
     // NOTE: this array is expected to be really tiny.
@@ -172,6 +197,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       this._getRecentlyLaunchedKey(),
       JSON.stringify(scriptNames),
     );
+    localStorage.setItem(this._getCwdKey(), cwd);
     this.setState({
       recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
       recentlyLaunchedScript: script,
@@ -200,9 +226,14 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     const scriptPath = nullthrows(this._scriptPath)
       .getText()
       .trim();
+    const cwdPath = nullthrows(this._cwdPath)
+      .getText()
+      .trim();
+
     this._setRecentlyLaunchedScript(
       scriptPath,
       this.state.recentlyLaunchedScripts,
+      cwdPath,
     );
 
     const processInfo = new LaunchProcessInfo(
@@ -210,6 +241,8 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       scriptPath,
       null,
       this.state.runInTerminal,
+      '',
+      cwdPath,
     );
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),

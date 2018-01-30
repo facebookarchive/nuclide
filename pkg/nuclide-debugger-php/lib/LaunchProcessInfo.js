@@ -41,6 +41,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchWrapperCommand: ?string;
   _useTerminal: boolean;
   _scriptArguments: string;
+  _cwd: ?string;
 
   constructor(
     targetUri: NuclideUri,
@@ -48,12 +49,14 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     launchWrapperCommand: ?string,
     useTerminal: boolean,
     scriptArguments: ?string,
+    cwd: ?string,
   ) {
     super('hhvm', targetUri);
     this._launchTarget = launchTarget;
     this._launchWrapperCommand = launchWrapperCommand;
     this._useTerminal = useTerminal;
     this._scriptArguments = scriptArguments != null ? scriptArguments : '';
+    this._cwd = cwd;
   }
 
   clone(): LaunchProcessInfo {
@@ -62,6 +65,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       this._launchTarget,
       this._launchWrapperCommand,
       this._useTerminal,
+      this._cwd,
     );
   }
 
@@ -107,6 +111,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       hhvmRuntimeArgs,
       deferLaunch,
     };
+
+    if (this._cwd != null && this._cwd !== '') {
+      config.cwd = this._cwd;
+    }
 
     if (phpRuntimePath != null) {
       config.hhvmRuntimePath = phpRuntimePath;

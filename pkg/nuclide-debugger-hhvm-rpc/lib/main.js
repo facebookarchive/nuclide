@@ -118,7 +118,25 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
   }
 
   async getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
-    const cwd = nuclideUri.dirname(config.targetUri);
+    const launchWrapperCommand =
+      config.launchWrapperCommand != null &&
+      config.launchWrapperCommand.trim() !== ''
+        ? this._expandPath(
+            config.launchWrapperCommand,
+            nuclideUri.dirname(config.targetUri),
+          )
+        : null;
+
+    // Launch the script with cwd set to the directory the launch wrapper
+    // command is in, if a wrapper is specified. Otherwise try to use the
+    // cwd provided by the front-end, and finally fall back to the directory
+    // of the target uri.
+    const cwd =
+      launchWrapperCommand != null
+        ? nuclideUri.dirname(launchWrapperCommand)
+        : config.cwd != null && config.cwd.trim() !== ''
+          ? config.cwd
+          : nuclideUri.dirname(config.targetUri);
 
     // Expand paths in the launch config from the front end.
     if (config.hhvmRuntimePath != null) {
@@ -126,13 +144,6 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
     }
 
     config.launchScriptPath = this._expandPath(config.launchScriptPath, cwd);
-
-    if (config.launchWrapperCommand != null) {
-      config.launchWrapperCommand = this._expandPath(
-        config.launchWrapperCommand,
-        cwd,
-      );
-    }
 
     const deferArgs = [];
     let debugPort = null;
@@ -144,9 +155,8 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
 
     const hhvmPath = await this._getHhvmPath(config);
     const launchArgs =
-      config.launchWrapperCommand != null &&
-      config.launchWrapperCommand.trim() !== ''
-        ? [config.launchWrapperCommand, config.launchScriptPath]
+      launchWrapperCommand != null
+        ? [launchWrapperCommand, config.launchScriptPath]
         : [config.launchScriptPath];
 
     let hhvmRuntimeArgs = config.hhvmRuntimeArgs;
@@ -177,10 +187,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       startupDocumentPath,
       logFilePath,
       debugPort,
-      cwd:
-        config.launchWrapperCommand != null
-          ? nuclideUri.dirname(config.launchWrapperCommand)
-          : cwd,
+      cwd,
     };
   }
 
