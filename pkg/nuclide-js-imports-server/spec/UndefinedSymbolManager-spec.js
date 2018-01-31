@@ -29,6 +29,28 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].id).toBe('x');
     expect(undefinedSymbols[0].type).toBe('value');
   });
+  it('Should find undefined React in JSX component', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const x = <Component />;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(2);
+    expect(undefinedSymbols[0].id).toBe('React');
+    expect(undefinedSymbols[0].type).toBe('value');
+    expect(undefinedSymbols[1].id).toBe('Component');
+    expect(undefinedSymbols[1].type).toBe('value');
+  });
+  it('Should find undefined React in JSX tag', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const x = <div />;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('React');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
   it('Should not declare all globals as undefined', () => {
     const manager = new UndefinedSymbolManager([]);
     const program = 'var x = 10; function myFunc(){ return x; };';

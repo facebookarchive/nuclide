@@ -20,6 +20,7 @@ traverse.Scope.prototype.warnOnFlowBinding = x => x;
 import type {UndefinedSymbol} from './types';
 
 const BUILT_INS = ['Iterator', '__DEV__'];
+const REACT_MODULE_NAME = 'React';
 
 export class UndefinedSymbolManager {
   globals: Set<string>;
@@ -92,6 +93,9 @@ function traverseTreeForUndefined(
         definedValues.add(path.node.name);
       }
     },
+    JSXIdentifier(path) {
+      findUndefinedReact(path, undefinedSymbols, globals);
+    },
     LabeledStatement(path) {
       // Create a fake binding for the label.
       if (path.node.label && path.node.label.name) {
@@ -126,6 +130,27 @@ function findUndefinedValues(
 
   undefinedSymbols.push({
     id: node.name,
+    type: 'value',
+    location: {
+      start: {line: node.loc.start.line, col: node.loc.start.column},
+      end: {line: node.loc.end.line, col: node.loc.end.column},
+    },
+  });
+}
+
+function findUndefinedReact(
+  path: Object,
+  undefinedSymbols: Array<UndefinedSymbol>,
+  globals: Set<string>,
+) {
+  const {node, scope} = path;
+
+  if (scope.hasBinding(REACT_MODULE_NAME)) {
+    return;
+  }
+
+  undefinedSymbols.push({
+    id: REACT_MODULE_NAME,
     type: 'value',
     location: {
       start: {line: node.loc.start.line, col: node.loc.start.column},
