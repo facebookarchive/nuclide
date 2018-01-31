@@ -76,6 +76,13 @@ export class TextEditorBanner {
     // And insert the new one instead
     editorContainerNode.appendChild(this._editorElement);
     this._editor.getElement().measureDimensions();
+
+    // Fix for Hyperclicking a read-only file.
+    // Restore the scroll position in the editor.
+    this._editor
+      .getElement()
+      .getModel()
+      .scrollToCursorPosition();
   }
 
   render(reactElement: React.Element<any>) {
