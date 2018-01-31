@@ -45,6 +45,16 @@ SHEBANG_HEADER = '''\
 # the root directory of this source tree.
 '''
 
+SHEBANG_HEADER3 = '''\
+#!/usr/bin/env python3
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+'''
+
 
 def _find_py_files(basedir):
     found = []
@@ -73,7 +83,8 @@ class LintPyHeaders(object):
                 text = read_f.read()
             if (text and not (
                     text.startswith(SIMPLE_HEADER) or
-                    text.startswith(SHEBANG_HEADER))):
+                    text.startswith(SHEBANG_HEADER) or
+                    text.startswith(SHEBANG_HEADER3))):
                 rel_path = os.path.relpath(path, self._basedir)
                 found.append(rel_path)
         return found
