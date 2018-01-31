@@ -13,8 +13,8 @@
 // DEPRECATED, AVOID USING THIS. Use 'showModal' in nuclide-commons-ui instead
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Portal} from './Portal';
 import * as React from 'react';
+import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 
 type Props = {
@@ -98,12 +98,11 @@ export class Modal extends React.Component<Props> {
 
   render() {
     const {modalClassName, children, onDismiss, ...props} = this.props;
-    return (
-      <Portal container={this._container}>
-        <div tabIndex="0" {...props} ref={this._handleContainerInnerElement}>
-          {this.props.children}
-        </div>
-      </Portal>
+    return ReactDOM.createPortal(
+      <div tabIndex="0" {...props} ref={this._handleContainerInnerElement}>
+        {this.props.children}
+      </div>,
+      this._container,
     );
   }
 }

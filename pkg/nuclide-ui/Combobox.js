@@ -14,7 +14,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {Observable} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Portal} from 'nuclide-commons-ui/Portal';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
@@ -435,16 +434,15 @@ export class Combobox extends React.Component<Props, State> {
 
       const rect = this.state.optionsRect || {left: 0, top: 0, width: 300};
 
-      optionsContainer = (
-        <Portal container={this._getOptionsElement()}>
-          <div className="nuclide-combobox-options" style={rect}>
-            <div className="select-list">
-              <ol className="nuclide-combobox-list-group list-group">
-                {options}
-              </ol>
-            </div>
+      optionsContainer = ReactDOM.createPortal(
+        <div className="nuclide-combobox-options" style={rect}>
+          <div className="select-list">
+            <ol className="nuclide-combobox-list-group list-group">
+              {options}
+            </ol>
           </div>
-        </Portal>
+        </div>,
+        this._getOptionsElement(),
       );
     }
 

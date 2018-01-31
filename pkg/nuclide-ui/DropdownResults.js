@@ -14,8 +14,8 @@ import invariant from 'assert';
 import classnames from 'classnames';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {Portal} from 'nuclide-commons-ui/Portal';
 import * as React from 'react';
+import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -153,18 +153,15 @@ export default class DropdownResults extends React.Component<Props, State> {
       ));
     }
 
-    return (
-      <Portal container={this._optionsElement}>
-        <div
-          className="nuclide-combobox-options nuclide-dropdown-results"
-          style={this.state.optionsRect}>
-          <div className="select-list">
-            <ol className="nuclide-combobox-list-group list-group">
-              {options}
-            </ol>
-          </div>
+    return ReactDOM.createPortal(
+      <div
+        className="nuclide-combobox-options nuclide-dropdown-results"
+        style={this.state.optionsRect}>
+        <div className="select-list">
+          <ol className="nuclide-combobox-list-group list-group">{options}</ol>
         </div>
-      </Portal>
+      </div>,
+      this._optionsElement,
     );
   }
 
