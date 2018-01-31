@@ -27,7 +27,7 @@ export function openTunnelEpic(
 ): Observable<Action> {
   return actions
     .ofType(Actions.OPEN_TUNNEL)
-    .switchMap(async action => {
+    .mergeMap(async action => {
       invariant(action.type === Actions.OPEN_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
       const {from, to} = tunnel;
