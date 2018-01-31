@@ -43,7 +43,7 @@ type Response<T> = {
  *     .subscribe(console.log);
  *   Observable.timer(1000)
  *     .mapTo(2)
- *     .let(pool.schedule)
+ *     .let(pool.schedule.bind(pool))
  *     .subscribe(console.log);
  *   pool
  *     .schedule(Observable.timer(100).mapTo(3))
@@ -63,11 +63,7 @@ export default class ObservablePool<T> {
     this._subscription = this._handleEvents(concurrency);
   }
 
-  /**
-   * You can call this function directly or use it with Observable.let.
-   * (the arrow binding enables use without a bind).
-   */
-  schedule = (executor: Executor<T>): Observable<T> => {
+  schedule(executor: Executor<T>): Observable<T> {
     return Observable.create(observer => {
       const unsubscribed = new Subject();
       const tag = {}; // Just a unique object.
@@ -78,7 +74,7 @@ export default class ObservablePool<T> {
         unsubscribed.next();
       };
     });
-  };
+  }
 
   /**
    * Warning: calling dispose() will error all executing requests.
