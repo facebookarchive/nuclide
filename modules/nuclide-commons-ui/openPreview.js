@@ -95,7 +95,8 @@ export default function openPreview(
       }
 
       // the pane may have been reused: e.g. previewing a line in the same file
-      // so make sure it wasn't. Then destroy the old preview.
+      // so make sure it wasn't. Then destroy the old preview if it's not the
+      // original pane.
       if (
         preview != null &&
         preview !== newPreview &&
