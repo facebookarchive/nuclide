@@ -1,58 +1,116 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {ObjectRegistry} from './ObjectRegistry';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.loadServicesConfig = exports.RpcProcess = exports.SocketServer = exports.SocketTransport = exports.StreamTransport = exports.LoopbackTransports = exports.RpcTimeoutError = exports.RpcConnection = exports.ServiceRegistry = undefined;
 
-export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection, RpcTimeoutError} from './RpcConnection';
-export {LoopbackTransports} from './LoopbackTransports';
-export {StreamTransport} from './StreamTransport';
-export {SocketTransport} from './SocketTransport';
-export {SocketServer} from './SocketServer';
-export {RpcProcess} from './RpcProcess';
+var _ServiceRegistry;
 
-import loadServicesConfig from './loadServicesConfig';
-export {loadServicesConfig};
+function _load_ServiceRegistry() {
+  return _ServiceRegistry = require('./ServiceRegistry');
+}
 
-export type MessageLogger = (
-  direction: 'send' | 'receive',
-  message: string,
-) => void;
+Object.defineProperty(exports, 'ServiceRegistry', {
+  enumerable: true,
+  get: function () {
+    return (_ServiceRegistry || _load_ServiceRegistry()).ServiceRegistry;
+  }
+});
 
-export type ConfigEntry = {
-  name: string,
-  definition: string,
-  implementation: string,
-  // When true, doesn't mangle in the service name into the method names for functions.
-  preserveFunctionNames?: boolean,
-};
+var _RpcConnection;
 
-export type NamedTransformer = (
-  value: any,
-  context: ObjectRegistry,
-) => any | Promise<any>;
+function _load_RpcConnection() {
+  return _RpcConnection = require('./RpcConnection');
+}
 
-export type PredefinedTransformer = {
-  typeName: string,
-  marshaller: NamedTransformer,
-  unmarshaller: NamedTransformer,
-};
+Object.defineProperty(exports, 'RpcConnection', {
+  enumerable: true,
+  get: function () {
+    return (_RpcConnection || _load_RpcConnection()).RpcConnection;
+  }
+});
+Object.defineProperty(exports, 'RpcTimeoutError', {
+  enumerable: true,
+  get: function () {
+    return (_RpcConnection || _load_RpcConnection()).RpcTimeoutError;
+  }
+});
 
-export type Transport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-  close(): void,
-  isClosed(): boolean,
-};
+var _LoopbackTransports;
+
+function _load_LoopbackTransports() {
+  return _LoopbackTransports = require('./LoopbackTransports');
+}
+
+Object.defineProperty(exports, 'LoopbackTransports', {
+  enumerable: true,
+  get: function () {
+    return (_LoopbackTransports || _load_LoopbackTransports()).LoopbackTransports;
+  }
+});
+
+var _StreamTransport;
+
+function _load_StreamTransport() {
+  return _StreamTransport = require('./StreamTransport');
+}
+
+Object.defineProperty(exports, 'StreamTransport', {
+  enumerable: true,
+  get: function () {
+    return (_StreamTransport || _load_StreamTransport()).StreamTransport;
+  }
+});
+
+var _SocketTransport;
+
+function _load_SocketTransport() {
+  return _SocketTransport = require('./SocketTransport');
+}
+
+Object.defineProperty(exports, 'SocketTransport', {
+  enumerable: true,
+  get: function () {
+    return (_SocketTransport || _load_SocketTransport()).SocketTransport;
+  }
+});
+
+var _SocketServer;
+
+function _load_SocketServer() {
+  return _SocketServer = require('./SocketServer');
+}
+
+Object.defineProperty(exports, 'SocketServer', {
+  enumerable: true,
+  get: function () {
+    return (_SocketServer || _load_SocketServer()).SocketServer;
+  }
+});
+
+var _RpcProcess;
+
+function _load_RpcProcess() {
+  return _RpcProcess = require('./RpcProcess');
+}
+
+Object.defineProperty(exports, 'RpcProcess', {
+  enumerable: true,
+  get: function () {
+    return (_RpcProcess || _load_RpcProcess()).RpcProcess;
+  }
+});
+
+var _loadServicesConfig;
+
+function _load_loadServicesConfig() {
+  return _loadServicesConfig = _interopRequireDefault(require('./loadServicesConfig'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.loadServicesConfig = (_loadServicesConfig || _load_loadServicesConfig()).default;
 
 // An unreliable transport for sending JSON formatted messages
 // onClose handlers are guaranteed to be called exactly once.
@@ -61,28 +119,12 @@ export type Transport = {
 // (note that successfull sending doesn't imply successfull delivery...)
 // onClose handlers will be called before close() returns.
 // May not call send() after transport has closed..
-export type UnreliableTransport = {
-  send(message: string): Promise<boolean>,
-  onClose(callback: () => mixed): IDisposable,
-  onMessage(): Observable<string>,
-  onError(callback: (error: Object) => mixed): IDisposable,
-  close(): void,
-  isClosed(): boolean,
-};
+
 
 // There are two implementation attempts at a reliable transport that satisfy
 // the following interface - QueuedTransport (known to be unreliable in cases),
 // and QueuedAckTransport (new as of Oct2017, not greatly tested). The GK
 // 'nuclide_connection_ack' will opt you into the latter. If it proves itself
 // then we can deleted QueuedTransport and the following interface entirely.
-export type ReliableTransport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-  close(): void,
-  isClosed(): boolean,
-  getState(): 'open' | 'disconnected' | 'closed',
-  reconnect(transport: UnreliableTransport): void,
-  id: string,
-};
 
-(((null: any): ReliableTransport): Transport);
+null;

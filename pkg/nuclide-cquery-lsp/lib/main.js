@@ -1,3 +1,99 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getConnection = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
+    const cqueryService = yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getCqueryLSPServiceByConnection)(connection).createCqueryService({
+      fileNotifier,
+      host,
+      logCategory: 'cquery-language-server',
+      logLevel: 'WARN',
+      enableLibclangLogs: (_featureConfig || _load_featureConfig()).default.get('nuclide-cquery-lsp.enable-libclang-logs') === true
+    });
+    return cqueryService != null ? new CqueryLSPClient(cqueryService) : new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).NullLanguageService();
+  });
+
+  return function getConnection(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('../../nuclide-clang/lib/libclang');
+}
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _CqueryProject;
+
+function _load_CqueryProject() {
+  return _CqueryProject = require('./CqueryProject');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let _referencesViewService;
+
+// Wrapper that queries for clang settings when new files seen.
+
+// TODO pelmers: maybe don't import from libclang
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,69 +101,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  FindReferencesReturn,
-  DefinitionQueryResult,
-  Outline,
-  CodeAction,
-} from 'atom-ide-ui';
-import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {ConnectableObservable} from 'rxjs';
-import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
-import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
-import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  LanguageService,
-  SymbolResult,
-  FileDiagnosticMap,
-  FormatOptions,
-  AutocompleteResult,
-  AutocompleteRequest,
-  FileDiagnosticMessage,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-
-import {getLogger} from 'log4js';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-// TODO pelmers: maybe don't import from libclang
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
-import {determineCqueryProject} from './CqueryProject';
-import {wordUnderPoint} from './utils';
-
-let _referencesViewService: ?FindReferencesViewService;
-
-// Wrapper that queries for clang settings when new files seen.
 class CqueryLSPClient {
-  _service: CqueryLanguageService;
-  _logger: log4js$Logger;
-  _subscriptions = new UniversalDisposable();
 
-  constructor(service: CqueryLanguageService) {
+  constructor(service) {
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+
     this._service = service;
-    this._logger = getLogger('cquery-language-server');
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)('cquery-language-server');
     this._subscriptions.add(service, this._addCommands());
   }
 
@@ -75,317 +119,280 @@ class CqueryLSPClient {
     this._subscriptions.dispose();
   }
 
-  _addCommands(): IDisposable {
+  _addCommands() {
     // This command just sends a notification to the server.
-    const notificationCommands = [
-      atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor) {
-          const path: ?NuclideUri = editor.getPath();
-          if (this._service && path != null) {
-            this._service.freshenIndexForFile(path);
-          }
+    const notificationCommands = [atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        const path = editor.getPath();
+        if (this._service && path != null) {
+          this._service.freshenIndexForFile(path);
         }
-      }),
-    ];
+      }
+    })];
     // These commands all request locations in response to a position
     // which we can display in a find references pane.
-    const requestCommands = [
-      {
-        command: 'cquery:find-variables',
-        methodName: '$cquery/vars',
-        title: 'Variables',
-      },
-      {
-        command: 'cquery:find-callers',
-        methodName: '$cquery/callers',
-        title: 'Callers',
-      },
-      {
-        command: 'cquery:find-base-class',
-        methodName: '$cquery/base',
-        title: 'Base classes',
-      },
-      {
-        command: 'cquery:find-derived-class',
-        methodName: '$cquery/derived',
-        title: 'Derived classes',
-      },
-    ].map(({command, methodName, title}) =>
-      atom.commands.add('atom-text-editor', command, () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor) {
-          const point = editor.getCursorBufferPosition();
-          const path: ?NuclideUri = editor.getPath();
-          const name = wordUnderPoint(editor, point);
-          if (this._service && path != null && name != null) {
-            this._service
-              .requestLocationsCommand(methodName, path, point)
-              .then(locations => {
-                if (_referencesViewService != null) {
-                  _referencesViewService.viewResults({
-                    type: 'data',
-                    baseUri: path,
-                    referencedSymbolName: name,
-                    title,
-                    references: locations.map(loc => ({...loc, name: ''})),
-                  });
-                }
+    const requestCommands = [{
+      command: 'cquery:find-variables',
+      methodName: '$cquery/vars',
+      title: 'Variables'
+    }, {
+      command: 'cquery:find-callers',
+      methodName: '$cquery/callers',
+      title: 'Callers'
+    }, {
+      command: 'cquery:find-base-class',
+      methodName: '$cquery/base',
+      title: 'Base classes'
+    }, {
+      command: 'cquery:find-derived-class',
+      methodName: '$cquery/derived',
+      title: 'Derived classes'
+    }].map(({ command, methodName, title }) => atom.commands.add('atom-text-editor', command, () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        const point = editor.getCursorBufferPosition();
+        const path = editor.getPath();
+        const name = (0, (_utils || _load_utils()).wordUnderPoint)(editor, point);
+        if (this._service && path != null && name != null) {
+          this._service.requestLocationsCommand(methodName, path, point).then(locations => {
+            if (_referencesViewService != null) {
+              _referencesViewService.viewResults({
+                type: 'data',
+                baseUri: path,
+                referencedSymbolName: name,
+                title,
+                references: locations.map(loc => Object.assign({}, loc, { name: '' }))
               });
-          }
+            }
+          });
         }
-      }),
-    );
-    return new UniversalDisposable(...notificationCommands, ...requestCommands);
+      }
+    }));
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(...notificationCommands, ...requestCommands);
   }
 
-  async ensureProject(file: string): Promise<?CqueryProject> {
-    const project = await determineCqueryProject(file);
-    return this._service
-      .associateFileWithProject(file, project)
-      .then(() => project, () => null);
+  ensureProject(file) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield (0, (_CqueryProject || _load_CqueryProject()).determineCqueryProject)(file);
+      return _this._service.associateFileWithProject(file, project).then(function () {
+        return project;
+      }, function () {
+        return null;
+      });
+    })();
   }
 
-  async getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null ? null : this._service.getDiagnostics(fileVersion);
+  getDiagnostics(fileVersion) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this2.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this2._service.getDiagnostics(fileVersion);
+    })();
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getAutocompleteSuggestions(
-          fileVersion,
-          position,
-          request,
-        );
+  getAutocompleteSuggestions(fileVersion, position, request) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this3.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this3._service.getAutocompleteSuggestions(fileVersion, position, request);
+    })();
   }
 
-  async getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
-    return this._service.getAdditionalLogFiles(deadline);
+  getAdditionalLogFiles(deadline) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this4._service.getAdditionalLogFiles(deadline);
+    })();
   }
 
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getDefinition(fileVersion, position);
+  getDefinition(fileVersion, position) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this5.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this5._service.getDefinition(fileVersion, position);
+    })();
   }
 
-  async findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.findReferences(fileVersion, position);
+  findReferences(fileVersion, position) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this6.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this6._service.findReferences(fileVersion, position);
+    })();
   }
 
-  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    const project = await this.ensureProject(filePath);
-    return project == null ? null : this._service.getCoverage(filePath);
+  getCoverage(filePath) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this7.ensureProject(filePath);
+      return project == null ? null : _this7._service.getCoverage(filePath);
+    })();
   }
 
-  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null ? null : this._service.getOutline(fileVersion);
+  getOutline(fileVersion) {
+    var _this8 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this8.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this8._service.getOutline(fileVersion);
+    })();
   }
 
-  async getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? []
-      : this._service.getCodeActions(fileVersion, range, diagnostics);
+  getCodeActions(fileVersion, range, diagnostics) {
+    var _this9 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this9.ensureProject(fileVersion.filePath);
+      return project == null ? [] : _this9._service.getCodeActions(fileVersion, range, diagnostics);
+    })();
   }
 
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.highlight(fileVersion, position);
+  highlight(fileVersion, position) {
+    var _this10 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this10.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this10._service.highlight(fileVersion, position);
+    })();
   }
 
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatSource(fileVersion, range, options);
+  formatSource(fileVersion, range, options) {
+    var _this11 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this11.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this11._service.formatSource(fileVersion, range, options);
+    })();
   }
 
-  async formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatAtPosition(
-          fileVersion,
-          position,
-          triggerCharacter,
-          options,
-        );
+  formatAtPosition(fileVersion, position, triggerCharacter, options) {
+    var _this12 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this12.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this12._service.formatAtPosition(fileVersion, position, triggerCharacter, options);
+    })();
   }
 
-  async formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatEntireFile(fileVersion, range, options);
+  formatEntireFile(fileVersion, range, options) {
+    var _this13 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this13.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this13._service.formatEntireFile(fileVersion, range, options);
+    })();
   }
 
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getEvaluationExpression(fileVersion, position);
+  getEvaluationExpression(fileVersion, position) {
+    var _this14 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this14.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this14._service.getEvaluationExpression(fileVersion, position);
+    })();
   }
 
-  async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    const project = await this.ensureProject(filePath);
-    return project == null ? null : this._service.getProjectRoot(filePath);
+  getProjectRoot(filePath) {
+    var _this15 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this15.ensureProject(filePath);
+      return project == null ? null : _this15._service.getProjectRoot(filePath);
+    })();
   }
 
-  async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    const project = await this.ensureProject(filePath);
-    return project != null;
+  isFileInProject(filePath) {
+    var _this16 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this16.ensureProject(filePath);
+      return project != null;
+    })();
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
+  observeDiagnostics() {
     return this._service.observeDiagnostics();
   }
 
-  async typeHint(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.typeHint(fileVersion, position);
+  typeHint(fileVersion, position) {
+    var _this17 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const project = yield _this17.ensureProject(fileVersion.filePath);
+      return project == null ? null : _this17._service.typeHint(fileVersion, position);
+    })();
   }
 
-  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    // TODO pelmers: wrap with ensure server
-    return this._service.supportsSymbolSearch(directories);
+  supportsSymbolSearch(directories) {
+    var _this18 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // TODO pelmers: wrap with ensure server
+      return _this18._service.supportsSymbolSearch(directories);
+    })();
   }
 
-  async symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
-    return this._service.symbolSearch(query, directories);
+  symbolSearch(query, directories) {
+    var _this19 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this19._service.symbolSearch(query, directories);
+    })();
   }
 
-  async getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
-    return this._service.getExpandedSelectionRange(
-      fileVersion,
-      currentSelection,
-    );
+  getExpandedSelectionRange(fileVersion, currentSelection) {
+    var _this20 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this20._service.getExpandedSelectionRange(fileVersion, currentSelection);
+    })();
   }
 
-  async getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
-    return this._service.getCollapsedSelectionRange(
-      fileVersion,
-      currentSelection,
-      originalCursorPosition,
-    );
-  }
-}
+  getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition) {
+    var _this21 = this;
 
-async function getConnection(connection): Promise<LanguageService> {
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-  const cqueryService = await getCqueryLSPServiceByConnection(
-    connection,
-  ).createCqueryService({
-    fileNotifier,
-    host,
-    logCategory: 'cquery-language-server',
-    logLevel: 'WARN',
-    enableLibclangLogs:
-      featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true,
-  });
-  return cqueryService != null
-    ? new CqueryLSPClient(cqueryService)
-    : new NullLanguageService();
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this21._service.getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition);
+    })();
+  }
 }
 
 class Activation {
-  _languageService: ?AtomLanguageService<LanguageService>;
-  _subscriptions = new UniversalDisposable();
 
-  constructor(state: ?mixed) {
+  constructor(state) {
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+
     if (this._canInitializeLsp()) {
       this._subscriptions.add(this.initializeLsp());
     }
   }
 
-  _canInitializeLsp(): boolean {
-    return (
-      featureConfig.get('nuclide-cquery-lsp.use-cquery') === true &&
-      !this._subscriptions.disposed
-    );
+  _canInitializeLsp() {
+    return (_featureConfig || _load_featureConfig()).default.get('nuclide-cquery-lsp.use-cquery') === true && !this._subscriptions.disposed;
   }
 
-  consumeClangConfigurationProvider(
-    provider: ClangConfigurationProvider,
-  ): IDisposable {
-    return registerClangProvider(provider);
+  consumeClangConfigurationProvider(provider) {
+    return (0, (_libclang || _load_libclang()).registerClangProvider)(provider);
   }
 
-  consumeReferencesView(provider: FindReferencesViewService): IDisposable {
+  consumeReferencesView(provider) {
     _referencesViewService = provider;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       _referencesViewService = null;
     });
   }
 
-  initializeLsp(): IDisposable {
-    const atomConfig: AtomLanguageServiceConfig = {
+  initializeLsp() {
+    const atomConfig = {
       name: 'cquery',
       grammars: ['source.cpp', 'source.c', 'source.objc', 'source.objcpp'],
       autocomplete: {
@@ -396,62 +403,57 @@ class Activation {
         autocompleteCacherConfig: null,
         analytics: {
           eventName: 'nuclide-cquery-lsp',
-          shouldLogInsertedSuggestion: false,
-        },
+          shouldLogInsertedSuggestion: false
+        }
       },
       definition: {
         version: '0.1.0',
         priority: 1,
-        definitionEventName: 'cquery.getDefinition',
+        definitionEventName: 'cquery.getDefinition'
       },
       diagnostics: {
         version: '0.2.0',
-        analyticsEventName: 'cquery.observe-diagnostics',
+        analyticsEventName: 'cquery.observe-diagnostics'
       },
       codeAction: {
         version: '0.1.0',
         priority: 1,
         analyticsEventName: 'cquery.getActions',
-        applyAnalyticsEventName: 'cquery.applyAction',
+        applyAnalyticsEventName: 'cquery.applyAction'
       },
       outline: {
         version: '0.1.0',
         analyticsEventName: 'cquery.outline',
         updateOnEdit: true,
-        priority: 1,
+        priority: 1
       },
       codeFormat: {
         version: '0.1.0',
         priority: 1,
         analyticsEventName: 'cquery.codeFormat',
         canFormatAtPosition: false,
-        canFormatRanges: true,
+        canFormatRanges: true
       },
       typeHint: {
         version: '0.0.0',
         priority: 1,
-        analyticsEventName: 'cquery.typeHint',
+        analyticsEventName: 'cquery.typeHint'
       },
       findReferences: {
         version: '0.1.0',
-        analyticsEventName: 'cquery.findReferences',
-      },
+        analyticsEventName: 'cquery.findReferences'
+      }
     };
 
-    const languageService = new AtomLanguageService(
-      getConnection,
-      atomConfig,
-      null,
-      getLogger('cquery-language-server'),
-    );
+    const languageService = new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(getConnection, atomConfig, null, (0, (_log4js || _load_log4js()).getLogger)('cquery-language-server'));
     languageService.activate();
     this._languageService = languageService;
     return languageService;
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.open = open;
+exports.gotRefactorings = gotRefactorings;
+exports.error = error;
+exports.backFromDiffPreview = backFromDiffPreview;
+exports.pickedRefactor = pickedRefactor;
+exports.inlinePickedRefactor = inlinePickedRefactor;
+exports.execute = execute;
+exports.confirm = confirm;
+exports.loadDiffPreview = loadDiffPreview;
+exports.displayDiffPreview = displayDiffPreview;
+exports.apply = apply;
+exports.progress = progress;
+exports.close = close;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,169 +23,120 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
-
-import type {
-  ApplyAction,
-  BackFromDiffPreviewAction,
-  CloseAction,
-  ConfirmAction,
-  DisplayDiffPreviewAction,
-  ErrorAction,
-  ErrorSource,
-  ExecuteAction,
-  GotRefactoringsAction,
-  InlinePickedRefactorAction,
-  OpenAction,
-  Phase,
-  ProgressAction,
-  PickedRefactorAction,
-  RefactorUI,
-  LoadDiffPreviewAction,
-} from './types';
-
-import type {RefactorEditResponse} from './rpc-types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-export function open(ui: RefactorUI): OpenAction {
+function open(ui) {
   return {
     type: 'open',
-    ui,
+    ui
   };
 }
 
-export function gotRefactorings(
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-  provider: RefactorProvider,
-  availableRefactorings: Array<AvailableRefactoring>,
-): GotRefactoringsAction {
+function gotRefactorings(editor, originalRange, provider, availableRefactorings) {
   return {
     type: 'got-refactorings',
     payload: {
       editor,
       originalRange,
       provider,
-      availableRefactorings,
-    },
+      availableRefactorings
+    }
   };
 }
 
-export function error(source: ErrorSource, err: Error): ErrorAction {
+function error(source, err) {
   return {
     type: 'error',
     payload: {
       source,
-      error: err,
-    },
+      error: err
+    }
   };
 }
 
-export function backFromDiffPreview(phase: Phase): BackFromDiffPreviewAction {
+function backFromDiffPreview(phase) {
   return {
     type: 'back-from-diff-preview',
     payload: {
-      phase,
-    },
+      phase
+    }
   };
 }
 
-export function pickedRefactor(
-  refactoring: AvailableRefactoring,
-): PickedRefactorAction {
+function pickedRefactor(refactoring) {
   return {
     type: 'picked-refactor',
     payload: {
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function inlinePickedRefactor(
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-  provider: RefactorProvider,
-  refactoring: AvailableRefactoring,
-): InlinePickedRefactorAction {
+function inlinePickedRefactor(editor, originalRange, provider, refactoring) {
   return {
     type: 'inline-picked-refactor',
     payload: {
       originalRange,
       editor,
       provider,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function execute(
-  provider: RefactorProvider,
-  refactoring: RefactorRequest,
-): ExecuteAction {
+function execute(provider, refactoring) {
   return {
     type: 'execute',
     payload: {
       provider,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function confirm(response: RefactorEditResponse): ConfirmAction {
+function confirm(response) {
   return {
     type: 'confirm',
-    payload: {response},
+    payload: { response }
   };
 }
 
-export function loadDiffPreview(
-  previousPhase: Phase,
-  uri: NuclideUri,
-  response: RefactorEditResponse,
-): LoadDiffPreviewAction {
+function loadDiffPreview(previousPhase, uri, response) {
   return {
     type: 'load-diff-preview',
     payload: {
       previousPhase,
       uri,
-      response,
-    },
+      response
+    }
   };
 }
 
-export function displayDiffPreview(
-  diffs: Array<diffparser$FileDiff>,
-): DisplayDiffPreviewAction {
+function displayDiffPreview(diffs) {
   return {
     type: 'display-diff-preview',
-    payload: {diffs},
+    payload: { diffs }
   };
 }
 
-export function apply(response: RefactorEditResponse): ApplyAction {
+function apply(response) {
   return {
     type: 'apply',
-    payload: {response},
+    payload: { response }
   };
 }
 
-export function progress(
-  message: string,
-  value: number,
-  max: number,
-): ProgressAction {
+function progress(message, value, max) {
   return {
     type: 'progress',
-    payload: {message, value, max},
+    payload: { message, value, max }
   };
 }
 
-export function close(): CloseAction {
+function close() {
   return {
-    type: 'close',
+    type: 'close'
   };
 }

@@ -1,60 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from '../../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ATDeviceStopProcessProvider = undefined;
 
-import {AndroidBridge} from '../bridges/AndroidBridge';
-import {TizenBridge} from '../bridges/TizenBridge';
-import {Observable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class ATDeviceStopProcessProvider implements DeviceProcessTaskProvider {
-  _bridge: AndroidBridge | TizenBridge;
+var _AndroidBridge;
 
-  constructor(bridge: AndroidBridge | TizenBridge) {
+function _load_AndroidBridge() {
+  return _AndroidBridge = require('../bridges/AndroidBridge');
+}
+
+var _TizenBridge;
+
+function _load_TizenBridge() {
+  return _TizenBridge = require('../bridges/TizenBridge');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ATDeviceStopProcessProvider {
+
+  constructor(bridge) {
     this._bridge = bridge;
   }
 
-  getType(): string {
+  getType() {
     return this._bridge.name;
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'KILL';
   }
 
-  getName(): string {
+  getName() {
     return 'Stop process/package';
   }
 
-  isSupported(proc: Process): boolean {
+  isSupported(proc) {
     return true;
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(new Set(procs.map(proc => proc.pid)));
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.map(proc => proc.pid)));
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return this._bridge
-      .getService(host)
-      .stopProcess(device, proc.name, proc.pid);
+  run(host, device, proc) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this._bridge.getService(host).stopProcess(device, proc.name, proc.pid);
+    })();
   }
 }
+exports.ATDeviceStopProcessProvider = ATDeviceStopProcessProvider; /**
+                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                    * All rights reserved.
+                                                                    *
+                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                    * the root directory of this source tree.
+                                                                    *
+                                                                    * 
+                                                                    * @format
+                                                                    */

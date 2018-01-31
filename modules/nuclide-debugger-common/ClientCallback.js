@@ -1,3 +1,11 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,51 +14,47 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AtomNotification, AtomNotificationType} from './types';
-import {Observable, Subject} from 'rxjs';
-
-export default class ClientCallback {
-  _serverMessageObservable: Subject<string>; // For server messages.
-  _userOutputObservable: Subject<string>; // For user visible output messages.
-  _atomNotificationObservable: Subject<AtomNotification>;
-
+class ClientCallback {
+  // For server messages.
   constructor() {
-    this._serverMessageObservable = new Subject();
-    this._userOutputObservable = new Subject();
-    this._atomNotificationObservable = new Subject();
-  }
+    this._serverMessageObservable = new _rxjsBundlesRxMinJs.Subject();
+    this._userOutputObservable = new _rxjsBundlesRxMinJs.Subject();
+    this._atomNotificationObservable = new _rxjsBundlesRxMinJs.Subject();
+  } // For user visible output messages.
 
-  getServerMessageObservable(): Observable<string> {
+
+  getServerMessageObservable() {
     return this._serverMessageObservable.asObservable();
   }
 
-  getOutputWindowObservable(): Observable<string> {
+  getOutputWindowObservable() {
     return this._userOutputObservable.asObservable();
   }
 
-  getAtomNotificationObservable(): Observable<AtomNotification> {
+  getAtomNotificationObservable() {
     return this._atomNotificationObservable.asObservable();
   }
 
-  sendChromeMessage(message: string): void {
+  sendChromeMessage(message) {
     this._serverMessageObservable.next(message);
   }
 
-  sendUserOutputMessage(message: string): void {
+  sendUserOutputMessage(message) {
     this._userOutputObservable.next(message);
   }
 
-  sendAtomNotification(type: AtomNotificationType, message: string): void {
-    this._atomNotificationObservable.next({type, message});
+  sendAtomNotification(type, message) {
+    this._atomNotificationObservable.next({ type, message });
   }
 
-  dispose(): void {
+  dispose() {
     this._serverMessageObservable.complete();
     this._userOutputObservable.complete();
     this._atomNotificationObservable.complete();
   }
 }
+exports.default = ClientCallback;

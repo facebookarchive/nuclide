@@ -1,44 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Outline, OutlineProvider} from 'atom-ide-ui';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OutlineViewProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type OutlineViewConfig = {|
-  version: '0.1.0',
-  priority: number,
-  analyticsEventName: string,
-  updateOnEdit?: boolean,
-|};
+var _nuclideRemoteConnection;
 
-export class OutlineViewProvider<T: LanguageService> {
-  grammarScopes: Array<string>;
-  priority: number;
-  name: string;
-  updateOnEdit: boolean | typeof undefined;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    grammarScopes: Array<string>,
-    priority: number,
-    analyticsEventName: string,
-    updateOnEdit: ?boolean,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class OutlineViewProvider {
+
+  constructor(name, grammarScopes, priority, analyticsEventName, updateOnEdit, connectionToLanguageService) {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
@@ -47,39 +38,34 @@ export class OutlineViewProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammarScopes: Array<string>,
-    config: OutlineViewConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'outline-view',
-      config.version,
-      new OutlineViewProvider(
-        name,
-        grammarScopes,
-        config.priority,
-        config.analyticsEventName,
-        config.updateOnEdit,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammarScopes, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('outline-view', config.version, new OutlineViewProvider(name, grammarScopes, config.priority, config.analyticsEventName, config.updateOnEdit, connectionToLanguageService));
   }
 
-  getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  getOutline(editor) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return (await languageService).getOutline(fileVersion);
-    });
+      return (yield languageService).getOutline(fileVersion);
+    }));
   }
 }
 
-(((null: any): OutlineViewProvider<LanguageService>): OutlineProvider);
+exports.OutlineViewProvider = OutlineViewProvider; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    * 
+                                                    * @format
+                                                    */
+
+null;

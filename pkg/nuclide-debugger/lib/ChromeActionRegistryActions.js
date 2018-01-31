@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +10,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -18,7 +23,7 @@ const ChromeActionRegistryActions = Object.freeze({
   STEP_OVER: 'debugger.step-over',
   STEP_INTO: 'debugger.step-into',
   STEP_OUT: 'debugger.step-out',
-  RUN: 'debugger.run-snippet',
+  RUN: 'debugger.run-snippet'
 });
 
-export default ChromeActionRegistryActions;
+exports.default = ChromeActionRegistryActions;

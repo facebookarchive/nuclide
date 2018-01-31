@@ -1,50 +1,61 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import log4js from 'log4js';
-import {IConnection} from 'vscode-languageserver';
-import {
-  type LogMessageParams,
-  MessageType,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+var _log4js;
 
-function getMessageType(levelStr: string) {
-  switch (levelStr) {
-    case 'ERROR':
-      return MessageType.Error;
-    case 'WARN':
-      return MessageType.Warning;
-    case 'INFO':
-      return MessageType.Info;
-    default:
-      return MessageType.Log;
-  }
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
 }
 
-function appender(config: {connection: IConnection}) {
-  const {connection} = config;
+var _vscodeLanguageserver;
+
+function _load_vscodeLanguageserver() {
+  return _vscodeLanguageserver = require('vscode-languageserver');
+}
+
+var _protocol;
+
+function _load_protocol() {
+  return _protocol = require('../../nuclide-vscode-language-service-rpc/lib/protocol');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getMessageType(levelStr) {
+  switch (levelStr) {
+    case 'ERROR':
+      return (_protocol || _load_protocol()).MessageType.Error;
+    case 'WARN':
+      return (_protocol || _load_protocol()).MessageType.Warning;
+    case 'INFO':
+      return (_protocol || _load_protocol()).MessageType.Info;
+    default:
+      return (_protocol || _load_protocol()).MessageType.Log;
+  }
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function appender(config) {
+  const { connection } = config;
 
   // eslint-disable-next-line flowtype/no-weak-types
-  return (loggingEvent: any): void => {
+  return loggingEvent => {
     // $FlowFixMe: type log4js.layouts
-    const message = log4js.layouts.basicLayout(loggingEvent);
-    if (loggingEvent.level.level >= log4js.levels.INFO.level) {
+    const message = (_log4js || _load_log4js()).default.layouts.basicLayout(loggingEvent);
+    if (loggingEvent.level.level >= (_log4js || _load_log4js()).default.levels.INFO.level) {
       connection.console.log(message);
     }
-    connection.telemetry.logEvent(
-      ({
-        type: getMessageType(loggingEvent.level.levelStr),
-        message,
-      }: LogMessageParams),
-    );
+    connection.telemetry.logEvent({
+      type: getMessageType(loggingEvent.level.levelStr),
+      message
+    });
   };
 }
 
