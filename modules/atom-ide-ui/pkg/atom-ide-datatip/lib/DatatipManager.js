@@ -88,7 +88,7 @@ function getBufferPosition(
   // This is essentially a heuristic for "mouse cursor is to the left or right
   // of text content".
   if (
-    pixelPosition.left < 0 ||
+    pixelPosition.left <= 0 ||
     horizontalDistance > editor.getDefaultCharWidth()
   ) {
     return null;
