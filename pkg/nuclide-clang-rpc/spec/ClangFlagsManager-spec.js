@@ -39,8 +39,6 @@ describe('ClangFlagsManager', () => {
   });
 
   it('sanitizeCommand()', () => {
-    const {sanitizeEntry} = ClangFlagsManager;
-
     const originalArgs = [
       '/usr/bin/clang',
       '-mios-simulator-version-min=7.0',
@@ -100,7 +98,7 @@ describe('ClangFlagsManager', () => {
       'local/path/EXExample.m',
     ];
     const buckProjectRoot = '/Users/whoami/project/';
-    const sanitizedCommandArgs = sanitizeEntry(
+    const sanitizedCommandArgs = flagsManager.sanitizeEntry(
       {
         file: '/Users/whoami/project/local/path/EXExample.m',
         arguments: originalArgs,

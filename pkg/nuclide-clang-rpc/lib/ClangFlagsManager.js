@@ -99,6 +99,10 @@ export default class ClangFlagsManager {
 
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
+  _uriResolveCache: Cache<[string, string], string> = new Cache({
+    keyFactory: ([parent, relative]) => relative + parent,
+  });
+
   constructor() {
     this._realpathCache = {};
     this._clangProjectFlags = new Map();
@@ -398,12 +402,12 @@ export default class ClangFlagsManager {
     const directory = await fsPromise.realpath(
       // Relative directories aren't part of the spec, but resolving them
       // relative to the compile_commands.json location seems reasonable.
-      nuclideUri.resolve(dbDir, entry.directory),
+      this._uriResolveCached(dbDir, entry.directory),
       this._realpathCache,
     );
-    const filename = nuclideUri.resolve(directory, entry.file);
+    const filename = this._uriResolveCached(directory, entry.file);
     const realpath = await fsPromise.realpath(filename, this._realpathCache);
-    const clangFlags = ClangFlagsManager.sanitizeEntry(
+    const clangFlags = this.sanitizeEntry(
       entry,
       flagsFile == null ? dbFile : flagsFile,
     );
@@ -446,6 +450,7 @@ export default class ClangFlagsManager {
     for (const [realpath, clangFlagsHandle] of processedEntries) {
       flags.set(realpath, clangFlagsHandle);
     }
+    this._uriResolveCache.clear();
     return flags;
   }
 
@@ -471,24 +476,18 @@ export default class ClangFlagsManager {
     );
   }
 
-  static _getXFlagForSourceFile(sourceFile: string): string {
-    const ext = nuclideUri.extname(sourceFile);
-    if (ext === '.mm') {
-      return 'objective-c++';
-    } else if (ext === '.m') {
-      return 'objective-c';
-    } else if (ext === '.c') {
-      return 'c';
-    } else {
-      return 'c++';
-    }
+  _uriResolveCached(parent: string, relative: string): string {
+    return this._uriResolveCache.getOrCreate([parent, relative], () =>
+      nuclideUri.resolve(parent, relative),
+    );
   }
 
-  static sanitizeEntry(
+  sanitizeEntry(
     entry: ClangCompilationDatabaseEntry,
     flagsFile: string,
   ): ClangFlags {
     const {directory, file} = entry;
+    const ext = nuclideUri.extname(file);
     // Nullthrows is safe because of _assertCompilationDatabaseEntry.
     let args =
       entry.arguments !== undefined
@@ -501,7 +500,8 @@ export default class ClangFlagsManager {
     args = args.filter(
       arg =>
         normalizedSourceFile !== arg &&
-        normalizedSourceFile !== nuclideUri.resolve(directory, arg),
+        (!arg.endsWith(ext) ||
+          normalizedSourceFile !== this._uriResolveCached(directory, arg)),
     );
     // Add the -x flag if it does not exist.
     if (!args.find(arg => arg === '-x')) {
@@ -526,5 +526,18 @@ export default class ClangFlagsManager {
       }
     });
     return {directory, flagsFile, flags: args};
+  }
+
+  static _getXFlagForSourceFile(sourceFile: string): string {
+    const ext = nuclideUri.extname(sourceFile);
+    if (ext === '.mm') {
+      return 'objective-c++';
+    } else if (ext === '.m') {
+      return 'objective-c';
+    } else if (ext === '.c') {
+      return 'c';
+    } else {
+      return 'c++';
+    }
   }
 }
