@@ -92,16 +92,6 @@ export default class ClangFlagsManager {
   });
 
   _realpathCache: Object;
-  _pathToFlags: Cache<
-    [string, ClangRequestSettings],
-    Promise<?ClangFlags>,
-  > = new Cache({
-    keyFactory: ([src, requestSettings]) =>
-      JSON.stringify([
-        src,
-        getCacheKeyForDb(requestSettings.compilationDatabase),
-      ]),
-  });
 
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
@@ -111,7 +101,6 @@ export default class ClangFlagsManager {
   }
 
   reset() {
-    this._pathToFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._clangProjectFlags.clear();
@@ -138,21 +127,22 @@ export default class ClangFlagsManager {
     return null;
   }
 
-  _getFlagsForSrcCached(
+  async _getFlagsForSrcCached(
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    return this._pathToFlags.getOrCreate([src, requestSettings], () =>
-      this._getFlagsForSrcImpl(src, requestSettings),
-    );
-  }
-
-  _getFlagsForSrcImpl(
-    src: string,
-    requestSettings: ClangRequestSettings,
-  ): Promise<?ClangFlags> {
+    const {compilationDatabase} = requestSettings;
+    if (compilationDatabase != null) {
+      const flagMap = await this._compilationDatabases.get(compilationDatabase);
+      if (flagMap != null) {
+        const flags = flagMap.get(src);
+        if (flags != null) {
+          return flags;
+        }
+      }
+    }
     return trackTiming('nuclide-clang.get-flags', () =>
-      this.__getFlagsForSrcImpl(src, requestSettings),
+      this._getFlagsForSrcImpl(src, requestSettings),
     );
   }
 
@@ -298,7 +288,7 @@ export default class ClangFlagsManager {
     return getRelatedHeaderForSource(src);
   }
 
-  async __getFlagsForSrcImpl(
+  async _getFlagsForSrcImpl(
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
@@ -444,10 +434,6 @@ export default class ClangFlagsManager {
         return [];
       });
     for (const [realpath, clangFlags] of processedEntries) {
-      this._pathToFlags.set(
-        [realpath, requestSettings],
-        Promise.resolve(clangFlags),
-      );
       flags.set(realpath, clangFlags);
     }
     return flags;
