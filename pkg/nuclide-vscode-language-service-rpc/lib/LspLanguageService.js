@@ -99,6 +99,7 @@ import {
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
 import {JsonRpcTrace} from './jsonrpc';
+import {mapAtomLanguageIdToVsCode} from './languageIdMap';
 import {LspConnection} from './LspConnection';
 import {
   ErrorCodes,
@@ -125,7 +126,7 @@ export class LspLanguageService {
   _host: HostServices; // this is created per-connection
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
-  _languageId: string;
+  _languageServerName: string;
   _command: string;
   _args: Array<string>;
   _spawnOptions: Object; // supplies the options for spawning a process
@@ -178,7 +179,7 @@ export class LspLanguageService {
     logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
-    languageId: string,
+    languageServerName: string,
     command: string,
     args: Array<string>,
     spawnOptions: Object = {},
@@ -195,7 +196,7 @@ export class LspLanguageService {
     this._masterHost = host;
     this._host = host;
     this._projectRoot = projectRoot;
-    this._languageId = languageId;
+    this._languageServerName = languageServerName;
     this._command = command;
     this._args = args;
     this._spawnOptions = spawnOptions;
@@ -234,8 +235,8 @@ export class LspLanguageService {
       // Show a progress spinner
       const tooltip =
         state === 'Starting'
-          ? `Starting ${this._languageId} language service...`
-          : `Stopping ${this._languageId} language service...`;
+          ? `Starting ${this._languageServerName} language service...`
+          : `Stopping ${this._languageServerName} language service...`;
       this._masterHost.showProgress(tooltip).then(progress => {
         if (nextDisposable.disposed) {
           progress.dispose();
@@ -250,12 +251,12 @@ export class LspLanguageService {
 
       const tooltip =
         state === 'StartFailed'
-          ? `Failed to start ${this._languageId} - click to retry.`
-          : `Crash in ${this._languageId} - click to restart.`;
+          ? `Failed to start ${this._languageServerName} - click to retry.`
+          : `Crash in ${this._languageServerName} - click to restart.`;
       const defaultMessage =
         state === 'StartFailed'
-          ? `Failed to start ${this._languageId} language service.`
-          : `Language service ${this._languageId} has crashed.`;
+          ? `Failed to start ${this._languageServerName} language service.`
+          : `Language service ${this._languageServerName} has crashed.`;
       const button = state === 'StartFailed' ? 'Retry' : 'Restart';
       // flowlint-next-line sketchy-null-string:off
       const message = actionRequiredDialogMessage || defaultMessage;
@@ -281,9 +282,9 @@ export class LspLanguageService {
           // we're here now means that this has not happened, i.e. a new state
           // has not come along.
           this._masterHost.consoleNotification(
-            this._languageId,
+            this._languageServerName,
             'info',
-            `Restarting ${this._languageId}`,
+            `Restarting ${this._languageServerName}`,
           );
           this._setState('Initial');
           this.start();
@@ -389,7 +390,7 @@ export class LspLanguageService {
         });
 
         const message =
-          `Couldn't start ${this._languageId} server` +
+          `Couldn't start ${this._languageServerName} server` +
           ` - ${this._errorString(e, this._command)}`;
         const dialog = this._masterHost
           .dialogNotification('error', message)
@@ -629,7 +630,9 @@ export class LspLanguageService {
           // the lspConnection might already have been torn down.
 
           this._childOut = {stdout: '', stderr: ''};
-          const message = `Couldn't initialize ${this._languageId} server`;
+          const message = `Couldn't initialize ${
+            this._languageServerName
+          } server`;
           const longMessage = `${message} - ${this._errorString(e)}`;
 
           // LSP has the notion that only some failures-to-start should
@@ -659,7 +662,7 @@ export class LspLanguageService {
           if (button === 'Retry') {
             this._logger.trace('Lsp.Initialize.retry');
             this._host.consoleNotification(
-              this._languageId,
+              this._languageServerName,
               'info',
               'Retrying initialize',
             );
@@ -682,7 +685,7 @@ export class LspLanguageService {
         // also like to log that. It was probably informational not error.
         if (this._childOut.stderr !== '') {
           this._host.consoleNotification(
-            this._languageId,
+            this._languageServerName,
             'info',
             this._childOut.stderr,
           );
@@ -943,7 +946,7 @@ export class LspLanguageService {
       .dialogNotification(
         'error',
         `Connection to the ${
-          this._languageId
+          this._languageServerName
         } language server is erroring; shutting it down - ${this._errorString(
           error,
         )}`,
@@ -982,7 +985,7 @@ export class LspLanguageService {
     if (this._recentRestarts.length >= 5) {
       this._logger.error('Lsp.Close - will not auto-restart.');
       const message =
-        `Language server '${this._languageId}' ` +
+        `Language server '${this._languageServerName}' ` +
         'has crashed 5 times in the last 3 minutes.';
       const dialog = this._host
         .dialogRequest('error', message, ['Restart'], 'Close')
@@ -990,9 +993,9 @@ export class LspLanguageService {
         .subscribe(response => {
           if (response === 'Restart') {
             this._host.consoleNotification(
-              this._languageId,
+              this._languageServerName,
               'warning',
-              `Restarting ${this._languageId}`,
+              `Restarting ${this._languageServerName}`,
             );
             this._setState('Initial');
             this.start();
@@ -1006,9 +1009,9 @@ export class LspLanguageService {
     } else {
       this._logger.error('Lsp.Close - will auto-restart');
       this._host.consoleNotification(
-        this._languageId,
+        this._languageServerName,
         'warning',
-        `Automatically restarting ${this._languageId} after a crash`,
+        `Automatically restarting ${this._languageServerName} after a crash`,
       );
       this._setState('Initial');
       this.start();
@@ -1047,7 +1050,7 @@ export class LspLanguageService {
   _handleLogMessageNotification(params: LogMessageParams): void {
     // CARE! This method may be called before initialization has finished.
     this._host.consoleNotification(
-      this._languageId,
+      this._languageServerName,
       convert.lspMessageType_atomShowNotificationLevel(params.type),
       params.message,
     );
@@ -1234,7 +1237,7 @@ export class LspLanguageService {
       : null;
   }
 
-  _fileOpen(fileEvent: FileOpenEvent): void {
+  async _fileOpen(fileEvent: FileOpenEvent): Promise<void> {
     invariant(this._lspConnection != null);
     invariant(this._state === 'Running' || this._state === 'Stopping');
     if (this._state !== 'Running') {
@@ -1243,10 +1246,26 @@ export class LspLanguageService {
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
+
+    let languageId = mapAtomLanguageIdToVsCode(fileEvent.languageId);
+    if (languageId == null) {
+      languageId = this._languageServerName;
+      this._logger.warn(
+        `Could not find a mapping for ${
+          fileEvent.languageId
+        }, falling back to ${languageId}.`,
+      );
+      track('language-server-no-mapping', {
+        languageId: fileEvent.languageId,
+      });
+    } else {
+      this._logger.info(`Mapped ${fileEvent.languageId} to ${languageId}.`);
+    }
+
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
-        languageId: this._languageId,
+        languageId,
         version: fileEvent.fileVersion.version,
         text: fileEvent.contents,
       },
@@ -1702,11 +1721,13 @@ export class LspLanguageService {
   async _executeCommand(command: string, args?: Array<any>): Promise<void> {
     if (this._state !== 'Running') {
       throw new Error(
-        `${this._languageId} is not currently in a state to handle the request`,
+        `${
+          this._languageServerName
+        } is not currently in a state to handle the request`,
       );
       // flowlint-next-line sketchy-null-mixed:off
     } else if (!this._serverCapabilities.executeCommandProvider) {
-      throw new Error(`${this._languageId} cannot handle the request`);
+      throw new Error(`${this._languageServerName} cannot handle the request`);
     }
     try {
       await this._lspConnection.executeCommand({
@@ -1776,7 +1797,9 @@ export class LspLanguageService {
     // The LSP server sends back either titled data (each one of which gets
     // written as an AdditionalLogFile) or untitled data (which we accumulate
     // and send in a single AdditionalLogFile with our own logs).
-    const lspAnonymousTitle = `${this._projectRoot}:LSP#${this._languageId}`;
+    const lspAnonymousTitle = `${this._projectRoot}:LSP#${
+      this._languageServerName
+    }`;
     let lspAnonymousRage = '';
 
     if (

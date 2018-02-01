@@ -28,6 +28,7 @@ describe('ConfigObserver', () => {
       version: 1,
     },
     contents: 'contents1',
+    languageId: 'Babel ES6 JavaScript',
   });
 
   const createClose = filePath => ({

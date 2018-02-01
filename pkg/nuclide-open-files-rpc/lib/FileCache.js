@@ -29,8 +29,16 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {FileEventKind} from './constants';
 
+/**
+ * NB: although it is possible to change the language ID after the file has
+ * already been opened, the file cache will not update to reflect that.
+ */
 export class FileCache {
-  _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
+  _buffers: Map<
+    NuclideUri,
+    {buffer: simpleTextBuffer$TextBuffer, languageId: string},
+  >;
+
   _requests: FileVersionNotifier;
   _fileEvents: Subject<LocalFileEvent>;
   // Care! update() is the only way you're allowed to update _buffers or _requests
@@ -66,11 +74,12 @@ export class FileCache {
   onFileEvent(event: FileEvent): Promise<void> {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
-    const buffer = this._buffers.get(filePath);
+    const fileInfo = this._buffers.get(filePath);
+    const buffer = fileInfo != null ? fileInfo.buffer : null;
     switch (event.kind) {
       case FileEventKind.OPEN:
         invariant(buffer == null);
-        this._open(filePath, event.contents, changeCount);
+        this._open(filePath, event.contents, changeCount, event.languageId);
         break;
       case FileEventKind.CLOSE:
         if (buffer != null) {
@@ -92,7 +101,7 @@ export class FileCache {
         break;
       case FileEventKind.SYNC:
         if (buffer == null) {
-          this._open(filePath, event.contents, changeCount);
+          this._open(filePath, event.contents, changeCount, event.languageId);
         } else {
           this._syncEdit(filePath, buffer, event.contents, changeCount);
         }
@@ -105,7 +114,7 @@ export class FileCache {
   }
 
   async getTotalBufferSize(): Promise<number> {
-    const addLength = (acc, buffer) => acc + buffer.getText().length;
+    const addLength = (acc, {buffer}) => acc + buffer.getText().length;
     return [...this._buffers.values()].reduce(addLength, 0);
   }
 
@@ -140,16 +149,22 @@ export class FileCache {
     });
   }
 
-  _open(filePath: NuclideUri, contents: string, changeCount: number): void {
+  _open(
+    filePath: NuclideUri,
+    contents: string,
+    changeCount: number,
+    languageId: string,
+  ): void {
     // We never call setPath on these TextBuffers as that will
     // start the TextBuffer attempting to sync with the file system.
     const newBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
     this.update(() => {
-      this._buffers.set(filePath, newBuffer);
+      this._buffers.set(filePath, {buffer: newBuffer, languageId});
       return createOpenEvent(
         this.createFileVersion(filePath, changeCount),
         contents,
+        languageId,
       );
     });
   }
@@ -173,7 +188,7 @@ export class FileCache {
   dispose(): void {
     // The _close routine will delete elements from the _buffers map.
     // Per ES6 this is safe to do even while iterating.
-    for (const [filePath, buffer] of this._buffers.entries()) {
+    for (const [filePath, {buffer}] of this._buffers.entries()) {
       this._close(filePath, buffer);
     }
     invariant(this._buffers.size === 0);
@@ -187,7 +202,8 @@ export class FileCache {
     // TODO: change this to return a string, to ensure that no caller will ever mutate
     // the buffer contents (and hence its changeCount). The only modifications allowed
     // are those that come from the editor inside this.onFileEvent.
-    return this._buffers.get(filePath);
+    const fileInfo = this._buffers.get(filePath);
+    return fileInfo != null ? fileInfo.buffer : null;
   }
 
   // getBufferAtVersion(version): if the stream of onFileEvent gets up to this particular
@@ -244,13 +260,17 @@ export class FileCache {
 
   observeFileEvents(): Observable<LocalFileEvent> {
     return Observable.from(
-      Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
-        invariant(buffer != null);
-        return createOpenEvent(
-          this.createFileVersion(filePath, buffer.changeCount),
-          buffer.getText(),
-        );
-      }),
+      Array.from(this._buffers.entries()).map(
+        ([filePath, {buffer, languageId}]) => {
+          invariant(buffer != null);
+          invariant(languageId != null);
+          return createOpenEvent(
+            this.createFileVersion(filePath, buffer.changeCount),
+            buffer.getText(),
+            languageId,
+          );
+        },
+      ),
     ).concat(this._fileEvents);
   }
 
@@ -270,11 +290,13 @@ export class FileCache {
 function createOpenEvent(
   fileVersion: FileVersion,
   contents: string,
+  languageId: string,
 ): FileOpenEvent {
   return {
     kind: FileEventKind.OPEN,
     fileVersion,
     contents,
+    languageId,
   };
 }
 

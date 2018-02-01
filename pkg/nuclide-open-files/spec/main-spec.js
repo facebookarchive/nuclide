@@ -94,6 +94,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',
@@ -134,6 +135,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 2,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',
@@ -165,6 +167,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'edit',
@@ -213,6 +216,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'edit',
@@ -277,6 +281,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'save',
@@ -321,6 +326,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',
@@ -332,6 +338,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f2',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',
@@ -369,6 +376,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f2',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',
@@ -431,6 +439,7 @@ describe('nuclide-open-files', () => {
             filePath: 'f1',
             changeCount: 1,
             contents: 'contents1',
+            languageId: 'text.plain.null-grammar',
           },
           {
             kind: 'close',

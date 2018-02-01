@@ -21,11 +21,14 @@ import type {NotifiersByConnection} from './NotifiersByConnection';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
+import semver from 'semver';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
 
 const logger = getLogger('nuclide-open-files');
 
 const RESYNC_TIMEOUT_MS = 2000;
+
+const ATOM_VERSION_CHECK_FOR_LANGUAGE_ID = '1.24.0-beta0';
 
 // Watches a TextBuffer for change/rename/destroy events and then sends
 // those events to the FileNotifier or NotifiersByConnection as appropriate.
@@ -149,6 +152,8 @@ export class BufferSubscription {
     const filePath = this._buffer.getPath();
     invariant(filePath != null);
 
+    const contents = this._buffer.getText();
+    const languageId = this._getLanguageId(filePath, contents);
     this._sentOpen = true;
     this.sendEvent({
       kind: FileEventKind.OPEN,
@@ -157,8 +162,18 @@ export class BufferSubscription {
         filePath,
         version,
       },
-      contents: this._buffer.getText(),
+      contents,
+      languageId,
     });
+  }
+
+  /** TODO(hansonw): remove version check after Atom 1.24 drops. */
+  _getLanguageId(filePath: string, contents: string): string {
+    if (semver.gte(atom.getVersion(), ATOM_VERSION_CHECK_FOR_LANGUAGE_ID)) {
+      return this._buffer.getLanguageMode().getLanguageId();
+    }
+
+    return atom.grammars.selectGrammar(filePath, contents).scopeName;
   }
 
   getVersion(): number {
@@ -216,6 +231,9 @@ export class BufferSubscription {
         } else if (resyncVersion !== this._changeCount) {
           logger.error('Resync preempted by later edit');
         } else {
+          const contents = this._buffer.getText();
+          const languageId = this._getLanguageId(filePath, contents);
+
           const syncEvent: FileSyncEvent = {
             kind: FileEventKind.SYNC,
             fileVersion: {
@@ -223,7 +241,8 @@ export class BufferSubscription {
               filePath,
               version: resyncVersion,
             },
-            contents: this._buffer.getText(),
+            contents,
+            languageId,
           };
           try {
             await notifier.onFileEvent(syncEvent);

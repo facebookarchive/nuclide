@@ -14,17 +14,23 @@ import {FileCache} from '../lib/FileCache';
 import {Point as ServerPoint, Range as ServerRange} from 'simple-text-buffer';
 import {addMatchers} from '../../nuclide-test-helpers';
 
-function bufferToObject(buffer: simpleTextBuffer$TextBuffer): Object {
+function fileInfoToObject(fileInfo: {
+  buffer: simpleTextBuffer$TextBuffer,
+  languageId: string,
+}): Object {
   return {
-    text: buffer.getText(),
-    changeCount: buffer.changeCount,
+    buffer: {
+      text: fileInfo.buffer.getText(),
+      changeCount: fileInfo.buffer.changeCount,
+    },
+    languageId: fileInfo.languageId,
   };
 }
 
 function cacheToObject(cache: FileCache): Object {
   const result = {};
-  cache._buffers.forEach((buffer, filePath) => {
-    result[filePath] = bufferToObject(buffer);
+  cache._buffers.forEach((fileInfo, filePath) => {
+    result[filePath] = fileInfoToObject(fileInfo);
   });
   return result;
 }
@@ -98,11 +104,15 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(cacheToObject(cache)).toEqual({
         f1: {
-          text: 'contents1',
-          changeCount: 3,
+          buffer: {
+            text: 'contents1',
+            changeCount: 3,
+          },
+          languageId: 'Babel ES6 JavaScript',
         },
       });
       expect(await finishEvents()).toEqual([
@@ -111,6 +121,7 @@ describe('FileCache', () => {
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         },
       ]);
     });
@@ -125,6 +136,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       cache.onFileEvent({
         kind: 'close',
@@ -141,6 +153,7 @@ describe('FileCache', () => {
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         },
         {
           kind: 'close',
@@ -160,6 +173,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       cache.onFileEvent({
         kind: 'edit',
@@ -179,6 +193,7 @@ describe('FileCache', () => {
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         },
         {
           kind: 'edit',
@@ -208,11 +223,15 @@ describe('FileCache', () => {
           version: 4,
         },
         contents: 'contents12',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(cacheToObject(cache)).toEqual({
         f2: {
-          text: 'contents12',
-          changeCount: 4,
+          buffer: {
+            text: 'contents12',
+            changeCount: 4,
+          },
+          languageId: 'Babel ES6 JavaScript',
         },
       });
       expect(await finishEvents()).toEqual([
@@ -221,6 +240,7 @@ describe('FileCache', () => {
           filePath: 'f2',
           changeCount: 4,
           contents: 'contents12',
+          languageId: 'Babel ES6 JavaScript',
         },
       ]);
     });
@@ -235,6 +255,7 @@ describe('FileCache', () => {
           version: 4,
         },
         contents: 'blip',
+        languageId: 'Babel ES6 JavaScript',
       });
       cache.onFileEvent({
         kind: 'sync',
@@ -244,11 +265,15 @@ describe('FileCache', () => {
           version: 42,
         },
         contents: 'contents12',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(cacheToObject(cache)).toEqual({
         f2: {
-          text: 'contents12',
-          changeCount: 42,
+          buffer: {
+            text: 'contents12',
+            changeCount: 42,
+          },
+          languageId: 'Babel ES6 JavaScript',
         },
       });
       expect(JSON.stringify(await finishEvents())).toEqual(
@@ -256,6 +281,7 @@ describe('FileCache', () => {
           {
             kind: 'open',
             contents: 'blip',
+            languageId: 'Babel ES6 JavaScript',
             filePath: 'f2',
             changeCount: 4,
           },
@@ -288,6 +314,7 @@ describe('FileCache', () => {
           version: 42,
         },
         contents: 'blip',
+        languageId: 'Babel ES6 JavaScript',
       });
       cache.onFileEvent({
         kind: 'sync',
@@ -297,11 +324,15 @@ describe('FileCache', () => {
           version: 4,
         },
         contents: 'contents12',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(cacheToObject(cache)).toEqual({
         f2: {
-          text: 'blip',
-          changeCount: 42,
+          buffer: {
+            text: 'blip',
+            changeCount: 42,
+          },
+          languageId: 'Babel ES6 JavaScript',
         },
       });
       expect(JSON.stringify(await finishEvents())).toEqual(
@@ -309,6 +340,7 @@ describe('FileCache', () => {
           {
             kind: 'open',
             contents: 'blip',
+            languageId: 'Babel ES6 JavaScript',
             filePath: 'f2',
             changeCount: 42,
           },
@@ -328,6 +360,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(() => {
         cache.onFileEvent({
@@ -338,6 +371,7 @@ describe('FileCache', () => {
             version: 3,
           },
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         });
       }).toThrow();
       expect(await finishEvents()).toEqual([
@@ -346,6 +380,7 @@ describe('FileCache', () => {
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         },
       ]);
     });
@@ -404,6 +439,7 @@ describe('FileCache', () => {
           end: {row: 0, column: 6},
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(() => {
         cache.onFileEvent({
@@ -428,6 +464,7 @@ describe('FileCache', () => {
       expect(await finishEvents()).toEqual([
         {
           kind: 'open',
+          languageId: 'Babel ES6 JavaScript',
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
@@ -445,6 +482,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(() => {
         cache.onFileEvent({
@@ -472,6 +510,7 @@ describe('FileCache', () => {
           filePath: 'f1',
           changeCount: 3,
           contents: 'contents1',
+          languageId: 'Babel ES6 JavaScript',
         },
       ]);
     });
@@ -488,6 +527,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       const result = await getFileContentsByVersion('f1', 3);
       expect(result).toBe('contents1');
@@ -503,6 +543,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       const value = await getFileContentsByVersion('f1', 2);
       expect(value).toBe(null);
@@ -518,6 +559,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       const result = getFileContentsByVersion('f1', 4);
       cache.onFileEvent({
@@ -547,6 +589,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       const value = await result;
       expect(value).toBe('contents1');
@@ -563,6 +606,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(await result).toBe(null);
     });
@@ -578,6 +622,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       const value = await result;
       expect(value).toBe('contents1');
@@ -594,6 +639,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       cache.onFileEvent({
         kind: 'sync',
@@ -603,6 +649,7 @@ describe('FileCache', () => {
           version: 6,
         },
         contents: 'contents6',
+        languageId: 'Babel ES6 JavaScript',
       });
       const value = await result;
       expect(value).toBe('contents6');
@@ -619,6 +666,7 @@ describe('FileCache', () => {
           version: 3,
         },
         contents: 'contents1',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(await result1).toBe('contents1');
       cache.onFileEvent({
@@ -639,6 +687,7 @@ describe('FileCache', () => {
           version: 4,
         },
         contents: 'contents-reopened',
+        languageId: 'Babel ES6 JavaScript',
       });
       expect(await result2).toBe('contents-reopened');
     });

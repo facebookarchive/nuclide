@@ -15,6 +15,7 @@ export type FileOpenEvent = {
   kind: 'open',
   fileVersion: FileVersion,
   contents: string,
+  languageId: string,
 };
 
 // Used in debugging to verify that the server contents match the client
@@ -22,6 +23,7 @@ export type FileSyncEvent = {
   kind: 'sync',
   fileVersion: FileVersion,
   contents: string,
+  languageId: string,
 };
 
 export type FileCloseEvent = {

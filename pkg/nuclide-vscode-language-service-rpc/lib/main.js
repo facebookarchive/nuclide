@@ -32,7 +32,7 @@ import {
  * TODO: Document all of the fields below.
  */
 export async function createMultiLspLanguageService(
-  languageId: string,
+  languageServerName: string,
   command: string,
   args: Array<string>,
   params: {|
@@ -53,9 +53,9 @@ export async function createMultiLspLanguageService(
   logger.setLevel(params.logLevel);
 
   if ((await which(command)) == null) {
-    const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
+    const message = `Command "${command}" could not be found: ${languageServerName} language features will be disabled.`;
     logger.warn(message);
-    params.host.consoleNotification(languageId, 'warning', message);
+    params.host.consoleNotification(languageServerName, 'warning', message);
     return null;
   }
 
@@ -85,7 +85,7 @@ export async function createMultiLspLanguageService(
       logger,
       fileCache,
       await forkHostServices(params.host, logger),
-      languageId,
+      languageServerName,
       command,
       args,
       params.spawnOptions,
