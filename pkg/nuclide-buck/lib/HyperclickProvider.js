@@ -104,7 +104,6 @@ export async function findTargetLocation(target: Target): Promise<any> {
 }
 
 const VALID_BUILD_FILE_NAMES = new Set(['BUCK', 'BUCK.autodeps', 'TARGETS']);
-const VALID_BUILD_FILE_EXTENSIONS = new Set(['.bzl']);
 
 export async function getSuggestion(
   textEditor: TextEditor,
@@ -116,10 +115,7 @@ export async function getSuggestion(
   }
 
   const baseName = nuclideUri.basename(absolutePath);
-  if (
-    !VALID_BUILD_FILE_NAMES.has(baseName) &&
-    !VALID_BUILD_FILE_EXTENSIONS.has(nuclideUri.extname(baseName))
-  ) {
+  if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
     return null;
   }
 
