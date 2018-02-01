@@ -24,6 +24,10 @@ import {trackTiming} from '../../nuclide-analytics';
 import {Cache} from '../../commons-node/cache';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
+import {
+  readCompilationFlags,
+  fallbackReadCompilationFlags,
+} from './clang-flags-reader';
 import {mapPathsInFlags} from './clang-flags-parser';
 import {
   isHeaderFile,
@@ -468,52 +472,41 @@ export default class ClangFlagsManager {
     requestSettings: ClangRequestSettings,
   ): Promise<Map<string, ClangFlags>> {
     const flags = new Map();
-    let contents = null;
-    try {
-      contents = await fsPromise.readFile(dbFile, 'utf8');
-    } catch (e) {
-      logger.error(
-        `Error reading the compilation database ${dbFile} before parsing. It might be too big or have corrupted data.`,
-        e,
-      );
-      return flags;
-    }
-    let data = null;
-    try {
-      data = JSON.parse(contents);
-    } catch (e) {
-      logger.error(
-        `Error parsing as JSON object the compilation database ${dbFile}`,
-        e,
-      );
-      return flags;
-    }
     const dbDir = nuclideUri.dirname(dbFile);
-    await Promise.all(
-      data.map(async entry => {
-        try {
-          const [
-            realpath,
-            clangFlags,
-          ] = await this._processCompilationDatabaseEntry(
+    const processedEntries = await readCompilationFlags(dbFile)
+      .flatMap(entry =>
+        Observable.fromPromise(
+          this._processCompilationDatabaseEntry(
             entry,
             dbDir,
             flagsFile,
             dbFile,
-          );
-          flags.set(realpath, clangFlags);
-          this._pathToFlags.set(
-            [realpath, requestSettings],
-            Promise.resolve(clangFlags),
-          );
-        } catch (e) {
-          logger.error(
-            `Error processing entry for compilation database ${dbFile}: ${entry}`,
-            e,
-          );
-        }
-      }),
-    );
+          ),
+        ),
+      )
+      .toArray()
+      .toPromise()
+      .catch(error => {
+        logger.error(
+          `Saw error loading ${dbFile}, falling back to JSON.parse.`,
+          error,
+        );
+        return fallbackReadCompilationFlags(dbFile);
+      })
+      .catch(error => {
+        logger.error(
+          `Fallback parser for ${dbFile} encountered error too`,
+          error,
+        );
+        return new Map();
+      });
+    for (const [realpath, clangFlags] of processedEntries) {
+      this._pathToFlags.set(
+        [realpath, requestSettings],
+        Promise.resolve(clangFlags),
+      );
+      flags.set(realpath, clangFlags);
+    }
     return flags;
   }
 
