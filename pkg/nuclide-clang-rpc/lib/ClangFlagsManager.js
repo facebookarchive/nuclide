@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {ClangFlagsHandle} from './ClangFlagsPool';
 import type {
   ClangCompilationDatabase,
   ClangFlags,
@@ -30,6 +31,7 @@ import {
   fallbackReadCompilationFlags,
 } from './clang-flags-reader';
 import {mapPathsInFlags} from './clang-flags-parser';
+import ClangFlagsPool from './ClangFlagsPool';
 import {
   isHeaderFile,
   isSourceFile,
@@ -86,10 +88,12 @@ function getCacheKeyForDb(
 export default class ClangFlagsManager {
   _compilationDatabases: Cache<
     ClangCompilationDatabase,
-    Promise<Map<string, ClangFlags>>,
+    Promise<Map<string, ClangFlagsHandle>>,
   > = new Cache({
     keyFactory: db => getCacheKeyForDb(db),
   });
+
+  _flagPool: ClangFlagsPool;
 
   _realpathCache: Object;
 
@@ -98,16 +102,22 @@ export default class ClangFlagsManager {
   constructor() {
     this._realpathCache = {};
     this._clangProjectFlags = new Map();
+    this._flagPool = new ClangFlagsPool();
   }
 
   reset() {
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._clangProjectFlags.clear();
+    this._flagPool.reset();
+  }
+
+  getFlags(handle: ClangFlagsHandle): ?ClangFlags {
+    return this._flagPool.getFlags(handle);
   }
 
   /**
-   * @return a space-delimited string of flags or null if nothing is known
+   * @return a the normalized compilation flags or null if nothing is known
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
@@ -135,9 +145,9 @@ export default class ClangFlagsManager {
     if (compilationDatabase != null) {
       const flagMap = await this._compilationDatabases.get(compilationDatabase);
       if (flagMap != null) {
-        const flags = flagMap.get(src);
-        if (flags != null) {
-          return flags;
+        const flagsHandle = flagMap.get(src);
+        if (flagsHandle != null) {
+          return this._flagPool.getFlags(flagsHandle);
         }
       }
     }
@@ -148,7 +158,7 @@ export default class ClangFlagsManager {
 
   _findSourceFileForHeaderFromCompilationDatabase(
     header: string,
-    dbFlags: Map<string, ClangFlags>,
+    dbFlags: Map<string, ClangFlagsHandle>,
   ): ?string {
     const basename = getFileBasename(header);
     const srcWithSameBasename = [];
@@ -206,7 +216,7 @@ export default class ClangFlagsManager {
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<{
-    dbFlags: ?Map<string, ClangFlags>,
+    dbFlags: ?Map<string, ClangFlagsHandle>,
     dbDir: ?string,
   }> {
     let dbFlags = null;
@@ -240,7 +250,7 @@ export default class ClangFlagsManager {
 
   async _getRelatedSrcFileForHeader(
     header: string,
-    dbFlags: ?Map<string, ClangFlags>,
+    dbFlags: ?Map<string, ClangFlagsHandle>,
     projectRoot: ?string,
   ): Promise<?string> {
     const source = await getRelatedSourceForHeader(header);
@@ -297,9 +307,9 @@ export default class ClangFlagsManager {
       requestSettings,
     );
     if (dbFlags != null) {
-      const flags = dbFlags.get(src);
-      if (flags != null) {
-        return flags;
+      const flagsHandle = dbFlags.get(src);
+      if (flagsHandle != null) {
+        return this._flagPool.getFlags(flagsHandle);
       }
     }
 
@@ -383,7 +393,7 @@ export default class ClangFlagsManager {
     dbDir: string,
     flagsFile: ?string,
     dbFile: string,
-  ): Promise<[string, ClangFlags]> {
+  ): Promise<[string, ClangFlagsHandle]> {
     this._assertCompilationDatabaseEntry(entry);
     const directory = await fsPromise.realpath(
       // Relative directories aren't part of the spec, but resolving them
@@ -397,20 +407,20 @@ export default class ClangFlagsManager {
       entry,
       flagsFile == null ? dbFile : flagsFile,
     );
-    return [realpath, clangFlags];
+    return [realpath, this._flagPool.getHandle(clangFlags)];
   }
 
   async _loadFlagsFromCompilationDatabase(
     dbFile: string,
     flagsFile: ?string,
     requestSettings: ClangRequestSettings,
-  ): Promise<Map<string, ClangFlags>> {
+  ): Promise<Map<string, ClangFlagsHandle>> {
     const flags = new Map();
     const dbDir = nuclideUri.dirname(dbFile);
     // Factor out the common arguments to _processCompilationDatabaseEntry.
     const processEntry = (
       entry: ClangCompilationDatabaseEntry,
-    ): Promise<[string, ClangFlags]> =>
+    ): Promise<[string, ClangFlagsHandle]> =>
       this._processCompilationDatabaseEntry(entry, dbDir, flagsFile, dbFile);
 
     const processedEntries = await readCompilationFlags(dbFile)
@@ -433,15 +443,15 @@ export default class ClangFlagsManager {
         );
         return [];
       });
-    for (const [realpath, clangFlags] of processedEntries) {
-      flags.set(realpath, clangFlags);
+    for (const [realpath, clangFlagsHandle] of processedEntries) {
+      flags.set(realpath, clangFlagsHandle);
     }
     return flags;
   }
 
   loadFlagsFromCompilationDatabase(
     requestSettings: ClangRequestSettings,
-  ): Promise<Map<string, ClangFlags>> {
+  ): Promise<Map<string, ClangFlagsHandle>> {
     const db = requestSettings.compilationDatabase;
     if (db == null) {
       return Promise.resolve(new Map());

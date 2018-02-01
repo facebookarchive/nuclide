@@ -307,12 +307,21 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
   }
 }
 
-export function loadFlagsFromCompilationDatabaseAndCacheThem(
+export async function loadFlagsFromCompilationDatabaseAndCacheThem(
   requestSettings: ClangRequestSettings,
 ): Promise<Map<string, ClangFlags>> {
-  return serverManager
-    .getClangFlagsManager()
-    .loadFlagsFromCompilationDatabase(requestSettings);
+  const flagsManager = serverManager.getClangFlagsManager();
+  const compilationHandles = await flagsManager.loadFlagsFromCompilationDatabase(
+    requestSettings,
+  );
+  const compilationFlags = new Map();
+  for (const [src, handle] of compilationHandles) {
+    const flags = flagsManager.getFlags(handle);
+    if (flags != null) {
+      compilationFlags.set(src, flags);
+    }
+  }
+  return compilationFlags;
 }
 
 /**
