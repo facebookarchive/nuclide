@@ -75,36 +75,40 @@ export const CodeSearchProvider: Provider<FileResult> = {
     const config = pickConfigByUri(projectRoot);
     const regexp = new RegExp(escapeRegExp(query), 'i');
 
-    return getCodeSearchServiceByNuclideUri(projectRoot)
-      .codeSearch(
-        projectRoot,
-        regexp,
-        config.useVcsSearch,
-        config.tool.length === 0 ? null : config.tool,
-        config.maxResults,
-      )
-      .refCount()
-      .map(match => {
-        const result = {
-          isFirstResultForPath: match.file !== lastPath,
-          path: match.file,
-          query,
-          line: match.row,
-          column: match.column,
-          context: match.line,
-          displayPath: `./${nuclideUri
-            .relative(projectRoot, match.file)
-            .replace(/\\/g, '/')}`,
-          resultType: 'FILE',
-        };
-        lastPath = match.file;
-        return result;
-      })
-      .timeout(SEARCH_TIMEOUT)
-      .catch(() => Observable.empty())
-      .toArray()
-      .takeUntil(directoriesObs.filter(dir => dir.getPath() === projectRoot))
-      .toPromise();
+    return (
+      getCodeSearchServiceByNuclideUri(projectRoot)
+        .codeSearch(
+          projectRoot,
+          regexp,
+          config.useVcsSearch,
+          config.tool.length === 0 ? null : config.tool,
+          config.maxResults,
+        )
+        .refCount()
+        .map(match => {
+          const result = {
+            isFirstResultForPath: match.file !== lastPath,
+            path: match.file,
+            query,
+            line: match.row,
+            column: match.column,
+            context: match.line,
+            displayPath: `./${nuclideUri
+              .relative(projectRoot, match.file)
+              .replace(/\\/g, '/')}`,
+            resultType: 'FILE',
+          };
+          lastPath = match.file;
+          return result;
+        })
+        .timeout(SEARCH_TIMEOUT)
+        .catch(() => Observable.empty())
+        .toArray()
+        .takeUntil(directoriesObs.filter(dir => dir.getPath() === projectRoot))
+        .toPromise()
+        // toPromise yields undefined if it was interrupted.
+        .then(result => result || [])
+    );
   },
   getComponentForItem(_item: FileResult): React.Element<any> {
     const item = ((_item: any): CodeSearchFileResult);
