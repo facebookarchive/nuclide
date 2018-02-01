@@ -417,17 +417,14 @@ export default class ClangFlagsManager {
   ): Promise<Map<string, ClangFlags>> {
     const flags = new Map();
     const dbDir = nuclideUri.dirname(dbFile);
+    // Factor out the common arguments to _processCompilationDatabaseEntry.
+    const processEntry = (
+      entry: ClangCompilationDatabaseEntry,
+    ): Promise<[string, ClangFlags]> =>
+      this._processCompilationDatabaseEntry(entry, dbDir, flagsFile, dbFile);
+
     const processedEntries = await readCompilationFlags(dbFile)
-      .flatMap(entry =>
-        Observable.fromPromise(
-          this._processCompilationDatabaseEntry(
-            entry,
-            dbDir,
-            flagsFile,
-            dbFile,
-          ),
-        ),
-      )
+      .flatMap(processEntry)
       .toArray()
       .toPromise()
       .catch(error => {
@@ -435,14 +432,16 @@ export default class ClangFlagsManager {
           `Saw error loading ${dbFile}, falling back to JSON.parse.`,
           error,
         );
-        return fallbackReadCompilationFlags(dbFile);
+        return fallbackReadCompilationFlags(dbFile).then(entries =>
+          Promise.all(entries.map(entry => processEntry(entry))),
+        );
       })
       .catch(error => {
         logger.error(
           `Fallback parser for ${dbFile} encountered error too`,
           error,
         );
-        return new Map();
+        return [];
       });
     for (const [realpath, clangFlags] of processedEntries) {
       this._pathToFlags.set(
