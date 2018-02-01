@@ -224,7 +224,7 @@ class BuckClangCompilationDatabaseHandler {
         projectRoot: buckRoot,
       },
     );
-    pathToFlags.forEach((fullFlags, path) => {
+    pathToFlags.forEach((_, path) => {
       this._sourceCache.set(path, Promise.resolve(db));
     });
   }

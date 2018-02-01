@@ -18,12 +18,12 @@ import type {
   ClangDeclaration,
   ClangLocalReferences,
   ClangOutlineTree,
-  ClangCompilationDatabaseEntry,
   ClangRequestSettings,
+  ClangFlags,
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {keyMirror, mapTransform, mapCompact} from 'nuclide-commons/collection';
+import {keyMirror} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
@@ -309,13 +309,10 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
 
 export function loadFlagsFromCompilationDatabaseAndCacheThem(
   requestSettings: ClangRequestSettings,
-): Promise<Map<string, ClangCompilationDatabaseEntry>> {
+): Promise<Map<string, ClangFlags>> {
   return serverManager
     .getClangFlagsManager()
-    .loadFlagsFromCompilationDatabase(requestSettings)
-    .then(fullFlags =>
-      mapCompact(mapTransform(fullFlags, flags => flags.rawData)),
-    );
+    .loadFlagsFromCompilationDatabase(requestSettings);
 }
 
 /**

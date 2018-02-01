@@ -122,16 +122,17 @@ export type ClangCompilationDatabase = {|
   libclangPath: ?string,
 |};
 
+// https://clang.llvm.org/docs/JSONCompilationDatabase.html
 export type ClangCompilationDatabaseEntry = {|
-  command: string,
+  command?: string,
   file: string,
   directory: string,
   arguments?: Array<string>,
 |};
 
+// Merges the command and arguments fields of the database entry into 'flags'.
 export type ClangFlags = {|
-  // Will be computed and memoized from rawData on demand.
-  flags?: ?Array<string>,
-  rawData: ?ClangCompilationDatabaseEntry,
+  flags: Array<string>,
+  directory: string,
   flagsFile: ?string,
 |};
