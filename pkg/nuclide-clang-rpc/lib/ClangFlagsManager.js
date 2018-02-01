@@ -450,6 +450,7 @@ export default class ClangFlagsManager {
     for (const [realpath, clangFlagsHandle] of processedEntries) {
       flags.set(realpath, clangFlagsHandle);
     }
+    this._flagPool.trackStats();
     this._uriResolveCache.clear();
     return flags;
   }
