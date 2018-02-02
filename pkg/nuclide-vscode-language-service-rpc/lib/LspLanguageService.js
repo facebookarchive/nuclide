@@ -382,6 +382,7 @@ export class LspLanguageService {
       } catch (e) {
         this._logLspException(e);
         track('lsp-start', {
+          name: this._languageServerName,
           status: 'spawn failed',
           spawn: spawnCommandForLogs,
           message: e.message,
@@ -618,6 +619,7 @@ export class LspLanguageService {
           this._logger.trace('Lsp.Initialize.error');
           this._logLspException(e);
           track('lsp-start', {
+            name: this._languageServerName,
             status: 'initialize failed',
             spawn: spawnCommandForLogs,
             message: e.message,
@@ -720,6 +722,7 @@ export class LspLanguageService {
         });
 
         track('lsp-start', {
+          name: this._languageServerName,
           status: 'ok',
           spawn: spawnCommandForLogs,
           timeTakenMs: Date.now() - startTimeMs,
@@ -736,6 +739,7 @@ export class LspLanguageService {
       // Don't know how to recover.
       this._logger.error(`Lsp.start - unexpected error ${e}`);
       track('lsp-start', {
+        name: this._languageServerName,
         status: 'start failed',
         spawn: spawnCommandForLogs,
         message: e.message,
@@ -894,6 +898,7 @@ export class LspLanguageService {
       e.data != null && e.data.stack != null ? e.data.stack : null;
 
     track('lsp-exception', {
+      name: this._languageServerName,
       message: e.message,
       exceptionStack,
       callStack,
@@ -981,7 +986,10 @@ export class LspLanguageService {
     while (this._recentRestarts[0] < now - 3 * 60 * 1000) {
       this._recentRestarts.shift();
     }
-    track('lsp-handle-close', {recentRestarts: this._recentRestarts.length});
+    track('lsp-handle-close', {
+      name: this._languageServerName,
+      recentRestarts: this._recentRestarts.length,
+    });
     if (this._recentRestarts.length >= 5) {
       this._logger.error('Lsp.Close - will not auto-restart.');
       const message =
