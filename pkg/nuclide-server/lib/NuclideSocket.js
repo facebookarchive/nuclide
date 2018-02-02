@@ -69,8 +69,7 @@ export class NuclideSocket {
   _heartbeat: XhrConnectionHeartbeat;
   _useProtocolLogger: boolean;
 
-  constructor(serverUri: string, options: ?AgentOptions) {
-    const useAck = options != null && options.useAck;
+  constructor(serverUri: string, useAck: boolean, options: ?AgentOptions) {
     this._emitter = new Emitter();
     this._serverUri = serverUri;
     this._options = options;

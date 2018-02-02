@@ -29,7 +29,8 @@ describe('Nuclide Server test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
-      socket = new NuclideSocket('http://localhost:8176', null);
+      const useAck = false;
+      socket = new NuclideSocket('http://localhost:8176', useAck, null);
       client = RpcConnection.createRemote(
         socket,
         [getRemoteNuclideUriMarshalers('localhost')],

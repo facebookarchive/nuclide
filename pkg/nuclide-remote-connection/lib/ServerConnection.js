@@ -299,7 +299,7 @@ export class ServerConnection {
     }
 
     let uri;
-    let options = {useAck};
+    let options = {};
 
     // Use https if we have key, cert, and ca
     if (this._isSecure()) {
@@ -319,7 +319,7 @@ export class ServerConnection {
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 
-    const socket = new NuclideSocket(uri, options);
+    const socket = new NuclideSocket(uri, useAck, options);
     const client = RpcConnection.createRemote(
       (socket: Transport),
       getAtomSideMarshalers(this.getRemoteHostname()),

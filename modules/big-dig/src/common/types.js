@@ -15,5 +15,4 @@ export type AgentOptions = {
   key?: Buffer,
   cert?: Buffer,
   family?: 4 | 6,
-  useAck: boolean,
 };

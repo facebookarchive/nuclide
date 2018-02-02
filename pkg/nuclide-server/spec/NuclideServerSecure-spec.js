@@ -60,12 +60,12 @@ describe('Nuclide Secure Server test suite', () => {
 
       await server.connect();
 
-      socket = new NuclideSocket('https://localhost:8176', {
+      const useAck = false;
+      socket = new NuclideSocket('https://localhost:8176', useAck, {
         ca: fs.readFileSync(ca_cert_path),
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),
         family: 6,
-        useAck: false,
       });
       const client = RpcConnection.createRemote(
         socket,
