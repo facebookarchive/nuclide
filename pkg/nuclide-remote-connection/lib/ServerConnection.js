@@ -21,7 +21,7 @@ import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import invariant from 'assert';
-import {RpcConnection} from '../../nuclide-rpc';
+import {RpcConnection, type Transport} from '../../nuclide-rpc';
 import {Observable} from 'rxjs';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {
@@ -42,6 +42,7 @@ import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getLogger} from 'log4js';
 import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
+import createBigDigRpcClient from './createBigDigRpcClient';
 
 export type ServerConnectionConfiguration = {
   host: string, // host nuclide server is running on.
@@ -50,6 +51,7 @@ export type ServerConnectionConfiguration = {
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
+  version?: number,
 };
 
 // ServerConnection represents the client side of a connection to a remote machine.
@@ -65,7 +67,7 @@ export class ServerConnection {
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
-  _client: ?RpcConnection<NuclideSocket>;
+  _client: ?RpcConnection<Transport>;
   _connections: Array<RemoteConnection>;
   _fileWatches: SharedObservableCache<string, WatchResult>;
   _directoryWatches: SharedObservableCache<string, WatchResult>;
@@ -156,10 +158,15 @@ export class ServerConnection {
 
   _monitorConnectionHeartbeat() {
     invariant(this._healthNotifier == null);
-    this._healthNotifier = new ConnectionHealthNotifier(
-      this._config.host,
-      this.getSocket(),
-    );
+    const socket = this.getClient().getTransport();
+    if (socket instanceof NuclideSocket) {
+      this._healthNotifier = new ConnectionHealthNotifier(
+        this._config.host,
+        socket,
+      );
+    } else {
+      // TODO: big-dig heartbeat?
+    }
   }
 
   setOnHeartbeatError(onHeartbeatError: OnHeartbeatErrorCallback): void {
@@ -216,7 +223,7 @@ export class ServerConnection {
 
   async initialize(): Promise<void> {
     const useAck = await passesGK('nuclide_connection_ack');
-    this._startRpc(useAck);
+    await this._startRpc(useAck);
     const client = this.getClient();
     const clientVersion = getVersion();
 
@@ -231,16 +238,20 @@ export class ServerConnection {
     // Test connection first. First time we get here we're checking to reestablish
     // connection using cached credentials. This will fail fast (faster than infoService)
     // when we don't have cached credentials yet.
-    const [heartbeatVersion, ip] = await Promise.all([
-      client.getTransport().testConnection(),
-      lookupPreferIpv6(this._config.host),
-    ]);
-    if (clientVersion !== heartbeatVersion) {
-      throwVersionMismatch(heartbeatVersion);
+    const transport = client.getTransport();
+    // TODO: do we even want this for bigdig?
+    if (transport instanceof NuclideSocket) {
+      const heartbeatVersion = await transport.testConnection();
+      if (clientVersion !== heartbeatVersion) {
+        throwVersionMismatch(heartbeatVersion);
+      }
     }
 
     // Do another version check over the RPC framework.
-    const serverVersion = await this._getInfoService().getServerVersion();
+    const [serverVersion, ip] = await Promise.all([
+      this._getInfoService().getServerVersion(),
+      lookupPreferIpv6(this._config.host),
+    ]);
     if (clientVersion !== serverVersion) {
       throwVersionMismatch(serverVersion);
     }
@@ -272,7 +283,7 @@ export class ServerConnection {
     }
   }
 
-  getClient(): RpcConnection<NuclideSocket> {
+  getClient(): RpcConnection<Transport> {
     invariant(
       !this._closed && this._client != null,
       'Server connection has been closed.',
@@ -280,7 +291,12 @@ export class ServerConnection {
     return this._client;
   }
 
-  _startRpc(useAck: boolean): void {
+  async _startRpc(useAck: boolean): Promise<void> {
+    if (this._config.version === 2) {
+      this._client = await createBigDigRpcClient(this._config);
+      return;
+    }
+
     let uri;
     let options = {useAck};
 
@@ -304,7 +320,7 @@ export class ServerConnection {
 
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
-      socket,
+      (socket: Transport),
       getAtomSideMarshalers(this.getRemoteHostname()),
       servicesConfig,
       // Track calls with a sampling rate of 1/10.
@@ -438,10 +454,6 @@ export class ServerConnection {
 
   getService(serviceName: string): any {
     return this.getClient().getService(serviceName);
-  }
-
-  getSocket(): NuclideSocket {
-    return this.getClient().getTransport();
   }
 
   _getInfoService(): InfoService {

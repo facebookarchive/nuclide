@@ -41,6 +41,7 @@ export type RemoteConnectionConfiguration = {
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
   promptReconnectOnFailure?: boolean, // open a connection dialog prompt if the reconnect fails
+  version?: number,
 };
 
 // A RemoteConnection represents a directory which has been opened in Nuclide on a remote machine.

@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ServerConnection} from '../../nuclide-remote-connection';
+import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import StatusBarTile from './StatusBarTile';
@@ -81,11 +82,14 @@ export default class RemoteProjectsController {
       return;
     }
 
-    const socket = connection.getSocket();
-    updateStatus(socket.isConnected());
+    const socket = connection.getClient().getTransport();
+    updateStatus(!socket.isClosed());
 
-    this._statusSubscription = socket.onStatus(updateStatus);
-    this._disposables.add(this._statusSubscription);
+    // TODO: implement for big-dig
+    if (socket instanceof NuclideSocket) {
+      this._statusSubscription = socket.onStatus(updateStatus);
+      this._disposables.add(this._statusSubscription);
+    }
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): void {

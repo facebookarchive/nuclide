@@ -33,6 +33,7 @@ type SerializableServerConnectionConfiguration = {
   certificateAuthorityCertificate?: string,
   clientCertificate?: string,
   clientKey?: string,
+  version?: number,
 };
 
 // Insecure configs are used for testing only.
@@ -130,6 +131,7 @@ async function encryptConfig(
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
+    version: remoteProjectConfig.version,
   };
 }
 
@@ -190,6 +192,7 @@ async function decryptConfig(
     ),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),
+    version: remoteProjectConfig.version,
   };
 }
 

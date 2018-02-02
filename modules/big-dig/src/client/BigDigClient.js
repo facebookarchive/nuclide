@@ -62,6 +62,10 @@ export class BigDigClient {
     return this._webSocketTransport.onClose(callback);
   }
 
+  close(): void {
+    this._webSocketTransport.close();
+  }
+
   sendMessage(tag: string, body: string) {
     this._webSocketTransport.send(`${tag}\0${body}`);
   }
