@@ -21,7 +21,7 @@ import {Emitter} from 'event-kit';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedTransport} from './QueuedTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
-import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
+import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';

@@ -1,23 +1,25 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
-import type {RequestOptions} from 'big-dig/src/client/utils/asyncRequest';
-import type {AgentOptions} from 'big-dig/src/common/types';
-import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
+import type {RequestOptions} from './utils/asyncRequest';
+import type {AgentOptions} from '../common/types';
+import asyncRequest from './utils/asyncRequest';
 import {Emitter} from 'event-kit';
-import {HEARTBEAT_CHANNEL} from './config';
 
 const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
+
+export const HEARTBEAT_CHANNEL = 'heartbeat';
 
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;

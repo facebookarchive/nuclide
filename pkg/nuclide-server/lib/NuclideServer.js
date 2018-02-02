@@ -19,7 +19,7 @@ import {attachEvent} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
-import {HEARTBEAT_CHANNEL} from './config';
+import {HEARTBEAT_CHANNEL} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {HistogramTracker} from '../../nuclide-analytics';
