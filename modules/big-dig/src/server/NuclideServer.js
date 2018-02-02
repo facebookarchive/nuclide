@@ -20,6 +20,9 @@ export type LauncherParameters = {
   serverParams: mixed,
 };
 
+// The absolutePathToServerMain must export a single function of this type.
+export type LauncherType = (params: LauncherParameters) => Promise<void>;
+
 export type NuclideServerOptions = {
   // These options will be passed verbatim to https.createServer(). Admittedly,
   // this is not the complete list of options that it takes, but these are the
@@ -74,10 +77,8 @@ export function launchServer(options: NuclideServerOptions): Promise<number> {
       });
       webSocketServer.on('error', onError);
 
-      const launcher: (
-        params: LauncherParameters,
-        // $FlowIgnore
-      ) => Promise<void> = require(options.absolutePathToServerMain);
+      // $FlowIgnore
+      const launcher: LauncherType = require(options.absolutePathToServerMain);
 
       const bigDigServer = new BigDigServer(webServer, webSocketServer);
       launcher({
