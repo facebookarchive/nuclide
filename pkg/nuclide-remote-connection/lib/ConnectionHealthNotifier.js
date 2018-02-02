@@ -9,10 +9,11 @@
  * @format
  */
 
+import type {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
+
 import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-remote-connection');
@@ -36,11 +37,11 @@ export class ConnectionHealthNotifier {
   _subscription: IDisposable;
   _onHeartbeatError: ?OnHeartbeatErrorCallback;
 
-  constructor(host: string, socket: NuclideSocket) {
+  constructor(host: string, port: number, heartbeat: XhrConnectionHeartbeat) {
     this._heartbeatNetworkAwayCount = 0;
     this._lastHeartbeatNotification = null;
 
-    const serverUri = socket.getServerUri();
+    const uri = `https://${host}:${port}`;
 
     /**
      * Adds an Atom notification for the detected heartbeat network status
@@ -99,7 +100,7 @@ export class ConnectionHealthNotifier {
         const {notification} = this._lastHeartbeatNotification;
         notification.dismiss();
         atom.notifications.addSuccess(
-          'Connection restored to Nuclide Server at: ' + serverUri,
+          'Connection restored to Nuclide Server at: ' + uri,
         );
         this._heartbeatNetworkAwayCount = 0;
         this._lastHeartbeatNotification = null;
@@ -112,7 +113,7 @@ export class ConnectionHealthNotifier {
         addHeartbeatNotification(
           HEARTBEAT_NOTIFICATION_WARNING,
           code,
-          `Nuclide server cannot be reached at "${serverUri}".<br/>` +
+          `Nuclide server cannot be reached at "${uri}".<br/>` +
             'Nuclide will reconnect when the network is restored.',
           /* dismissable */ true,
           /* askToReload */ false,
@@ -163,7 +164,6 @@ export class ConnectionHealthNotifier {
           break;
         case 'PORT_NOT_ACCESSIBLE':
           // Notify never heard a heartbeat from the server.
-          const port = socket.getServerPort();
           addHeartbeatNotification(
             HEARTBEAT_NOTIFICATION_ERROR,
             code,
@@ -198,8 +198,8 @@ export class ConnectionHealthNotifier {
       }
     };
     this._subscription = new UniversalDisposable(
-      socket.getHeartbeat().onHeartbeat(onHeartbeat),
-      socket.getHeartbeat().onHeartbeatError(onHeartbeatError),
+      heartbeat.onHeartbeat(onHeartbeat),
+      heartbeat.onHeartbeatError(onHeartbeatError),
     );
   }
 

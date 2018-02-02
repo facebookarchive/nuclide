@@ -162,7 +162,8 @@ export class ServerConnection {
     if (socket instanceof NuclideSocket) {
       this._healthNotifier = new ConnectionHealthNotifier(
         this._config.host,
-        socket,
+        socket.getServerPort(),
+        socket.getHeartbeat(),
       );
     } else {
       // TODO: big-dig heartbeat?
