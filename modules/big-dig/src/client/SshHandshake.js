@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {BigDigClient} from './BigDigClient';
 import type {
   ClientErrorExtensions,
   ConnectConfig,
@@ -26,7 +25,6 @@ import fs from '../common/fs';
 import {lastly, timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
-import createBigDigClient from './createBigDigClient';
 import {onceEventOrError} from '../common/events';
 import {getPackage} from './RemotePackage';
 import type {PackageParams, RemotePackage} from './RemotePackage';
@@ -38,9 +36,6 @@ export type {
   UnmanagedPackageParams as UnmanagedServerParams,
   PackageParams as ServerExecutable,
 } from './RemotePackage';
-
-// TODO
-function restoreBigDigClient(address: string) {}
 
 export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
@@ -85,7 +80,6 @@ const ErrorType = Object.freeze({
   SSH_AUTHENTICATION: 'SSH_AUTHENTICATION',
   DIRECTORY_NOT_FOUND: 'DIRECTORY_NOT_FOUND',
   SERVER_START_FAILED: 'SERVER_START_FAILED',
-  SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
   UNSUPPORTED_AUTH_METHOD: 'UNSUPPORTED_AUTH_METHOD',
   USER_CANCELLED: 'USER_CANCELLED',
@@ -101,7 +95,6 @@ export type SshHandshakeErrorType =
   | 'SSH_AUTHENTICATION'
   | 'DIRECTORY_NOT_FOUND'
   | 'SERVER_START_FAILED'
-  | 'SERVER_CANNOT_CONNECT'
   | 'SFTP_TIMEOUT'
   | 'UNSUPPORTED_AUTH_METHOD'
   | 'USER_CANCELLED'
@@ -189,7 +182,7 @@ export type SshConnectionDelegate = {
   onWillConnect: (config: SshConnectionConfiguration) => void,
   /** Invoked when connection is successful */
   onDidConnect: (
-    connection: BigDigClient,
+    remoteConnectionConfig: RemoteConnectionConfiguration,
     config: SshConnectionConfiguration,
   ) => mixed,
   /** Invoked when connection is fails */
@@ -304,8 +297,11 @@ export class SshHandshake {
     this._delegate.onWillConnect(this._config);
   }
 
-  _didConnect(connection: BigDigClient): void {
-    this._delegate.onDidConnect(connection, this._config);
+  _didConnect(
+    config: RemoteConnectionConfiguration,
+  ): RemoteConnectionConfiguration {
+    this._delegate.onDidConnect(config, this._config);
+    return config;
   }
 
   async _userPromptSingle(prompt: Prompt): Promise<string> {
@@ -511,7 +507,7 @@ export class SshHandshake {
    */
   async connect(
     config: SshConnectionConfiguration,
-  ): Promise<[BigDigClient, SshConnectionConfiguration]> {
+  ): Promise<[RemoteConnectionConfiguration, SshConnectionConfiguration]> {
     try {
       this._config = config;
       this._cancelled = false;
@@ -526,17 +522,6 @@ export class SshHandshake {
           SshHandshake.ErrorType.HOST_NOT_FOUND,
           error,
         );
-      }
-
-      const connection =
-        (await restoreBigDigClient(config.host)) ||
-        // We save connections by their IP address as well, in case a different hostname
-        // was used for the same server.
-        (await restoreBigDigClient(address));
-
-      if (connection) {
-        this._didConnect(connection);
-        return [connection, this._config];
       }
 
       const connectConfig = await this._getConnectConfig(address, config);
@@ -838,7 +823,7 @@ export class SshHandshake {
   /**
    * This is called when the SshConnection is ready.
    */
-  async _onSshConnectionIsReady(): Promise<BigDigClient> {
+  async _onSshConnectionIsReady(): Promise<RemoteConnectionConfiguration> {
     const server = await this._setupServerPackage(this._config.remoteServer);
     await this._startRemoteServer(server);
 
@@ -846,7 +831,7 @@ export class SshHandshake {
     if (this._isSecure()) {
       // flowlint-next-line sketchy-null-string:off
       invariant(this._remoteHost);
-      return this._establishBigDigClient({
+      return this._didConnect({
         host: this._remoteHost,
         port: this._remotePort,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
@@ -863,38 +848,11 @@ export class SshHandshake {
       const localPort = this._getLocalPort();
       // flowlint-next-line sketchy-null-number:off
       invariant(localPort);
-      return this._establishBigDigClient({
+      return this._didConnect({
         host: 'localhost',
         port: localPort,
       });
     }
-  }
-
-  /**
-   * Now that the remote server has been started, create the BigDigClient to talk to it and
-   * pass it to the _didConnect() callback.
-   */
-  async _establishBigDigClient(
-    config: RemoteConnectionConfiguration,
-  ): Promise<BigDigClient> {
-    let bigDigClient = null;
-    try {
-      bigDigClient = await createBigDigClient(config);
-    } catch (error) {
-      throw new SshHandshakeError(
-        'Connection check failed',
-        SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
-        error,
-      );
-    }
-
-    this._didConnect(bigDigClient);
-    // If we are secure then we don't need the ssh tunnel.
-    if (this._isSecure()) {
-      await this._connection.end();
-    }
-
-    return bigDigClient;
   }
 
   _getLocalPort(): ?number {
@@ -937,12 +895,12 @@ export function decorateSshConnectionDelegateWithTracking(
       delegate.onWillConnect(config);
     },
     onDidConnect: (
-      connection: BigDigClient,
+      remoteConnectionConfig: RemoteConnectionConfiguration,
       config: SshConnectionConfiguration,
     ) => {
       invariant(connectionTracker);
       connectionTracker.trackSuccess();
-      delegate.onDidConnect(connection, config);
+      delegate.onDidConnect(remoteConnectionConfig, config);
     },
     onError: (
       errorType: SshHandshakeErrorType,

@@ -10,11 +10,12 @@
  * @format
  */
 
-import type {BigDigClient} from 'big-dig/src/client/BigDigClient';
+import type {BigDigClient} from 'big-dig/src/client';
 import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
   Prompt,
+  RemoteConnectionConfiguration,
 } from 'big-dig/src/client/SshHandshake';
 
 import invariant from 'assert';
@@ -23,7 +24,7 @@ import yargs from 'yargs';
 
 import {question} from 'big-dig/src/common/readline';
 import {getUsername} from 'big-dig/src/common/username';
-import {SshHandshake} from 'big-dig/src/client/SshHandshake';
+import {createBigDigClient, SshHandshake} from 'big-dig/src/client';
 import {setupDefaultLogging} from './logging';
 
 setupDefaultLogging('big-dig-server-cli.log');
@@ -69,22 +70,34 @@ function parseArgsAndRunMain(): Promise<void> {
         getLogger().info('Connecting...');
       },
 
-      async onDidConnect(
-        connection: BigDigClient,
+      onDidConnect(
+        connectionConfig: RemoteConnectionConfiguration,
         config: SshConnectionConfiguration,
       ) {
-        getLogger().info(`Connected to server at: ${connection.getAddress()}`);
-        // TODO(mbolin): Do this in a better way that does not interleave
-        // with logging output. Maybe a simpler send/response would be a better
-        // first sample and there could be a more complex example that uses more
-        // of the Observable API.
-        connection.onMessage('raw-data').subscribe(x => getLogger().info(x));
+        createBigDigClient(connectionConfig).then(
+          connection => {
+            getLogger().info(
+              `Connected to server at: ${connection.getAddress()}`,
+            );
+            // TODO(mbolin): Do this in a better way that does not interleave
+            // with logging output. Maybe a simpler send/response would be a better
+            // first sample and there could be a more complex example that uses more
+            // of the Observable API.
+            connection
+              .onMessage('raw-data')
+              .subscribe(x => getLogger().info(x));
 
-        // Once the connection is established, the common pattern is to pass
-        // the WebSocketTransport to the business logic that needs to
-        // communicate with the server.
-        const client = new QuestionClient(connection, resolve);
-        client.run();
+            // Once the connection is established, the common pattern is to pass
+            // the WebSocketTransport to the business logic that needs to
+            // communicate with the server.
+            const client = new QuestionClient(connection, resolve);
+            client.run();
+          },
+          err => {
+            getLogger().error('Error connecting to server', err);
+            reject(err);
+          },
+        );
       },
 
       onError(

@@ -22,8 +22,5 @@
  * makes it easier to test this code locally without an explicit build step.
  */
 require('../../loadTranspiler');
-const {SshHandshake} = require('./SshHandshake');
-const createBigDigClient = require('./createBigDigClient').default;
 
-module.exports.SshHandshake = SshHandshake;
-module.exports.createBigDigClient = createBigDigClient;
+module.exports = require('./index');

@@ -13,15 +13,22 @@
 import WS from 'ws';
 import https from 'https';
 
-import type {RemoteConnectionConfiguration} from './SshHandshake';
 import {WebSocketTransport} from './WebSocketTransport';
 import {BigDigClient} from './BigDigClient';
+
+export type BigDigClientConfig = {
+  +host: string,
+  +port: number,
+  +certificateAuthorityCertificate?: Buffer | string,
+  +clientCertificate?: Buffer | string,
+  +clientKey?: Buffer | string,
+};
 
 /**
  * Creates a Big Dig client that speaks the v1 protocol.
  */
 export default (async function createBigDigClient(
-  config: RemoteConnectionConfiguration,
+  config: BigDigClientConfig,
 ): Promise<BigDigClient> {
   const options = {
     ca: config.certificateAuthorityCertificate,

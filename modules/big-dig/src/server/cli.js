@@ -37,7 +37,8 @@ const DEFAULT_PORT = 0;
  *     server [that is using Big Dig as a building block].
  */
 export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
-  const params = JSON.parse(process.argv[2]);
+  // All arguments expect for the last one are ignored.
+  const params = JSON.parse(process.argv[process.argv.length - 1]);
   const {cname, expiration, jsonOutputFile} = params;
   let {port} = params;
   if (typeof cname !== 'string') {

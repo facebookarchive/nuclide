@@ -12,7 +12,7 @@
 import type {ServerConnectionConfiguration} from './ServerConnection';
 import type {Transport} from '../../nuclide-rpc';
 
-import createBigDigClient from 'big-dig/src/client/createBigDigClient';
+import {createBigDigClient} from 'big-dig/src/client';
 import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
 import {RpcConnection} from '../../nuclide-rpc';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
