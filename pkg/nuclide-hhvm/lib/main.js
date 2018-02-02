@@ -94,6 +94,9 @@ class Activation {
     const pathString = decodeURIComponent(String(nuclidePath));
     const hackRootString = decodeURIComponent(String(hackRoot));
 
+    const startDebugger =
+      params.noDebugger == null || params.noDebugger !== 'true';
+
     track('nuclide-attach-hhvm-deeplink', {
       pathString,
       line,
@@ -114,7 +117,9 @@ class Activation {
     const host = nuclideUri.getHostname(pathString);
     const cwd = nuclideUri.createRemoteUri(host, hackRootString);
     const notification = atom.notifications.addInfo(
-      `Connecting to ${host} and attaching debugger...`,
+      startDebugger
+        ? `Connecting to ${host} and attaching debugger...`
+        : `Connecting to ${host}...`,
       {
         dismissable: true,
       },
@@ -155,18 +160,21 @@ class Activation {
       goToLocation(navUri, {line: lineNumber - 1});
     }
 
-    // Debug the remote HHVM server!
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
+    if (startDebugger) {
+      // Debug the remote HHVM server!
+      const debuggerService = await consumeFirstProvider(
+        'nuclide-debugger.remote',
+      );
 
-    if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
-      // Insert a breakpoint if requested.
-      // NOTE: Nuclide protocol breakpoint line numbers start at 0, so subtract 1.
-      debuggerService.addBreakpoint(navUri, lineNumber - 1);
+      if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
+        // Insert a breakpoint if requested.
+        // NOTE: Nuclide protocol breakpoint line numbers start at 0, so subtract 1.
+        debuggerService.addBreakpoint(navUri, lineNumber - 1);
+      }
+
+      await debuggerService.startDebugging(new AttachProcessInfo(hackRootUri));
     }
 
-    await debuggerService.startDebugging(new AttachProcessInfo(hackRootUri));
     notification.dismiss();
   }
 }
