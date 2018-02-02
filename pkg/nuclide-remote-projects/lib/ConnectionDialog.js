@@ -17,12 +17,15 @@ import type {
 import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
+  SshConnectionDelegate,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
-import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
+import {Observable} from 'rxjs';
+import passesGK from '../../commons-node/passesGK';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import connectBigDigSshHandshake from './connectBigDigSshHandshake';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
@@ -30,6 +33,7 @@ import {notifySshHandshakeError} from './notification';
 import * as React from 'react';
 import electron from 'electron';
 import {
+  RemoteConnection,
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
@@ -72,7 +76,6 @@ type State = {
   instructions: string,
   isDirty: boolean,
   mode: number,
-  sshHandshake: SshHandshake,
 };
 
 const REQUEST_CONNECTION_DETAILS = 1;
@@ -87,52 +90,51 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   _cancelButton: ?Button;
   _okButton: ?Button;
   _content: ?(AuthenticationPrompt | ConnectionDetailsPrompt);
+  _delegate: SshConnectionDelegate;
+  _pendingHandshake: ?rxjs$ISubscription;
 
   constructor(props: Props) {
     super(props);
 
-    const sshHandshake = new SshHandshake(
-      decorateSshConnectionDelegateWithTracking({
-        onKeyboardInteractive: (
-          name,
-          instructions,
-          instructionsLang,
-          prompts,
-          finish,
-        ) => {
-          // TODO: Display all prompts, not just the first one.
-          this.requestAuthentication(prompts[0], finish);
-        },
+    this._delegate = decorateSshConnectionDelegateWithTracking({
+      onKeyboardInteractive: (
+        name,
+        instructions,
+        instructionsLang,
+        prompts,
+        finish,
+      ) => {
+        // TODO: Display all prompts, not just the first one.
+        this.requestAuthentication(prompts[0], finish);
+      },
 
-        onWillConnect: () => {},
+      onWillConnect: () => {},
 
-        onDidConnect: (
-          connection: RemoteConnection,
-          config: SshConnectionConfiguration,
-        ) => {
-          this.close(); // Close the dialog.
-          this.props.onConnect(connection, config);
-        },
+      onDidConnect: (
+        connection: RemoteConnection,
+        config: SshConnectionConfiguration,
+      ) => {
+        this.close(); // Close the dialog.
+        this.props.onConnect(connection, config);
+      },
 
-        onError: (
-          errorType: SshHandshakeErrorType,
-          error: Error,
-          config: SshConnectionConfiguration,
-        ) => {
-          this.close(); // Close the dialog.
-          notifySshHandshakeError(errorType, error, config);
-          this.props.onError(error, config);
-          logger.debug(error);
-        },
-      }),
-    );
+      onError: (
+        errorType: SshHandshakeErrorType,
+        error: Error,
+        config: SshConnectionConfiguration,
+      ) => {
+        this.close(); // Close the dialog.
+        notifySshHandshakeError(errorType, error, config);
+        this.props.onError(error, config);
+        logger.debug(error);
+      },
+    });
 
     this.state = {
       finish: answers => {},
       instructions: '',
       isDirty: false,
       mode: REQUEST_CONNECTION_DETAILS,
-      sshHandshake,
     };
   }
 
@@ -309,23 +311,28 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   cancel = () => {
     const mode = this.state.mode;
 
-    // It is safe to call cancel even if no connection is started
-    this.state.sshHandshake.cancel();
+    if (this._pendingHandshake != null) {
+      this._pendingHandshake.unsubscribe();
+      this._pendingHandshake = null;
+    }
 
     if (mode === WAITING_FOR_CONNECTION) {
-      // TODO(mikeo): Tell delegate to cancel the connection request.
       this.setState({
         isDirty: false,
         mode: REQUEST_CONNECTION_DETAILS,
       });
     } else {
-      // TODO(mikeo): Also cancel connection request, as appropriate for mode?
       this.props.onCancel();
       this.close();
     }
   };
 
   close() {
+    if (this._pendingHandshake != null) {
+      this._pendingHandshake.unsubscribe();
+      this._pendingHandshake = null;
+    }
+
     if (this.props.onClosed) {
       this.props.onClosed();
     }
@@ -363,7 +370,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           isDirty: false,
           mode: WAITING_FOR_CONNECTION,
         });
-        this.state.sshHandshake.connect({
+        this._pendingHandshake = this._connect({
           host: server,
           sshPort: parseInt(sshPort, 10),
           username,
@@ -438,4 +445,24 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     this.setState({isDirty: false});
     this.props.onProfileSelected(selectedProfileIndex);
   };
+
+  _connect(connectionConfig: SshConnectionConfiguration): rxjs$ISubscription {
+    return Observable.defer(() => passesGK('nuclide_big_dig'))
+      .switchMap(useBigDig => {
+        let sshHandshake;
+        if (useBigDig) {
+          sshHandshake = connectBigDigSshHandshake(
+            connectionConfig,
+            this._delegate,
+          );
+        } else {
+          sshHandshake = new SshHandshake(this._delegate);
+          sshHandshake.connect(connectionConfig);
+        }
+        return Observable.create(() => {
+          return () => sshHandshake.cancel();
+        });
+      })
+      .subscribe();
+  }
 }
