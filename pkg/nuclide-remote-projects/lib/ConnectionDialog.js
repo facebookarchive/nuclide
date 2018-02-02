@@ -447,8 +447,22 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   };
 
   _connect(connectionConfig: SshConnectionConfiguration): rxjs$ISubscription {
-    return Observable.defer(() => passesGK('nuclide_big_dig'))
-      .switchMap(useBigDig => {
+    return Observable.defer(() =>
+      Promise.all([
+        passesGK('nuclide_big_dig'),
+        RemoteConnection.reconnect(
+          connectionConfig.host,
+          connectionConfig.cwd,
+          connectionConfig.displayTitle,
+        ),
+      ]),
+    )
+      .switchMap(([useBigDig, existingConnection]) => {
+        if (existingConnection != null) {
+          this._delegate.onWillConnect(connectionConfig); // required for the API
+          this._delegate.onDidConnect(existingConnection, connectionConfig);
+          return Observable.empty();
+        }
         let sshHandshake;
         if (useBigDig) {
           sshHandshake = connectBigDigSshHandshake(

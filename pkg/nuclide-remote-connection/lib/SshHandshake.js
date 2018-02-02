@@ -234,17 +234,6 @@ export class SshHandshake {
     this._cancelled = false;
     this._willConnect();
 
-    const existingConnection = await RemoteConnection.reconnect(
-      this._config.host,
-      this._config.cwd,
-      this._config.displayTitle,
-    );
-
-    if (existingConnection) {
-      this._didConnect(existingConnection);
-      return;
-    }
-
     let lookup;
     try {
       lookup = await lookupPreferIpv6(config.host);
