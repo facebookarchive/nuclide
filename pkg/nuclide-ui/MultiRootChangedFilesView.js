@@ -42,9 +42,9 @@ type Props = {
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
   // Callback when a file's checkbox is toggled
-  onFileChecked?: (filePath: NuclideUri) => void,
-  onFileChosen: (filePath: NuclideUri) => void,
-  onMarkFileResolved?: (filePath: NuclideUri) => void,
+  onFileChecked?: (filePath: NuclideUri) => mixed,
+  onFileChosen: (filePath: NuclideUri) => mixed,
+  onMarkFileResolved?: (filePath: NuclideUri) => mixed,
   getRevertTargetRevision?: () => ?string,
   openInDiffViewOption?: boolean,
 };
