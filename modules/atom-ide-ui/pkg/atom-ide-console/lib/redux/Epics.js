@@ -39,6 +39,7 @@ export function registerExecutorEpic(
         scopeName: null, // The output won't be in the language's grammar.
         // Eventually, we'll want to allow providers to specify custom timestamps for records.
         timestamp: new Date(),
+        executor,
       })),
     });
   });

@@ -23,6 +23,7 @@ import type {
 } from '../types';
 import type {CreatePasteFunction} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
+import type {Executor} from '../types';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import Model from 'nuclide-commons/Model';
@@ -462,29 +463,106 @@ function filterRecords(
   });
 }
 
+async function serializeRecordObject(
+  executor: Executor,
+  visited: Set<string>,
+  data: {
+    objectId?: string,
+    description?: string,
+    value?: string,
+  },
+  text: string,
+  level: number,
+): Promise<string> {
+  const getText = record => {
+    let indent = '';
+    for (let i = 0; i < level; i++) {
+      indent += '\t';
+    }
+    return (
+      indent +
+      (record.description != null
+        ? record.description
+        : record.value != null ? record.value : '')
+    );
+  };
+
+  if (data.objectId == null) {
+    // Leaf node.
+    return text + getText(data);
+  }
+
+  const id = data.objectId;
+  if (visited.has(id)) {
+    // Guard against cycles.
+    return text;
+  }
+
+  visited.add(id);
+
+  if (executor.getProperties == null) {
+    return text;
+  }
+
+  const childProperties = (await executor.getProperties(id).toPromise()) || [];
+  const serializedProps = childProperties.map(childProp => {
+    return serializeRecordObject(
+      executor,
+      visited,
+      childProp.value,
+      '',
+      level + 1,
+    );
+  });
+  return getText(data) + '\n' + (await Promise.all(serializedProps)).join('\n');
+}
+
 async function createPaste(
   createPasteImpl: CreatePasteFunction,
   records: Array<DisplayableRecord>,
 ): Promise<void> {
-  const lines = records
+  const linePromises = records
     .filter(
       displayable =>
         displayable.record.kind === 'message' ||
         displayable.record.kind === 'request' ||
         displayable.record.kind === 'response',
     )
-    .map(displayable => {
+    .map(async displayable => {
       const record = displayable.record;
       const level =
         record.level != null ? record.level.toString().toUpperCase() : 'LOG';
       const timestamp = record.timestamp.toLocaleString();
-      const text =
+      let text =
         record.text ||
         (record.data && record.data.value) ||
         ERROR_TRANSCRIBING_MESSAGE;
+
+      if (
+        record.kind === 'response' &&
+        record.data != null &&
+        record.data.objectId != null &&
+        record.data.objectId !== ''
+      ) {
+        const executor = record.executor;
+        if (executor != null) {
+          // If the record has a data object, and the object has an ID,
+          // recursively expand the nodes of the object and serialize it
+          // for the paste.
+          text = await serializeRecordObject(
+            executor,
+            new Set(),
+            record.data,
+            '',
+            0,
+          );
+        }
+      }
+
       return `[${level}][${record.sourceId}][${timestamp}]\t ${text}`;
-    })
-    .join('\n');
+    });
+
+  const lines = (await Promise.all(linePromises)).join('\n');
 
   if (lines === '') {
     // Can't create an empty paste!

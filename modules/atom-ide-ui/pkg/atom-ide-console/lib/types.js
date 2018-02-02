@@ -53,6 +53,8 @@ export type Record = {
   scopeName: ?string,
   data?: ?EvaluationResult,
   timestamp: Date,
+
+  executor?: Executor,
 };
 
 export type AppState = {
