@@ -10,10 +10,8 @@
  */
 
 import type {DnsLookup} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
-import type {
-  NuclideRemoteAuthMethods,
-  NuclideRemoteConnectionParamsWithPassword,
-} from './connection-types';
+import type {SshHandshakeAuthMethodsType} from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {NuclideRemoteConnectionParamsWithPassword} from './connection-types';
 
 import {getOfficialRemoteServerCommand} from './connection-profile-utils';
 
@@ -29,7 +27,7 @@ import ReactDOM from 'react-dom';
 import {SshHandshake} from '../../nuclide-remote-connection';
 
 const {SupportedMethods} = SshHandshake;
-const authMethods = [
+const authMethods: Array<SshHandshakeAuthMethodsType> = [
   SupportedMethods.PASSWORD,
   SupportedMethods.SSL_AGENT,
   SupportedMethods.PRIVATE_KEY,
@@ -43,7 +41,7 @@ type Props = {
   initialRemoteServerCommand: string,
   initialSshPort: string,
   initialPathToPrivateKey: string,
-  initialAuthMethod: $Enum<typeof SupportedMethods>,
+  initialAuthMethod: SshHandshakeAuthMethodsType,
   initialDisplayTitle: string,
   onCancel: () => mixed,
   onConfirm: () => mixed,
@@ -396,7 +394,7 @@ export default class ConnectionDetailsForm extends React.Component<
     remoteServerCommand?: string,
     sshPort?: string,
     pathToPrivateKey?: string,
-    authMethod?: NuclideRemoteAuthMethods,
+    authMethod?: SshHandshakeAuthMethodsType,
     displayTitle?: string,
   }): void {
     this._setText(this._username, fields.username);
@@ -424,11 +422,11 @@ export default class ConnectionDetailsForm extends React.Component<
     }
   }
 
-  _getAuthMethod(): string {
+  _getAuthMethod(): SshHandshakeAuthMethodsType {
     return authMethods[this.state.selectedAuthMethodIndex];
   }
 
-  _setAuthMethod(authMethod: ?NuclideRemoteAuthMethods): void {
+  _setAuthMethod(authMethod: ?SshHandshakeAuthMethodsType): void {
     if (authMethod == null) {
       return;
     }

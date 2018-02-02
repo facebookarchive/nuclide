@@ -42,7 +42,7 @@ export type SshConnectionConfiguration = {
   pathToPrivateKey: string, // The path to private key
   remoteServerCommand: string, // Command to use to start server
   cwd: string, // Path to remote directory user should start in upon connection.
-  authMethod: string, // Which of the authentication methods in `SupportedMethods` to use.
+  authMethod: SshHandshakeAuthMethodsType, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
   displayTitle: string, // Name of the saved connection profile.
 };
@@ -52,6 +52,8 @@ const SupportedMethods = Object.freeze({
   PASSWORD: 'PASSWORD',
   PRIVATE_KEY: 'PRIVATE_KEY',
 });
+
+export type SshHandshakeAuthMethodsType = $Values<typeof SupportedMethods>;
 
 const ErrorType = Object.freeze({
   UNKNOWN: 'UNKNOWN',

@@ -174,7 +174,7 @@ describe('validateFormInputs', () => {
   });
 
   it('rejects a profile if an Authentication Method is missing.', () => {
-    minimumValidParamsWithPrivateKey.authMethod = null;
+    minimumValidParamsWithPrivateKey.authMethod = (null: any);
     const resultFromNullAuthMethod: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
@@ -182,7 +182,7 @@ describe('validateFormInputs', () => {
     );
     expect(resultFromNullAuthMethod.errorMessage).not.toBeNull();
 
-    minimumValidParamsWithPrivateKey.authMethod = '';
+    minimumValidParamsWithPrivateKey.authMethod = ('': any);
     const resultFromEmptyAuthMethod: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
