@@ -70,7 +70,7 @@ xdescribe('NuclideSocket test suite', () => {
       const heartbeatHandler: Function = (jasmine.createSpy(): any);
       // There was an initial heartbeat, but we can't be sure if it went before or after we do
       // listen here.
-      socket.onHeartbeat(heartbeatHandler);
+      socket.getHeartbeat().onHeartbeat(heartbeatHandler);
       advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatHandler.callCount > 0);
       advanceClock(5050); // Advance the heartbeat interval.
@@ -79,7 +79,7 @@ xdescribe('NuclideSocket test suite', () => {
 
     it('on ECONNREFUSED, emits PORT_NOT_ACCESSIBLE, when the server was never accessible', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.onHeartbeatError(heartbeatErrorHandler);
+      socket.getHeartbeat().onHeartbeatError(heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
       socket._heartbeat._heartbeatConnectedOnce = false;
       server.close();
@@ -94,7 +94,7 @@ xdescribe('NuclideSocket test suite', () => {
 
     it('on ECONNREFUSED, emits SERVER_CRASHED, when the server was once reachable', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.onHeartbeatError(heartbeatErrorHandler);
+      socket.getHeartbeat().onHeartbeatError(heartbeatErrorHandler);
       socket._heartbeat._heartbeatConnectedOnce = true;
       server.close();
       advanceClock(5050); // Advance the heartbeat interval.
@@ -108,7 +108,7 @@ xdescribe('NuclideSocket test suite', () => {
 
     it('on ENOTFOUND, emits NETWORK_AWAY error, when the server cannot be located', () => {
       const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
-      socket.onHeartbeatError(heartbeatErrorHandler);
+      socket.getHeartbeat().onHeartbeatError(heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
       advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);

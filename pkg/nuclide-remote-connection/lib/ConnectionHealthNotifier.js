@@ -198,8 +198,8 @@ export class ConnectionHealthNotifier {
       }
     };
     this._subscription = new UniversalDisposable(
-      socket.onHeartbeat(onHeartbeat),
-      socket.onHeartbeatError(onHeartbeatError),
+      socket.getHeartbeat().onHeartbeat(onHeartbeat),
+      socket.getHeartbeat().onHeartbeatError(onHeartbeatError),
     );
   }
 

@@ -111,6 +111,10 @@ export class NuclideSocket {
     this._reconnect();
   }
 
+  getHeartbeat(): XhrConnectionHeartbeat {
+    return this._heartbeat;
+  }
+
   // This is intended to be temporary while we are collecting extra
   // logging to debug QueuedAckTransport.
   getProtocolLogger(): ?MemoryLogger {
@@ -300,20 +304,6 @@ export class NuclideSocket {
 
   isClosed(): boolean {
     return this._transport == null;
-  }
-
-  onHeartbeat(callback: () => mixed): IDisposable {
-    return this._heartbeat.onHeartbeat(callback);
-  }
-
-  onHeartbeatError(
-    callback: (arg: {
-      code: string,
-      originalCode: string,
-      message: string,
-    }) => mixed,
-  ): IDisposable {
-    return this._heartbeat.onHeartbeatError(callback);
   }
 
   onMessage(): Observable<string> {
