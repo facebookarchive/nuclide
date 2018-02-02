@@ -111,6 +111,24 @@ describe('Remote Atom Search', () => {
       });
     });
 
+    it('Does not crash with no results', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool == null) {
+          return;
+        }
+        // Setup the (empty) test folder.
+        const folder = await generateFixture('grep-rpc', new Map());
+
+        const results = await remoteAtomSearch(folder, /hello/, [], false, tool)
+          .refCount()
+          .toArray()
+          .toPromise();
+        const expected = [];
+        expect(results).toEqual(expected);
+      });
+    });
+
     it('Can execute a search of subdirectories.', () => {
       waitsForPromise(async () => {
         const tool = await toolPromise;

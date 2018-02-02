@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
+import {observeGrepLikeProcess} from './handlerCommon';
 import {parseAgAckRgLine} from './parser';
 
 export function search(
@@ -24,7 +24,7 @@ export function search(
   // but Rust's regex library is picky about extra escapes:
   // see https://github.com/rust-lang/regex/issues/93#issuecomment-196022003
   const source = regex.source.replace('\\/', '/');
-  return observeProcess(
+  return observeGrepLikeProcess(
     'rg',
     (regex.ignoreCase ? ['--ignore-case'] : []).concat([
       // no colors, show line number, search hidden files,

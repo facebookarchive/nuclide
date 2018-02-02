@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
+import {observeGrepLikeProcess} from './handlerCommon';
 import {parseAgAckRgLine} from './parser';
 
 export function search(
@@ -29,7 +29,7 @@ export function search(
   if (regex.ignoreCase) {
     baseArgs.push('--ignore-case');
   }
-  return observeProcess(
+  return observeGrepLikeProcess(
     tool,
     baseArgs.concat([
       // no colors, always show column of first match, one result per line

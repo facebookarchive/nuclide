@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
+import {observeGrepLikeProcess} from './handlerCommon';
 import {parseGrepLine} from './parser';
 
 export function search(
@@ -28,14 +28,7 @@ export function search(
     regex.source,
     directory,
   ]);
-  return observeProcess('grep', args, {
-    cwd: directory,
-    // An exit code of 0 or 1 is perfectly normal for grep (1 = no results).
-    isExitError: ({exitCode, signal}) => {
-      return (
-        // flowlint-next-line sketchy-null-string:off
-        !signal && (exitCode == null || exitCode > 1)
-      );
-    },
-  }).flatMap(event => parseGrepLine(event, directory, regex));
+  return observeGrepLikeProcess('grep', args, directory).flatMap(event =>
+    parseGrepLine(event, directory, regex),
+  );
 }
