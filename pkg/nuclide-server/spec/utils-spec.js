@@ -12,6 +12,7 @@
 import http from 'http';
 import querystring from 'querystring';
 import * as utils from '../lib/utils';
+import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
 
 describe('NuclideServer utils test', () => {
   let server;
@@ -38,16 +39,6 @@ describe('NuclideServer utils test', () => {
     customHandler = null;
   });
 
-  it('can do http request in an async way', () => {
-    waitsForPromise(async () => {
-      const {body, response} = await utils.asyncRequest({
-        uri: 'http://127.0.0.1:36845/abc',
-      });
-      expect(body).toBe('okay');
-      expect(response.statusCode).toBe(200);
-    });
-  });
-
   it('parses the request body', () => {
     const bodyHandler = jasmine.createSpy();
     customHandler = (req, res) => {
@@ -57,7 +48,7 @@ describe('NuclideServer utils test', () => {
         .then(bodyHandler)
         .then(() => res.end());
     };
-    utils.asyncRequest({
+    asyncRequest({
       uri: 'http://127.0.0.1:36845/abc',
       method: 'POST',
       body: 'string_abc',

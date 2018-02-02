@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AgentOptions} from './main';
+import type {AgentOptions} from 'big-dig/src/common/types';
 import type {Observable} from 'rxjs';
 import type {ReliableTransport} from '../../nuclide-rpc';
 import type {MemoryLogger} from '../../commons-node/memoryLogger';

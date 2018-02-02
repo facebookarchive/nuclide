@@ -26,14 +26,6 @@ const DEFAULT_PORT = 9090;
 
 const logger = getLogger('nuclide-server');
 
-export type AgentOptions = {
-  ca?: Buffer,
-  key?: Buffer,
-  cert?: Buffer,
-  family?: 4 | 6,
-  useAck: boolean,
-};
-
 async function getServerCredentials(args) {
   const {key, cert, ca} = args;
   if (key && cert && ca) {

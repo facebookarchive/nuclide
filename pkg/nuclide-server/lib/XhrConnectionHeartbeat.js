@@ -9,9 +9,9 @@
  * @format
  */
 
-import type {RequestOptions} from './utils';
-import type {AgentOptions} from './main';
-import {asyncRequest} from './utils';
+import type {RequestOptions} from 'big-dig/src/client/utils/asyncRequest';
+import type {AgentOptions} from 'big-dig/src/common/types';
+import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
 import {Emitter} from 'event-kit';
 import {HEARTBEAT_CHANNEL} from './config';
 
