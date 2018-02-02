@@ -234,9 +234,10 @@ export class SshHandshake {
     this._cancelled = false;
     this._willConnect();
 
-    const existingConnection = RemoteConnection.getByHostnameAndPath(
+    const existingConnection = await RemoteConnection.reconnect(
       this._config.host,
       this._config.cwd,
+      this._config.displayTitle,
     );
 
     if (existingConnection) {
@@ -257,25 +258,6 @@ export class SshHandshake {
 
     const {address, family} = lookup;
     this._config.family = family;
-
-    const connection =
-      (await RemoteConnection.createConnectionBySavedConfig(
-        this._config.host,
-        this._config.cwd,
-        this._config.displayTitle,
-      )) ||
-      // We save connections by their IP address as well, in case a different hostname
-      // was used for the same server.
-      (await RemoteConnection.createConnectionBySavedConfig(
-        address,
-        this._config.cwd,
-        this._config.displayTitle,
-      ));
-
-    if (connection) {
-      this._didConnect(connection);
-      return;
-    }
 
     if (config.authMethod === SupportedMethods.SSL_AGENT) {
       // Point to ssh-agent's socket for ssh-agent-based authentication.

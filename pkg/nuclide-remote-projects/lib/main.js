@@ -324,27 +324,7 @@ async function reloadRemoteProjects(
 
       ServerConnection.cancelConnection(config.host);
     } else {
-      // It's fine the user connected to a different project on the same host:
-      // we should still be able to restore this using the new connection.
-      const {cwd, host, displayTitle} = config;
-      if (
-        connection.getPathForInitialWorkingDirectory() !== cwd &&
-        connection.getRemoteHostname() === host
-      ) {
-        // eslint-disable-next-line no-await-in-loop
-        const subConnection = await RemoteConnection.createConnectionBySavedConfig(
-          host,
-          cwd,
-          displayTitle,
-        );
-        if (subConnection != null) {
-          reloadedProjects.push(
-            subConnection.getUriForInitialWorkingDirectory(),
-          );
-        }
-      } else {
-        reloadedProjects.push(connection.getUriForInitialWorkingDirectory());
-      }
+      reloadedProjects.push(connection.getUriForInitialWorkingDirectory());
     }
   }
   if (remoteProjectsService != null) {

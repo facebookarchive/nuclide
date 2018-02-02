@@ -49,12 +49,7 @@ export default class RemoteProjectsService {
       displayTitle,
       promptReconnectOnFailure = true,
     } = remoteProjectConfig;
-    let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
-    if (connection != null) {
-      return connection;
-    }
-
-    connection = await RemoteConnection.createConnectionBySavedConfig(
+    const connection = await RemoteConnection.reconnect(
       host,
       cwd,
       displayTitle,

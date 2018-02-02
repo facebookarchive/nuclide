@@ -20,6 +20,7 @@ import type {RemoteDirectory} from './RemoteDirectory';
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {ServerConnection} from './ServerConnection';
 import {Emitter} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -123,13 +124,19 @@ export class RemoteConnection {
    * connection, null (resolved by promise) is returned.
    * Configurations may also be retrieved by IP address.
    */
-  static async createConnectionBySavedConfig(
-    hostOrIp: string,
+  static async _createConnectionBySavedConfig(
+    host: string,
     cwd: string,
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
-    const connectionConfig = await getConnectionConfig(hostOrIp);
+    let connectionConfig = await getConnectionConfig(host);
+    if (!connectionConfig) {
+      return null;
+    }
+    // Connection configs are also stored by IP address to share between hostnames.
+    const {address} = await lookupPreferIpv6(host);
+    connectionConfig = await getConnectionConfig(address);
     if (!connectionConfig) {
       return null;
     }
@@ -146,9 +153,30 @@ export class RemoteConnection {
         e.name === 'VersionMismatchError'
           ? logger.warn.bind(logger)
           : logger.error.bind(logger);
-      log(`Failed to reuse connectionConfiguration for ${hostOrIp}`, e);
+      log(`Failed to reuse connectionConfiguration for ${host}`, e);
       return null;
     }
+  }
+
+  /**
+   * Attempts to connect to an open or previously open remote connection.
+   */
+  static async reconnect(
+    host: string,
+    cwd: string,
+    displayTitle: string,
+    promptReconnectOnFailure: boolean = true,
+  ): Promise<?RemoteConnection> {
+    const connection = RemoteConnection.getByHostnameAndPath(host, cwd);
+    if (connection != null) {
+      return connection;
+    }
+    return RemoteConnection._createConnectionBySavedConfig(
+      host,
+      cwd,
+      displayTitle,
+      promptReconnectOnFailure,
+    );
   }
 
   // A workaround before Atom 2.0: Atom's Project::setPaths currently uses
