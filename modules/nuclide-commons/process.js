@@ -53,6 +53,7 @@ import idx from 'idx';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import util from 'util';
 
 import UniversalDisposable from './UniversalDisposable';
 import nuclideUri from './nuclideUri';
@@ -63,7 +64,9 @@ import {observeStream} from './stream';
 import {splitStream, takeWhileInclusive} from './observable';
 import {shellQuote} from './string';
 
-const logger = getLogger('nuclide-commons/process');
+export const LOG_CATEGORY = 'nuclide-commons/process';
+
+const logger = getLogger(LOG_CATEGORY);
 
 /**
  * Run a command, accumulate the output. Errors are surfaced as stream errors and unsubscribing will
@@ -423,7 +426,7 @@ export function killProcess(
   _killProcess(proc, killTree).then(
     () => {},
     error => {
-      logError(`Killing process ${proc.pid} failed`, error);
+      logger.error(`Killing process ${proc.pid} failed`, error);
     },
   );
 }
@@ -575,7 +578,7 @@ export function logStreamErrors(
   return new UniversalDisposable(
     getStreamErrorEvents(proc)
       .do(([err, streamName]) => {
-        logError(
+        logger.error(
           `stream error on stream ${streamName} with command:`,
           command,
           args,
@@ -790,6 +793,25 @@ const whenShellEnvironmentLoaded =
         return noopDisposable;
       };
 
+/**
+ * Log custom events to log4js so that we can easily hook into process events
+ * using a custom log4js appender (e.g. for analytics purposes).
+ */
+export class ProcessLoggingEvent {
+  command: string;
+  duration: number;
+
+  constructor(command: string, duration: number) {
+    this.command = command;
+    this.duration = duration;
+    // log4js uses util.inspect to convert log arguments to strings.
+    // Note: computed property methods aren't supported by Flow yet.
+    (this: any)[util.inspect.custom] = () => {
+      return `${this.duration}ms: ${this.command}`;
+    };
+  }
+}
+
 export const loggedCalls = [];
 function logCall(duration: number, command: string, args: Array<string>) {
   // Trim the history once in a while, to avoid doing expensive array
@@ -802,19 +824,13 @@ function logCall(duration: number, command: string, args: Array<string>) {
     });
   }
 
-  const fullCommand = [command, ...args].join(' ');
+  const fullCommand = shellQuote([command, ...args]);
   loggedCalls.push({
     command: fullCommand,
     duration,
     time: new Date(),
   });
-  logger.info(`${duration}ms: ${fullCommand}`);
-}
-
-function logError(...args) {
-  // Can't use nuclide-logging here to not cause cycle dependency.
-  // eslint-disable-next-line no-console
-  console.error(...args);
+  logger.info(new ProcessLoggingEvent(fullCommand, duration));
 }
 
 /**

@@ -13,6 +13,7 @@
 import type {ProcessExitMessage} from '../process';
 
 import EventEmitter from 'events';
+import {getLogger} from 'log4js';
 import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -33,6 +34,7 @@ import {
   runCommandDetailed,
   scriptifyCommand,
   exitEventToMessage,
+  LOG_CATEGORY,
 } from '../process';
 
 describe('commons-node/process', () => {
@@ -55,7 +57,6 @@ describe('commons-node/process', () => {
         const proc = {
           kill: jasmine.createSpy(),
         };
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         await killProcess((proc: any), false);
         expect(proc.kill).toHaveBeenCalled();
@@ -70,7 +71,6 @@ describe('commons-node/process', () => {
           '-c',
           '( (sleep 1000)& sleep 1000 )& wait',
         ]);
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         spyOn(process, 'kill').andCallThrough();
         await sleep(250); // Give some time for the processes to spawn.
@@ -84,7 +84,6 @@ describe('commons-node/process', () => {
         const proc = {
           pid: 123,
         };
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         Object.defineProperty(process, 'platform', {value: 'win32'});
         spyOn(child_process, 'exec');
@@ -192,7 +191,6 @@ describe('commons-node/process', () => {
   describe('spawn', () => {
     it('errors when the process does', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         const processStream = spawn('fakeCommand');
         let error;
@@ -214,7 +212,6 @@ describe('commons-node/process', () => {
     // spawning it.
     it('errors before emitting the process', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         let proc;
         await spawn('fakeCommand')
@@ -233,7 +230,6 @@ describe('commons-node/process', () => {
 
     it('leaves an error handler when you unsubscribe', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         let resolve;
         const promise = new Promise(r => {
@@ -260,7 +256,6 @@ describe('commons-node/process', () => {
 
     it('can be retried', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         spyOn(child_process, 'spawn');
         try {
@@ -308,7 +303,6 @@ describe('commons-node/process', () => {
   describe('observeProcess', () => {
     it('errors when the process does', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         const processStream = observeProcess('fakeCommand', []);
         let error;
@@ -384,7 +378,6 @@ describe('commons-node/process', () => {
 
   describe('observeProcessRaw', () => {
     it("doesn't split on line breaks", () => {
-      spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
       waitsForPromise({timeout: 1000}, async () => {
         const event = await observeProcessRaw(process.execPath, [
@@ -402,7 +395,6 @@ describe('commons-node/process', () => {
   describe('runCommand', () => {
     beforeEach(() => {
       // Suppress console spew.
-      spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
     });
 
@@ -558,7 +550,6 @@ describe('commons-node/process', () => {
   describe('runCommandDetailed', () => {
     beforeEach(() => {
       // Suppress console spew.
-      spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
     });
 
@@ -709,6 +700,7 @@ describe('commons-node/process', () => {
   });
 
   describe('logStreamErrors', () => {
+    const logger = getLogger(LOG_CATEGORY);
     let proc: child_process$ChildProcess;
     beforeEach(() => {
       proc = ({
@@ -725,19 +717,17 @@ describe('commons-node/process', () => {
 
     it('logs errors', () => {
       logStreamErrors(proc, 'test', [], {});
-      spyOn(console, 'error');
+      spyOn(logger, 'error');
       proc.stderr.emit('error', new Error('Test error'));
-      // eslint-disable-next-line no-console
-      expect(console.error).toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
 
     it("doesn't log when disposed", () => {
       const disposable = logStreamErrors(proc, 'test', [], {});
-      spyOn(console, 'error');
+      spyOn(logger, 'error');
       disposable.dispose();
       proc.stderr.emit('error', new Error('Test error'));
-      // eslint-disable-next-line no-console
-      expect(console.error).not.toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
     });
   });
 

@@ -12,6 +12,7 @@
 import {isRunningInTest} from '../../commons-node/system-info';
 
 import os from 'os';
+import {LOG_CATEGORY as PROCESS_LOG_CATEGORY} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const LOG_DIRECTORY = nuclideUri.join(
@@ -60,6 +61,10 @@ export function getDefaultConfig(): log4js$Config {
     });
   }
   if (!isRunningInTest()) {
+    appenders.push({
+      type: require.resolve('./processTrackingAppender'),
+      category: PROCESS_LOG_CATEGORY,
+    });
     try {
       const scribeAppenderPath = require.resolve('../fb/scribeAppender');
       appenders.push({
