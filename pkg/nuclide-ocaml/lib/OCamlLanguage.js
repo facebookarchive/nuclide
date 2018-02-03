@@ -43,6 +43,7 @@ async function createOCamlLanguageService(
       projectFileSearchStrategy: 'priority',
       useOriginalEnvironment: true,
       fileExtensions: ['.ml', '.mli', '.re', '.rei'],
+      additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
       initializationOptions: {
         codelens: {
           unicode: true,
