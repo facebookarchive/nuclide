@@ -141,6 +141,8 @@ describe('vscode-ocaml', () => {
         return;
       }
 
+      jasmine.getEnv().defaultTimeoutInterval = 10000;
+
       const mlFiles = await new Promise((resolve, reject) => {
         fs.readdir(OCAML_FIXTURES, (err, files) => {
           if (err) {
