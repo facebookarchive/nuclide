@@ -144,7 +144,10 @@ export default class QuickSelectionComponent extends React.Component<
    * Public API
    */
   focus(): void {
-    this._getInputTextEditor().focus();
+    const element = this._getInputTextEditor();
+    if (element != null) {
+      element.focus();
+    }
   }
 
   selectAllText(): void {
@@ -343,7 +346,7 @@ export default class QuickSelectionComponent extends React.Component<
     ) {
       this.props.onCancellation();
     } else {
-      process.nextTick(() => this._getInputTextEditor().focus());
+      process.nextTick(() => this.focus());
     }
   };
 
@@ -665,9 +668,11 @@ export default class QuickSelectionComponent extends React.Component<
     });
   }
 
-  _getInputTextEditor(): atom$TextEditorElement {
-    // $FlowFixMe
-    return ReactDOM.findDOMNode(this._queryInput);
+  _getInputTextEditor(): ?atom$TextEditorElement {
+    if (this._queryInput != null) {
+      return this._queryInput.getTextEditor().getElement();
+    }
+    return null;
   }
 
   _getTextEditor(): TextEditor {
