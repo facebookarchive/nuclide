@@ -70,11 +70,7 @@ export type UnreliableTransport = {
   isClosed(): boolean,
 };
 
-// There are two implementation attempts at a reliable transport that satisfy
-// the following interface - QueuedTransport (known to be unreliable in cases),
-// and QueuedAckTransport (new as of Oct2017, not greatly tested). The GK
-// 'nuclide_connection_ack' will opt you into the latter. If it proves itself
-// then we can deleted QueuedTransport and the following interface entirely.
+// TODO (semmy): Remove QueuedTransport and this interface
 export type ReliableTransport = {
   send(message: string): void,
   onMessage(): Observable<string>,

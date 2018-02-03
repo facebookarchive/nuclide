@@ -19,7 +19,6 @@ import WS from 'ws';
 import uuid from 'uuid';
 import {Emitter} from 'event-kit';
 import {WebSocketTransport} from './WebSocketTransport';
-import {QueuedTransport} from './QueuedTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import invariant from 'assert';
@@ -67,26 +66,19 @@ export class NuclideSocket {
   _emitter: Emitter;
   _transport: ?ReliableTransport;
   _heartbeat: XhrConnectionHeartbeat;
-  _useProtocolLogger: boolean;
 
-  constructor(serverUri: string, useAck: boolean, options: ?AgentOptions) {
+  constructor(serverUri: string, options: ?AgentOptions) {
     this._emitter = new Emitter();
     this._serverUri = serverUri;
     this._options = options;
-    this.id = (useAck ? 'ACK' : 'NOACK') + uuid.v4();
+    this.id = uuid.v4();
     this._pingTimer = null;
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
-    this._useProtocolLogger = useAck;
-    let transport;
-    if (useAck) {
-      transport = new QueuedAckTransport(this.id);
-    } else {
-      transport = new QueuedTransport(this.id);
-    }
-    this._transport = transport;
-    transport.onDisconnect(() => {
+    this._transport = new QueuedAckTransport(this.id);
+
+    this._transport.onDisconnect(() => {
       if (this.isDisconnected()) {
         this._emitter.emit('status', false);
         this._emitter.emit('disconnect');
@@ -117,11 +109,7 @@ export class NuclideSocket {
   // This is intended to be temporary while we are collecting extra
   // logging to debug QueuedAckTransport.
   getProtocolLogger(): ?MemoryLogger {
-    if (this._useProtocolLogger) {
-      return protocolLogger;
-    } else {
-      return null;
-    }
+    return protocolLogger;
   }
 
   isConnected(): boolean {

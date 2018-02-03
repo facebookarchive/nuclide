@@ -27,9 +27,8 @@ export default class ServiceTestHelper {
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    const useAck = false;
     this._client = RpcConnection.createRemote(
-      new NuclideSocket(`http://localhost:${port}`, useAck, null),
+      new NuclideSocket(`http://localhost:${port}`, null),
       [getRemoteNuclideUriMarshalers('localhost')],
       customServices,
     );

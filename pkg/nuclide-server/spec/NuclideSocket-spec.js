@@ -27,8 +27,7 @@ xdescribe('NuclideSocket test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
-      const useAck = false;
-      socket = new NuclideSocket('http://localhost:8176', useAck, null);
+      socket = new NuclideSocket('http://localhost:8176', null);
 
       const clientId = Array.from(server._clients.keys())[0];
       const client = server._clients.get(clientId);

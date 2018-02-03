@@ -13,7 +13,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
-import passesGK from '../../commons-node/passesGK';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
@@ -223,8 +222,7 @@ export class ServerConnection {
   }
 
   async initialize(): Promise<void> {
-    const useAck = await passesGK('nuclide_connection_ack');
-    await this._startRpc(useAck);
+    await this._startRpc();
     const client = this.getClient();
     const clientVersion = getVersion();
 
@@ -292,7 +290,7 @@ export class ServerConnection {
     return this._client;
   }
 
-  async _startRpc(useAck: boolean): Promise<void> {
+  async _startRpc(): Promise<void> {
     if (this._config.version === 2) {
       this._client = await createBigDigRpcClient(this._config);
       return;
@@ -319,7 +317,7 @@ export class ServerConnection {
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 
-    const socket = new NuclideSocket(uri, useAck, options);
+    const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
       (socket: Transport),
       getAtomSideMarshalers(this.getRemoteHostname()),

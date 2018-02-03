@@ -299,17 +299,14 @@ export default class NuclideServer {
     socket.once('message', (clientId: string) => {
       errorSubscription.dispose();
       client = this._clients.get(clientId);
-      const useAck = clientId.startsWith('ACK');
       const transport = new WebSocketTransport(clientId, socket);
       if (client == null) {
         client = RpcConnection.createServer(
           this._rpcServiceRegistry,
-          useAck
-            ? new QueuedAckTransport(clientId, transport)
-            : new QueuedTransport(clientId, transport),
+          new QueuedAckTransport(clientId, transport),
           {},
           clientId,
-          useAck ? protocolLogger : null,
+          protocolLogger,
         );
         this._clients.set(clientId, client);
       } else {
