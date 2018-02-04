@@ -152,6 +152,8 @@ export class FileTreeStore {
   _isCalculatingChanges: boolean;
   selectionManager: FileTreeSelectionManager;
 
+  _maxComponentWidth: number;
+
   static getInstance(): FileTreeStore {
     if (!instance) {
       instance = new FileTreeStore();
@@ -193,6 +195,8 @@ export class FileTreeStore {
     this._selectionRange = null;
     this._targetNodeKeys = null;
     this._isCalculatingChanges = false;
+
+    this._maxComponentWidth = -1;
   }
 
   /**
@@ -2214,6 +2218,16 @@ export class FileTreeStore {
 
   subscribe(listener: ChangeListener): IDisposable {
     return this._emitter.on('change', listener);
+  }
+
+  getMaxComponentWidth(): ?number {
+    return this._maxComponentWidth;
+  }
+
+  updateMaxComponentWidth(width: ?number): void {
+    if (width != null) {
+      this._maxComponentWidth = Math.max(this._maxComponentWidth, width);
+    }
   }
 }
 

@@ -47,6 +47,7 @@ type State = {|
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
+const CHAR_EM_SCALE_FACTOR = 0.9;
 
 export class FileTreeEntryComponent extends React.Component<Props, State> {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
@@ -187,6 +188,14 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       }
     }
 
+    let min_width = 'max-content';
+    if (store != null) {
+      const size = store.getMaxComponentWidth();
+      if (size != null && typeof size === 'number' && size > 0) {
+        min_width = size * CHAR_EM_SCALE_FACTOR + 'em';
+      }
+    }
+
     return (
       <li
         className={classnames(outerClassName, statusClass, generatedClass, {
@@ -194,7 +203,11 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
           // data-path is a directory or not:
           directory: node.isContainer,
         })}
-        style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
+        style={{
+          paddingLeft: this.props.node.getDepth() * INDENT_LEVEL,
+          minWidth: min_width,
+          marginLeft: 0,
+        }}
         draggable={true}
         onMouseDown={this._onMouseDown}
         onClick={this._onClick}
@@ -205,6 +218,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
           className={listItemClassName}
           ref={el => {
             this._arrowContainer = el;
+            store.updateMaxComponentWidth(this.props.node.name.length);
           }}>
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
