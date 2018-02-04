@@ -10,7 +10,7 @@
  */
 
 import type {ServerConnectionConfiguration} from './ServerConnection';
-import type {Transport} from '../../nuclide-rpc';
+import type {TransportWithHeartbeat} from '../../nuclide-rpc';
 
 import {createBigDigClient} from 'big-dig/src/client';
 import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
@@ -21,9 +21,9 @@ import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
 
 export default (async function createBigDigRpcClient(
   config: ServerConnectionConfiguration,
-): Promise<RpcConnection<Transport>> {
+): Promise<RpcConnection<TransportWithHeartbeat>> {
   const bigDigClient = await createBigDigClient(config);
-  const bigDigTransport: Transport = {
+  const bigDigTransport: TransportWithHeartbeat = {
     send(message: string) {
       bigDigClient.sendMessage(NUCLIDE_RPC_TAG, message);
     },
@@ -35,6 +35,9 @@ export default (async function createBigDigRpcClient(
     },
     isClosed() {
       return bigDigClient.isClosed();
+    },
+    getHeartbeat() {
+      return bigDigClient.getHeartbeat();
     },
   };
   return RpcConnection.createRemote(

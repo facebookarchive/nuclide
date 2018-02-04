@@ -12,6 +12,7 @@
 
 import type {Observable} from 'rxjs';
 import type {WebSocketTransport} from './WebSocketTransport';
+import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 
 import {Subject} from 'rxjs';
 
@@ -21,10 +22,14 @@ import {Subject} from 'rxjs';
  * and stderr.
  */
 export class BigDigClient {
-  _webSocketTransport: WebSocketTransport;
+  _heartbeat: XhrConnectionHeartbeat;
   _tagToSubject: Map<string, Subject<string>>;
+  _webSocketTransport: WebSocketTransport;
 
-  constructor(webSocketTransport: WebSocketTransport) {
+  constructor(
+    webSocketTransport: WebSocketTransport,
+    heartbeat: XhrConnectionHeartbeat,
+  ) {
     this._webSocketTransport = webSocketTransport;
     this._tagToSubject = new Map();
 
@@ -52,6 +57,12 @@ export class BigDigClient {
         console.error('ConnectionWrapper completed()?');
       },
     });
+
+    this._heartbeat = heartbeat;
+    this._heartbeat.onConnectionRestored(() => {
+      // eslint-disable-next-line no-console
+      console.warn('TODO(T25533063): Implement reconnect logic');
+    });
   }
 
   isClosed(): boolean {
@@ -77,6 +88,10 @@ export class BigDigClient {
       this._tagToSubject.set(tag, subject);
     }
     return subject.asObservable();
+  }
+
+  getHeartbeat(): XhrConnectionHeartbeat {
+    return this._heartbeat;
   }
 
   getAddress(): string {

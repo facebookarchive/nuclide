@@ -11,8 +11,8 @@
  */
 
 export type AgentOptions = {
-  ca?: Buffer,
-  key?: Buffer,
-  cert?: Buffer,
+  ca?: Buffer | string,
+  key?: Buffer | string,
+  cert?: Buffer | string,
   family?: 4 | 6,
 };

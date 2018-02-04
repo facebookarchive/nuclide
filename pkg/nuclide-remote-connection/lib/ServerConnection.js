@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {TransportWithHeartbeat} from '../../nuclide-rpc';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
@@ -20,7 +21,7 @@ import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import invariant from 'assert';
-import {RpcConnection, type Transport} from '../../nuclide-rpc';
+import {RpcConnection} from '../../nuclide-rpc';
 import {Observable} from 'rxjs';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {
@@ -66,7 +67,7 @@ export class ServerConnection {
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
-  _client: ?RpcConnection<Transport>;
+  _client: ?RpcConnection<TransportWithHeartbeat>;
   _connections: Array<RemoteConnection>;
   _fileWatches: SharedObservableCache<string, WatchResult>;
   _directoryWatches: SharedObservableCache<string, WatchResult>;
@@ -157,16 +158,13 @@ export class ServerConnection {
 
   _monitorConnectionHeartbeat() {
     invariant(this._healthNotifier == null);
-    const socket = this.getClient().getTransport();
-    if (socket instanceof NuclideSocket) {
-      this._healthNotifier = new ConnectionHealthNotifier(
-        this._config.host,
-        socket.getServerPort(),
-        socket.getHeartbeat(),
-      );
-    } else {
-      // TODO: big-dig heartbeat?
-    }
+    this._healthNotifier = new ConnectionHealthNotifier(
+      this._config.host,
+      this._config.port,
+      this.getClient()
+        .getTransport()
+        .getHeartbeat(),
+    );
   }
 
   setOnHeartbeatError(onHeartbeatError: OnHeartbeatErrorCallback): void {
@@ -239,8 +237,8 @@ export class ServerConnection {
     // when we don't have cached credentials yet.
     const transport = client.getTransport();
     // TODO: do we even want this for bigdig?
-    if (transport instanceof NuclideSocket) {
-      const heartbeatVersion = await transport.testConnection();
+    if (this._config.version !== 2) {
+      const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
       if (clientVersion !== heartbeatVersion) {
         throwVersionMismatch(heartbeatVersion);
       }
@@ -282,7 +280,7 @@ export class ServerConnection {
     }
   }
 
-  getClient(): RpcConnection<Transport> {
+  getClient(): RpcConnection<TransportWithHeartbeat> {
     invariant(
       !this._closed && this._client != null,
       'Server connection has been closed.',
@@ -319,7 +317,7 @@ export class ServerConnection {
 
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
-      (socket: Transport),
+      (socket: TransportWithHeartbeat),
       getAtomSideMarshalers(this.getRemoteHostname()),
       servicesConfig,
       // Track calls with a sampling rate of 1/10.

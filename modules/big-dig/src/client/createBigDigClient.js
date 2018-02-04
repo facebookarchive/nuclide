@@ -15,6 +15,7 @@ import https from 'https';
 
 import {WebSocketTransport} from './WebSocketTransport';
 import {BigDigClient} from './BigDigClient';
+import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 
 export type BigDigClientConfig = {
   +host: string,
@@ -42,5 +43,9 @@ export default (async function createBigDigClient(
   });
   const agent = new https.Agent(options);
   const webSocketTransport = new WebSocketTransport('test', agent, socket);
-  return new BigDigClient(webSocketTransport);
+  const heartbeat = new XhrConnectionHeartbeat(
+    `https://${config.host}:${config.port}`,
+    options,
+  );
+  return new BigDigClient(webSocketTransport, heartbeat);
 });

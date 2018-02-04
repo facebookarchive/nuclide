@@ -17,6 +17,8 @@ import type https from 'https';
 import {getLogger} from 'log4js';
 import url from 'url';
 import {Subject} from 'rxjs';
+import {HEARTBEAT_CHANNEL} from '../client/XhrConnectionHeartbeat';
+import {getVersion} from '../common/getVersion';
 
 export type Transport = {
   send(message: string): void,
@@ -31,10 +33,6 @@ export default class BigDigServer {
   _logger: log4js$Logger;
   _tagToSubscriber: Map<string, Subscriber>;
 
-  /**
-   * Currently, this is unused, though we will likely use it once we port the
-   * logic for XhrConnectionHeartbeat over.
-   */
   _httpsServer: https.Server;
   _webSocketServer: WS.Server;
 
@@ -71,6 +69,12 @@ export default class BigDigServer {
     request: http$IncomingMessage,
     response: http$ServerResponse,
   ) {
+    const {pathname} = url.parse(request.url);
+    if (pathname === `/${HEARTBEAT_CHANNEL}`) {
+      response.write(getVersion());
+      response.end();
+      return;
+    }
     this._logger.info(`Ignored HTTPS request for ${request.url}`);
   }
 

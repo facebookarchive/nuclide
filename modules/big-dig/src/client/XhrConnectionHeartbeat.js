@@ -19,7 +19,7 @@ const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
-export const HEARTBEAT_CHANNEL = 'heartbeat';
+export const HEARTBEAT_CHANNEL: 'heartbeat' = 'heartbeat';
 
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
