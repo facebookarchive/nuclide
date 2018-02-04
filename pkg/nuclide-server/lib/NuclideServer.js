@@ -19,7 +19,6 @@ import {attachEvent} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
-import {HEARTBEAT_CHANNEL} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {HistogramTracker} from '../../nuclide-analytics';
@@ -31,6 +30,8 @@ import {WebSocketTransport} from './WebSocketTransport';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {protocolLogger} from './utils';
 import {track} from '../../nuclide-analytics';
+
+export const HEARTBEAT_CHANNEL = 'heartbeat';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 const connect: connect$module = require('connect');

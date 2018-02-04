@@ -18,6 +18,7 @@ import url from 'url';
 import WS from 'ws';
 import uuid from 'uuid';
 import {Emitter} from 'event-kit';
+import {HEARTBEAT_CHANNEL} from './NuclideServer';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
@@ -92,7 +93,11 @@ export class NuclideSocket {
       protocol === 'https:' ? 's' : ''
     }://${maybeToString(host)}`;
 
-    this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
+    this._heartbeat = new XhrConnectionHeartbeat(
+      serverUri,
+      HEARTBEAT_CHANNEL,
+      options,
+    );
     this._heartbeat.onConnectionRestored(() => {
       if (this.isDisconnected()) {
         this._scheduleReconnect();

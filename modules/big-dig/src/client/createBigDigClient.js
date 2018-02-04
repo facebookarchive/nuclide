@@ -13,6 +13,7 @@
 import WS from 'ws';
 import https from 'https';
 
+import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
 import {WebSocketTransport} from './WebSocketTransport';
 import {BigDigClient} from './BigDigClient';
 import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
@@ -45,6 +46,7 @@ export default (async function createBigDigClient(
   const webSocketTransport = new WebSocketTransport('test', agent, socket);
   const heartbeat = new XhrConnectionHeartbeat(
     `https://${config.host}:${config.port}`,
+    HEARTBEAT_CHANNEL,
     options,
   );
   return new BigDigClient(webSocketTransport, heartbeat);

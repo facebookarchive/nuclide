@@ -19,8 +19,6 @@ const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
-export const HEARTBEAT_CHANNEL: 'heartbeat' = 'heartbeat';
-
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
   _lastHeartbeat: ?('here' | 'away');
@@ -29,12 +27,16 @@ export class XhrConnectionHeartbeat {
   _emitter: Emitter;
   _options: RequestOptions;
 
-  constructor(serverUri: string, agentOptions: ?AgentOptions) {
+  constructor(
+    serverUri: string,
+    heartbeatChannel: string,
+    agentOptions: ?AgentOptions,
+  ) {
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
     this._lastHeartbeatTime = null;
     const options: RequestOptions = {
-      uri: serverUri + '/' + HEARTBEAT_CHANNEL,
+      uri: `${serverUri}/${heartbeatChannel}`,
       method: 'POST',
       timeout: HEARTBEAT_TIMEOUT_MS,
     };

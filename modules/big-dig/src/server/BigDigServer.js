@@ -17,8 +17,9 @@ import type https from 'https';
 import {getLogger} from 'log4js';
 import url from 'url';
 import {Subject} from 'rxjs';
-import {HEARTBEAT_CHANNEL} from '../client/XhrConnectionHeartbeat';
 import {getVersion} from '../common/getVersion';
+
+export const HEARTBEAT_CHANNEL = 'big-dig-heartbeat';
 
 export type Transport = {
   send(message: string): void,
