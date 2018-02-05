@@ -359,7 +359,7 @@ export default class CodeFormatManager {
     const saveProvider = this._onSaveProviders.getProviderForEditor(editor);
     if (saveProvider != null) {
       return Observable.defer(() =>
-        this._reportBusy(editor, saveProvider.formatOnSave(editor)),
+        this._reportBusy(editor, saveProvider.formatOnSave(editor), false),
       ).map(edits => {
         applyTextEditsToBuffer(editor.getBuffer(), edits);
       });
@@ -372,7 +372,11 @@ export default class CodeFormatManager {
     return Observable.empty();
   }
 
-  _reportBusy<T>(editor: atom$TextEditor, promise: Promise<T>): Promise<T> {
+  _reportBusy<T>(
+    editor: atom$TextEditor,
+    promise: Promise<T>,
+    revealTooltip?: boolean = true,
+  ): Promise<T> {
     const busySignalService = this._busySignalService;
     if (busySignalService != null) {
       const path = editor.getPath();
@@ -381,7 +385,7 @@ export default class CodeFormatManager {
       return busySignalService.reportBusyWhile(
         `Formatting code in ${displayPath}`,
         () => promise,
-        {revealTooltip: true},
+        {revealTooltip},
       );
     }
     return promise;
