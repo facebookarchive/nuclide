@@ -134,9 +134,13 @@ export class RemoteConnection {
     if (!connectionConfig) {
       return null;
     }
-    // Connection configs are also stored by IP address to share between hostnames.
-    const {address} = await lookupPreferIpv6(host);
-    connectionConfig = await getConnectionConfig(address);
+    try {
+      // Connection configs are also stored by IP address to share between hostnames.
+      const {address} = await lookupPreferIpv6(host);
+      connectionConfig = await getConnectionConfig(address);
+    } catch (err) {
+      // It's OK if the backup IP check fails.
+    }
     if (!connectionConfig) {
       return null;
     }
