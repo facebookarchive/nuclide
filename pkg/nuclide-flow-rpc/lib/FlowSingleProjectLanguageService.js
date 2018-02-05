@@ -219,7 +219,10 @@ export class FlowSingleProjectLanguageService {
       return convertFindRefsOutput(json, this._root);
     } catch (e) {
       logger.error(`flowFindRefs error: ${String(e)}`);
-      return null;
+      return {
+        type: 'error',
+        message: String(e),
+      };
     }
   }
 
@@ -918,7 +921,7 @@ function locsToReferences(locs: Array<FlowLoc>): Array<Reference> {
 function convertFindRefsOutput(
   output: FindRefsOutput,
   root: string,
-): ?FindReferencesReturn {
+): FindReferencesReturn {
   if (Array.isArray(output)) {
     return {
       type: 'data',
@@ -928,7 +931,10 @@ function convertFindRefsOutput(
     };
   } else {
     if (output.kind === 'no-symbol-found') {
-      return null;
+      return {
+        type: 'error',
+        message: 'No symbol found at the current location by Flow.',
+      };
     } else {
       return {
         type: 'data',
