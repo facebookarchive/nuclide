@@ -72,4 +72,31 @@ describe('DiagnosticsMessageText', () => {
       {isUrl: false, text: ''},
     ]);
   });
+
+  it('should handle URLs that include a query', () => {
+    expect(
+      separateUrls(
+        'help: https://example.com/foo.html?q=%20+!&-._~:@/?-hmm. (weird url huh?)',
+      ),
+    ).toEqual([
+      {isUrl: false, text: 'help: '},
+      {isUrl: true, url: 'https://example.com/foo.html?q=%20+!&-._~:@/?-hmm'},
+      {isUrl: false, text: '. (weird url huh?)'},
+    ]);
+  });
+
+  it('should handle URLs that include a fragment', () => {
+    expect(
+      separateUrls(
+        'help: https://example.com/foo.html#frag%20+!&=-._~:@/?-name. (weird url huh?)',
+      ),
+    ).toEqual([
+      {isUrl: false, text: 'help: '},
+      {
+        isUrl: true,
+        url: 'https://example.com/foo.html#frag%20+!&=-._~:@/?-name',
+      },
+      {isUrl: false, text: '. (weird url huh?)'},
+    ]);
+  });
 });

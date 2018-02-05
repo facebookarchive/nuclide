@@ -37,7 +37,15 @@ export function separateUrls(message: string): Array<UrlOrText> {
   // Don't match periods at the end of URLs, because those are usually just to
   // end the sentence and not actually part of the URL. Optionally match
   // parameters following a question mark.
-  const urlRegex = /https?:\/\/[\w/._%-]*[\w/_-](?:\?[\w/_=&-]*)?/g;
+
+  // first bit before query/fragment
+  const mainUrl = /https?:\/\/[\w/.%-]*[\w/-]/.source;
+  // characters allowed in query/fragment, disallow `.` at the end
+  const queryChars = /[\w-~%&+.!=:@/?]*[\w-~%&+!=:@/?]/.source;
+  const urlRegex = new RegExp(
+    `${mainUrl}(?:\\?${queryChars})?(?:#${queryChars})?`,
+    'g',
+  );
 
   const urls = message.match(urlRegex);
   const nonUrls = message.split(urlRegex);
