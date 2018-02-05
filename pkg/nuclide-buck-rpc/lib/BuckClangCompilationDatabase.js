@@ -13,11 +13,12 @@ import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {BuckClangCompilationDatabase} from './types';
 
 import * as ClangService from '../../nuclide-clang-rpc';
+import {RelatedFileFinder} from '../../nuclide-clang-rpc/lib/RelatedFileFinder';
 import * as BuckService from './BuckServiceImpl';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
-import {guessBuildFile} from '../../nuclide-clang-rpc/lib/utils';
+import {guessBuildFile, isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {convertBuckClangCompilationDatabase} from './types';
 import fsPromise from 'nuclide-commons/fsPromise';
 
@@ -65,21 +66,49 @@ class BuckClangCompilationDatabaseHandler {
     this._sourceToTargetKey.clear();
   }
 
-  getCompilationDatabase(src: string): Promise<?BuckClangCompilationDatabase> {
-    return this._sourceCache.getOrCreate(src, async () => {
-      const buckRoot = await BuckService.getRootForPath(src);
-      return this._loadCompilationDatabaseFromBuck(src, buckRoot)
-        .catch(err => {
-          logger.error('Error getting flags from Buck', err);
-          throw err;
-        })
-        .then(db => {
-          if (db != null) {
-            this._cacheFilesToCompilationDB(db, buckRoot, src);
-          }
-          return db;
-        });
+  getCompilationDatabase(file: string): Promise<?BuckClangCompilationDatabase> {
+    return this._sourceCache.getOrCreate(file, async () => {
+      let caughtError = null;
+      let compDb = null;
+      try {
+        compDb = await this._getCompilationDatabase(file);
+      } catch (e) {
+        caughtError = e;
+      }
+      if ((compDb == null || compDb.file == null) && isHeaderFile(file)) {
+        logger.error(`Couldn't find flags for header ${file}.`);
+        const source = await new RelatedFileFinder().getRelatedSourceForHeader(
+          file,
+        );
+        if (source != null) {
+          return this.getCompilationDatabase(source);
+        } else {
+          logger.error(`Couldn't find source file for header ${file}.`);
+        }
+      }
+      logger.error(`Couldn't find flags for file ${file}.`);
+      if (caughtError != null) {
+        throw caughtError;
+      }
+      return compDb;
     });
+  }
+
+  async _getCompilationDatabase(
+    file: string,
+  ): Promise<?BuckClangCompilationDatabase> {
+    const buckRoot = await BuckService.getRootForPath(file);
+    return this._loadCompilationDatabaseFromBuck(file, buckRoot)
+      .catch(err => {
+        logger.error('Error getting flags from Buck for file ', file, err);
+        throw err;
+      })
+      .then(db => {
+        if (db != null) {
+          this._cacheFilesToCompilationDB(db, buckRoot, file);
+        }
+        return db;
+      });
   }
 
   async _loadCompilationDatabaseFromBuck(

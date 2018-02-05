@@ -9,17 +9,22 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ClangRequestSettings} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {
   getClangRequestSettings,
   getDefaultFlags,
 } from '../../nuclide-clang/lib/libclang';
 import {COMPILATION_DATABASE_FILE} from '../../nuclide-cquery-lsp-rpc/lib/CqueryLanguageServer';
-import {getCqueryLSPServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getCqueryLSPServiceByNuclideUri,
+  getClangServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {secondIfFirstIsNull} from './utils';
 
 type RootlessCqueryProject =
@@ -33,7 +38,7 @@ function getProjectRootFromAtom(path: string): string {
 
 function getProjectRootFromClangRequestSettingsOrAtom(
   settings: ?ClangRequestSettings,
-  path: string,
+  path: NuclideUri,
 ): string {
   return settings != null && settings.projectRoot != null
     ? settings.projectRoot
@@ -56,7 +61,7 @@ function getFlagsFileFromSettings(settings: ?ClangRequestSettings): ?string {
     : null;
 }
 
-function findNearestCompilationDbDir(file: string): Promise<?string> {
+function findNearestCompilationDbDir(file: NuclideUri): Promise<?string> {
   return getCqueryLSPServiceByNuclideUri(file).findNearestCompilationDbDir(
     file,
   );
@@ -68,7 +73,7 @@ function getCompilationDbFile(compilationDbDir: string): string {
 
 async function getCompilationDbAndFlagsFile(
   settings: ?ClangRequestSettings,
-  file: string,
+  file: NuclideUri,
 ): Promise<RootlessCqueryProject> {
   const compilationDbDir = await secondIfFirstIsNull(
     getCompilationDbDirFromSettings(settings),
@@ -87,9 +92,23 @@ async function getCompilationDbAndFlagsFile(
   };
 }
 
+async function findSourcePath(path: NuclideUri): Promise<NuclideUri> {
+  if (isHeaderFile(path)) {
+    const service = getClangServiceByNuclideUri(path);
+    if (service != null) {
+      const source = await service.getRelatedSourceOrHeader(path);
+      if (source != null) {
+        return source;
+      }
+    }
+  }
+  return path;
+}
+
 export async function determineCqueryProject(
-  path: string,
+  _path: NuclideUri,
 ): Promise<CqueryProject> {
+  const path = await findSourcePath(_path);
   const settings = await getClangRequestSettings(path);
   const compilationDbAndFlags = await getCompilationDbAndFlagsFile(
     settings,

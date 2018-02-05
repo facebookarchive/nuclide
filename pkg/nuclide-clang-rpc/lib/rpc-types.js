@@ -113,13 +113,13 @@ export type ClangLocalReferences = {
 
 export type ClangRequestSettings = {|
   compilationDatabase: ?ClangCompilationDatabase,
-  projectRoot: ?string,
+  projectRoot: ?NuclideUri,
 |};
 
 export type ClangCompilationDatabase = {|
-  file: ?string,
-  flagsFile: ?string,
-  libclangPath: ?string,
+  file: ?NuclideUri,
+  flagsFile: ?NuclideUri,
+  libclangPath: ?NuclideUri,
 |};
 
 // https://clang.llvm.org/docs/JSONCompilationDatabase.html

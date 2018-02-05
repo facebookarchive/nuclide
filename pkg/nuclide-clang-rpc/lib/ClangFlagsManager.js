@@ -17,7 +17,6 @@ import type {
   ClangRequestSettings,
 } from './rpc-types';
 
-import {Observable} from 'rxjs';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -39,15 +38,10 @@ import {
   guessBuildFile,
   getFileBasename,
 } from './utils';
-import {
-  getRelatedHeaderForSource,
-  getRelatedSourceForHeader,
-  findIncludingSourceFile,
-} from './RelatedFileFinder';
+import {RelatedFileFinder} from './RelatedFileFinder';
 
 const logger = getLogger('nuclide-clang-rpc');
 
-const INCLUDE_SEARCH_TIMEOUT = 15000;
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
 
@@ -257,7 +251,9 @@ export default class ClangFlagsManager {
     dbFlags: ?Map<string, ClangFlagsHandle>,
     projectRoot: ?string,
   ): Promise<?string> {
-    const source = await getRelatedSourceForHeader(header);
+    const source = await new RelatedFileFinder().getRelatedSourceForHeader(
+      header,
+    );
     if (source != null) {
       return source;
     }
@@ -270,15 +266,9 @@ export default class ClangFlagsManager {
         return sourceFile;
       }
     }
-    if (projectRoot != null) {
-      // Try searching all subdirectories for source files that include this header.
-      // Give up after INCLUDE_SEARCH_TIMEOUT.
-      return findIncludingSourceFile(header, projectRoot)
-        .timeout(INCLUDE_SEARCH_TIMEOUT)
-        .catch(() => Observable.of(null))
-        .toPromise();
-    }
-    return null;
+    return projectRoot != null
+      ? new RelatedFileFinder().getRelatedSourceForHeader(header, projectRoot)
+      : null;
   }
 
   async getRelatedSourceOrHeader(
@@ -299,7 +289,7 @@ export default class ClangFlagsManager {
         projectRoot || dbDir,
       );
     }
-    return getRelatedHeaderForSource(src);
+    return new RelatedFileFinder().getRelatedHeaderForSource(src);
   }
 
   async _getFlagsForSrcImpl(

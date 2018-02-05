@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ClangCompileResult,
   ClangCompletion,
@@ -18,16 +19,13 @@ import type {
   ClangOutlineTree,
   ClangRequestSettings,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
-import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangConfigurationProvider} from './types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {
-  getClangServiceByNuclideUri,
-  getServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
+import {getClangServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 type NuclideClangConfig = {
   enableDefaultFlags: boolean,
@@ -45,9 +43,24 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
+async function findSourcePath(path: NuclideUri): Promise<string> {
+  if (isHeaderFile(path)) {
+    const service = getClangServiceByNuclideUri(path);
+    if (service != null) {
+      const source = await service.getRelatedSourceOrHeader(path);
+      if (source != null) {
+        return source;
+      }
+    }
+  }
+  return path;
+}
+
 async function getClangProvidersForSource(
-  src: string,
+  _src: NuclideUri,
 ): Promise<ClangConfigurationProvider[]> {
+  const src = await findSourcePath(_src);
+
   // $FlowFixMe(>=0.55.0) Flow suppress
   return arrayCompact(
     // $FlowFixMe(>=0.55.0) Flow suppress
@@ -182,7 +195,7 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    const service = getClangServiceByNuclideUri(src);
     if (service == null) {
       return Promise.resolve(null);
     }
@@ -223,7 +236,7 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    const service = getClangServiceByNuclideUri(src);
     if (service == null) {
       return Promise.resolve(null);
     }
