@@ -349,7 +349,11 @@ class GutterElement extends React.Component<Props> {
           {!isLastLine ? (
             <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
           ) : null}
-          {Avatar ? <Avatar size={16} unixname={unixname} /> : unixname + ': '}
+          {Avatar ? (
+            <Avatar size={16} employeeIdentifier={unixname} />
+          ) : (
+            unixname + ': '
+          )}
           <span>{revision.title}</span>
           <div style={{opacity}} className="nuclide-blame-border-age" />
         </div>
