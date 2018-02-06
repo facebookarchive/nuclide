@@ -69,3 +69,31 @@ export function getBuildFileName(buckRoot: string): Promise<string> {
   buildFileNameCache.set(buckRoot, buildFileName);
   return buildFileName;
 }
+
+const cellLocationCache: Map<string, Promise<string>> = new Map();
+/**
+ * @return path of the provided cell from .buckconfig.
+ */
+export function getCellLocation(
+  buckRoot: string,
+  cellName: string,
+): Promise<string> {
+  const cacheKey = buckRoot + '->' + cellName;
+  const cachedLocation = cellLocationCache.get(cacheKey);
+  if (cachedLocation != null) {
+    return cachedLocation;
+  }
+  const buckService = getBuckServiceByNuclideUri(buckRoot);
+  const cellLocation = buckService
+    .getBuckConfig(buckRoot, 'repositories', cellName)
+    .catch(error => {
+      getLogger('nuclide-buck').error(
+        `Error trying to find the location of '${cellName}' for Buck project '${buckRoot}'`,
+        error,
+      );
+      return '';
+    })
+    .then(result => (result == null ? '' : result));
+  cellLocationCache.set(cacheKey, cellLocation);
+  return cellLocation;
+}
