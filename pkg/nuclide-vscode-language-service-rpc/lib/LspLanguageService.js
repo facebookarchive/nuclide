@@ -1656,6 +1656,12 @@ export class LspLanguageService {
         },
       ],
     );
+    return {outlineTrees: this._createOutlineTreeHierarchy(list).children};
+  }
+
+  _createOutlineTreeHierarchy(
+    list: Array<[SymbolInformation, OutlineTree]>,
+  ): OutlineTree {
     list.sort(([, aNode], [, bNode]) =>
       aNode.startPosition.compare(bNode.startPosition),
     );
@@ -1718,7 +1724,7 @@ export class LspLanguageService {
       }
     }
 
-    return {outlineTrees: root.children};
+    return root;
   }
 
   // Private API to send executeCommand requests to the server. Returns a

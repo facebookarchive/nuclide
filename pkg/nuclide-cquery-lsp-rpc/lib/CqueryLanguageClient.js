@@ -10,11 +10,12 @@
  */
 
 // Provides some extra commands on top of base Lsp.
-import type {CodeAction} from 'atom-ide-ui';
+import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   TextEdit,
   Command,
+  SymbolInformation,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {RequestLocationsResult} from './types';
 
@@ -28,6 +29,7 @@ import {
   atomPoint_lspPosition,
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
+import {parseOutlineTree} from './outline/CqueryOutlineParser';
 
 type CqueryProgressNotification = {
   indexRequestCount: number,
@@ -109,6 +111,12 @@ export class CqueryLanguageClient extends LspLanguageService {
       );
     // TODO pelmers Register handlers for other custom cquery messages.
     // TODO pelmers hook into refactorizer for renaming?
+  }
+
+  _createOutlineTreeHierarchy(
+    list: Array<[SymbolInformation, OutlineTree]>,
+  ): OutlineTree {
+    return parseOutlineTree(list);
   }
 
   _executeCommand(command: string, args?: Array<any>): Promise<void> {
