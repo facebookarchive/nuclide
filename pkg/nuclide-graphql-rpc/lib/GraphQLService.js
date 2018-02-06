@@ -44,6 +44,7 @@ export async function initializeLsp(
       spawnOptions,
       projectFileNames,
       fileExtensions,
+      additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
     },
   );
 }
