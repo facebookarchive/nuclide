@@ -51,6 +51,16 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].id).toBe('React');
     expect(undefinedSymbols[0].type).toBe('value');
   });
+  it('Should not find undefined React in JSX component with @csx tag', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = '/**@csx*/ const x = <Component />;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('Component');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
   it('Should not declare all globals as undefined', () => {
     const manager = new UndefinedSymbolManager([]);
     const program = 'var x = 10; function myFunc(){ return x; };';

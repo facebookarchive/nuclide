@@ -21,6 +21,7 @@ import type {UndefinedSymbol} from './types';
 
 const BUILT_INS = ['Iterator', '__DEV__'];
 const REACT_MODULE_NAME = 'React';
+const JSX_CSX_PRAGMA_REGEX = /\*?\s*@csx/;
 
 export class UndefinedSymbolManager {
   globals: Set<string>;
@@ -53,6 +54,7 @@ function traverseTreeForUndefined(
   const undefinedSymbols = [];
   const definedTypes = new Set();
   const definedValues = new Set();
+  let csx = false;
   traverse(ast, {
     ImportDeclaration: path => {
       saveImports(path, definedTypes);
@@ -93,8 +95,17 @@ function traverseTreeForUndefined(
         definedValues.add(path.node.name);
       }
     },
+    Program(path) {
+      csx =
+        csx ||
+        path.parent.comments.some(({value}) =>
+          JSX_CSX_PRAGMA_REGEX.test(value),
+        );
+    },
     JSXIdentifier(path) {
-      findUndefinedReact(path, undefinedSymbols, globals);
+      if (!csx) {
+        findUndefinedReact(path, undefinedSymbols, globals);
+      }
     },
     LabeledStatement(path) {
       // Create a fake binding for the label.
