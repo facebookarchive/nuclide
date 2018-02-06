@@ -23,12 +23,11 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {Observable} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
-import ATEmulatorTable from './ui/ATEmulatorTable';
+import AvdTable from './ui/AvdTable';
 
 export type Avd = string;
 
-export class ATEmulatorComponentProvider
-  implements DeviceTypeComponentProvider {
+export class AvdComponentProvider implements DeviceTypeComponentProvider {
   _avds: Device[];
   _emulator: ?string;
 
@@ -60,7 +59,7 @@ export class ATEmulatorComponentProvider
           order: 0,
           component: bindObservableAsProps(
             Observable.of({avds, startAvd: this._startAvd.bind(this)}),
-            ATEmulatorTable,
+            AvdTable,
           ),
         });
       })
@@ -68,16 +67,15 @@ export class ATEmulatorComponentProvider
     return new UniversalDisposable();
   }
 
-  _getEmulator(): Promise<?string> {
+  async _getEmulator(): Promise<?string> {
     const androidHome = process.env.ANDROID_HOME;
     const emulator =
       androidHome != null ? `${androidHome}/tools/emulator` : null;
     if (emulator == null) {
-      return Promise.resolve(null);
+      return null;
     }
-    return fsPromise.exists(emulator).then(exists => {
-      return exists ? Promise.resolve(emulator) : Promise.resolve(null);
-    });
+    const exists = await fsPromise.exists(emulator);
+    return exists ? emulator : null;
   }
 
   _parseAvds(emulatorOutput: string): Avd[] {

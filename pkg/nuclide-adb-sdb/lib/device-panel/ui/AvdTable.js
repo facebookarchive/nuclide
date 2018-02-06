@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Avd} from '../ATEmulatorComponentProvider';
+import type {Avd} from '../AvdComponentProvider';
 
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -25,7 +25,7 @@ type Props = {
   startAvd: (avd: Avd) => void,
 };
 
-export default class ATEmulatorTable extends React.Component<Props> {
+export default class AvdTable extends React.Component<Props> {
   _renderAvd(rowProps: {data: Avd}): React.Node {
     const {startAvd} = this.props;
     const avd = rowProps.data;

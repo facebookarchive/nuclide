@@ -19,7 +19,7 @@ import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
 import {ATDeviceStopProcessProvider} from './ATDeviceStopProcessProvider';
 import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
-import {ATEmulatorComponentProvider} from './ATEmulatorComponentProvider';
+import {AvdComponentProvider} from './AvdComponentProvider';
 
 export function registerDevicePanelProviders(
   api: DevicePanelServiceApi,
@@ -34,7 +34,7 @@ export function registerDevicePanelProviders(
     api.registerDeviceTypeTaskProvider(
       new ATConfigurePathTaskProvider(android),
     ),
-    api.registerDeviceTypeComponentProvider(new ATEmulatorComponentProvider()),
+    api.registerDeviceTypeComponentProvider(new AvdComponentProvider()),
   );
 
   if (atom.config.get('nuclide.nuclide-adb-sdb.tizen')) {
