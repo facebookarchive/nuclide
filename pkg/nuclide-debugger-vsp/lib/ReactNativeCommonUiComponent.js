@@ -106,9 +106,9 @@ export default class ReactNativeCommonUiComponent<
   render(): React.Node {
     return (
       <div className="block">
-        <label>Workspace path (should contain package.json): </label>
+        <label>Workspace absolute path (should contain package.json): </label>
         <AtomInput
-          placeholderText="Path containing package.json"
+          placeholderText="Absolute path containing package.json"
           value={this.state.workspacePath}
           onDidChange={value => this.setState({workspacePath: value})}
           autofocus={true}
