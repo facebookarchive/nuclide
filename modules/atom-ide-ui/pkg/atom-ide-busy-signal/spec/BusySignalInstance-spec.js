@@ -131,7 +131,7 @@ describe('BusySignalSingleton', () => {
     });
   });
 
-  it('should clear revealTooltip after the initial display', () => {
+  it('correctly sets revealTooltip when provided', () => {
     waitsForPromise(async () => {
       function getCurrentMessages() {
         return messageStore
@@ -140,26 +140,13 @@ describe('BusySignalSingleton', () => {
           .toPromise();
       }
 
-      const dispose1 = singleton.reportBusy('foo', {
+      singleton.reportBusy('foo', {
         debounce: false,
         revealTooltip: true,
       });
-      let curMessages = await getCurrentMessages();
+      const curMessages = await getCurrentMessages();
       expect(curMessages.length).toBe(1);
       expect(curMessages[0].shouldRevealTooltip()).toBe(true);
-
-      const dispose2 = singleton.reportBusy('foo', {
-        debounce: false,
-        revealTooltip: true,
-      });
-      curMessages = await getCurrentMessages();
-      expect(curMessages.length).toBe(2);
-      expect(curMessages[0].shouldRevealTooltip()).toBe(false);
-      expect(curMessages[1].shouldRevealTooltip()).toBe(true);
-
-      dispose1.dispose();
-      dispose2.dispose();
-      expect(await getCurrentMessages()).toEqual([]);
     });
   });
 });
