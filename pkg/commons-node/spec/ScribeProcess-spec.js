@@ -124,4 +124,14 @@ describe('scribe_cat test suites', () => {
       ]);
     });
   });
+
+  it('disables itself when spawning fails', () => {
+    waitsForPromise(async () => {
+      __test__.setScribeCatCommand('not a valid command');
+      const scribeProcess = new ScribeProcess('test', 100);
+      expect(await scribeProcess.write('hi')).toBe(false);
+      expect(ScribeProcess.isEnabled()).toBe(false);
+      expect(await scribeProcess.write('hi')).toBe(false);
+    });
+  });
 });

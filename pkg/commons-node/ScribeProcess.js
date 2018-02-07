@@ -9,6 +9,8 @@
  * @format
  */
 
+import {getLogger} from 'log4js';
+import performanceNow from 'nuclide-commons/performanceNow';
 import os from 'os';
 import {spawn} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
@@ -22,6 +24,11 @@ let SCRIBE_CAT_COMMAND = 'scribe_cat';
 // in a timely manner, we'll periodically force-kill the process.
 const DEFAULT_JOIN_INTERVAL = process.platform === 'darwin' ? 60000 : null;
 
+// If spawning the Scribe process takes this long, disable it.
+// Node sometimes runs into strange issues where spawning() starts to block.
+// https://github.com/nodejs/node/issues/14917
+const SPAWN_TOO_LONG_MS = 2000;
+
 /**
  * A wrapper of `scribe_cat` (https://github.com/facebookarchive/scribe/blob/master/examples/scribe_cat)
  * command. User could call `new ScribeProcess($scribeCategoryName)` to create a process and then
@@ -29,6 +36,8 @@ const DEFAULT_JOIN_INTERVAL = process.platform === 'darwin' ? 60000 : null;
  * It will also recover from `scribe_cat` failure automatically.
  */
 export default class ScribeProcess {
+  static _enabled: boolean = true;
+
   _scribeCategory: string;
   _childPromise: ?Promise<child_process$ChildProcess>;
   _subscription: ?rxjs$ISubscription;
@@ -51,15 +60,36 @@ export default class ScribeProcess {
     which(SCRIBE_CAT_COMMAND).then(cmd => cmd != null),
   );
 
+  static isEnabled(): boolean {
+    return ScribeProcess._enabled;
+  }
+
   /**
    * Write a string to a Scribe category.
    * Ensure newlines are properly escaped.
+   * Returns false if something is wrong with the Scribe process (use a fallback instead.)
    */
-  async write(message: string): Promise<void> {
-    const child = await this._getChildProcess();
+  async write(message: string): Promise<boolean> {
+    if (!ScribeProcess._enabled) {
+      return false;
+    }
+    let child;
+    try {
+      child = await this._getChildProcess();
+    } catch (err) {
+      ScribeProcess._enabled = false;
+      // Note: Logging errors is potentially recursive, since they go through Scribe!
+      // It's important that we set _enabled before logging errors in this file.
+      getLogger('ScribeProcess').error(
+        'Disabling ScribeProcess due to spawn error:',
+        err,
+      );
+      return false;
+    }
     await new Promise(resolve => {
       child.stdin.write(`${message}${os.EOL}`, resolve);
     });
+    return true;
   }
 
   /**
@@ -105,10 +135,21 @@ export default class ScribeProcess {
 
     // Obtain a promise to get the child process, but don't start it yet.
     // this._subscription will have control over starting / stopping the process.
+    const startTime = performanceNow();
     const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory], {
       dontLogInNuclide: true,
     })
       .do(child => {
+        const duration = performanceNow() - startTime;
+        if (duration > SPAWN_TOO_LONG_MS) {
+          ScribeProcess._enabled = false;
+          getLogger('ScribeProcess').error(
+            `Disabling ScribeProcess because spawn took too long (${duration}ms)`,
+          );
+          // Don't raise any errors and allow the current write to complete.
+          // However, the next write will fail due to the _enabled check.
+          this.join();
+        }
         child.stdin.setDefaultEncoding('utf8');
       })
       .finally(() => {
