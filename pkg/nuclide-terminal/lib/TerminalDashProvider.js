@@ -16,6 +16,7 @@ import type {
   // $FlowFB
 } from '../../fb-dash/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {Command} from '../../nuclide-pty-rpc/rpc-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -47,44 +48,46 @@ export default class TerminalDashProvider
     callback: (items: Array<GenericResult>) => mixed,
   ): IDisposable {
     let results;
+    const cwdApi = this._getCwdApi();
+    const cwd = cwdApi ? cwdApi.getCwd() : null;
+    const cwdPath = cwd ? cwd.getPath() : nuclideUri.expandHomeDir('~');
     if (query === '') {
       results = [
         {
           type: 'generic',
           primaryText: 'Enter a command to run in the terminal',
           relevance: 1,
+          callback: () => this._openTerminal(cwdPath),
         },
       ];
     } else {
-      const cwdApi = this._getCwdApi();
-      const cwd = cwdApi ? cwdApi.getCwd() : null;
-      const cwdPath = cwd ? cwd.getPath() : nuclideUri.expandHomeDir('~');
-      results = [
-        {
-          type: 'generic',
-          primaryText: highlightText`Run ${query} in the terminal`,
-          secondaryText: `at ${cwdPath}`,
-          relevance: 1,
-          callback: () => {
-            goToLocation(
-              uriFromInfo({
-                cwd: cwdPath,
-                defaultLocation: 'bottom',
-                icon: 'terminal',
-                remainOnCleanExit: true,
-                title: this.prefix + query,
-                command: {
-                  file: '/bin/bash',
-                  args: ['-c', query],
-                },
-              }),
-            );
-          },
-        },
-      ];
+      results = atom.project.getPaths().map(path => ({
+        type: 'generic',
+        primaryText: highlightText`Run ${query} in the terminal`,
+        secondaryText: `at ${nuclideUri.nuclideUriToDisplayString(path)}`,
+        relevance: path === cwdPath ? 1 : 0.5,
+        callback: () =>
+          this._openTerminal(path, this.prefix + query, {
+            file: '/bin/bash',
+            args: ['-c', query],
+          }),
+      }));
     }
 
     callback(results);
     return new UniversalDisposable();
+  }
+
+  _openTerminal(cwd: string, title?: string, command?: Command): void {
+    goToLocation(
+      uriFromInfo({
+        cwd,
+        defaultLocation: 'bottom',
+        icon: 'terminal',
+        remainOnCleanExit: true,
+        title,
+        command,
+      }),
+    );
   }
 }

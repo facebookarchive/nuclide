@@ -137,11 +137,13 @@ class Activation {
   }
 
   consumeDash(registerProvider: RegisterProvider): IDisposable {
-    return registerProvider(
+    const subscription = registerProvider(
       new TerminalDashProvider({
         getCwdApi: () => this._cwd,
       }),
     );
+    this._subscriptions.add(subscription);
+    return subscription;
   }
 
   _getPathOrCwd(event: Event): ?string {
