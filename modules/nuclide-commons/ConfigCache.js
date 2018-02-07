@@ -16,7 +16,7 @@ import type {NuclideUri} from './nuclideUri';
 import LRU from 'lru-cache';
 import fsPromise from './fsPromise';
 
-export type SearchStrategy = 'nearest' | 'priority';
+export type SearchStrategy = 'nearest' | 'furthest' | 'priority';
 
 export class ConfigCache {
   _configFileNames: Array<string>;
@@ -46,15 +46,26 @@ export class ConfigCache {
 
   async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
     const configDirs = await Promise.all(
-      this._configFileNames.map(configFile =>
-        fsPromise.findNearestFile(configFile, path),
-      ),
+      this._configFileNames.map(configFile => {
+        if (this._searchStrategy === 'furthest') {
+          return fsPromise.findFurthestFile(configFile, path);
+        } else {
+          return fsPromise.findNearestFile(configFile, path);
+        }
+      }),
     );
 
     if (this._searchStrategy === 'nearest') {
       // Find the result with the greatest length (the closest match).
       return configDirs.filter(Boolean).reduce((previous, configDir) => {
         if (previous == null || configDir.length > previous.length) {
+          return configDir;
+        }
+        return previous;
+      }, null);
+    } else if (this._searchStrategy === 'furthest') {
+      return configDirs.filter(Boolean).reduce((previous, configDir) => {
+        if (previous == null || configDir.length < previous.length) {
           return configDir;
         }
         return previous;

@@ -40,8 +40,8 @@ describe('ConfigCache', () => {
       expect(await cache.getConfigDir(noConfigFolder)).toBe(null);
       expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
       expect(await cache.getConfigDir(rootFile)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFolder)).toBe(rootFolder);
-      expect(await cache.getConfigDir(nestedFile)).toBe(rootFolder);
+      expect(await cache.getConfigDir(nestedFolder)).toBe(nestedFolder);
+      expect(await cache.getConfigDir(nestedFile)).toBe(nestedFolder);
     });
   });
 
@@ -51,6 +51,19 @@ describe('ConfigCache', () => {
 
       expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
       expect(await cache.getConfigDir(nestedFolder2)).toBe(nestedFolder2);
+    });
+  });
+
+  it('prefers further matches when the search strategy is "furthest"', () => {
+    waitsForPromise(async () => {
+      const cache = new ConfigCache(
+        [CONFIG_FILE_NAME, CONFIG_FILE_NAME_2],
+        'furthest',
+      );
+
+      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+      expect(await cache.getConfigDir(nestedFolder)).toBe(rootFolder);
+      expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
     });
   });
 
