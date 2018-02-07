@@ -10,7 +10,7 @@
  */
 
 // $FlowFB
-import type {ProjectSymbol} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
+import type {ProjectSymbol} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 import type {AtomLanguageService} from '../../nuclide-language-service';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 

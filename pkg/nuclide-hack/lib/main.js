@@ -10,12 +10,12 @@
  */
 
 // $FlowFB
-import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
+import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 import type {SymbolResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
-import Omni2ProjectSymbolProvider from './Omni2ProjectSymbolProvider';
+import DashProjectSymbolProvider from './DashProjectSymbolProvider';
 
 export function activate() {
   hackLanguageService.then(value => value.activate());
@@ -30,5 +30,5 @@ export function registerQuickOpenProvider(): Provider<SymbolResult> {
 }
 
 export function registerProjectSymbolSearchProvider(): ProjectSymbolSearchProvider {
-  return Omni2ProjectSymbolProvider;
+  return DashProjectSymbolProvider;
 }

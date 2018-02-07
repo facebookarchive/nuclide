@@ -13,13 +13,13 @@ import type {
   ProjectSymbolSearchProvider,
   ProjectSymbol,
   // $FlowFB
-} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
+} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getHackLanguageForUri} from './HackLanguage';
 
-const Omni2ProjectSymbolProvider: ProjectSymbolSearchProvider = {
+const DashProjectSymbolProvider: ProjectSymbolSearchProvider = {
   searchSymbolsForDirectory(
     query: string,
     directory: atom$Directory,
@@ -41,4 +41,4 @@ const Omni2ProjectSymbolProvider: ProjectSymbolSearchProvider = {
   },
 };
 
-export default Omni2ProjectSymbolProvider;
+export default DashProjectSymbolProvider;

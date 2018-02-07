@@ -11,10 +11,10 @@
 
 import type {
   GenericResult,
-  Omni2Provider,
+  DashProvider,
   QueryContext,
   // $FlowFB
-} from '../../fb-omni2/lib/types';
+} from '../../fb-dash/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -23,14 +23,14 @@ import highlightText from 'nuclide-commons-ui/highlightText';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {uriFromInfo} from '../../commons-node/nuclide-terminal-uri';
 
-export default class TerminalOmni2Provider
-  implements Omni2Provider<GenericResult> {
+export default class TerminalDashProvider
+  implements DashProvider<GenericResult> {
   _getCwdApi: () => ?CwdApi;
   debounceDelay = 0;
   display = {
     title: 'Terminal',
     prompt: 'Run a terminal command...',
-    action: 'terminal-omni2-provider:toggle-provider',
+    action: 'terminal-dash-provider:toggle-provider',
   };
 
   name = 'TerminalProvider';
