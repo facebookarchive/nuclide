@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RelatedFileFinder = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _escapeStringRegexp;
+
+function _load_escapeStringRegexp() {
+  return _escapeStringRegexp = _interopRequireDefault(require('escape-string-regexp'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,191 +48,144 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import escapeStringRegExp from 'escape-string-regexp';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {getFileBasename, isHeaderFile, isSourceFile} from './utils';
-import {Observable} from 'rxjs';
-import {observeProcess} from 'nuclide-commons/process';
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
 
 // The only purpose of having this as a class is because it's easier to mock
 // functions within for testing
-export class RelatedFileFinder {
-  async _searchFileWithBasename(
-    dir: string,
-    basename: string,
-    condition: (file: string) => boolean,
-  ): Promise<?string> {
-    const files = await fsPromise.readdir(dir).catch(() => []);
-    for (const file of files) {
-      if (condition(file) && getFileBasename(file) === basename) {
-        return nuclideUri.join(dir, file);
+class RelatedFileFinder {
+  _searchFileWithBasename(dir, basename, condition) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const files = yield (_fsPromise || _load_fsPromise()).default.readdir(dir).catch(function () {
+        return [];
+      });
+      for (const file of files) {
+        if (condition(file) && (0, (_utils || _load_utils()).getFileBasename)(file) === basename) {
+          return (_nuclideUri || _load_nuclideUri()).default.join(dir, file);
+        }
       }
-    }
-    return null;
+      return null;
+    })();
   }
 
-  _getFrameworkStructureFromSourceDir(
-    dir: string,
-  ): ?{
-    frameworkPath: string,
-    frameworkName: string,
-    frameworkSubFolder: string,
-  } {
-    const paths = nuclideUri.split(dir).reverse();
+  _getFrameworkStructureFromSourceDir(dir) {
+    const paths = (_nuclideUri || _load_nuclideUri()).default.split(dir).reverse();
     const rootIndex = paths.findIndex(folderName => folderName === 'Sources');
     if (rootIndex === -1) {
       return null;
     }
     const frameworkName = paths[rootIndex + 1];
-    const frameworkPath = nuclideUri.join(
-      ...paths.slice(rootIndex + 1).reverse(),
-    );
+    const frameworkPath = (_nuclideUri || _load_nuclideUri()).default.join(...paths.slice(rootIndex + 1).reverse());
     const frameworkSubPaths = paths.slice(0, rootIndex);
-    const frameworkSubFolder =
-      frameworkSubPaths.length === 0
-        ? ''
-        : nuclideUri.join(...frameworkSubPaths.reverse());
+    const frameworkSubFolder = frameworkSubPaths.length === 0 ? '' : (_nuclideUri || _load_nuclideUri()).default.join(...frameworkSubPaths.reverse());
     return {
       frameworkPath,
       frameworkName,
-      frameworkSubFolder,
+      frameworkSubFolder
     };
   }
 
-  _getFrameworkStructureFromHeaderDir(
-    dir: string,
-  ): ?{
-    frameworkPath: string,
-    frameworkName: string,
-    frameworkSubFolder: string,
-  } {
-    const paths = nuclideUri.split(dir).reverse();
-    const rootIndex = paths.findIndex(folderName =>
-      ['Headers', 'PrivateHeaders'].includes(folderName),
-    );
+  _getFrameworkStructureFromHeaderDir(dir) {
+    const paths = (_nuclideUri || _load_nuclideUri()).default.split(dir).reverse();
+    const rootIndex = paths.findIndex(folderName => ['Headers', 'PrivateHeaders'].includes(folderName));
     if (rootIndex === -1) {
       return null;
     }
     const frameworkName = paths[rootIndex + 1];
-    const frameworkPath = nuclideUri.join(
-      ...paths.slice(rootIndex + 1).reverse(),
-    );
+    const frameworkPath = (_nuclideUri || _load_nuclideUri()).default.join(...paths.slice(rootIndex + 1).reverse());
     const frameworkSubPaths = paths.slice(0, rootIndex - 1);
-    const frameworkSubFolder =
-      frameworkSubPaths.length === 0
-        ? ''
-        : nuclideUri.join(...frameworkSubPaths.reverse());
+    const frameworkSubFolder = frameworkSubPaths.length === 0 ? '' : (_nuclideUri || _load_nuclideUri()).default.join(...frameworkSubPaths.reverse());
     return {
       frameworkPath,
       frameworkName,
-      frameworkSubFolder,
+      frameworkSubFolder
     };
   }
 
-  async _getRelatedHeaderForSourceFromFramework(src: string): Promise<?string> {
-    const frameworkStructure = this._getFrameworkStructureFromSourceDir(
-      nuclideUri.dirname(src),
-    );
-    if (frameworkStructure == null) {
-      return null;
-    }
-    const {
-      frameworkPath,
-      frameworkName,
-      frameworkSubFolder,
-    } = frameworkStructure;
-    const basename = getFileBasename(src);
-    const headers = await Promise.all(
-      ['Headers', 'PrivateHeaders'].map(headerFolder =>
-        this._searchFileWithBasename(
-          nuclideUri.join(
-            frameworkPath,
-            headerFolder,
-            frameworkName,
-            frameworkSubFolder,
-          ),
-          basename,
-          isHeaderFile,
-        ),
-      ),
-    );
-    return headers.find(file => file != null);
+  _getRelatedHeaderForSourceFromFramework(src) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const frameworkStructure = _this._getFrameworkStructureFromSourceDir((_nuclideUri || _load_nuclideUri()).default.dirname(src));
+      if (frameworkStructure == null) {
+        return null;
+      }
+      const {
+        frameworkPath,
+        frameworkName,
+        frameworkSubFolder
+      } = frameworkStructure;
+      const basename = (0, (_utils || _load_utils()).getFileBasename)(src);
+      const headers = yield Promise.all(['Headers', 'PrivateHeaders'].map(function (headerFolder) {
+        return _this._searchFileWithBasename((_nuclideUri || _load_nuclideUri()).default.join(frameworkPath, headerFolder, frameworkName, frameworkSubFolder), basename, (_utils || _load_utils()).isHeaderFile);
+      }));
+      return headers.find(function (file) {
+        return file != null;
+      });
+    })();
   }
 
-  async _getRelatedSourceForHeaderFromFramework(
-    header: string,
-  ): Promise<?string> {
-    const frameworkStructure = this._getFrameworkStructureFromHeaderDir(
-      nuclideUri.dirname(header),
-    );
-    if (frameworkStructure == null) {
-      return null;
-    }
-    const {frameworkPath, frameworkSubFolder} = frameworkStructure;
-    return this._searchFileWithBasename(
-      nuclideUri.join(frameworkPath, 'Sources', frameworkSubFolder),
-      getFileBasename(header),
-      isSourceFile,
-    );
+  _getRelatedSourceForHeaderFromFramework(header) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const frameworkStructure = _this2._getFrameworkStructureFromHeaderDir((_nuclideUri || _load_nuclideUri()).default.dirname(header));
+      if (frameworkStructure == null) {
+        return null;
+      }
+      const { frameworkPath, frameworkSubFolder } = frameworkStructure;
+      return _this2._searchFileWithBasename((_nuclideUri || _load_nuclideUri()).default.join(frameworkPath, 'Sources', frameworkSubFolder), (0, (_utils || _load_utils()).getFileBasename)(header), (_utils || _load_utils()).isSourceFile);
+    })();
   }
 
-  async getRelatedHeaderForSource(src: string): Promise<?string> {
-    // search in folder
-    const header = await this._searchFileWithBasename(
-      nuclideUri.dirname(src),
-      getFileBasename(src),
-      isHeaderFile,
-    );
-    if (header != null) {
-      return header;
-    }
-    // special case for obj-c frameworks
-    return this._getRelatedHeaderForSourceFromFramework(src);
+  getRelatedHeaderForSource(src) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // search in folder
+      const header = yield _this3._searchFileWithBasename((_nuclideUri || _load_nuclideUri()).default.dirname(src), (0, (_utils || _load_utils()).getFileBasename)(src), (_utils || _load_utils()).isHeaderFile);
+      if (header != null) {
+        return header;
+      }
+      // special case for obj-c frameworks
+      return _this3._getRelatedHeaderForSourceFromFramework(src);
+    })();
   }
 
-  async getRelatedSourceForHeader(
-    header: string,
-    projectRoot: ?string,
-  ): Promise<?string> {
-    // search in folder
-    let source = await this._searchFileWithBasename(
-      nuclideUri.dirname(header),
-      getFileBasename(header),
-      isSourceFile,
-    );
-    if (source != null) {
-      return source;
-    }
-    // special case for obj-c frameworks
-    source = await this._getRelatedSourceForHeaderFromFramework(header);
-    if (source != null) {
-      return source;
-    }
+  getRelatedSourceForHeader(header, projectRoot) {
+    var _this4 = this;
 
-    if (projectRoot != null) {
-      source = await this._findIncludingSourceFile(header, projectRoot)
-        .timeout(INCLUDE_SEARCH_TIMEOUT)
-        .catch(() => Observable.of(null))
-        .toPromise();
+    return (0, _asyncToGenerator.default)(function* () {
+      // search in folder
+      let source = yield _this4._searchFileWithBasename((_nuclideUri || _load_nuclideUri()).default.dirname(header), (0, (_utils || _load_utils()).getFileBasename)(header), (_utils || _load_utils()).isSourceFile);
       if (source != null) {
         return source;
       }
-    }
+      // special case for obj-c frameworks
+      source = yield _this4._getRelatedSourceForHeaderFromFramework(header);
+      if (source != null) {
+        return source;
+      }
 
-    return this._findIncludingSourceFile(header, this._inferProjectRoot(header))
-      .timeout(INCLUDE_SEARCH_TIMEOUT)
-      .catch(() => Observable.of(null))
-      .toPromise();
+      if (projectRoot != null) {
+        source = yield _this4._findIncludingSourceFile(header, projectRoot).timeout(INCLUDE_SEARCH_TIMEOUT).catch(function () {
+          return _rxjsBundlesRxMinJs.Observable.of(null);
+        }).toPromise();
+        if (source != null) {
+          return source;
+        }
+      }
+
+      return _this4._findIncludingSourceFile(header, _this4._inferProjectRoot(header)).timeout(INCLUDE_SEARCH_TIMEOUT).catch(function () {
+        return _rxjsBundlesRxMinJs.Observable.of(null);
+      }).toPromise();
+    })();
   }
 
-  _getFBProjectRoots(): string[] {
+  _getFBProjectRoots() {
     try {
       // $FlowFB
       return require('./fb/project_roots').FB_PROJECT_ROOTS;
@@ -198,10 +194,10 @@ export class RelatedFileFinder {
     }
   }
 
-  _inferProjectRoot(header: string): string {
-    const headerParts = nuclideUri.split(header);
+  _inferProjectRoot(header) {
+    const headerParts = (_nuclideUri || _load_nuclideUri()).default.split(header);
     for (const root of this._getFBProjectRoots()) {
-      const rootParts = nuclideUri.split(root).filter(p => p.length > 0);
+      const rootParts = (_nuclideUri || _load_nuclideUri()).default.split(root).filter(p => p.length > 0);
       for (let i = 0; i + rootParts.length <= headerParts.length; i++) {
         let found = true;
         for (let j = 0; found && j < rootParts.length; j++) {
@@ -210,12 +206,12 @@ export class RelatedFileFinder {
           }
         }
         if (found) {
-          return nuclideUri.join(...headerParts.slice(0, i + rootParts.length));
+          return (_nuclideUri || _load_nuclideUri()).default.join(...headerParts.slice(0, i + rootParts.length));
         }
       }
     }
     // as fallback we just use the existing folder
-    return nuclideUri.dirname(header);
+    return (_nuclideUri || _load_nuclideUri()).default.dirname(header);
   }
 
   /**
@@ -229,60 +225,38 @@ export class RelatedFileFinder {
    * The resulting Observable fires and completes as soon as a matching file is found;
    * 'null' will always be emitted if no results are found.
    */
-  _findIncludingSourceFile(
-    headerFile: string,
-    projectRoot: string,
-  ): Observable<?string> {
-    const basename = escapeStringRegExp(nuclideUri.basename(headerFile));
-    const relativePath = escapeStringRegExp(
-      nuclideUri.relative(projectRoot, headerFile),
-    );
+  _findIncludingSourceFile(headerFile, projectRoot) {
+    const basename = (0, (_escapeStringRegexp || _load_escapeStringRegexp()).default)((_nuclideUri || _load_nuclideUri()).default.basename(headerFile));
+    const relativePath = (0, (_escapeStringRegexp || _load_escapeStringRegexp()).default)((_nuclideUri || _load_nuclideUri()).default.relative(projectRoot, headerFile));
     const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
     const regex = new RegExp(pattern);
     // We need both the file and the match to verify relative includes.
     // Relative includes may not always be correct, so we may have to go through all the results.
-    return observeProcess(
-      'grep',
-      [
-        '-RE', // recursive, extended
-        '--null', // separate file/match with \0
-        pattern,
-        nuclideUri.dirname(headerFile),
-      ],
-      {/* TODO(T17353599) */ isExitError: () => false},
-    )
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .flatMap(message => {
-        switch (message.kind) {
-          case 'stdout':
-            const file = this._processGrepResult(
-              message.data,
-              headerFile,
-              regex,
-            );
-            return file == null ? Observable.empty() : Observable.of(file);
-          case 'error':
-            throw new Error(String(message.error));
-          case 'exit':
-            return Observable.of(null);
-          default:
-            return Observable.empty();
-        }
-      })
-      .take(1);
+    return (0, (_process || _load_process()).observeProcess)('grep', ['-RE', // recursive, extended
+    '--null', // separate file/match with \0
+    pattern, (_nuclideUri || _load_nuclideUri()).default.dirname(headerFile)], { /* TODO(T17353599) */isExitError: () => false }).catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error })) // TODO(T17463635)
+    .flatMap(message => {
+      switch (message.kind) {
+        case 'stdout':
+          const file = this._processGrepResult(message.data, headerFile, regex);
+          return file == null ? _rxjsBundlesRxMinJs.Observable.empty() : _rxjsBundlesRxMinJs.Observable.of(file);
+        case 'error':
+          throw new Error(String(message.error));
+        case 'exit':
+          return _rxjsBundlesRxMinJs.Observable.of(null);
+        default:
+          return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+    }).take(1);
   }
 
-  _processGrepResult(
-    result: string,
-    headerFile: string,
-    includeRegex: RegExp,
-  ): ?string {
+  _processGrepResult(result, headerFile, includeRegex) {
     const splitIndex = result.indexOf('\0');
     if (splitIndex === -1) {
       return null;
     }
     const filename = result.substr(0, splitIndex);
-    if (!isSourceFile(filename)) {
+    if (!(0, (_utils || _load_utils()).isSourceFile)(filename)) {
       return null;
     }
     const match = includeRegex.exec(result.substr(splitIndex + 1));
@@ -292,9 +266,7 @@ export class RelatedFileFinder {
     // Source-relative includes have to be verified.
     // Relative paths will match the (../)* rule (at index 2).
     if (match[2] != null) {
-      const includePath = nuclideUri.normalize(
-        nuclideUri.join(nuclideUri.dirname(filename), match[1]),
-      );
+      const includePath = (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join((_nuclideUri || _load_nuclideUri()).default.dirname(filename), match[1]));
       if (includePath !== headerFile) {
         return null;
       }
@@ -302,3 +274,4 @@ export class RelatedFileFinder {
     return filename;
   }
 }
+exports.RelatedFileFinder = RelatedFileFinder;

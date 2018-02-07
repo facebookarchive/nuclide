@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getModifierKeysFromMouseEvent = getModifierKeysFromMouseEvent;
+exports.getModifierKeyFromKeyboardEvent = getModifierKeyFromKeyboardEvent;
+
+var _types;
+
+function _load_types() {
+  return _types = require('./types');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,40 +20,35 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ModifierKey} from './types';
-import {ModifierKeys} from './types';
-
 const KEYNAME_TO_PROPERTY = {
-  Meta: ModifierKeys.META,
-  Shift: ModifierKeys.SHIFT,
-  Alt: ModifierKeys.ALT,
-  Control: ModifierKeys.CTRL,
+  Meta: (_types || _load_types()).ModifierKeys.META,
+  Shift: (_types || _load_types()).ModifierKeys.SHIFT,
+  Alt: (_types || _load_types()).ModifierKeys.ALT,
+  Control: (_types || _load_types()).ModifierKeys.CTRL
 };
 
-export function getModifierKeysFromMouseEvent(e: MouseEvent): Set<ModifierKey> {
-  const keys: Set<ModifierKey> = new Set();
+function getModifierKeysFromMouseEvent(e) {
+  const keys = new Set();
   if (e.metaKey) {
-    keys.add(ModifierKeys.META);
+    keys.add((_types || _load_types()).ModifierKeys.META);
   }
   if (e.shiftKey) {
-    keys.add(ModifierKeys.SHIFT);
+    keys.add((_types || _load_types()).ModifierKeys.SHIFT);
   }
   if (e.altKey) {
-    keys.add(ModifierKeys.ALT);
+    keys.add((_types || _load_types()).ModifierKeys.ALT);
   }
   if (e.ctrlKey) {
-    keys.add(ModifierKeys.CTRL);
+    keys.add((_types || _load_types()).ModifierKeys.CTRL);
   }
 
   return keys;
 }
 
-export function getModifierKeyFromKeyboardEvent(
-  e: KeyboardEvent,
-): ?ModifierKey {
+function getModifierKeyFromKeyboardEvent(e) {
   return KEYNAME_TO_PROPERTY[e.key];
 }

@@ -1,50 +1,52 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DeviceDescription} from '../types';
-import type {getDevicesOptions} from './DebugBridge';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Devices = undefined;
 
-import {Adb} from '../bridges/Adb';
-import {Sdb} from '../bridges/Sdb';
-import {Observable} from 'rxjs';
+var _Adb;
 
-type Db = Class<Adb> | Class<Sdb>;
+function _load_Adb() {
+  return _Adb = require('../bridges/Adb');
+}
 
-export class Devices {
-  _db: Db;
+var _Sdb;
 
-  constructor(db: Db) {
+function _load_Sdb() {
+  return _Sdb = require('../bridges/Sdb');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+class Devices {
+
+  constructor(db) {
     this._db = db;
   }
 
-  getDeviceList(
-    options?: getDevicesOptions,
-  ): Observable<Array<DeviceDescription>> {
+  getDeviceList(options) {
     return this._db.getDevices(options).switchMap(devices => {
-      return Observable.concat(
-        ...devices.map(deviceId => {
-          const db = new this._db(deviceId);
-          return Observable.forkJoin(
-            db.getDeviceArchitecture().catch(() => Observable.of('')),
-            db.getAPIVersion().catch(() => Observable.of('')),
-            db.getDeviceModel().catch(() => Observable.of('')),
-          ).map(([architecture, apiVersion, model]) => ({
-            name: deviceId.name,
-            port: deviceId.port,
-            architecture,
-            apiVersion,
-            model,
-          }));
-        }),
-      ).toArray();
+      return _rxjsBundlesRxMinJs.Observable.concat(...devices.map(deviceId => {
+        const db = new this._db(deviceId);
+        return _rxjsBundlesRxMinJs.Observable.forkJoin(db.getDeviceArchitecture().catch(() => _rxjsBundlesRxMinJs.Observable.of('')), db.getAPIVersion().catch(() => _rxjsBundlesRxMinJs.Observable.of('')), db.getDeviceModel().catch(() => _rxjsBundlesRxMinJs.Observable.of(''))).map(([architecture, apiVersion, model]) => ({
+          name: deviceId.name,
+          port: deviceId.port,
+          architecture,
+          apiVersion,
+          model
+        }));
+      })).toArray();
     });
   }
 }
+exports.Devices = Devices; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            * @format
+                            */

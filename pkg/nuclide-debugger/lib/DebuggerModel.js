@@ -1,3 +1,104 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WORKSPACE_VIEW_URI = undefined;
+
+var _DebuggerProviderStore;
+
+function _load_DebuggerProviderStore() {
+  return _DebuggerProviderStore = require('./DebuggerProviderStore');
+}
+
+var _BreakpointManager;
+
+function _load_BreakpointManager() {
+  return _BreakpointManager = _interopRequireDefault(require('./BreakpointManager'));
+}
+
+var _BreakpointStore;
+
+function _load_BreakpointStore() {
+  return _BreakpointStore = _interopRequireDefault(require('./BreakpointStore'));
+}
+
+var _DebuggerActions;
+
+function _load_DebuggerActions() {
+  return _DebuggerActions = _interopRequireDefault(require('./DebuggerActions'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _WatchExpressionStore;
+
+function _load_WatchExpressionStore() {
+  return _WatchExpressionStore = require('./WatchExpressionStore');
+}
+
+var _CallstackStore;
+
+function _load_CallstackStore() {
+  return _CallstackStore = _interopRequireDefault(require('./CallstackStore'));
+}
+
+var _ScopesStore;
+
+function _load_ScopesStore() {
+  return _ScopesStore = _interopRequireDefault(require('./ScopesStore'));
+}
+
+var _ThreadStore;
+
+function _load_ThreadStore() {
+  return _ThreadStore = _interopRequireDefault(require('./ThreadStore'));
+}
+
+var _WatchExpressionListStore;
+
+function _load_WatchExpressionListStore() {
+  return _WatchExpressionListStore = require('./WatchExpressionListStore');
+}
+
+var _DebuggerActionsStore;
+
+function _load_DebuggerActionsStore() {
+  return _DebuggerActionsStore = _interopRequireDefault(require('./DebuggerActionsStore'));
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = _interopRequireDefault(require('./DebuggerDispatcher'));
+}
+
+var _DebuggerPauseController;
+
+function _load_DebuggerPauseController() {
+  return _DebuggerPauseController = require('./DebuggerPauseController');
+}
+
+var _events = _interopRequireDefault(require('events'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,178 +106,102 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {DebuggerProviderStore} from './DebuggerProviderStore';
-import BreakpointManager from './BreakpointManager';
-import BreakpointStore from './BreakpointStore';
-import DebuggerActions from './DebuggerActions';
-import {DebuggerStore} from './DebuggerStore';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import CallstackStore from './CallstackStore';
-import ScopesStore from './ScopesStore';
-import ThreadStore from './ThreadStore';
-import {WatchExpressionListStore} from './WatchExpressionListStore';
-import DebuggerActionsStore from './DebuggerActionsStore';
-import Bridge from './Bridge';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import DebuggerDispatcher from './DebuggerDispatcher';
-import {DebuggerPauseController} from './DebuggerPauseController';
-import EventEmitter from 'events';
-
-import type {SerializedState} from '..';
-
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
 
 /**
  * Atom ViewProvider compatible model object.
  */
-export default class DebuggerModel {
-  _disposables: UniversalDisposable;
-  _actions: DebuggerActions;
-  _breakpointManager: BreakpointManager;
-  _breakpointStore: BreakpointStore;
-  _dispatcher: DebuggerDispatcher;
-  _emitter: EventEmitter;
-  _store: DebuggerStore;
-  _watchExpressionStore: WatchExpressionStore;
-  _watchExpressionListStore: WatchExpressionListStore;
-  _debuggerProviderStore: DebuggerProviderStore;
-  _debuggerActionStore: DebuggerActionsStore;
-  _callstackStore: CallstackStore;
-  _scopesStore: ScopesStore;
-  _threadStore: ThreadStore;
-  _bridge: Bridge;
-  _debuggerPauseController: DebuggerPauseController;
+class DebuggerModel {
 
-  constructor(state: ?SerializedState) {
-    this._dispatcher = new DebuggerDispatcher();
-    this._emitter = new EventEmitter();
+  constructor(state) {
+    this._dispatcher = new (_DebuggerDispatcher || _load_DebuggerDispatcher()).default();
+    this._emitter = new _events.default();
     const pauseOnException = state != null ? state.pauseOnException : true;
-    const pauseOnCaughtException =
-      state != null ? state.pauseOnCaughtException : false;
-    this._store = new DebuggerStore(
-      this._dispatcher,
-      this,
-      pauseOnException,
-      pauseOnCaughtException,
-    );
-    this._actions = new DebuggerActions(this._dispatcher, this._store);
-    this._breakpointStore = new BreakpointStore(
-      this._dispatcher,
-      state != null ? state.breakpoints : null, // serialized breakpoints
-      this._store,
-    );
-    this._breakpointManager = new BreakpointManager(
-      this._breakpointStore,
-      this._actions,
-    );
-    this._bridge = new Bridge(this);
-    this._debuggerProviderStore = new DebuggerProviderStore(
-      this._dispatcher,
-      this._actions,
-    );
-    this._watchExpressionStore = new WatchExpressionStore(
-      this._dispatcher,
-      this._bridge,
-    );
-    this._watchExpressionListStore = new WatchExpressionListStore(
-      this._watchExpressionStore,
-      this._dispatcher,
-      state != null ? state.watchExpressions : null, // serialized watch expressions
-    );
-    this._debuggerActionStore = new DebuggerActionsStore(
-      this._dispatcher,
-      this._bridge,
-    );
-    this._callstackStore = new CallstackStore(this._dispatcher, this._store);
-    this._scopesStore = new ScopesStore(
-      this._dispatcher,
-      this._bridge,
-      this._store,
-    );
-    this._threadStore = new ThreadStore(this._dispatcher);
-    this._debuggerPauseController = new DebuggerPauseController(this._store);
+    const pauseOnCaughtException = state != null ? state.pauseOnCaughtException : false;
+    this._store = new (_DebuggerStore || _load_DebuggerStore()).DebuggerStore(this._dispatcher, this, pauseOnException, pauseOnCaughtException);
+    this._actions = new (_DebuggerActions || _load_DebuggerActions()).default(this._dispatcher, this._store);
+    this._breakpointStore = new (_BreakpointStore || _load_BreakpointStore()).default(this._dispatcher, state != null ? state.breakpoints : null, // serialized breakpoints
+    this._store);
+    this._breakpointManager = new (_BreakpointManager || _load_BreakpointManager()).default(this._breakpointStore, this._actions);
+    this._bridge = new (_Bridge || _load_Bridge()).default(this);
+    this._debuggerProviderStore = new (_DebuggerProviderStore || _load_DebuggerProviderStore()).DebuggerProviderStore(this._dispatcher, this._actions);
+    this._watchExpressionStore = new (_WatchExpressionStore || _load_WatchExpressionStore()).WatchExpressionStore(this._dispatcher, this._bridge);
+    this._watchExpressionListStore = new (_WatchExpressionListStore || _load_WatchExpressionListStore()).WatchExpressionListStore(this._watchExpressionStore, this._dispatcher, state != null ? state.watchExpressions : null);
+    this._debuggerActionStore = new (_DebuggerActionsStore || _load_DebuggerActionsStore()).default(this._dispatcher, this._bridge);
+    this._callstackStore = new (_CallstackStore || _load_CallstackStore()).default(this._dispatcher, this._store);
+    this._scopesStore = new (_ScopesStore || _load_ScopesStore()).default(this._dispatcher, this._bridge, this._store);
+    this._threadStore = new (_ThreadStore || _load_ThreadStore()).default(this._dispatcher);
+    this._debuggerPauseController = new (_DebuggerPauseController || _load_DebuggerPauseController()).DebuggerPauseController(this._store);
 
-    this._disposables = new UniversalDisposable(
-      this._store,
-      this._actions,
-      this._breakpointStore,
-      this._breakpointManager,
-      this._bridge,
-      this._debuggerProviderStore,
-      this._watchExpressionStore,
-      this._debuggerActionStore,
-      this._callstackStore,
-      this._scopesStore,
-      this._threadStore,
-      this._debuggerPauseController,
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._store, this._actions, this._breakpointStore, this._breakpointManager, this._bridge, this._debuggerProviderStore, this._watchExpressionStore, this._debuggerActionStore, this._callstackStore, this._scopesStore, this._threadStore, this._debuggerPauseController);
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  getLaunchAttachActionEventEmitter(): EventEmitter {
+  getLaunchAttachActionEventEmitter() {
     return this._emitter;
   }
 
-  getActions(): DebuggerActions {
+  getActions() {
     return this._actions;
   }
 
-  getStore(): DebuggerStore {
+  getStore() {
     return this._store;
   }
 
-  getWatchExpressionStore(): WatchExpressionStore {
+  getWatchExpressionStore() {
     return this._watchExpressionStore;
   }
 
-  getWatchExpressionListStore(): WatchExpressionListStore {
+  getWatchExpressionListStore() {
     return this._watchExpressionListStore;
   }
 
-  getDebuggerProviderStore(): DebuggerProviderStore {
+  getDebuggerProviderStore() {
     return this._debuggerProviderStore;
   }
 
-  getBreakpointStore(): BreakpointStore {
+  getBreakpointStore() {
     return this._breakpointStore;
   }
 
-  getCallstackStore(): CallstackStore {
+  getCallstackStore() {
     return this._callstackStore;
   }
 
-  getScopesStore(): ScopesStore {
+  getScopesStore() {
     return this._scopesStore;
   }
 
-  getThreadStore(): ThreadStore {
+  getThreadStore() {
     return this._threadStore;
   }
 
-  getBridge(): Bridge {
+  getBridge() {
     return this._bridge;
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Debugger';
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 500;
   }
 }
+exports.default = DebuggerModel;

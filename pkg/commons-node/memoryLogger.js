@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SnapshotLogger = exports.MemoryLogger = undefined;
+
+var _doubleEndedQueue;
+
+function _load_doubleEndedQueue() {
+  return _doubleEndedQueue = _interopRequireDefault(require('double-ended-queue'));
+}
+
+var _util = _interopRequireDefault(require('util'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Retain past five minutes
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,56 +23,40 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {default as Deque} from 'double-ended-queue';
-import util from 'util';
-
-type LogEntry = {|time: number, text: string|};
-
-// Retain past five minutes
 const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000;
 
 // ...but only if it is less than 10 MB
 const DEFAULT_RETENTION_SIZE_LIMIT = 10 * 1000 * 1000;
 
-export class MemoryLogger {
-  _underlyingLogger: ?log4js$Logger;
-  _logs: Deque<LogEntry> = new Deque();
-  _retentionPeriod: number;
-  _sizeLimit: number;
-  _size: number;
+class MemoryLogger {
 
-  constructor(
-    underlyingLogger: ?log4js$Logger,
-    retentionPeriod: number = DEFAULT_RETENTION_PERIOD_MS,
-    sizeLimit: number = DEFAULT_RETENTION_SIZE_LIMIT,
-  ) {
+  constructor(underlyingLogger, retentionPeriod = DEFAULT_RETENTION_PERIOD_MS, sizeLimit = DEFAULT_RETENTION_SIZE_LIMIT) {
+    this._logs = new (_doubleEndedQueue || _load_doubleEndedQueue()).default();
+
     this._underlyingLogger = underlyingLogger;
     this._retentionPeriod = retentionPeriod;
     this._sizeLimit = sizeLimit;
     this._size = 0;
   }
 
-  dispose(): void {
+  dispose() {
     this._logs.isEmpty();
   }
 
-  dump(): string {
-    return this._logs
-      .toArray()
-      .map(entry => `${entry.text}\n`)
-      .join('');
+  dump() {
+    return this._logs.toArray().map(entry => `${entry.text}\n`).join('');
   }
 
-  getUnderlyingLogger(): ?log4js$Logger {
+  getUnderlyingLogger() {
     return this._underlyingLogger;
   }
 
-  debug(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  debug(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.debug(message.substring(0, 400));
@@ -62,8 +64,8 @@ export class MemoryLogger {
     this._appendAndExpunge('DEBUG', message);
   }
 
-  trace(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  trace(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.trace(message.substring(0, 400));
@@ -71,8 +73,8 @@ export class MemoryLogger {
     this._appendAndExpunge('TRACE', message);
   }
 
-  info(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  info(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.info(message.substring(0, 400));
@@ -80,8 +82,8 @@ export class MemoryLogger {
     this._appendAndExpunge('INFO', message);
   }
 
-  warn(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  warn(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.warn(message);
@@ -89,8 +91,8 @@ export class MemoryLogger {
     this._appendAndExpunge('WARN', message);
   }
 
-  error(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  error(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.error(message);
@@ -98,21 +100,16 @@ export class MemoryLogger {
     this._appendAndExpunge('ERROR', message);
   }
 
-  _appendAndExpunge(level: string, message: string): void {
+  _appendAndExpunge(level, message) {
     if (this._retentionPeriod === 0) {
       return;
     }
 
     // this._logs will keep the past five minute's worth of logs
     const time = Date.now();
-    const text =
-      new Date(time).toLocaleTimeString('en-US', {hour12: false}) +
-      ' ' +
-      level +
-      ' - ' +
-      message;
+    const text = new Date(time).toLocaleTimeString('en-US', { hour12: false }) + ' ' + level + ' - ' + message;
     // push the new entry
-    const newLog: LogEntry = {time, text};
+    const newLog = { time, text };
     this._logs.push(newLog);
     this._size += text.length;
     // and remove all expired entries
@@ -121,10 +118,7 @@ export class MemoryLogger {
       if (front == null) {
         break;
       }
-      if (
-        time <= front.time + this._retentionPeriod &&
-        this._size <= this._sizeLimit
-      ) {
+      if (time <= front.time + this._retentionPeriod && this._size <= this._sizeLimit) {
         break;
       }
       this._logs.shift();
@@ -133,48 +127,40 @@ export class MemoryLogger {
   }
 }
 
-export class SnapshotLogger {
-  _retentionPeriod: number;
-  _snapshotInterval: number;
-  _files: Map<
-    string,
-    Array<{|time: number, text: string, version: number|}>,
-  > = new Map();
+exports.MemoryLogger = MemoryLogger;
+class SnapshotLogger {
 
-  constructor(
-    retentionPeriod: number = 5 * 60 * 1000, // retain past five minutes
-    snapshotInterval: number = 30 * 1000, // snapshot no more than every 30s
-  ) {
+  constructor(retentionPeriod = 5 * 60 * 1000, // retain past five minutes
+  snapshotInterval = 30 * 1000) // snapshot no more than every 30s
+  {
+    this._files = new Map();
+
     this._retentionPeriod = retentionPeriod;
     this._snapshotInterval = snapshotInterval;
   }
 
-  dispose(): void {
+  dispose() {
     this._files.clear();
   }
 
-  dump(): Array<{|title: string, text: string|}> {
+  dump() {
     const results = [];
     for (const [filepath, snapshots] of this._files) {
       for (const snapshot of snapshots) {
         const time = new Date(snapshot.time).toLocaleTimeString('en-US', {
-          hour12: false,
+          hour12: false
         });
         const version = String(snapshot.version);
         results.push({
           title: `${filepath} ${time},v${version}`,
-          text: snapshot.text,
+          text: snapshot.text
         });
       }
     }
     return results;
   }
 
-  snapshot(
-    filepath: string,
-    version: number,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): void {
+  snapshot(filepath, version, buffer) {
     if (this._retentionPeriod === 0) {
       return;
     }
@@ -186,10 +172,7 @@ export class SnapshotLogger {
     let snapshots = this._files.get(filepath);
     if (snapshots != null && snapshots.length > 0) {
       const mostRecent = snapshots[snapshots.length - 1];
-      if (
-        mostRecent.time + this._snapshotInterval > time ||
-        mostRecent.version === version
-      ) {
+      if (mostRecent.time + this._snapshotInterval > time || mostRecent.version === version) {
         return;
       }
     }
@@ -198,17 +181,16 @@ export class SnapshotLogger {
       this._files.set(filepath, snapshots);
     }
     // Remove any old snapshots at the start of the array
-    const firstRemainingSnapshot = snapshots.findIndex(
-      snapshot => snapshot.time + this._retentionPeriod > time,
-    );
+    const firstRemainingSnapshot = snapshots.findIndex(snapshot => snapshot.time + this._retentionPeriod > time);
     if (firstRemainingSnapshot > 0) {
       snapshots.splice(0, firstRemainingSnapshot);
     }
     // Add a new snashot at the end
-    snapshots.push({time, text: buffer.getText(), version});
+    snapshots.push({ time, text: buffer.getText(), version });
   }
 
-  close(filepath: string): void {
+  close(filepath) {
     this._files.delete(filepath);
   }
 }
+exports.SnapshotLogger = SnapshotLogger;
