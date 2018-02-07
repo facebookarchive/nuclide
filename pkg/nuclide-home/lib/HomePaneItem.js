@@ -20,6 +20,7 @@ import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import {track} from '../../nuclide-analytics';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/home';
 
@@ -109,7 +110,7 @@ export default class HomePaneItem extends React.Component<
           <NuclideLogo className="nuclide-home-logo" />
           <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
         </section>
-        <section className="text-center">
+        <section className="text-center" onClick={trackAnchorClicks}>
           {welcomes.length > 0 ? welcomes : DEFAULT_WELCOME}
         </section>
         <section className="text-center">
@@ -168,4 +169,15 @@ export default class HomePaneItem extends React.Component<
       this._disposables.dispose();
     }
   }
+}
+
+function trackAnchorClicks(e: SyntheticMouseEvent<>) {
+  const {target} = e;
+  if (target.tagName !== 'A' || target.href == null) {
+    return;
+  }
+
+  // $FlowFixMe
+  const {href, innerText} = target;
+  track('home-link-clicked', {href, text: innerText});
 }
