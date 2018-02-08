@@ -68,29 +68,31 @@ class BuckClangCompilationDatabaseHandler {
 
   getCompilationDatabase(file: string): Promise<?BuckClangCompilationDatabase> {
     return this._sourceCache.getOrCreate(file, async () => {
-      let caughtError = null;
-      let compDb = null;
-      try {
-        compDb = await this._getCompilationDatabase(file);
-      } catch (e) {
-        caughtError = e;
-      }
-      if ((compDb == null || compDb.file == null) && isHeaderFile(file)) {
-        logger.error(`Couldn't find flags for header ${file}.`);
+      if (isHeaderFile(file)) {
         const source = await new RelatedFileFinder().getRelatedSourceForHeader(
           file,
         );
         if (source != null) {
+          logger.info(
+            `${file} is a header, thus using ${source} for getting the compilation flags.`,
+          );
           return this.getCompilationDatabase(source);
         } else {
-          logger.error(`Couldn't find source file for header ${file}.`);
+          logger.error(
+            `Couldn't find a corresponding source file for ${file}, thus there are no compilation flags available.`,
+          );
+          return {
+            file: null,
+            flagsFile: await guessBuildFile(file),
+            libclangPath: null,
+            warnings: [
+              `I could not find a corresponding source file for ${file}.`,
+            ],
+          };
         }
+      } else {
+        return this._getCompilationDatabase(file);
       }
-      logger.error(`Couldn't find flags for file ${file}.`);
-      if (caughtError != null) {
-        throw caughtError;
-      }
-      return compDb;
     });
   }
 
