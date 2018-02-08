@@ -40,17 +40,20 @@ type State = {
   recentlyLaunchedScript: ?string,
   runInTerminal: boolean,
   cwd: ?string,
+  scriptArgs: ?string,
 };
 
 export class LaunchUiComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable = new UniversalDisposable();
   _scriptPath: ?AtomInput;
+  _scriptArgs: ?AtomInput;
   _cwdPath: ?AtomInput;
 
   state = {
     recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
     recentlyLaunchedScript: null,
     runInTerminal: false,
+    scriptArgs: null,
     cwd: this._getLastCwd(),
   };
 
@@ -70,6 +73,8 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       (transientSettings, savedSettings) => {
         this.setState({
           recentlyLaunchedScript: savedSettings.scriptPath || '',
+          cwd: savedSettings.cwdPath || '',
+          scriptArgs: savedSettings.scriptArgs || '',
         });
       },
     );
@@ -115,7 +120,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
           onChange={this._handleRecentSelectionChange}
           value={this.state.recentlyLaunchedScript}
         />
-        <label>Command: </label>
+        <label>Script path: </label>
         <AtomInput
           ref={input => {
             this._scriptPath = input;
@@ -126,9 +131,18 @@ export class LaunchUiComponent extends React.Component<Props, State> {
           value={this.state.recentlyLaunchedScript || ''}
           onDidChange={value => this.setState({recentlyLaunchedScript: value})}
         />
+        <label>Script arguments: </label>
+        <AtomInput
+          ref={input => {
+            this._scriptArgs = input;
+          }}
+          tabIndex="12"
+          value={this.state.scriptArgs || ''}
+          onDidChange={value => this.setState({scriptArgs: value})}
+        />
         <label>Current Working Directory: </label>
         <AtomInput
-          tabIndex="12"
+          tabIndex="13"
           ref={input => {
             this._cwdPath = input;
           }}
@@ -229,6 +243,9 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     const cwdPath = nullthrows(this._cwdPath)
       .getText()
       .trim();
+    const scriptArgs = nullthrows(this._scriptArgs)
+      .getText()
+      .trim();
 
     this._setRecentlyLaunchedScript(
       scriptPath,
@@ -241,7 +258,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       scriptPath,
       null,
       this.state.runInTerminal,
-      '',
+      scriptArgs,
       cwdPath,
     );
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
@@ -250,6 +267,8 @@ export class LaunchUiComponent extends React.Component<Props, State> {
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       scriptPath,
+      scriptArgs,
+      cwdPath,
     });
   };
 
