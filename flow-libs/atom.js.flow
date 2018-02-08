@@ -747,12 +747,12 @@ type ChangeCursorPositionEvent = {
   cursor: atom$Cursor,
 };
 
-type MarkerOptions = {|
+type MarkerOptions = {
   reversed?: boolean,
   tailed?: boolean,
   invalidate?: 'never' | 'surround' | 'overlap' | 'inside' | 'touch',
   exclusive?: boolean,
-|};
+};
 
 type ChangeSelectionRangeEvent = {|
   oldBufferRange: atom$Range,
@@ -873,6 +873,7 @@ declare class atom$TextEditor extends atom$Model {
   markBufferRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
   markScreenRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,
   markScreenPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
+  findMarkers(options: MarkerOptions): Array<atom$Marker>,
   getMarkerCount(): number,
 
   // Cursors
