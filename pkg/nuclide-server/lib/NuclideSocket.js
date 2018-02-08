@@ -11,7 +11,7 @@
 
 import type {AgentOptions} from 'big-dig/src/common/types';
 import type {Observable} from 'rxjs';
-import type {MemoryLogger} from '../../commons-node/memoryLogger';
+import type {ProtocolLogger} from './QueuedAckTransport';
 
 import url from 'url';
 import WS from 'ws';
@@ -24,7 +24,6 @@ import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat'
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';
-import {protocolLogger} from './utils';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-server');
@@ -67,7 +66,11 @@ export class NuclideSocket {
   _transport: ?QueuedAckTransport;
   _heartbeat: XhrConnectionHeartbeat;
 
-  constructor(serverUri: string, options: ?AgentOptions) {
+  constructor(
+    serverUri: string,
+    options: ?AgentOptions,
+    protocolLogger: ?ProtocolLogger,
+  ) {
     this._emitter = new Emitter();
     this._serverUri = serverUri;
     this._options = options;
@@ -109,12 +112,6 @@ export class NuclideSocket {
 
   getHeartbeat(): XhrConnectionHeartbeat {
     return this._heartbeat;
-  }
-
-  // This is intended to be temporary while we are collecting extra
-  // logging to debug QueuedAckTransport.
-  getProtocolLogger(): ?MemoryLogger {
-    return protocolLogger;
   }
 
   isConnected(): boolean {

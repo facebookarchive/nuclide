@@ -39,6 +39,7 @@ import {timeoutPromise} from 'nuclide-commons/promise';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
+import {protocolLogger} from '../../nuclide-server/lib/utils';
 import {getLogger} from 'log4js';
 import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
@@ -315,7 +316,7 @@ export class ServerConnection {
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 
-    const socket = new NuclideSocket(uri, options);
+    const socket = new NuclideSocket(uri, options, protocolLogger);
     const client = RpcConnection.createRemote(
       (socket: TransportWithHeartbeat),
       getAtomSideMarshalers(this.getRemoteHostname()),
@@ -324,7 +325,7 @@ export class ServerConnection {
       {trackSampleRate: 10},
       SERVICE_FRAMEWORK3_PROTOCOL,
       socket.id,
-      socket.getProtocolLogger(),
+      protocolLogger,
     );
 
     this._client = client;

@@ -23,7 +23,6 @@ import {
 } from '../lib/QueuedAckTransport';
 import {Emitter} from 'event-kit';
 import {Subject} from 'rxjs';
-import {protocolLogger} from '../lib/utils';
 
 function makeUnreliableTransport(
   receiver: Subject<string> = new Subject(),
@@ -77,7 +76,7 @@ describe('QueuedAckTransport', () => {
   beforeEach(() => {
     receiver = new Subject();
     transport = makeUnreliableTransport(receiver);
-    q = new QueuedAckTransport('42', transport, protocolLogger);
+    q = new QueuedAckTransport('42', transport);
   });
 
   it('constructor', () => {

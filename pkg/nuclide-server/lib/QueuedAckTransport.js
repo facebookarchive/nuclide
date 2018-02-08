@@ -24,7 +24,7 @@ export const PENDING_MESSAGE_TIMEOUT = 30 * 1000;
 export const CONTENT = 'CONTENT';
 export const ACK = 'ACK';
 
-interface ProtocolLogger {
+export interface ProtocolLogger {
   trace(format: string, ...values: Array<any>): void;
   info(format: string, ...values: Array<any>): void;
   error(format: string, ...values: Array<any>): void;
@@ -381,12 +381,6 @@ export class QueuedAckTransport {
 
   // Helper functions to log sufficiently interesting logs to both
   // logger (disk) and protocolLogger (circular in-memory).
-  _logTrace(format: string, ...args: Array<any>): void {
-    if (this._protocolLogger != null) {
-      this._protocolLogger.trace(format, ...args);
-    }
-  }
-
   _logError(format: string, ...args: Array<any>): void {
     logger.error(format, ...args);
     if (this._protocolLogger != null) {
@@ -398,6 +392,12 @@ export class QueuedAckTransport {
     logger.info(format, ...args);
     if (this._protocolLogger != null) {
       this._protocolLogger.info(format, ...args);
+    }
+  }
+
+  _logTrace(format: string, ...args: Array<any>): void {
+    if (this._protocolLogger != null) {
+      this._protocolLogger.trace(format, ...args);
     }
   }
 }
