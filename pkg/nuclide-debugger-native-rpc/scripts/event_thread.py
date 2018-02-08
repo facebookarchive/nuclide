@@ -172,17 +172,28 @@ class LLDBListenerThread(Thread):
         self._send_notification('Debugger.paused', params)
         self._debugger_store.thread_manager.send_threads_updated(process)
 
+    def _should_stop(self, process, thread):
+        '''Determine if the thread should be considered stopped.  Arguably
+        signals that have been masked as non-stop by `process handle` should not
+        stop the thread.
+        TODO: Remove this if/when lldb fixes this behavior
+        '''
+        lldb = get_lldb()
+        if thread.GetStopReason() == lldb.eStopReasonSignal:
+            signum = thread.GetStopReasonDataAtIndex(0)
+            return process.GetUnixSignals().GetShouldStop(signum)
+        return thread.GetStopReason() != lldb.eStopReasonNone
+
     def _update_stop_thread(self, process):
         '''lldb on Linux has a bug of not setting stop thread correctly.
         This method fixes this issue.
         TODO: remove this when lldb fixes this on Linux.
         '''
         thread = process.GetSelectedThread()
-        lldb = get_lldb()
-        if thread.GetStopReason() != lldb.eStopReasonNone:
+        if self._should_stop(process, thread):
             return
         for thread in process.threads:
-            if thread.GetStopReason() != lldb.eStopReasonNone:
+            if self._should_stop(process, thread):
                 process.SetSelectedThread(thread)
                 return
 
