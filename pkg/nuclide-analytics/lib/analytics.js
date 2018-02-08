@@ -15,3 +15,9 @@ export function track(
   values?: {[key: string]: mixed},
   immediate?: boolean,
 ): ?Promise<mixed> {}
+
+// Other packages can check this to avoid doing work that will be ignored
+// anyway by the stubbed track implementation.
+export function isTrackSupported(): boolean {
+  return false;
+}

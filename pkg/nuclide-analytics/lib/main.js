@@ -16,6 +16,7 @@ import {isPromise} from 'nuclide-commons/promise';
 import performanceNow from 'nuclide-commons/performanceNow';
 
 import {track as rawTrack} from './track';
+export {isTrackSupported} from './track';
 export {HistogramTracker} from './HistogramTracker';
 
 export type TrackingEvent = {

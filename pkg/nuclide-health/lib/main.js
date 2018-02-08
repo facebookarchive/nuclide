@@ -16,9 +16,10 @@ import type {HealthStats, PaneItemState} from './types';
 // Imports from non-Nuclide modules.
 import * as React from 'react';
 import {Observable} from 'rxjs';
+import {getLogger} from 'log4js';
 
 // Imports from other Nuclide packages.
-import {track} from '../../nuclide-analytics';
+import {isTrackSupported, track} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
@@ -97,18 +98,31 @@ class Activation {
     );
 
     this._subscriptions = new UniversalDisposable(
-      Observable.zip(
-        statsStream.buffer(analyticsInterval),
-        analyticsInterval.switchMap(getDOMCounters),
-        analyticsInterval.switchMap(() =>
-          queryPs('comm').map(childProcessSummary),
-        ),
-      ).subscribe(([buffer, domCounters, processes]) => {
-        this._updateAnalytics(buffer, domCounters, processes);
-      }),
-      trackStalls(),
       this._registerCommandAndOpener(),
     );
+
+    if (isTrackSupported()) {
+      this._subscriptions.add(
+        Observable.zip(
+          statsStream.buffer(analyticsInterval),
+          analyticsInterval.switchMap(getDOMCounters),
+          analyticsInterval.switchMap(() =>
+            queryPs('comm').map(childProcessSummary),
+          ),
+        ).subscribe(
+          ([buffer, domCounters, processes]) => {
+            this._updateAnalytics(buffer, domCounters, processes);
+          },
+          error => {
+            getLogger().error(
+              'Failed to gather nuclide-health analytics.',
+              error.stack,
+            );
+          },
+        ),
+        trackStalls(),
+      );
+    }
   }
 
   dispose(): void {
