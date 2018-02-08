@@ -158,7 +158,7 @@ export class TerminalView implements PtyClient {
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
     terminal.open(this._div);
-    terminal.setHypertextLinkHandler((e, u) => shell.openExternal(u));
+    terminal.setHypertextLinkHandler(openLink);
     this._syncAtomStyle();
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
@@ -697,6 +697,14 @@ function registerLinkHandlers(terminal: Terminal): void {
       {matchIndex},
     );
   }
+}
+
+function openLink(event: Event, link: string): void {
+  shell.openExternal(trimTrailingDot(link));
+}
+
+function trimTrailingDot(s: string): string {
+  return s.endsWith('.') ? s.substring(0, s.length - 1) : s;
 }
 
 // As a precaution, we should not let any undisplayable or potentially unsafe characters through
