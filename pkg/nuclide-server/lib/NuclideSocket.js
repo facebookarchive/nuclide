@@ -77,7 +77,7 @@ export class NuclideSocket {
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
-    this._transport = new QueuedAckTransport(this.id);
+    this._transport = new QueuedAckTransport(this.id, null, protocolLogger);
 
     this._transport.onDisconnect(() => {
       if (this.isDisconnected()) {

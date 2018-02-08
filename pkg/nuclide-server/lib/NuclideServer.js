@@ -303,7 +303,7 @@ export default class NuclideServer {
       if (client == null) {
         client = RpcConnection.createServer(
           this._rpcServiceRegistry,
-          new QueuedAckTransport(clientId, transport),
+          new QueuedAckTransport(clientId, transport, protocolLogger),
           {},
           clientId,
           protocolLogger,

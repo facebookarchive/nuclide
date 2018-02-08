@@ -18,12 +18,17 @@ import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-server');
 import {Emitter} from 'event-kit';
-import {protocolLogger} from './utils';
 
 export const ACK_BUFFER_TIME = 100;
 export const PENDING_MESSAGE_TIMEOUT = 30 * 1000;
 export const CONTENT = 'CONTENT';
 export const ACK = 'ACK';
+
+interface ProtocolLogger {
+  trace(format: string, ...values: Array<any>): void;
+  info(format: string, ...values: Array<any>): void;
+  error(format: string, ...values: Array<any>): void;
+}
 
 type ParsedMessage =
   | {
@@ -66,8 +71,13 @@ export class QueuedAckTransport {
   _lastProcessedId: number = 0;
   _pendingMessageTimer: ?TimeoutID;
   _ackTimer: ?TimeoutID;
+  _protocolLogger: ?ProtocolLogger;
 
-  constructor(clientId: string, transport: ?WebSocketTransport) {
+  constructor(
+    clientId: string,
+    transport: ?WebSocketTransport,
+    protocolLogger: ?ProtocolLogger,
+  ) {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
@@ -75,6 +85,7 @@ export class QueuedAckTransport {
     this._pendingReceives = new Map();
     this._messageProcessor = new Subject();
     this._emitter = new Emitter();
+    this._protocolLogger = protocolLogger;
 
     if (transport != null) {
       this._connect(transport);
@@ -99,7 +110,7 @@ export class QueuedAckTransport {
   }
 
   _connect(transport: WebSocketTransport): void {
-    logInfo(`${this.id} connect`);
+    this._logInfo(`${this.id} connect`);
     invariant(!transport.isClosed(), 'connect with closed transport');
     invariant(this._transport == null, 'connect with existing this._transport');
 
@@ -114,12 +125,14 @@ export class QueuedAckTransport {
 
     if (this._isClosed) {
       // This happens when close() is called and we have an open transport.
-      logInfo(`${this.id} handleTransportClose (but already closed)`);
+      this._logInfo(`${this.id} handleTransportClose (but already closed)`);
     } else if (transport !== this._transport) {
       // This should not happen, but we don't care enough to track.
-      logError(`${this.id} handleTransportClose (but unexpected transport)`);
+      this._logError(
+        `${this.id} handleTransportClose (but unexpected transport)`,
+      );
     } else {
-      logInfo(`${this.id} handleTransportClose`);
+      this._logInfo(`${this.id} handleTransportClose`);
       this._transport = null;
       this._cancelPendingMessageTimer();
       this._cancelAckTimer();
@@ -130,12 +143,12 @@ export class QueuedAckTransport {
 
   reconnect(transport: WebSocketTransport): void {
     if (this._isClosed) {
-      logInfo(`${this.id} reconnect (but already closed)`);
+      this._logInfo(`${this.id} reconnect (but already closed)`);
       this._checkLeaks();
       return;
     }
     invariant(!transport.isClosed(), 'reconnect with closed transport');
-    logInfo(
+    this._logInfo(
       `${this.id} reconnect (${this._pendingSends.length} sends, ${
         this._pendingReceives.size
       } receives)`,
@@ -150,7 +163,7 @@ export class QueuedAckTransport {
   }
 
   disconnect(caller: string = 'external'): void {
-    protocolLogger.trace(
+    this._logTrace(
       `${this.id} disconnect (caller=${caller}, state=${this.getState()}))`,
     );
     const transport = this._transport;
@@ -164,7 +177,7 @@ export class QueuedAckTransport {
 
   send(message: string): void {
     if (this._isClosed) {
-      protocolLogger.trace(`${this.id} send (but already closed) '${message}'`);
+      this._logTrace(`${this.id} send (but already closed) '${message}'`);
       this._checkLeaks();
       return;
     }
@@ -178,7 +191,7 @@ export class QueuedAckTransport {
   }
 
   _resendQueue(): void {
-    logInfo(`${this.id} resendQueue`);
+    this._logInfo(`${this.id} resendQueue`);
     this._sendAck();
     this._pendingSends
       .toArray()
@@ -188,7 +201,7 @@ export class QueuedAckTransport {
 
   _handleMessage(wireMessage: string): void {
     if (this._isClosed) {
-      protocolLogger.trace(
+      this._logTrace(
         `${this.id} receive (but already closed) '${wireMessage}'`,
       );
       this._checkLeaks();
@@ -200,7 +213,7 @@ export class QueuedAckTransport {
 
     switch (parsed.type) {
       case CONTENT: {
-        protocolLogger.trace(`${this.id} received ${_forLogging(wireMessage)}`);
+        this._logTrace(`${this.id} received ${_forLogging(wireMessage)}`);
         const pending = this._pendingReceives;
         // If this is a repeat of an old message, don't add it, since we
         // only remove messages when we process them.
@@ -219,7 +232,7 @@ export class QueuedAckTransport {
           progress++;
         }
         if (progress !== 1) {
-          protocolLogger.trace(`${this.id} processed ${progress} messages`);
+          this._logTrace(`${this.id} processed ${progress} messages`);
         }
         this._ensureAckTimer();
         break;
@@ -246,7 +259,7 @@ export class QueuedAckTransport {
             pending.dequeue();
             progress++;
           }
-          protocolLogger.trace(
+          this._logTrace(
             `${
               this.id
             } received ack ${wireMessage} (cleared ${progress} messages, last sent ${
@@ -271,13 +284,13 @@ export class QueuedAckTransport {
 
   close(): void {
     if (!this._isClosed) {
-      protocolLogger.trace(`${this.id} close`);
+      this._logTrace(`${this.id} close`);
       this.disconnect('close');
       this._pendingSends.clear();
       this._pendingReceives.clear();
       this._isClosed = true;
     } else {
-      protocolLogger.trace(`${this.id} close (but already closed)`);
+      this._logTrace(`${this.id} close (but already closed)`);
     }
     this._checkLeaks();
   }
@@ -347,12 +360,10 @@ export class QueuedAckTransport {
     const transport = this._transport;
     const summary = _forLogging(wireMessage);
     if (transport != null) {
-      protocolLogger.trace(`${this.id} transport send ${summary}`);
+      this._logTrace(`${this.id} transport send ${summary}`);
       transport.send(wireMessage);
     } else {
-      protocolLogger.trace(
-        `${this.id} transport send (but disconnected) ${summary}`,
-      );
+      this._logTrace(`${this.id} transport send (but disconnected) ${summary}`);
     }
   }
 
@@ -365,6 +376,28 @@ export class QueuedAckTransport {
     if (this._transport == null) {
       invariant(this._ackTimer == null, 'ackTimer');
       invariant(this._pendingMessageTimer == null, 'pendingMessageTimer');
+    }
+  }
+
+  // Helper functions to log sufficiently interesting logs to both
+  // logger (disk) and protocolLogger (circular in-memory).
+  _logTrace(format: string, ...args: Array<any>): void {
+    if (this._protocolLogger != null) {
+      this._protocolLogger.trace(format, ...args);
+    }
+  }
+
+  _logError(format: string, ...args: Array<any>): void {
+    logger.error(format, ...args);
+    if (this._protocolLogger != null) {
+      this._protocolLogger.error(format, ...args);
+    }
+  }
+
+  _logInfo(format: string, ...args: Array<any>): void {
+    logger.info(format, ...args);
+    if (this._protocolLogger != null) {
+      this._protocolLogger.info(format, ...args);
     }
   }
 }
@@ -425,16 +458,4 @@ function removeUserInput(message: string): string {
     message.substring(0, argsIndex + WRITE_INPUT_DATA_PREFIX.length) +
     '<omitted user input>..'
   );
-}
-
-// Helper functions to log sufficiently interesting logs to both
-// logger (disk) and protocolLogger (circular in-memory).
-function logError(format: string, ...args: Array<any>): void {
-  logger.error(format, ...args);
-  protocolLogger.error(format, ...args);
-}
-
-function logInfo(format: string, ...args: Array<any>): void {
-  logger.info(format, ...args);
-  protocolLogger.info(format, ...args);
 }
