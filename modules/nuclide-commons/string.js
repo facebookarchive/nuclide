@@ -258,3 +258,5 @@ export function getMatchRanges(
 // Added a single matching group for use with String.split.
 // eslint-disable-next-line max-len
 export const URL_REGEX = /(https?:\/\/(?:www\.)?[-\w@:%.+~#=]{2,256}\.[a-z]{2,6}\b[-\w@:%+.~#?&/=!]*|www\.[-\w@:%.+~#=]{2,256}\.[a-z]{2,6}\b[-\w@:%+.~#?&/=!]*)/;
+
+export const ELLIPSIS_CHAR = '\u2026';
