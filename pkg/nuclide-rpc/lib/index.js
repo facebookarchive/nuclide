@@ -58,32 +58,3 @@ export type Transport = {
 export type TransportWithHeartbeat = Transport & {
   getHeartbeat(): XhrConnectionHeartbeat,
 };
-
-// An unreliable transport for sending JSON formatted messages
-// onClose handlers are guaranteed to be called exactly once.
-// onMessage handlers are guaranteed to not be called after onClose has been called.
-// send(data) yields false if the message failed to send, true on success.
-// (note that successfull sending doesn't imply successfull delivery...)
-// onClose handlers will be called before close() returns.
-// May not call send() after transport has closed..
-export type UnreliableTransport = {
-  send(message: string): Promise<boolean>,
-  onClose(callback: () => mixed): IDisposable,
-  onMessage(): Observable<string>,
-  onError(callback: (error: Object) => mixed): IDisposable,
-  close(): void,
-  isClosed(): boolean,
-};
-
-// TODO (semmy): Remove QueuedTransport and this interface
-export type ReliableTransport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-  close(): void,
-  isClosed(): boolean,
-  getState(): 'open' | 'disconnected' | 'closed',
-  reconnect(transport: UnreliableTransport): void,
-  id: string,
-};
-
-(((null: any): ReliableTransport): Transport);

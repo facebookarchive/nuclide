@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {QueuedTransport} from '../QueuedTransport';
+import type {QueuedAckTransport} from '../QueuedAckTransport';
 import type {RpcConnection} from '../../../nuclide-rpc';
 
 import {getVersion} from '../../../nuclide-version';
@@ -23,7 +23,7 @@ export function getServerVersion(): Promise<string> {
 // However, we can't close the connection right away, as otherwise the response never gets sent!
 // Add a small delay to allow the return message to go through.
 export function closeConnection(shutdownServer: boolean): Promise<void> {
-  const client: RpcConnection<QueuedTransport> = (this: any);
+  const client: RpcConnection<QueuedAckTransport> = (this: any);
   setTimeout(() => {
     NuclideServer.closeConnection(client);
     if (shutdownServer) {

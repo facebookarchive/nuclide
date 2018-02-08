@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {UnreliableTransport} from '../../nuclide-rpc';
+import type {WebSocketTransport} from '../lib/WebSocketTransport';
 import invariant from 'assert';
 import {
   QueuedAckTransport,
@@ -26,7 +26,7 @@ import {Subject} from 'rxjs';
 
 function makeUnreliableTransport(
   receiver: Subject<string> = new Subject(),
-): UnreliableTransport {
+): WebSocketTransport {
   let isClosed = false;
   const transport: any = new Emitter();
   transport.send = jasmine.createSpy('send').andCallFake((data: Object) => {

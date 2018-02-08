@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {UnreliableTransport} from '../../nuclide-rpc';
+import type {WebSocketTransport} from './WebSocketTransport';
 import {default as Deque} from 'double-ended-queue';
 
 import invariant from 'assert';
@@ -58,7 +58,7 @@ type PendingSend = {
 export class QueuedAckTransport {
   id: string;
   _isClosed: boolean;
-  _transport: ?UnreliableTransport;
+  _transport: ?WebSocketTransport;
   _pendingSends: Deque<PendingSend>;
   _pendingReceives: Map<number, string>;
   _emitter: Emitter;
@@ -68,7 +68,7 @@ export class QueuedAckTransport {
   _pendingMessageTimer: ?TimeoutID;
   _ackTimer: ?TimeoutID;
 
-  constructor(clientId: string, transport: ?UnreliableTransport) {
+  constructor(clientId: string, transport: ?WebSocketTransport) {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
@@ -90,7 +90,7 @@ export class QueuedAckTransport {
   }
 
   onDisconnect(
-    callback: (transport: UnreliableTransport) => mixed,
+    callback: (transport: WebSocketTransport) => mixed,
   ): IDisposable {
     return this._emitter.on('disconnect', callback);
   }
@@ -99,7 +99,7 @@ export class QueuedAckTransport {
     return this._messageProcessor;
   }
 
-  _connect(transport: UnreliableTransport): void {
+  _connect(transport: WebSocketTransport): void {
     logInfo(`${this.id} connect`);
     invariant(!transport.isClosed(), 'connect with closed transport');
     invariant(this._transport == null, 'connect with existing this._transport');
@@ -110,7 +110,7 @@ export class QueuedAckTransport {
     transport.onClose(() => this._handleTransportClose(transport));
   }
 
-  _handleTransportClose(transport: UnreliableTransport): void {
+  _handleTransportClose(transport: WebSocketTransport): void {
     invariant(transport.isClosed(), 'handleTransportClose transport is closed');
 
     if (this._isClosed) {
@@ -129,7 +129,7 @@ export class QueuedAckTransport {
     this._checkLeaks();
   }
 
-  reconnect(transport: UnreliableTransport): void {
+  reconnect(transport: WebSocketTransport): void {
     if (this._isClosed) {
       logInfo(`${this.id} reconnect (but already closed)`);
       this._checkLeaks();

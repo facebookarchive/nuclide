@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ConfigEntry, ReliableTransport} from '../../nuclide-rpc';
+import type {ConfigEntry} from '../../nuclide-rpc';
 
 import invariant from 'assert';
 import os from 'os';
@@ -25,7 +25,6 @@ import {HistogramTracker} from '../../nuclide-analytics';
 import {getVersion} from '../../nuclide-version';
 import {flushLogsAndExit} from '../../nuclide-logging';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
-import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {protocolLogger} from './utils';
@@ -55,7 +54,7 @@ export default class NuclideServer {
 
   _webServer: http$fixed$Server;
   _webSocketServer: WS.Server;
-  _clients: Map<string, RpcConnection<ReliableTransport>>;
+  _clients: Map<string, RpcConnection<QueuedAckTransport>>;
   _port: number;
   _app: connect$Server;
   _xhrServiceRegistry: {[serviceName: string]: () => any};
@@ -202,14 +201,14 @@ export default class NuclideServer {
     }
   }
 
-  static closeConnection(client: RpcConnection<QueuedTransport>): void {
+  static closeConnection(client: RpcConnection<QueuedAckTransport>): void {
     logger.info(`Closing client: #${client.getTransport().id}`);
     if (NuclideServer._theServer != null) {
       NuclideServer._theServer._closeConnection(client);
     }
   }
 
-  _closeConnection(client: RpcConnection<QueuedTransport>): void {
+  _closeConnection(client: RpcConnection<QueuedAckTransport>): void {
     if (this._clients.get(client.getTransport().id) === client) {
       this._clients.delete(client.getTransport().id);
       client.dispose();
@@ -291,7 +290,7 @@ export default class NuclideServer {
   _onConnection(socket: WS): void {
     logger.debug('WebSocket connecting');
 
-    let client: ?RpcConnection<ReliableTransport> = null;
+    let client: ?RpcConnection<QueuedAckTransport> = null;
 
     const errorSubscription = attachEvent(socket, 'error', e =>
       logger.error('WebSocket error before first message', e),

@@ -11,7 +11,6 @@
 
 import type {AgentOptions} from 'big-dig/src/common/types';
 import type {Observable} from 'rxjs';
-import type {ReliableTransport} from '../../nuclide-rpc';
 import type {MemoryLogger} from '../../commons-node/memoryLogger';
 
 import url from 'url';
@@ -65,7 +64,7 @@ export class NuclideSocket {
   _previouslyConnected: boolean;
   _websocketUri: string;
   _emitter: Emitter;
-  _transport: ?ReliableTransport;
+  _transport: ?QueuedAckTransport;
   _heartbeat: XhrConnectionHeartbeat;
 
   constructor(serverUri: string, options: ?AgentOptions) {
