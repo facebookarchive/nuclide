@@ -18,7 +18,6 @@ import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-server');
 import {Emitter} from 'event-kit';
-import {track} from '../../nuclide-analytics';
 import {protocolLogger} from './utils';
 
 export const ACK_BUFFER_TIME = 100;
@@ -229,21 +228,13 @@ export class QueuedAckTransport {
       case ACK: {
         const pending = this._pendingSends;
         const id = parsed.id;
+
         if (id > this._lastSendId) {
-          // This happens if the client tells the server to close while
-          // racing to reconnect.  In this case the client really does
-          // think we are done, even if all async work hasn't figured that
-          // out yet.  Unfortunately, we don't have enough state to
-          // proceed, so just disconnect.
-          logError(`${this.id} amnesia receiving ack=${id}`);
-          track('queued-ack-transport:amnesia-ack', {
-            clientId: this.id,
-            ackedId: id,
-            lastSendId: this._lastSendId,
-            lastProcessedId: this._lastProcessedId,
-            sendQueue: pending.toArray().map(send => send.id),
-            receiveQueue: [...this._pendingReceives.keys()],
-          });
+          // The id needs to be smaller than or equal to the _lastSendId unless
+          // the client is reconnecting after a close (which can happen in a
+          // specific client-side race condition). The invariant here makes
+          // sure this is the case.
+          invariant(this._lastSendId === 0 && this._lastProcessedId === 0);
           this.close();
           break;
         } else {
