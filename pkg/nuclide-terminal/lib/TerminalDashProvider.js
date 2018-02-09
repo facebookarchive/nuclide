@@ -30,7 +30,10 @@ export default class TerminalDashProvider
   debounceDelay = 0;
   display = {
     title: 'Terminal',
-    prompt: 'Run a terminal command...',
+    prompt: {
+      verb: 'Run',
+      object: 'a terminal command',
+    },
     action: 'terminal-dash-provider:toggle-provider',
   };
 
