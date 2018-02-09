@@ -11,7 +11,6 @@
 
 import type {ThreadItem} from './types';
 import type DebuggerModel from './DebuggerModel';
-import type {ThreadColumn} from 'nuclide-debugger-common';
 import type {Row} from 'nuclide-commons-ui/Table';
 
 import * as React from 'react';
@@ -29,7 +28,6 @@ import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 type Props = {|
   +selectThread: (threadId: string) => void,
   +model: DebuggerModel,
-  +customThreadColumns: Array<ThreadColumn>,
   +threadName: string,
 |};
 
@@ -175,10 +173,7 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
     ];
 
     // Individual debuggers can override the displayed columns.
-    const columns =
-      this.props.customThreadColumns.length === 0
-        ? defaultColumns
-        : [activeThreadCol, ...this.props.customThreadColumns];
+    const columns = defaultColumns;
     const threadName = this.props.threadName.toLowerCase();
     const emptyComponent = () => (
       <div className="nuclide-debugger-thread-list-empty">

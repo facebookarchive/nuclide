@@ -290,7 +290,7 @@ declare class atom$Marker {
 
     isValid: boolean,
     textChanged: boolean,
-  }) => void): IDisposable,
+  }) => mixed): IDisposable,
   isValid(): boolean,
   isDestroyed(): boolean,
   onDidDestroy(callback: () => mixed): IDisposable,

@@ -21,7 +21,6 @@ export type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpression,
   NuclideEvaluationExpressionProvider,
-  ThreadColumn,
   UserOutput,
   VSAdapterExecutableInfo,
   VsAdapterType,

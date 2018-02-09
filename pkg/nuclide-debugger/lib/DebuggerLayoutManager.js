@@ -18,7 +18,6 @@ import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import DebuggerModel from './DebuggerModel';
 import {DebuggerMode} from './constants';
 import invariant from 'assert';
-import {__DEV__} from '../../commons-node/runtime-info';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
@@ -198,20 +197,6 @@ export class DebuggerLayoutManager {
         isEnabled: () => true,
         createView: () => <DebuggerControlsView model={this._model} />,
         onPaneResize: (dockPane, newFlexScale) => {
-          // If the debugger is stopped, let the controls pane keep its default
-          // layout to make room for the buttons and additional content. Otherwise,
-          // override the layout to shrink the pane and remove extra vertical whitespace.
-          const debuggerMode = this._model.getDebuggerMode();
-          if (debuggerMode !== DebuggerMode.STOPPED) {
-            // If __DEV__, leave some extra space for the chrome devtools gear
-            // TODO: Remove this when chrome is gone
-            this._overridePaneInitialHeight(
-              dockPane,
-              newFlexScale,
-              __DEV__ ? 155 : 130,
-            );
-          }
-
           // If newFlexScale !== 1, that means the user must have resized this pane.
           // Return true to unhook this callback and let the pane resize per Atom's
           // default behavior. The user is now responsible for the pane's height.

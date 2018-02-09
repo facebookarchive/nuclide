@@ -81,8 +81,6 @@ export default class DebuggerActions {
       const supportThreadsWindow = debuggerCapabilities.threads;
       this._model.getSettings().supportThreadsWindow = supportThreadsWindow;
       if (supportThreadsWindow) {
-        this._model.getSettings().customThreadColumns =
-          debuggerProps.threadColumns;
         this._model.getSettings().threadsComponentTitle =
           debuggerProps.threadsComponentTitle;
       }

@@ -15,7 +15,6 @@ import type DebuggerModel from './DebuggerModel';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
-import type {ThreadColumn} from 'nuclide-debugger-common';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './constants';
 
@@ -26,7 +25,6 @@ type Props = {
 export class ThreadsView extends React.PureComponent<
   Props,
   {
-    customThreadColumns: Array<ThreadColumn>,
     mode: DebuggerModeType,
     threadsComponentTitle: string,
   },
@@ -38,7 +36,6 @@ export class ThreadsView extends React.PureComponent<
     this._disposables = new UniversalDisposable();
     const {model} = props;
     this.state = {
-      customThreadColumns: model.getSettings().customThreadColumns,
       mode: model.getDebuggerMode(),
       threadsComponentTitle: String(model.getSettings().threadsComponentTitle),
     };
@@ -49,7 +46,6 @@ export class ThreadsView extends React.PureComponent<
     this._disposables.add(
       model.onChange(() => {
         this.setState({
-          customThreadColumns: model.getSettings().customThreadColumns,
           mode: model.getDebuggerMode(),
           threadsComponentTitle: model.getSettings().threadsComponentTitle,
         });
@@ -67,7 +63,7 @@ export class ThreadsView extends React.PureComponent<
 
   render(): React.Node {
     const {model} = this.props;
-    const {mode, threadsComponentTitle, customThreadColumns} = this.state;
+    const {mode, threadsComponentTitle} = this.state;
     const disabledClass =
       mode !== DebuggerMode.RUNNING
         ? ''
@@ -82,7 +78,6 @@ export class ThreadsView extends React.PureComponent<
           <DebuggerThreadsComponent
             selectThread={selectThread}
             model={model}
-            customThreadColumns={customThreadColumns}
             threadName={threadsComponentTitle}
           />
         </div>

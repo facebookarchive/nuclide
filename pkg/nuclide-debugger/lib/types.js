@@ -11,7 +11,6 @@
 
 import type {Observable} from 'rxjs';
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
-import type {ThreadColumn} from 'nuclide-debugger-common';
 // eslint-disable-next-line rulesdir/import-type-style
 import type {EvaluationResult as EvaluationResult_} from 'nuclide-commons-ui/TextRenderer';
 // eslint-disable-next-line rulesdir/import-type-style
@@ -19,7 +18,6 @@ import type {ExpansionResult as ExpansionResult_} from 'nuclide-commons-ui/LazyN
 
 export type DebuggerSettings = {|
   supportThreadsWindow: boolean,
-  customThreadColumns: Array<ThreadColumn>,
   threadsComponentTitle: string,
 |};
 

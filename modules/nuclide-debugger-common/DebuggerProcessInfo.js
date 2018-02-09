@@ -53,7 +53,6 @@ export default class DebuggerProcessInfo {
     return {
       customControlButtons: [],
       targetDescription: () => null,
-      threadColumns: [],
       threadsComponentTitle: 'Threads',
     };
   }

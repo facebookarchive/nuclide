@@ -42,6 +42,7 @@ import {
   count,
   range,
   mapFromObject,
+  distinct,
 } from '../collection';
 
 describe('ensureArray', () => {
@@ -664,5 +665,16 @@ describe('mapFromObject', () => {
     expect(
       mapEqual(mapFromObject({a: 1, b: 2}), new Map([['a', 1], ['b', 2]])),
     ).toEqual(true);
+  });
+});
+
+describe('distinct', () => {
+  it('returns the unique values mapped (or keys)', () => {
+    expect(distinct([1, 2, 3])).toEqual([1, 2, 3]);
+    expect(distinct(['1', '2', '3'])).toEqual(['1', '2', '3']);
+    expect(distinct([1, 2, 3, 4], x => String(x % 2 === 0))).toEqual([1, 2]);
+    expect(
+      distinct([{x: 1}, {x: 2}, {x: 3}, {x: 4}, {x: 4}], o => String(o.x)),
+    ).toEqual([{x: 1}, {x: 2}, {x: 3}, {x: 4}]);
   });
 });

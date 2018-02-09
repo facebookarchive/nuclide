@@ -45,7 +45,6 @@ import type {
   SetVariableResponse,
   RemoteObjectId,
 } from 'nuclide-debugger-common/protocol-types';
-import type {RegisterExecutorFunction} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import * as React from 'react';
 import BreakpointManager from './BreakpointManager';
@@ -152,7 +151,6 @@ export default class DebuggerModel {
     this._dispatcher = new DebuggerDispatcher();
     this._debuggerSettings = {
       supportThreadsWindow: false,
-      customThreadColumns: [],
       threadsComponentTitle: 'Threads',
     };
     this._debuggerInstance = null;
@@ -1199,10 +1197,6 @@ export default class DebuggerModel {
 
   getCustomControlButtons(): Array<ControlButtonSpecification> {
     return this._customControlButtons;
-  }
-
-  getConsoleExecutorFunction(): ?RegisterExecutorFunction {
-    return this._registerExecutor;
   }
 
   getDebuggerInstance(): ?DebuggerInstanceInterface {

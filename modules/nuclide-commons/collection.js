@@ -561,3 +561,19 @@ export function mapFromObject<T>(obj: {[key: string]: T}): Map<string, T> {
 export function lastFromArray<T>(arr: Array<T>): T {
   return arr[arr.length - 1];
 }
+
+export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
+  if (keyFn == null) {
+    return Array.from(new Set(array));
+  }
+
+  const seenKeys = new Set();
+  return array.filter(elem => {
+    const key = keyFn(elem);
+    if (seenKeys.has(key)) {
+      return false;
+    }
+    seenKeys.add(key);
+    return true;
+  });
+}

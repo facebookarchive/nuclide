@@ -15,7 +15,6 @@ import type {
   ControlButtonSpecification,
   DebuggerCapabilities,
   DebuggerProperties,
-  ThreadColumn,
 } from 'nuclide-debugger-common';
 
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
@@ -57,7 +56,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return {
       ...super.getDebuggerProps(),
       customControlButtons: this._getCustomControlButtons(),
-      threadColumns: this._getThreadColumns(),
       threadsComponentTitle: 'Requests',
     };
   }
@@ -128,26 +126,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   _getRpcService(): PhpDebuggerServiceType {
     const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.PhpDebuggerService();
-  }
-
-  _getThreadColumns(): Array<ThreadColumn> {
-    return [
-      {
-        key: 'id',
-        title: 'ID',
-        width: 0.15,
-      },
-      {
-        key: 'address',
-        title: 'Location',
-        width: 0.55,
-      },
-      {
-        key: 'stopReason',
-        title: 'Stop Reason',
-        width: 0.25,
-      },
-    ];
   }
 
   _getCustomControlButtons(): Array<ControlButtonSpecification> {
