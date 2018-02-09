@@ -18,12 +18,11 @@ import type {
 import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type {RegisterExecutorFunction, OutputService} from 'atom-ide-ui';
 import type {
+  Expression,
   EvaluationResult,
   FileLineBreakpoint,
   SerializedBreakpoint,
-  SerializedWatchExpression,
 } from './types';
-import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
@@ -58,7 +57,7 @@ import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
-  watchExpressions: ?Array<SerializedWatchExpression>,
+  watchExpressions: ?Array<Expression>,
   showDebugger: boolean,
   workspaceDocksVisibility: Array<boolean>,
   pauseOnException: boolean,
@@ -453,9 +452,7 @@ class Activation {
     const model = this._model;
     const state = {
       breakpoints: model.getBreakpointStore().getSerializedBreakpoints(),
-      watchExpressions: model
-        .getWatchExpressionListStore()
-        .getSerializedWatchExpressions(),
+      watchExpressions: model.getSerializedWatchExpressions(),
       showDebugger: this._layoutManager.isDebuggerVisible(),
       workspaceDocksVisibility: this._layoutManager.getWorkspaceDocksVisibility(),
       pauseOnException: this._model.getStore().getTogglePauseOnException(),
@@ -940,11 +937,7 @@ class Activation {
     registerExecutor: RegisterExecutorFunction,
   ): IDisposable {
     const model = this._model;
-    const register = () =>
-      registerConsoleExecutor(
-        model.getWatchExpressionStore(),
-        registerExecutor,
-      );
+    const register = () => registerConsoleExecutor(model, registerExecutor);
     model.getActions().addConsoleRegisterFunction(register);
     return new UniversalDisposable(() =>
       model.getActions().removeConsoleRegisterFunction(register),
@@ -1021,7 +1014,7 @@ class Activation {
 }
 
 function registerConsoleExecutor(
-  watchExpressionStore: WatchExpressionStore,
+  model: DebuggerModel,
   registerExecutor: RegisterExecutorFunction,
 ): IDisposable {
   const disposables = new UniversalDisposable();
@@ -1030,13 +1023,13 @@ function registerConsoleExecutor(
     disposables.add(
       // We filter here because the first value in the BehaviorSubject is null no matter what, and
       // we want the console to unsubscribe the stream after the first non-null value.
-      watchExpressionStore
+      model
         .evaluateConsoleExpression(expression)
         .filter(result => result != null)
         .first()
         .subscribe(result => rawOutput.next(result)),
     );
-    watchExpressionStore._triggerReevaluation();
+    model.triggerReevaluation();
   };
   const output: Observable<{
     result?: EvaluationResult,
@@ -1051,9 +1044,7 @@ function registerConsoleExecutor(
       scopeName: 'text.plain',
       send,
       output,
-      getProperties: watchExpressionStore.getProperties.bind(
-        watchExpressionStore,
-      ),
+      getProperties: model.getProperties.bind(model),
     }),
   );
   return disposables;

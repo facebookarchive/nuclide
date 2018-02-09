@@ -62,12 +62,11 @@ export async function debuggerDatatip(
   if (expression == null) {
     return null;
   }
-  const watchExpressionStore = model.getWatchExpressionStore();
-  const evaluation = watchExpressionStore.evaluateWatchExpression(expression);
+  const evaluation = model.evaluateWatchExpression(expression);
   const propStream = evaluation.map(result => ({
     expression,
     evaluationResult: result,
-    watchExpressionStore,
+    model,
   }));
   return {
     component: bindObservableAsProps(propStream, DebuggerDatatipComponent),

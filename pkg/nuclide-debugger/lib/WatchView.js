@@ -29,7 +29,6 @@ export class WatchView extends React.PureComponent<Props> {
     super(props);
     this._watchExpressionComponentWrapped = bindObservableAsProps(
       props.model
-        .getWatchExpressionListStore()
         .getWatchExpressions()
         .map(watchExpressions => ({watchExpressions})),
       WatchExpressionComponent,
@@ -41,7 +40,6 @@ export class WatchView extends React.PureComponent<Props> {
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this
       ._watchExpressionComponentWrapped;
-    const watchExpressionStore = model.getWatchExpressionStore();
 
     return (
       <div className={classnames('nuclide-debugger-container-new')}>
@@ -50,9 +48,7 @@ export class WatchView extends React.PureComponent<Props> {
             onAddWatchExpression={actions.addWatchExpression.bind(model)}
             onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
             onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-            getProperties={watchExpressionStore.getProperties.bind(
-              watchExpressionStore,
-            )}
+            getProperties={model.getProperties.bind(model)}
           />
         </div>
       </div>

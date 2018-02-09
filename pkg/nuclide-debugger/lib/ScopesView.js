@@ -75,10 +75,7 @@ export class ScopesView extends React.PureComponent<Props, State> {
       <div
         className={classnames('nuclide-debugger-container-new', disabledClass)}>
         <div className="nuclide-debugger-pane-content">
-          <ScopesComponentWrapped
-            watchExpressionStore={model.getWatchExpressionStore()}
-            model={model}
-          />
+          <ScopesComponentWrapped model={model} />
         </div>
       </div>
     );

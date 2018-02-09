@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {WatchExpressionStore} from './WatchExpressionStore';
+import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './types';
 
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
@@ -20,15 +20,13 @@ import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 type Props = {|
   +expression: string,
   +evaluationResult: ?EvaluationResult,
-  +watchExpressionStore: WatchExpressionStore,
+  +model: DebuggerModel,
 |};
 
 export class DebuggerDatatipComponent extends React.Component<Props> {
   render(): React.Node {
-    const {expression, evaluationResult, watchExpressionStore} = this.props;
-    const fetchChildren = watchExpressionStore.getProperties.bind(
-      watchExpressionStore,
-    );
+    const {expression, evaluationResult, model} = this.props;
+    const fetchChildren = model.getProperties.bind(model);
     let datatipElement;
     if (evaluationResult == null) {
       datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;

@@ -17,18 +17,16 @@ import type {
   ScopesMap,
   ScopeSection,
 } from './types';
-import invariant from 'assert';
-import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
 import * as React from 'react';
 import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
+import invariant from 'assert';
 import {Section} from '../../nuclide-ui/Section';
 
 type Props = {|
   +scopes: ScopesMap,
-  +watchExpressionStore: WatchExpressionStore,
   +model: DebuggerModel,
 |};
 
@@ -158,13 +156,11 @@ export class ScopesComponent extends React.Component<Props> {
   }
 
   render(): React.Node {
-    const {watchExpressionStore, scopes} = this.props;
+    const {model, scopes} = this.props;
     if (scopes == null || scopes.size === 0) {
       return <span>(no variables)</span>;
     }
-    const fetchChildren = watchExpressionStore.getProperties.bind(
-      watchExpressionStore,
-    );
+    const fetchChildren = model.getProperties.bind(model);
     const scopeSections = Array.from(scopes.values()).map(
       this._renderScopeSection.bind(this, fetchChildren),
     );

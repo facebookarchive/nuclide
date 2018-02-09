@@ -17,8 +17,16 @@ import type {
 import type {DebuggerAction} from './DebuggerDispatcher';
 import type {
   Callstack,
+  ChromeProtocolResponse,
   DebuggerModeType,
+  Expression,
+  EvalCommand,
+  EvaluatedExpression,
+  EvaluatedExpressionList,
+  EvaluationResult,
+  ExpansionResult,
   NuclideThreadData,
+  ObjectGroup,
   ScopesMap,
   ScopeSection,
   ScopeSectionPayload,
@@ -34,8 +42,6 @@ import BreakpointManager from './BreakpointManager';
 import BreakpointStore from './BreakpointStore';
 import DebuggerActions from './DebuggerActions';
 import {DebuggerStore} from './DebuggerStore';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import {WatchExpressionListStore} from './WatchExpressionListStore';
 import Bridge from './Bridge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import DebuggerDispatcher from './DebuggerDispatcher';
@@ -52,6 +58,9 @@ import {track} from '../../nuclide-analytics';
 import {AnalyticsEvents} from './constants';
 import {reportError} from './Protocol/EventReporter';
 import {isLocalScopeName} from './utils';
+import {Deferred} from 'nuclide-commons/promise';
+import {getLogger} from 'log4js';
+import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 
 import type {SerializedState} from '..';
 
@@ -72,8 +81,6 @@ export default class DebuggerModel {
   _breakpointStore: BreakpointStore;
   _dispatcher: DebuggerDispatcher;
   _store: DebuggerStore;
-  _watchExpressionStore: WatchExpressionStore;
-  _watchExpressionListStore: WatchExpressionListStore;
   _bridge: Bridge;
   _debuggerPauseController: DebuggerPauseController;
   _emitter: Emitter;
@@ -101,6 +108,13 @@ export default class DebuggerModel {
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
 
+  // Watch expressions
+  _watchExpressions: Map<Expression, BehaviorSubject<?EvaluationResult>>;
+  _previousEvaluationSubscriptions: UniversalDisposable;
+  _evaluationId: number;
+  _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
+  _watchExpressionsList: BehaviorSubject<EvaluatedExpressionList>;
+
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
     this._callstack = null;
@@ -119,6 +133,13 @@ export default class DebuggerModel {
     this._connections = ['local'];
     this._scopes = new BehaviorSubject(new Map());
     this._expandedScopes = new Map();
+    this._evaluationId = 0;
+    this._watchExpressions = new Map();
+    this._evaluationRequestsInFlight = new Map();
+    // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
+    // `this._disposables`.
+    this._previousEvaluationSubscriptions = new UniversalDisposable();
+    this._watchExpressionsList = new BehaviorSubject([]);
 
     // Debounce calls to _openPathInEditor to work around an Atom bug that causes
     // two editor windows to be opened if multiple calls to atom.workspace.open
@@ -145,15 +166,9 @@ export default class DebuggerModel {
       this._actions,
     );
     this._bridge = new Bridge(this);
-    this._watchExpressionStore = new WatchExpressionStore(
-      this._dispatcher,
-      this._bridge,
-    );
-    this._watchExpressionListStore = new WatchExpressionListStore(
-      this._watchExpressionStore,
-      this._dispatcher,
-      state != null ? state.watchExpressions : null, // serialized watch expressions
-    );
+    const initialWatchExpressions =
+      state != null ? state.watchExpressions : null;
+    this._deserializeWatchExpressions(initialWatchExpressions);
     this._debuggerPauseController = new DebuggerPauseController(this._store);
     const dispatcherToken = this._dispatcher.register(
       this._handlePayload.bind(this),
@@ -165,14 +180,15 @@ export default class DebuggerModel {
       this._breakpointStore,
       this._breakpointManager,
       this._bridge,
-      this._watchExpressionStore,
       this._debuggerPauseController,
       () => {
         this._dispatcher.unregister(dispatcherToken);
         this._clearSelectedCallFrameMarker();
         this._cleanUpDatatip();
+        this._watchExpressions.clear();
       },
       this._listenForProjectChange(),
+      this._previousEvaluationSubscriptions,
     );
   }
 
@@ -192,14 +208,6 @@ export default class DebuggerModel {
 
   getStore(): DebuggerStore {
     return this._store;
-  }
-
-  getWatchExpressionStore(): WatchExpressionStore {
-    return this._watchExpressionStore;
-  }
-
-  getWatchExpressionListStore(): WatchExpressionListStore {
-    return this._watchExpressionListStore;
   }
 
   getBreakpointStore(): BreakpointStore {
@@ -295,6 +303,15 @@ export default class DebuggerModel {
           // The UI is never waiting for threads if it's running.
           this._threadsReloading = false;
         }
+
+        if (payload.data === DebuggerMode.PAUSED) {
+          this.triggerReevaluation();
+        } else if (payload.data === DebuggerMode.STOPPED) {
+          this._cancelRequestsToBridge();
+          this._clearEvaluationValues();
+        } else if (payload.data === DebuggerMode.STARTING) {
+          this._refetchWatchSubscriptions();
+        }
         this._debuggerMode = payload.data;
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
@@ -330,6 +347,29 @@ export default class DebuggerModel {
         break;
       case ActionTypes.UPDATE_SCOPES:
         this._handleUpdateScopesAsPayload(payload.data);
+        break;
+      case ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE: {
+        const {id, response} = payload.data;
+        this._handleResponseForPendingRequest(id, response);
+        break;
+      }
+      case ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE: {
+        const {id, response} = payload.data;
+        response.result = normalizeRemoteObjectValue(response.result);
+        this._handleResponseForPendingRequest(id, response);
+        break;
+      }
+      case ActionTypes.ADD_WATCH_EXPRESSION:
+        this._addWatchExpression(payload.data.expression);
+        break;
+      case ActionTypes.REMOVE_WATCH_EXPRESSION:
+        this._removeWatchExpression(payload.data.index);
+        break;
+      case ActionTypes.UPDATE_WATCH_EXPRESSION:
+        this._updateWatchExpression(
+          payload.data.index,
+          payload.data.newExpression,
+        );
         break;
       default:
         return;
@@ -382,6 +422,7 @@ export default class DebuggerModel {
     this._threadMap.clear();
     this._cleanUpDatatip();
     this._clearScopesInterface();
+    this._clearEvaluationValues();
   }
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
@@ -724,4 +765,251 @@ export default class DebuggerModel {
     selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
     this._handleUpdateScopes(scopes);
   };
+
+  triggerReevaluation(): void {
+    this._cancelRequestsToBridge();
+    for (const [expression, subject] of this._watchExpressions) {
+      if (subject.observers == null || subject.observers.length === 0) {
+        // Nobody is watching this expression anymore.
+        this._watchExpressions.delete(expression);
+        continue;
+      }
+      this._requestExpressionEvaluation(
+        expression,
+        subject,
+        false /* no REPL support */,
+      );
+    }
+  }
+
+  _cancelRequestsToBridge(): void {
+    this._previousEvaluationSubscriptions.dispose();
+    this._previousEvaluationSubscriptions = new UniversalDisposable();
+  }
+
+  // Resets all values to N/A, for examples when the debugger resumes or stops.
+  _clearEvaluationValues(): void {
+    for (const subject of this._watchExpressions.values()) {
+      subject.next(null);
+    }
+  }
+
+  /**
+   * Returns an observable of child properties for the given objectId.
+   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+   */
+  getProperties(objectId: string): Observable<?ExpansionResult> {
+    const getPropertiesPromise: Promise<?ExpansionResult> = this._sendEvaluationCommand(
+      'getProperties',
+      objectId,
+    );
+    return Observable.fromPromise(getPropertiesPromise);
+  }
+
+  evaluateConsoleExpression(
+    expression: Expression,
+  ): Observable<?EvaluationResult> {
+    return this._evaluateExpression(expression, true /* support REPL */);
+  }
+
+  evaluateWatchExpression(
+    expression: Expression,
+  ): Observable<?EvaluationResult> {
+    return this._evaluateExpression(
+      expression,
+      false /* do not support REPL */,
+    );
+  }
+
+  /**
+   * Returns an observable of evaluation results for a given expression.
+   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+   *
+   * The supportRepl boolean indicates if we allow evaluation in a non-paused state.
+   */
+  _evaluateExpression(
+    expression: Expression,
+    supportRepl: boolean,
+  ): Observable<?EvaluationResult> {
+    if (!supportRepl && this._watchExpressions.has(expression)) {
+      const cachedResult = this._watchExpressions.get(expression);
+      return nullthrows(cachedResult);
+    }
+    const subject = new BehaviorSubject(null);
+    this._requestExpressionEvaluation(expression, subject, supportRepl);
+    if (!supportRepl) {
+      this._watchExpressions.set(expression, subject);
+    }
+    // Expose an observable rather than the raw subject.
+    return subject.asObservable();
+  }
+
+  _requestExpressionEvaluation(
+    expression: Expression,
+    subject: BehaviorSubject<?EvaluationResult>,
+    supportRepl: boolean,
+  ): void {
+    let evaluationPromise;
+    if (supportRepl) {
+      evaluationPromise =
+        this._debuggerMode === DebuggerMode.PAUSED
+          ? this._evaluateOnSelectedCallFrame(expression, 'console')
+          : this._runtimeEvaluate(expression);
+    } else {
+      evaluationPromise = this._evaluateOnSelectedCallFrame(
+        expression,
+        'watch-group',
+      );
+    }
+
+    const evaluationDisposable = new UniversalDisposable(
+      Observable.fromPromise(evaluationPromise)
+        .merge(Observable.never()) // So that we do not unsubscribe `subject` when disposed.
+        .subscribe(subject),
+    );
+
+    // Non-REPL environments will want to record these requests so they can be canceled on
+    // re-evaluation, e.g. in the case of stepping.  REPL environments should let them complete so
+    // we can have e.g. a history of evaluations in the console.
+    if (!supportRepl) {
+      this._previousEvaluationSubscriptions.add(evaluationDisposable);
+    } else {
+      this._disposables.add(evaluationDisposable);
+    }
+  }
+
+  async _evaluateOnSelectedCallFrame(
+    expression: string,
+    objectGroup: ObjectGroup,
+  ): Promise<EvaluationResult> {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'evaluateOnSelectedCallFrame',
+      expression,
+      objectGroup,
+    );
+    if (result == null) {
+      // Backend returned neither a result nor an error message
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
+  }
+
+  async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'runtimeEvaluate',
+      expression,
+    );
+    if (result == null) {
+      // Backend returned neither a result nor an error message
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
+  }
+
+  async _sendEvaluationCommand(
+    command: EvalCommand,
+    ...args: Array<mixed>
+  ): Promise<any> {
+    const deferred = new Deferred();
+    const evalId = this._evaluationId;
+    ++this._evaluationId;
+    this._evaluationRequestsInFlight.set(evalId, deferred);
+    this._bridge.sendEvaluationCommand(command, evalId, ...args);
+    let result = null;
+    try {
+      result = await deferred.promise;
+    } catch (e) {
+      getLogger('nuclide-debugger').warn(
+        `${command}: Error getting result.`,
+        e,
+      );
+    }
+    this._evaluationRequestsInFlight.delete(evalId);
+    return result;
+  }
+
+  _handleResponseForPendingRequest(
+    id: number,
+    response: ChromeProtocolResponse,
+  ): void {
+    const {result, error} = response;
+    const deferred = this._evaluationRequestsInFlight.get(id);
+    if (deferred == null) {
+      // Nobody is listening for the result of this expression.
+      return;
+    }
+    if (error != null) {
+      deferred.reject(error);
+    } else {
+      deferred.resolve(result);
+    }
+  }
+
+  _deserializeWatchExpressions(watchExpressions: ?Array<Expression>): void {
+    if (watchExpressions != null) {
+      this._watchExpressionsList.next(
+        watchExpressions.map(expression =>
+          this._getExpressionEvaluationFor(expression),
+        ),
+      );
+    }
+  }
+
+  _getExpressionEvaluationFor(expression: Expression): EvaluatedExpression {
+    return {
+      expression,
+      value: this.evaluateWatchExpression(expression),
+    };
+  }
+
+  getWatchExpressions(): Observable<EvaluatedExpressionList> {
+    return this._watchExpressionsList.asObservable();
+  }
+
+  getSerializedWatchExpressions(): Array<Expression> {
+    return this._watchExpressionsList
+      .getValue()
+      .map(evaluatedExpression => evaluatedExpression.expression);
+  }
+
+  _addWatchExpression(expression: Expression): void {
+    if (expression === '') {
+      return;
+    }
+    this._watchExpressionsList.next([
+      ...this._watchExpressionsList.getValue(),
+      this._getExpressionEvaluationFor(expression),
+    ]);
+  }
+
+  _removeWatchExpression(index: number): void {
+    const watchExpressions = this._watchExpressionsList.getValue().slice();
+    watchExpressions.splice(index, 1);
+    this._watchExpressionsList.next(watchExpressions);
+  }
+
+  _updateWatchExpression(index: number, newExpression: Expression): void {
+    if (newExpression === '') {
+      return this._removeWatchExpression(index);
+    }
+    const watchExpressions = this._watchExpressionsList.getValue().slice();
+    watchExpressions[index] = this._getExpressionEvaluationFor(newExpression);
+    this._watchExpressionsList.next(watchExpressions);
+  }
+
+  _refetchWatchSubscriptions(): void {
+    const watchExpressions = this._watchExpressionsList.getValue().slice();
+    const refetchedWatchExpressions = watchExpressions.map(({expression}) => {
+      return this._getExpressionEvaluationFor(expression);
+    });
+    this._watchExpressionsList.next(refetchedWatchExpressions);
+  }
 }
