@@ -1029,9 +1029,7 @@ class Activation {
   consumeDatatipService(service: DatatipService): IDisposable {
     const provider = this._createDatatipProvider();
     const disposable = service.addProvider(provider);
-    this.getModel()
-      .getThreadStore()
-      .setDatatipService(service);
+    this.getModel().setDatatipService(service);
     this._disposables.add(disposable);
     return disposable;
   }

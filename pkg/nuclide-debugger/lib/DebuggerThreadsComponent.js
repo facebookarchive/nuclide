@@ -9,14 +9,15 @@
  * @format
  */
 
+import type {ThreadItem} from './types';
+import type DebuggerModel from './DebuggerModel';
+import type {ThreadColumn} from 'nuclide-debugger-common';
+import type {Row} from 'nuclide-commons-ui/Table';
+
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import type {ThreadItem} from './types';
-import type ThreadStore from './ThreadStore';
-import type {ThreadColumn} from 'nuclide-debugger-common';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {Table} from 'nuclide-commons-ui/Table';
-import type {Row} from 'nuclide-commons-ui/Table';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   LoadingSpinner,
@@ -27,7 +28,7 @@ import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 type Props = {|
   +selectThread: (threadId: string) => void,
-  +threadStore: ThreadStore,
+  +model: DebuggerModel,
   +customThreadColumns: Array<ThreadColumn>,
   +threadName: string,
 |};
@@ -57,15 +58,15 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleThreadStoreChanged = debounce(
-      this._handleThreadStoreChanged,
+    (this: any)._handleThreadsChanged = debounce(
+      this._handleThreadsChanged,
       150,
     );
 
     this._disposables = new UniversalDisposable();
     this.state = {
-      threadList: props.threadStore.getThreadList(),
-      selectedThreadId: props.threadStore.getSelectedThreadId(),
+      threadList: props.model.getThreadList(),
+      selectedThreadId: props.model.getSelectedThreadId(),
       sortedColumn: null,
       sortDescending: false,
       threadsLoading: false,
@@ -73,9 +74,8 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const {threadStore} = this.props;
     this._disposables.add(
-      threadStore.onChange(() => this._handleThreadStoreChanged()),
+      this.props.model.onThreadsChanged(() => this._handleThreadsChanged()),
     );
   }
 
@@ -103,11 +103,11 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
     }
   }
 
-  _handleThreadStoreChanged(): void {
+  _handleThreadsChanged(): void {
     this.setState({
-      threadList: this.props.threadStore.getThreadList(),
-      selectedThreadId: this.props.threadStore.getSelectedThreadId(),
-      threadsLoading: this.props.threadStore.getThreadsReloading(),
+      threadList: this.props.model.getThreadList(),
+      selectedThreadId: this.props.model.getSelectedThreadId(),
+      threadsLoading: this.props.model.getThreadsReloading(),
     });
   }
 

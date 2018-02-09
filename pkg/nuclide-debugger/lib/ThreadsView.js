@@ -84,7 +84,7 @@ export class ThreadsView extends React.PureComponent<
         <div className="nuclide-debugger-pane-content">
           <DebuggerThreadsComponent
             selectThread={selectThread}
-            threadStore={model.getThreadStore()}
+            model={model}
             customThreadColumns={customThreadColumns}
             threadName={threadsComponentTitle}
           />
