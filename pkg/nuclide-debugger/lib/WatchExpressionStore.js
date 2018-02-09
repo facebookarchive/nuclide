@@ -19,7 +19,7 @@ import type {
 } from './types';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import {ActionTypes} from './DebuggerDispatcher';
 import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';

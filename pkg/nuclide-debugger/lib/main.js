@@ -10,6 +10,8 @@
  */
 
 import type {
+  DebuggerConfigAction,
+  DebuggerLaunchAttachProvider,
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
@@ -17,20 +19,18 @@ import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type {RegisterExecutorFunction, OutputService} from 'atom-ide-ui';
 import type {
   EvaluationResult,
+  FileLineBreakpoint,
   SerializedBreakpoint,
   SerializedWatchExpression,
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
-import type {FileLineBreakpoint} from './types';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
-import {AnalyticsEvents} from './constants';
+import {AnalyticsEvents, DebuggerMode} from './constants';
 import {BreakpointConfigComponent} from './BreakpointConfigComponent';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
@@ -46,7 +46,6 @@ import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {setNotificationService, setOutputService} from './AtomServiceContainer';
-import {DebuggerMode} from './DebuggerStore';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {DebuggerLayoutManager} from './DebuggerLayoutManager';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';

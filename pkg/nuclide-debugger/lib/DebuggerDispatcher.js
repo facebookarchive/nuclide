@@ -10,13 +10,11 @@
  */
 
 import type {
-  NuclideDebuggerProvider,
-  NuclideEvaluationExpressionProvider,
-} from 'nuclide-debugger-common';
-import type {
   ControlButtonSpecification,
   DebuggerProcessInfo,
   DebuggerInstanceInterface,
+  NuclideDebuggerProvider,
+  NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {
   Callstack,

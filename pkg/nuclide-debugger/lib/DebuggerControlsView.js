@@ -15,7 +15,7 @@ import * as React from 'react';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import DebuggerControllerView from './DebuggerControllerView';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
@@ -125,12 +125,7 @@ export class DebuggerControlsView extends React.PureComponent<
     return (
       <div className="nuclide-debugger-container-new">
         <div className="nuclide-debugger-section-header">
-          <DebuggerControllerView
-            store={model.getStore()}
-            bridge={model.getBridge()}
-            breakpointStore={model.getBreakpointStore()}
-            stopDebugging={this._stopDebugging}
-          />
+          <DebuggerControllerView store={model.getStore()} />
         </div>
         <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
           <DebuggerSteppingComponent

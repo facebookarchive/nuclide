@@ -9,9 +9,9 @@
  * @format
  */
 
-import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
 
+import classnames from 'classnames';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -41,6 +41,7 @@ export class WatchView extends React.PureComponent<Props> {
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this
       ._watchExpressionComponentWrapped;
+    const watchExpressionStore = model.getWatchExpressionStore();
 
     return (
       <div className={classnames('nuclide-debugger-container-new')}>
@@ -49,7 +50,9 @@ export class WatchView extends React.PureComponent<Props> {
             onAddWatchExpression={actions.addWatchExpression.bind(model)}
             onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
             onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-            watchExpressionStore={model.getWatchExpressionStore()}
+            getProperties={watchExpressionStore.getProperties.bind(
+              watchExpressionStore,
+            )}
           />
         </div>
       </div>

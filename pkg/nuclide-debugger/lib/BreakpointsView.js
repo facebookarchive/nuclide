@@ -19,10 +19,6 @@ type Props = {
 };
 
 export class BreakpointsView extends React.PureComponent<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
-
   render(): React.Node {
     const {model} = this.props;
     const actions = model.getActions();

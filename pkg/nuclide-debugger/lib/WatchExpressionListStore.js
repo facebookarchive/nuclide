@@ -22,7 +22,7 @@ import type {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 
 export class WatchExpressionListStore {
   _watchExpressionStore: WatchExpressionStore;

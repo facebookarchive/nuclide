@@ -17,7 +17,7 @@ import * as React from 'react';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {ScopesComponent} from './ScopesComponent';
 import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 
 type Props = {
   model: DebuggerModel,

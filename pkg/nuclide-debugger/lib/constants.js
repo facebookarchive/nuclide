@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {DebuggerModeType} from './types';
+
 export const AnalyticsEvents = Object.freeze({
   DEBUGGER_BREAKPOINT_ADD: 'debugger-breakpoint-add',
   DEBUGGER_BREAKPOINT_DELETE: 'debugger-breakpoint-delete',
@@ -39,3 +41,14 @@ export const AnalyticsEvents = Object.freeze({
   DEBUGGER_EDIT_BREAKPOINT_FROM_ICON: 'debugger-edit-breakpoint-from-icon',
   DEBUGGER_DELETE_BREAKPOINT_FROM_ICON: 'debugger-delete-breakpoint-from-icon',
 });
+
+export const DebuggerMode = Object.freeze({
+  STARTING: 'starting',
+  RUNNING: 'running',
+  PAUSED: 'paused',
+  STOPPING: 'stopping',
+  STOPPED: 'stopped',
+});
+
+// This is to work around flow's missing support of enums.
+(DebuggerMode: {[key: string]: DebuggerModeType});

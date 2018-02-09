@@ -18,7 +18,7 @@ import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 
 export default class ThreadStore {
   _disposables: IDisposable;

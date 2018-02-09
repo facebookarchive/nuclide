@@ -22,7 +22,7 @@ import invariant from 'assert';
 import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ActionTypes} from './DebuggerDispatcher';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import {DebuggerStore} from './DebuggerStore';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 

@@ -40,7 +40,7 @@ import {
   endTimerTracking,
 } from './AnalyticsHelper';
 import invariant from 'assert';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');

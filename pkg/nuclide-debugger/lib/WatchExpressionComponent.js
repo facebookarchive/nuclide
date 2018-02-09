@@ -14,7 +14,6 @@ import type {
   EvaluatedExpression,
   EvaluatedExpressionList,
 } from './types';
-import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
 import * as React from 'react';
@@ -31,7 +30,7 @@ type Props = {
   onAddWatchExpression: (expression: string) => void,
   onRemoveWatchExpression: (index: number) => void,
   onUpdateWatchExpression: (index: number, newExpression: string) => void,
-  watchExpressionStore: WatchExpressionStore,
+  getProperties: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 type State = {
@@ -175,12 +174,9 @@ export class WatchExpressionComponent extends React.PureComponent<
   };
 
   render(): React.Node {
-    const {watchExpressions, watchExpressionStore} = this.props;
-    const fetchChildren = watchExpressionStore.getProperties.bind(
-      watchExpressionStore,
-    );
+    const {watchExpressions, getProperties} = this.props;
     const expressions = watchExpressions.map(
-      this._renderExpression.bind(this, fetchChildren),
+      this._renderExpression.bind(this, getProperties),
     );
     const addNewExpressionInput = (
       <AtomInput

@@ -27,7 +27,7 @@ import type {
 import {Subject} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import invariant from 'assert';
 import CommandDispatcher from './CommandDispatcher';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';

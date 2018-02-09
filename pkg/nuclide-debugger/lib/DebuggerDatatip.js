@@ -15,7 +15,7 @@ import type DebuggerModel from './DebuggerModel';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getDefaultEvaluationExpression} from 'nuclide-debugger-common';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 
 function getEvaluationExpression(

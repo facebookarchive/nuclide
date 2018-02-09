@@ -16,7 +16,7 @@ import type {DebuggerModeType} from './types';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
 import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import DebuggerModel from './DebuggerModel';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import invariant from 'assert';
 import {__DEV__} from '../../commons-node/runtime-info';
 import createPaneContainer from '../../commons-atom/create-pane-container';

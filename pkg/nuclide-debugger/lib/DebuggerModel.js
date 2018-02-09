@@ -24,7 +24,6 @@ import Bridge from './Bridge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import DebuggerDispatcher from './DebuggerDispatcher';
 import {DebuggerPauseController} from './DebuggerPauseController';
-import EventEmitter from 'events';
 
 import type {SerializedState} from '..';
 
@@ -39,7 +38,6 @@ export default class DebuggerModel {
   _breakpointManager: BreakpointManager;
   _breakpointStore: BreakpointStore;
   _dispatcher: DebuggerDispatcher;
-  _emitter: EventEmitter;
   _store: DebuggerStore;
   _watchExpressionStore: WatchExpressionStore;
   _watchExpressionListStore: WatchExpressionListStore;
@@ -53,7 +51,6 @@ export default class DebuggerModel {
 
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
-    this._emitter = new EventEmitter();
     const pauseOnException = state != null ? state.pauseOnException : true;
     const pauseOnCaughtException =
       state != null ? state.pauseOnCaughtException : false;
@@ -120,10 +117,6 @@ export default class DebuggerModel {
     this._disposables.dispose();
   }
 
-  getLaunchAttachActionEventEmitter(): EventEmitter {
-    return this._emitter;
-  }
-
   getActions(): DebuggerActions {
     return this._actions;
   }
@@ -178,5 +171,14 @@ export default class DebuggerModel {
 
   getPreferredWidth(): number {
     return 500;
+  }
+
+  selectThread(threadId: string): void {
+    this._bridge.selectThread(threadId);
+  }
+
+  setSelectedCallFrameIndex(callFrameIndex: number): void {
+    this._bridge.setSelectedCallFrameIndex(callFrameIndex);
+    this._actions.setSelectedCallFrameIndex(callFrameIndex);
   }
 }

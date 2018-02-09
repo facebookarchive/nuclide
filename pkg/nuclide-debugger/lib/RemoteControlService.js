@@ -20,7 +20,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import nullthrows from 'nullthrows';
 import * as terminalUri from '../../commons-node/nuclide-terminal-uri';
 

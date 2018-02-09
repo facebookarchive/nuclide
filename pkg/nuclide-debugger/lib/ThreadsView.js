@@ -17,7 +17,7 @@ import * as React from 'react';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
 import type {ThreadColumn} from 'nuclide-debugger-common';
 import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 
 type Props = {
   model: DebuggerModel,
@@ -76,12 +76,14 @@ export class ThreadsView extends React.PureComponent<
         ? ''
         : ' nuclide-debugger-container-new-disabled';
 
+    const selectThread = model.selectThread.bind(model);
+
     return (
       <div
         className={classnames('nuclide-debugger-container-new', disabledClass)}>
         <div className="nuclide-debugger-pane-content">
           <DebuggerThreadsComponent
-            bridge={this.props.model.getBridge()}
+            selectThread={selectThread}
             threadStore={model.getThreadStore()}
             customThreadColumns={customThreadColumns}
             threadName={threadsComponentTitle}

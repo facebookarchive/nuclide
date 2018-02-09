@@ -16,15 +16,14 @@ import type CallstackStore from './CallstackStore';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import Bridge from './Bridge';
 import {Table} from 'nuclide-commons-ui/Table';
 import classnames from 'classnames';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,
-  bridge: Bridge,
   callstackStore: CallstackStore,
+  setSelectedCallFrameIndex: (callFrameIndex: number) => void,
 };
 
 type DebuggerCallstackComponentState = {
@@ -110,8 +109,7 @@ export class DebuggerCallstackComponent extends React.Component<
     clickedCallframe: ?CallstackItem,
     callFrameIndex: number,
   ): void => {
-    this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
-    this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
+    this.props.setSelectedCallFrameIndex(callFrameIndex);
   };
 
   render(): React.Node {

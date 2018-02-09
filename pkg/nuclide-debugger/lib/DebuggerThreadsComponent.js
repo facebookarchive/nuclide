@@ -12,7 +12,6 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import type {ThreadItem} from './types';
-import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';
 import type {ThreadColumn} from 'nuclide-debugger-common';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -27,7 +26,7 @@ import debounce from 'nuclide-commons/debounce';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 type Props = {|
-  +bridge: Bridge,
+  +selectThread: (threadId: string) => void,
   +threadStore: ThreadStore,
   +customThreadColumns: Array<ThreadColumn>,
   +threadName: string,
@@ -113,7 +112,7 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
   }
 
   _handleSelectThread = (data: ThreadItem): void => {
-    this.props.bridge.selectThread(data.id);
+    this.props.selectThread(data.id);
   };
 
   _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {

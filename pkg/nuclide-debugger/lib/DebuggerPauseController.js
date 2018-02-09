@@ -9,7 +9,8 @@
  * @format
  */
 
-import {DebuggerStore, DebuggerMode} from './DebuggerStore';
+import {DebuggerStore} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 import {getNotificationService} from './AtomServiceContainer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

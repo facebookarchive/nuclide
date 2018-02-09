@@ -9,13 +9,14 @@
  * @format
  */
 
-import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
+import type {DebuggerModeType} from './types';
+
+import classnames from 'classnames';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
-import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
+import {DebuggerMode} from './constants';
 
 type Props = {
   model: DebuggerModel,
@@ -72,7 +73,9 @@ export class CallstackView extends React.PureComponent<
         <div className="nuclide-debugger-pane-content">
           <DebuggerCallstackComponent
             actions={actions}
-            bridge={model.getBridge()}
+            setSelectedCallFrameIndex={model.setSelectedCallFrameIndex.bind(
+              model,
+            )}
             callstackStore={model.getCallstackStore()}
           />
         </div>
