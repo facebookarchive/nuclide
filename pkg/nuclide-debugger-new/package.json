@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-debugger",
+  "name": "nuclide-debugger-new",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Allows debugging of various types of process from within Nuclide",
@@ -72,13 +72,13 @@
         "0.0.0": "consumeCurrentWorkingDirectory"
       }
     },
-    "DEPRECATED-nuclide-output": {
+    "console": {
       "versions": {
-        "0.0.0": "consumeOutputService"
+        "0.1.0": "consumeConsole"
       }
     }
   },
   "activationHooks": [
-    "!nuclide_vsp_debugger_core:gk:nuclide"
+    "nuclide_vsp_debugger_core:gk:nuclide"
   ]
 }
