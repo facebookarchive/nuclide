@@ -166,8 +166,11 @@ export default class DebuggerSteppingComponent extends React.Component<
   render(): React.Node {
     const {debuggerMode, waitingForPause, customControlButtons} = this.state;
     const {service} = this.props;
-    const {focusedThread} = service.viewModel;
-    const isReadonlyTarget = false;
+    const {focusedThread, focusedProcess} = service.viewModel;
+    const isReadonlyTarget =
+      focusedProcess == null
+        ? false
+        : focusedProcess.configuration.capabilities.readOnlyTarget;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;

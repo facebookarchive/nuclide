@@ -469,9 +469,11 @@ class Activation {
     return disposable;
   }
 
-  _isReadonlyTarget() {
-    // TODO
-    return false;
+  _isReadonlyTarget(): boolean {
+    const {focusedProcess} = this._service.viewModel;
+    return focusedProcess == null
+      ? false
+      : focusedProcess.configuration.capabilities.readOnlyTarget;
   }
 
   _continue() {
