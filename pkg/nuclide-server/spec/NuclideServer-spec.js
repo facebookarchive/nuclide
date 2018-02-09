@@ -18,6 +18,8 @@ import invariant from 'assert';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
+const HEARTBEAT_CHANNEL = 'test-heartbeat';
+
 let server;
 let client;
 let socket;
@@ -29,7 +31,11 @@ describe('Nuclide Server test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
-      socket = new NuclideSocket('http://localhost:8176', null);
+      socket = new NuclideSocket(
+        'http://localhost:8176',
+        HEARTBEAT_CHANNEL,
+        null,
+      );
       client = RpcConnection.createRemote(
         socket,
         [getRemoteNuclideUriMarshalers('localhost')],

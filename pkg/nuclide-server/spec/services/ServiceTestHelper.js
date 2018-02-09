@@ -18,6 +18,8 @@ import {getRemoteNuclideUriMarshalers} from '../../../nuclide-marshalers-common'
 
 type Services = Array<ConfigEntry>;
 
+const HEARTBEAT_CHANNEL = 'test-heartbeat';
+
 export default class ServiceTestHelper {
   _server: NuclideServer;
   _client: RpcConnection<NuclideSocket>;
@@ -28,7 +30,7 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = RpcConnection.createRemote(
-      new NuclideSocket(`http://localhost:${port}`, null),
+      new NuclideSocket(`http://localhost:${port}`, HEARTBEAT_CHANNEL, null),
       [getRemoteNuclideUriMarshalers('localhost')],
       customServices,
     );

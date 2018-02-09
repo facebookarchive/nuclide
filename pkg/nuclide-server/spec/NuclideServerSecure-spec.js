@@ -23,6 +23,8 @@ import invariant from 'assert';
 import child_process from 'child_process';
 import nullthrows from 'nullthrows';
 
+const HEARTBEAT_CHANNEL = 'test-heartbeat';
+
 let server;
 let socket;
 
@@ -60,7 +62,7 @@ describe('Nuclide Secure Server test suite', () => {
 
       await server.connect();
 
-      socket = new NuclideSocket('https://localhost:8176', {
+      socket = new NuclideSocket('https://localhost:8176', HEARTBEAT_CHANNEL, {
         ca: fs.readFileSync(ca_cert_path),
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),

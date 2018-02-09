@@ -17,7 +17,6 @@ import url from 'url';
 import WS from 'ws';
 import uuid from 'uuid';
 import {Emitter} from 'event-kit';
-import {HEARTBEAT_CHANNEL} from './NuclideServer';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
@@ -65,15 +64,18 @@ export class NuclideSocket {
   _emitter: Emitter;
   _transport: ?QueuedAckTransport;
   _heartbeat: XhrConnectionHeartbeat;
+  _heartbeatChannel: string;
 
   constructor(
     serverUri: string,
+    heartbeatChannel: string,
     options: ?AgentOptions,
     protocolLogger: ?ProtocolLogger,
   ) {
     this._emitter = new Emitter();
     this._serverUri = serverUri;
     this._options = options;
+    this._heartbeatChannel = heartbeatChannel;
     // TODO: ACK can be removed after the release of 0.282.
     this.id = 'ACK' + uuid.v4();
     this._pingTimer = null;
@@ -98,7 +100,7 @@ export class NuclideSocket {
 
     this._heartbeat = new XhrConnectionHeartbeat(
       serverUri,
-      HEARTBEAT_CHANNEL,
+      this._heartbeatChannel,
       options,
     );
     this._heartbeat.onConnectionRestored(() => {

@@ -16,6 +16,8 @@ import servicesConfig from '../lib/servicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import invariant from 'assert';
 
+const HEARTBEAT_CHANNEL = 'test-heartbeat';
+
 let server: NuclideServer;
 let socket: NuclideSocket;
 let serverSocketClient: RpcConnection<any>;
@@ -27,7 +29,11 @@ xdescribe('NuclideSocket test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
-      socket = new NuclideSocket('http://localhost:8176', null);
+      socket = new NuclideSocket(
+        'http://localhost:8176',
+        HEARTBEAT_CHANNEL,
+        null,
+      );
 
       const clientId = Array.from(server._clients.keys())[0];
       const client = server._clients.get(clientId);
