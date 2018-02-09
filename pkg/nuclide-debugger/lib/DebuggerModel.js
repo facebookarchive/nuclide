@@ -10,6 +10,10 @@
  */
 
 import type {DatatipService} from 'atom-ide-ui';
+import type {
+  DebuggerLaunchAttachProvider,
+  NuclideDebuggerProvider,
+} from 'nuclide-debugger-common';
 import type {DebuggerAction} from './DebuggerDispatcher';
 import type {
   Callstack,
@@ -19,7 +23,6 @@ import type {
 } from './types';
 
 import * as React from 'react';
-import {DebuggerProviderStore} from './DebuggerProviderStore';
 import BreakpointManager from './BreakpointManager';
 import BreakpointStore from './BreakpointStore';
 import DebuggerActions from './DebuggerActions';
@@ -27,7 +30,6 @@ import {DebuggerStore} from './DebuggerStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import ScopesStore from './ScopesStore';
 import {WatchExpressionListStore} from './WatchExpressionListStore';
-import DebuggerActionsStore from './DebuggerActionsStore';
 import Bridge from './Bridge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import DebuggerDispatcher from './DebuggerDispatcher';
@@ -42,8 +44,11 @@ import {DebuggerMode} from './constants';
 import type {SerializedState} from '..';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
+
 const CALLSTACK_CHANGE_EVENT = 'CALLSTACK_CHANGE_EVENT';
 const THREADS_CHANGED_EVENT = 'THREADS_CHANGED_EVENT';
+const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
+const PROVIDERS_UPDATED_EVENT = 'PROVIDERS_UPDATED_EVENT';
 
 /**
  * Atom ViewProvider compatible model object.
@@ -57,8 +62,6 @@ export default class DebuggerModel {
   _store: DebuggerStore;
   _watchExpressionStore: WatchExpressionStore;
   _watchExpressionListStore: WatchExpressionListStore;
-  _debuggerProviderStore: DebuggerProviderStore;
-  _debuggerActionStore: DebuggerActionsStore;
   _scopesStore: ScopesStore;
   _bridge: Bridge;
   _debuggerPauseController: DebuggerPauseController;
@@ -79,6 +82,10 @@ export default class DebuggerModel {
   _threadChangeDatatip: ?IDisposable;
   _threadsReloading: boolean;
 
+  // Debugger providers
+  _debuggerProviders: Set<NuclideDebuggerProvider>;
+  _connections: Array<string>;
+
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
     this._callstack = null;
@@ -92,6 +99,9 @@ export default class DebuggerModel {
     this._stopThreadId = 0;
     this._threadsReloading = false;
     this._debuggerMode = DebuggerMode.STOPPED;
+    this._debuggerProviders = new Set();
+    // There is always a local connection.
+    this._connections = ['local'];
 
     // Debounce calls to _openPathInEditor to work around an Atom bug that causes
     // two editor windows to be opened if multiple calls to atom.workspace.open
@@ -118,10 +128,6 @@ export default class DebuggerModel {
       this._actions,
     );
     this._bridge = new Bridge(this);
-    this._debuggerProviderStore = new DebuggerProviderStore(
-      this._dispatcher,
-      this._actions,
-    );
     this._watchExpressionStore = new WatchExpressionStore(
       this._dispatcher,
       this._bridge,
@@ -130,10 +136,6 @@ export default class DebuggerModel {
       this._watchExpressionStore,
       this._dispatcher,
       state != null ? state.watchExpressions : null, // serialized watch expressions
-    );
-    this._debuggerActionStore = new DebuggerActionsStore(
-      this._dispatcher,
-      this._bridge,
     );
     this._scopesStore = new ScopesStore(
       this._dispatcher,
@@ -151,9 +153,7 @@ export default class DebuggerModel {
       this._breakpointStore,
       this._breakpointManager,
       this._bridge,
-      this._debuggerProviderStore,
       this._watchExpressionStore,
-      this._debuggerActionStore,
       this._scopesStore,
       this._debuggerPauseController,
       () => {
@@ -161,7 +161,14 @@ export default class DebuggerModel {
         this._clearSelectedCallFrameMarker();
         this._cleanUpDatatip();
       },
+      this._listenForProjectChange(),
     );
+  }
+
+  _listenForProjectChange(): IDisposable {
+    return atom.project.onDidChangePaths(() => {
+      this._actions.updateConnections();
+    });
   }
 
   dispose() {
@@ -182,10 +189,6 @@ export default class DebuggerModel {
 
   getWatchExpressionListStore(): WatchExpressionListStore {
     return this._watchExpressionListStore;
-  }
-
-  getDebuggerProviderStore(): DebuggerProviderStore {
-    return this._debuggerProviderStore;
   }
 
   getBreakpointStore(): BreakpointStore {
@@ -286,6 +289,36 @@ export default class DebuggerModel {
         }
         this._debuggerMode = payload.data;
         this._emitter.emit(THREADS_CHANGED_EVENT);
+        break;
+      case ActionTypes.SET_PROCESS_SOCKET:
+        const {data} = payload;
+        if (data == null) {
+          this._bridge.leaveDebugMode();
+        } else {
+          this._bridge.enterDebugMode();
+          this._bridge.setupChromeChannel();
+          this._bridge.enableEventsListening();
+        }
+        break;
+      case ActionTypes.TRIGGER_DEBUGGER_ACTION:
+        this._bridge.triggerAction(payload.data.actionId);
+        break;
+      case ActionTypes.ADD_DEBUGGER_PROVIDER:
+        if (this._debuggerProviders.has(payload.data)) {
+          return;
+        }
+        this._debuggerProviders.add(payload.data);
+        this._emitter.emit(PROVIDERS_UPDATED_EVENT);
+        break;
+      case ActionTypes.REMOVE_DEBUGGER_PROVIDER:
+        if (!this._debuggerProviders.has(payload.data)) {
+          return;
+        }
+        this._debuggerProviders.delete(payload.data);
+        break;
+      case ActionTypes.UPDATE_CONNECTIONS:
+        this._connections = payload.data;
+        this._emitter.emit(CONNECTIONS_UPDATED_EVENT);
         break;
       default:
         return;
@@ -498,5 +531,37 @@ export default class DebuggerModel {
         {message}
       </div>
     );
+  }
+
+  /**
+   * Subscribe to new connection updates from DebuggerActions.
+   */
+  onConnectionsUpdated(callback: () => void): IDisposable {
+    return this._emitter.on(CONNECTIONS_UPDATED_EVENT, callback);
+  }
+
+  onProvidersUpdated(callback: () => void): IDisposable {
+    return this._emitter.on(PROVIDERS_UPDATED_EVENT, callback);
+  }
+
+  getConnections(): Array<string> {
+    return this._connections;
+  }
+
+  /**
+   * Return available launch/attach provider for input connection.
+   * Caller is responsible for disposing the results.
+   */
+  getLaunchAttachProvidersForConnection(
+    connection: string,
+  ): Array<DebuggerLaunchAttachProvider> {
+    const availableLaunchAttachProviders = [];
+    for (const provider of this._debuggerProviders) {
+      const launchAttachProvider = provider.getLaunchAttachProvider(connection);
+      if (launchAttachProvider != null) {
+        availableLaunchAttachProviders.push(launchAttachProvider);
+      }
+    }
+    return availableLaunchAttachProviders;
   }
 }

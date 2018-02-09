@@ -29,10 +29,10 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
 const BREAKPOINT_NEED_UI_UPDATE = 'BREAKPOINT_NEED_UI_UPDATE';
-const BREAKPOINT_USER_CHANGED = 'breakpoint_user_changed';
+const BREAKPOINT_USER_CHANGED = 'BREAKPOINT_USER_CHANGED';
 
-const ADDBREAKPOINT_ACTION = 'AddBreakpoint';
-const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
+const ADD_BREAKPOINT_ACTION = 'AddBreakpoint';
+const DELETE_BREAKPOINT_ACTION = 'DeleteBreakpoint';
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.
@@ -153,7 +153,7 @@ export default class BreakpointStore {
     this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
     if (userAction) {
       this._emitter.emit(BREAKPOINT_USER_CHANGED, {
-        action: ADDBREAKPOINT_ACTION,
+        action: ADD_BREAKPOINT_ACTION,
         breakpoint,
       });
     }
@@ -253,7 +253,7 @@ export default class BreakpointStore {
       this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
       if (userAction) {
         this._emitter.emit(BREAKPOINT_USER_CHANGED, {
-          action: DELETEBREAKPOINT_ACTION,
+          action: DELETE_BREAKPOINT_ACTION,
           breakpoint,
         });
       }

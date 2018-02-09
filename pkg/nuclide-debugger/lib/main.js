@@ -26,7 +26,6 @@ import type {
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
@@ -109,9 +108,8 @@ class Activation {
           this._model.getActions().stopDebugging();
         }
       }),
-      this._model.getDebuggerProviderStore().onConnectionsUpdated(() => {
-        const store = this._model.getDebuggerProviderStore();
-        const newConnections = store.getConnections();
+      this._model.onConnectionsUpdated(() => {
+        const newConnections = this._model.getConnections();
         const keys = Array.from(this._connectionProviders.keys());
 
         const removedConnections = keys.filter(
@@ -131,14 +129,13 @@ class Activation {
         }
 
         for (const connection of addedConnections) {
-          this._setProvidersForConnection(store, connection);
+          this._setProvidersForConnection(connection);
         }
       }),
-      this._model.getDebuggerProviderStore().onProvidersUpdated(() => {
-        const store = this._model.getDebuggerProviderStore();
-        const connections = store.getConnections();
+      this._model.onProvidersUpdated(() => {
+        const connections = this._model.getConnections();
         for (const connection of connections) {
-          this._setProvidersForConnection(store, connection);
+          this._setProvidersForConnection(connection);
         }
       }),
       // Commands.
@@ -397,14 +394,11 @@ class Activation {
     return store.getBreakpointAtLine(path, line);
   }
 
-  _setProvidersForConnection(
-    store: DebuggerProviderStore,
-    connection: NuclideUri,
-  ): void {
+  _setProvidersForConnection(connection: NuclideUri): void {
     const key = nuclideUri.isRemote(connection)
       ? nuclideUri.getHostname(connection)
       : 'local';
-    const availableProviders = store.getLaunchAttachProvidersForConnection(
+    const availableProviders = this._model.getLaunchAttachProvidersForConnection(
       connection,
     );
     this._connectionProviders.set(key, availableProviders);
@@ -696,7 +690,6 @@ class Activation {
     invariant(this._selectedDebugConnection != null);
 
     const options = this._model
-      .getDebuggerProviderStore()
       .getConnections()
       .map(connection => {
         const displayName = nuclideUri.isRemote(connection)
@@ -716,8 +709,7 @@ class Activation {
     ReactDOM.render(
       <DebuggerLaunchAttachUI
         dialogMode={dialogMode}
-        store={this._model.getDebuggerProviderStore()}
-        debuggerActions={this._model.getActions()}
+        model={this._model}
         connectionChanged={(newValue: ?string) => {
           this._selectedDebugConnection = newValue;
           this._renderConfigDialog(panel, dialogMode, dialogCloser);

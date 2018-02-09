@@ -10,10 +10,8 @@
  */
 /* global localStorage */
 
-import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-import type DebuggerActions from './DebuggerActions';
 
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -27,11 +25,6 @@ import invariant from 'assert';
 
 type PropsType = {
   dialogMode: DebuggerConfigAction,
-  // TODO: Remove disable
-  /* eslint-disable react/no-unused-prop-types */
-  store: DebuggerProviderStore,
-  debuggerActions: DebuggerActions,
-  /* eslint-enable react/no-unused-prop-types */
   connection: string,
   connectionChanged: (newValue: ?string) => void,
   // $FlowFixMe

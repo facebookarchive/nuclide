@@ -9,8 +9,9 @@
  * @format
  */
 
-import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
+
+import classnames from 'classnames';
 import * as React from 'react';
 import {BreakpointListComponent} from './BreakpointListComponent';
 
