@@ -193,13 +193,14 @@ export function build(
 export async function getOwners(
   rootPath: NuclideUri,
   filePath: NuclideUri,
+  extraArguments: Array<string>,
   kindFilter?: string,
 ): Promise<Array<string>> {
   let queryString = `owner("${shellQuote([filePath])}")`;
   if (kindFilter != null) {
     queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
   }
-  return query(rootPath, queryString);
+  return query(rootPath, queryString, extraArguments);
 }
 
 export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
@@ -239,8 +240,9 @@ export async function runBuckCommandFromProjectRoot(
 export async function query(
   rootPath: NuclideUri,
   queryString: string,
+  extraArguments: Array<string>,
 ): Promise<Array<string>> {
-  const args = ['query', '--json', queryString];
+  const args = ['query', ...extraArguments, '--json', queryString];
   const result = await runBuckCommandFromProjectRoot(rootPath, args);
   const json: Array<string> = JSON.parse(result);
   return json;
@@ -251,7 +253,7 @@ export async function getBuildFile(
   targetName: string,
 ): Promise<?string> {
   try {
-    const result = await query(rootPath, `buildfile(${targetName})`);
+    const result = await query(rootPath, `buildfile(${targetName})`, []);
     if (result.length === 0) {
       return null;
     }

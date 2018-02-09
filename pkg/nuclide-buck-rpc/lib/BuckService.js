@@ -145,14 +145,21 @@ export function getBuildFile(
  *
  * @param filePath absolute path or a local or a remote file.
  * @param kindFilter filter for specific build target kinds.
+ * @param extraArguments passed on the command line to buck query
  * @return Promise that resolves to an array of build targets.
  */
 export function getOwners(
   rootPath: NuclideUri,
   filePath: NuclideUri,
+  extraArguments: Array<string>,
   kindFilter?: string,
 ): Promise<Array<string>> {
-  return BuckServiceImpl.getOwners(rootPath, filePath, kindFilter);
+  return BuckServiceImpl.getOwners(
+    rootPath,
+    filePath,
+    extraArguments,
+    kindFilter,
+  );
 }
 
 /**
@@ -549,8 +556,9 @@ export async function getHTTPServerPort(rootPath: NuclideUri): Promise<number> {
 export function query(
   rootPath: NuclideUri,
   queryString: string,
+  extraArguments: Array<string>,
 ): Promise<Array<string>> {
-  return BuckServiceImpl.query(rootPath, queryString);
+  return BuckServiceImpl.query(rootPath, queryString, extraArguments);
 }
 
 /**

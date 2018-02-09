@@ -40,7 +40,7 @@ export default class LinkTreeManager {
     if (buckRoot == null) {
       return null;
     }
-    const owners = await BuckService.getOwners(buckRoot, src).catch(err => {
+    const owners = await BuckService.getOwners(buckRoot, src, []).catch(err => {
       logger.error(`Failed to get Buck owner for ${src}`, err);
       return [];
     });

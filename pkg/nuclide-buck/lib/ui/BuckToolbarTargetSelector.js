@@ -110,7 +110,7 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
       buckService == null
         ? Promise.resolve([])
         : buckService
-            .getOwners(buckRoot, path)
+            .getOwners(buckRoot, path, [])
             .then(
               // Strip off the optional leading "//" to match typical user input.
               owners =>

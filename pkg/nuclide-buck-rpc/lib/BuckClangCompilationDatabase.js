@@ -126,6 +126,7 @@ class BuckClangCompilationDatabaseHandler {
       queryTarget = (await BuckService.getOwners(
         buckRoot,
         src,
+        [],
         TARGET_KIND_REGEX,
       )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
     } catch (err) {
