@@ -18,9 +18,10 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService, getPrepackLaunchProcessInfo} from './utils';
+import {getPrepackLaunchProcessInfo} from './utils';
 
 function getActiveScriptPath(): string {
   const center = atom.workspace.getCenter

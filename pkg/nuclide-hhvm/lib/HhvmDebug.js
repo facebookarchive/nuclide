@@ -11,8 +11,7 @@
 
 import type {DebugMode} from './types';
 
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-
+import {getDebuggerService} from '../../commons-atom/debugger';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
@@ -60,6 +59,6 @@ export async function debug(
     atom.views.getView(atom.workspace),
     'nuclide-debugger:show',
   );
-  const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
+  const debuggerService = await getDebuggerService();
   await debuggerService.startDebugging(processInfo);
 }

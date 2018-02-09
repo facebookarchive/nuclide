@@ -22,7 +22,8 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
-import {getDebuggerService, getOCamlLaunchProcessInfo} from './utils';
+import {getDebuggerService} from '../../commons-atom/debugger';
+import {getOCamlLaunchProcessInfo} from './utils';
 
 type PropsType = {
   targetUri: NuclideUri,

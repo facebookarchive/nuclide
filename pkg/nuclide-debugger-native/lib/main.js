@@ -15,6 +15,7 @@ import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {PlatformGroup} from '../../nuclide-buck/lib/types';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
@@ -33,8 +34,6 @@ import {getConfig} from './utils';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
@@ -277,14 +276,10 @@ class Activation {
     });
   }
 
-  async _getDebuggerService(): Promise<RemoteControlService> {
-    return consumeFirstProvider('nuclide-debugger.remote');
-  }
-
   async _debugPidWithLLDB(pid: number, buckRoot: string): Promise<void> {
     const attachInfo = await this._getAttachProcessInfoFromPid(pid, buckRoot);
     invariant(attachInfo);
-    const debuggerService = await this._getDebuggerService();
+    const debuggerService = await getDebuggerService();
     debuggerService.startDebugging(attachInfo);
   }
 
@@ -356,7 +351,7 @@ class Activation {
       lldbPythonPath: null,
     });
 
-    const debuggerService = await this._getDebuggerService();
+    const debuggerService = await getDebuggerService();
     await debuggerService.startDebugging(info);
     return remoteOutputPath;
   }

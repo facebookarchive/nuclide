@@ -22,6 +22,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import nullthrows from 'nullthrows';
+import * as terminalUri from '../../commons-node/nuclide-terminal-uri';
 
 export default class RemoteControlService {
   _getModel: () => ?DebuggerModel;
@@ -46,22 +47,6 @@ export default class RemoteControlService {
     await model.getActions().startDebugging(processInfo);
   }
 
-  toggleBreakpoint(filePath: string, line: number): void {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-    model.getActions().toggleBreakpoint(filePath, line);
-  }
-
-  addBreakpoint(filePath: string, line: number): void {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-    model.getActions().addBreakpoint(filePath, line);
-  }
-
   isInDebuggingMode(providerName: string): boolean {
     const model = this._getModel();
     if (model == null) {
@@ -79,7 +64,7 @@ export default class RemoteControlService {
     return model.getStore().getDebuggerInstance();
   }
 
-  killDebugger(): void {
+  _killDebugger(): void {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -87,22 +72,9 @@ export default class RemoteControlService {
     model.getActions().stopDebugging();
   }
 
-  getTerminal(): any {
-    try {
-      // $FlowFB
-      const terminalUri = require('../../commons-node/nuclide-terminal-uri');
-      return terminalUri;
-    } catch (_) {
-      return null;
-    }
-  }
-
   canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {
     // The terminal is not supported on Windows.
-    return (
-      (nuclideUri.isRemote(targetUri) || process.platform !== 'win32') &&
-      this.getTerminal() != null
-    );
+    return nuclideUri.isRemote(targetUri) || process.platform !== 'win32';
   }
 
   async launchDebugTargetInTerminal(
@@ -112,11 +84,6 @@ export default class RemoteControlService {
     cwd: NuclideUri,
     environmentVariables: Map<string, string>,
   ): Promise<boolean> {
-    const terminalUri = this.getTerminal();
-    if (terminalUri == null) {
-      return false;
-    }
-
     const key = `targetUri=${targetUri}&command=${command}`;
     const info = {
       cwd,
@@ -146,11 +113,11 @@ export default class RemoteControlService {
     // opening a new terminal tab. We don't want them to pile up if the
     // user keeps running the same app over and over.
     destroyItemWhere(item => {
-      if (item.getURI == null) {
+      if (item.getURI == null || item.getURI() == null) {
         return false;
       }
 
-      const uri = item.getURI();
+      const uri = nullthrows(item.getURI());
       try {
         // Only close terminal tabs with the same title and target binary.
         const otherInfo = terminalUri.infoFromUri(uri);
@@ -190,7 +157,7 @@ export default class RemoteControlService {
       // This callback is invoked if the target process dies first, ensuring
       // we tear down the debugger.
       disposable.dispose();
-      this.killDebugger();
+      this._killDebugger();
     });
 
     return true;

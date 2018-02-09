@@ -18,9 +18,10 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService, getPythonScriptLaunchProcessInfo} from './utils';
+import {getPythonScriptLaunchProcessInfo} from './utils';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

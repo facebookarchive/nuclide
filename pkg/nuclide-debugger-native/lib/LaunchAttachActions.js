@@ -16,13 +16,13 @@ import type {
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {ActionTypes} from './LaunchAttachDispatcher';
 
 const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
@@ -60,9 +60,7 @@ export class LaunchAttachActions {
   }
 
   async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
+    const debuggerService = await getDebuggerService();
     await debuggerService.startDebugging(processInfo);
   }
 

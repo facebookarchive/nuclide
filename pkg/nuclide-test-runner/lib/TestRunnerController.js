@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import Ansi from './Ansi';
 import {TextBuffer} from 'atom';
 import * as React from 'react';
@@ -23,7 +24,6 @@ import TestRunnerPanel from './ui/TestRunnerPanel';
 import TestSuiteModel from './TestSuiteModel';
 import os from 'os';
 import {track} from '../../nuclide-analytics';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-test-runner');
@@ -180,9 +180,7 @@ export class TestRunnerController {
   }
 
   async _isDebuggerAttached(debuggerProviderName: string): Promise<boolean> {
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
+    const debuggerService = await getDebuggerService();
     return debuggerService.isInDebuggingMode(debuggerProviderName);
   }
 

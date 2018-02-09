@@ -16,12 +16,12 @@ import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
 } from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
-import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {Adapter} from 'nuclide-debugger-vsps/main';
 import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
 
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import VspProcessInfo from './VspProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 // eslint-disable-next-line rulesdir/no-unresolved
@@ -30,7 +30,6 @@ import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 import {VSP_DEBUGGER_SERVICE_NAME} from './VspProcessInfo';
@@ -160,10 +159,6 @@ function getPythonAttachTargetConfig(
     port: target.port,
     host: '127.0.0.1',
   };
-}
-
-export function getDebuggerService(): Promise<RemoteControlService> {
-  return consumeFirstProvider('nuclide-debugger.remote');
 }
 
 function rootUriOfConnection(connection: ?ServerConnection): string {

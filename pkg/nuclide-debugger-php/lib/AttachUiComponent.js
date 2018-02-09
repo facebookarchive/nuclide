@@ -10,11 +10,11 @@
  */
 
 import * as React from 'react';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   serializeDebuggerConfig,
@@ -327,7 +327,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       nuclideUri.createRemoteUri(hostname, selectedPath),
       this.state.attachPort,
     );
-    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
+    getDebuggerService().then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );
 

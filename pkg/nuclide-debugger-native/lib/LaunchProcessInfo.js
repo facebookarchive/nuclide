@@ -21,6 +21,7 @@ import type {
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {PausedEvent} from 'nuclide-debugger-common/protocol-types';
 
@@ -32,8 +33,6 @@ import {DebuggerInstance} from 'nuclide-debugger-common';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import nullthrows from 'nullthrows';
 import passesGK from '../../commons-node/passesGK';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
@@ -130,9 +129,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<DebuggerInstanceInterface> {
     const rpcService = this._getRpcService();
-    const remoteService = nullthrows(
-      await consumeFirstProvider('nuclide-debugger.remote'),
-    );
+    const remoteService = await getDebuggerService();
 
     if (typeof this.basepath === 'string') {
       this._launchTargetInfo.basepath = this.basepath;

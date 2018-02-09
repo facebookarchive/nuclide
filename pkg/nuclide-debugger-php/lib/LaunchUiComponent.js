@@ -13,12 +13,12 @@
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   serializeDebuggerConfig,
@@ -261,7 +261,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       scriptArgs,
       cwdPath,
     );
-    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
+    getDebuggerService().then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );
 

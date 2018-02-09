@@ -22,13 +22,13 @@ import type {
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
 import {
   getPhpDebuggerServiceByNuclideUri,
   getHhvmDebuggerServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import logger from './utils';
 import {getSessionConfig} from './utils';
@@ -87,9 +87,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   async _hhvmDebug(): Promise<PhpDebuggerInstance> {
     const service = getHhvmDebuggerServiceByNuclideUri(this.getTargetUri());
     const hhvmDebuggerService = new service.HhvmDebuggerService();
-    const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
-    const deferLaunch =
-      this._useTerminal && remoteService.getTerminal() != null;
+    const remoteService = await getDebuggerService();
+    const deferLaunch = this._useTerminal;
 
     // Honor any PHP configuration the user has in Nuclide settings.
     const userConfig = (featureConfig.get('nuclide-debugger-php'): any);
@@ -196,9 +195,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       sessionConfig.launchWrapperCommand = this._launchWrapperCommand;
     }
 
-    const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
-    const deferLaunch = (sessionConfig.deferLaunch =
-      this._useTerminal && remoteService.getTerminal() != null);
+    const remoteService = await getDebuggerService();
+    const deferLaunch = (sessionConfig.deferLaunch = this._useTerminal);
 
     logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 

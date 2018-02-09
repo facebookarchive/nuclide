@@ -18,9 +18,9 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
+import {getDebuggerService} from '../../commons-atom/debugger';
 import ReactNativeCommonUiComponent from './ReactNativeCommonUiComponent';
 import {
-  getDebuggerService,
   getReactNativeAttachProcessInfo,
   REACT_NATIVE_PACKAGER_DEFAULT_PORT,
 } from './utils';
