@@ -22,7 +22,7 @@ import type {
 
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {registerConsoleLogging} from '../../nuclide-debugger';
+import {registerConsoleLogging} from '../../nuclide-debugger/lib/AtomServiceContainer';
 import invariant from 'assert';
 import {DebuggerInstance} from 'nuclide-debugger-common';
 import {getConfig} from './utils';

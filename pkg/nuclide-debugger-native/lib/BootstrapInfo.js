@@ -25,7 +25,7 @@ import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc
 import invariant from 'assert';
 import {DebuggerProcessInfo} from 'nuclide-debugger-common';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {registerConsoleLogging} from '../../nuclide-debugger';
+import {registerConsoleLogging} from '../../nuclide-debugger/lib/AtomServiceContainer';
 import {DebuggerInstance} from 'nuclide-debugger-common';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';

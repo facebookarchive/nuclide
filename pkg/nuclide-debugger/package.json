@@ -36,9 +36,6 @@
       }
     }
   },
-  "viewProviders": [
-    "createDebuggerView"
-  ],
   "consumedServices": {
     "DEPRECATED-nuclide.registerExecutor": {
       "versions": {

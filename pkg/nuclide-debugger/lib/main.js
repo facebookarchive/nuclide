@@ -32,6 +32,8 @@ import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/type
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {AnalyticsEvents, DebuggerMode} from './constants';
 import {BreakpointConfigComponent} from './BreakpointConfigComponent';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import {getBreakpointEventLocation, getLineForEvent} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 import invariant from 'assert';
@@ -65,100 +67,6 @@ export type SerializedState = {
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
-const SCREEN_ROW_ATTRIBUTE_NAME = 'data-screen-row';
-
-function getGutterLineNumber(target: HTMLElement): ?number {
-  const eventLine = parseInt(target.dataset.line, 10);
-  if (eventLine != null && eventLine >= 0 && !isNaN(Number(eventLine))) {
-    return eventLine;
-  }
-}
-
-function getBreakpointEventLocation(
-  target: HTMLElement,
-): ?{path: string, line: number} {
-  if (
-    target != null &&
-    target.dataset != null &&
-    target.dataset.path != null &&
-    target.dataset.line != null
-  ) {
-    return {path: target.dataset.path, line: parseInt(target.dataset.line, 10)};
-  }
-  return null;
-}
-
-function getEditorLineNumber(
-  editor: atom$TextEditor,
-  target: HTMLElement,
-): ?number {
-  let node = target;
-  while (node != null) {
-    if (node.hasAttribute(SCREEN_ROW_ATTRIBUTE_NAME)) {
-      const screenRow = Number(node.getAttribute(SCREEN_ROW_ATTRIBUTE_NAME));
-      try {
-        return editor.bufferPositionForScreenPosition([screenRow, 0]).row;
-      } catch (error) {
-        return null;
-      }
-    }
-    node = node.parentElement;
-  }
-}
-
-function firstNonNull(...args) {
-  return nullthrows(args.find(arg => arg != null));
-}
-
-function getLineForEvent(editor: atom$TextEditor, event: any): number {
-  const cursorLine = editor.getLastCursor().getBufferRow();
-  const target = event ? (event.target: HTMLElement) : null;
-  if (target == null) {
-    return cursorLine;
-  }
-  // toggleLine is the line the user clicked in the gutter next to, as opposed
-  // to the line the editor's cursor happens to be in. If this command was invoked
-  // from the menu, then the cursor position is the target line.
-  return firstNonNull(
-    getGutterLineNumber(target),
-    getEditorLineNumber(editor, target),
-    // fall back to the line the cursor is on.
-    cursorLine,
-  );
-}
-
-export function createAutocompleteProvider(): AtomAutocompleteProvider {
-  return {
-    analytics: {
-      eventName: 'nuclide-debugger',
-      shouldLogInsertedSuggestion: false,
-    },
-    labels: ['nuclide-console'],
-    selector: '*',
-    filterSuggestions: true,
-    async getSuggestions(request) {
-      return activation != null ? activation.getSuggestions(request) : null;
-    },
-  };
-}
-
-export function createDebuggerView(model: mixed): ?HTMLElement {
-  let view = null;
-  if (
-    model instanceof DebuggerPaneViewModel ||
-    model instanceof DebuggerPaneContainerViewModel
-  ) {
-    view = model.createView();
-  }
-
-  if (view != null) {
-    const elem = renderReactRoot(view);
-    elem.className = 'nuclide-debugger-container';
-    return elem;
-  }
-
-  return null;
-}
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -170,6 +78,11 @@ class Activation {
   _connectionProviders: Map<string, Array<DebuggerLaunchAttachProvider>>;
 
   constructor(state: ?SerializedState) {
+    atom.views.addViewProvider(DebuggerPaneViewModel, createDebuggerView);
+    atom.views.addViewProvider(
+      DebuggerPaneContainerViewModel,
+      createDebuggerView,
+    );
     this._model = new DebuggerModel(state);
     this._selectedDebugConnection = null;
     this._visibleLaunchAttachDialogMode = null;
@@ -1025,59 +938,118 @@ class Activation {
       this._disposables.remove(disposable);
     });
   }
-}
 
-function createDatatipProvider(): DatatipProvider {
-  if (datatipProvider == null) {
-    datatipProvider = {
+  createAutocompleteProvider(): AtomAutocompleteProvider {
+    return {
+      analytics: {
+        eventName: 'nuclide-debugger',
+        shouldLogInsertedSuggestion: false,
+      },
+      labels: ['nuclide-console'],
+      selector: '*',
+      filterSuggestions: true,
+      async getSuggestions(request) {
+        return this.getSuggestions(request);
+      },
+    };
+  }
+
+  consumeOutputService(api: OutputService): IDisposable {
+    return setOutputService(api);
+  }
+
+  consumeRegisterExecutor(
+    registerExecutor: RegisterExecutorFunction,
+  ): IDisposable {
+    const model = this.getModel();
+    const register = () =>
+      registerConsoleExecutor(
+        model.getWatchExpressionStore(),
+        registerExecutor,
+      );
+    model.getActions().addConsoleRegisterFunction(register);
+    return new UniversalDisposable(() =>
+      model.getActions().removeConsoleRegisterFunction(register),
+    );
+  }
+
+  consumeDebuggerProvider(provider: NuclideDebuggerProvider): IDisposable {
+    this.getModel()
+      .getActions()
+      .addDebuggerProvider(provider);
+    return new UniversalDisposable(() => {
+      this.getModel()
+        .getActions()
+        .removeDebuggerProvider(provider);
+    });
+  }
+
+  consumeEvaluationExpressionProvider(
+    provider: NuclideEvaluationExpressionProvider,
+  ): IDisposable {
+    this.getModel()
+      .getActions()
+      .addEvaluationExpressionProvider(provider);
+    return new UniversalDisposable(() => {
+      this.getModel()
+        .getActions()
+        .removeEvaluationExpressionProvider(provider);
+    });
+  }
+
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+    const toolBar = getToolBar('nuclide-debugger');
+    toolBar.addButton(
+      makeToolbarButtonSpec({
+        iconset: 'icon-nuclicon',
+        icon: 'debugger',
+        callback: 'nuclide-debugger:show-attach-dialog',
+        tooltip: 'Attach Debugger',
+        priority: 500,
+      }),
+    ).element;
+    const disposable = new UniversalDisposable(() => {
+      toolBar.removeItems();
+    });
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  consumeNotifications(
+    raiseNativeNotification: (
+      title: string,
+      body: string,
+      timeout: number,
+      raiseIfAtomHasFocus: boolean,
+    ) => ?IDisposable,
+  ): void {
+    setNotificationService(raiseNativeNotification);
+  }
+
+  provideRemoteControlService(): RemoteControlService {
+    return new RemoteControlService(() => this.getModel());
+  }
+
+  consumeDatatipService(service: DatatipService): IDisposable {
+    const provider = this._createDatatipProvider();
+    const disposable = service.addProvider(provider);
+    this.getModel()
+      .getThreadStore()
+      .setDatatipService(service);
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  _createDatatipProvider(): DatatipProvider {
+    return {
       // Eligibility is determined online, based on registered EvaluationExpression providers.
       providerName: DATATIP_PACKAGE_NAME,
       priority: 1,
       datatip: (editor: TextEditor, position: atom$Point) => {
-        if (activation == null) {
-          return Promise.resolve(null);
-        }
-        const model = activation.getModel();
-        return debuggerDatatip(model, editor, position);
+        return debuggerDatatip(this.getModel(), editor, position);
       },
     };
   }
-  return datatipProvider;
-}
-
-let activation = null;
-let datatipProvider: ?DatatipProvider;
-
-export function activate(state: ?SerializedState): void {
-  if (!activation) {
-    activation = new Activation(state);
-  }
-}
-
-export function serialize(): SerializedState {
-  if (activation) {
-    return activation.serialize();
-  } else {
-    return {
-      breakpoints: null,
-      watchExpressions: null,
-      showDebugger: false,
-      workspaceDocksVisibility: [false, false, false, false],
-      pauseOnException: true,
-      pauseOnCaughtException: false,
-    };
-  }
-}
-
-export function deactivate() {
-  if (activation) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function consumeOutputService(api: OutputService): IDisposable {
-  return setOutputService(api);
 }
 
 function registerConsoleExecutor(
@@ -1119,114 +1091,22 @@ function registerConsoleExecutor(
   return disposables;
 }
 
-export function consumeRegisterExecutor(
-  registerExecutor: RegisterExecutorFunction,
-): IDisposable {
-  if (activation != null) {
-    const model = activation.getModel();
-    const register = () =>
-      registerConsoleExecutor(
-        model.getWatchExpressionStore(),
-        registerExecutor,
-      );
-    model.getActions().addConsoleRegisterFunction(register);
-    return new UniversalDisposable(() =>
-      model.getActions().removeConsoleRegisterFunction(register),
-    );
-  } else {
-    return new UniversalDisposable();
+function createDebuggerView(model: mixed): ?HTMLElement {
+  let view = null;
+  if (
+    model instanceof DebuggerPaneViewModel ||
+    model instanceof DebuggerPaneContainerViewModel
+  ) {
+    view = model.createView();
   }
-}
 
-export function consumeDebuggerProvider(
-  provider: NuclideDebuggerProvider,
-): IDisposable {
-  if (activation) {
-    activation
-      .getModel()
-      .getActions()
-      .addDebuggerProvider(provider);
+  if (view != null) {
+    const elem = renderReactRoot(view);
+    elem.className = 'nuclide-debugger-container';
+    return elem;
   }
-  return new UniversalDisposable(() => {
-    if (activation) {
-      activation
-        .getModel()
-        .getActions()
-        .removeDebuggerProvider(provider);
-    }
-  });
+
+  return null;
 }
 
-export function consumeEvaluationExpressionProvider(
-  provider: NuclideEvaluationExpressionProvider,
-): IDisposable {
-  if (activation) {
-    activation
-      .getModel()
-      .getActions()
-      .addEvaluationExpressionProvider(provider);
-  }
-  return new UniversalDisposable(() => {
-    if (activation) {
-      activation
-        .getModel()
-        .getActions()
-        .removeEvaluationExpressionProvider(provider);
-    }
-  });
-}
-
-export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
-  const toolBar = getToolBar('nuclide-debugger');
-  toolBar.addButton(
-    makeToolbarButtonSpec({
-      iconset: 'icon-nuclicon',
-      icon: 'debugger',
-      callback: 'nuclide-debugger:show-attach-dialog',
-      tooltip: 'Attach Debugger',
-      priority: 500,
-    }),
-  ).element;
-  const disposable = new UniversalDisposable(() => {
-    toolBar.removeItems();
-  });
-  invariant(activation);
-  activation._disposables.add(disposable);
-  return disposable;
-}
-
-export function consumeNotifications(
-  raiseNativeNotification: (
-    title: string,
-    body: string,
-    timeout: number,
-    raiseIfAtomHasFocus: boolean,
-  ) => ?IDisposable,
-): void {
-  setNotificationService(raiseNativeNotification);
-}
-
-export function provideRemoteControlService(): RemoteControlService {
-  return new RemoteControlService(
-    () => (activation ? activation.getModel() : null),
-  );
-}
-
-export function consumeDatatipService(service: DatatipService): IDisposable {
-  const provider = createDatatipProvider();
-  const disposable = service.addProvider(provider);
-  invariant(activation);
-  activation
-    .getModel()
-    .getThreadStore()
-    .setDatatipService(service);
-  activation._disposables.add(disposable);
-  return disposable;
-}
-
-export function consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
-  invariant(activation);
-  return activation.consumeCurrentWorkingDirectory(cwdApi);
-}
-
-export {registerConsoleLogging} from './AtomServiceContainer';
+createPackage(module.exports, Activation);
