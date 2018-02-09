@@ -9,19 +9,20 @@
  * @format
  */
 
+import type DebuggerModel from './DebuggerModel';
+
 import * as React from 'react';
-import {DebuggerStore} from './DebuggerStore';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {
-  store: DebuggerStore,
+  model: DebuggerModel,
 };
 
 type State = {
-  debuggerStoreChangeListener?: IDisposable,
+  debuggerModelChangeListener?: IDisposable,
 };
 
-function getStateFromStore(store: DebuggerStore): State {
+function getStateFromModel(model: DebuggerModel): State {
   return {};
 }
 
@@ -31,40 +32,40 @@ export default class DebuggerControllerView extends React.Component<
 > {
   constructor(props: Props) {
     super(props);
-    this.state = getStateFromStore(props.store);
+    this.state = getStateFromModel(props.model);
   }
 
   componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(
-        this._updateStateFromStore,
+      debuggerModelChangeListener: this.props.model.onChange(
+        this._updateStateFromModel,
       ),
     });
-    this._updateStateFromStore();
+    this._updateStateFromModel();
   }
 
   componentWillUnmount() {
-    const listener = this.state.debuggerStoreChangeListener;
+    const listener = this.state.debuggerModelChangeListener;
     if (listener != null) {
       listener.dispose();
     }
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    const listener = this.state.debuggerStoreChangeListener;
+    const listener = this.state.debuggerModelChangeListener;
     if (listener != null) {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(
-        this._updateStateFromStore,
+      debuggerModelChangeListener: nextProps.model.onChange(
+        this._updateStateFromModel,
       ),
     });
-    this._updateStateFromStore(nextProps.store);
+    this._updateStateFromModel(nextProps.model);
   }
 
   render(): React.Node {
-    if (this.props.store.getDebuggerMode() === 'starting') {
+    if (this.props.model.getDebuggerMode() === 'starting') {
       return (
         <div className="nuclide-debugger-starting-message">
           <div>
@@ -77,11 +78,11 @@ export default class DebuggerControllerView extends React.Component<
     return null;
   }
 
-  _updateStateFromStore = (store?: DebuggerStore) => {
-    if (store != null) {
-      this.setState(getStateFromStore(store));
+  _updateStateFromModel = (model?: DebuggerModel) => {
+    if (model != null) {
+      this.setState(getStateFromModel(model));
     } else {
-      this.setState(getStateFromStore(this.props.store));
+      this.setState(getStateFromModel(this.props.model));
     }
   };
 }

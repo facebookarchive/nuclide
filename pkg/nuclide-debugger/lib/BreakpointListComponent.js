@@ -10,7 +10,7 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
-import type BreakpointStore from './BreakpointStore';
+import type DebuggerModel from './DebuggerModel';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -26,29 +26,32 @@ import {AnalyticsEvents} from './constants';
 
 type Props = {
   actions: DebuggerActions,
-  breakpointStore: BreakpointStore,
+  model: DebuggerModel,
 };
 
 type State = {
   breakpoints: ?FileLineBreakpoints,
 };
 
-export class BreakpointListComponent extends React.Component<Props, State> {
+export default class BreakpointListComponent extends React.Component<
+  Props,
+  State,
+> {
   _disposables: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
     this.state = {
-      breakpoints: this.props.breakpointStore.getAllBreakpoints(),
+      breakpoints: this.props.model.getAllBreakpoints(),
     };
   }
 
   componentDidMount(): void {
-    const {breakpointStore} = this.props;
+    const {model} = this.props;
     this._disposables = new UniversalDisposable(
-      breakpointStore.onNeedUIUpdate(() => {
+      model.onNeedUIUpdate(() => {
         this.setState({
-          breakpoints: breakpointStore.getAllBreakpoints(),
+          breakpoints: model.getAllBreakpoints(),
         });
       }),
     );
@@ -82,7 +85,7 @@ export class BreakpointListComponent extends React.Component<Props, State> {
   _debuggerSupportsConditionalBp = (
     breakpoint: FileLineBreakpoint,
   ): boolean => {
-    return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
+    return this.props.model.breakpointSupportsConditions(breakpoint);
   };
 
   render(): React.Node {
@@ -201,9 +204,9 @@ export class BreakpointListComponent extends React.Component<Props, State> {
           </div>
         );
         return (
-          // $FlowFixMe(>=0.53.0) Flow suppress
           <ListViewItem
             key={label}
+            index={i}
             value={breakpoint}
             data-path={path}
             data-line={line}
@@ -214,7 +217,6 @@ export class BreakpointListComponent extends React.Component<Props, State> {
         );
       });
     return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
       <ListView
         alternateBackground={true}
         onSelect={this._handleBreakpointClick}

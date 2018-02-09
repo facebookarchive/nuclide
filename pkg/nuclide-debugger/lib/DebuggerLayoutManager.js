@@ -201,7 +201,7 @@ export class DebuggerLayoutManager {
           // If the debugger is stopped, let the controls pane keep its default
           // layout to make room for the buttons and additional content. Otherwise,
           // override the layout to shrink the pane and remove extra vertical whitespace.
-          const debuggerMode = this._model.getStore().getDebuggerMode();
+          const debuggerMode = this._model.getDebuggerMode();
           if (debuggerMode !== DebuggerMode.STOPPED) {
             // If __DEV__, leave some extra space for the chrome devtools gear
             // TODO: Remove this when chrome is gone
@@ -258,9 +258,8 @@ export class DebuggerLayoutManager {
         uri: debuggerUriBase + 'threads',
         isLifetimeView: false,
         defaultLocation: 'right',
-        title: () => this._model.getStore().getSettings().threadsComponentTitle,
-        isEnabled: () =>
-          this._model.getStore().getSettings().supportThreadsWindow,
+        title: () => this._model.getSettings().threadsComponentTitle,
+        isEnabled: () => this._model.getSettings().supportThreadsWindow,
         createView: () => <ThreadsView model={this._model} />,
         debuggerModeFilter: (mode: DebuggerModeType) =>
           mode !== DebuggerMode.STOPPED,
@@ -278,7 +277,7 @@ export class DebuggerLayoutManager {
           if (mode === DebuggerMode.STOPPED) {
             return false;
           }
-          const info = this._model.getStore().getDebugProcessInfo();
+          const info = this._model.getDebugProcessInfo();
           return info != null && info.getDebuggerCapabilities().disassembly;
         },
       },
@@ -295,7 +294,7 @@ export class DebuggerLayoutManager {
           if (mode === DebuggerMode.STOPPED) {
             return false;
           }
-          const info = this._model.getStore().getDebugProcessInfo();
+          const info = this._model.getDebugProcessInfo();
           return info != null && info.getDebuggerCapabilities().registers;
         },
       },
@@ -621,7 +620,7 @@ export class DebuggerLayoutManager {
   }
 
   debuggerModeChanged(): void {
-    const mode = this._model.getStore().getDebuggerMode();
+    const mode = this._model.getDebuggerMode();
 
     // Most panes disappear when the debugger is stopped, only keep
     // the ones that should still be shown.
@@ -650,7 +649,7 @@ export class DebuggerLayoutManager {
   }
 
   _countPanesForTargetDock(dockName: string, defaultDockName: string): number {
-    const mode = this._model.getStore().getDebuggerMode();
+    const mode = this._model.getDebuggerMode();
     return this._debuggerPanes
       .filter(
         // Filter out any panes that the user has hidden or that aren't visible
@@ -738,7 +737,7 @@ export class DebuggerLayoutManager {
     // Sort the debugger panes by the index at which they appeared the last
     // time they were positioned, so we maintain the relative ordering of
     // debugger panes within the same dock.
-    const mode = this._model.getStore().getDebuggerMode();
+    const mode = this._model.getDebuggerMode();
     this._debuggerPanes
       .slice()
       .sort((a, b) => {
@@ -824,7 +823,7 @@ export class DebuggerLayoutManager {
       // This view being destroyed means the debugger is exiting completely, and
       // this view is never remembered as "hidden by the user" because it's reqiured
       // for running the debugger.
-      const mode = this._model.getStore().getDebuggerMode();
+      const mode = this._model.getDebuggerMode();
       if (mode === DebuggerMode.RUNNING || mode === DebuggerMode.PAUSED) {
         this._saveDebuggerPaneLocations();
       }
@@ -848,7 +847,7 @@ export class DebuggerLayoutManager {
     }
 
     if (config.isEnabled == null || config.isEnabled()) {
-      const mode = this._model.getStore().getDebuggerMode();
+      const mode = this._model.getDebuggerMode();
       if (
         config.debuggerModeFilter == null ||
         config.debuggerModeFilter(mode)

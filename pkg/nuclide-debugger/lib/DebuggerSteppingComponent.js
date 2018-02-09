@@ -12,7 +12,7 @@
 import type DebuggerActions from './DebuggerActions';
 import type {ControlButtonSpecification} from 'nuclide-debugger-common';
 import type {DebuggerModeType} from './types';
-import type {DebuggerStore} from './DebuggerStore';
+import type DebuggerModel from './DebuggerModel';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -28,7 +28,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type DebuggerSteppingComponentProps = {
   actions: DebuggerActions,
-  debuggerStore: DebuggerStore,
+  model: DebuggerModel,
 };
 
 type DebuggerSteppingComponentState = {
@@ -100,30 +100,30 @@ export class DebuggerSteppingComponent extends React.Component<
     super(props);
 
     this._disposables = new UniversalDisposable();
-    const {debuggerStore} = props;
+    const {model} = props;
     this.state = {
-      debuggerMode: debuggerStore.getDebuggerMode(),
-      pauseOnException: debuggerStore.getTogglePauseOnException(),
-      pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-      customControlButtons: debuggerStore.getCustomControlButtons(),
+      debuggerMode: model.getDebuggerMode(),
+      pauseOnException: model.getTogglePauseOnException(),
+      pauseOnCaughtException: model.getTogglePauseOnCaughtException(),
+      customControlButtons: model.getCustomControlButtons(),
       waitingForPause: false,
     };
   }
 
   componentDidMount(): void {
-    const {debuggerStore} = this.props;
+    const {model} = this.props;
     this._disposables.add(
-      debuggerStore.onChange(() => {
+      model.onChange(() => {
         this.setState({
-          debuggerMode: debuggerStore.getDebuggerMode(),
-          pauseOnException: debuggerStore.getTogglePauseOnException(),
-          pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-          customControlButtons: debuggerStore.getCustomControlButtons(),
+          debuggerMode: model.getDebuggerMode(),
+          pauseOnException: model.getTogglePauseOnException(),
+          pauseOnCaughtException: model.getTogglePauseOnCaughtException(),
+          customControlButtons: model.getCustomControlButtons(),
         });
 
         if (
           this.state.waitingForPause &&
-          debuggerStore.getDebuggerMode() !== DebuggerMode.RUNNING
+          model.getDebuggerMode() !== DebuggerMode.RUNNING
         ) {
           this._setWaitingForPause(false);
         }
@@ -162,8 +162,8 @@ export class DebuggerSteppingComponent extends React.Component<
       customControlButtons,
       waitingForPause,
     } = this.state;
-    const {actions, debuggerStore} = this.props;
-    const isReadonlyTarget = debuggerStore.getIsReadonlyTarget();
+    const {actions, model} = this.props;
+    const isReadonlyTarget = model.getIsReadonlyTarget();
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
@@ -182,7 +182,7 @@ export class DebuggerSteppingComponent extends React.Component<
 
     // "Set Source Paths" is only available if the current debugger provides
     // this functionality.
-    const setSourcePathsButton = !this.props.debuggerStore.getCanSetSourcePaths() ? null : (
+    const setSourcePathsButton = !this.props.model.getCanSetSourcePaths() ? null : (
       <Button
         className="nuclide-debugger-set-source-path-button"
         icon="file-code"
@@ -191,7 +191,7 @@ export class DebuggerSteppingComponent extends React.Component<
       />
     );
 
-    const restartDebuggerButton = !this.props.debuggerStore.getCanRestartDebugger() ? null : (
+    const restartDebuggerButton = !this.props.model.getCanRestartDebugger() ? null : (
       <Button
         icon="sync"
         className="nuclide-debugger-stepping-button-separated"

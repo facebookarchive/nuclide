@@ -24,7 +24,7 @@ function getEvaluationExpression(
   position: atom$Point,
 ): Promise<?NuclideEvaluationExpression> {
   const {scopeName} = editor.getGrammar();
-  const allProviders = model.getStore().getEvaluationExpressionProviders();
+  const allProviders = model.getEvaluationExpressionProviders();
   let matchingProvider = null;
   for (const provider of allProviders) {
     const providerGrammars = provider.selector.split(/, ?/);
@@ -43,7 +43,7 @@ export async function debuggerDatatip(
   editor: TextEditor,
   position: atom$Point,
 ): Promise<?Datatip> {
-  if (model.getStore().getDebuggerMode() !== DebuggerMode.PAUSED) {
+  if (model.getDebuggerMode() !== DebuggerMode.PAUSED) {
     return null;
   }
   const activeEditor = atom.workspace.getActiveTextEditor();

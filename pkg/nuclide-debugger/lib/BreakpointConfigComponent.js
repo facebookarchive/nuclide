@@ -10,6 +10,7 @@
  */
 
 import type {FileLineBreakpoint} from './types';
+import type DebuggerModel from './DebuggerModel';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import DebuggerActions from './DebuggerActions';
@@ -20,7 +21,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import BreakpointStore from './BreakpointStore';
 import {Modal} from 'nuclide-commons-ui/Modal';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
@@ -29,7 +29,7 @@ type PropsType = {
   onDismiss: () => void,
   breakpoint: FileLineBreakpoint,
   actions: DebuggerActions,
-  breakpointStore: BreakpointStore,
+  model: DebuggerModel,
 };
 
 type StateType = {
@@ -53,8 +53,8 @@ export class BreakpointConfigComponent extends React.Component<
     };
 
     this._disposables.add(
-      this.props.breakpointStore.onNeedUIUpdate(() => {
-        const breakpoint = this.props.breakpointStore.getBreakpointAtLine(
+      this.props.model.onNeedUIUpdate(() => {
+        const breakpoint = this.props.model.getBreakpointAtLine(
           this.state.breakpoint.path,
           this.state.breakpoint.line,
         );

@@ -92,7 +92,7 @@ class Activation {
       this._layoutManager,
       // Listen for removed connections and kill the debugger if it is using that connection.
       ServerConnection.onDidCloseServerConnection(connection => {
-        const debuggerProcess = this._model.getStore().getDebuggerInstance();
+        const debuggerProcess = this._model.getDebuggerInstance();
         if (debuggerProcess == null) {
           return; // Nothing to do if we're not debugging.
         }
@@ -279,10 +279,7 @@ class Activation {
                   location.line,
                 );
                 return (
-                  bp != null &&
-                  this._model
-                    .getBreakpointStore()
-                    .breakpointSupportsConditions(bp)
+                  bp != null && this._model.breakpointSupportsConditions(bp)
                 );
               }
               return false;
@@ -316,7 +313,7 @@ class Activation {
                 command: 'nuclide-debugger:run-to-location',
                 shouldDisplay: event => {
                   // Should also check for is paused.
-                  const store = this._model.getStore();
+                  const store = this._model;
                   const debuggerInstance = store.getDebuggerInstance();
                   if (
                     store.getDebuggerMode() === DebuggerMode.PAUSED &&
@@ -341,9 +338,7 @@ class Activation {
                   this._executeWithEditorPath(
                     event,
                     (filePath, line) =>
-                      this._model
-                        .getBreakpointStore()
-                        .getBreakpointAtLine(filePath, line) != null,
+                      this._model.getBreakpointAtLine(filePath, line) != null,
                   ) || false,
               },
               {
@@ -353,10 +348,7 @@ class Activation {
                   this._executeWithEditorPath(event, (filePath, line) => {
                     const bp = this._getBreakpointForLine(filePath, line);
                     return (
-                      bp != null &&
-                      this._model
-                        .getBreakpointStore()
-                        .breakpointSupportsConditions(bp)
+                      bp != null && this._model.breakpointSupportsConditions(bp)
                     );
                   }) || false,
               },
@@ -365,10 +357,7 @@ class Activation {
                 command: 'nuclide-debugger:add-to-watch',
                 shouldDisplay: event => {
                   const textEditor = atom.workspace.getActiveTextEditor();
-                  if (
-                    !this._model.getStore().isDebugging() ||
-                    textEditor == null
-                  ) {
+                  if (!this._model.isDebugging() || textEditor == null) {
                     return false;
                   }
                   return (
@@ -387,8 +376,7 @@ class Activation {
   }
 
   _getBreakpointForLine(path: string, line: number): ?FileLineBreakpoint {
-    const store = this._model.getBreakpointStore();
-    return store.getBreakpointAtLine(path, line);
+    return this._model.getBreakpointAtLine(path, line);
   }
 
   _setProvidersForConnection(connection: NuclideUri): void {
@@ -409,7 +397,7 @@ class Activation {
     const {row, column} = request.bufferPosition;
     // Only keep the lines up to and including the buffer position row.
     text = lines.slice(0, row + 1).join('\n');
-    const debuggerInstance = this._model.getStore().getDebuggerInstance();
+    const debuggerInstance = this._model.getDebuggerInstance();
     if (
       debuggerInstance == null ||
       !debuggerInstance.getDebuggerProcessInfo().getDebuggerCapabilities()
@@ -451,14 +439,12 @@ class Activation {
   serialize(): SerializedState {
     const model = this._model;
     const state = {
-      breakpoints: model.getBreakpointStore().getSerializedBreakpoints(),
+      breakpoints: model.getSerializedBreakpoints(),
       watchExpressions: model.getSerializedWatchExpressions(),
       showDebugger: this._layoutManager.isDebuggerVisible(),
       workspaceDocksVisibility: this._layoutManager.getWorkspaceDocksVisibility(),
-      pauseOnException: this._model.getStore().getTogglePauseOnException(),
-      pauseOnCaughtException: this._model
-        .getStore()
-        .getTogglePauseOnCaughtException(),
+      pauseOnException: this._model.getTogglePauseOnException(),
+      pauseOnCaughtException: this._model.getTogglePauseOnCaughtException(),
     };
     return state;
   }
@@ -506,9 +492,9 @@ class Activation {
           );
         }
       }),
-      this._model
-        .getStore()
-        .onDebuggerModeChange(() => this._layoutManager.debuggerModeChanged()),
+      this._model.onDebuggerModeChange(() =>
+        this._layoutManager.debuggerModeChanged(),
+      ),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:reset-layout': () => {
           this._layoutManager.resetLayout();
@@ -533,7 +519,7 @@ class Activation {
   }
 
   _isReadonlyTarget() {
-    return this._model.getStore().getIsReadonlyTarget();
+    return this._model.getIsReadonlyTarget();
   }
 
   _continue() {
@@ -582,9 +568,7 @@ class Activation {
 
   _toggleBreakpointEnabled(event: any) {
     this._executeWithEditorPath(event, (filePath, line) => {
-      const bp = this._model
-        .getBreakpointStore()
-        .getBreakpointAtLine(filePath, line);
+      const bp = this._model.getBreakpointAtLine(filePath, line);
 
       if (bp) {
         const {id, enabled} = bp;
@@ -598,9 +582,8 @@ class Activation {
       getBreakpointEventLocation((event.target: HTMLElement)) ||
       this._executeWithEditorPath(event, (path, line) => ({path, line}));
     if (location != null) {
-      const store = this._model.getBreakpointStore();
       const bp = this._getBreakpointForLine(location.path, location.line);
-      if (bp != null && store.breakpointSupportsConditions(bp)) {
+      if (bp != null && this._model.breakpointSupportsConditions(bp)) {
         // Open the configuration dialog.
         const container = new ReactMountRootElement();
         ReactDOM.render(
@@ -610,7 +593,7 @@ class Activation {
             onDismiss={() => {
               ReactDOM.unmountComponentAtNode(container);
             }}
-            breakpointStore={store}
+            model={this._model}
           />,
           container,
         );

@@ -15,7 +15,7 @@ import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
-import type {DebuggerStore} from './DebuggerStore';
+import type DebuggerModel from './DebuggerModel';
 import type {
   ControlButtonSpecification,
   DebuggerProcessInfo,
@@ -55,12 +55,12 @@ const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 export default class DebuggerActions {
   _disposables: UniversalDisposable;
   _dispatcher: DebuggerDispatcher;
-  _store: DebuggerStore;
+  _model: DebuggerModel;
 
-  constructor(dispatcher: DebuggerDispatcher, store: DebuggerStore) {
+  constructor(dispatcher: DebuggerDispatcher, model: DebuggerModel) {
     this._disposables = new UniversalDisposable();
     this._dispatcher = dispatcher;
-    this._store = store;
+    this._model = model;
   }
 
   async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
@@ -79,11 +79,11 @@ export default class DebuggerActions {
       const debuggerCapabilities = processInfo.getDebuggerCapabilities();
       const debuggerProps = processInfo.getDebuggerProps();
       const supportThreadsWindow = debuggerCapabilities.threads;
-      this._store.getSettings().supportThreadsWindow = supportThreadsWindow;
+      this._model.getSettings().supportThreadsWindow = supportThreadsWindow;
       if (supportThreadsWindow) {
-        this._store.getSettings().customThreadColumns =
+        this._model.getSettings().customThreadColumns =
           debuggerProps.threadColumns;
-        this._store.getSettings().threadsComponentTitle =
+        this._model.getSettings().threadsComponentTitle =
           debuggerProps.threadsComponentTitle;
       }
 
@@ -108,7 +108,7 @@ export default class DebuggerActions {
       );
 
       const debuggerInstance = await processInfo.debug();
-      await this._store.getBridge().setupNuclideChannel(debuggerInstance);
+      await this._model.getBridge().setupNuclideChannel(debuggerInstance);
       this._registerConsole();
 
       await this._waitForChromeConnection(debuggerInstance);
@@ -149,7 +149,7 @@ export default class DebuggerActions {
     this.setDebuggerMode(DebuggerMode.RUNNING);
 
     // Wait for 'resume' event from Bridge.js to guarantee we've passed the loader breakpoint.
-    await this._store.loaderBreakpointResumePromise;
+    await this._model.loaderBreakpointResumePromise;
   }
 
   _setDebuggerInstance(debuggerInstance: ?DebuggerInstanceInterface): void {
@@ -160,7 +160,7 @@ export default class DebuggerActions {
   }
 
   _handleSessionEnd(debuggerInstance: DebuggerInstanceInterface): void {
-    if (this._store.getDebuggerInstance() === debuggerInstance) {
+    if (this._model.getDebuggerInstance() === debuggerInstance) {
       this.stopDebugging();
     } else {
       // Do nothing, because either:
@@ -170,12 +170,12 @@ export default class DebuggerActions {
   }
 
   stopDebugging() {
-    if (this._store.getDebuggerMode() === DebuggerMode.STOPPING) {
+    if (this._model.getDebuggerMode() === DebuggerMode.STOPPING) {
       return;
     }
     this.setDebuggerMode(DebuggerMode.STOPPING);
     this._unregisterConsole();
-    const debuggerInstance = this._store.getDebuggerInstance();
+    const debuggerInstance = this._model.getDebuggerInstance();
     if (debuggerInstance != null) {
       debuggerInstance.dispose();
       this._setDebuggerInstance(null);
@@ -193,14 +193,14 @@ export default class DebuggerActions {
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
 
-    invariant(this._store.getDebuggerInstance() == null);
+    invariant(this._model.getDebuggerInstance() == null);
   }
 
   restartDebugger() {
-    const currentDebuggerInfo = this._store.getDebugProcessInfo();
+    const currentDebuggerInfo = this._model.getDebugProcessInfo();
     if (
       currentDebuggerInfo == null ||
-      this._store.getDebuggerMode() === DebuggerMode.STOPPED
+      this._model.getDebuggerMode() === DebuggerMode.STOPPED
     ) {
       atom.notifications.addWarning(
         'Cannot restart the debugger: the debugger is not currently running!',

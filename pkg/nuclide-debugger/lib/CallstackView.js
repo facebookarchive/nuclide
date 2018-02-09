@@ -33,18 +33,16 @@ export class CallstackView extends React.PureComponent<
   constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
-    const debuggerStore = props.model.getStore();
     this.state = {
-      mode: debuggerStore.getDebuggerMode(),
+      mode: props.model.getDebuggerMode(),
     };
   }
 
   componentDidMount(): void {
-    const debuggerStore = this.props.model.getStore();
     this._disposables.add(
-      debuggerStore.onChange(() => {
+      this.props.model.onChange(() => {
         this.setState({
-          mode: debuggerStore.getDebuggerMode(),
+          mode: this.props.model.getDebuggerMode(),
         });
       }),
     );

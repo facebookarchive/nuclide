@@ -18,7 +18,7 @@ type ListViewItemProps = {
   index: number,
   value?: ?Object,
   children?: ?React.Element<any>,
-  onSelect: (value: ?Object, index: number) => void,
+  onSelect?: (value: ?Object, index: number) => void,
 };
 
 /**
@@ -26,7 +26,9 @@ type ListViewItemProps = {
  */
 export class ListViewItem extends React.Component<ListViewItemProps> {
   _select(value: ?Object, index: number, event: SyntheticMouseEvent<>): void {
-    this.props.onSelect(value, index);
+    if (this.props.onSelect != null) {
+      this.props.onSelect(value, index);
+    }
   }
 
   render(): React.Node {
@@ -49,7 +51,7 @@ type ListViewProps = {
    * Whether to shade even and odd items differently.
    */
   alternateBackground?: boolean,
-  children?: React.Element<any>,
+  children?: Array<React.Element<any>>,
   /**
    * Whether items can be selected.
    * If specified, `onSelect` must also be specified.

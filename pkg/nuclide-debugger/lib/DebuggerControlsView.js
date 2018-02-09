@@ -37,18 +37,17 @@ export class DebuggerControlsView extends React.PureComponent<
     super(props);
 
     this._disposables = new UniversalDisposable();
-    const debuggerStore = props.model.getStore();
     this.state = {
-      mode: debuggerStore.getDebuggerMode(),
+      mode: props.model.getDebuggerMode(),
     };
   }
 
   componentDidMount(): void {
-    const debuggerStore = this.props.model.getStore();
+    const {model} = this.props;
     this._disposables.add(
-      debuggerStore.onChange(() => {
+      model.onChange(() => {
         this.setState({
-          mode: debuggerStore.getDebuggerMode(),
+          mode: model.getDebuggerMode(),
         });
       }),
     );
@@ -102,7 +101,7 @@ export class DebuggerControlsView extends React.PureComponent<
         </div>
       );
 
-    const targetInfo = model.getStore().getDebugProcessInfo();
+    const targetInfo = model.getDebugProcessInfo();
     const targetDescription =
       targetInfo == null
         ? null
@@ -125,13 +124,10 @@ export class DebuggerControlsView extends React.PureComponent<
     return (
       <div className="nuclide-debugger-container-new">
         <div className="nuclide-debugger-section-header">
-          <DebuggerControllerView store={model.getStore()} />
+          <DebuggerControllerView model={model} />
         </div>
         <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
-          <DebuggerSteppingComponent
-            actions={actions}
-            debuggerStore={model.getStore()}
-          />
+          <DebuggerSteppingComponent actions={actions} model={model} />
         </div>
         {debugeeRunningNotice}
         {debuggerStoppedNotice}

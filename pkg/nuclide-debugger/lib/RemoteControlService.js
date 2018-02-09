@@ -52,7 +52,7 @@ export default class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    const session = model.getStore().getDebuggerInstance();
+    const session = model.getDebuggerInstance();
     return session != null && session.getProviderName() === providerName;
   }
 
@@ -61,7 +61,7 @@ export default class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    return model.getStore().getDebuggerInstance();
+    return model.getDebuggerInstance();
   }
 
   _killDebugger(): void {
@@ -138,11 +138,11 @@ export default class RemoteControlService {
       throw new Error('Package is not activated.');
     }
 
-    const disposable = model.getStore().onDebuggerModeChange(() => {
+    const disposable = model.onDebuggerModeChange(() => {
       const debuggerModel = this._getModel();
 
       invariant(debuggerModel != null);
-      const debuggerMode = debuggerModel.getStore().getDebuggerMode();
+      const debuggerMode = debuggerModel.getDebuggerMode();
       if (debuggerMode === DebuggerMode.STOPPED) {
         // This termination path is invoked if the debugger dies first, ensuring
         // we terminate the target process. This can happen if the user hits stop,

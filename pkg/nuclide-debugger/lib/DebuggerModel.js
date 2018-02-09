@@ -11,22 +11,31 @@
 
 import type {DatatipService} from 'atom-ide-ui';
 import type {
+  ControlButtonSpecification,
+  DebuggerInstanceInterface,
   DebuggerLaunchAttachProvider,
+  DebuggerProcessInfo,
   NuclideDebuggerProvider,
+  NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {DebuggerAction} from './DebuggerDispatcher';
 import type {
+  BreakpointUserChangeArgType,
   Callstack,
   ChromeProtocolResponse,
   DebuggerModeType,
+  DebuggerSettings,
   Expression,
   EvalCommand,
   EvaluatedExpression,
   EvaluatedExpressionList,
   EvaluationResult,
   ExpansionResult,
+  FileLineBreakpoint,
+  FileLineBreakpoints,
   NuclideThreadData,
   ObjectGroup,
+  SerializedBreakpoint,
   ScopesMap,
   ScopeSection,
   ScopeSectionPayload,
@@ -36,16 +45,14 @@ import type {
   SetVariableResponse,
   RemoteObjectId,
 } from 'nuclide-debugger-common/protocol-types';
+import type {RegisterExecutorFunction} from '../../../modules/atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 import * as React from 'react';
 import BreakpointManager from './BreakpointManager';
-import BreakpointStore from './BreakpointStore';
 import DebuggerActions from './DebuggerActions';
-import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import DebuggerDispatcher from './DebuggerDispatcher';
-import {DebuggerPauseController} from './DebuggerPauseController';
 import {Emitter} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
@@ -61,6 +68,8 @@ import {isLocalScopeName} from './utils';
 import {Deferred} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
 import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
+import invariant from 'assert';
+import {getNotificationService} from './AtomServiceContainer';
 
 import type {SerializedState} from '..';
 
@@ -70,6 +79,14 @@ const CALLSTACK_CHANGE_EVENT = 'CALLSTACK_CHANGE_EVENT';
 const THREADS_CHANGED_EVENT = 'THREADS_CHANGED_EVENT';
 const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
 const PROVIDERS_UPDATED_EVENT = 'PROVIDERS_UPDATED_EVENT';
+const DEBUGGER_CHANGE_EVENT = 'DEBUGGER_CHANGE_EVENT';
+const DEBUGGER_MODE_CHANGE_EVENT = 'DEBUGGER_MODE_CHANGE_EVENT';
+const BREAKPOINT_NEED_UI_UPDATE = 'BREAKPOINT_NEED_UI_UPDATE';
+const BREAKPOINT_USER_CHANGED = 'BREAKPOINT_USER_CHANGED';
+const ADD_BREAKPOINT_ACTION = 'AddBreakpoint';
+const DELETE_BREAKPOINT_ACTION = 'DeleteBreakpoint';
+
+type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
 /**
  * Atom ViewProvider compatible model object.
@@ -78,14 +95,25 @@ export default class DebuggerModel {
   _disposables: UniversalDisposable;
   _actions: DebuggerActions;
   _breakpointManager: BreakpointManager;
-  _breakpointStore: BreakpointStore;
   _dispatcher: DebuggerDispatcher;
-  _store: DebuggerStore;
   _bridge: Bridge;
-  _debuggerPauseController: DebuggerPauseController;
   _emitter: Emitter;
   _datatipService: ?DatatipService;
+  _debuggerSettings: DebuggerSettings;
+  _debuggerInstance: ?DebuggerInstanceInterface;
+  _error: ?string;
+  _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _debuggerMode: DebuggerModeType;
+  _togglePauseOnException: boolean;
+  _togglePauseOnCaughtException: boolean;
+  _enableShowDisassembly: boolean;
+  _onLoaderBreakpointResume: () => void;
+  _registerExecutor: ?() => IDisposable;
+  _consoleDisposable: ?IDisposable;
+  _customControlButtons: Array<ControlButtonSpecification>;
+  _debugProcessInfo: ?DebuggerProcessInfo;
+  _setSourcePathCallback: ?() => void;
+  loaderBreakpointResumePromise: Promise<void>;
 
   // CallStack state
   _callstack: ?Callstack;
@@ -115,8 +143,35 @@ export default class DebuggerModel {
   _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
   _watchExpressionsList: BehaviorSubject<EvaluatedExpressionList>;
 
+  // Breakpoints
+  _breakpointIdSeed: number;
+  _breakpoints: Map<string, LineToBreakpointMap>;
+  _idToBreakpointMap: Map<number, FileLineBreakpoint>;
+
   constructor(state: ?SerializedState) {
     this._dispatcher = new DebuggerDispatcher();
+    this._debuggerSettings = {
+      supportThreadsWindow: false,
+      customThreadColumns: [],
+      threadsComponentTitle: 'Threads',
+    };
+    this._debuggerInstance = null;
+    this._error = null;
+    this._evaluationExpressionProviders = new Set();
+    this._togglePauseOnException =
+      state != null ? state.pauseOnException : true;
+    this._togglePauseOnCaughtException =
+      state != null ? state.pauseOnCaughtException : false;
+    this._enableShowDisassembly = false;
+    this._registerExecutor = null;
+    this._consoleDisposable = null;
+    this._customControlButtons = [];
+    this._debugProcessInfo = null;
+    this._setSourcePathCallback = null;
+    this.loaderBreakpointResumePromise = new Promise(resolve => {
+      this._onLoaderBreakpointResume = resolve;
+    });
+
     this._callstack = null;
     this._selectedCallFrameIndex = 0;
     this._selectedCallFrameMarker = null;
@@ -141,51 +196,43 @@ export default class DebuggerModel {
     this._previousEvaluationSubscriptions = new UniversalDisposable();
     this._watchExpressionsList = new BehaviorSubject([]);
 
+    this._breakpointIdSeed = 0;
+    this._breakpoints = new Map();
+    this._idToBreakpointMap = new Map();
+
     // Debounce calls to _openPathInEditor to work around an Atom bug that causes
     // two editor windows to be opened if multiple calls to atom.workspace.open
     // are made close together, even if {searchAllPanes: true} is set.
     (this: any)._openPathInEditor = debounce(this._openPathInEditor, 100, true);
-
-    const pauseOnException = state != null ? state.pauseOnException : true;
-    const pauseOnCaughtException =
-      state != null ? state.pauseOnCaughtException : false;
-    this._store = new DebuggerStore(
-      this._dispatcher,
-      this,
-      pauseOnException,
-      pauseOnCaughtException,
-    );
-    this._actions = new DebuggerActions(this._dispatcher, this._store);
-    this._breakpointStore = new BreakpointStore(
-      this._dispatcher,
-      state != null ? state.breakpoints : null, // serialized breakpoints
-      this._store,
-    );
-    this._breakpointManager = new BreakpointManager(
-      this._breakpointStore,
-      this._actions,
-    );
+    this._actions = new DebuggerActions(this._dispatcher, this);
+    this._breakpointManager = new BreakpointManager(this._actions, this);
     this._bridge = new Bridge(this);
     const initialWatchExpressions =
       state != null ? state.watchExpressions : null;
     this._deserializeWatchExpressions(initialWatchExpressions);
-    this._debuggerPauseController = new DebuggerPauseController(this._store);
+    this._deserializeBreakpoints(state != null ? state.breakpoints : null);
+
     const dispatcherToken = this._dispatcher.register(
       this._handlePayload.bind(this),
     );
 
     this._disposables = new UniversalDisposable(
-      this._store,
       this._actions,
-      this._breakpointStore,
       this._breakpointManager,
       this._bridge,
-      this._debuggerPauseController,
       () => {
         this._dispatcher.unregister(dispatcherToken);
         this._clearSelectedCallFrameMarker();
         this._cleanUpDatatip();
         this._watchExpressions.clear();
+        if (this._debuggerInstance != null) {
+          this._debuggerInstance.dispose();
+          this._debuggerInstance = null;
+        }
+        if (this._debugProcessInfo != null) {
+          this._debugProcessInfo.dispose();
+          this._debugProcessInfo = null;
+        }
       },
       this._listenForProjectChange(),
       this._previousEvaluationSubscriptions,
@@ -204,14 +251,6 @@ export default class DebuggerModel {
 
   getActions(): DebuggerActions {
     return this._actions;
-  }
-
-  getStore(): DebuggerStore {
-    return this._store;
-  }
-
-  getBreakpointStore(): BreakpointStore {
-    return this._breakpointStore;
   }
 
   getBridge(): Bridge {
@@ -306,14 +345,33 @@ export default class DebuggerModel {
 
         if (payload.data === DebuggerMode.PAUSED) {
           this.triggerReevaluation();
+          // Moving from non-pause to pause state.
+          this._scheduleNativeNotification();
         } else if (payload.data === DebuggerMode.STOPPED) {
           this._cancelRequestsToBridge();
           this._clearEvaluationValues();
+          this.loaderBreakpointResumePromise = new Promise(resolve => {
+            this._onLoaderBreakpointResume = resolve;
+          });
         } else if (payload.data === DebuggerMode.STARTING) {
           this._refetchWatchSubscriptions();
         }
+
         this._debuggerMode = payload.data;
+        this._emitter.emit(DEBUGGER_MODE_CHANGE_EVENT);
         this._emitter.emit(THREADS_CHANGED_EVENT);
+
+        // Breakpoint handling
+        if (this._debuggerMode === DebuggerMode.STOPPED) {
+          // All breakpoints should be unresolved after stop debugging.
+          this._resetBreakpoints();
+        } else {
+          for (const breakpoint of this.getAllBreakpoints()) {
+            if (!breakpoint.resolved) {
+              this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+            }
+          }
+        }
         break;
       case ActionTypes.SET_PROCESS_SOCKET:
         const {data} = payload;
@@ -371,9 +429,135 @@ export default class DebuggerModel {
           payload.data.newExpression,
         );
         break;
+      case ActionTypes.SET_ERROR:
+        this._error = payload.data;
+        break;
+      case ActionTypes.SET_DEBUGGER_INSTANCE:
+        this._debuggerInstance = payload.data;
+        break;
+      case ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION:
+        const pauseOnException = payload.data;
+        this._togglePauseOnException = pauseOnException;
+        if (!this._togglePauseOnException) {
+          this._togglePauseOnCaughtException = false;
+        }
+        if (this.isDebugging()) {
+          this.getBridge().setPauseOnException(pauseOnException);
+          if (!pauseOnException) {
+            this.getBridge().setPauseOnCaughtException(
+              this._togglePauseOnCaughtException,
+            );
+          }
+        }
+        break;
+      case ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
+        const pauseOnCaughtException = payload.data;
+        this._togglePauseOnCaughtException = pauseOnCaughtException;
+        if (this.isDebugging()) {
+          this.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
+        }
+        break;
+      case ActionTypes.ADD_EVALUATION_EXPRESSION_PROVIDER:
+        if (this._evaluationExpressionProviders.has(payload.data)) {
+          return;
+        }
+        this._evaluationExpressionProviders.add(payload.data);
+        break;
+      case ActionTypes.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
+        if (!this._evaluationExpressionProviders.has(payload.data)) {
+          return;
+        }
+        this._evaluationExpressionProviders.delete(payload.data);
+        break;
+      case ActionTypes.ADD_REGISTER_EXECUTOR:
+        invariant(this._registerExecutor == null);
+        this._registerExecutor = payload.data;
+        break;
+      case ActionTypes.REMOVE_REGISTER_EXECUTOR:
+        invariant(this._registerExecutor === payload.data);
+        this._registerExecutor = null;
+        break;
+      case ActionTypes.REGISTER_CONSOLE:
+        if (this._registerExecutor != null) {
+          this._consoleDisposable = this._registerExecutor();
+        }
+        break;
+      case ActionTypes.UNREGISTER_CONSOLE:
+        if (this._consoleDisposable != null) {
+          this._consoleDisposable.dispose();
+          this._consoleDisposable = null;
+        }
+        break;
+      case ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
+        this._customControlButtons = payload.data;
+        break;
+      case ActionTypes.UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK:
+        this._setSourcePathCallback = payload.data;
+        break;
+      case ActionTypes.CONFIGURE_SOURCE_PATHS:
+        if (this._setSourcePathCallback != null) {
+          this._setSourcePathCallback();
+        }
+        break;
+      case ActionTypes.SET_DEBUG_PROCESS_INFO:
+        if (this._debugProcessInfo != null) {
+          this._debugProcessInfo.dispose();
+        }
+        this._debugProcessInfo = payload.data;
+        break;
+      case ActionTypes.ADD_BREAKPOINT:
+        this._addBreakpoint(payload.data.path, payload.data.line);
+        break;
+      case ActionTypes.UPDATE_BREAKPOINT_CONDITION:
+        this._updateBreakpointCondition(
+          payload.data.breakpointId,
+          payload.data.condition,
+        );
+        break;
+      case ActionTypes.UPDATE_BREAKPOINT_ENABLED:
+        this._updateBreakpointEnabled(
+          payload.data.breakpointId,
+          payload.data.enabled,
+        );
+        break;
+      case ActionTypes.DELETE_BREAKPOINT:
+        this._deleteBreakpoint(payload.data.path, payload.data.line);
+        break;
+      case ActionTypes.DELETE_ALL_BREAKPOINTS:
+        this._deleteAllBreakpoints();
+        break;
+      case ActionTypes.ENABLE_ALL_BREAKPOINTS:
+        this._enableAllBreakpoints();
+        break;
+      case ActionTypes.DISABLE_ALL_BREAKPOINTS:
+        this._disableAllBreakpoints();
+        break;
+      case ActionTypes.TOGGLE_BREAKPOINT:
+        this._toggleBreakpoint(payload.data.path, payload.data.line);
+        break;
+      case ActionTypes.DELETE_BREAKPOINT_IPC:
+        this._deleteBreakpoint(payload.data.path, payload.data.line, false);
+        break;
+      case ActionTypes.UPDATE_BREAKPOINT_HITCOUNT:
+        this._updateBreakpointHitcount(
+          payload.data.path,
+          payload.data.line,
+          payload.data.hitCount,
+        );
+        break;
+      case ActionTypes.BIND_BREAKPOINT_IPC:
+        this._bindBreakpoint(
+          payload.data.path,
+          payload.data.line,
+          payload.data.condition,
+          payload.data.enabled,
+          payload.data.resolved,
+        );
+        break;
       default:
         return;
     }
+    this._emitter.emit(DEBUGGER_CHANGE_EVENT);
   }
 
   _updateCallstack(callstack: Callstack): void {
@@ -698,10 +882,6 @@ export default class DebuggerModel {
     this._handleUpdateScopes(scopes);
   }
 
-  supportsSetVariable(): boolean {
-    return this._store.supportsSetVariable();
-  }
-
   // Returns a promise of the updated value after it has been set.
   async sendSetVariableRequest(
     scopeObjectId: RemoteObjectId,
@@ -709,7 +889,7 @@ export default class DebuggerModel {
     expression: string,
     newValue: string,
   ): Promise<string> {
-    const debuggerInstance = this._store.getDebuggerInstance();
+    const debuggerInstance = this.getDebuggerInstance();
     if (debuggerInstance == null) {
       const errorMsg = 'setVariable failed because debuggerInstance is null';
       reportError(errorMsg);
@@ -1011,5 +1191,437 @@ export default class DebuggerModel {
       return this._getExpressionEvaluationFor(expression);
     });
     this._watchExpressionsList.next(refetchedWatchExpressions);
+  }
+
+  loaderBreakpointResumed(): void {
+    this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
+  }
+
+  getCustomControlButtons(): Array<ControlButtonSpecification> {
+    return this._customControlButtons;
+  }
+
+  getConsoleExecutorFunction(): ?RegisterExecutorFunction {
+    return this._registerExecutor;
+  }
+
+  getDebuggerInstance(): ?DebuggerInstanceInterface {
+    return this._debuggerInstance;
+  }
+
+  getError(): ?string {
+    return this._error;
+  }
+
+  getDebuggerMode(): DebuggerModeType {
+    return this._debuggerMode;
+  }
+
+  isDebugging(): boolean {
+    return (
+      this._debuggerMode !== DebuggerMode.STOPPED &&
+      this._debuggerMode !== DebuggerMode.STOPPING
+    );
+  }
+
+  getTogglePauseOnException(): boolean {
+    return this._togglePauseOnException;
+  }
+
+  getTogglePauseOnCaughtException(): boolean {
+    return this._togglePauseOnCaughtException;
+  }
+
+  getIsReadonlyTarget(): boolean {
+    return (
+      this._debugProcessInfo != null &&
+      this._debugProcessInfo.getDebuggerCapabilities().readOnlyTarget
+    );
+  }
+
+  getSettings(): DebuggerSettings {
+    return this._debuggerSettings;
+  }
+
+  getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
+    return this._evaluationExpressionProviders;
+  }
+
+  getCanSetSourcePaths(): boolean {
+    return this._setSourcePathCallback != null;
+  }
+
+  getCanRestartDebugger(): boolean {
+    return this._debugProcessInfo != null;
+  }
+
+  getDebugProcessInfo(): ?DebuggerProcessInfo {
+    return this._debugProcessInfo;
+  }
+
+  onChange(callback: () => void): IDisposable {
+    return this._emitter.on(DEBUGGER_CHANGE_EVENT, callback);
+  }
+
+  onDebuggerModeChange(callback: () => void): IDisposable {
+    return this._emitter.on(DEBUGGER_MODE_CHANGE_EVENT, callback);
+  }
+
+  setShowDisassembly(enable: boolean): void {
+    this._enableShowDisassembly = enable;
+    if (this.isDebugging()) {
+      this.getBridge().setShowDisassembly(enable);
+    }
+  }
+
+  getShowDisassembly(): boolean {
+    return (
+      this._debugProcessInfo != null &&
+      this._debugProcessInfo.getDebuggerCapabilities().disassembly &&
+      this._enableShowDisassembly
+    );
+  }
+
+  supportsSetVariable(): boolean {
+    const currentDebugInfo = this.getDebugProcessInfo();
+    return currentDebugInfo
+      ? currentDebugInfo.getDebuggerCapabilities().setVariable
+      : false;
+  }
+
+  _scheduleNativeNotification(): void {
+    const raiseNativeNotification = getNotificationService();
+    if (raiseNativeNotification != null) {
+      const pendingNotification = raiseNativeNotification(
+        'Nuclide Debugger',
+        'Paused at a breakpoint',
+        3000,
+        false,
+      );
+      if (pendingNotification != null) {
+        this._disposables.add(pendingNotification);
+      }
+    }
+  }
+
+  _addBreakpoint(
+    path: string,
+    line: number,
+    condition: string = '',
+    resolved: boolean = false,
+    userAction: boolean = true,
+    enabled: boolean = true,
+  ): void {
+    this._breakpointIdSeed++;
+    const breakpoint = {
+      id: this._breakpointIdSeed,
+      path,
+      line,
+      condition,
+      enabled,
+      resolved,
+    };
+    this._idToBreakpointMap.set(breakpoint.id, breakpoint);
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const lineMap = this._breakpoints.get(path);
+    invariant(lineMap != null);
+    lineMap.set(line, breakpoint);
+    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
+    if (userAction) {
+      this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+        action: ADD_BREAKPOINT_ACTION,
+        breakpoint,
+      });
+    }
+  }
+
+  _updateBreakpointHitcount(
+    path: string,
+    line: number,
+    hitCount: number,
+  ): void {
+    const breakpoint = this.getBreakpointAtLine(path, line);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.hitCount = hitCount;
+    this._updateBreakpoint(breakpoint);
+  }
+
+  _updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
+    const breakpoint = this._idToBreakpointMap.get(breakpointId);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.enabled = enabled;
+    if (!enabled) {
+      // For VSCode backends, disabling a breakpoint removes it from the backend
+      // even though the front-end remembers it. If this bp had a hit count
+      // being maintained by the backend, it will be reset to 0 so remove it
+      // from the UX as well.
+      delete breakpoint.hitCount;
+    }
+    this._updateBreakpoint(breakpoint);
+  }
+
+  _updateBreakpointCondition(breakpointId: number, condition: string): void {
+    const breakpoint = this._idToBreakpointMap.get(breakpointId);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.condition = condition;
+    this._updateBreakpoint(breakpoint);
+  }
+
+  _updateBreakpoint(breakpoint: FileLineBreakpoint): void {
+    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+    this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+      action: 'UpdateBreakpoint',
+      breakpoint,
+    });
+  }
+
+  _forEachBreakpoint(
+    callback: (path: string, line: number, breakpointId: number) => void,
+  ) {
+    for (const path of this._breakpoints.keys()) {
+      const lineMap = this._breakpoints.get(path);
+      invariant(lineMap != null);
+      for (const line of lineMap.keys()) {
+        const bp = lineMap.get(line);
+        invariant(bp != null);
+        callback(path, line, bp.id);
+      }
+    }
+  }
+
+  _deleteAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._deleteBreakpoint(path, line),
+    );
+  }
+
+  _enableAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._updateBreakpointEnabled(breakpointId, true),
+    );
+  }
+
+  _disableAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._updateBreakpointEnabled(breakpointId, false),
+    );
+  }
+
+  _deleteBreakpoint(
+    path: string,
+    line: number,
+    userAction: boolean = true,
+  ): void {
+    const lineMap = this._breakpoints.get(path);
+    if (lineMap == null) {
+      return;
+    }
+    const breakpoint = lineMap.get(line);
+    if (lineMap.delete(line)) {
+      invariant(breakpoint);
+      this._idToBreakpointMap.delete(breakpoint.id);
+      this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
+      if (userAction) {
+        this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+          action: DELETE_BREAKPOINT_ACTION,
+          breakpoint,
+        });
+      }
+    }
+  }
+
+  _toggleBreakpoint(path: string, line: number): void {
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const lineMap = this._breakpoints.get(path);
+    invariant(lineMap != null);
+    if (lineMap.has(line)) {
+      this._deleteBreakpoint(path, line);
+    } else {
+      this._addBreakpoint(path, line, '');
+    }
+  }
+
+  _bindBreakpoint(
+    path: string,
+    line: number,
+    condition: string,
+    enabled: boolean,
+    resolved: boolean,
+  ): void {
+    // The Chrome devtools always bind a new breakpoint as enabled the first time. If this
+    // breakpoint is known to be disabled in the front-end, sync the enabled state with Chrome.
+    const existingBp = this.getBreakpointAtLine(path, line);
+    const updateEnabled = existingBp != null && existingBp.enabled !== enabled;
+
+    this._addBreakpoint(
+      path,
+      line,
+      condition,
+      resolved,
+      false, // userAction
+      enabled,
+    );
+
+    if (updateEnabled) {
+      const updatedBp = this.getBreakpointAtLine(path, line);
+      if (updatedBp != null) {
+        updatedBp.enabled = !enabled;
+        this._updateBreakpoint(updatedBp);
+      }
+    }
+
+    const currentInfo = this.getDebugProcessInfo();
+    if (
+      condition !== '' &&
+      currentInfo != null &&
+      !currentInfo.getDebuggerCapabilities().conditionalBreakpoints
+    ) {
+      // If the current debugger does not support conditional breakpoints, and the bp that
+      // was just bound has a condition on it, warn the user that the condition isn't going
+      // to be honored.
+      atom.notifications.addWarning(
+        'The current debugger does not support conditional breakpoints. The breakpoint at this location will hit without ' +
+          'evaluating the specified condition expression:\n' +
+          `${nuclideUri.basename(path)}:${line}`,
+      );
+      const updatedBp = this.getBreakpointAtLine(path, line);
+      if (updatedBp != null) {
+        this._updateBreakpointCondition(updatedBp.id, '');
+      }
+    }
+  }
+
+  _handleDebuggerModeChange(newMode: DebuggerModeType): void {
+    if (newMode === DebuggerMode.STOPPED) {
+      // All breakpoints should be unresolved after stop debugging.
+      this._resetBreakpoints();
+    } else {
+      for (const breakpoint of this.getAllBreakpoints()) {
+        if (!breakpoint.resolved) {
+          this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+        }
+      }
+    }
+  }
+
+  _resetBreakpoints(): void {
+    for (const breakpoint of this.getAllBreakpoints()) {
+      breakpoint.resolved = false;
+      breakpoint.hitCount = undefined;
+      this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+    }
+  }
+
+  getBreakpointsForPath(path: string): LineToBreakpointMap {
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const ret = this._breakpoints.get(path);
+    invariant(ret);
+    return ret;
+  }
+
+  getBreakpointLinesForPath(path: string): Set<number> {
+    const lineMap = this._breakpoints.get(path);
+    return lineMap != null ? new Set(lineMap.keys()) : new Set();
+  }
+
+  getBreakpointAtLine(path: string, line: number): ?FileLineBreakpoint {
+    const lineMap = this._breakpoints.get(path);
+    if (lineMap == null) {
+      return null;
+    }
+    return lineMap.get(line);
+  }
+
+  getAllBreakpoints(): FileLineBreakpoints {
+    const breakpoints: FileLineBreakpoints = [];
+    for (const [, lineMap] of this._breakpoints) {
+      for (const breakpoint of lineMap.values()) {
+        breakpoints.push(breakpoint);
+      }
+    }
+    return breakpoints;
+  }
+
+  getSerializedBreakpoints(): Array<SerializedBreakpoint> {
+    const breakpoints = [];
+    for (const [path, lineMap] of this._breakpoints) {
+      for (const line of lineMap.keys()) {
+        const breakpoint = lineMap.get(line);
+        if (breakpoint == null) {
+          continue;
+        }
+
+        breakpoints.push({
+          line,
+          sourceURL: path,
+          disabled: !breakpoint.enabled,
+          condition: breakpoint.condition,
+        });
+      }
+    }
+    return breakpoints;
+  }
+
+  breakpointSupportsConditions(breakpoint: FileLineBreakpoint): boolean {
+    // If currently debugging, return whether or not the current debugger supports this.
+    if (this.getDebuggerMode() !== DebuggerMode.STOPPED) {
+      const currentDebugInfo = this.getDebugProcessInfo();
+      if (currentDebugInfo != null) {
+        return currentDebugInfo.getDebuggerCapabilities()
+          .conditionalBreakpoints;
+      }
+    }
+
+    // If not currently debugging, return if any of the debuggers that support
+    // the file extension this bp is in support conditions.
+    // TODO: have providers register their file extensions and filter correctly here.
+    return true;
+  }
+
+  _deserializeBreakpoints(breakpoints: ?Array<SerializedBreakpoint>): void {
+    if (breakpoints == null) {
+      return;
+    }
+    for (const breakpoint of breakpoints) {
+      const {line, sourceURL, disabled, condition} = breakpoint;
+      this._addBreakpoint(
+        sourceURL,
+        line,
+        condition || '',
+        false, // resolved
+        false, // user action
+        !disabled, // enabled
+      );
+    }
+  }
+
+  /**
+   * Register a change handler that is invoked when the breakpoints UI
+   * needs to be updated for a file.
+   */
+  onNeedUIUpdate(callback: (path: string) => void): IDisposable {
+    return this._emitter.on(BREAKPOINT_NEED_UI_UPDATE, callback);
+  }
+
+  /**
+   * Register a change handler that is invoked when a breakpoint is changed
+   * by user action, like user explicitly added, deleted a breakpoint.
+   */
+  onUserChange(
+    callback: (params: BreakpointUserChangeArgType) => void,
+  ): IDisposable {
+    return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
   }
 }

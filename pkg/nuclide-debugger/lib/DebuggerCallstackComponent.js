@@ -55,8 +55,7 @@ export class DebuggerCallstackComponent extends React.Component<
     },
   }): React.Element<any> => {
     const missingSourceItem =
-      this.props.model.getStore().getCanSetSourcePaths() &&
-      !props.data.hasSource ? (
+      this.props.model.getCanSetSourcePaths() && !props.data.hasSource ? (
         <span
           className={classnames('text-error', 'icon', 'icon-alert')}
           onClick={() => this.props.actions.configureSourcePaths()}

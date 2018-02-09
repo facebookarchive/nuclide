@@ -13,7 +13,7 @@ import type DebuggerModel from './DebuggerModel';
 
 import classnames from 'classnames';
 import * as React from 'react';
-import {BreakpointListComponent} from './BreakpointListComponent';
+import BreakpointListComponent from './BreakpointListComponent';
 
 type Props = {
   model: DebuggerModel,
@@ -31,10 +31,7 @@ export class BreakpointsView extends React.PureComponent<Props> {
           'nuclide-debugger-breakpoint-list',
         )}>
         <div className="nuclide-debugger-pane-content ">
-          <BreakpointListComponent
-            actions={actions}
-            breakpointStore={model.getBreakpointStore()}
-          />
+          <BreakpointListComponent actions={actions} model={model} />
         </div>
       </div>
     );

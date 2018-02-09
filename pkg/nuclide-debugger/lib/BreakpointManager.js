@@ -9,7 +9,7 @@
  * @format
  */
 
-import type BreakpointStore from './BreakpointStore';
+import type DebuggerModel from './DebuggerModel';
 import type DebuggerActions from './DebuggerActions';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -17,14 +17,14 @@ import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import BreakpointDisplayController from './BreakpointDisplayController';
 
 export default class BreakpointManager {
-  _breakpointStore: BreakpointStore;
   _debuggerActions: DebuggerActions;
+  _model: DebuggerModel;
   _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
   _disposables: UniversalDisposable;
 
-  constructor(store: BreakpointStore, debuggerActions: DebuggerActions) {
-    this._breakpointStore = store;
+  constructor(debuggerActions: DebuggerActions, model: DebuggerModel) {
     this._debuggerActions = debuggerActions;
+    this._model = model;
     this._displayControllers = new Map();
     this._disposables = new UniversalDisposable(
       observeTextEditors(this._handleTextEditor.bind(this)),
@@ -56,7 +56,7 @@ export default class BreakpointManager {
     if (!this._displayControllers.has(editor)) {
       const controller = new BreakpointDisplayController(
         this,
-        this._breakpointStore,
+        this._model,
         editor,
         this._debuggerActions,
       );

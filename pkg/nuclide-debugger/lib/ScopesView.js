@@ -37,18 +37,17 @@ export class ScopesView extends React.PureComponent<Props, State> {
       ScopesComponent,
     );
     this._disposables = new UniversalDisposable();
-    const debuggerStore = props.model.getStore();
     this.state = {
-      mode: debuggerStore.getDebuggerMode(),
+      mode: props.model.getDebuggerMode(),
     };
   }
 
   componentDidMount(): void {
-    const debuggerStore = this.props.model.getStore();
+    const {model} = this.props;
     this._disposables.add(
-      debuggerStore.onChange(() => {
+      model.onChange(() => {
         this.setState({
-          mode: debuggerStore.getDebuggerMode(),
+          mode: model.getDebuggerMode(),
         });
       }),
     );

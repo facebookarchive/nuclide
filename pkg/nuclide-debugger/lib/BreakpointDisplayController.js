@@ -11,7 +11,7 @@
 
 import type {FileLineBreakpoint} from './types';
 
-import type BreakpointStore from './BreakpointStore';
+import type DebuggerModel from './DebuggerModel';
 import type DebuggerActions from './DebuggerActions';
 
 import invariant from 'assert';
@@ -41,7 +41,7 @@ type BreakpointMarkerProperties = {
  * editor.
  */
 export default class BreakpointDisplayController {
-  _breakpointStore: BreakpointStore;
+  _model: DebuggerModel;
   _debuggerActions: DebuggerActions;
   _delegate: BreakpointDisplayControllerDelegate;
   _disposables: UniversalDisposable;
@@ -56,13 +56,13 @@ export default class BreakpointDisplayController {
 
   constructor(
     delegate: BreakpointDisplayControllerDelegate,
-    breakpointStore: BreakpointStore,
+    model: DebuggerModel,
     editor: atom$TextEditor,
     debuggerActions: DebuggerActions,
   ) {
     this._delegate = delegate;
     this._disposables = new UniversalDisposable();
-    this._breakpointStore = breakpointStore;
+    this._model = model;
     this._debuggerActions = debuggerActions;
     this._editor = editor;
     this._markers = [];
@@ -85,9 +85,7 @@ export default class BreakpointDisplayController {
     this._disposables.add(
       gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
       editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
-      this._breakpointStore.onNeedUIUpdate(
-        this._handleBreakpointsChanged.bind(this),
-      ),
+      this._model.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
       this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
       this._registerEditorContextMenuHandler(),
     );
@@ -95,8 +93,7 @@ export default class BreakpointDisplayController {
   }
 
   _isDebugging(): boolean {
-    const debuggerStore = this._breakpointStore.getDebuggerStore();
-    return debuggerStore != null && debuggerStore.isDebugging();
+    return this._model.isDebugging();
   }
 
   _registerEditorContextMenuHandler(): IDisposable {
@@ -231,17 +228,15 @@ export default class BreakpointDisplayController {
     if (path == null) {
       return;
     }
-    const breakpoints = this._breakpointStore.getBreakpointsForPath(path);
+    const breakpoints = this._model.getBreakpointsForPath(path);
     // A mutable unhandled lines map.
-    const unhandledLines = this._breakpointStore.getBreakpointLinesForPath(
-      path,
-    );
+    const unhandledLines = this._model.getBreakpointLinesForPath(path);
     const markersToKeep = [];
 
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
       const line = marker.getStartBufferPosition().row;
-      const bp = this._breakpointStore.getBreakpointAtLine(path, line);
+      const bp = this._model.getBreakpointAtLine(path, line);
       if (
         debugging === this._debugging &&
         unhandledLines.has(line) &&
@@ -361,7 +356,7 @@ export default class BreakpointDisplayController {
       const curLine = this._getCurrentMouseEventLine(event);
       this._debuggerActions.toggleBreakpoint(path, curLine);
 
-      if (this._breakpointStore.getBreakpointAtLine(path, curLine) != null) {
+      if (this._model.getBreakpointAtLine(path, curLine) != null) {
         // If a breakpoint was added and showDebuggerOnBpSet config setting
         // is true, show the debugger.
         if (atom.config.get('nuclide.nuclide-debugger.showDebuggerOnBpSet')) {

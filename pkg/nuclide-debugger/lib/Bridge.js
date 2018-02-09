@@ -49,9 +49,9 @@ export default class Bridge {
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
     this._commandDispatcher = new CommandDispatcher(
-      () => debuggerModel.getStore().getIsReadonlyTarget(),
+      () => debuggerModel.getIsReadonlyTarget(),
       pausedEvent => {
-        const info = debuggerModel.getStore().getDebugProcessInfo();
+        const info = debuggerModel.getDebugProcessInfo();
         if (info != null) {
           return info.shouldFilterBreak(pausedEvent);
         }
@@ -60,9 +60,7 @@ export default class Bridge {
     );
     this._consoleEvent$ = new Subject();
     this._disposables = new UniversalDisposable(
-      debuggerModel
-        .getBreakpointStore()
-        .onUserChange(this._handleUserBreakpointChange.bind(this)),
+      debuggerModel.onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
     const subscription = registerConsoleLogging(
       'Debugger',
@@ -322,7 +320,7 @@ export default class Bridge {
   }
 
   _syncDebuggerState(): void {
-    const store = this._debuggerModel.getStore();
+    const store = this._debuggerModel;
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
     this.setShowDisassembly(store.getShowDisassembly());
@@ -349,7 +347,7 @@ export default class Bridge {
   }
 
   _handleLoaderBreakpointResumed(): void {
-    this._debuggerModel.getStore().loaderBreakpointResumed();
+    this._debuggerModel.loaderBreakpointResumed();
   }
 
   _clearInterfaceDelayed(): void {
@@ -470,17 +468,14 @@ export default class Bridge {
     // Send an array of file/line objects.
     if (!this._suppressBreakpointSync) {
       const results = [];
-      this._debuggerModel
-        .getBreakpointStore()
-        .getAllBreakpoints()
-        .forEach(breakpoint => {
-          results.push({
-            sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
-            lineNumber: breakpoint.line,
-            condition: breakpoint.condition,
-            enabled: breakpoint.enabled,
-          });
+      this._debuggerModel.getAllBreakpoints().forEach(breakpoint => {
+        results.push({
+          sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+          lineNumber: breakpoint.line,
+          condition: breakpoint.condition,
+          enabled: breakpoint.enabled,
         });
+      });
       this._commandDispatcher.send('SyncBreakpoints', results);
     }
   }
