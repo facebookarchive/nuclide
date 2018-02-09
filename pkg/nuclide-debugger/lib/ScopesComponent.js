@@ -10,10 +10,14 @@
  */
 
 import type {RemoteObjectId} from 'nuclide-debugger-common/protocol-types';
-import type {ScopesMap} from './ScopesStore';
-import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
+import type DebuggerModel from './DebuggerModel';
+import type {
+  EvaluationResult,
+  ExpansionResult,
+  ScopesMap,
+  ScopeSection,
+} from './types';
 import invariant from 'assert';
-import ScopesStore from './ScopesStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
@@ -25,7 +29,7 @@ import {Section} from '../../nuclide-ui/Section';
 type Props = {|
   +scopes: ScopesMap,
   +watchExpressionStore: WatchExpressionStore,
-  scopesStore: ScopesStore,
+  +model: DebuggerModel,
 |};
 
 const NO_VARIABLES = (
@@ -73,7 +77,7 @@ export class ScopesComponent extends React.Component<Props> {
     if (Boolean(expression) && Boolean(newValue)) {
       invariant(expression != null);
       invariant(newValue != null);
-      this.props.scopesStore.sendSetVariableRequest(
+      this.props.model.sendSetVariableRequest(
         scopeObjectId,
         scopeName,
         expression,
@@ -119,11 +123,10 @@ export class ScopesComponent extends React.Component<Props> {
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
     scope: ScopeSection,
   ): ?React.Element<any> {
-    const {scopesStore} = this.props;
     const {loaded, expanded, name, scopeObjectId, scopeVariables} = scope;
     // Non-local scopes should be collapsed by default since users typically care less about them.
 
-    const setVariableHandler = scopesStore.supportsSetVariable()
+    const setVariableHandler = this.props.model.supportsSetVariable()
       ? this._setVariable.bind(this, scopeObjectId, name)
       : null;
 
@@ -132,7 +135,9 @@ export class ScopesComponent extends React.Component<Props> {
       <Section
         collapsable={true}
         collapsed={!expanded}
-        onChange={isCollapsed => scopesStore.setExpanded(name, !isCollapsed)}
+        onChange={isCollapsed =>
+          this.props.model.setExpanded(name, !isCollapsed)
+        }
         headline={name}
         size="small">
         {!expanded

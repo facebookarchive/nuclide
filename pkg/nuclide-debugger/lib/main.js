@@ -281,7 +281,7 @@ class Activation {
                 );
                 return (
                   bp != null &&
-                  this.getModel()
+                  this._model
                     .getBreakpointStore()
                     .breakpointSupportsConditions(bp)
                 );
@@ -317,7 +317,7 @@ class Activation {
                 command: 'nuclide-debugger:run-to-location',
                 shouldDisplay: event => {
                   // Should also check for is paused.
-                  const store = this.getModel().getStore();
+                  const store = this._model.getStore();
                   const debuggerInstance = store.getDebuggerInstance();
                   if (
                     store.getDebuggerMode() === DebuggerMode.PAUSED &&
@@ -342,7 +342,7 @@ class Activation {
                   this._executeWithEditorPath(
                     event,
                     (filePath, line) =>
-                      this.getModel()
+                      this._model
                         .getBreakpointStore()
                         .getBreakpointAtLine(filePath, line) != null,
                   ) || false,
@@ -355,7 +355,7 @@ class Activation {
                     const bp = this._getBreakpointForLine(filePath, line);
                     return (
                       bp != null &&
-                      this.getModel()
+                      this._model
                         .getBreakpointStore()
                         .breakpointSupportsConditions(bp)
                     );
@@ -367,9 +367,7 @@ class Activation {
                 shouldDisplay: event => {
                   const textEditor = atom.workspace.getActiveTextEditor();
                   if (
-                    !this.getModel()
-                      .getStore()
-                      .isDebugging() ||
+                    !this._model.getStore().isDebugging() ||
                     textEditor == null
                   ) {
                     return false;
@@ -390,7 +388,7 @@ class Activation {
   }
 
   _getBreakpointForLine(path: string, line: number): ?FileLineBreakpoint {
-    const store = this.getModel().getBreakpointStore();
+    const store = this._model.getBreakpointStore();
     return store.getBreakpointAtLine(path, line);
   }
 
@@ -412,18 +410,14 @@ class Activation {
     const {row, column} = request.bufferPosition;
     // Only keep the lines up to and including the buffer position row.
     text = lines.slice(0, row + 1).join('\n');
-    const debuggerInstance = this.getModel()
-      .getStore()
-      .getDebuggerInstance();
+    const debuggerInstance = this._model.getStore().getDebuggerInstance();
     if (
       debuggerInstance == null ||
       !debuggerInstance.getDebuggerProcessInfo().getDebuggerCapabilities()
         .completionsRequest
     ) {
       // As a fallback look at the variable names of currently visible scopes.
-      const scopes = this.getModel()
-        .getScopesStore()
-        .getScopesNow();
+      const scopes = this._model.getScopesNow();
       return Promise.resolve(
         arrayFlatten(
           Array.from(scopes.values()).map(({scopeVariables}) =>
@@ -433,7 +427,7 @@ class Activation {
       );
     }
     return new Promise((resolve, reject) => {
-      this.getModel()
+      this._model
         .getBridge()
         .sendCompletionsCommand(text, column + 1, (err, response) => {
           if (err != null) {
@@ -456,7 +450,7 @@ class Activation {
   }
 
   serialize(): SerializedState {
-    const model = this.getModel();
+    const model = this._model;
     const state = {
       breakpoints: model.getBreakpointStore().getSerializedBreakpoints(),
       watchExpressions: model
@@ -474,10 +468,6 @@ class Activation {
 
   dispose() {
     this._disposables.dispose();
-  }
-
-  getModel(): DebuggerModel {
-    return this._model;
   }
 
   _registerCommandsContextMenuAndOpener(): UniversalDisposable {
@@ -611,7 +601,7 @@ class Activation {
       getBreakpointEventLocation((event.target: HTMLElement)) ||
       this._executeWithEditorPath(event, (path, line) => ({path, line}));
     if (location != null) {
-      const store = this.getModel().getBreakpointStore();
+      const store = this._model.getBreakpointStore();
       const bp = this._getBreakpointForLine(location.path, location.line);
       if (bp != null && store.breakpointSupportsConditions(bp)) {
         // Open the configuration dialog.
@@ -619,7 +609,7 @@ class Activation {
         ReactDOM.render(
           <BreakpointConfigComponent
             breakpoint={bp}
-            actions={this.getModel().getActions()}
+            actions={this._model.getActions()}
             onDismiss={() => {
               ReactDOM.unmountComponentAtNode(container);
             }}
@@ -949,7 +939,7 @@ class Activation {
   consumeRegisterExecutor(
     registerExecutor: RegisterExecutorFunction,
   ): IDisposable {
-    const model = this.getModel();
+    const model = this._model;
     const register = () =>
       registerConsoleExecutor(
         model.getWatchExpressionStore(),
@@ -962,26 +952,18 @@ class Activation {
   }
 
   consumeDebuggerProvider(provider: NuclideDebuggerProvider): IDisposable {
-    this.getModel()
-      .getActions()
-      .addDebuggerProvider(provider);
+    this._model.getActions().addDebuggerProvider(provider);
     return new UniversalDisposable(() => {
-      this.getModel()
-        .getActions()
-        .removeDebuggerProvider(provider);
+      this._model.getActions().removeDebuggerProvider(provider);
     });
   }
 
   consumeEvaluationExpressionProvider(
     provider: NuclideEvaluationExpressionProvider,
   ): IDisposable {
-    this.getModel()
-      .getActions()
-      .addEvaluationExpressionProvider(provider);
+    this._model.getActions().addEvaluationExpressionProvider(provider);
     return new UniversalDisposable(() => {
-      this.getModel()
-        .getActions()
-        .removeEvaluationExpressionProvider(provider);
+      this._model.getActions().removeEvaluationExpressionProvider(provider);
     });
   }
 
@@ -1015,13 +997,13 @@ class Activation {
   }
 
   provideRemoteControlService(): RemoteControlService {
-    return new RemoteControlService(() => this.getModel());
+    return new RemoteControlService(() => this._model);
   }
 
   consumeDatatipService(service: DatatipService): IDisposable {
     const provider = this._createDatatipProvider();
     const disposable = service.addProvider(provider);
-    this.getModel().setDatatipService(service);
+    this._model.setDatatipService(service);
     this._disposables.add(disposable);
     return disposable;
   }
@@ -1032,7 +1014,7 @@ class Activation {
       providerName: DATATIP_PACKAGE_NAME,
       priority: 1,
       datatip: (editor: TextEditor, position: atom$Point) => {
-        return debuggerDatatip(this.getModel(), editor, position);
+        return debuggerDatatip(this._model, editor, position);
       },
     };
   }

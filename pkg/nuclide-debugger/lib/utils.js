@@ -72,3 +72,7 @@ export function getLineForEvent(editor: atom$TextEditor, event: any): number {
     cursorLine,
   );
 }
+
+export function isLocalScopeName(scopeName: string): boolean {
+  return ['Local', 'Locals'].indexOf(scopeName) !== -1;
+}

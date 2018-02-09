@@ -33,8 +33,7 @@ function getEvaluationExpression(
       break;
     }
   }
-  // eslint-disable-next-line eqeqeq
-  return matchingProvider === null
+  return matchingProvider == null
     ? Promise.resolve(getDefaultEvaluationExpression(editor, position))
     : matchingProvider.getEvaluationExpression(editor, position);
 }

@@ -37,6 +37,8 @@ export type ScopeSection = ScopeSectionPayload & {
   scopeVariables: ExpansionResult,
 };
 
+export type ScopesMap = Map<string, ScopeSection>;
+
 export type Expression = string;
 export type EvaluatedExpression = {
   expression: Expression,

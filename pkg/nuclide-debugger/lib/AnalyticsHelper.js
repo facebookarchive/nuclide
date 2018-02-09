@@ -17,16 +17,14 @@ export function beginTimerTracking(eventName: string) {
 }
 
 export function failTimerTracking(err: Error) {
-  // eslint-disable-next-line eqeqeq
-  if (timer !== null) {
+  if (timer != null) {
     timer.onError(err);
     timer = null;
   }
 }
 
 export function endTimerTracking() {
-  // eslint-disable-next-line eqeqeq
-  if (timer !== null) {
+  if (timer != null) {
     timer.onSuccess();
     timer = null;
   }

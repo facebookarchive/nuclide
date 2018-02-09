@@ -33,10 +33,7 @@ export class ScopesView extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this._scopesComponentWrapped = bindObservableAsProps(
-      props.model
-        .getScopesStore()
-        .getScopes()
-        .map(scopes => ({scopes})),
+      props.model.getScopes().map(scopes => ({scopes})),
       ScopesComponent,
     );
     this._disposables = new UniversalDisposable();
@@ -80,7 +77,7 @@ export class ScopesView extends React.PureComponent<Props, State> {
         <div className="nuclide-debugger-pane-content">
           <ScopesComponentWrapped
             watchExpressionStore={model.getWatchExpressionStore()}
-            scopesStore={model.getScopesStore()}
+            model={model}
           />
         </div>
       </div>
