@@ -153,9 +153,6 @@ export default class CommandDispatcher {
       case 'setPauseOnCaughtException':
         this._bridgeAdapter.setPauseOnCaughtException(args[1]);
         break;
-      case 'setSingleThreadStepping':
-        this._bridgeAdapter.setSingleThreadStepping(args[1]);
-        break;
       case 'setShowDisassembly':
         this._bridgeAdapter.setShowDisassembly(args[1]);
         break;

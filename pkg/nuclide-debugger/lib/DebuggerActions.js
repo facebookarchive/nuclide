@@ -86,9 +86,6 @@ export default class DebuggerActions {
         this._store.getSettings().threadsComponentTitle =
           debuggerProps.threadsComponentTitle;
       }
-      const singleThreadStepping = debuggerCapabilities.singleThreadStepping;
-      this._store.getSettings().singleThreadStepping = singleThreadStepping;
-      this.toggleSingleThreadStepping(singleThreadStepping);
 
       const customControlButtons = debuggerProps.customControlButtons;
       if (customControlButtons.length > 0) {
@@ -582,16 +579,6 @@ export default class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
       data: pauseOnCaughtException,
-    });
-  }
-
-  toggleSingleThreadStepping(singleThreadStepping: boolean): void {
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_SINGLE_THREAD_STEPPING, {
-      singleThreadStepping,
-    });
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING,
-      data: singleThreadStepping,
     });
   }
 

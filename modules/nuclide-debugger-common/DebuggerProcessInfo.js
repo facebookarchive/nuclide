@@ -44,7 +44,6 @@ export default class DebuggerProcessInfo {
       readOnlyTarget: false,
       registers: false,
       setVariable: false,
-      singleThreadStepping: false,
       threads: false,
       completionsRequest: false,
     };

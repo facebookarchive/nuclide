@@ -32,11 +32,9 @@ type DebuggerSteppingComponentProps = {
 };
 
 type DebuggerSteppingComponentState = {
-  allowSingleThreadStepping: boolean,
   debuggerMode: DebuggerModeType,
   pauseOnException: boolean,
   pauseOnCaughtException: boolean,
-  enableSingleThreadStepping: boolean,
   customControlButtons: Array<ControlButtonSpecification>,
   waitingForPause: boolean,
 };
@@ -104,13 +102,9 @@ export class DebuggerSteppingComponent extends React.Component<
     this._disposables = new UniversalDisposable();
     const {debuggerStore} = props;
     this.state = {
-      allowSingleThreadStepping: Boolean(
-        debuggerStore.getSettings().singleThreadStepping,
-      ),
       debuggerMode: debuggerStore.getDebuggerMode(),
       pauseOnException: debuggerStore.getTogglePauseOnException(),
       pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-      enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       customControlButtons: debuggerStore.getCustomControlButtons(),
       waitingForPause: false,
     };
@@ -121,12 +115,9 @@ export class DebuggerSteppingComponent extends React.Component<
     this._disposables.add(
       debuggerStore.onChange(() => {
         this.setState({
-          allowSingleThreadStepping: debuggerStore.getSettings()
-            .singleThreadStepping,
           debuggerMode: debuggerStore.getDebuggerMode(),
           pauseOnException: debuggerStore.getTogglePauseOnException(),
           pauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-          enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
           customControlButtons: debuggerStore.getCustomControlButtons(),
         });
 
@@ -168,8 +159,6 @@ export class DebuggerSteppingComponent extends React.Component<
       debuggerMode,
       pauseOnException,
       pauseOnCaughtException,
-      allowSingleThreadStepping,
-      enableSingleThreadStepping,
       customControlButtons,
       waitingForPause,
     } = this.state;
@@ -331,17 +320,6 @@ export class DebuggerSteppingComponent extends React.Component<
               </span>,
             ]
           : null}
-        {allowSingleThreadStepping ? (
-          <Checkbox
-            disabled={isStopped || isReadonlyTarget}
-            className="nuclide-debugger-exception-checkbox"
-            onChange={() =>
-              actions.toggleSingleThreadStepping(!enableSingleThreadStepping)
-            }
-            checked={enableSingleThreadStepping}
-            label={'Single Thread Stepping'}
-          />
-        ) : null}
       </div>
     );
   }

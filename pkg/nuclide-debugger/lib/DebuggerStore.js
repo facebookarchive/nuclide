@@ -46,7 +46,6 @@ export class DebuggerStore {
   _debuggerMode: DebuggerModeType;
   _togglePauseOnException: boolean;
   _togglePauseOnCaughtException: boolean;
-  _enableSingleThreadStepping: boolean;
   _enableShowDisassembly: boolean;
   _onLoaderBreakpointResume: () => void;
   _registerExecutor: ?() => IDisposable;
@@ -71,7 +70,6 @@ export class DebuggerStore {
 
     this._debuggerSettings = {
       supportThreadsWindow: false,
-      singleThreadStepping: false,
       customThreadColumns: [],
       threadsComponentTitle: 'Threads',
     };
@@ -81,7 +79,6 @@ export class DebuggerStore {
     this._debuggerMode = DebuggerMode.STOPPED;
     this._togglePauseOnException = pauseOnException;
     this._togglePauseOnCaughtException = pauseOnCaughtException;
-    this._enableSingleThreadStepping = false;
     this._enableShowDisassembly = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
@@ -151,10 +148,6 @@ export class DebuggerStore {
     return this._togglePauseOnCaughtException;
   }
 
-  getEnableSingleThreadStepping(): boolean {
-    return this._enableSingleThreadStepping;
-  }
-
   getIsReadonlyTarget(): boolean {
     return (
       this._debugProcessInfo != null &&
@@ -180,10 +173,6 @@ export class DebuggerStore {
 
   getDebugProcessInfo(): ?DebuggerProcessInfo {
     return this._debugProcessInfo;
-  }
-
-  initializeSingleThreadStepping(mode: boolean) {
-    this._enableSingleThreadStepping = mode;
   }
 
   onChange(callback: () => void): IDisposable {
@@ -244,13 +233,6 @@ export class DebuggerStore {
         this._togglePauseOnCaughtException = pauseOnCaughtException;
         if (this.isDebugging()) {
           this.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
-        }
-        break;
-      case ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING:
-        const singleThreadStepping = payload.data;
-        this._enableSingleThreadStepping = singleThreadStepping;
-        if (this.isDebugging()) {
-          this.getBridge().setSingleThreadStepping(singleThreadStepping);
         }
         break;
       case ActionTypes.DEBUGGER_MODE_CHANGE:

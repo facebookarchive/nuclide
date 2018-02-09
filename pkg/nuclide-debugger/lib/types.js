@@ -17,12 +17,11 @@ import type {EvaluationResult as EvaluationResult_} from 'nuclide-commons-ui/Tex
 // eslint-disable-next-line rulesdir/import-type-style
 import type {ExpansionResult as ExpansionResult_} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
-export type DebuggerSettings = {
+export type DebuggerSettings = {|
   supportThreadsWindow: boolean,
-  singleThreadStepping: boolean,
   customThreadColumns: Array<ThreadColumn>,
   threadsComponentTitle: string,
-};
+|};
 
 export type EvaluationResult = EvaluationResult_;
 export type ExpansionResult = ExpansionResult_;

@@ -46,7 +46,6 @@ export class BootstrapInfo extends DebuggerProcessInfo {
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
       ...super.getDebuggerCapabilities(),
-      singleThreadStepping: true,
       threads: true,
     };
   }

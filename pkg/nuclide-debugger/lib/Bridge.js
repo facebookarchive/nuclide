@@ -162,13 +162,6 @@ export default class Bridge {
     );
   }
 
-  setSingleThreadStepping(singleThreadStepping: boolean): void {
-    this._commandDispatcher.send(
-      'setSingleThreadStepping',
-      singleThreadStepping,
-    );
-  }
-
   setShowDisassembly(disassembly: boolean): void {
     this._commandDispatcher.send('setShowDisassembly', disassembly);
   }
@@ -332,7 +325,6 @@ export default class Bridge {
     const store = this._debuggerModel.getStore();
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
-    this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
     this.setShowDisassembly(store.getShowDisassembly());
   }
 

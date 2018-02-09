@@ -102,7 +102,6 @@ export type DebuggerCapabilities = {
   +readOnlyTarget: boolean,
   +registers: boolean,
   +setVariable: boolean,
-  +singleThreadStepping: boolean,
   +threads: boolean,
   +completionsRequest: boolean,
 };

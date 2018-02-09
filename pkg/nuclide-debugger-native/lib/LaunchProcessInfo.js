@@ -59,7 +59,6 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
         this._launchTargetInfo.coreDump != null &&
         this._launchTargetInfo.coreDump !== '',
       registers: true,
-      singleThreadStepping: true,
       threads: true,
     };
   }
