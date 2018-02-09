@@ -71,13 +71,7 @@ export class CallstackView extends React.PureComponent<
       <div
         className={classnames('nuclide-debugger-container-new', disabledClass)}>
         <div className="nuclide-debugger-pane-content">
-          <DebuggerCallstackComponent
-            actions={actions}
-            setSelectedCallFrameIndex={model.setSelectedCallFrameIndex.bind(
-              model,
-            )}
-            callstackStore={model.getCallstackStore()}
-          />
+          <DebuggerCallstackComponent actions={actions} model={model} />
         </div>
       </div>
     );

@@ -12,7 +12,7 @@
 import * as React from 'react';
 import type {Callstack, CallstackItem} from './types';
 import type DebuggerActions from './DebuggerActions';
-import type CallstackStore from './CallstackStore';
+import type DebuggerModel from './DebuggerModel';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -22,8 +22,7 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,
-  callstackStore: CallstackStore,
-  setSelectedCallFrameIndex: (callFrameIndex: number) => void,
+  model: DebuggerModel,
 };
 
 type DebuggerCallstackComponentState = {
@@ -41,8 +40,8 @@ export class DebuggerCallstackComponent extends React.Component<
     super(props);
     this._disposables = new UniversalDisposable();
     this.state = {
-      callstack: props.callstackStore.getCallstack(),
-      selectedCallFrameIndex: props.callstackStore.getSelectedCallFrameIndex(),
+      callstack: props.model.getCallstack(),
+      selectedCallFrameIndex: props.model.getSelectedCallFrameIndex(),
     };
   }
 
@@ -56,7 +55,7 @@ export class DebuggerCallstackComponent extends React.Component<
     },
   }): React.Element<any> => {
     const missingSourceItem =
-      this.props.callstackStore.getDebuggerStore().getCanSetSourcePaths() &&
+      this.props.model.getStore().getCanSetSourcePaths() &&
       !props.data.hasSource ? (
         <span
           className={classnames('text-error', 'icon', 'icon-alert')}
@@ -90,12 +89,12 @@ export class DebuggerCallstackComponent extends React.Component<
   };
 
   componentDidMount(): void {
-    const {callstackStore} = this.props;
+    const {model} = this.props;
     this._disposables.add(
-      callstackStore.onChange(() => {
+      model.onCallstackChange(() => {
         this.setState({
-          selectedCallFrameIndex: callstackStore.getSelectedCallFrameIndex(),
-          callstack: callstackStore.getCallstack(),
+          selectedCallFrameIndex: model.getSelectedCallFrameIndex(),
+          callstack: model.getCallstack(),
         });
       }),
     );
@@ -109,7 +108,7 @@ export class DebuggerCallstackComponent extends React.Component<
     clickedCallframe: ?CallstackItem,
     callFrameIndex: number,
   ): void => {
-    this.props.setSelectedCallFrameIndex(callFrameIndex);
+    this.props.model.setSelectedCallFrameIndex(callFrameIndex);
   };
 
   render(): React.Node {

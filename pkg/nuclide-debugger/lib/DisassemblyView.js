@@ -12,7 +12,6 @@
 import type {FrameDissassembly} from './types';
 
 import * as React from 'react';
-import CallstackStore from './CallstackStore';
 import DebuggerModel from './DebuggerModel';
 import {Table} from 'nuclide-commons-ui/Table';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -27,7 +26,6 @@ type State = {
 
 export class DisassemblyView extends React.Component<Props, State> {
   _state: State;
-  _callstackStore: CallstackStore;
   _disposables: UniversalDisposable;
 
   constructor(props: Props) {
@@ -36,7 +34,6 @@ export class DisassemblyView extends React.Component<Props, State> {
     (this: any)._callStackUpdated = this._callStackUpdated.bind(this);
 
     this._disposables = new UniversalDisposable();
-    this._callstackStore = this.props.model.getCallstackStore();
     this.state = {
       frameInfo: null,
     };
@@ -48,7 +45,7 @@ export class DisassemblyView extends React.Component<Props, State> {
       () => {
         this.props.model.getStore().setShowDisassembly(false);
       },
-      this._callstackStore.onChange(() => {
+      this.props.model.onCallstackChange(() => {
         this._callStackUpdated();
       }),
     );
@@ -61,13 +58,13 @@ export class DisassemblyView extends React.Component<Props, State> {
   }
 
   _callStackUpdated(): void {
-    const callstack = this._callstackStore.getCallstack();
+    const callstack = this.props.model.getCallstack();
     if (callstack == null || callstack.length === 0) {
       this.setState({
         frameInfo: null,
       });
     } else {
-      const selectedFrame = this._callstackStore.getSelectedCallFrameIndex();
+      const selectedFrame = this.props.model.getSelectedCallFrameIndex();
       const selectedFrameInfo = callstack[selectedFrame];
       this.setState({
         frameInfo:

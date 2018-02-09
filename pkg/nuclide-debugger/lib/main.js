@@ -807,10 +807,9 @@ class Activation {
   }
 
   _copyDebuggerDisassembly() {
-    const callstackStore = this._model.getCallstackStore();
-    const callstack = callstackStore.getCallstack();
+    const callstack = this._model.getCallstack();
     if (callstack != null) {
-      const selectedFrame = callstackStore.getSelectedCallFrameIndex();
+      const selectedFrame = this._model.getSelectedCallFrameIndex();
       if (selectedFrame >= 0 && selectedFrame < callstack.length) {
         const frameInfo = callstack[selectedFrame].disassembly;
         if (frameInfo != null) {
@@ -840,10 +839,9 @@ class Activation {
   }
 
   _copyDebuggerRegisters() {
-    const callstackStore = this._model.getCallstackStore();
-    const callstack = callstackStore.getCallstack();
+    const callstack = this._model.getCallstack();
     if (callstack != null) {
-      const selectedFrame = callstackStore.getSelectedCallFrameIndex();
+      const selectedFrame = this._model.getSelectedCallFrameIndex();
       if (selectedFrame >= 0 && selectedFrame < callstack.length) {
         const registerInfo = callstack[selectedFrame].registers;
         if (registerInfo != null) {
@@ -873,9 +871,8 @@ class Activation {
     ): any);
     if (clickedRow != null) {
       const rowIndex = clickedRow.dataset.rowindex;
-      const callstackStore = this._model.getCallstackStore();
-      const callstack = callstackStore.getCallstack();
-      const selectedFrameIndex = callstackStore.getSelectedCallFrameIndex();
+      const callstack = this._model.getCallstack();
+      const selectedFrameIndex = this._model.getSelectedCallFrameIndex();
       if (
         callstack != null &&
         selectedFrameIndex >= 0 &&
@@ -893,8 +890,7 @@ class Activation {
   }
 
   _copyDebuggerCallstack(event: Event) {
-    const callstackStore = this._model.getCallstackStore();
-    const callstack = callstackStore.getCallstack();
+    const callstack = this._model.getCallstack();
     if (callstack) {
       let callstackText = '';
       callstack.forEach((item, i) => {
