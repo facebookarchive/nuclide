@@ -50,3 +50,6 @@ export const DebuggerMode = Object.freeze({
 
 // This is to work around flow's missing support of enums.
 (DebuggerMode: {[key: string]: DebuggerModeType});
+
+export const DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
+export const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
