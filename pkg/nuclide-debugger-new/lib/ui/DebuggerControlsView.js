@@ -100,11 +100,11 @@ export default class DebuggerControlsView extends React.PureComponent<
         </div>
       );
 
-    const {focussedProcess} = service.viewModel;
+    const {focusedProcess} = service.viewModel;
     const targetDescription =
-      focussedProcess == null
+      focusedProcess == null
         ? null
-        : focussedProcess.configuration.properties.targetDescription();
+        : focusedProcess.configuration.properties.targetDescription();
 
     const debugeeRunningNotice =
       mode !== DebuggerMode.RUNNING ? null : (

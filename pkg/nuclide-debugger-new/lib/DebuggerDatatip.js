@@ -63,16 +63,16 @@ export async function debuggerDatatip(
     return null;
   }
   const {expression, range} = evaluationExpression;
-  const {focussedProcess, focussedStackFrame} = service.viewModel;
-  if (expression == null || focussedProcess == null) {
+  const {focusedProcess, focusedStackFrame} = service.viewModel;
+  if (expression == null || focusedProcess == null) {
     // TODO respect session.capabilities.supportsEvaluateForHovers
     // and fallback to scopes variables resolution.
     return null;
   }
   const propStream = expressionAsEvaluationResultStream(
     service.createExpression(expression),
-    focussedProcess,
-    focussedStackFrame,
+    focusedProcess,
+    focusedStackFrame,
     'hover',
   ).map(evaluationResult => ({
     expression,

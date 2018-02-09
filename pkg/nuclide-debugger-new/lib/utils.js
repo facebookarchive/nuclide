@@ -127,12 +127,12 @@ export function expressionAsEvaluationResult(
 
 export function expressionAsEvaluationResultStream(
   expression: IEvaluatableExpression,
-  focussedProcess: IProcess,
-  focussedStackFrame: ?IStackFrame,
+  focusedProcess: IProcess,
+  focusedStackFrame: ?IStackFrame,
   context: ContextType,
 ): Observable<?EvaluationResult> {
   return Observable.fromPromise(
-    expression.evaluate(focussedProcess, focussedStackFrame, context),
+    expression.evaluate(focusedProcess, focusedStackFrame, context),
   )
     .map(() => expressionAsEvaluationResult(expression))
     .startWith(null);

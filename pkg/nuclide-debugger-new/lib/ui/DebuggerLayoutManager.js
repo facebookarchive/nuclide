@@ -181,7 +181,7 @@ export default class DebuggerLayoutManager {
 
   _initializeDebuggerPanes(): void {
     const debuggerUriBase = 'atom://nuclide/debugger-';
-    const {focussedProcess} = this._service.viewModel;
+    const {focusedProcess} = this._service.viewModel;
 
     // This configures the debugger panes. By default, they'll appear below the stepping
     // controls from top to bottom in the order they're defined here. After that, the
@@ -242,13 +242,13 @@ export default class DebuggerLayoutManager {
         isLifetimeView: false,
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () =>
-          focussedProcess == null
+          focusedProcess == null
             ? 'Threads'
-            : focussedProcess.configuration.properties.threadsComponentTitle,
+            : focusedProcess.configuration.properties.threadsComponentTitle,
         isEnabled: () =>
-          focussedProcess == null
+          focusedProcess == null
             ? false
-            : focussedProcess.configuration.capabilities.threads,
+            : focusedProcess.configuration.capabilities.threads,
         createView: () => <ThreadsView service={this._service} />,
         debuggerModeFilter: (mode: DebuggerModeType) =>
           mode !== DebuggerMode.STOPPED,

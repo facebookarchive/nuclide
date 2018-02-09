@@ -38,11 +38,11 @@ export default class DebuggerCallstackComponent extends React.Component<
   }
 
   _getState(): DebuggerCallstackComponentState {
-    const {focussedStackFrame, focussedThread} = this.props.service.viewModel;
+    const {focusedStackFrame, focusedThread} = this.props.service.viewModel;
     return {
-      callstack: focussedThread == null ? [] : focussedThread.getCallStack(),
+      callstack: focusedThread == null ? [] : focusedThread.getCallStack(),
       selectedCallFrameId:
-        focussedStackFrame == null ? -1 : focussedStackFrame.frameId,
+        focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
     };
   }
 

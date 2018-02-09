@@ -59,12 +59,14 @@ export interface ISource {
   +name: ?string;
   +uri: NuclideUri;
   +origin: ?string;
-  +presentationHint: ?('normal' | 'emphasize' | 'deemphasize');
+  +presentationHint: ?SourcePresentationHint;
   +raw: DebugProtocol.Source;
   +reference: ?number;
   +inMemory: boolean;
   openInEditor(): Promise<atom$TextEditor>;
 }
+
+export type SourcePresentationHint = 'normal' | 'emphasize' | 'deemphasize';
 
 export interface IExpressionContainer extends ITreeElement {
   hasChildren(): boolean;
@@ -261,17 +263,17 @@ export interface IViewModel {
   /**
    * Returns the focused debug process or null if no process is stopped.
    */
-  +focussedProcess: ?IProcess;
+  +focusedProcess: ?IProcess;
 
   /**
    * Returns the focused thread or null if no thread is stopped.
    */
-  +focussedThread: ?IThread;
+  +focusedThread: ?IThread;
 
   /**
    * Returns the focused stack frame or null if there are no stack frames.
    */
-  +focussedStackFrame: ?IStackFrame;
+  +focusedStackFrame: ?IStackFrame;
   isMultiProcessView(): boolean;
 
   onDidFocusProcess(callback: (process: ?IProcess) => mixed): IDisposable;

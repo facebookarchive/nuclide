@@ -46,13 +46,13 @@ export default class BreakpointListComponent extends React.Component<
 
   _computeState(): State {
     const {service} = this.props;
-    const {focussedProcess} = service.viewModel;
+    const {focusedProcess} = service.viewModel;
     const model = service.getModel();
     return {
       supportsConditionalBreakpoints:
-        focussedProcess != null &&
+        focusedProcess != null &&
         Boolean(
-          focussedProcess.session.capabilities.supportsConditionalBreakpoints,
+          focusedProcess.session.capabilities.supportsConditionalBreakpoints,
         ),
       breakpoints: model.getBreakpoints(),
       exceptionBreakpoints: model.getExceptionBreakpoints(),

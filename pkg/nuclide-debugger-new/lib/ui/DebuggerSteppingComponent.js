@@ -116,14 +116,14 @@ export default class DebuggerSteppingComponent extends React.Component<
         )
         .subscribe(() => {
           const debuggerMode = service.getDebuggerMode();
-          const {focussedProcess} = service.viewModel;
+          const {focusedProcess} = service.viewModel;
 
           this.setState({
             debuggerMode,
             customControlButtons:
-              focussedProcess == null
+              focusedProcess == null
                 ? []
-                : focussedProcess.configuration.properties.customControlButtons,
+                : focusedProcess.configuration.properties.customControlButtons,
           });
           if (
             this.state.waitingForPause &&
@@ -146,8 +146,8 @@ export default class DebuggerSteppingComponent extends React.Component<
   }
 
   _togglePauseState = () => {
-    const {focussedThread} = this.props.service.viewModel;
-    if (focussedThread == null) {
+    const {focusedThread} = this.props.service.viewModel;
+    if (focusedThread == null) {
       logger.error('No focussed thread to pause/resume');
       return;
     }
@@ -155,9 +155,9 @@ export default class DebuggerSteppingComponent extends React.Component<
     const {debuggerMode} = this.state;
     if (debuggerMode === DebuggerMode.RUNNING) {
       this._setWaitingForPause(true);
-      focussedThread.pause();
+      focusedThread.pause();
     } else if (debuggerMode === DebuggerMode.PAUSED) {
-      focussedThread.continue();
+      focusedThread.continue();
     } else {
       logger.error('Unable to pause/resume in debug mode', debuggerMode);
     }
@@ -166,7 +166,7 @@ export default class DebuggerSteppingComponent extends React.Component<
   render(): React.Node {
     const {debuggerMode, waitingForPause, customControlButtons} = this.state;
     const {service} = this.props;
-    const {focussedThread} = service.viewModel;
+    const {focusedThread} = service.viewModel;
     const isReadonlyTarget = false;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
@@ -244,24 +244,24 @@ export default class DebuggerSteppingComponent extends React.Component<
           </Button>
           <DebuggerStepButton
             icon={STEP_OVER_ICON}
-            disabled={!isPaused || isReadonlyTarget || focussedThread == null}
+            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step over"
             keyBindingCommand="nuclide-debugger:step-over"
-            onClick={() => nullthrows(focussedThread).next()}
+            onClick={() => nullthrows(focusedThread).next()}
           />
           <DebuggerStepButton
             icon={STEP_INTO_ICON}
-            disabled={!isPaused || isReadonlyTarget || focussedThread == null}
+            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step into"
             keyBindingCommand="nuclide-debugger:step-into"
-            onClick={() => nullthrows(focussedThread).stepIn()}
+            onClick={() => nullthrows(focusedThread).stepIn()}
           />
           <DebuggerStepButton
             icon={STEP_OUT_ICON}
-            disabled={!isPaused || isReadonlyTarget || focussedThread == null}
+            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step out"
             keyBindingCommand="nuclide-debugger:step-out"
-            onClick={() => nullthrows(focussedThread).stepOut()}
+            onClick={() => nullthrows(focusedThread).stepOut()}
           />
           <Button
             icon="primitive-square"

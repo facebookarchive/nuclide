@@ -117,11 +117,10 @@ export default class DebuggerThreadsComponent extends React.Component<
   }
 
   _getState(): $Shape<State> {
-    const {focussedThread, focussedProcess} = this.props.service.viewModel;
+    const {focusedThread, focusedProcess} = this.props.service.viewModel;
     return {
-      threadList:
-        focussedProcess == null ? [] : focussedProcess.getAllThreads(),
-      selectedThreadId: focussedThread == null ? -1 : focussedThread.threadId,
+      threadList: focusedProcess == null ? [] : focusedProcess.getAllThreads(),
+      selectedThreadId: focusedThread == null ? -1 : focusedThread.threadId,
       threadsLoading: false, // TODO
     };
   }

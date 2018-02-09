@@ -27,8 +27,8 @@ import {
 
 type Props = {
   watchExpressions: Array<IEvaluatableExpression>,
-  focussedStackFrame: ?IStackFrame,
-  focussedProcess: ?IProcess,
+  focusedStackFrame: ?IStackFrame,
+  focusedProcess: ?IProcess,
   onAddWatchExpression: (expression: string) => void,
   onRemoveWatchExpression: (id: string) => void,
   onUpdateWatchExpression: (id: string, newExpression: string) => void,
@@ -111,7 +111,7 @@ export default class WatchExpressionComponent extends React.Component<
   _renderExpression = (
     watchExpression: IEvaluatableExpression,
   ): React.Element<any> => {
-    const {focussedProcess, focussedStackFrame} = this.props;
+    const {focusedProcess, focusedStackFrame} = this.props;
     const id = watchExpression.getId();
     let evalResult;
     if (id === this.state.rowBeingEdited) {
@@ -131,13 +131,13 @@ export default class WatchExpressionComponent extends React.Component<
           initialValue={watchExpression.name}
         />
       );
-    } else if (focussedProcess == null) {
+    } else if (focusedProcess == null) {
       evalResult = Observable.of(null);
     } else {
       evalResult = expressionAsEvaluationResultStream(
         watchExpression,
-        focussedProcess,
-        focussedStackFrame,
+        focusedProcess,
+        focusedStackFrame,
         'watch',
       );
     }

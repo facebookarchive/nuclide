@@ -84,13 +84,13 @@ export default class ScopesComponent extends React.Component<Props, State> {
   }
 
   _getScopes(): Observable<Expected<Array<IScope>>> {
-    const {focussedStackFrame} = this.props.service.viewModel;
-    if (focussedStackFrame == null) {
+    const {focusedStackFrame} = this.props.service.viewModel;
+    if (focusedStackFrame == null) {
       return Observable.of(Expect.value([]));
     } else {
       return Observable.of(Expect.pendingValue([])).concat(
         Observable.fromPromise(
-          focussedStackFrame
+          focusedStackFrame
             .getScopes()
             .then(scopes => Expect.value(scopes), error => Expect.error(error)),
         ),
@@ -105,10 +105,10 @@ export default class ScopesComponent extends React.Component<Props, State> {
   _renderScopeSection(scope: IScope): ?React.Element<any> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const expanded = this._isScopeExpanded(scope);
-    const {focussedProcess} = this.props.service.viewModel;
+    const {focusedProcess} = this.props.service.viewModel;
     const canSetVariables =
-      focussedProcess != null &&
-      focussedProcess.session.capabilities.supportsSetVariable;
+      focusedProcess != null &&
+      focusedProcess.session.capabilities.supportsSetVariable;
 
     let ScopeBodyComponent = () => null;
     if (expanded) {
