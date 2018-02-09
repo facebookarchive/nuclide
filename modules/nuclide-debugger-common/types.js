@@ -11,9 +11,11 @@
  */
 
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
+import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
+import type {ProcessMessage} from 'nuclide-commons/process';
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 export type AtomNotification = {
@@ -121,4 +123,11 @@ export interface DebuggerInstanceInterface {
   getProviderName(): string;
   getTargetUri(): NuclideUri;
   dispose(): void;
+}
+
+export interface IVsAdapterSpawner {
+  spawnAdapter(
+    adapter: VSAdapterExecutableInfo,
+  ): ConnectableObservable<ProcessMessage>;
+  write(input: string): Promise<void>;
 }

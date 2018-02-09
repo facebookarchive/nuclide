@@ -112,7 +112,7 @@ async function withSession(
   }
 }
 
-async function waitForEvent<T: DebugProtocol.base$Event>(
+async function waitForEvent<T: DebugProtocol.DebugEvent>(
   eventStream: rxjs$Observable<T>,
 ): Promise<void> {
   await eventStream.take(1).toPromise();

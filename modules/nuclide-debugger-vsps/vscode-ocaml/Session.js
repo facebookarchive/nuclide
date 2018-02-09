@@ -166,7 +166,7 @@ export class Session {
     const mapFailedBreakpoint = bp => {
       return {
         line: bp.line,
-        column: bp.column,
+        column: bp.column || 0,
         verified: false,
       };
     };

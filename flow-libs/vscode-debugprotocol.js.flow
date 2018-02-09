@@ -30,7 +30,7 @@ declare module 'vscode-debugprotocol' {
   }
 
   /** Server-initiated event. */
-  declare interface base$Event extends base$ProtocolMessage {
+  declare interface DebugEvent extends base$ProtocolMessage {
     type: 'event';
     /** Type of event. */
     +event: string;
@@ -53,11 +53,11 @@ declare module 'vscode-debugprotocol' {
     +body?: any;
   }
 
-  declare interface InitializedEvent extends base$Event {
+  declare interface InitializedEvent extends DebugEvent {
     event: 'initialized';
   }
 
-  declare interface StoppedEvent extends base$Event {
+  declare interface StoppedEvent extends DebugEvent {
     event: 'stopped';
     body: {
       /** The reason for the event (such as: 'step', 'breakpoint', 'exception', 'pause', 'entry').
@@ -78,7 +78,7 @@ declare module 'vscode-debugprotocol' {
     };
   }
 
-  declare interface ContinuedEvent extends base$Event {
+  declare interface ContinuedEvent extends DebugEvent {
     event: 'continued';
     body: {
       /** The thread which was continued. */
@@ -91,7 +91,7 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'exited' event type.
     The event indicates that the debuggee has exited.
   */
-  declare interface ExitedEvent extends base$Event {
+  declare interface ExitedEvent extends DebugEvent {
     event: 'exited';
     body: {
       /** The exit code returned from the debuggee. */
@@ -102,7 +102,7 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'terminated' event types.
     The event indicates that debugging of the debuggee has terminated.
   */
-  declare interface TerminatedEvent extends base$Event {
+  declare interface TerminatedEvent extends DebugEvent {
     event: 'terminated';
     body?: {
       /** A debug adapter may set 'restart' to true to request that the front end restarts the session. */
@@ -113,7 +113,7 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'thread' event type.
     The event indicates that a thread has started or exited.
   */
-  declare interface ThreadEvent extends base$Event {
+  declare interface ThreadEvent extends DebugEvent {
     event: 'thread';
     body: {
       /** The reason for the event (such as: 'started', 'exited'). */
@@ -126,13 +126,19 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'output' event type.
     The event indicates that the target has produced some output.
   */
-  declare interface OutputEvent extends base$Event {
+  declare interface OutputEvent extends DebugEvent {
     event: 'output';
     body: {
       /** The category of output (such as: 'console', 'stdout', 'stderr', 'telemetry'). If not specified, 'console' is assumed. */
       category?: string,
       /** The output to report. */
       output: string,
+      /** An optional source location where the output was produced. */
+      source?: Source,
+      /** An optional source location line where the output was produced. */
+      line?: number,
+      /** An optional source location column where the output was produced. */
+      column?: number,
       /** If an attribute 'variablesReference' exists and its value is > 0, the output contains objects which can be retrieved by passing variablesReference to the VariablesRequest. */
       variablesReference?: number,
       /** Optional data to report. For the 'telemetry' category the data will be sent to telemetry, for the other categories the data is shown in JSON format. */
@@ -143,7 +149,7 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'breakpoint' event type.
     The event indicates that some information about a breakpoint has changed.
   */
-  declare interface BreakpointEvent extends base$Event {
+  declare interface BreakpointEvent extends DebugEvent {
     event: 'breakpoint';
     body: {
       /** The reason for the event (such as: 'changed', 'new'). */
@@ -156,7 +162,7 @@ declare module 'vscode-debugprotocol' {
   /** Event message for 'module' event type.
     The event indicates that some information about a module has changed.
   */
-  declare interface ModuleEvent extends base$Event {
+  declare interface ModuleEvent extends DebugEvent {
     event: 'module';
     body: {
       /** The reason for the event. */
@@ -166,7 +172,7 @@ declare module 'vscode-debugprotocol' {
     };
   }
 
-  declare interface LoadedSourceEvent extends base$Event {
+  declare interface LoadedSourceEvent extends DebugEvent {
     event: 'loadedSource';
     body: {
       /** The reason for the event. */
@@ -1250,6 +1256,8 @@ declare module 'vscode-debugprotocol' {
     value: string,
     /** The type of the variable's value. Typically shown in the UI when hovering over the value. */
     type?: string,
+    /** Properties of a variable that can be used to determine how to render the variable in the UI. */
+    presentationHint?: VariablePresentationHint,
     /** Properties of a variable that can be used to determine how to render the variable in the UI. Format of the string value: TBD. */
     kind?: string,
     /** Optional evaluatable name of this variable which can be passed to the 'EvaluateRequest' to fetch the variable's value. */
@@ -1266,16 +1274,51 @@ declare module 'vscode-debugprotocol' {
     indexedVariables?: number,
   };
 
+  /** Optional properties of a variable that can be used to determine how to render the variable in the UI. */
+  declare type VariablePresentationHint = {
+    /** The kind of variable. Before introducing additional values, try to use the listed values.
+      Values:
+      'property': Indicates that the object is a property.
+      'method': Indicates that the object is a method.
+      'class': Indicates that the object is a class.
+      'data': Indicates that the object is data.
+      'event': Indicates that the object is an event.
+      'baseClass': Indicates that the object is a base class.
+      'innerClass': Indicates that the object is an inner class.
+      'interface': Indicates that the object is an interface.
+      'mostDerivedClass': Indicates that the object is the most derived class.
+      'virtual': Indicates that the object is virtual, that means it is a synthetic object introduced by the adapter for rendering purposes, e.g. an index range for large arrays.
+      etc.
+    */
+    kind?: string,
+    /** Set of attributes represented as an array of strings. Before introducing additional values, try to use the listed values.
+      Values:
+      'static': Indicates that the object is static.
+      'constant': Indicates that the object is a constant.
+      'readOnly': Indicates that the object is read only.
+      'rawString': Indicates that the object is a raw string.
+      'hasObjectId': Indicates that the object can have an Object ID created for it.
+      'canHaveObjectId': Indicates that the object has an Object ID associated with it.
+      'hasSideEffects': Indicates that the evaluation had side effects.
+      etc.
+    */
+    attributes?: string[],
+    /** Visibility of variable. Before introducing additional values, try to use the listed values.
+      Values: 'public', 'private', 'protected', 'internal', 'final', etc.
+    */
+    visibility?: string,
+  };
+
   /** Properties of a breakpoint passed to the setBreakpoints request. */
   declare type SourceBreakpoint = {
     /** The source line of the breakpoint. */
     line: number,
     /** An optional source column of the breakpoint. */
-    column?: number,
+    column?: ?number,
     /** An optional expression for conditional breakpoints. */
-    condition?: string,
+    condition?: ?string,
     /** An optional expression that controls how many hits of the breakpoint are ignored. The backend is expected to interpret the expression as needed. */
-    hitCondition?: string,
+    hitCondition?: ?string,
   };
 
   /** Properties of a breakpoint passed to the setFunctionBreakpoints request. */
@@ -1283,9 +1326,9 @@ declare module 'vscode-debugprotocol' {
     /** The name of the function. */
     name: string,
     /** An optional expression for conditional breakpoints. */
-    condition?: string,
+    condition?: ?string,
     /** An optional expression that controls how many hits of the breakpoint are ignored. The backend is expected to interpret the expression as needed. */
-    hitCondition?: string,
+    hitCondition?: ?string,
   };
 
   /** Information about a Breakpoint created in setBreakpoints or setFunctionBreakpoints. */

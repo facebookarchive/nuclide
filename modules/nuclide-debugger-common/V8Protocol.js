@@ -12,6 +12,8 @@
 
 import * as DebugProtocol from 'vscode-debugprotocol';
 
+export type MessageProcessor = (message: Object) => void;
+
 const TWO_CRLF = '\r\n\r\n';
 
 /**
@@ -19,16 +21,25 @@ const TWO_CRLF = '\r\n\r\n';
  */
 export default class V8Protocol {
   _id: string;
-  _outputStream: stream$Writable;
+  _output: (input: string) => mixed;
   _sequence: number;
   _pendingRequests: Map<number, (e: DebugProtocol.Response) => void>;
   _rawData: Buffer;
   _contentLength: number;
   _logger: log4js$Logger;
+  _sendPreprocessor: MessageProcessor;
+  _receivePreprocessor: MessageProcessor;
 
-  constructor(id: string, logger: log4js$Logger) {
+  constructor(
+    id: string,
+    logger: log4js$Logger,
+    sendPreprocessor: MessageProcessor,
+    receivePreprocessor: MessageProcessor,
+  ) {
     this._id = id;
     this._logger = logger;
+    this._sendPreprocessor = sendPreprocessor;
+    this._receivePreprocessor = receivePreprocessor;
     this._sequence = 1;
     this._contentLength = -1;
     this._pendingRequests = new Map();
@@ -54,13 +65,8 @@ export default class V8Protocol {
     throw new Error('No implementation found!');
   }
 
-  connect(readable: stream$Readable, writable: stream$Writable): void {
-    this._outputStream = writable;
-
-    readable.on('data', (data: Buffer) => {
-      this._rawData = Buffer.concat([this._rawData, data]);
-      this._handleData();
-    });
+  setOutput(output: (input: string) => mixed): void {
+    this._output = output;
   }
 
   send(command: string, args: any): Promise<DebugProtocol.Response> {
@@ -114,17 +120,15 @@ export default class V8Protocol {
     message.type = (typ: any);
     message.seq = this._sequence++;
 
+    this._sendPreprocessor(message);
     const json = JSON.stringify(message);
     const length = Buffer.byteLength(json, 'utf8');
 
-    this._outputStream.write(
-      'Content-Length: ' + length.toString() + TWO_CRLF,
-      'utf8',
-    );
-    this._outputStream.write(json, 'utf8');
+    this._output('Content-Length: ' + length.toString() + TWO_CRLF + json);
   }
 
-  _handleData(): void {
+  handleData(data: Buffer): void {
+    this._rawData = Buffer.concat([this._rawData, data]);
     while (true) {
       if (this._contentLength >= 0) {
         if (this._rawData.length >= this._contentLength) {
@@ -159,6 +163,8 @@ export default class V8Protocol {
   _dispatch(body: string): void {
     try {
       const rawData = JSON.parse(body);
+      this._receivePreprocessor(rawData);
+
       switch (rawData.type) {
         case 'event':
           this.onEvent((rawData: DebugProtocol.Event));

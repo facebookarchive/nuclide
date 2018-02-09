@@ -24,6 +24,7 @@ export type {
   ThreadColumn,
   UserOutput,
   VSAdapterExecutableInfo,
+  VsAdapterType,
 } from './types';
 
 export {default as ClientCallback} from './ClientCallback';
@@ -58,3 +59,5 @@ export {
   deserializeDebuggerConfig,
   serializeDebuggerConfig,
 } from './DebuggerConfigSerializer';
+
+export {default as VsAdapterSpawner} from './VsAdapterSpawner';

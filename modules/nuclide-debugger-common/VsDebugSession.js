@@ -11,20 +11,17 @@
  */
 
 import * as DebugProtocol from 'vscode-debugprotocol';
-import type {VSAdapterExecutableInfo} from './types';
+import type {VSAdapterExecutableInfo, IVsAdapterSpawner} from './types';
+import type {ProcessMessage} from 'nuclide-commons/process';
+import type {MessageProcessor} from './V8Protocol';
 
-import child_process from 'child_process';
+import VsAdapterSpawner from './VsAdapterSpawner';
 import V8Protocol from './V8Protocol';
-import {
-  killProcess,
-  logStreamErrors,
-  preventStreamsFromThrowing,
-} from 'nuclide-commons/process';
 import {Observable, Subject} from 'rxjs';
 import idx from 'idx';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
+import invariant from 'assert';
 
-export interface AdapterExitedEvent extends DebugProtocol.base$Event {
+export interface AdapterExitedEvent extends DebugProtocol.DebugEvent {
   event: 'adapter-exited';
   body: {exitCode: number};
 }
@@ -38,6 +35,8 @@ function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
   };
 }
 
+function NOOP() {}
+
 /**
  * Use V8 JSON-RPC protocol to send & receive messages
  * (requests, responses & events) over `stdio` of adapter child processes.
@@ -46,13 +45,13 @@ export default class VsDebugSession extends V8Protocol {
   _readyForBreakpoints: boolean;
   _disconnected: boolean;
 
-  _serverProcess: ?child_process$ChildProcess;
-  _cachedInitServer: ?Promise<void>;
+  _adapterProcessSubscription: ?rxjs$Subscription;
   _startTime: number;
 
-  _capabilities: DebugProtocol.Capabilities;
+  capabilities: DebugProtocol.Capabilities;
   _adapterExecutable: VSAdapterExecutableInfo;
   _logger: log4js$Logger;
+  _spawner: IVsAdapterSpawner;
 
   _onDidInitialize: Subject<DebugProtocol.InitializedEvent>;
   _onDidStop: Subject<DebugProtocol.StoppedEvent>;
@@ -65,17 +64,22 @@ export default class VsDebugSession extends V8Protocol {
   _onDidBreakpoint: Subject<DebugProtocol.BreakpointEvent>;
   _onDidModule: Subject<DebugProtocol.ModuleEvent>;
   _onDidLoadSource: Subject<DebugProtocol.LoadedSourceEvent>;
+  _onDidCustom: Subject<DebugProtocol.DebugEvent>;
   _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
 
   constructor(
     id: string,
     logger: log4js$Logger,
     adapterExecutable: VSAdapterExecutableInfo,
+    spawner?: IVsAdapterSpawner,
+    sendPreprocessor?: MessageProcessor,
+    receivePreprocessor?: MessageProcessor,
   ) {
-    super(id, logger);
+    super(id, logger, sendPreprocessor || NOOP, receivePreprocessor || NOOP);
     this._adapterExecutable = adapterExecutable;
     this._logger = logger;
     this._readyForBreakpoints = false;
+    this._spawner = spawner == null ? new VsAdapterSpawner() : spawner;
 
     this._onDidInitialize = new Subject();
     this._onDidStop = new Subject();
@@ -88,6 +92,7 @@ export default class VsDebugSession extends V8Protocol {
     this._onDidBreakpoint = new Subject();
     this._onDidModule = new Subject();
     this._onDidLoadSource = new Subject();
+    this._onDidCustom = new Subject();
     this._onDidEvent = new Subject();
   }
 
@@ -135,27 +140,21 @@ export default class VsDebugSession extends V8Protocol {
     return this._onDidLoadSource.asObservable();
   }
 
+  observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
+    return this._onDidCustom.asObservable();
+  }
+
   observeAllEvents(): Observable<DebugProtocol.Event | AdapterExitedEvent> {
     return this._onDidEvent.asObservable();
   }
 
-  _initServer(): Promise<void> {
-    if (this._cachedInitServer) {
-      return this._cachedInitServer;
+  _initServer(): void {
+    if (this._adapterProcessSubscription != null) {
+      return;
     }
 
-    const serverPromise = this._startServer();
-    this._cachedInitServer = serverPromise.then(
-      () => {
-        this._startTime = new Date().getTime();
-      },
-      err => {
-        this._cachedInitServer = null;
-        return Promise.reject(err);
-      },
-    );
-
-    return this._cachedInitServer;
+    this._startServer();
+    this._startTime = new Date().getTime();
   }
 
   custom(request: string, args: any): Promise<DebugProtocol.CustomResponse> {
@@ -164,28 +163,29 @@ export default class VsDebugSession extends V8Protocol {
 
   send(command: string, args: any): Promise<any> {
     this._logger.info('Send request:', command, args);
-    return this._initServer().then(() =>
-      // Babel Bug: `super` isn't working with `async`.
-      super.send(command, args).then(
-        response => {
-          this._logger.info('Received response:', response);
-          return response;
-        },
-        (errorResponse: DebugProtocol.ErrorResponse) => {
-          let formattedError = idx(errorResponse, _ => _.body.error.format);
-          if (formattedError === '{_stack}') {
-            formattedError = JSON.stringify(errorResponse.body.error);
-          } else if (formattedError == null) {
-            formattedError = [
-              `command: ${command}`,
-              `args: ${JSON.stringify(args)}`,
-              `response: ${JSON.stringify(errorResponse)}`,
-              `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
-            ].join(', ');
-          }
-          throw new Error(formattedError);
-        },
-      ),
+    this._initServer();
+    // Babel Bug: `super` isn't working with `async`.
+    return super.send(command, args).then(
+      response => {
+        this._logger.info('Received response:', response);
+        return response;
+      },
+      (errorResponse: DebugProtocol.ErrorResponse) => {
+        let formattedError =
+          idx(errorResponse, _ => _.body.error.format) ||
+          idx(errorResponse, _ => _.message);
+        if (formattedError === '{_stack}') {
+          formattedError = JSON.stringify(errorResponse.body.error);
+        } else if (formattedError == null) {
+          formattedError = [
+            `command: ${command}`,
+            `args: ${JSON.stringify(args)}`,
+            `response: ${JSON.stringify(errorResponse)}`,
+            `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
+          ].join(', ');
+        }
+        throw new Error(formattedError);
+      },
     );
   }
 
@@ -236,13 +236,14 @@ export default class VsDebugSession extends V8Protocol {
         this._onDidLoadSource.next(event);
         break;
       default:
-        this._logger.error('Unknonwn event type:', event);
+        this._onDidCustom.next(event);
+        this._logger.info('Custom event type:', event);
         break;
     }
   }
 
   getCapabilities(): DebugProtocol.Capabilities {
-    return this._capabilities || {};
+    return this.capabilities || {};
   }
 
   async initialize(
@@ -254,8 +255,8 @@ export default class VsDebugSession extends V8Protocol {
 
   _readCapabilities(response: any): any {
     if (response) {
-      this._capabilities = {
-        ...this._capabilities,
+      this.capabilities = {
+        ...this.capabilities,
         ...response.body,
       };
     }
@@ -329,15 +330,15 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   async disconnect(
-    restart: boolean = false,
-    force: boolean = false,
+    restart?: boolean = false,
+    force?: boolean = false,
   ): Promise<void> {
     if (this._disconnected && force) {
       this._stopServer();
       return;
     }
 
-    if (this._serverProcess && !this._disconnected) {
+    if (this._adapterProcessSubscription != null && !this._disconnected) {
       // point of no return: from now on don't report any errors
       this._disconnected = true;
       await this.send('disconnect', {restart});
@@ -464,56 +465,48 @@ export default class VsDebugSession extends V8Protocol {
     this._onDidEvent.next(event);
   }
 
-  async _startServer(): Promise<void> {
-    const {command, args} = this._adapterExecutable;
-    const options = {
-      stdio: [
-        'pipe', // stdin
-        'pipe', // stdout
-        'pipe', // stderr
-      ],
-      env: await getOriginalEnvironment(),
-    };
-    const serverProcess = (this._serverProcess = child_process.spawn(
-      command,
-      args,
-      options,
-    ));
-    // Process and stream errors shouldn't crash the server.
-    preventStreamsFromThrowing(serverProcess);
-    logStreamErrors(serverProcess, command, args, options);
-
-    serverProcess.on('error', (err: Error) => this.onServerError(err));
-    serverProcess.on('exit', (code: number, signal: string) =>
-      this.onServerExit(code),
-    );
-
-    serverProcess.stderr.on('data', (data: string) => {
-      const event: DebugProtocol.OutputEvent = ({
-        type: 'event',
-        event: 'output',
-        body: {
-          category: 'stderr',
-          output: data.toString(),
+  _startServer(): void {
+    this._adapterProcessSubscription = this._spawner
+      .spawnAdapter(this._adapterExecutable)
+      .refCount()
+      .subscribe(
+        (message: ProcessMessage) => {
+          if (message.kind === 'stdout') {
+            this.handleData(new Buffer(message.data));
+          } else if (message.kind === 'stderr') {
+            const event: DebugProtocol.OutputEvent = ({
+              type: 'event',
+              event: 'output',
+              body: {
+                category: 'stderr',
+                output: message.data,
+              },
+              seq: 0,
+            }: any);
+            this._onDidOutput.next(event);
+            this._onDidEvent.next(event);
+            this._logger.error(`adapter stderr: ${message.data}`);
+          } else {
+            invariant(message.kind === 'exit');
+            this.onServerExit(message.exitCode || 0);
+          }
         },
-        seq: 0,
-      }: any);
-      this._onDidOutput.next(event);
-      this._onDidEvent.next(event);
-      this._logger.error(`adapter stderr: ${data.toString()}`);
-    });
+        (err: Error) => {
+          this.onServerError(err);
+        },
+      );
 
-    this.connect(serverProcess.stdout, serverProcess.stdin);
+    this.setOutput(this._spawner.write.bind(this._spawner));
   }
 
   _stopServer(): void {
     this.onEvent(raiseAdapterExitedEvent(0));
-    if (this._serverProcess == null) {
+    if (this._adapterProcessSubscription == null) {
       return;
     }
 
     this._disconnected = true;
-    killProcess(this._serverProcess, /* killTree */ true);
+    this._adapterProcessSubscription.unsubscribe();
   }
 
   onServerError(error: Error): void {
@@ -522,8 +515,10 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   onServerExit(code: number): void {
-    this._serverProcess = null;
-    this._cachedInitServer = null;
+    if (this._adapterProcessSubscription != null) {
+      this._adapterProcessSubscription.unsubscribe();
+      this._adapterProcessSubscription = null;
+    }
     if (!this._disconnected) {
       this._logger.error(
         `Debug adapter process has terminated unexpectedly ${code}`,
@@ -534,6 +529,10 @@ export default class VsDebugSession extends V8Protocol {
 
   isReadyForBreakpoints(): boolean {
     return this._readyForBreakpoints;
+  }
+
+  isDisconnected(): boolean {
+    return this._disconnected;
   }
 
   dispose(): void {
