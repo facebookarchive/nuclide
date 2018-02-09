@@ -51,4 +51,8 @@ export default class VsAdapterSpawner implements IVsAdapterSpawner {
   async write(input: string): Promise<void> {
     this._stdin.next(input);
   }
+
+  async dispose(): Promise<void> {
+    this._stdin.complete();
+  }
 }

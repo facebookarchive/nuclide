@@ -11,9 +11,12 @@
  */
 
 import * as DebugProtocol from 'vscode-debugprotocol';
-import type {VSAdapterExecutableInfo, IVsAdapterSpawner} from './types';
+import type {
+  IVsAdapterSpawner,
+  MessageProcessor,
+  VSAdapterExecutableInfo,
+} from './types';
 import type {ProcessMessage} from 'nuclide-commons/process';
-import type {MessageProcessor} from './V8Protocol';
 
 import VsAdapterSpawner from './VsAdapterSpawner';
 import V8Protocol from './V8Protocol';
@@ -34,8 +37,6 @@ function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
     body: {exitCode: 0},
   };
 }
-
-function NOOP() {}
 
 /**
  * Use V8 JSON-RPC protocol to send & receive messages
@@ -72,10 +73,10 @@ export default class VsDebugSession extends V8Protocol {
     logger: log4js$Logger,
     adapterExecutable: VSAdapterExecutableInfo,
     spawner?: IVsAdapterSpawner,
-    sendPreprocessor?: MessageProcessor,
-    receivePreprocessor?: MessageProcessor,
+    sendPreprocessors?: MessageProcessor[] = [],
+    receivePreprocessors?: MessageProcessor[] = [],
   ) {
-    super(id, logger, sendPreprocessor || NOOP, receivePreprocessor || NOOP);
+    super(id, logger, sendPreprocessors, receivePreprocessors);
     this._adapterExecutable = adapterExecutable;
     this._logger = logger;
     this._readyForBreakpoints = false;

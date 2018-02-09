@@ -54,6 +54,7 @@ import type {
   IProcessConfig,
   SerializedState,
 } from '../types';
+import type {MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TimingTracker} from '../../../nuclide-analytics';
@@ -62,11 +63,12 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {sleep} from 'nuclide-commons/promise';
-import {VsAdapterSpawner, VsDebugSession} from 'nuclide-debugger-common';
+import {VsDebugSession} from 'nuclide-debugger-common';
 import {Subject} from 'rxjs';
 import capitalize from 'lodash/capitalize';
 import {track, startTracking} from '../../../nuclide-analytics';
 import nullthrows from 'nullthrows';
+import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {
   getConsoleRegisterExecutor,
   getConsoleService,
@@ -92,6 +94,7 @@ import uuid from 'uuid';
 import {DebuggerMode, AnalyticsEvents} from '../constants';
 import logger from '../logger';
 import stripAnsi from 'strip-ansi';
+import {remoteToLocalProcessor, localToRemoteProcessor} from './processors';
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
@@ -213,6 +216,7 @@ export default class DebugService implements IDebugService {
         const {stackFrame, explicit} = event;
         if (selectedFrameMarker != null) {
           selectedFrameMarker.destroy();
+          selectedFrameMarker = null;
         }
         if (stackFrame == null || !stackFrame.source.available) {
           if (explicit) {
@@ -245,6 +249,7 @@ export default class DebugService implements IDebugService {
       () => {
         if (selectedFrameMarker != null) {
           selectedFrameMarker.destroy();
+          selectedFrameMarker = null;
         }
       },
     );
@@ -273,7 +278,7 @@ export default class DebugService implements IDebugService {
       return;
     }
 
-    // focus first stack frame from top that has source location if no other stack frame is focused
+    // Focus first stack frame from top that has source location if no other stack frame is focused
     const stackFrameToFocus = callStack.find(
       sf => sf.source != null && sf.source.available,
     );
@@ -283,7 +288,6 @@ export default class DebugService implements IDebugService {
 
     this.focusStackFrame(stackFrameToFocus, null, null);
     await stackFrameToFocus.openInEditor();
-    return;
   }
 
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
@@ -298,7 +302,9 @@ export default class DebugService implements IDebugService {
             return session.configurationDone().catch(e => {
               // Disconnect the debug session on configuration done error #10596
               session.disconnect().catch(onUnexpectedError);
-              // TODO this.messageService.show(Severity.Error, e.message);
+              atom.notifications.addError('Failed to configure debugger', {
+                detail: e.message,
+              });
             });
           }
         };
@@ -782,14 +788,7 @@ export default class DebugService implements IDebugService {
     sessionId: string,
   ): Promise<?IProcess> {
     let process: ?IProcess;
-    // TODO setup remoting (spawner) & uri translation (preprocessors)
-    const spawner = new VsAdapterSpawner();
-    const session = new VsDebugSession(
-      sessionId,
-      logger,
-      configuration.adapterExecutable,
-      spawner,
-    );
+    const session = this._createVsDebugSession(configuration, sessionId);
     try {
       process = this._model.addProcess(configuration, session);
       this._registerSessionListeners(process, session);
@@ -838,6 +837,38 @@ export default class DebugService implements IDebugService {
       }
       return null;
     }
+  }
+
+  _createVsDebugSession(
+    configuration: IProcessConfig,
+    sessionId: string,
+  ): VsDebugSession {
+    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(
+      configuration.targetUri,
+    );
+    const spawner = new service.VsRawAdapterSpawnerService();
+    const clientPreprocessors: Array<MessageProcessor> = [];
+    const adapterPreprocessors: Array<MessageProcessor> = [];
+    if (configuration.clientPreprocessor != null) {
+      clientPreprocessors.push(configuration.clientPreprocessor);
+    }
+    if (configuration.adapterPreprocessor != null) {
+      adapterPreprocessors.push(configuration.adapterPreprocessor);
+    }
+    if (nuclideUri.isRemote(configuration.targetUri)) {
+      clientPreprocessors.push(remoteToLocalProcessor());
+      adapterPreprocessors.push(
+        localToRemoteProcessor(configuration.targetUri),
+      );
+    }
+    return new VsDebugSession(
+      sessionId,
+      logger,
+      configuration.adapterExecutable,
+      spawner,
+      clientPreprocessors,
+      adapterPreprocessors,
+    );
   }
 
   sourceIsNotAvailable(uri: NuclideUri): void {

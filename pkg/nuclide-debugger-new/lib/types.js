@@ -46,6 +46,7 @@ import type {
   DebuggerConfigAction,
   DebuggerCapabilities,
   DebuggerProperties,
+  MessageProcessor,
   VsAdapterType,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
@@ -218,6 +219,8 @@ export type IProcessConfig = {|
   // TODO(most): deprecate
   +properties: DebuggerProperties,
   +config: Object,
+  +clientPreprocessor?: MessageProcessor,
+  +adapterPreprocessor?: MessageProcessor,
 |};
 
 export interface IProcess extends ITreeElement {

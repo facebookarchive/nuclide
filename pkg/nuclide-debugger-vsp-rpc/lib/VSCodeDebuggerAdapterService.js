@@ -18,11 +18,13 @@ import type {
   VsAdapterType,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common/types';
+import type {ProcessMessage} from 'nuclide-commons/process';
 
 // eslint-disable-next-line rulesdir/no-unresolved
 import {
   DebuggerRpcServiceBase,
   VsDebugSessionTranslator,
+  VsAdapterSpawner,
 } from 'nuclide-debugger-common';
 
 export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
@@ -77,6 +79,22 @@ export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
 
   getServerMessageObservable(): ConnectableObservable<string> {
     return super.getServerMessageObservable();
+  }
+
+  dispose(): Promise<void> {
+    return super.dispose();
+  }
+}
+
+export class VsRawAdapterSpawnerService extends VsAdapterSpawner {
+  spawnAdapter(
+    adapter: VSAdapterExecutableInfo,
+  ): ConnectableObservable<ProcessMessage> {
+    return super.spawnAdapter(adapter);
+  }
+
+  write(input: string): Promise<void> {
+    return super.write(input);
   }
 
   dispose(): Promise<void> {

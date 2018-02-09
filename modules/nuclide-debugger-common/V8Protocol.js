@@ -10,9 +10,8 @@
  * @format
  */
 
+import type {MessageProcessor} from './types';
 import * as DebugProtocol from 'vscode-debugprotocol';
-
-export type MessageProcessor = (message: Object) => void;
 
 const TWO_CRLF = '\r\n\r\n';
 
@@ -27,19 +26,19 @@ export default class V8Protocol {
   _rawData: Buffer;
   _contentLength: number;
   _logger: log4js$Logger;
-  _sendPreprocessor: MessageProcessor;
-  _receivePreprocessor: MessageProcessor;
+  _sendPreprocessors: MessageProcessor[];
+  _receivePreprocessors: MessageProcessor[];
 
   constructor(
     id: string,
     logger: log4js$Logger,
-    sendPreprocessor: MessageProcessor,
-    receivePreprocessor: MessageProcessor,
+    sendPreprocessors: MessageProcessor[],
+    receivePreprocessors: MessageProcessor[],
   ) {
     this._id = id;
     this._logger = logger;
-    this._sendPreprocessor = sendPreprocessor;
-    this._receivePreprocessor = receivePreprocessor;
+    this._sendPreprocessors = sendPreprocessors;
+    this._receivePreprocessors = receivePreprocessors;
     this._sequence = 1;
     this._contentLength = -1;
     this._pendingRequests = new Map();
@@ -120,7 +119,7 @@ export default class V8Protocol {
     message.type = (typ: any);
     message.seq = this._sequence++;
 
-    this._sendPreprocessor(message);
+    this._sendPreprocessors.forEach(processor => processor(message));
     const json = JSON.stringify(message);
     const length = Buffer.byteLength(json, 'utf8');
 
@@ -163,7 +162,7 @@ export default class V8Protocol {
   _dispatch(body: string): void {
     try {
       const rawData = JSON.parse(body);
-      this._receivePreprocessor(rawData);
+      this._receivePreprocessors.forEach(processor => processor(rawData));
 
       switch (rawData.type) {
         case 'event':

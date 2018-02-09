@@ -116,3 +116,5 @@ export interface IVsAdapterSpawner {
   ): ConnectableObservable<ProcessMessage>;
   write(input: string): Promise<void>;
 }
+
+export type MessageProcessor = (message: Object) => void;

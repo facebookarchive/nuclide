@@ -18,6 +18,7 @@ export type {
   DebuggerConfigAction,
   DebuggerInstanceInterface,
   DebuggerProperties,
+  MessageProcessor,
   NuclideDebuggerProvider,
   NuclideEvaluationExpression,
   NuclideEvaluationExpressionProvider,
