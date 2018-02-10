@@ -15,6 +15,7 @@ import type {
   AtomSuggestionInsertedRequest,
 } from './types';
 
+import performanceNow from 'nuclide-commons/performanceNow';
 import {
   timeoutPromise,
   TimedOutError,
@@ -27,6 +28,8 @@ import {track, trackTiming} from '../../nuclide-analytics';
  * let the fallback providers provide something at least.
  */
 const AUTOCOMPLETE_TIMEOUT = 3000;
+
+const durationBySuggestion = new WeakMap();
 
 /**
  * Receives a provider and returns a proxy provider that applies time limit to
@@ -67,6 +70,7 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
     eventNames.onGetSuggestions,
     async () => {
       let result = null;
+      const startTime = performanceNow();
       if (request.activatedManually) {
         try {
           result = await provider.getSuggestions(request);
@@ -88,6 +92,12 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
         }
       }
       logObject.isEmpty = result == null || result.length === 0;
+      const endTime = performanceNow();
+      if (result) {
+        result.forEach(suggestion =>
+          durationBySuggestion.set(suggestion, endTime - startTime),
+        );
+      }
       return result;
     },
     logObject,
@@ -114,8 +124,13 @@ function trackOnDidInsertSuggestion<Suggestion: atom$AutocompleteSuggestion>(
   shouldLogInsertedSuggestion: boolean,
   insertedSuggestionArgument: AtomSuggestionInsertedRequest<Suggestion>,
 ) {
+  const duration = durationBySuggestion.get(
+    insertedSuggestionArgument.suggestion,
+  );
   if (!shouldLogInsertedSuggestion) {
-    track(eventName);
+    track(eventName, {
+      duration,
+    });
     return;
   }
 
@@ -123,6 +138,7 @@ function trackOnDidInsertSuggestion<Suggestion: atom$AutocompleteSuggestion>(
   const suggestionText =
     suggestion.text != null ? suggestion.text : suggestion.snippet;
   track(eventName, {
+    duration,
     replacementPrefix: suggestion.replacementPrefix,
     suggestionText,
   });
