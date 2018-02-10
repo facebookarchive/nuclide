@@ -32,6 +32,7 @@ import {getConfig} from './config';
 import {ServerStatus} from './FlowConstants';
 import {FlowIDEConnection} from './FlowIDEConnection';
 import {FlowIDEConnectionWatcher} from './FlowIDEConnectionWatcher';
+import {FlowVersion} from './FlowVersion';
 
 import type {FileCache} from '../../nuclide-open-files-rpc';
 
@@ -80,6 +81,7 @@ export class FlowProcess {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
   _execInfoContainer: FlowExecInfoContainer;
+  _version: FlowVersion;
 
   _ideConnections: Observable<?FlowIDEConnection>;
 
@@ -141,6 +143,17 @@ export class FlowProcess {
       .subscribe(() => {
         track('flow-server-failed');
       });
+
+    this._version = new FlowVersion(async () => {
+      const execInfo = await execInfoContainer.getFlowExecInfo(root);
+      if (!execInfo) {
+        return null;
+      }
+      return execInfo.flowVersion;
+    });
+    this._serverStatus
+      .filter(state => state === 'not running')
+      .subscribe(() => this._version.invalidateVersion());
   }
 
   dispose(): void {
@@ -151,6 +164,10 @@ export class FlowProcess {
       this._startedServer.kill('SIGKILL');
     }
     this._subscriptions.dispose();
+  }
+
+  getVersion(): FlowVersion {
+    return this._version;
   }
 
   /**

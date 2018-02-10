@@ -63,7 +63,6 @@ const logger = getLogger('nuclide-flow-rpc');
 import {flowCoordsToAtomCoords} from '../../nuclide-flow-common';
 
 import {FlowProcess} from './FlowProcess';
-import {FlowVersion} from './FlowVersion';
 import prettyPrintTypes from './prettyPrintTypes';
 import {astToOutline} from './astToOutline';
 import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
@@ -75,7 +74,6 @@ export class FlowSingleProjectLanguageService {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
   _process: FlowProcess;
-  _version: FlowVersion;
   _execInfoContainer: FlowExecInfoContainer;
 
   constructor(
@@ -86,17 +84,6 @@ export class FlowSingleProjectLanguageService {
     this._root = root;
     this._execInfoContainer = execInfoContainer;
     this._process = new FlowProcess(root, execInfoContainer, fileCache);
-    this._version = new FlowVersion(async () => {
-      const execInfo = await execInfoContainer.getFlowExecInfo(root);
-      if (!execInfo) {
-        return null;
-      }
-      return execInfo.flowVersion;
-    });
-    this._process
-      .getServerStatusUpdates()
-      .filter(state => state === 'not running')
-      .subscribe(() => this._version.invalidateVersion());
   }
 
   dispose(): void {
@@ -181,7 +168,7 @@ export class FlowSingleProjectLanguageService {
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
     // `flow find-refs` did not work well until version v0.55.0
-    const isSupported = await this._version.satisfies('>=0.55.0');
+    const isSupported = await this._process.getVersion().satisfies('>=0.55.0');
     if (!isSupported) {
       return null;
     }
@@ -351,7 +338,7 @@ export class FlowSingleProjectLanguageService {
       const ideConnection = this._process.getCurrentIDEConnection();
       if (
         ideConnection != null &&
-        (await this._version.satisfies('>=0.48.0'))
+        (await this._process.getVersion().satisfies('>=0.48.0'))
       ) {
         json = await ideConnection.getAutocompleteSuggestions(
           filePath,
