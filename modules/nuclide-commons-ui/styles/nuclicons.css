@@ -106,3 +106,36 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-metro::before {
   content: "\f11a";
 }
+.icon-nuclicon-connected::before {
+  content: "\f11b";
+}
+.icon-nuclicon-disconnected::before {
+  content: "\f11c";
+}
+.icon-nuclicon-eject::before {
+  content: "\f11d";
+}
+.icon-nuclicon-all-items::before {
+  content: "\f11e";
+}
+.icon-nuclicon-local::before {
+  content: "\f11f";
+}
+.icon-nuclicon-remote::before {
+  content: "\f120";
+}
+.icon-nuclicon-config::before {
+  content: "\f121";
+}
+.icon-nuclicon-snapshot::before {
+  content: "\f122";
+}
+.icon-nuclicon-success::before {
+  content: "\f123";
+}
+.icon-nuclicon-time-start::before {
+  content: "\f124";
+}
+.icon-nuclicon-time-end::before {
+  content: "\f125";
+}

@@ -40,7 +40,18 @@ export type Nuclicon =
   | 'nuclicon-warning'
   | 'nuclicon-kebab-horizontal'
   | 'nuclicon-cs'
-  | 'nuclicon-metro';
+  | 'nuclicon-metro'
+  | 'nuclicon-connected'
+  | 'nuclicon-disconnected'
+  | 'nuclicon-eject'
+  | 'nuclicon-all-items'
+  | 'nuclicon-local'
+  | 'nuclicon-remote'
+  | 'nuclicon-config'
+  | 'nuclicon-snapshot'
+  | 'nuclicon-success'
+  | 'nuclicon-time-start'
+  | 'nuclicon-time-end';
 
 export type IconName = Nuclicon | atom$Octicon;
 
