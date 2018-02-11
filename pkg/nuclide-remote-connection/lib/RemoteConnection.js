@@ -171,6 +171,12 @@ export class RemoteConnection {
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
+    logger.info('Attempting to reconnect', {
+      host,
+      cwd,
+      displayTitle,
+      promptReconnectOnFailure,
+    });
     const connection = RemoteConnection.getByHostnameAndPath(host, cwd);
     if (connection != null) {
       return connection;
@@ -333,6 +339,7 @@ export class RemoteConnection {
   }
 
   async close(shutdownIfLast: boolean): Promise<void> {
+    logger.info('Received close command!', {shutdownIfLast});
     this._subscriptions.dispose();
     await this._connection.removeConnection(this, shutdownIfLast);
     RemoteConnection._emitter.emit('did-close', this);

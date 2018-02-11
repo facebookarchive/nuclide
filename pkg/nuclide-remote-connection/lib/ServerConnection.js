@@ -370,6 +370,11 @@ export class ServerConnection {
       'Attempt to remove a non-existent RemoteConnection',
     );
     this._connections.splice(this._connections.indexOf(connection), 1);
+    getLogger('nuclide-remote-connection').info('Removed connection.', {
+      cwd: connection.getUriForInitialWorkingDirectory(),
+      title: connection.getDisplayTitle(),
+      remainingConnections: this._connections.length,
+    });
     if (this._connections.length === 0) {
       // The await here is subtle, it ensures that the shutdown call is sent
       // on the socket before the socket is closed on the next line.

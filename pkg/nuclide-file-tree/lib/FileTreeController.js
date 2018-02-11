@@ -31,6 +31,9 @@ import removeProjectPath from '../../commons-atom/removeProjectPath';
 import {isRunningInWindows} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WORKSPACE_VIEW_URI} from './Constants';
+import {getLogger} from 'log4js';
+
+const logger = getLogger('nuclide-file-tree');
 
 import os from 'os';
 import {shell} from 'electron';
@@ -613,6 +616,7 @@ export default class FileTreeController {
   async _removeRootFolderSelection(): Promise<void> {
     const rootNode = this._store.getSingleSelectedNode();
     if (rootNode != null && rootNode.isRoot) {
+      logger.info('Removing project path via file tree', rootNode);
       await removeProjectPath(rootNode.uri);
     }
   }

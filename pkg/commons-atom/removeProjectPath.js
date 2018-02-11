@@ -12,10 +12,15 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getLogger} from 'log4js';
+
+const logger = getLogger('commons-atom');
 
 export default (async function removeProjectPath(
   projectPath: NuclideUri,
 ): Promise<void> {
+  logger.info(`Removing project path ${projectPath}`);
+
   // close all the files associated with the project before closing
   const projectEditors = atom.workspace.getTextEditors();
   for (const editor of projectEditors) {

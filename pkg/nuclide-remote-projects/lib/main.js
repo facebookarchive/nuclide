@@ -128,6 +128,7 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
     }
 
     // The project was removed from the tree.
+    logger.info(`Project ${workingDirectoryUri} removed from the tree`);
     subscription.dispose();
     if (connection.isOnlyConnection()) {
       closeOpenFilesForRemoteProject(connection);
@@ -146,9 +147,11 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
 
   function closeRemoteConnection() {
     const closeConnection = (shutdownIfLast: boolean) => {
+      logger.info('Closing remote connection.', {shutdownIfLast});
       connection.close(shutdownIfLast);
     };
 
+    logger.info('Closing connection to remote project.');
     if (!connection.isOnlyConnection()) {
       logger.info(
         'Remaining remote projects using Nuclide Server - no prompt to shutdown',
@@ -167,6 +170,7 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
       'nuclide-remote-projects.shutdownServerAfterDisconnection',
     );
     invariant(typeof shutdownServerAfterDisconnection === 'boolean');
+    logger.info({shutdownServerAfterDisconnection});
     closeConnection(shutdownServerAfterDisconnection);
   }
 
