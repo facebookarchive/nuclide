@@ -136,7 +136,9 @@ export default class ClangServerManager {
         );
         return null;
       });
-    if (flagsData != null && flagsData.flags != null) {
+    if (flagsData != null && flagsData.flags.length > 0) {
+      // Flags length could be 0 if the clang provider wants us to watch the
+      // flags file but doesn't have accurate flags (e.g. header-only libs).
       return {
         flags: flagsData.flags,
         usesDefaultFlags: false,

@@ -16,12 +16,14 @@ import ClangServerManager from '../lib/ClangServerManager';
 describe('ClangServerManager', () => {
   let serverManager;
   let emptyRequestSettings;
+  let getFlagsSpy;
   beforeEach(() => {
     serverManager = new ClangServerManager();
     emptyRequestSettings = {compilationDatabase: null, projectRoot: null};
-    spyOn(serverManager._flagsManager, 'getFlagsForSrc').andReturn(
-      Promise.resolve(null),
-    );
+    getFlagsSpy = spyOn(
+      serverManager._flagsManager,
+      'getFlagsForSrc',
+    ).andReturn(Promise.resolve(null));
   });
 
   afterEach(() => {
@@ -41,7 +43,7 @@ describe('ClangServerManager', () => {
     });
   });
 
-  it('falls back to default flags', () => {
+  it('falls back to default flags with null database', () => {
     waitsForPromise(async () => {
       const flagsResult = await serverManager._getFlags(
         'test.cpp',
@@ -52,6 +54,25 @@ describe('ClangServerManager', () => {
         flags: ['b'],
         usesDefaultFlags: true,
         flagsFile: null,
+      });
+    });
+  });
+
+  it('falls back to default flags with only flags file without flags', () => {
+    waitsForPromise(async () => {
+      // sometimes providers give us a flags file (e.g. TARGETS) without flags.
+      getFlagsSpy.andCallFake(() =>
+        Promise.resolve({flags: [], directory: '.', flagsFile: 'TARGET'}),
+      );
+      const flagsResult = await serverManager._getFlags(
+        'test.cpp',
+        emptyRequestSettings,
+        ['b'],
+      );
+      expect(flagsResult).toEqual({
+        flags: ['b'],
+        usesDefaultFlags: true,
+        flagsFile: 'TARGET',
       });
     });
   });
