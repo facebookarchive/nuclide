@@ -13,7 +13,7 @@ import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {BuckClangCompilationDatabase} from './types';
 
 import * as ClangService from '../../nuclide-clang-rpc';
-import {RelatedFileFinder} from '../../nuclide-clang-rpc/lib/RelatedFileFinder';
+import {RelatedFileFinder} from '../../nuclide-clang-rpc/lib/related-file/finders';
 import * as BuckService from './BuckServiceImpl';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';

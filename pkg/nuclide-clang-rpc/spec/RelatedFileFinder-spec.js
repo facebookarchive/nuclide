@@ -11,53 +11,52 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from 'nuclide-commons/test-helpers';
-import {RelatedFileFinder} from '../lib/RelatedFileFinder';
+import {RelatedFileFinder} from '../lib/related-file/finders';
 
 describe('getRelatedSourceForHeader', () => {
   const finder = new RelatedFileFinder();
-
   it('is able to find an absolute include with project root but with a different real root', () => {
-    spyOn(finder, '_getFBProjectRoots').andReturn(['fbfolder/fbfolder2']);
     waitsForPromise(async () => {
+      spyOn(finder, '_getProjectRoots').andReturn(['project/subproject']);
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([
           [
-            'a/fbfolder/fbfolder2/subroot/source.cpp',
+            'a/project/subproject/subroot/source.cpp',
             '#include "subroot/header.h"',
           ],
         ]),
       );
       const sourceFile = nuclideUri.join(
         tmpdir,
-        'a/fbfolder/fbfolder2/subroot/source.cpp',
+        'a/project/subproject/subroot/source.cpp',
       );
       const file = await finder.getRelatedSourceForHeader(
-        nuclideUri.join(tmpdir, 'a/fbfolder/fbfolder2/subroot/header.h'),
-        nuclideUri.join(tmpdir, 'a/fbfolder/fbfolder2/subroot'),
+        nuclideUri.join(tmpdir, 'a/project/subproject/subroot/header.h'),
+        nuclideUri.join(tmpdir, 'a/project/subproject/subroot'),
       );
       expect(file).toBe(sourceFile);
     });
   });
 
   it('is able to find an absolute include without project root', () => {
-    spyOn(finder, '_getFBProjectRoots').andReturn(['fbfolder/fbfolder2']);
+    spyOn(finder, '_getProjectRoots').andReturn(['project/subproject']);
     waitsForPromise(async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([
           [
-            'a/fbfolder/fbfolder2/subroot/source.cpp',
+            'a/project/subproject/subroot/source.cpp',
             '#include "subroot/header.h"',
           ],
         ]),
       );
       const sourceFile = nuclideUri.join(
         tmpdir,
-        'a/fbfolder/fbfolder2/subroot/source.cpp',
+        'a/project/subproject/subroot/source.cpp',
       );
       const file = await finder.getRelatedSourceForHeader(
-        nuclideUri.join(tmpdir, 'a/fbfolder/fbfolder2/subroot/header.h'),
+        nuclideUri.join(tmpdir, 'a/project/subproject/subroot/header.h'),
       );
       expect(file).toBe(sourceFile);
     });

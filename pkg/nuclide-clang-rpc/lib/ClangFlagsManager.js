@@ -31,6 +31,7 @@ import {
 } from './clang-flags-reader';
 import {mapPathsInFlags} from './clang-flags-parser';
 import ClangFlagsPool from './ClangFlagsPool';
+import {RelatedFileFinder} from './related-file/finders';
 import {
   isHeaderFile,
   isSourceFile,
@@ -38,7 +39,6 @@ import {
   guessBuildFile,
   getFileBasename,
 } from './utils';
-import {RelatedFileFinder} from './RelatedFileFinder';
 
 const logger = getLogger('nuclide-clang-rpc');
 
