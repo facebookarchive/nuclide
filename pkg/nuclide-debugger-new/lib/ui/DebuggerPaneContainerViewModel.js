@@ -18,7 +18,7 @@ import invariant from 'assert';
 import * as React from 'react';
 import TabBarView from '../../../nuclide-ui/VendorLib/atom-tabs/lib/tab-bar-view';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {View} from '../../../nuclide-ui/View';
+import {View} from 'nuclide-commons-ui/View';
 
 const DEBUGGER_TAB_TITLE = 'Debugger';
 

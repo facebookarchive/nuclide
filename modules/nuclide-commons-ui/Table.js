@@ -144,6 +144,11 @@ type Props<T> = {
    * It disables the 'sortable' prop.
    */
   headerTitle?: string,
+  /**
+   * Optional HTMLElement to render a custom table header. Takes precedence over
+   * headerTitle.
+   */
+  headerElement?: React.Node,
 
   /**
    * Should keyboard navigation be enabled? This option exists for historical purposes. Ideally it
@@ -469,6 +474,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     const {
       alternateBackground,
       columns,
+      headerElement,
       headerTitle,
       maxBodyHeight,
       rows,
@@ -482,9 +488,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     const columnWidths = this._calculateColumnWidths();
 
     const header =
-      headerTitle != null ? (
+      headerElement != null || headerTitle != null ? (
         <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
-          {headerTitle}
+          {headerElement != null ? headerElement : headerTitle}
         </div>
       ) : (
         columns.map((column, i) => {
