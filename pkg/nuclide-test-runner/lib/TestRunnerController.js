@@ -181,7 +181,7 @@ export class TestRunnerController {
 
   async _isDebuggerAttached(debuggerProviderName: string): Promise<boolean> {
     const debuggerService = await getDebuggerService();
-    return debuggerService.isInDebuggingMode(debuggerProviderName);
+    return debuggerService.getCurrentDebuggerName() === debuggerProviderName;
   }
 
   stopTests = (): void => {

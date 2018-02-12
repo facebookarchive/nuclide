@@ -32,7 +32,6 @@ import {
 } from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
-import {VSP_DEBUGGER_SERVICE_NAME} from './VspProcessInfo';
 import {track} from '../../nuclide-analytics';
 import {isRunningInTest} from '../../commons-node/system-info';
 import {getNodeBinaryPath} from '../../commons-node/node-info';
@@ -389,22 +388,14 @@ export function listenToRemoteDebugCommands(): IDisposable {
           command.target,
         );
         const debuggerService = await getDebuggerService();
-        const instance = debuggerService.getDebuggerInstance();
-        if (instance == null) {
+        const debuggerName = debuggerService.getCurrentDebuggerName();
+        if (debuggerName == null) {
           track('fb-python-debugger-auto-attach');
           debuggerService.startDebugging(attachProcessInfo);
           return;
-        } else if (instance.getProviderName() !== VSP_DEBUGGER_SERVICE_NAME) {
+        } else {
           notifyOpenDebugSession();
           return;
-        }
-        const vspInfo: VspProcessInfo = (instance.getDebuggerProcessInfo(): any);
-        if (
-          vspInfo.getDebugMode() !== 'attach' ||
-          vspInfo.getAdapterType() !== VsAdapterTypes.PYTHON ||
-          vspInfo.getConfig().port !== command.target.port
-        ) {
-          notifyOpenDebugSession();
         }
         // Otherwise, we're already debugging that target.
       }),

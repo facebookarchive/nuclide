@@ -30,7 +30,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 
-export const VSP_DEBUGGER_SERVICE_NAME = 'vscode-adapter';
+const VSP_DEBUGGER_SERVICE_NAME = 'vscode-adapter';
 
 export default class VspProcessInfo extends DebuggerProcessInfo {
   _adapterType: VsAdapterType;

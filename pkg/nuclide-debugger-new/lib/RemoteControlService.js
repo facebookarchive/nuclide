@@ -9,8 +9,9 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
-import type {IDebugService, IProcessConfig, IProcess} from './types';
+import type {IDebugService, IProcessConfig} from './types';
 import type VspProcessInfo from '../../nuclide-debugger-vsp/lib/VspProcessInfo';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
@@ -33,7 +34,7 @@ export default class RemoteControlService {
   }
 
   async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    await this.startVspDebugging({
+    await this._startVspDebugging({
       debuggerName: processInfo._serviceName,
       targetUri: processInfo.getTargetUri(),
       debugMode: processInfo._debugMode,
@@ -45,11 +46,16 @@ export default class RemoteControlService {
     });
   }
 
-  getDebuggerProcess(): ?IProcess {
-    return this._service.viewModel.focusedProcess;
+  getCurrentDebuggerName(): ?string {
+    const {focusedProcess} = this._service.viewModel;
+    if (focusedProcess == null) {
+      return null;
+    } else {
+      return focusedProcess.configuration.debuggerName;
+    }
   }
 
-  async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
+  async _startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
     await this._service.startDebugging(config);
     const {viewModel} = this._service;
     const {focusedProcess} = viewModel;
@@ -87,5 +93,20 @@ export default class RemoteControlService {
       customRequest,
       observeCustomEvents,
     };
+  }
+
+  canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {
+    // Launcing in terminal isn't yet supported
+    return false;
+  }
+
+  async launchDebugTargetInTerminal(
+    targetUri: NuclideUri,
+    command: string,
+    args: Array<string>,
+    cwd: NuclideUri,
+    environmentVariables: Map<string, string>,
+  ): Promise<void> {
+    throw new Error('TODO: Add support for launching in terminal');
   }
 }

@@ -10,10 +10,7 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
-import type {
-  DebuggerInstanceInterface,
-  DebuggerProcessInfo,
-} from 'nuclide-debugger-common';
+import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
@@ -47,21 +44,17 @@ export default class RemoteControlService {
     await model.getActions().startDebugging(processInfo);
   }
 
-  isInDebuggingMode(providerName: string): boolean {
+  getCurrentDebuggerName(): ?string {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    const session = model.getDebuggerInstance();
-    return session != null && session.getProviderName() === providerName;
-  }
-
-  getDebuggerInstance(): ?DebuggerInstanceInterface {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
+    const instance = model.getDebuggerInstance();
+    if (instance == null) {
+      return null;
     }
-    return model.getDebuggerInstance();
+    const processInfo = instance.getDebuggerProcessInfo();
+    return processInfo.getServiceName();
   }
 
   _killDebugger(): void {
@@ -83,7 +76,7 @@ export default class RemoteControlService {
     args: Array<string>,
     cwd: NuclideUri,
     environmentVariables: Map<string, string>,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const key = `targetUri=${targetUri}&command=${command}`;
     const info = {
       cwd,
@@ -159,7 +152,5 @@ export default class RemoteControlService {
       disposable.dispose();
       this._killDebugger();
     });
-
-    return true;
   }
 }

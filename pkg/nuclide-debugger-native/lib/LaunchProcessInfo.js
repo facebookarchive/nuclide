@@ -88,7 +88,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   async _launchInTerminal(
     rpcService: NativeDebuggerServiceType,
     remoteService: RemoteControlService,
-  ): Promise<boolean> {
+  ): Promise<void> {
     // Enable filtering on the first few breaks, when lanuching in the terminal
     // we expect to see additional startup breaks due to signals sent by execing
     // the child process.
@@ -147,7 +147,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
         getConfig().useTerminal &&
         (await passesGK('nuclide_debugger_launch_in_terminal'))
       ) {
-        launched = await this._launchInTerminal(rpcService, remoteService);
+        await this._launchInTerminal(rpcService, remoteService);
+        launched = true;
       }
 
       // Otherwise, fall back to launching without a terminal.
