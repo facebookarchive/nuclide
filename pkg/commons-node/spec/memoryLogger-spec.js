@@ -69,4 +69,68 @@ describe('memoryLogger', () => {
     logger.info('11');
     expect(logger.dump()).toBe('00:00:00 INFO - 11\n');
   });
+
+  it('tails correctly when count is less than the number of logs', () => {
+    const nextToLastLog = 'next to last log';
+    const lastLog = 'last log';
+
+    time = 0;
+    logger.info('123456789');
+    logger.info('11');
+    logger.info('hello');
+    logger.info('world');
+    logger.info(nextToLastLog);
+    logger.info(lastLog);
+
+    const tail = logger
+      .tail(2)
+      .split('\n')
+      .filter(line => line !== '');
+
+    expect(tail.length).toBe(2);
+    expect(tail[0].indexOf(nextToLastLog)).toBeGreaterThan(-1);
+    expect(tail[1].indexOf(lastLog)).toBeGreaterThan(-1);
+  });
+
+  it('tails correctly when count is greater than the number of logs, and around boundaries', () => {
+    const lastLog = 'last log';
+
+    time = 0;
+    logger.info('123456789');
+    logger.info('11');
+    logger.info('hello');
+    logger.info('world');
+    logger.info('next to last log');
+    logger.info(lastLog);
+
+    let tail = logger
+      .tail(10)
+      .split('\n')
+      .filter(line => line !== '');
+
+    expect(tail.length).toBe(6);
+
+    tail = logger
+      .tail(6)
+      .split('\n')
+      .filter(line => line !== '');
+
+    expect(tail.length).toBe(6);
+
+    tail = logger
+      .tail(1)
+      .split('\n')
+      .filter(line => line !== '');
+
+    expect(tail.length).toBe(1);
+    expect(tail[0].indexOf(lastLog)).toBeGreaterThan(-1);
+
+    expect(() => {
+      logger.tail(-1);
+    }).toThrow();
+
+    expect(() => {
+      logger.tail(0);
+    }).toThrow();
+  });
 });

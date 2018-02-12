@@ -11,6 +11,7 @@
 
 import {default as Deque} from 'double-ended-queue';
 import util from 'util';
+import invariant from 'assert';
 
 type LogEntry = {|time: number, text: string|};
 
@@ -47,6 +48,19 @@ export class MemoryLogger {
       .toArray()
       .map(entry => `${entry.text}\n`)
       .join('');
+  }
+
+  tail(count: number): string {
+    invariant(count > 0);
+    if (count >= this._logs.length) {
+      return this.dump();
+    } else {
+      return this._logs
+        .toArray()
+        .slice(this._logs.length - count, this._logs.length)
+        .map(entry => `${entry.text}\n`)
+        .join('');
+    }
   }
 
   getUnderlyingLogger(): ?log4js$Logger {

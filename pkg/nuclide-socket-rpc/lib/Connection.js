@@ -16,6 +16,8 @@ import net from 'net';
 import {protocolLogger} from '../../nuclide-server/lib/utils';
 import {track} from '../../nuclide-analytics';
 
+const PROTOCOL_LOGGER_COUNT = 20;
+
 export class Connection {
   _socket: net.Socket;
   _remoteSocket: IRemoteSocket;
@@ -63,7 +65,7 @@ export class Connection {
         track('socket-service:attempting-to-write-data-after-close', {
           disposeCalled: this._disposeCalled,
           lastError: this._error,
-          protocolLog: protocolLogger.dump(),
+          protocolLog: protocolLogger.tail(PROTOCOL_LOGGER_COUNT),
         });
       }
     });
