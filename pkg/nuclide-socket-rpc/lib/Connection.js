@@ -13,15 +13,23 @@ import type {IRemoteSocket, TunnelHost} from './types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import net from 'net';
+import {protocolLogger} from '../../nuclide-server/lib/utils';
+import {track} from '../../nuclide-analytics';
 
 export class Connection {
   _socket: net.Socket;
   _remoteSocket: IRemoteSocket;
   _disposables: UniversalDisposable;
+  _closed: boolean;
+  _disposeCalled: boolean;
+  _error: ?Error;
 
   constructor(tunnelHost: TunnelHost, remoteSocket: IRemoteSocket) {
     trace('Connection: creating connection: ' + JSON.stringify(tunnelHost));
+    this._closed = false;
+    this._disposeCalled = false;
     this._remoteSocket = remoteSocket;
+    this._error = null;
 
     this._socket = net.createConnection(
       {port: tunnelHost.port, family: tunnelHost.family},
@@ -38,7 +46,9 @@ export class Connection {
     this._socket.on('error', err => {
       // TODO: we should find a way to send the error back
       //       to the remote socket
-      trace('Connection error: ' + JSON.stringify(err));
+      this._error = err;
+      getLogger('SocketService').error('Connection error', err);
+      this._closed = true;
       this._socket.end();
     });
 
@@ -47,7 +57,15 @@ export class Connection {
     });
 
     this._socket.on('data', data => {
-      this._remoteSocket.write(data);
+      if (!this._closed) {
+        this._remoteSocket.write(data);
+      } else {
+        track('socket-service:attempting-to-write-data-after-close', {
+          disposeCalled: this._disposeCalled,
+          lastError: this._error,
+          protocolLog: protocolLogger.dump(),
+        });
+      }
     });
   }
 
@@ -57,6 +75,8 @@ export class Connection {
 
   dispose(): void {
     trace('Connection: disposing connection');
+    this._disposeCalled = true;
+    this._closed = true;
     this._disposables.dispose();
   }
 }
