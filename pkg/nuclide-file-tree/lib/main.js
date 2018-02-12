@@ -41,6 +41,7 @@ import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';
 import {Observable} from 'rxjs';
+import passesGK from '../../commons-node/passesGK';
 
 type SerializedState = {
   tree: ExportStoreData,
@@ -406,10 +407,14 @@ class Activation {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
-    if (!this._restored) {
-      // eslint-disable-next-line rulesdir/atom-apis
-      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
-    }
+    passesGK('nuclide_open_connect_menu_on_clean_startup').then(
+      openConnectMenu => {
+        if (!this._restored && !openConnectMenu) {
+          // eslint-disable-next-line rulesdir/atom-apis
+          atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+        }
+      },
+    );
     return disposable;
   }
 
