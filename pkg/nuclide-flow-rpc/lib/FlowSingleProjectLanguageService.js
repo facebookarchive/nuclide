@@ -226,7 +226,13 @@ export class FlowSingleProjectLanguageService {
 
     const options = {};
 
-    const args = ['status', '--json', filePath];
+    const supportsFriendlyStatusError = await this._process
+      .getVersion()
+      .satisfies('>=0.66.0');
+    const jsonFlag = supportsFriendlyStatusError
+      ? ['--json', '--json-version', '2']
+      : ['--json'];
+    const args = ['status', ...jsonFlag, filePath];
 
     let result;
 

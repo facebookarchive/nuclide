@@ -217,6 +217,344 @@ describe('flowStatusOutputToDiagnostics', () => {
   it('converts the flow status output', () => {
     expect(flowStatusOutputToDiagnostics(flowOutput)).diffJson(expected);
   });
+
+  it('converts the flow status output >=0.66.0', () => {
+    expect(
+      flowStatusOutputToDiagnostics({
+        flowVersion: '0.65.0',
+        errors: [
+          {
+            kind: 'infer',
+            level: 'error',
+            classic: false,
+            primaryLoc: {
+              source: 'test.js',
+              type: 'SourceFile',
+              start: {line: 9, column: 3, offset: 92},
+              end: {line: 9, column: 4, offset: 94},
+            },
+            rootLoc: {
+              source: 'test.js',
+              type: 'SourceFile',
+              start: {line: 9, column: 2, offset: 91},
+              end: {line: 9, column: 5, offset: 95},
+            },
+            messageMarkup: [
+              {
+                kind: 'Text',
+                text: 'Cannot cast array literal to tuple type because ',
+              },
+              {
+                kind: 'Reference',
+                referenceId: '1',
+                message: [{kind: 'Text', text: 'number'}],
+              },
+              {kind: 'Text', text: ' is incompatible with '},
+              {
+                kind: 'Reference',
+                referenceId: '2',
+                message: [{kind: 'Text', text: 'empty'}],
+              },
+              {kind: 'Text', text: ' in property '},
+              {kind: 'Code', text: 'p'},
+              {kind: 'Text', text: ' of index 0.'},
+            ],
+            referenceLocs: {
+              '1': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 7, column: 16, offset: 65},
+                end: {line: 7, column: 17, offset: 67},
+              },
+              '2': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 6, column: 14, offset: 42},
+                end: {line: 6, column: 18, offset: 47},
+              },
+            },
+          },
+          {
+            kind: 'infer',
+            level: 'error',
+            classic: false,
+            primaryLoc: {
+              source: 'test.js',
+              type: 'SourceFile',
+              start: {line: 10, column: 2, offset: 104},
+              end: {line: 10, column: 5, offset: 108},
+            },
+            rootLoc: {
+              source: 'test.js',
+              type: 'SourceFile',
+              start: {line: 10, column: 2, offset: 104},
+              end: {line: 10, column: 5, offset: 108},
+            },
+            messageMarkup: {
+              kind: 'UnorderedList',
+              message: [
+                {
+                  kind: 'Text',
+                  text: 'Cannot cast array literal to union type because:',
+                },
+              ],
+              items: [
+                [
+                  {kind: 'Text', text: 'Either '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '1',
+                    message: [{kind: 'Text', text: 'number'}],
+                  },
+                  {kind: 'Text', text: ' is incompatible with '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '2',
+                    message: [{kind: 'Text', text: 'empty'}],
+                  },
+                  {kind: 'Text', text: ' in property '},
+                  {kind: 'Code', text: 'p'},
+                  {kind: 'Text', text: ' of index 0.'},
+                ],
+                [
+                  {kind: 'Text', text: 'Or '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '1',
+                    message: [{kind: 'Text', text: 'number'}],
+                  },
+                  {kind: 'Text', text: ' is incompatible with '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '3',
+                    message: [{kind: 'Text', text: 'empty'}],
+                  },
+                  {kind: 'Text', text: ' in property '},
+                  {kind: 'Code', text: 'p'},
+                  {kind: 'Text', text: ' of index 0.'},
+                ],
+                [
+                  {kind: 'Text', text: 'Or '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '1',
+                    message: [{kind: 'Text', text: 'number'}],
+                  },
+                  {kind: 'Text', text: ' is incompatible with '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '4',
+                    message: [{kind: 'Text', text: 'empty'}],
+                  },
+                  {kind: 'Text', text: ' in property '},
+                  {kind: 'Code', text: 'p'},
+                  {kind: 'Text', text: ' of index 0.'},
+                ],
+                [
+                  {kind: 'Text', text: 'Or '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '1',
+                    message: [{kind: 'Text', text: 'number'}],
+                  },
+                  {kind: 'Text', text: ' is incompatible with '},
+                  {
+                    kind: 'Reference',
+                    referenceId: '5',
+                    message: [{kind: 'Text', text: 'empty'}],
+                  },
+                  {kind: 'Text', text: ' in property '},
+                  {kind: 'Code', text: 'p'},
+                  {kind: 'Text', text: ' of index 0.'},
+                ],
+              ],
+            },
+            referenceLocs: {
+              '1': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 8, column: 16, offset: 85},
+                end: {line: 8, column: 17, offset: 87},
+              },
+              '2': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 10, column: 13, offset: 115},
+                end: {line: 10, column: 17, offset: 120},
+              },
+              '3': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 10, column: 21, offset: 123},
+                end: {line: 10, column: 25, offset: 128},
+              },
+              '4': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 10, column: 36, offset: 138},
+                end: {line: 10, column: 40, offset: 143},
+              },
+              '5': {
+                source: 'test.js',
+                type: 'SourceFile',
+                start: {line: 10, column: 44, offset: 146},
+                end: {line: 10, column: 48, offset: 151},
+              },
+            },
+          },
+        ],
+        passed: false,
+      }),
+    ).diffJson([
+      {
+        filePath: 'test.js',
+        providerName: 'Flow',
+        range: {
+          end: {
+            column: 4,
+            row: 8,
+          },
+          start: {
+            column: 2,
+            row: 8,
+          },
+        },
+        text:
+          'Cannot cast array literal to tuple type because number [1] is incompatible with empty [2] in property `p` of index 0.',
+        trace: [
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 17,
+                row: 6,
+              },
+              start: {
+                column: 15,
+                row: 6,
+              },
+            },
+            text: '[1]',
+            type: 'Trace',
+          },
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 18,
+                row: 5,
+              },
+              start: {
+                column: 13,
+                row: 5,
+              },
+            },
+            text: '[2]',
+            type: 'Trace',
+          },
+        ],
+        type: 'Error',
+      },
+      {
+        filePath: 'test.js',
+        providerName: 'Flow',
+        range: {
+          end: {
+            column: 5,
+            row: 9,
+          },
+          start: {
+            column: 1,
+            row: 9,
+          },
+        },
+        text:
+          'Cannot cast array literal to union type because:\n' +
+          ' - Either number [1] is incompatible with empty [2] in property `p` of index 0.\n' +
+          ' - Or number [1] is incompatible with empty [3] in property `p` of index 0.\n' +
+          ' - Or number [1] is incompatible with empty [4] in property `p` of index 0.\n' +
+          ' - Or number [1] is incompatible with empty [5] in property `p` of index 0.',
+        trace: [
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 17,
+                row: 7,
+              },
+              start: {
+                column: 15,
+                row: 7,
+              },
+            },
+            text: '[1]',
+            type: 'Trace',
+          },
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 17,
+                row: 9,
+              },
+              start: {
+                column: 12,
+                row: 9,
+              },
+            },
+            text: '[2]',
+            type: 'Trace',
+          },
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 25,
+                row: 9,
+              },
+              start: {
+                column: 20,
+                row: 9,
+              },
+            },
+            text: '[3]',
+            type: 'Trace',
+          },
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 40,
+                row: 9,
+              },
+              start: {
+                column: 35,
+                row: 9,
+              },
+            },
+            text: '[4]',
+            type: 'Trace',
+          },
+          {
+            filePath: 'test.js',
+            range: {
+              end: {
+                column: 48,
+                row: 9,
+              },
+              start: {
+                column: 43,
+                row: 9,
+              },
+            },
+            text: '[5]',
+            type: 'Trace',
+          },
+        ],
+        type: 'Error',
+      },
+    ]);
+  });
 });
 
 describe('diagnosticToFix', () => {

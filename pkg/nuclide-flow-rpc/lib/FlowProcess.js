@@ -286,11 +286,24 @@ export class FlowProcess {
         if (!serverIsReady) {
           return Observable.of(null);
         }
-        return getAllExecInfo(
-          ['ide', '--protocol', 'very-unstable', ...NO_RETRY_ARGS],
-          this._root,
-          this._execInfoContainer,
-        );
+        return this.getVersion()
+          .satisfies('>=0.66.0')
+          .then(supportsFriendlyStatusError => {
+            const jsonFlag = supportsFriendlyStatusError
+              ? ['--json-version', '2']
+              : [];
+            return getAllExecInfo(
+              [
+                'ide',
+                '--protocol',
+                'very-unstable',
+                ...jsonFlag,
+                ...NO_RETRY_ARGS,
+              ],
+              this._root,
+              this._execInfoContainer,
+            );
+          });
       })
       .switchMap(allExecInfo => {
         if (allExecInfo == null) {
