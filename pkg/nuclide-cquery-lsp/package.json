@@ -17,7 +17,7 @@
     },
     "config": {
       "use-cquery": {
-        "title": "Use cquery instead of libclang",
+        "title": "Use cquery instead of Nuclide's built-in C++ service",
         "type": "boolean",
         "default": "false",
         "description": "You need cquery in your PATH and a restart is required"
