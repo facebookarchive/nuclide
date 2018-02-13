@@ -1257,6 +1257,10 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
+  getFullHashForRevision(rev: string): Promise<?string> {
+    return this._service.getFullHashForRevision(rev);
+  }
+
   continueOperation(
     commandWithOptions: Array<string>,
   ): Observable<LegacyProcessMessage> {

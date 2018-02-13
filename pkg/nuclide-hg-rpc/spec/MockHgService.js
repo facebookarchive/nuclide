@@ -84,6 +84,10 @@ export default class MockHgService {
     return new Observable();
   }
 
+  getFullHashForRevision(): Promise<?string> {
+    return Promise.resolve(null);
+  }
+
   fetchFileContentAtRevision(
     filePath: NuclideUri,
     revision: string,
