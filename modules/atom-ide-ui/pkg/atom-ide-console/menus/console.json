@@ -10,16 +10,11 @@
       ]
     },
     {
-      "label": "Nuclide",
+      "label": "Edit",
       "submenu": [
         {
-          "label": "Console",
-          "submenu": [
-            {
-              "label": "Clear",
-              "command": "console:clear"
-            }
-          ]
+          "label": "Clear Console",
+          "command": "console:clear"
         }
       ]
     }
