@@ -147,7 +147,9 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
         ),
       ],
       spawnOptions,
-      project.projectRoot,
+      project.hasCompilationDb
+        ? nuclideUri.dirname(project.flagsFile)
+        : project.projectRoot,
       ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'],
       initalizationOptions,
       5 * 60 * 1000, // 5 minutes

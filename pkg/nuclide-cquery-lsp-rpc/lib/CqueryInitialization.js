@@ -47,10 +47,16 @@ export async function getInitializationOptions(
   project: CqueryProject,
 ): Promise<?Object> {
   if (project.hasCompilationDb) {
-    return getInitializationOptionsWithCompilationDb(
+    let options = await getInitializationOptionsWithCompilationDb(
       project.projectRoot,
       project.compilationDbDir,
     );
+    try {
+      // $FlowFB
+      const overrides = require('./fb-init-options').default(project.flagsFile);
+      options = {...options, ...overrides};
+    } catch (e) {}
+    return options;
   } else if (project.defaultFlags != null) {
     return getInitializationOptionsWithoutCompilationDb(
       project.projectRoot,
