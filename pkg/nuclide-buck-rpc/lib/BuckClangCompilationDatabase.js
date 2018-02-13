@@ -19,7 +19,6 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
 import {guessBuildFile, isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
-import fsPromise from 'nuclide-commons/fsPromise';
 
 const logger = getLogger('nuclide-buck');
 const BUCK_TIMEOUT = 10 * 60 * 1000;
@@ -31,7 +30,6 @@ const TARGET_KIND_REGEX = [
   'cxx_library',
   'cxx_test',
 ].join('|');
-const MAX_DB_SIZE_IN_BYTES_FOR_CACHING = 100000000; // 100 MB
 
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
@@ -106,7 +104,7 @@ class BuckClangCompilationDatabaseHandler {
       })
       .then(db => {
         if (db != null) {
-          this._cacheFilesToCompilationDB(db, buckRoot, file);
+          this._cacheFilesToCompilationDB(db);
         }
         return db;
       });
@@ -243,27 +241,23 @@ class BuckClangCompilationDatabaseHandler {
 
   async _cacheFilesToCompilationDB(
     db: BuckClangCompilationDatabase,
-    buckRoot: ?string,
-    src: string,
   ): Promise<void> {
-    if ((await this._isDbTooBigForFullCaching(db)) || db.file == null) {
+    const {file} = db;
+    if (file == null) {
       return;
     }
-    const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
-      db.file,
-      db.flagsFile,
-    );
-    pathToFlags.forEach((_, path) => {
-      this._sourceCache.set(path, Promise.resolve(db));
+    return new Promise((resolve, reject) => {
+      ClangService.loadFilesFromCompilationDatabaseAndCacheThem(
+        file,
+        db.flagsFile,
+      )
+        .refCount()
+        .subscribe(
+          path => this._sourceCache.set(path, Promise.resolve(db)),
+          reject, // on error
+          resolve, // on complete
+        );
     });
-  }
-
-  async _isDbTooBigForFullCaching(
-    db: BuckClangCompilationDatabase,
-  ): Promise<boolean> {
-    return db.file == null
-      ? false
-      : (await fsPromise.stat(db.file)).size > MAX_DB_SIZE_IN_BYTES_FOR_CACHING;
   }
 }
 

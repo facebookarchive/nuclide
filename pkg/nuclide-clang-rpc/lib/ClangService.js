@@ -307,6 +307,21 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
   }
 }
 
+// Read the provided database file, optionally associate it with the provided
+// flags file, and return an observable of the filenames it contains.
+export function loadFilesFromCompilationDatabaseAndCacheThem(
+  dbFile: string,
+  flagsFile: ?string,
+): ConnectableObservable<string> {
+  const flagsManager = serverManager.getClangFlagsManager();
+  return Observable.from(
+    flagsManager.loadFlagsFromCompilationDatabase(dbFile, flagsFile),
+  )
+    .flatMap(flagsMap => flagsMap.keys())
+    .publish();
+}
+
+// Remark: this isn't really rpc-safe, the big databases can be > 1 GB.
 export async function loadFlagsFromCompilationDatabaseAndCacheThem(
   dbFile: string,
   flagsFile: ?string,
