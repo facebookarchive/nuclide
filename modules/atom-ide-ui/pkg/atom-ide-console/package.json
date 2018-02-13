@@ -1,5 +1,6 @@
 {
   "name": "atom-ide-console",
+  "displayName": "Console",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Aggregate and display output from various sources and provide an user interface for REPL-like functionality.",
@@ -51,7 +52,7 @@
         "default": ""
       },
       "consoleFontScale": {
-        "title": "Console Font Scale",
+        "title": "Font Scale",
         "description": "The scale of the font used in the console relative to the editor font size.",
         "type": "number",
         "default": 0.9,
