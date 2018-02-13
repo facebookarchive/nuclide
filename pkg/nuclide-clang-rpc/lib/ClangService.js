@@ -308,14 +308,16 @@ async function getArcanistClangFormatBinary(src: string): Promise<?string> {
 }
 
 export async function loadFlagsFromCompilationDatabaseAndCacheThem(
-  requestSettings: ClangRequestSettings,
+  dbFile: string,
+  flagsFile: ?string,
 ): Promise<Map<string, ClangFlags>> {
   const flagsManager = serverManager.getClangFlagsManager();
-  const compilationHandles = await flagsManager.loadFlagsFromCompilationDatabase(
-    requestSettings,
+  const flagHandles = await flagsManager.loadFlagsFromCompilationDatabase(
+    dbFile,
+    flagsFile,
   );
   const compilationFlags = new Map();
-  for (const [src, handle] of compilationHandles) {
+  for (const [src, handle] of flagHandles) {
     const flags = flagsManager.getFlags(handle);
     if (flags != null) {
       compilationFlags.set(src, flags);

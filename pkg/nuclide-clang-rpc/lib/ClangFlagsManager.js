@@ -11,7 +11,6 @@
 
 import type {ClangFlagsHandle} from './ClangFlagsPool';
 import type {
-  ClangCompilationDatabase,
   ClangFlags,
   ClangCompilationDatabaseEntry,
   ClangRequestSettings,
@@ -72,20 +71,12 @@ function overrideIncludePath(src: string): string {
   return src;
 }
 
-function getCacheKeyForDb(
-  compilationDatabase: ?ClangCompilationDatabase,
-): ?string {
-  // only requestSettings.compilationDatabase.file is meaningful
-  return compilationDatabase == null ? null : compilationDatabase.file;
-}
-
 export default class ClangFlagsManager {
+  // Map from the database file to its files -> flags mappings.
   _compilationDatabases: Cache<
-    ClangCompilationDatabase,
+    string,
     Promise<Map<string, ClangFlagsHandle>>,
-  > = new Cache({
-    keyFactory: db => getCacheKeyForDb(db),
-  });
+  > = new Cache();
 
   _flagPool: ClangFlagsPool;
 
@@ -141,11 +132,14 @@ export default class ClangFlagsManager {
   ): Promise<?ClangFlags> {
     const {compilationDatabase} = requestSettings;
     if (compilationDatabase != null) {
-      const flagMap = await this._compilationDatabases.get(compilationDatabase);
-      if (flagMap != null) {
-        const flagsHandle = flagMap.get(src);
-        if (flagsHandle != null) {
-          return this._flagPool.getFlags(flagsHandle);
+      const {file} = compilationDatabase;
+      if (file != null) {
+        const flagMap = await this._compilationDatabases.get(file);
+        if (flagMap != null) {
+          const flagsHandle = flagMap.get(src);
+          if (flagsHandle != null) {
+            return this._flagPool.getFlags(flagsHandle);
+          }
         }
       }
     }
@@ -221,9 +215,10 @@ export default class ClangFlagsManager {
     let dbDir = null;
     const compilationDB = requestSettings.compilationDatabase;
     if (compilationDB != null && compilationDB.file != null) {
+      const {file, flagsFile} = compilationDB;
       // Look for a compilation database provided by the client.
-      dbDir = nuclideUri.dirname(compilationDB.file);
-      dbFlags = await this.loadFlagsFromCompilationDatabase(requestSettings);
+      dbDir = nuclideUri.dirname(file);
+      dbFlags = await this.loadFlagsFromCompilationDatabase(file, flagsFile);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -232,15 +227,7 @@ export default class ClangFlagsManager {
       );
       if (dbDir != null) {
         const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-        const compilationDatabase = {
-          file: dbFile,
-          flagsFile: null,
-          libclangPath: null,
-        };
-        dbFlags = await this.loadFlagsFromCompilationDatabase({
-          compilationDatabase,
-          projectRoot: requestSettings.projectRoot,
-        });
+        dbFlags = await this.loadFlagsFromCompilationDatabase(dbFile, null);
       }
     }
     return {dbFlags, dbDir};
@@ -407,7 +394,6 @@ export default class ClangFlagsManager {
   async _loadFlagsFromCompilationDatabase(
     dbFile: string,
     flagsFile: ?string,
-    requestSettings: ClangRequestSettings,
   ): Promise<Map<string, ClangFlagsHandle>> {
     const flags = new Map();
     const dbDir = nuclideUri.dirname(dbFile);
@@ -446,24 +432,14 @@ export default class ClangFlagsManager {
   }
 
   loadFlagsFromCompilationDatabase(
-    requestSettings: ClangRequestSettings,
+    dbFile: string,
+    flagsFile: ?string,
   ): Promise<Map<string, ClangFlagsHandle>> {
-    const db = requestSettings.compilationDatabase;
-    if (db == null) {
-      return Promise.resolve(new Map());
-    }
-    const dbFile = db.file;
-    if (dbFile == null) {
-      return Promise.resolve(new Map());
-    }
     return this._compilationDatabases.getOrCreate(
-      db,
+      dbFile,
       () =>
-        this._loadFlagsFromCompilationDatabase(
-          dbFile,
-          db.flagsFile,
-          requestSettings,
-        ) || Promise.resolve(new Map()),
+        this._loadFlagsFromCompilationDatabase(dbFile, flagsFile) ||
+        Promise.resolve(new Map()),
     );
   }
 

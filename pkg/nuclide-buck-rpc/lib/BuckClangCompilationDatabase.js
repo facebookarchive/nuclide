@@ -19,7 +19,6 @@ import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
 import {guessBuildFile, isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
-import {convertBuckClangCompilationDatabase} from './types';
 import fsPromise from 'nuclide-commons/fsPromise';
 
 const logger = getLogger('nuclide-buck');
@@ -247,14 +246,12 @@ class BuckClangCompilationDatabaseHandler {
     buckRoot: ?string,
     src: string,
   ): Promise<void> {
-    if (await this._isDbTooBigForFullCaching(db)) {
+    if ((await this._isDbTooBigForFullCaching(db)) || db.file == null) {
       return;
     }
     const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
-      {
-        compilationDatabase: convertBuckClangCompilationDatabase(db),
-        projectRoot: buckRoot,
-      },
+      db.file,
+      db.flagsFile,
     );
     pathToFlags.forEach((_, path) => {
       this._sourceCache.set(path, Promise.resolve(db));
