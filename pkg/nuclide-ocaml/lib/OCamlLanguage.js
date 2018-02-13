@@ -13,11 +13,13 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
+import {parseLogLevel} from '../../nuclide-logging/lib/rpc-types';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 
@@ -30,13 +32,18 @@ async function createOCamlLanguageService(
     getHostServices(),
   ]);
 
+  const logLevel = parseLogLevel(
+    featureConfig.get('nuclide-ocaml.logLevel'),
+    'DEBUG',
+  );
+
   const lspService = await service.createMultiLspLanguageService(
     'ocaml',
     'ocaml-language-server',
     ['--stdio'],
     {
       logCategory: 'OcamlService',
-      logLevel: 'INFO',
+      logLevel,
       fileNotifier,
       host,
       projectFileNames: ['esy', 'esy.json', 'package.json', '.merlin'],

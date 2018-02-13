@@ -32,3 +32,19 @@ export type AdditionalLogFile = {
   title: string, // usually a filepath
   data: string,
 };
+
+export function parseLogLevel(s: mixed, _default: LogLevel): LogLevel {
+  if (
+    s === 'ALL' ||
+    s === 'TRACE' ||
+    s === 'DEBUG' ||
+    s === 'INFO' ||
+    s === 'WARN' ||
+    s === 'ERROR' ||
+    s === 'FATAL' ||
+    s === 'OFF'
+  ) {
+    return s;
+  }
+  return _default;
+}
