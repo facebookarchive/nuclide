@@ -220,7 +220,6 @@ export function centerScrollToBufferLine(
   bufferLineNumber: number,
 ): void {
   const textEditor = textEditorElement.getModel();
-  atom.grammars.autoAssignLanguageMode(textEditor.getBuffer());
   const pixelPositionTop = textEditorElement.pixelPositionForBufferPosition([
     bufferLineNumber,
     0,
@@ -233,6 +232,7 @@ export function centerScrollToBufferLine(
     textEditor.getLineHeightInPixels() / 2 -
     textEditorElement.clientHeight / 2;
   textEditorElement.setScrollTop(Math.max(scrollTop, 1));
+
   textEditorElement.focus();
 
   textEditor.setCursorBufferPosition([bufferLineNumber, 0], {
