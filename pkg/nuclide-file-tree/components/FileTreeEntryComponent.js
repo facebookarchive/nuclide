@@ -204,7 +204,12 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
           directory: node.isContainer,
         })}
         style={{
-          paddingLeft: this.props.node.getDepth() * INDENT_LEVEL,
+          paddingLeft: node.isContainer
+            ? this.props.node.getDepth() * INDENT_LEVEL
+            : // Folders typically render a disclosure triangle, making them appear
+              // at one depth level more than they actually are. Compensate by
+              // adding the appearance of an extra level of depth for files.
+              this.props.node.getDepth() * INDENT_LEVEL + INDENT_LEVEL,
           minWidth: min_width,
           marginLeft: 0,
         }}
