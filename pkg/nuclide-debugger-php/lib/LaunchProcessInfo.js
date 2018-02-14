@@ -169,7 +169,11 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   }
 
   async debug(): Promise<PhpDebuggerInstance> {
-    const useNewDebugger = await passesGK('nuclide_hhvm_debugger_vscode');
+    const userConfig = (featureConfig.get('nuclide-debugger-php'): any);
+    const useXDebug = userConfig.useXDebug || false;
+    const useNewDebugger =
+      !useXDebug && (await passesGK('nuclide_hhvm_debugger_vscode'));
+
     if (useNewDebugger) {
       // TODO: Ericblue - this will be cleaned up when the old debugger
       // is removed. For now we need to leave both in place until the new

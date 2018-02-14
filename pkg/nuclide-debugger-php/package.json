@@ -82,6 +82,12 @@
        "type": "boolean",
        "default": true,
        "description": "Specifies whether we stop all requests once we hit a breakpoint"
+     },
+     "useXDebug": {
+       "title": "Use legacy XDebug debugger for PHP",
+       "type": "boolean",
+       "default": false,
+       "description": "If checked, Nuclide will use the legacy XDebug PHP debugger, even if the new HHVM debugger is available."
       }
     },
     "packageType": "Atom",
