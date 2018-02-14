@@ -28,6 +28,33 @@ diff --git a/test.xml b/test.xml
 +test
 +test`;
 
+const MULTI_CHUNK_ADD_MOVE_COPY_DELETE_CHANGES = `diff --git a/add.js b/add.js
+--- /dev/null
++++ add.js
+@@ -0,0 +1,1 @@
++add
+diff --git a/delete.txt b/delete.txt
+--- delete.txt
++++ /dev/null
+@@ -1, +0,0 @@
+-delete
+diff --git a/copybefore.txt b/copyafter.txt
+copy from copybefore.txt
+copy to copyafter.txt
+--- copybefore.txt
++++ copyafter.txt
+@@ -1, +1 @@
+-delete
++add
+diff --git a/movebefore.txt b/moveafter.txt
+rename from movebefore.txt
+rename to moveafter.txt
+--- renamebefore.txt
++++ renameafter.txt
+@@ -1, +1 @@
+-rename
++newline`;
+
 const MULTI_FILE_HG_DIFF_OUTPUT = `diff --git test-test/blah/blah.js test-test/blah/blah.js
 --- test-test/blah/blah.js
 +++ test-test/blah/blah.js
@@ -200,6 +227,63 @@ describe('hg-diff-output-parser', () => {
             newLines: 4,
           },
         ],
+      });
+    });
+
+    describe('parseMultiFileHgDiffUnifiedOutput', () => {
+      it('parses the diff information correctly for each file.', () => {
+        const diffInfoForManyFiles = parseMultiFileHgDiffUnifiedOutput(
+          MULTI_CHUNK_ADD_MOVE_COPY_DELETE_CHANGES,
+        );
+        expect(diffInfoForManyFiles.size).toBe(4);
+        expect(diffInfoForManyFiles.get('add.js')).toEqual({
+          added: 1,
+          deleted: 0,
+          lineDiffs: [
+            {
+              oldStart: 0,
+              oldLines: 0,
+              newStart: 1,
+              newLines: 1,
+            },
+          ],
+        });
+        expect(diffInfoForManyFiles.get('delete.txt')).toEqual({
+          added: 0,
+          deleted: 1,
+          lineDiffs: [
+            {
+              oldStart: 1,
+              oldLines: 1,
+              newStart: 0,
+              newLines: 0,
+            },
+          ],
+        });
+        expect(diffInfoForManyFiles.get('copyafter.txt')).toEqual({
+          added: 1,
+          deleted: 1,
+          lineDiffs: [
+            {
+              oldStart: 1,
+              oldLines: 1,
+              newStart: 1,
+              newLines: 1,
+            },
+          ],
+        });
+        expect(diffInfoForManyFiles.get('renameafter.txt')).toEqual({
+          added: 1,
+          deleted: 1,
+          lineDiffs: [
+            {
+              oldStart: 1,
+              oldLines: 1,
+              newStart: 1,
+              newLines: 1,
+            },
+          ],
+        });
       });
     });
   });
