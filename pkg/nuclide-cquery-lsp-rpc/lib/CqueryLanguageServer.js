@@ -22,6 +22,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getOriginalEnvironment} from 'nuclide-commons/process';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {
   MultiProjectLanguageService,
   forkHostServices,
@@ -32,8 +33,6 @@ import {getInitializationOptions} from './CqueryInitialization';
 import {CqueryInvalidator} from './CqueryInvalidator';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import {CqueryProjectManager} from './CqueryProjectManager';
-
-export const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
 export default class CqueryLanguageServer extends MultiProjectLanguageService<
   CqueryLanguageClient,
@@ -155,6 +154,14 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
       5 * 60 * 1000, // 5 minutes
     );
 
+    lsp.setProjectChecker(file => {
+      const checkProject = this._projectManager.getProjectForFile(file);
+      return checkProject != null
+        ? this._projectManager.getProjectKey(checkProject) === projectKey
+        : // TODO pelmers: header files aren't in the map because they do not
+          // appear in compile_commands.json, but they should be cached!
+          isHeaderFile(file);
+    });
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
   }
@@ -194,15 +201,14 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     file: NuclideUri,
     project: CqueryProject,
   ): Promise<void> {
-    // requires await to synchronize with getLanguageServiceForFile
-    await this._projectManager.associateFileWithProject(file, project);
+    this._projectManager.associateFileWithProject(file, project);
     this._processes.get(this._projectManager.getProjectKey(project)); // spawn the process ahead of time
   }
 
   async getLanguageServiceForFile(
     file: string,
   ): Promise<?CqueryLanguageClient> {
-    const project = await this._projectManager.getProjectForFile(file);
+    const project = this._projectManager.getProjectForFile(file);
     return project == null ? null : this._getLanguageServiceForProject(project);
   }
 

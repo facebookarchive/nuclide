@@ -12,8 +12,8 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {COMPILATION_DATABASE_FILE} from './CqueryLanguageServer';
 import fs from 'nuclide-commons/fsPromise';
+import {COMPILATION_DATABASE_FILE} from './CqueryProjectManager';
 
 export async function findNearestCompilationDbDir(
   source: NuclideUri,

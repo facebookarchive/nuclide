@@ -52,9 +52,15 @@ function shortenByOneCharacter({newText, range}: TextEdit): TextEdit {
 }
 
 export class CqueryLanguageClient extends LspLanguageService {
+  _checkProject: string => boolean = _ => false;
+
   start(): Promise<void> {
     // Workaround for https://github.com/babel/babel/issues/3930
     return super.start().then(() => this.startCquery());
+  }
+
+  setProjectChecker(check: string => boolean): void {
+    this._checkProject = check;
   }
 
   async startCquery(): Promise<void> {
@@ -158,6 +164,10 @@ export class CqueryLanguageClient extends LspLanguageService {
       }
     }
     return super._convertCommands_CodeActions(outputCommands);
+  }
+
+  _isFileInProject(file: string): boolean {
+    return super._isFileInProject(file) && this._checkProject(file);
   }
 
   async _notifyOnFail(success: boolean, falseMessage: string): Promise<void> {

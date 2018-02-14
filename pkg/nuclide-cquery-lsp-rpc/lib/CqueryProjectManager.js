@@ -11,7 +11,10 @@
 
 import type {CqueryProject, CqueryProjectKey} from './types';
 
-import fsPromise from 'nuclide-commons/fsPromise';
+import * as ClangService from '../../nuclide-clang-rpc';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+
+export const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
 /**
  * Manages the existing projects and the files associated with them
@@ -29,17 +32,41 @@ export class CqueryProjectManager {
     return JSON.stringify(project);
   }
 
-  async associateFileWithProject(
+  associateFileWithProject(
     file: string,
     project: CqueryProject,
   ): Promise<void> {
     const key = this.getProjectKey(project);
     this._keyToProject.set(key, project);
-    this._fileToProjectKey.set(await fsPromise.realpath(file), key);
+    if (this._fileToProjectKey.get(file) === key) {
+      return Promise.resolve();
+    }
+    if (!this._keyToProject.has(key) && project.hasCompilationDb) {
+      const dbFile = nuclideUri.join(
+        project.compilationDbDir,
+        COMPILATION_DATABASE_FILE,
+      );
+      // Cache keys for all the files in the project.
+      return new Promise((resolve, reject) => {
+        ClangService.loadFilesFromCompilationDatabaseAndCacheThem(
+          dbFile,
+          project.flagsFile,
+        )
+          .refCount()
+          .subscribe(
+            path => this._fileToProjectKey.set(path, key),
+            reject, // on error
+            resolve, // on complete
+          );
+      });
+    } else {
+      this._fileToProjectKey.set(file, key);
+      return Promise.resolve();
+    }
   }
 
-  async getProjectForFile(file: string): Promise<?CqueryProject> {
-    const key = this._fileToProjectKey.get(await fsPromise.realpath(file));
+  getProjectForFile(file: string): ?CqueryProject {
+    const key = this._fileToProjectKey.get(file);
     this._logger.debug('key for', file, ':', key);
     return key == null ? null : this._keyToProject.get(key);
   }
