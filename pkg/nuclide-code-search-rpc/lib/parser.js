@@ -1,47 +1,51 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {CodeSearchResult} from './types';
-import type {ProcessMessage} from 'nuclide-commons/process';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseAgAckRgLine = parseAgAckRgLine;
+exports.parseGrepLine = parseGrepLine;
 
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable} from 'rxjs';
+var _nuclideUri;
 
-const ACK_PARSE_REGEX = /^(.+):(\d+):(\d+):(.*)$/;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ACK_PARSE_REGEX = /^(.+):(\d+):(\d+):(.*)$/; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    * 
+                                                    * @format
+                                                    */
+
 const GREP_PARSE_REGEX = /^(.+):(\d+):(.*)$/;
 
-export function parseAgAckRgLine(
-  event: ProcessMessage,
-): Observable<CodeSearchResult> {
+function parseAgAckRgLine(event) {
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(ACK_PARSE_REGEX);
     if (matches != null && matches.length === 5) {
       const [file, row, column, line] = matches.slice(1);
-      return Observable.of({
+      return _rxjsBundlesRxMinJs.Observable.of({
         file,
         row: parseInt(row, 10) - 1,
         column: parseInt(column, 10) - 1,
-        line,
+        line
       });
     }
   }
-  return Observable.empty();
+  return _rxjsBundlesRxMinJs.Observable.empty();
 }
 
-export function parseGrepLine(
-  event: ProcessMessage,
-  cwd: string,
-  regex: RegExp,
-): Observable<CodeSearchResult> {
+function parseGrepLine(event, cwd, regex) {
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(GREP_PARSE_REGEX);
     if (matches != null && matches.length === 4) {
@@ -50,19 +54,23 @@ export function parseGrepLine(
       // Finding the first index is consistent with the other 'ack'-like tools.
       const match = regex.exec(line);
       // match cannot be null because grep used the regex to find this line.
-      invariant(match != null);
+
+      if (!(match != null)) {
+        throw new Error('Invariant violation: "match != null"');
+      }
+
       const column = match.index;
       // Then reset the regex for the next search.
       regex.lastIndex = 0;
       // Note: the vcs-grep searches return paths rooted from their cwd,
       // so join the paths to make them absolute.
-      return Observable.of({
-        file: nuclideUri.isAbsolute(file) ? file : nuclideUri.join(cwd, file),
+      return _rxjsBundlesRxMinJs.Observable.of({
+        file: (_nuclideUri || _load_nuclideUri()).default.isAbsolute(file) ? file : (_nuclideUri || _load_nuclideUri()).default.join(cwd, file),
         row: parseInt(row, 10) - 1,
         column,
-        line,
+        line
       });
     }
   }
-  return Observable.empty();
+  return _rxjsBundlesRxMinJs.Observable.empty();
 }

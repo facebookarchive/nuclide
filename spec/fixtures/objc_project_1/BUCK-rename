@@ -1,5 +1,0 @@
-apple_library(
-  name = 'test',
-  headers = ['FoundationStub.h'],
-  srcs = ['Hello.m'],
-)

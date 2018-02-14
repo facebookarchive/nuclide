@@ -1,540 +1,462 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getBuildableTargets = exports.getDiagnostics = exports._getReferences = exports.initialize = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let initialize = exports.initialize = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileNotifier, config) {
+    return new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService(fileNotifier, new PythonSingleFileLanguageService(fileNotifier, config));
+  });
+
+  return function initialize(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+// Exported for testing.
+let _getReferences = exports._getReferences = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (manager, src, contents, line, column) {
+    const service = yield manager.getJediService();
+    return service.get_references(src, contents, manager.getSysPath(src), line, column);
+  });
+
+  return function _getReferences(_x3, _x4, _x5, _x6, _x7) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+// Set to false if flake8 isn't found, so we don't repeatedly fail.
+
+
+let getDiagnostics = exports.getDiagnostics = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (src, contents) {
+    if (!shouldRunFlake8) {
+      return [];
+    }
+
+    let result;
+    try {
+      result = yield runLinterCommand(src, contents);
+    } catch (err) {
+      // A non-successful exit code can result in some cases that we want to ignore,
+      // for example when an incorrect python version is specified for a source file.
+      if (err instanceof (_process || _load_process()).ProcessExitError) {
+        return [];
+      } else if (err.errorCode === 'ENOENT') {
+        // Don't throw if flake8 is not found on the user's system.
+        // Don't retry again.
+        shouldRunFlake8 = false;
+        return [];
+      }
+      throw new Error(`flake8 failed with error: ${(0, (_string || _load_string()).maybeToString)(err.message)}`);
+    }
+
+    return (0, (_flake || _load_flake()).parseFlake8Output)(src, result);
+  });
+
+  return function getDiagnostics(_x8, _x9) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let runLinterCommand = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (src, contents) {
+    const dirName = (_nuclideUri || _load_nuclideUri()).default.dirname(src);
+    const configDir = yield (_fsPromise || _load_fsPromise()).default.findNearestFile('.flake8', dirName);
+    // flowlint-next-line sketchy-null-string:off
+    const configPath = configDir ? (_nuclideUri || _load_nuclideUri()).default.join(configDir, '.flake8') : null;
+
+    let result;
+    let runFlake8;
+    try {
+      // $FlowFB
+      runFlake8 = require('./fb/run-flake8').default;
+    } catch (e) {
+      // Ignore.
+    }
+
+    if (runFlake8 != null) {
+      result = yield runFlake8(src, contents, configPath);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    const command = global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8') || 'flake8';
+    const args = [];
+
+    // flowlint-next-line sketchy-null-string:off
+    if (configPath) {
+      args.push('--config');
+      args.push(configPath);
+    }
+
+    // Read contents from stdin.
+    args.push('-');
+
+    if (!(typeof command === 'string')) {
+      throw new Error('Invariant violation: "typeof command === \'string\'"');
+    }
+
+    return (0, (_process || _load_process()).runCommand)(command, args, {
+      cwd: dirName,
+      input: contents,
+      // 1 indicates unclean lint result (i.e. has errors/warnings).
+      isExitError: function (exit) {
+        return exit.exitCode == null || exit.exitCode > 1;
+      }
+    }).toPromise();
+  });
+
+  return function runLinterCommand(_x10, _x11) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
+ * Retrieves a list of buildable targets to obtain link trees for a given file.
+ * (This won't return anything if a link tree is already available.)
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {
-  DefinitionQueryResult,
-  DiagnosticMessageType,
-  FindReferencesReturn,
-  Outline,
-  CodeAction,
-} from 'atom-ide-ui';
-import type {
-  AutocompleteResult,
-  FileDiagnosticMap,
-  FileDiagnosticMessage,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
-import type {ConnectableObservable} from 'rxjs';
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import {runCommand, ProcessExitError} from 'nuclide-commons/process';
-import {asyncSome} from 'nuclide-commons/promise';
-import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-import {maybeToString} from 'nuclide-commons/string';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import once from '../../commons-node/once';
-import {IDENTIFIER_REGEXP} from './constants';
-import JediServerManager from './JediServerManager';
-import {parseFlake8Output} from './flake8';
-import {ServerLanguageService} from '../../nuclide-language-service-rpc';
-import {itemsToOutline} from './outline';
-import {Point, Range} from 'simple-text-buffer';
-import {FileCache} from '../../nuclide-open-files-rpc';
-import {getAutocompleteSuggestions} from './AutocompleteHelpers';
-import {getDefinition} from './DefinitionHelpers';
+let getBuildableTargets = exports.getBuildableTargets = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (src) {
+    const linkTreeManager = serverManager._linkTreeManager;
+    const linkTrees = yield linkTreeManager.getLinkTreePaths(src);
+    if (linkTrees.length === 0) {
+      return [];
+    }
+    if (yield (0, (_promise || _load_promise()).asyncSome)(linkTrees, (_fsPromise || _load_fsPromise()).default.exists)) {
+      return [];
+    }
+    const buckRoot = yield linkTreeManager.getBuckRoot(src);
+    const owner = yield linkTreeManager.getOwner(src);
+    if (buckRoot == null || owner == null) {
+      return [];
+    }
+    const dependents = yield linkTreeManager.getDependents(buckRoot, owner);
+    return Array.from(dependents.keys());
+  });
 
-export type PythonCompletion = {
-  type: string,
-  text: string,
-  description?: string,
-  params: ?Array<string>,
-};
+  return function getBuildableTargets(_x12) {
+    return _ref5.apply(this, arguments);
+  };
+})();
 
-export type PythonDefinition = {
-  type: string,
-  text: string,
-  file: NuclideUri,
-  line: number,
-  column: number,
-};
+exports.reset = reset;
 
-export type PythonReference = {
-  type: string,
-  text: string,
-  file: NuclideUri,
-  line: number,
-  column: number,
-  parentName?: string,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export type Position = {
-  line: number,
-  column: number,
-};
+var _process;
 
-export type PythonFunctionItem = {
-  kind: 'function',
-  name: string,
-  start: Position,
-  end: Position,
-  children?: Array<PythonOutlineItem>,
-  docblock?: string,
-  params?: Array<string>,
-};
-
-export type PythonClassItem = {
-  kind: 'class',
-  name: string,
-  start: Position,
-  end: Position,
-  children?: Array<PythonOutlineItem>,
-  docblock?: string,
-  // Class params, i.e. superclasses.
-  params?: Array<string>,
-};
-
-export type PythonStatementItem = {
-  kind: 'statement',
-  name: string,
-  start: Position,
-  end: Position,
-  docblock?: string,
-};
-
-export type PythonOutlineItem =
-  | PythonFunctionItem
-  | PythonClassItem
-  | PythonStatementItem;
-
-export type PythonDiagnostic = {
-  file: NuclideUri,
-  code: string,
-  message: string,
-  type: DiagnosticMessageType,
-  line: number,
-  column: number,
-};
-
-export type PythonServiceConfig = {
-  showGlobalVariables: boolean,
-  autocompleteArguments: boolean,
-  includeOptionalArguments: boolean,
-};
-
-const serverManager = new JediServerManager();
-
-export async function initialize(
-  fileNotifier: FileNotifier,
-  config: PythonServiceConfig,
-): Promise<LanguageService> {
-  return new ServerLanguageService(
-    fileNotifier,
-    new PythonSingleFileLanguageService(fileNotifier, config),
-  );
+function _load_process() {
+  return _process = require('nuclide-commons/process');
 }
 
-class PythonSingleFileLanguageService {
-  _fileCache: FileCache;
-  _showGlobalVariables: boolean;
-  _autocompleteArguments: boolean;
-  _includeOptionalArguments: boolean;
+var _promise;
 
-  constructor(fileNotifier: FileNotifier, config: PythonServiceConfig) {
-    invariant(fileNotifier instanceof FileCache);
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('nuclide-commons/range');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _once;
+
+function _load_once() {
+  return _once = _interopRequireDefault(require('../../commons-node/once'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _JediServerManager;
+
+function _load_JediServerManager() {
+  return _JediServerManager = _interopRequireDefault(require('./JediServerManager'));
+}
+
+var _flake;
+
+function _load_flake() {
+  return _flake = require('./flake8');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _outline;
+
+function _load_outline() {
+  return _outline = require('./outline');
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _AutocompleteHelpers;
+
+function _load_AutocompleteHelpers() {
+  return _AutocompleteHelpers = require('./AutocompleteHelpers');
+}
+
+var _DefinitionHelpers;
+
+function _load_DefinitionHelpers() {
+  return _DefinitionHelpers = require('./DefinitionHelpers');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const serverManager = new (_JediServerManager || _load_JediServerManager()).default(); /**
+                                                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                        * All rights reserved.
+                                                                                        *
+                                                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                                                        * the root directory of this source tree.
+                                                                                        *
+                                                                                        * 
+                                                                                        * @format
+                                                                                        */
+
+class PythonSingleFileLanguageService {
+
+  constructor(fileNotifier, config) {
+    if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+      throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+    }
+
     this._fileCache = fileNotifier;
     this._showGlobalVariables = config.showGlobalVariables;
     this._autocompleteArguments = config.autocompleteArguments;
     this._includeOptionalArguments = config.includeOptionalArguments;
   }
 
-  async getCodeActions(
-    filePath: NuclideUri,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    throw new Error('Not implemented');
+  getCodeActions(filePath, range, diagnostics) {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('Not implemented');
+    })();
   }
 
-  getDiagnostics(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?FileDiagnosticMap> {
+  getDiagnostics(filePath, buffer) {
     throw new Error('Not Yet Implemented');
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
+  observeDiagnostics() {
     throw new Error('Not Yet Implemented');
   }
 
-  getAutocompleteSuggestions(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<AutocompleteResult> {
-    return getAutocompleteSuggestions(
-      serverManager,
-      filePath,
-      buffer,
-      position,
-      activatedManually,
-      this._autocompleteArguments,
-      this._includeOptionalArguments,
-    );
+  getAutocompleteSuggestions(filePath, buffer, position, activatedManually) {
+    return (0, (_AutocompleteHelpers || _load_AutocompleteHelpers()).getAutocompleteSuggestions)(serverManager, filePath, buffer, position, activatedManually, this._autocompleteArguments, this._includeOptionalArguments);
   }
 
-  getDefinition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return getDefinition(serverManager, filePath, buffer, position);
+  getDefinition(filePath, buffer, position) {
+    return (0, (_DefinitionHelpers || _load_DefinitionHelpers()).getDefinition)(serverManager, filePath, buffer, position);
   }
 
-  findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Observable<?FindReferencesReturn> {
-    return Observable.fromPromise(
-      this._findReferences(filePath, buffer, position),
-    );
+  findReferences(filePath, buffer, position) {
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(this._findReferences(filePath, buffer, position));
   }
 
-  async _findReferences(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const result = await _getReferences(
-      serverManager,
-      filePath,
-      buffer.getText(),
-      position.row,
-      position.column,
-    );
+  _findReferences(filePath, buffer, position) {
+    var _this = this;
 
-    if (!result || result.length === 0) {
-      return {type: 'error', message: 'No usages were found.'};
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _getReferences(serverManager, filePath, buffer.getText(), position.row, position.column);
 
-    const symbolName = result[0].text;
+      if (!result || result.length === 0) {
+        return { type: 'error', message: 'No usages were found.' };
+      }
 
-    // Process this into the format nuclide-find-references expects.
-    const references = result.map(ref => {
+      const symbolName = result[0].text;
+
+      // Process this into the format nuclide-find-references expects.
+      const references = result.map(function (ref) {
+        return {
+          uri: ref.file,
+          name: ref.parentName,
+          range: new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(ref.line, ref.column), new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(ref.line, ref.column + ref.text.length))
+        };
+      });
+
+      // Choose the project root as baseUri, or if no project exists,
+      // use the dirname of the src file.
+      const baseUri = _this._fileCache.getContainingDirectory(filePath) || (_nuclideUri || _load_nuclideUri()).default.dirname(filePath);
+
       return {
-        uri: ref.file,
-        name: ref.parentName,
-        range: new Range(
-          new Point(ref.line, ref.column),
-          new Point(ref.line, ref.column + ref.text.length),
-        ),
+        type: 'data',
+        baseUri,
+        referencedSymbolName: symbolName,
+        references
       };
-    });
-
-    // Choose the project root as baseUri, or if no project exists,
-    // use the dirname of the src file.
-    const baseUri =
-      this._fileCache.getContainingDirectory(filePath) ||
-      nuclideUri.dirname(filePath);
-
-    return {
-      type: 'data',
-      baseUri,
-      referencedSymbolName: symbolName,
-      references,
-    };
+    })();
   }
 
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
+  getCoverage(filePath) {
     throw new Error('Not Yet Implemented');
   }
 
-  async getOutline(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?Outline> {
-    const service = await serverManager.getJediService();
-    const items = await service.get_outline(filePath, buffer.getText());
+  getOutline(filePath, buffer) {
+    var _this2 = this;
 
-    if (items == null) {
-      return null;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const service = yield serverManager.getJediService();
+      const items = yield service.get_outline(filePath, buffer.getText());
 
-    const mode = this._showGlobalVariables ? 'all' : 'constants';
-    return {
-      outlineTrees: itemsToOutline(mode, items),
-    };
+      if (items == null) {
+        return null;
+      }
+
+      const mode = _this2._showGlobalVariables ? 'all' : 'constants';
+      return {
+        outlineTrees: (0, (_outline || _load_outline()).itemsToOutline)(mode, items)
+      };
+    })();
   }
 
-  async typeHint(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    const word = wordAtPositionFromBuffer(buffer, position, IDENTIFIER_REGEXP);
-    if (word == null) {
-      return null;
-    }
-    const service = await serverManager.getJediService();
-    const result = await service.get_hover(
-      filePath,
-      buffer.getText(),
-      serverManager.getSysPath(filePath),
-      word.wordMatch[0],
-      position.row,
-      position.column,
-    );
-    if (result == null) {
-      return null;
-    }
-    return {
-      hint: [
-        {
+  typeHint(filePath, buffer, position) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const word = (0, (_range || _load_range()).wordAtPositionFromBuffer)(buffer, position, (_constants || _load_constants()).IDENTIFIER_REGEXP);
+      if (word == null) {
+        return null;
+      }
+      const service = yield serverManager.getJediService();
+      const result = yield service.get_hover(filePath, buffer.getText(), serverManager.getSysPath(filePath), word.wordMatch[0], position.row, position.column);
+      if (result == null) {
+        return null;
+      }
+      return {
+        hint: [{
           type: 'markdown',
-          value: result,
-        },
-      ],
-      range: word.range,
-    };
+          value: result
+        }],
+        range: word.range
+      };
+    })();
   }
 
-  highlight(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
+  highlight(filePath, buffer, position) {
     throw new Error('Not Yet Implemented');
   }
 
-  formatSource(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?Array<TextEdit>> {
+  formatSource(filePath, buffer, range) {
     throw new Error('Not Yet Implemented');
   }
 
-  async formatEntireFile(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    const contents = buffer.getText();
-    const {command, args} = await getFormatterCommandImpl()(filePath, range);
-    const dirName = nuclideUri.dirname(nuclideUri.getPath(filePath));
+  formatEntireFile(filePath, buffer, range) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const contents = buffer.getText();
+      const { command, args } = yield getFormatterCommandImpl()(filePath, range);
+      const dirName = (_nuclideUri || _load_nuclideUri()).default.dirname((_nuclideUri || _load_nuclideUri()).default.getPath(filePath));
 
-    let stdout;
-    try {
-      stdout = await runCommand(command, args, {
-        cwd: dirName,
-        input: contents,
-        // At the moment, yapf outputs 3 possible exit codes:
-        // 0 - success, no content change.
-        // 2 - success, contents changed.
-        // 1 - internal failure, most likely due to syntax errors.
-        //
-        // See: https://github.com/google/yapf/issues/228#issuecomment-198682079
-        isExitError: exit => exit.exitCode === 1,
-      }).toPromise();
-    } catch (err) {
-      throw new Error(`"${command}" failed, likely due to syntax errors.`);
-    }
+      let stdout;
+      try {
+        stdout = yield (0, (_process || _load_process()).runCommand)(command, args, {
+          cwd: dirName,
+          input: contents,
+          // At the moment, yapf outputs 3 possible exit codes:
+          // 0 - success, no content change.
+          // 2 - success, contents changed.
+          // 1 - internal failure, most likely due to syntax errors.
+          //
+          // See: https://github.com/google/yapf/issues/228#issuecomment-198682079
+          isExitError: function (exit) {
+            return exit.exitCode === 1;
+          }
+        }).toPromise();
+      } catch (err) {
+        throw new Error(`"${command}" failed, likely due to syntax errors.`);
+      }
 
-    if (contents !== '' && stdout === '') {
-      // Throw error if the yapf output is empty, which is almost never desirable.
-      throw new Error('Empty output received from yapf.');
-    }
+      if (contents !== '' && stdout === '') {
+        // Throw error if the yapf output is empty, which is almost never desirable.
+        throw new Error('Empty output received from yapf.');
+      }
 
-    return {formatted: stdout};
+      return { formatted: stdout };
+    })();
   }
 
-  formatAtPosition(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-    triggerCharacter: string,
-  ): Promise<?Array<TextEdit>> {
+  formatAtPosition(filePath, buffer, position, triggerCharacter) {
     throw new Error('Not Yet Implemented');
   }
 
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
+  getEvaluationExpression(filePath, buffer, position) {
     throw new Error('Not Yet Implemented');
   }
 
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  getProjectRoot(fileUri) {
     throw new Error('Not Yet Implemented');
   }
 
-  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+  isFileInProject(fileUri) {
     throw new Error('Not Yet Implemented');
   }
 
-  getExpandedSelectionRange(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
+  getExpandedSelectionRange(filePath, buffer, currentSelection) {
     throw new Error('Not Yet Implemented');
   }
 
-  getCollapsedSelectionRange(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
+  getCollapsedSelectionRange(filePath, buffer, currentSelection, originalCursorPosition) {
     throw new Error('Not Yet Implemented');
   }
 
-  dispose(): void {}
+  dispose() {}
 }
 
-const getFormatterCommandImpl = once(() => {
+const getFormatterCommandImpl = (0, (_once || _load_once()).default)(() => {
   try {
     // $FlowFB
     return require('./fb/get-formatter-command').default;
   } catch (e) {
     return (filePath, range) => ({
       command: 'yapf',
-      args: ['--lines', `${range.start.row + 1}-${range.end.row + 1}`],
+      args: ['--lines', `${range.start.row + 1}-${range.end.row + 1}`]
     });
   }
-});
+});let shouldRunFlake8 = true;
 
-// Exported for testing.
-export async function _getReferences(
-  manager: JediServerManager,
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<PythonReference>> {
-  const service = await manager.getJediService();
-  return service.get_references(
-    src,
-    contents,
-    manager.getSysPath(src),
-    line,
-    column,
-  );
-}
-
-// Set to false if flake8 isn't found, so we don't repeatedly fail.
-let shouldRunFlake8 = true;
-
-export async function getDiagnostics(
-  src: NuclideUri,
-  contents: string,
-): Promise<Array<PythonDiagnostic>> {
-  if (!shouldRunFlake8) {
-    return [];
-  }
-
-  let result;
-  try {
-    result = await runLinterCommand(src, contents);
-  } catch (err) {
-    // A non-successful exit code can result in some cases that we want to ignore,
-    // for example when an incorrect python version is specified for a source file.
-    if (err instanceof ProcessExitError) {
-      return [];
-    } else if (err.errorCode === 'ENOENT') {
-      // Don't throw if flake8 is not found on the user's system.
-      // Don't retry again.
-      shouldRunFlake8 = false;
-      return [];
-    }
-    throw new Error(`flake8 failed with error: ${maybeToString(err.message)}`);
-  }
-
-  return parseFlake8Output(src, result);
-}
-
-async function runLinterCommand(
-  src: NuclideUri,
-  contents: string,
-): Promise<string> {
-  const dirName = nuclideUri.dirname(src);
-  const configDir = await fsPromise.findNearestFile('.flake8', dirName);
-  // flowlint-next-line sketchy-null-string:off
-  const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
-
-  let result;
-  let runFlake8;
-  try {
-    // $FlowFB
-    runFlake8 = require('./fb/run-flake8').default;
-  } catch (e) {
-    // Ignore.
-  }
-
-  if (runFlake8 != null) {
-    result = await runFlake8(src, contents, configPath);
-    if (result != null) {
-      return result;
-    }
-  }
-
-  const command =
-    (global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8')) ||
-    'flake8';
-  const args = [];
-
-  // flowlint-next-line sketchy-null-string:off
-  if (configPath) {
-    args.push('--config');
-    args.push(configPath);
-  }
-
-  // Read contents from stdin.
-  args.push('-');
-  invariant(typeof command === 'string');
-  return runCommand(command, args, {
-    cwd: dirName,
-    input: contents,
-    // 1 indicates unclean lint result (i.e. has errors/warnings).
-    isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
-  }).toPromise();
-}
-
-/**
- * Retrieves a list of buildable targets to obtain link trees for a given file.
- * (This won't return anything if a link tree is already available.)
- */
-export async function getBuildableTargets(
-  src: NuclideUri,
-): Promise<Array<string>> {
-  const linkTreeManager = serverManager._linkTreeManager;
-  const linkTrees = await linkTreeManager.getLinkTreePaths(src);
-  if (linkTrees.length === 0) {
-    return [];
-  }
-  if (await asyncSome(linkTrees, fsPromise.exists)) {
-    return [];
-  }
-  const buckRoot = await linkTreeManager.getBuckRoot(src);
-  const owner = await linkTreeManager.getOwner(src);
-  if (buckRoot == null || owner == null) {
-    return [];
-  }
-  const dependents = await linkTreeManager.getDependents(buckRoot, owner);
-  return Array.from(dependents.keys());
-}
-
-export function reset(): void {
+function reset() {
   serverManager.reset();
 }

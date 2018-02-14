@@ -1,3 +1,48 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _https = _interopRequireDefault(require('https'));
+
+var _BigDigServer;
+
+function _load_BigDigServer() {
+  return _BigDigServer = require('../server/BigDigServer');
+}
+
+var _WebSocketTransport;
+
+function _load_WebSocketTransport() {
+  return _WebSocketTransport = require('./WebSocketTransport');
+}
+
+var _BigDigClient;
+
+function _load_BigDigClient() {
+  return _BigDigClient = require('./BigDigClient');
+}
+
+var _XhrConnectionHeartbeat;
+
+function _load_XhrConnectionHeartbeat() {
+  return _XhrConnectionHeartbeat = require('./XhrConnectionHeartbeat');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Creates a Big Dig client that speaks the v1 protocol.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,48 +51,31 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import WS from 'ws';
-import https from 'https';
-
-import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
-import {WebSocketTransport} from './WebSocketTransport';
-import {BigDigClient} from './BigDigClient';
-import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
-
-export type BigDigClientConfig = {
-  +host: string,
-  +port: number,
-  +certificateAuthorityCertificate?: Buffer | string,
-  +clientCertificate?: Buffer | string,
-  +clientKey?: Buffer | string,
-};
-
-/**
- * Creates a Big Dig client that speaks the v1 protocol.
- */
-export default (async function createBigDigClient(
-  config: BigDigClientConfig,
-): Promise<BigDigClient> {
-  const options = {
-    ca: config.certificateAuthorityCertificate,
-    cert: config.clientCertificate,
-    key: config.clientKey,
-  };
-  const socket = new WS(`wss://${config.host}:${config.port}/v1`, options);
-  await new Promise((resolve, reject) => {
-    socket.once('open', resolve);
-    socket.once('error', reject);
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (config) {
+    const options = {
+      ca: config.certificateAuthorityCertificate,
+      cert: config.clientCertificate,
+      key: config.clientKey
+    };
+    const socket = new (_ws || _load_ws()).default(`wss://${config.host}:${config.port}/v1`, options);
+    yield new Promise(function (resolve, reject) {
+      socket.once('open', resolve);
+      socket.once('error', reject);
+    });
+    const agent = new _https.default.Agent(options);
+    const webSocketTransport = new (_WebSocketTransport || _load_WebSocketTransport()).WebSocketTransport('test', agent, socket);
+    const heartbeat = new (_XhrConnectionHeartbeat || _load_XhrConnectionHeartbeat()).XhrConnectionHeartbeat(`https://${config.host}:${config.port}`, (_BigDigServer || _load_BigDigServer()).HEARTBEAT_CHANNEL, options);
+    return new (_BigDigClient || _load_BigDigClient()).BigDigClient(webSocketTransport, heartbeat);
   });
-  const agent = new https.Agent(options);
-  const webSocketTransport = new WebSocketTransport('test', agent, socket);
-  const heartbeat = new XhrConnectionHeartbeat(
-    `https://${config.host}:${config.port}`,
-    HEARTBEAT_CHANNEL,
-    options,
-  );
-  return new BigDigClient(webSocketTransport, heartbeat);
-});
+
+  function createBigDigClient(_x) {
+    return _ref.apply(this, arguments);
+  }
+
+  return createBigDigClient;
+})();

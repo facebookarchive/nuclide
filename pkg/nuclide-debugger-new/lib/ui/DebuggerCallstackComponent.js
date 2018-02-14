@@ -1,3 +1,33 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _Table;
+
+function _load_Table() {
+  return _Table = require('nuclide-commons-ui/Table');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,144 +35,110 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import * as React from 'react';
-import type {IDebugService, IStackFrame} from '../types';
+class DebuggerCallstackComponent extends _react.Component {
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Table} from 'nuclide-commons-ui/Table';
-
-type DebuggerCallstackComponentProps = {
-  service: IDebugService,
-};
-
-type DebuggerCallstackComponentState = {
-  callstack: Array<IStackFrame>,
-  selectedCallFrameId: number,
-};
-
-export default class DebuggerCallstackComponent extends React.Component<
-  DebuggerCallstackComponentProps,
-  DebuggerCallstackComponentState,
-> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: DebuggerCallstackComponentProps) {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+
+    _initialiseProps.call(this);
+
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = this._getState();
   }
 
-  _getState(): DebuggerCallstackComponentState {
-    const {focusedStackFrame, focusedThread} = this.props.service.viewModel;
+  _getState() {
+    const { focusedStackFrame, focusedThread } = this.props.service.viewModel;
     return {
       callstack: focusedThread == null ? [] : focusedThread.getCallStack(),
-      selectedCallFrameId:
-        focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
+      selectedCallFrameId: focusedStackFrame == null ? -1 : focusedStackFrame.frameId
     };
   }
 
-  _locationComponent = (props: {
-    // eslint-disable-next-line react/no-unused-prop-types
-    data: IStackFrame,
-  }): React.Element<any> => {
-    const {source, range} = props.data;
-    const basename = nuclideUri.basename(source.uri);
-    return (
-      <div title={`${basename}:${range.start.row}`}>
-        <span>
-          {basename}:{range.start.row}
-        </span>
-      </div>
-    );
-  };
-
-  componentDidMount(): void {
-    const {service} = this.props;
-    this._disposables.add(
-      service
-        .getModel()
-        .onDidChangeCallStack(() => this.setState(this._getState())),
-      service.viewModel.onDidFocusStackFrame(() =>
-        this.setState(this._getState()),
-      ),
-    );
+  componentDidMount() {
+    const { service } = this.props;
+    this._disposables.add(service.getModel().onDidChangeCallStack(() => this.setState(this._getState())), service.viewModel.onDidFocusStackFrame(() => this.setState(this._getState())));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _handleStackFrameClick = (
-    clickedRow: {frame: IStackFrame},
-    callFrameIndex: number,
-  ): void => {
-    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
-  };
+  render() {
+    const { callstack } = this.state;
+    const rows = callstack == null ? [] : callstack.map((stackFrame, index) => {
+      const isSelected = this.state.selectedCallFrameId === stackFrame.frameId;
+      const cellData = {
+        data: {
+          frameId: index + 1,
+          address: stackFrame.name,
+          frame: stackFrame,
+          isSelected
+        }
+      };
 
-  render(): React.Node {
-    const {callstack} = this.state;
-    const rows =
-      callstack == null
-        ? []
-        : callstack.map((stackFrame, index) => {
-            const isSelected =
-              this.state.selectedCallFrameId === stackFrame.frameId;
-            const cellData = {
-              data: {
-                frameId: index + 1,
-                address: stackFrame.name,
-                frame: stackFrame,
-                isSelected,
-              },
-            };
+      if (isSelected) {
+        // $FlowIssue className is an optional property of a table row
+        cellData.className = 'nuclide-debugger-callstack-item-selected';
+      }
 
-            if (isSelected) {
-              // $FlowIssue className is an optional property of a table row
-              cellData.className = 'nuclide-debugger-callstack-item-selected';
-            }
+      return cellData;
+    });
 
-            return cellData;
-          });
+    const columns = [{
+      title: '',
+      key: 'frameId',
+      width: 0.05
+    }, {
+      title: 'Address',
+      key: 'address'
+    }, {
+      component: this._locationComponent,
+      title: 'File Location',
+      key: 'frame'
+    }];
 
-    const columns = [
-      {
-        title: '',
-        key: 'frameId',
-        width: 0.05,
-      },
-      {
-        title: 'Address',
-        key: 'address',
-      },
-      {
-        component: this._locationComponent,
-        title: 'File Location',
-        key: 'frame',
-      },
-    ];
-
-    const emptyComponent = () => (
-      <div className="nuclide-debugger-callstack-list-empty">
-        callstack unavailable
-      </div>
+    const emptyComponent = () => _react.createElement(
+      'div',
+      { className: 'nuclide-debugger-callstack-list-empty' },
+      'callstack unavailable'
     );
 
-    return (
-      <Table
-        className="nuclide-debugger-callstack-table"
-        columns={columns}
-        emptyComponent={emptyComponent}
-        rows={rows}
-        selectable={true}
-        resizable={true}
-        onSelect={this._handleStackFrameClick}
-        sortable={false}
-      />
-    );
+    return _react.createElement((_Table || _load_Table()).Table, {
+      className: 'nuclide-debugger-callstack-table',
+      columns: columns,
+      emptyComponent: emptyComponent,
+      rows: rows,
+      selectable: true,
+      resizable: true,
+      onSelect: this._handleStackFrameClick,
+      sortable: false
+    });
   }
 }
+exports.default = DebuggerCallstackComponent;
+
+var _initialiseProps = function () {
+  this._locationComponent = props => {
+    const { source, range } = props.data;
+    const basename = (_nuclideUri || _load_nuclideUri()).default.basename(source.uri);
+    return _react.createElement(
+      'div',
+      { title: `${basename}:${range.start.row}` },
+      _react.createElement(
+        'span',
+        null,
+        basename,
+        ':',
+        range.start.row
+      )
+    );
+  };
+
+  this._handleStackFrameClick = (clickedRow, callFrameIndex) => {
+    this.props.service.focusStackFrame(clickedRow.frame, null, null, true);
+  };
+};
