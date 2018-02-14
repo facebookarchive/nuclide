@@ -100,6 +100,8 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   async debug(): Promise<PhpDebuggerInstance> {
+    this.preAttachActions();
+
     const useNewDebugger = await passesGK('nuclide_hhvm_debugger_vscode');
     if (useNewDebugger) {
       // TODO: Ericblue - this will be cleaned up when the old debugger
@@ -109,8 +111,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     }
 
     logger.info('Connecting to: ' + this.getTargetUri());
-    this.preAttachActions();
-
     const rpcService = this._getRpcService();
     const sessionConfig = getSessionConfig(
       nuclideUri.getPath(this.getTargetUri()),
