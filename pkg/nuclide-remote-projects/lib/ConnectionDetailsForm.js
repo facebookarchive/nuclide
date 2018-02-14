@@ -46,6 +46,7 @@ type Props = {
   onCancel: () => mixed,
   onConfirm: () => mixed,
   onDidChange: () => mixed,
+  needsPasswordValue: boolean,
   profileHosts: ?Array<string>,
 };
 
@@ -188,27 +189,30 @@ export default class ConnectionDetailsForm extends React.Component<
   }
 
   render(): React.Node {
-    const {className} = this.props;
+    const {className, needsPasswordValue} = this.props;
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
     // _onKeyPress so that escape and enter work
+    const passwordLabelName = 'Password' + (needsPasswordValue ? ':' : '');
     const passwordLabel = (
       <div className="nuclide-auth-method">
-        <div className="nuclide-auth-method-label">Password:</div>
-        <div
-          className="nuclide-auth-method-input nuclide-auth-method-password"
-          onClick={this._handlePasswordInputClick}>
-          <input
-            type="password"
-            className="nuclide-password native-key-bindings"
-            disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
-            onChange={this._handleInputDidChange}
-            onKeyPress={this._onKeyPress.bind(this)}
-            ref={el => {
-              this._password = el;
-            }}
-          />
-        </div>
+        <div className="nuclide-auth-method-label">{passwordLabelName}</div>
+        {needsPasswordValue ? (
+          <div
+            className="nuclide-auth-method-input nuclide-auth-method-password"
+            onClick={this._handlePasswordInputClick}>
+            <input
+              type="password"
+              className="nuclide-password native-key-bindings"
+              disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
+              onChange={this._handleInputDidChange}
+              onKeyPress={this._onKeyPress.bind(this)}
+              ref={el => {
+                this._password = el;
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     );
     const privateKeyLabel = (

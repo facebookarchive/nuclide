@@ -52,7 +52,6 @@ const emptyFunction = () => {};
  */
 export default class CreateConnectionProfileForm extends React.Component<
   Props,
-  void,
 > {
   props: Props;
 
@@ -119,6 +118,7 @@ export default class CreateConnectionProfileForm extends React.Component<
           onCancel={emptyFunction}
           onConfirm={this._clickSave}
           onDidChange={emptyFunction}
+          needsPasswordValue={false}
           ref={details => {
             this._connectionDetails = details;
           }}
