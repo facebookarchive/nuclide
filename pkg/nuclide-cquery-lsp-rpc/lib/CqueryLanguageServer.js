@@ -217,13 +217,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   ): Promise<?CqueryLanguageClient> {
     const key = this._projectManager.getProjectKey(project);
     const client = this._processes.get(key);
-    if (client == null) {
-      this._logger.warn("Didn't find language service for ", project);
-      return null;
-    }
     if ((await client) == null) {
-      this._logger.warn('Found invalid language service for ', project);
-      this._processes.delete(key); // Delete so we retry next time.
+      this._logger.warn("Didn't find language service for ", project);
       return null;
     } else {
       this._logger.info('Found existing language service for ', project);

@@ -46,24 +46,25 @@ function staticInitializationOptions(): Object {
 export async function getInitializationOptions(
   project: CqueryProject,
 ): Promise<?Object> {
+  let options;
   if (project.hasCompilationDb) {
-    let options = await getInitializationOptionsWithCompilationDb(
+    options = await getInitializationOptionsWithCompilationDb(
       project.projectRoot,
       project.compilationDbDir,
     );
-    try {
-      // $FlowFB
-      const overrides = require('./fb-init-options').default(project.flagsFile);
-      options = {...options, ...overrides};
-    } catch (e) {}
-    return options;
   } else if (project.defaultFlags != null) {
-    return getInitializationOptionsWithoutCompilationDb(
+    options = await getInitializationOptionsWithoutCompilationDb(
       project.projectRoot,
       project.defaultFlags,
     );
   }
-  return null;
+  if (options != null) {
+    try {
+      // $FlowFB
+      options = require('./fb-init-options').default(options, project);
+    } catch (e) {}
+  }
+  return options;
 }
 
 async function getInitializationOptionsWithCompilationDb(
