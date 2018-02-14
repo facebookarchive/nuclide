@@ -55,7 +55,7 @@ export const DecorationIcons = Object.freeze({
   Error: ErrorIconWithShadow,
 });
 
-type FileIconsAddItemToElementFn = (
+export type FileIconsAddItemToElementFn = (
   element: HTMLElement,
   path: string,
 ) => IDisposable;
