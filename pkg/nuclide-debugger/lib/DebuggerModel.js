@@ -570,6 +570,10 @@ export default class DebuggerModel {
   }
 
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
+    if (this._debuggerMode !== DebuggerMode.PAUSED) {
+      return;
+    }
+
     try {
       const path = nuclideUri.uriToNuclideUri(sourceURL);
       if (path != null && atom.workspace != null) {
@@ -608,6 +612,10 @@ export default class DebuggerModel {
   }
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
+    if (this._debuggerMode !== DebuggerMode.PAUSED) {
+      return;
+    }
+
     if (options) {
       const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;
