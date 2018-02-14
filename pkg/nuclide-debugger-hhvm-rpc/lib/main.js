@@ -179,7 +179,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       config,
     );
 
-    const logFilePath = this._getHHVMLogFilePath();
+    const logFilePath = await this._getHHVMLogFilePath();
 
     return {
       hhvmPath,
@@ -191,12 +191,24 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
     };
   }
 
-  _getHHVMLogFilePath(): string {
-    return nuclideUri.join(
+  async _getHHVMLogFilePath(): Promise<string> {
+    const path = nuclideUri.join(
       os.tmpdir(),
       `nuclide-${os.userInfo().username}-logs`,
       'hhvm-debugger.log',
     );
+
+    // Ensure the log file exists, and is write-able by everyone so that
+    // HHVM, which is running as a different user, can append to it.
+    const mode = 0o666;
+    try {
+      const fd = await fsPromise.open(path, 'a+', mode);
+      if (fd >= 0) {
+        await fsPromise.chmod(path, mode);
+      }
+    } catch (_) {}
+
+    return path;
   }
 
   async createLogFilePaste(): Promise<string> {
@@ -204,7 +216,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
       // $FlowFB
       const fbPaste = require('../../fb-pastebin');
       return fsPromise
-        .readFile(this._getHHVMLogFilePath(), 'utf8')
+        .readFile(await this._getHHVMLogFilePath(), 'utf8')
         .then(contents =>
           fbPaste.createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
         );
@@ -217,7 +229,7 @@ export class HhvmDebuggerService extends DebuggerRpcServiceBase {
     const startupDocumentPath: ?string = await this._getStartupDocumentPath(
       config,
     );
-    const logFilePath = this._getHHVMLogFilePath();
+    const logFilePath = await this._getHHVMLogFilePath();
     return {
       debugPort: config.debugPort,
       startupDocumentPath,
