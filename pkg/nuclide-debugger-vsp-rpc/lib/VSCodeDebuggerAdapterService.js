@@ -26,6 +26,7 @@ import {
   VsDebugSessionTranslator,
   VsAdapterSpawner,
 } from 'nuclide-debugger-common';
+import {Observable} from 'rxjs';
 
 export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
   _translator: ?VsDebugSessionTranslator;
@@ -79,6 +80,27 @@ export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
 
   getServerMessageObservable(): ConnectableObservable<string> {
     return super.getServerMessageObservable();
+  }
+
+  async custom(request: string, args: any): Promise<any> {
+    if (this._translator == null) {
+      throw new Error(`No active session / translator: ${request}`);
+    } else {
+      return this._translator.getSession().custom(request, args);
+    }
+  }
+
+  observeCustomEvents(): ConnectableObservable<any> {
+    if (this._translator == null) {
+      return Observable.throw(
+        new Error('No active session / translator'),
+      ).publish();
+    } else {
+      return this._translator
+        .getSession()
+        .observeCustomEvents()
+        .publish();
+    }
   }
 
   dispose(): Promise<void> {

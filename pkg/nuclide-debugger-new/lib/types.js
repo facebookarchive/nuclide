@@ -114,7 +114,7 @@ export interface ISession {
   ): Promise<DebugProtocol.EvaluateResponse>;
   capabilities: DebugProtocol.Capabilities;
   disconnect(restart?: boolean, force?: boolean): Promise<void>;
-  custom(request: string, args: any): Promise<DebugProtocol.Response>;
+  custom(request: string, args: any): Promise<DebugProtocol.CustomResponse>;
   observeInitializeEvents(): Observable<DebugProtocol.InitializedEvent>;
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
   restartFrame(

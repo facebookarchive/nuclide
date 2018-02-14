@@ -61,7 +61,7 @@ export default class RemoteControlService {
     const {focusedProcess} = viewModel;
     invariant(focusedProcess != null);
 
-    const isFocussedProcess = (): boolean => {
+    const isFocusedProcess = (): boolean => {
       return (
         this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
         viewModel.focusedProcess === focusedProcess
@@ -72,7 +72,7 @@ export default class RemoteControlService {
       request: string,
       args: any,
     ): Promise<DebugProtocol.CustomResponse> => {
-      if (!isFocussedProcess()) {
+      if (!isFocusedProcess()) {
         throw new Error(
           'Cannot send custom requests to a no longer active debug session!',
         );
@@ -81,7 +81,7 @@ export default class RemoteControlService {
     };
 
     const observeCustomEvents = (): Observable<DebugProtocol.DebugEvent> => {
-      if (!isFocussedProcess()) {
+      if (!isFocusedProcess()) {
         throw new Error(
           'Cannot send custom requests to a no longer active debug session!',
         );
