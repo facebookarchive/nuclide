@@ -940,8 +940,6 @@ function createProcessStream(
               Observable.never(), // Don't complete until we say so!
             ),
         )
-          .takeUntil(errors)
-          .takeUntil(exitEvents)
           .merge(
             // Write any input to stdin. This is just for the side-effect. We merge it here to
             // ensure that writing to the stdin stream happens after our event listeners are added.
@@ -958,6 +956,8 @@ function createProcessStream(
                   })
                   .ignoreElements(),
           )
+          .takeUntil(errors)
+          .takeUntil(exitEvents)
           .do({
             error: () => {
               finished = true;
