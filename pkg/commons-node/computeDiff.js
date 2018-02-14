@@ -206,11 +206,11 @@ function _computeLineDiffMapping(diffChunks: Array<ChunkPiece>): LineMapping {
   }
 
   // Add two line number mapping for `after` decorations.
-  newToOld.push(newLineCount++);
-  newToOld.push(newLineCount);
+  newToOld.push(oldLineCount++);
+  newToOld.push(oldLineCount);
 
-  oldToNew.push(oldLineCount++);
-  oldToNew.push(oldLineCount);
+  oldToNew.push(newLineCount++);
+  oldToNew.push(newLineCount);
 
   return {
     newToOld,

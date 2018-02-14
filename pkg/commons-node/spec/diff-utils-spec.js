@@ -107,8 +107,8 @@ adding a non-new-line line`,
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets).toEqual([[1, 1]]); // offset for the last added line.
       expect(newLineOffsets.length).toBe(0);
-      expect(newToOld).toEqual([0, 1, 2, 3]);
-      expect(oldToNew).toEqual([0, 1, 2]);
+      expect(newToOld).toEqual([0, 1, 1, 2]);
+      expect(oldToNew).toEqual([0, 2, 3]);
     });
   });
 });
