@@ -18,6 +18,7 @@ import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
 import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import PrepackLaunchAttachProvider from './PrepackLaunchAttachProvider';
+import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {listenToRemoteDebugCommands} from './utils';
@@ -37,6 +38,7 @@ class Activation {
     this._registerReactNativeDebugProvider();
     this._registerPrepackDebugProvider();
     this._registerOcamlDebugProvider();
+    this._registerGdbDebugProvider();
   }
 
   _registerPythonDebugProvider(): void {
@@ -101,6 +103,17 @@ class Activation {
         name: 'OCaml',
         getLaunchAttachProvider: connection => {
           return new OcamlLaunchProvider(connection);
+        },
+      });
+    }
+  }
+
+  async _registerGdbDebugProvider(): Promise<void> {
+    if (await passesGK('nuclide_debugger_native_vsp')) {
+      this._registerDebugProvider({
+        name: 'Native (VSP)',
+        getLaunchAttachProvider: connection => {
+          return new NativeLaunchAttachProvider(connection);
         },
       });
     }

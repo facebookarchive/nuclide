@@ -14,7 +14,13 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 
-export type Adapter = 'node' | 'python' | 'prepack' | 'react-native' | 'ocaml';
+export type Adapter =
+  | 'node'
+  | 'python'
+  | 'prepack'
+  | 'react-native'
+  | 'ocaml'
+  | 'native';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
@@ -92,6 +98,21 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(__dirname, 'vscode-ocaml'),
+    },
+  ],
+  [
+    'native',
+    {
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            'fb-native-debugger-vsp/src/RunTranspiledServer.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, 'fb-native-debugger-vsp/src'),
     },
   ],
 ]);

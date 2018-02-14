@@ -251,6 +251,43 @@ export async function getOCamlLaunchProcessInfo(
   );
 }
 
+export async function getGdbLaunchProcessInfo(
+  program: NuclideUri,
+  args: Array<string>,
+  cwd: string,
+): Promise<VspProcessInfo> {
+  const adapterInfo = await getAdapterExecutableWithProperNode(
+    'native',
+    program,
+  );
+  return new VspProcessInfo(
+    program,
+    'launch',
+    VsAdapterTypes.NATIVE,
+    adapterInfo,
+    true, // showThreads
+    {program: nuclideUri.getPath(program), args, cwd},
+  );
+}
+
+export async function getGdbAttachProcessInfo(
+  targetUri: NuclideUri,
+  pid: number,
+): Promise<VspProcessInfo> {
+  const adapterInfo = await getAdapterExecutableWithProperNode(
+    'native',
+    targetUri,
+  );
+  return new VspProcessInfo(
+    targetUri,
+    'attach',
+    VsAdapterTypes.NATIVE,
+    adapterInfo,
+    true, // showThreads
+    {pid},
+  );
+}
+
 export async function getNodeAttachProcessInfo(
   targetUri: NuclideUri,
   port: number,
