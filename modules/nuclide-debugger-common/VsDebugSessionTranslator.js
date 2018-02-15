@@ -102,7 +102,7 @@ const OUTPUT_CATEGORY_TO_LEVEL = Object.freeze({
   success: 'success',
 });
 
-// VSP deoesn't provide process id.
+// VSP doesn't provide process id.
 const VSP_PROCESS_ID = -1;
 
 type TranslatorBreakpoint = {
@@ -371,7 +371,9 @@ export default class VsDebugSessionTranslator {
             threadInfo.callFrames = await this._getTranslatedCallFramesForThread(
               command.params.threadId,
               null,
+              true,
             );
+            threadInfo.callStackLoaded = true;
             callFrames = threadInfo.callFrames;
           }
         }
@@ -885,8 +887,16 @@ export default class VsDebugSessionTranslator {
                 try {
                   callFrames =
                     this._pausedThreadId === threadId
-                      ? await this._getTranslatedCallFramesForThread(id, null)
-                      : await this._getTranslatedCallFramesForThread(id, 1);
+                      ? await this._getTranslatedCallFramesForThread(
+                          id,
+                          null,
+                          false,
+                        )
+                      : await this._getTranslatedCallFramesForThread(
+                          id,
+                          1,
+                          false,
+                        );
                 } catch (e) {
                   callFrames = [];
                 }
@@ -932,7 +942,7 @@ export default class VsDebugSessionTranslator {
                   state: 'paused',
                   callFrames: pausedEvent.callFrames,
                   stopReason: pausedEvent.reason,
-                  callStackLoaded: this._pausedThreadId === stopThreadId,
+                  callStackLoaded: false,
                 });
               }
             }
@@ -1045,7 +1055,10 @@ export default class VsDebugSessionTranslator {
     for (const threadId of threadIds) {
       const threadInfo = this._threadsById.get(threadId);
       if (threadInfo == null || state === 'running') {
-        this._threadsById.set(threadId, {state, callStackLoaded: false});
+        this._threadsById.set(threadId, {
+          state,
+          callStackLoaded: false,
+        });
       } else {
         this._threadsById.set(threadId, {
           ...threadInfo,
@@ -1113,6 +1126,7 @@ export default class VsDebugSessionTranslator {
   async _getTranslatedCallFramesForThread(
     threadId: number,
     levels: ?number = null,
+    allScopes: boolean,
   ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
     try {
       const options = {};
@@ -1130,7 +1144,7 @@ export default class VsDebugSessionTranslator {
       });
       // $FlowFixMe(>=0.55.0) Flow suppress
       return Promise.all(
-        stackFrames.map(async frame => {
+        stackFrames.map(async (frame, idx) => {
           let scriptId;
           if (frame.source != null && frame.source.path != null) {
             scriptId = frame.source.path;
@@ -1148,7 +1162,10 @@ export default class VsDebugSessionTranslator {
               frame.column - 1,
             ),
             hasSource: frame.source != null,
-            scopeChain: await this._getScopesForFrame(frame.id),
+            scopeChain:
+              allScopes || idx === 0
+                ? await this._getScopesForFrame(frame.id)
+                : [],
             this: (undefined: any),
           };
         }),

@@ -26,14 +26,25 @@ import {reportError} from './EventReporter';
 export default class ThreadManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _threadEvent$: Subject<Array<mixed>>;
+  _selectedThread: ?string;
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
     this._debuggerDispatcher = debuggerDispatcher;
     this._threadEvent$ = new Subject();
+    this._selectedThread = null;
   }
 
   selectThread(threadId: string): void {
+    this._selectedThread = threadId;
     this._debuggerDispatcher.selectThread(Number(threadId));
+  }
+
+  getSelectedThread(): ?string {
+    return this._selectedThread;
+  }
+
+  setSelectedThread(threadId: string): void {
+    this._selectedThread = threadId;
   }
 
   getThreadStack(threadId: string): Promise<Array<CallFrame>> {
