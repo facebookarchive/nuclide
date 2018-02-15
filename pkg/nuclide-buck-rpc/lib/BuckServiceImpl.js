@@ -78,11 +78,20 @@ export async function _getBuckCommandAndOptions(
   if (pathToBuck === 'buck' && os.platform() === 'win32') {
     pathToBuck = 'buck.bat';
   }
+  let env = await getOriginalEnvironment();
+  try {
+    // $FlowFB
+    const {getRealUsername} = require('./fb/realUsername');
+    const username = await getRealUsername(env.USER);
+    if (username != null) {
+      env = {...env, USER: username};
+    }
+  } catch (_) {}
   const buckCommandOptions = {
     cwd: rootPath,
     // Buck restarts itself if the environment changes, so try to preserve
     // the original environment that Nuclide was started in.
-    env: await getOriginalEnvironment(),
+    env,
     ...commandOptions,
   };
   return {pathToBuck, buckCommandOptions};
