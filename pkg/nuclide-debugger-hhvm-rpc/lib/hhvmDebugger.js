@@ -47,6 +47,11 @@ class HHVMDebuggerWrapper {
     process.stdin.on('data', chunk => {
       this._processClientMessage(chunk);
     });
+
+    // If Nuclide exits, so shall we.
+    process.on('disconnect', () => {
+      process.exit();
+    });
   }
 
   _attachTarget(attachMessage: attachRequest, retries: number = 0) {
