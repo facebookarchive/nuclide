@@ -33,12 +33,25 @@ class Activation {
       listenToRemoteDebugCommands(),
     );
 
-    this._registerPythonDebugProvider();
-    this._registerNodeDebugProvider();
-    this._registerReactNativeDebugProvider();
-    this._registerPrepackDebugProvider();
-    this._registerOcamlDebugProvider();
-    this._registerGdbDebugProvider();
+    fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
+      const isOpenSource = !exists;
+
+      // TODO(most): Remove when fully migrated to VSP (`nuclide-debugger-new`).
+      if (isOpenSource) {
+        // Enable `nuclide-debugger` for OSS while `nuclide-debugger-new`
+        // is being iterated on to replace `nuclide-debugger`.
+        atom.packages.triggerActivationHook(
+          '!nuclide_vsp_debugger_core:gk:nuclide',
+        );
+      }
+
+      this._registerPythonDebugProvider();
+      this._registerNodeDebugProvider();
+      this._registerReactNativeDebugProvider(isOpenSource);
+      this._registerPrepackDebugProvider(isOpenSource);
+      this._registerOcamlDebugProvider();
+      this._registerGdbDebugProvider();
+    });
   }
 
   _registerPythonDebugProvider(): void {
@@ -69,10 +82,9 @@ class Activation {
     );
   }
 
-  async _registerReactNativeDebugProvider(): Promise<void> {
-    const isOpenSource = !await fsPromise.exists(
-      path.join(__dirname, 'fb-marker'),
-    );
+  async _registerReactNativeDebugProvider(
+    isOpenSource: boolean,
+  ): Promise<void> {
     if ((await passesGK('nuclide_debugger_reactnative')) || isOpenSource) {
       this._registerDebugProvider({
         name: 'React Native',
@@ -83,10 +95,7 @@ class Activation {
     }
   }
 
-  async _registerPrepackDebugProvider(): Promise<void> {
-    const isOpenSource = !await fsPromise.exists(
-      path.join(__dirname, 'fb-marker'),
-    );
+  async _registerPrepackDebugProvider(isOpenSource: boolean): Promise<void> {
     if ((await passesGK('nuclide_debugger_prepack')) || isOpenSource) {
       this._registerDebugProvider({
         name: 'Prepack',
