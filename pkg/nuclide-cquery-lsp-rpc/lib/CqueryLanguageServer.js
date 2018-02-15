@@ -162,6 +162,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
           // appear in compile_commands.json, but they should be cached!
           isHeaderFile(file);
     });
+    lsp.setProgressInfo({id: projectKey, label: lsp._projectRoot});
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
   }

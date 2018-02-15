@@ -39,6 +39,7 @@ function staticInitializationOptions(): Object {
     diagnosticsOnCodeCompletion: true,
     codeLensOnLocalVariables: false,
     enableSnippetInsertion: true,
+    progressReportFrequencyMs: 500,
     clientVersion: 3,
   };
 }

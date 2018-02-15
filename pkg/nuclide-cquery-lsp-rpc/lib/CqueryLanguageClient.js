@@ -12,6 +12,7 @@
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Subscription} from 'rxjs';
 import type {
   TextEdit,
   Command,
@@ -19,8 +20,7 @@ import type {
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 import type {RequestLocationsResult} from './types';
 
-import {Subject} from 'rxjs';
-import {fastDebounce} from 'nuclide-commons/observable';
+import {Observable} from 'rxjs';
 import {
   lspUri_localPath,
   localPath_lspUri,
@@ -39,6 +39,11 @@ type CqueryProgressNotification = {
   onIndexedCount: number,
 };
 
+type ProgressInfo = {
+  label: string,
+  id: string,
+};
+
 // FIXME pelmers: tracking cquery/issues/30
 // https://github.com/jacobdufault/cquery/issues/30#issuecomment-345536318
 function shortenByOneCharacter({newText, range}: TextEdit): TextEdit {
@@ -53,6 +58,8 @@ function shortenByOneCharacter({newText, range}: TextEdit): TextEdit {
 
 export class CqueryLanguageClient extends LspLanguageService {
   _checkProject: string => boolean = _ => false;
+  _progressInfo: ?ProgressInfo;
+  _progressSubscription: ?Subscription;
 
   start(): Promise<void> {
     // Workaround for https://github.com/babel/babel/issues/3930
@@ -63,60 +70,64 @@ export class CqueryLanguageClient extends LspLanguageService {
     this._checkProject = check;
   }
 
+  setProgressInfo(info: ProgressInfo): void {
+    this._progressInfo = info;
+  }
+
   async startCquery(): Promise<void> {
-    const progressSubject = new Subject();
-    this._lspConnection._jsonRpcConnection.onNotification(
-      {method: '$cquery/progress'},
-      (args: CqueryProgressNotification) => {
-        const {
-          indexRequestCount,
-          doIdMapCount,
-          loadPreviousIndexCount,
-          onIdMappedCount,
-          onIndexedCount,
-        } = args;
-        const total =
-          indexRequestCount +
-          doIdMapCount +
-          loadPreviousIndexCount +
-          onIdMappedCount +
-          onIndexedCount;
-        progressSubject.next(total);
-      },
-    );
-    // cquery progress is strange; sometimes it reaches 0 then goes back up
-    // again, so we wait a bit before clearing the progress icon at 0.
-    progressSubject
-      .distinctUntilChanged()
-      .throttleTime(50)
-      .do(
-        // update progress text
-        value => {
-          const label = `cquery: ${value} jobs`;
-          this._handleProgressNotification({id: 'cquery-progress', label});
-        },
-      )
-      // if progress has not changed for 2 seconds and is now 0 then complete.
-      .let(fastDebounce(2000))
-      .subscribe(
-        // next
-        value => {
-          if (value === 0) {
-            progressSubject.complete();
-          }
-        },
-        // error
-        null,
-        // complete
-        () => {
-          this._handleProgressNotification({
-            id: 'cquery-progress',
-            label: null,
-          });
+    const progressObservable = Observable.create(subscriber => {
+      this._lspConnection._jsonRpcConnection.onNotification(
+        {method: '$cquery/progress'},
+        (args: CqueryProgressNotification) => {
+          const {
+            indexRequestCount,
+            doIdMapCount,
+            loadPreviousIndexCount,
+            onIdMappedCount,
+            onIndexedCount,
+          } = args;
+          const total =
+            indexRequestCount +
+            doIdMapCount +
+            loadPreviousIndexCount +
+            onIdMappedCount +
+            onIndexedCount;
+          subscriber.next(total);
         },
       );
+    }).distinctUntilChanged();
+    if (this._progressInfo != null) {
+      const {id, label} = this._progressInfo;
+      // Because of the 'freshen' command, cquery may finish
+      // (i.e. progress reaches 0) then start emitting progress events again.
+      // So each time it reaches 0 create a new id by adding a monotonic number.
+      let progressId = 0;
+      this._progressSubscription = progressObservable.subscribe(totalJobs => {
+        const taggedId = id + progressId;
+        if (totalJobs === 0) {
+          // label null clears the indicator.
+          this._handleProgressNotification({
+            id: taggedId,
+            label: null,
+          });
+          progressId++;
+        } else {
+          this._handleProgressNotification({
+            id: taggedId,
+            label: `cquery ${label}: ${totalJobs} jobs`,
+          });
+        }
+      });
+    }
     // TODO pelmers Register handlers for other custom cquery messages.
     // TODO pelmers hook into refactorizer for renaming?
+  }
+
+  dispose(): void {
+    if (this._progressSubscription != null) {
+      this._progressSubscription.unsubscribe();
+    }
+    super.dispose();
   }
 
   _createOutlineTreeHierarchy(
