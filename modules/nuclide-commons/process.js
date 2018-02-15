@@ -541,7 +541,10 @@ export async function psTree(): Promise<Array<ProcessInfo>> {
 
 export function parsePsOutput(psOutput: string): Array<ProcessInfo> {
   // Remove the first header line.
-  const lines = psOutput.split(/\n|\r\n/).slice(1);
+  const lines = psOutput
+    .trim()
+    .split(/\n|\r\n/)
+    .slice(1);
 
   return lines.map(line => {
     const columns = line.trim().split(/\s+/);
