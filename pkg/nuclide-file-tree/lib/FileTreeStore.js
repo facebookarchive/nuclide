@@ -704,7 +704,7 @@ export class FileTreeStore {
       .map(root => root.uri);
   }
 
-  getCwdKey(): ?string {
+  getCwdKey(): ?NuclideUri {
     return this._cwdKey;
   }
 
@@ -1248,6 +1248,7 @@ export class FileTreeStore {
 
   collectDebugState(): Object {
     return {
+      currentWorkingRoot: this.getCwdKey(),
       openFilesExpanded: this.openFilesExpanded,
       uncommittedChangesExpanded: this.uncommittedChangesExpanded,
       foldersExpanded: this.foldersExpanded,
