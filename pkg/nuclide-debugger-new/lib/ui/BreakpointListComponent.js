@@ -146,8 +146,9 @@ export default class BreakpointListComponent extends React.Component<
             <div
               className={classnames({
                 'nuclide-debugger-breakpoint-disabled': !enabled,
-                'nuclide-debugger-breakpoint-with-condition':
-                  breakpoint.condition !== '',
+                'nuclide-debugger-breakpoint-with-condition': Boolean(
+                  breakpoint.condition,
+                ),
               })}
               key={i}>
               <Checkbox
