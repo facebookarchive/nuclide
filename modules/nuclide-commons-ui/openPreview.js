@@ -34,7 +34,7 @@ let activeOpenableId = 0;
 // a new pane if the destination uri is not the active item. However, if the
 // user has disabled preview panes, we won't show them a preview.
 
-// previewOpenable supports being called many times, and it deallocates prior
+// openPreview supports being called many times, and it deallocates prior
 // previews on its own when this happens. It also returns the user's focus when
 // to the original destination when cancelled. This *could* be implemented using
 // a stack, but this simpler implementation just holds global references and restores
