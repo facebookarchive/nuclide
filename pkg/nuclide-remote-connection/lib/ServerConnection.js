@@ -38,7 +38,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutPromise} from 'nuclide-commons/promise';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
-import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
+import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
 import {HEARTBEAT_CHANNEL} from '../../nuclide-server/lib/NuclideServer';
 import {protocolLogger} from '../../nuclide-server/lib/utils';
 import {getLogger} from 'log4js';

@@ -1,15 +1,16 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
-import type {AgentOptions} from 'big-dig/src/common/types';
+import type {AgentOptions} from '../common/types';
 import type {Observable} from 'rxjs';
 import type {ProtocolLogger} from './QueuedAckTransport';
 
@@ -19,7 +20,7 @@ import uuid from 'uuid';
 import {Emitter} from 'event-kit';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
-import {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
+import {XhrConnectionHeartbeat} from '../client/XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';

@@ -19,13 +19,13 @@ import {attachEvent} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
-import {QueuedAckTransport} from './QueuedAckTransport';
+import {QueuedAckTransport} from 'big-dig/src/socket/QueuedAckTransport';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {HistogramTracker} from '../../nuclide-analytics';
 import {getVersion} from '../../nuclide-version';
 import {flushLogsAndExit} from '../../nuclide-logging';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
-import {WebSocketTransport} from './WebSocketTransport';
+import {WebSocketTransport} from 'big-dig/src/socket/WebSocketTransport';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {protocolLogger} from './utils';
 import {track} from '../../nuclide-analytics';

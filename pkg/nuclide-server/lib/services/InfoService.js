@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {QueuedAckTransport} from '../QueuedAckTransport';
+import type {QueuedAckTransport} from 'big-dig/src/socket/QueuedAckTransport';
 import type {RpcConnection} from '../../../nuclide-rpc';
 
 import {getVersion} from '../../../nuclide-version';

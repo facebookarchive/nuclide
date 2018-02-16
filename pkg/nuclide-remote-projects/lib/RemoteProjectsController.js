@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
+import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import StatusBarTile from './StatusBarTile';

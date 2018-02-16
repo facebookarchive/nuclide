@@ -9,11 +9,17 @@
  * @format
  */
 
-import type {RpcConnection} from '../../nuclide-rpc';
+/**
+ * THESE TESTS HAVE BEEN DISABLED SINCE AUGUST 28, 2015
+ * (see https://our.intern.facebook.com/intern/diff/D2320889/)
+ * Once we have NuclideSocket wired up in big-dig, we should
+ * probably delete these
+ */
 
 import NuclideServer from '../lib/NuclideServer';
 import servicesConfig from '../lib/servicesConfig';
-import {NuclideSocket} from '../lib/NuclideSocket';
+import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
+import {RpcConnection} from '../../nuclide-rpc';
 import invariant from 'assert';
 
 const HEARTBEAT_CHANNEL = 'test-heartbeat';

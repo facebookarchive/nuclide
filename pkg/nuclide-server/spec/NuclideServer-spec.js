@@ -15,7 +15,7 @@ import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';
 
 import invariant from 'assert';
-import {NuclideSocket} from '../lib/NuclideSocket';
+import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
 import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 const HEARTBEAT_CHANNEL = 'test-heartbeat';

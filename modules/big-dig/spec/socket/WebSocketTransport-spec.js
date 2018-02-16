@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -12,8 +13,8 @@
 import type WS from 'ws';
 
 import EventEmitter from 'events';
-import {WebSocketTransport} from '../lib/WebSocketTransport';
-import {compress, decompress} from '../lib/compression';
+import {WebSocketTransport} from '../../src/socket/WebSocketTransport';
+import {compress, decompress} from '../../src/socket/compression';
 
 function mockSocket(): WS {
   const result = (new EventEmitter(): any);
