@@ -55,7 +55,7 @@ ruleTester.run('modules-dependencies', rule, {
       filename: TEST_PATH,
       errors: [
         {
-          message: `Dependency "test1234" must be declared in module "${PKG_NAME}".`,
+          message: `Dependency "test1234" must be declared in the package.json of module "${PKG_NAME}".`,
           type: 'CallExpression',
         },
       ],
@@ -65,7 +65,7 @@ ruleTester.run('modules-dependencies', rule, {
       filename: TEST_PATH,
       errors: [
         {
-          message: `Dependency "test1234" must be declared in module "${PKG_NAME}".`,
+          message: `Dependency "test1234" must be declared in the package.json of module "${PKG_NAME}".`,
           type: 'ImportDeclaration',
         },
       ],
