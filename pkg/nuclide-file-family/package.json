@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-file-family",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Allows jumping between files in the same family",
+  "author": "NEEDS OWNER",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "file-family-backend": {
+      "versions": {
+        "0.0.0": "consumeFileFamilyProvider"
+      }
+    }
+  }
+}
