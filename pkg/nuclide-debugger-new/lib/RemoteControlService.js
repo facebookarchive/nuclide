@@ -26,16 +26,19 @@ export default class RemoteControlService {
   }
 
   async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    await this._startVspDebugging({
-      debuggerName: processInfo._serviceName,
+    const instance = this._startVspDebugging({
       targetUri: processInfo.getTargetUri(),
-      debugMode: processInfo._debugMode,
-      adapterType: processInfo._adapterType,
+      debugMode: processInfo.getDebugMode(),
+      adapterType: processInfo.getAdapterType(),
       adapterExecutable: processInfo._adapterExecutable,
       capabilities: processInfo.getDebuggerCapabilities(),
       properties: processInfo.getDebuggerProps(),
-      config: processInfo._config,
+      config: processInfo.getConfig(),
+      clientPreprocessor: processInfo.getVspClientPreprocessor(),
+      adapterPreprocessor: processInfo.getVspAdapterPreprocessor(),
     });
+
+    processInfo.setVspDebuggerInstance(instance);
   }
 
   getCurrentDebuggerName(): ?string {
@@ -43,12 +46,13 @@ export default class RemoteControlService {
     if (focusedProcess == null) {
       return null;
     } else {
-      return focusedProcess.configuration.debuggerName;
+      return focusedProcess.configuration.adapterType;
     }
   }
 
-  async _startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
-    await this._service.startDebugging(config);
+  _startVspDebugging(config: IProcessConfig): IVspInstance {
+    this._service.startDebugging(config);
+
     const {viewModel} = this._service;
     const {focusedProcess} = viewModel;
     invariant(focusedProcess != null);
@@ -81,10 +85,10 @@ export default class RemoteControlService {
       return focusedProcess.session.observeCustomEvents();
     };
 
-    return {
+    return Object.freeze({
       customRequest,
       observeCustomEvents,
-    };
+    });
   }
 
   canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {

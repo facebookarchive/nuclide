@@ -443,7 +443,7 @@ export class Variable extends ExpressionContainer implements IExpression {
   async setVariable(value: string): Promise<void> {
     const process = nullthrows(this.process);
     track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
-      language: process.configuration.debuggerName,
+      language: process.configuration.adapterType,
     });
     try {
       const response = await process.session.setVariable({

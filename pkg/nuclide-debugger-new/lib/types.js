@@ -217,7 +217,6 @@ export interface IScope extends IExpressionContainer {
 }
 
 export type IProcessConfig = {|
-  +debuggerName: string,
   +targetUri: NuclideUri,
   +debugMode: DebuggerConfigAction,
   +adapterType: VsAdapterType,
@@ -227,8 +226,8 @@ export type IProcessConfig = {|
   // TODO(most): deprecate
   +properties: DebuggerProperties,
   +config: Object,
-  +clientPreprocessor?: MessageProcessor,
-  +adapterPreprocessor?: MessageProcessor,
+  +clientPreprocessor?: ?MessageProcessor,
+  +adapterPreprocessor?: ?MessageProcessor,
 |};
 
 export interface IProcess extends ITreeElement {

@@ -102,8 +102,8 @@ const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 const CUSTOM_DEBUG_EVENT = 'CUSTOM_DEBUG_EVENT';
 const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
 
-const CHANGE_FOCUSSED_PROCESS = 'CHANGE_FOCUSSED_PROCESS';
-const CHANGE_FOCUSSED_STACKFRAME = 'CHANGE_FOCUSSED_STACKFRAME';
+const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
+const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
 
 class ViewModel implements IViewModel {
   _focusedProcess: ?IProcess;
@@ -135,13 +135,13 @@ class ViewModel implements IViewModel {
   }
 
   onDidFocusProcess(callback: (process: ?IProcess) => mixed): IDisposable {
-    return this._emitter.on(CHANGE_FOCUSSED_PROCESS, callback);
+    return this._emitter.on(CHANGE_FOCUSED_PROCESS, callback);
   }
 
   onDidFocusStackFrame(
     callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
   ): IDisposable {
-    return this._emitter.on(CHANGE_FOCUSSED_STACKFRAME, callback);
+    return this._emitter.on(CHANGE_FOCUSED_STACKFRAME, callback);
   }
 
   isMultiProcessView(): boolean {
@@ -157,16 +157,17 @@ class ViewModel implements IViewModel {
     const shouldEmit =
       this._focusedProcess !== process ||
       this._focusedThread !== thread ||
-      this._focusedStackFrame !== stackFrame;
+      this._focusedStackFrame !== stackFrame ||
+      explicit;
     if (this._focusedProcess !== process) {
       this._focusedProcess = process;
-      this._emitter.emit(CHANGE_FOCUSSED_PROCESS, process);
+      this._emitter.emit(CHANGE_FOCUSED_PROCESS, process);
     }
     this._focusedThread = thread;
     this._focusedStackFrame = stackFrame;
 
     if (shouldEmit) {
-      this._emitter.emit(CHANGE_FOCUSSED_STACKFRAME, {stackFrame, explicit});
+      this._emitter.emit(CHANGE_FOCUSED_STACKFRAME, {stackFrame, explicit});
     }
   }
 }
@@ -268,7 +269,7 @@ export default class DebugService implements IDebugService {
     this._onSessionEnd();
   }
 
-  async _tryToAutoFocusStackFrame(thread: IThread): Promise<void> {
+  _tryToAutoFocusStackFrame(thread: IThread): void {
     const callStack = thread.getCallStack();
     if (
       !callStack.length ||
@@ -287,7 +288,6 @@ export default class DebugService implements IDebugService {
     }
 
     this.focusStackFrame(stackFrameToFocus, null, null);
-    await stackFrameToFocus.openInEditor();
   }
 
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
@@ -301,7 +301,10 @@ export default class DebugService implements IDebugService {
           ) {
             return session.configurationDone().catch(e => {
               // Disconnect the debug session on configuration done error #10596
-              session.disconnect().catch(onUnexpectedError);
+              session
+                .disconnect()
+                .catch(onUnexpectedError)
+                .then(this._onSessionEnd);
               atom.notifications.addError('Failed to configure debugger', {
                 detail: e.message,
               });
@@ -335,7 +338,7 @@ export default class DebugService implements IDebugService {
             // UX: That'll fetch the top stack frame first (to allow the UI to focus on it),
             // then the rest of the call stack.
             await this._model.fetchCallStack(thread);
-            await this._tryToAutoFocusStackFrame(thread);
+            this._tryToAutoFocusStackFrame(thread);
           }
         } catch (error) {
           onUnexpectedError(error);
@@ -363,7 +366,10 @@ export default class DebugService implements IDebugService {
               });
             });
           } else {
-            session.disconnect().catch(onUnexpectedError);
+            session
+              .disconnect()
+              .catch(onUnexpectedError)
+              .then(this._onSessionEnd);
           }
         }
       }),
@@ -791,6 +797,7 @@ export default class DebugService implements IDebugService {
     const session = this._createVsDebugSession(configuration, sessionId);
     try {
       process = this._model.addProcess(configuration, session);
+      this.focusStackFrame(null, null, process);
       this._registerSessionListeners(process, session);
       await session.initialize({
         clientID: 'atom',
@@ -806,15 +813,15 @@ export default class DebugService implements IDebugService {
       this._model.setExceptionBreakpoints(
         session.getCapabilities().exceptionBreakpointFilters || [],
       );
-      if (configuration.request === 'attach') {
+      if (configuration.debugMode === 'attach') {
         await session.attach(configuration.config);
       } else {
+        // It's 'launch'
         await session.launch(configuration.config);
       }
       if (session.isDisconnected()) {
         return;
       }
-      this.focusStackFrame(null, null, process);
       this._updateModeAndEmit(DebuggerMode.RUNNING);
       return process;
     } catch (error) {
@@ -830,7 +837,10 @@ export default class DebugService implements IDebugService {
       this._consoleDisposables.dispose();
       this._updateModeAndEmit(DebuggerMode.STOPPED);
       if (!session.isDisconnected()) {
-        session.disconnect().catch(onUnexpectedError);
+        session
+          .disconnect()
+          .catch(onUnexpectedError)
+          .then(this._onSessionEnd);
       }
       if (process != null) {
         this._model.removeProcess(process.getId());
@@ -909,7 +919,7 @@ export default class DebugService implements IDebugService {
     await this._doCreateProcess(config, uuid.v4());
   }
 
-  _onSessionEnd(): void {
+  _onSessionEnd = (): void => {
     const session = this._getCurrentSession();
     if (session == null) {
       return;
@@ -940,7 +950,7 @@ export default class DebugService implements IDebugService {
       };
     });
     this._model.updateBreakpoints(data);
-  }
+  };
 
   getModel(): IModel {
     return this._model;
