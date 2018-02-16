@@ -9,6 +9,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "file-family": {
+      "versions": {
+        "0.0.0": "provideFileFamilyService"
+      }
+    }
+  },
   "consumedServices": {
     "file-family-backend": {
       "versions": {

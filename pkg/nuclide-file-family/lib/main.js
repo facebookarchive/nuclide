@@ -14,6 +14,7 @@ import type {FileFamilyProvider} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
+import FileFamilyAggregator from './FileFamilyAggregator';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -27,6 +28,10 @@ class Activation {
 
   dispose() {
     this._disposables.dispose();
+  }
+
+  provideFileFamilyService(): FileFamilyProvider {
+    return new FileFamilyAggregator(this._providers.asObservable());
   }
 
   consumeFileFamilyProvider(provider: FileFamilyProvider): IDisposable {
