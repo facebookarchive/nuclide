@@ -409,9 +409,27 @@ class Activation {
     );
     passesGK('nuclide_open_connect_menu_on_clean_startup').then(
       openConnectMenu => {
-        if (!this._restored && !openConnectMenu) {
-          // eslint-disable-next-line rulesdir/atom-apis
-          atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+        if (!this._restored) {
+          if (!openConnectMenu) {
+            // eslint-disable-next-line rulesdir/atom-apis
+            atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+          } else {
+            observableFromSubscribeFunction(
+              atom.project.onDidChangePaths.bind(atom.project),
+            )
+              .startWith(null)
+              .map(() => atom.project.getPaths().length)
+              .pairwise()
+              .take(1)
+              .subscribe(([oldLength, newLength]) => {
+                if (oldLength === 0 && newLength === 1) {
+                  // eslint-disable-next-line rulesdir/atom-apis
+                  atom.workspace.open(WORKSPACE_VIEW_URI, {
+                    searchAllPanes: true,
+                  });
+                }
+              });
+          }
         }
       },
     );
