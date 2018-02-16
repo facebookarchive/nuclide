@@ -62,9 +62,10 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {sleep} from 'nuclide-commons/promise';
 import {VsDebugSession} from 'nuclide-debugger-common';
-import {Subject} from 'rxjs';
+import {Observable, Subject, TimeoutError} from 'rxjs';
 import capitalize from 'lodash/capitalize';
 import {track, startTracking} from '../../../nuclide-analytics';
 import nullthrows from 'nullthrows';
@@ -91,7 +92,11 @@ import {Emitter} from 'atom';
 import {distinct} from 'nuclide-commons/collection';
 import {onUnexpectedError} from '../utils';
 import uuid from 'uuid';
-import {DebuggerMode, AnalyticsEvents} from '../constants';
+import {
+  BreakpointEventReasons,
+  DebuggerMode,
+  AnalyticsEvents,
+} from '../constants';
 import logger from '../logger';
 import stripAnsi from 'strip-ansi';
 import {remoteToLocalProcessor, localToRemoteProcessor} from './processors';
@@ -104,6 +109,9 @@ const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
 
 const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
 const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
+
+// Berakpoint events may arrive sooner than breakpoint responses.
+const MAX_BREAKPOINT_EVENT_DELAY_MS = 5 * 1000;
 
 class ViewModel implements IViewModel {
   _focusedProcess: ?IProcess;
@@ -436,62 +444,111 @@ export default class DebugService implements IDebugService {
     }
 
     this._sessionEndDisposables.add(
-      session.observeBreakpointEvents().subscribe(event => {
-        const {breakpoint: bp} = event.body;
-        const breakpoint = this._model
-          .getBreakpoints()
-          .filter(b => b.idFromAdapter === bp.id)
-          .pop();
-        const functionBreakpoint = this._model
-          .getFunctionBreakpoints()
-          .filter(b => b.idFromAdapter === bp.id)
-          .pop();
-
-        if (event.body.reason === 'new' && bp.source) {
-          const source = process.getSource(bp.source);
-          const bps = this._model.addBreakpoints(
-            source.uri,
-            [
-              {
-                column: bp.column || 0,
-                enabled: true,
-                line: bp.line == null ? -1 : bp.line,
-              },
-            ],
-            false,
-          );
-          if (bps.length === 1) {
-            this._model.updateBreakpoints({
-              [bps[0].getId()]: bp,
+      session
+        .observeBreakpointEvents()
+        .flatMap(event => {
+          const {breakpoint, reason} = event.body;
+          if (
+            reason !== BreakpointEventReasons.CHANGED &&
+            reason !== BreakpointEventReasons.REMOVED
+          ) {
+            return Observable.of({
+              reason,
+              breakpoint,
+              sourceBreakpoint: null,
+              functionBreakpoint: null,
             });
           }
-        }
 
-        if (event.body.reason === 'removed') {
-          if (breakpoint != null) {
-            this._model.removeBreakpoints([breakpoint]);
-          }
-          if (functionBreakpoint != null) {
-            this._model.removeFunctionBreakpoints(functionBreakpoint.getId());
-          }
-        }
-
-        if (event.body.reason === 'changed') {
-          if (breakpoint != null) {
-            if (!breakpoint.column) {
-              bp.column = undefined;
+          // Breakpoint events may arrive sooner than their responses.
+          // Hence, we'll keep them cached and try re-processing on every change to the model's breakpoints
+          // for a set maximum time, then discard.
+          return observableFromSubscribeFunction(
+            this._model.onDidChangeBreakpoints.bind(this._model),
+          )
+            .startWith(null)
+            .switchMap(() => {
+              const sourceBreakpoint = this._model
+                .getBreakpoints()
+                .filter(b => b.idFromAdapter === breakpoint.id)
+                .pop();
+              const functionBreakpoint = this._model
+                .getFunctionBreakpoints()
+                .filter(b => b.idFromAdapter === breakpoint.id)
+                .pop();
+              if (sourceBreakpoint == null && functionBreakpoint == null) {
+                return Observable.empty();
+              } else {
+                return Observable.of({
+                  reason,
+                  breakpoint,
+                  sourceBreakpoint,
+                  functionBreakpoint,
+                });
+              }
+            })
+            .take(1)
+            .timeout(MAX_BREAKPOINT_EVENT_DELAY_MS)
+            .catch(error => {
+              if (error instanceof TimeoutError) {
+                logger.error(
+                  'Timed out breakpoint event handler',
+                  process.configuration.adapterType,
+                  reason,
+                  breakpoint,
+                );
+              }
+              return Observable.empty();
+            });
+        })
+        .subscribe(
+          ({reason, breakpoint, sourceBreakpoint, functionBreakpoint}) => {
+            if (reason === BreakpointEventReasons.NEW && breakpoint.source) {
+              const source = process.getSource(breakpoint.source);
+              const bps = this._model.addBreakpoints(
+                source.uri,
+                [
+                  {
+                    column: breakpoint.column || 0,
+                    enabled: true,
+                    line: breakpoint.line == null ? -1 : breakpoint.line,
+                  },
+                ],
+                false,
+              );
+              if (bps.length === 1) {
+                this._model.updateBreakpoints({
+                  [bps[0].getId()]: breakpoint,
+                });
+              }
+            } else if (reason === BreakpointEventReasons.REMOVED) {
+              if (sourceBreakpoint != null) {
+                this._model.removeBreakpoints([sourceBreakpoint]);
+              }
+              if (functionBreakpoint != null) {
+                this._model.removeFunctionBreakpoints(
+                  functionBreakpoint.getId(),
+                );
+              }
+            } else if (reason === BreakpointEventReasons.CHANGED) {
+              if (sourceBreakpoint != null) {
+                if (!sourceBreakpoint.column) {
+                  breakpoint.column = undefined;
+                }
+                this._model.updateBreakpoints({
+                  [sourceBreakpoint.getId()]: breakpoint,
+                });
+              }
+              if (functionBreakpoint != null) {
+                this._model.updateFunctionBreakpoints({
+                  [functionBreakpoint.getId()]: breakpoint,
+                });
+              }
+            } else {
+              logger.warn('Unknown breakpoint event', reason, breakpoint);
             }
-            this._model.updateBreakpoints({
-              [breakpoint.getId()]: bp,
-            });
-          }
-          if (functionBreakpoint != null) {
-            this._model.updateFunctionBreakpoints({
-              [functionBreakpoint.getId()]: bp,
-            });
-          }
-        }
-      }),
+          },
+        ),
     );
 
     this._sessionEndDisposables.add(

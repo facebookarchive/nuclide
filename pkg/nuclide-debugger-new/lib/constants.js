@@ -53,3 +53,9 @@ export const DebuggerMode = Object.freeze({
 
 export const DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
 export const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
+
+export const BreakpointEventReasons = Object.freeze({
+  NEW: 'new',
+  CHANGED: 'changed',
+  REMOVED: 'removed',
+});
