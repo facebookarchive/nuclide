@@ -11,17 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
-import type {IDebugService, IProcessConfig} from './types';
+import type {IDebugService, IProcessConfig, IVspInstance} from './types';
 import type VspProcessInfo from '../../nuclide-debugger-vsp/lib/VspProcessInfo';
 import * as DebugProtocol from 'vscode-debugprotocol';
-
-interface IVspInstance {
-  customRequest(
-    request: string,
-    args: any,
-  ): Promise<DebugProtocol.CustomResponse>;
-  observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
-}
 
 import {DebuggerMode} from './constants';
 import invariant from 'assert';

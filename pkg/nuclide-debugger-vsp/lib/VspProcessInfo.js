@@ -20,7 +20,9 @@ import type {
   DebuggerInstanceInterface,
   DebuggerCapabilities,
   DebuggerProperties,
+  MessageProcessor,
 } from 'nuclide-debugger-common';
+import type {IVspInstance} from '../../nuclide-debugger-new/lib/types';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {DebuggerProcessInfo, DebuggerInstance} from 'nuclide-debugger-common';
@@ -37,8 +39,8 @@ const VSP_DEBUGGER_SERVICE_NAME = 'vscode-adapter';
 type MessagePreprocessors = {
   chromeAdapterPreprocessor: (message: string) => string,
   chromeClientPreprocessor: (message: string) => string,
-  vspAdapterPreprocessor: (message: Object) => void,
-  vspClientPreprocessor: (message: Object) => void,
+  vspAdapterPreprocessor: MessageProcessor,
+  vspClientPreprocessor: MessageProcessor,
 };
 
 export default class VspProcessInfo extends DebuggerProcessInfo {
@@ -48,6 +50,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
   _showThreads: boolean;
   _config: Object;
   _rpcService: ?VSCodeDebuggerAdapterService;
+  _vspInstance: ?IVspInstance;
   _preprocessors: ?MessagePreprocessors;
   _customDisposable: ?IDisposable;
 
@@ -82,6 +85,10 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     );
   }
 
+  setVspDebuggerInstance(vspInstance: IVspInstance): void {
+    this._vspInstance = vspInstance;
+  }
+
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
       ...super.getDebuggerCapabilities(),
@@ -96,6 +103,18 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     return {
       ...super.getDebuggerProps(),
     };
+  }
+
+  getVspAdapterPreprocessor(): ?MessageProcessor {
+    return this._preprocessors == null
+      ? null
+      : this._preprocessors.vspAdapterPreprocessor;
+  }
+
+  getVspClientPreprocessor(): ?MessageProcessor {
+    return this._preprocessors == null
+      ? null
+      : this._preprocessors.vspClientPreprocessor;
   }
 
   async debug(): Promise<DebuggerInstanceInterface> {
@@ -134,19 +153,25 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     request: string,
     args: any,
   ): Promise<DebugProtocol.CustomResponse> {
-    if (this._rpcService == null) {
+    if (this._rpcService != null) {
+      return this._rpcService.custom(request, args);
+    } else if (this._vspInstance != null) {
+      return this._vspInstance.customRequest(request, args);
+    } else {
       throw new Error('Cannot send custom requests to inactive debug sessions');
     }
-    return this._rpcService.custom(request, args);
   }
 
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
-    if (this._rpcService == null) {
+    if (this._rpcService != null) {
+      return this._rpcService.observeCustomEvents().refCount();
+    } else if (this._vspInstance != null) {
+      return this._vspInstance.observeCustomEvents();
+    } else {
       return Observable.throw(
         new Error('Cannot send custom requests to inactive debug sessions'),
       );
     }
-    return this._rpcService.observeCustomEvents().refCount();
   }
 
   setCustomDisposable(disposable: IDisposable): void {
@@ -162,6 +187,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
       this._customDisposable.dispose();
       this._customDisposable = null;
     }
+    this._vspInstance = null;
   }
 
   getAdapterType(): VsAdapterType {
