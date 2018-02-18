@@ -620,3 +620,9 @@ export class PromiseWithState<T> {
     return this._state;
   }
 }
+
+export function delayTime(ms: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms);
+  });
+}

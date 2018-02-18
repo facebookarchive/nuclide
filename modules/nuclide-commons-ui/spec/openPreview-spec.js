@@ -15,6 +15,18 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nullthrows from 'nullthrows';
 
 describe('openPreview', () => {
+  // replace Jasmine's mocked setTimeout with another mock which immediately
+  // fires the callback. This is to mock the delay after requesting a preview.
+  let oldSetTimeout;
+  beforeEach(() => {
+    oldSetTimeout = window.setTimeout;
+    window.setTimeout = fn => fn();
+  });
+
+  afterEach(() => {
+    window.setTimeout = oldSetTimeout;
+  });
+
   describe('previewing within the same file', () => {
     let file;
     let fileItem;
@@ -26,7 +38,9 @@ describe('openPreview', () => {
       });
     });
 
-    afterEach(() => fsPromise.unlink(file));
+    afterEach(() => {
+      fsPromise.unlink(file);
+    });
 
     it('does not change the cursor position', () => {
       waitsForPromise(async () => {
