@@ -99,6 +99,7 @@ export default function openPreview(
         }).then(newPreview => {
           if (
             cancelled &&
+            isPending(newPreview) &&
             // don't destroy the pane if it's not new (e.g. within the same file --
             // like a symbol within the originating file)
             originalPoint != null &&
@@ -111,12 +112,7 @@ export default function openPreview(
           // the pane may have been reused: e.g. previewing a line in the same file
           // so make sure it wasn't. Then destroy the old preview if it's not the
           // original pane.
-          if (
-            preview != null &&
-            preview !== newPreview &&
-            originalPoint != null &&
-            newPreview !== originalPoint.item
-          ) {
+          if (preview != null && isPending(preview) && preview !== newPreview) {
             preview.destroy();
           }
 
@@ -193,6 +189,7 @@ export default function openPreview(
       confirmed = true;
 
       const goToLocationPromise = goToLocation(uri, options).then(newEditor => {
+        newEditor.terminatePendingState();
         if (
           preview != null &&
           preview !== newEditor &&
@@ -219,4 +216,9 @@ export default function openPreview(
 
   lastOpenablePreview = openablePreview;
   return openablePreview;
+}
+
+function isPending(paneItem: atom$PaneItem) {
+  const pane = atom.workspace.paneForItem(paneItem);
+  return pane && pane.getPendingItem() === paneItem;
 }

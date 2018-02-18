@@ -139,7 +139,7 @@ type atom$ConfigSchema = {
   type: Array<atom$ConfigType> | atom$ConfigType,
 };
 
-  declare class atom$Config {
+declare class atom$Config {
   // Config Subscription
   observe(
     keyPath: string,
@@ -834,6 +834,7 @@ declare class atom$TextEditor extends atom$Model {
   // History
   createCheckpoint(): atom$TextBufferCheckpoint,
   revertToCheckpoint(checkpoint: atom$TextBufferCheckpoint): boolean,
+  terminatePendingState(): void,
   transact(fn: () => mixed, _: void): void,
   transact(groupingInterval: number, fn: () => mixed): void,
 

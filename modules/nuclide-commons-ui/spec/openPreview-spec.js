@@ -265,8 +265,6 @@ function getActiveTextEditor(): atom$TextEditor {
 
 function getPendingItem(): atom$PaneItem {
   return nullthrows(
-    nullthrows(
-      atom.workspace.paneForItem(getActiveTextEditor()),
-    ).getPendingItem(),
-  );
+    atom.workspace.paneForItem(getActiveTextEditor()),
+  ).getPendingItem();
 }
