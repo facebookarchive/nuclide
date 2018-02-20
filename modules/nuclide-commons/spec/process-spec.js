@@ -104,8 +104,46 @@ describe('commons-node/process', () => {
         '    1    42  command with spaces';
       const processList = parsePsOutput(unixPsOut);
       expect(processList).toEqual([
-        {command: '/sbin/launchd', pid: 1, parentPid: 0},
-        {command: 'command with spaces', pid: 42, parentPid: 1},
+        {
+          command: '/sbin/launchd',
+          pid: 1,
+          parentPid: 0,
+          commandWithArgs: '/sbin/launchd',
+        },
+        {
+          command: 'command with spaces',
+          pid: 42,
+          parentPid: 1,
+          commandWithArgs: 'command with spaces',
+        },
+      ]);
+    });
+
+    it('parse `ps` unix output with command arguments', () => {
+      const unixPsOut =
+        ' PPID   PID COMM\n' +
+        '    0     1  /sbin/launchd\n' +
+        '    1    42  command with spaces';
+
+      const unixPsOutWithArgs =
+        ' PID ARGS\n' +
+        '   1  /sbin/launchd\n' +
+        '  42  command with spaces and some more arguments';
+
+      const processList = parsePsOutput(unixPsOut, unixPsOutWithArgs);
+      expect(processList).toEqual([
+        {
+          command: '/sbin/launchd',
+          pid: 1,
+          parentPid: 0,
+          commandWithArgs: '/sbin/launchd',
+        },
+        {
+          command: 'command with spaces',
+          pid: 42,
+          parentPid: 1,
+          commandWithArgs: 'command with spaces and some more arguments',
+        },
       ]);
     });
 
@@ -117,8 +155,18 @@ describe('commons-node/process', () => {
 
       const processList = parsePsOutput(windowsProcessOut);
       expect(processList).toEqual([
-        {command: 'System Process', pid: 4, parentPid: 0},
-        {command: 'smss.exe', pid: 228, parentPid: 4},
+        {
+          command: 'System Process',
+          pid: 4,
+          parentPid: 0,
+          commandWithArgs: 'System Process',
+        },
+        {
+          command: 'smss.exe',
+          pid: 228,
+          parentPid: 4,
+          commandWithArgs: 'smss.exe',
+        },
       ]);
     });
   });

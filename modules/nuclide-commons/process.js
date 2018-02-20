@@ -528,33 +528,64 @@ async function getDescendantsOfProcess(
 }
 
 export async function psTree(): Promise<Array<ProcessInfo>> {
-  const stdout = isWindowsPlatform()
-    ? // See also: https://github.com/nodejs/node-v0.x-archive/issues/2318
-      await runCommand('wmic.exe', [
-        'PROCESS',
-        'GET',
-        'ParentProcessId,ProcessId,Name',
-      ]).toPromise()
-    : await runCommand('ps', ['-A', '-o', 'ppid,pid,comm']).toPromise();
+  if (isWindowsPlatform()) {
+    return psTreeWindows();
+  }
+  const [commands, withArgs] = await Promise.all([
+    runCommand('ps', ['-A', '-o', 'ppid,pid,comm']).toPromise(),
+    runCommand('ps', ['-A', '-ww', '-o', 'pid,args']).toPromise(),
+  ]);
+
+  return parsePsOutput(commands, withArgs);
+}
+
+async function psTreeWindows(): Promise<Array<ProcessInfo>> {
+  const stdout = await runCommand('wmic.exe', [
+    'PROCESS',
+    'GET',
+    'ParentProcessId,ProcessId,Name',
+  ]).toPromise();
   return parsePsOutput(stdout);
 }
 
-export function parsePsOutput(psOutput: string): Array<ProcessInfo> {
+export function parsePsOutput(
+  psOutput: string,
+  argsOutput: ?string,
+): Array<ProcessInfo> {
   // Remove the first header line.
   const lines = psOutput
     .trim()
     .split(/\n|\r\n/)
     .slice(1);
 
+  let withArgs = new Map();
+  if (argsOutput != null) {
+    withArgs = new Map(
+      argsOutput
+        .trim()
+        .split(/\n|\r\n/)
+        .slice(1)
+        .map(line => {
+          const columns = line.trim().split(/\s+/);
+          const pid = parseInt(columns[0], 10);
+          const command = columns.slice(1).join(' ');
+          return [pid, command];
+        }),
+    );
+  }
+
   return lines.map(line => {
     const columns = line.trim().split(/\s+/);
-    const [parentPid, pid] = columns;
+    const [parentPid, pidStr] = columns;
+    const pid = parseInt(pidStr, 10);
     const command = columns.slice(2).join(' ');
+    const commandWithArgs = withArgs.get(pid);
 
     return {
       command,
       parentPid: parseInt(parentPid, 10),
-      pid: parseInt(pid, 10),
+      pid,
+      commandWithArgs: commandWithArgs == null ? command : commandWithArgs,
     };
   });
 }
@@ -627,6 +658,7 @@ export type ProcessInfo = {
   parentPid: number,
   pid: number,
   command: string,
+  commandWithArgs: string,
 };
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
