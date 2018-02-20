@@ -9,10 +9,13 @@
  * @format
  */
 
+import type {Column} from 'nuclide-commons-ui/Table';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ProcessInfo} from 'nuclide-commons/process';
+
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
@@ -21,30 +24,92 @@ import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from '../../commons-atom/debugger';
 import {getGdbAttachProcessInfo} from './utils';
+import {psTree} from 'nuclide-commons/process';
+import {Observable} from 'rxjs';
+import {Table} from 'nuclide-commons-ui/Table';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+const PROCESS_UPDATES_INTERVAL_MS = 2000;
 
 type Props = {|
   +targetUri: NuclideUri,
   +configIsValidChanged: (valid: boolean) => void,
 |};
 
+type ColumnName = 'pid' | 'command';
+
 type State = {
-  pid: string,
+  processList: Array<ProcessInfo>,
+  selectedProcess: ?ProcessInfo,
+  sortDescending: boolean,
+  sortedColumn: ?ColumnName,
+  filterText: string,
 };
+
+function getColumns(): Array<Column<*>> {
+  return [
+    {
+      title: 'PID',
+      key: 'pid',
+      width: 0.1,
+    },
+    {
+      title: 'Command Name',
+      key: 'command',
+      width: 0.9,
+    },
+  ];
+}
+
+function getCompareFunction(
+  sortedColumn: ?ColumnName,
+  sortDescending: boolean,
+): (a: ProcessInfo, b: ProcessInfo) => number {
+  switch (sortedColumn) {
+    case 'pid':
+      const order = sortDescending ? -1 : 1;
+      return (target1: ProcessInfo, target2: ProcessInfo) =>
+        order * (target1.pid - target2.pid);
+    case 'command':
+      return (target1: ProcessInfo, target2: ProcessInfo) => {
+        const first = sortDescending ? target2.command : target1.command;
+        const second = sortDescending ? target1.command : target2.command;
+        return first.toLowerCase().localeCompare(second.toLowerCase());
+      };
+    default:
+      break;
+  }
+  return () => 0;
+}
+
+function filterProcesses(processes: Array<ProcessInfo>, filterText: string) {
+  // Show all results if invalid regex
+  let filterRegex;
+  try {
+    filterRegex = new RegExp(filterText, 'i');
+  } catch (e) {
+    return processes;
+  }
+  return processes.filter(
+    item =>
+      filterRegex.test(item.pid.toString()) || filterRegex.test(item.command),
+  );
+}
 
 export default class NativeAttachUiComponent extends React.Component<
   Props,
   State,
 > {
   _disposables: UniversalDisposable;
-  _pid: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
     this.state = {
-      pid: '',
+      processList: [],
+      selectedProcess: null,
+      sortDescending: false,
+      sortedColumn: null,
+      filterText: '',
     };
   }
 
@@ -64,18 +129,21 @@ export default class NativeAttachUiComponent extends React.Component<
   }
 
   componentDidMount(): void {
+    const defaults = {
+      sortDescending: false,
+      sortedColumn: null,
+      filterText: '',
+    };
+
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(),
       (transientSettings, savedSettings) => {
         this.setState({
-          pid: savedSettings.pid || '',
+          ...transientSettings,
+          ...defaults,
         });
       },
     );
-
-    if (this._pid != null) {
-      this._pid.focus();
-    }
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
     this._disposables.add(
@@ -87,6 +155,15 @@ export default class NativeAttachUiComponent extends React.Component<
         },
       }),
     );
+
+    this._disposables.add(
+      Observable.interval(PROCESS_UPDATES_INTERVAL_MS)
+        .startWith(0)
+        .flatMap(_ => psTree())
+        .subscribe(_ => {
+          this.setState({processList: _});
+        }),
+    );
   }
 
   componentWillUnmount() {
@@ -94,42 +171,109 @@ export default class NativeAttachUiComponent extends React.Component<
   }
 
   _debugButtonShouldEnable(): boolean {
-    const {pid} = this.state;
-    return pid.length > 0 && !isNaN(pid);
+    return this.state.selectedProcess != null;
   }
 
+  _handleFilterTextChange = (text: string): void => {
+    // Check if we've filtered down to one option and select if so
+    let selectedProcess = this.state.selectedProcess;
+    const filteredProcesses = filterProcesses(this.state.processList, text);
+    if (filteredProcesses.length === 1) {
+      selectedProcess = filteredProcesses[0];
+    }
+
+    this.setState({
+      filterText: text,
+      selectedProcess,
+    });
+  };
+
+  _handleSelectTableRow = (
+    selectedProcess: ProcessInfo,
+    selectedIndex: number,
+  ): void => {
+    this.setState({selectedProcess});
+  };
+
+  _handleSort = (sortedColumn: string, sortDescending: boolean): void => {
+    this.setState({
+      sortedColumn,
+      sortDescending,
+    });
+  };
+
   render(): React.Node {
+    const {
+      processList,
+      sortedColumn,
+      sortDescending,
+      selectedProcess,
+      filterText,
+    } = this.state;
+    const sortFunction = getCompareFunction(sortedColumn, sortDescending);
+    let selectedIndex = null;
+
+    const rows = filterProcesses(processList, filterText)
+      .sort(sortFunction)
+      .map((process, index) => {
+        const row = {data: process};
+
+        if (selectedProcess != null && selectedProcess.pid === process.pid) {
+          selectedIndex = index;
+        }
+
+        return row;
+      });
+
     return (
       <div className="block">
         <p>Attach to a running native process</p>
-        <label>Process id: </label>
         <AtomInput
-          ref={input => {
-            this._pid = input;
-          }}
-          tabIndex="1"
-          placeholderText="Running process id (for example, from 'ps')"
-          value={this.state.pid}
-          onDidChange={pid => this.setState({pid})}
+          placeholderText="Search..."
+          value={this.state.filterText}
+          onDidChange={this._handleFilterTextChange}
+          size="sm"
+          autofocus={true}
+        />
+        <Table
+          columns={getColumns()}
+          fixedHeader={true}
+          maxBodyHeight="30em"
+          rows={rows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={this.state.sortedColumn}
+          sortDescending={this.state.sortDescending}
+          selectable={true}
+          selectedIndex={selectedIndex}
+          onSelect={this._handleSelectTableRow}
+          collapsable={true}
         />
       </div>
     );
   }
 
   _handleAttachButtonClick = async (): Promise<void> => {
+    const selectedProcess = this.state.selectedProcess;
+    if (selectedProcess == null) {
+      return;
+    }
+
     track('fb-native-debugger-attach-from-dialog');
-    const pid = Number(
-      nullthrows(this._pid)
-        .getText()
-        .trim(),
-    );
+    const pid = selectedProcess.pid;
     const attachInfo = await getGdbAttachProcessInfo(this.props.targetUri, pid);
 
     const debuggerService = await getDebuggerService();
     debuggerService.startDebugging(attachInfo);
 
-    serializeDebuggerConfig(...this._getSerializationArgs(), {
-      port: this.state.pid,
-    });
+    serializeDebuggerConfig(
+      ...this._getSerializationArgs(),
+      {},
+      {
+        sortDescending: this.state.sortDescending,
+        sortedColumn: this.state.sortedColumn,
+        filterText: this.state.filterText,
+      },
+    );
   };
 }
