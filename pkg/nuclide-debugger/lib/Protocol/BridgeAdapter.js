@@ -275,6 +275,7 @@ export default class BridgeAdapter {
       params,
       currentFrame ? currentFrame.location : null,
     );
+    this._stackTraceManager.refreshStack(params.callFrames, true);
     this._updateCurrentScopes();
   }
 
