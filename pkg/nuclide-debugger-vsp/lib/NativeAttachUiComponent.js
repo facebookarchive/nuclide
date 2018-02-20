@@ -35,11 +35,17 @@ type Props = {|
   +configIsValidChanged: (valid: boolean) => void,
 |};
 
-type ColumnName = 'pid' | 'command';
+type ColumnName = 'process' | 'pid' | 'command';
+
+type ProcessRow = {
+  process: string,
+  pid: number,
+  command: string,
+};
 
 type State = {
-  processList: Array<ProcessInfo>,
-  selectedProcess: ?ProcessInfo,
+  processList: Array<ProcessRow>,
+  selectedProcess: ?ProcessRow,
   sortDescending: boolean,
   sortedColumn: ?ColumnName,
   filterText: string,
@@ -48,14 +54,19 @@ type State = {
 function getColumns(): Array<Column<*>> {
   return [
     {
+      title: 'Process Binary',
+      key: 'process',
+      width: 0.25,
+    },
+    {
       title: 'PID',
       key: 'pid',
       width: 0.1,
     },
     {
-      title: 'Command Name',
+      title: 'Command',
       key: 'command',
-      width: 0.9,
+      width: 0.65,
     },
   ];
 }
@@ -63,14 +74,20 @@ function getColumns(): Array<Column<*>> {
 function getCompareFunction(
   sortedColumn: ?ColumnName,
   sortDescending: boolean,
-): (a: ProcessInfo, b: ProcessInfo) => number {
+): (a: ProcessRow, b: ProcessRow) => number {
   switch (sortedColumn) {
+    case 'process':
+      return (target1: ProcessRow, target2: ProcessRow) => {
+        const first = sortDescending ? target2.process : target1.process;
+        const second = sortDescending ? target1.process : target2.process;
+        return first.toLowerCase().localeCompare(second.toLowerCase());
+      };
     case 'pid':
       const order = sortDescending ? -1 : 1;
-      return (target1: ProcessInfo, target2: ProcessInfo) =>
+      return (target1: ProcessRow, target2: ProcessRow) =>
         order * (target1.pid - target2.pid);
     case 'command':
-      return (target1: ProcessInfo, target2: ProcessInfo) => {
+      return (target1: ProcessRow, target2: ProcessRow) => {
         const first = sortDescending ? target2.command : target1.command;
         const second = sortDescending ? target1.command : target2.command;
         return first.toLowerCase().localeCompare(second.toLowerCase());
@@ -81,7 +98,7 @@ function getCompareFunction(
   return () => 0;
 }
 
-function filterProcesses(processes: Array<ProcessInfo>, filterText: string) {
+function filterProcesses(processes: Array<ProcessRow>, filterText: string) {
   // Show all results if invalid regex
   let filterRegex;
   try {
@@ -91,7 +108,9 @@ function filterProcesses(processes: Array<ProcessInfo>, filterText: string) {
   }
   return processes.filter(
     item =>
-      filterRegex.test(item.pid.toString()) || filterRegex.test(item.command),
+      filterRegex.test(item.process) ||
+      filterRegex.test(item.pid.toString()) ||
+      filterRegex.test(item.command),
   );
 }
 
@@ -160,9 +179,7 @@ export default class NativeAttachUiComponent extends React.Component<
       Observable.interval(PROCESS_UPDATES_INTERVAL_MS)
         .startWith(0)
         .flatMap(_ => psTree())
-        .subscribe(_ => {
-          this.setState({processList: _});
-        }),
+        .subscribe(this._updateList),
     );
   }
 
@@ -173,6 +190,18 @@ export default class NativeAttachUiComponent extends React.Component<
   _debugButtonShouldEnable(): boolean {
     return this.state.selectedProcess != null;
   }
+
+  _updateList = (processes: Array<ProcessInfo>): void => {
+    const processList = processes.map(process => {
+      return {
+        process: nuclideUri.basename(process.command),
+        pid: process.pid,
+        command: process.commandWithArgs,
+      };
+    });
+
+    this.setState({processList});
+  };
 
   _handleFilterTextChange = (text: string): void => {
     // Check if we've filtered down to one option and select if so
@@ -216,7 +245,9 @@ export default class NativeAttachUiComponent extends React.Component<
     const rows = filterProcesses(processList, filterText)
       .sort(sortFunction)
       .map((process, index) => {
-        const row = {data: process};
+        const row = {
+          data: process,
+        };
 
         if (selectedProcess != null && selectedProcess.pid === process.pid) {
           selectedIndex = index;
