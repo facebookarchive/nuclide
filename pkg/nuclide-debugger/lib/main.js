@@ -389,7 +389,7 @@ class Activation {
     this._connectionProviders.set(key, availableProviders);
   }
 
-  getSuggestions(
+  _getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
     let text = request.editor.getText();
@@ -906,9 +906,7 @@ class Activation {
       labels: ['nuclide-console'],
       selector: '*',
       filterSuggestions: true,
-      async getSuggestions(request) {
-        return this.getSuggestions(request);
-      },
+      getSuggestions: this._getSuggestions.bind(this),
     };
   }
 

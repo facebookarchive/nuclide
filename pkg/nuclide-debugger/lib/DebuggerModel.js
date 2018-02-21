@@ -347,7 +347,7 @@ export default class DebuggerModel {
           this._scheduleNativeNotification();
         } else if (payload.data === DebuggerMode.STOPPED) {
           this._cancelRequestsToBridge();
-          this._clearEvaluationValues();
+          this._handleClearInterface();
           this.loaderBreakpointResumePromise = new Promise(resolve => {
             this._onLoaderBreakpointResume = resolve;
           });
@@ -570,10 +570,6 @@ export default class DebuggerModel {
   }
 
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
-    if (this._debuggerMode !== DebuggerMode.PAUSED) {
-      return;
-    }
-
     try {
       const path = nuclideUri.uriToNuclideUri(sourceURL);
       if (path != null && atom.workspace != null) {
@@ -612,10 +608,6 @@ export default class DebuggerModel {
   }
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
-    if (this._debuggerMode !== DebuggerMode.PAUSED) {
-      return;
-    }
-
     if (options) {
       const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;
@@ -1500,19 +1492,6 @@ export default class DebuggerModel {
       const updatedBp = this.getBreakpointAtLine(path, line);
       if (updatedBp != null) {
         this._updateBreakpointCondition(updatedBp.id, '');
-      }
-    }
-  }
-
-  _handleDebuggerModeChange(newMode: DebuggerModeType): void {
-    if (newMode === DebuggerMode.STOPPED) {
-      // All breakpoints should be unresolved after stop debugging.
-      this._resetBreakpoints();
-    } else {
-      for (const breakpoint of this.getAllBreakpoints()) {
-        if (!breakpoint.resolved) {
-          this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
-        }
       }
     }
   }
