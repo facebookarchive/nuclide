@@ -16,6 +16,7 @@ import type {CqueryProject} from './types';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {serializeAsyncCall} from 'nuclide-commons/promise';
 import {Observable} from 'rxjs';
+import {track} from '../../nuclide-analytics';
 import {memoryUsagePerPid} from '../../nuclide-clang-rpc/lib/utils';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {CqueryProjectManager} from './CqueryProjectManager';
@@ -95,6 +96,10 @@ export class CqueryInvalidator {
         projectsToDispose.push(project);
       }
     }
+    track('nuclide-cquery-lsp:memory-used', {
+      projects: priorityList.length,
+      memoryUsed,
+    });
     // Don't dispose all of them: keep at least the most recent one alive.
     if (projectsToDispose.length === priorityList.length) {
       projectsToDispose.shift();
