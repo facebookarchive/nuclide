@@ -55,21 +55,29 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     enableLibclangLogs: boolean,
   ) {
     super();
-
+    // Invalidator disposes a project which then disposes the process.
+    const disposeProject = project => this._projectManager.delete(project);
+    const disposeProcess = projectKey => {
+      this._processes.delete(projectKey);
+    };
     this._fileCache = fileCache;
     this._command = command;
     this._host = host;
     this._languageId = languageId;
     this._logger = logger;
-    this._projectManager = new CqueryProjectManager(logger);
+    this._projectManager = new CqueryProjectManager(logger, disposeProcess);
     this._projectInvalidator = new CqueryInvalidator(
       fileCache,
       logger,
-      project => {
-        this._processes.delete(this._projectManager.getProjectKey(project));
-        this._projectManager.delete(project);
+      disposeProject,
+      () => this._projectManager.getMRUProjects(),
+      async project => {
+        const key = CqueryProjectManager.getProjectKey(project);
+        if (this._processes.has(key)) {
+          const lsp = await this._processes.get(key);
+          return lsp != null ? lsp._childPid : null;
+        }
       },
-      () => this._projectManager.getAllProjects(),
     );
 
     this._processes = new Cache(
@@ -90,9 +98,9 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   _registerDisposables(): void {
     this._disposables.add(
       this._host,
-      this._projectInvalidator.subscribe(),
+      this._projectInvalidator.subscribeFileEvents(),
+      this._projectInvalidator.subscribeResourceUsage(),
       this._processes,
-      () => this._closeProcesses(),
     );
   }
 
@@ -105,7 +113,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     projectKey: CqueryProjectKey,
     enableLibclangLogs: boolean,
   ): Promise<?CqueryLanguageClient> {
-    const project = await this._projectManager.getProjectFromKey(projectKey);
+    const project = this._projectManager.getProjectFromKey(projectKey);
     if (project == null) {
       return null;
     }
@@ -162,7 +170,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     lsp.setProjectChecker(file => {
       const checkProject = this._projectManager.getProjectForFile(file);
       return checkProject != null
-        ? this._projectManager.getProjectKey(checkProject) === projectKey
+        ? CqueryProjectManager.getProjectKey(checkProject) === projectKey
         : // TODO pelmers: header files aren't in the map because they do not
           // appear in compile_commands.json, but they should be cached!
           isHeaderFile(file);
@@ -207,8 +215,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     file: NuclideUri,
     project: CqueryProject,
   ): Promise<void> {
-    this._projectManager.associateFileWithProject(file, project);
-    this._processes.get(this._projectManager.getProjectKey(project)); // spawn the process ahead of time
+    await this._projectManager.associateFileWithProject(file, project);
+    this._processes.get(CqueryProjectManager.getProjectKey(project)); // spawn the process ahead of time
   }
 
   async getLanguageServiceForFile(
@@ -221,7 +229,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   async _getLanguageServiceForProject(
     project: CqueryProject,
   ): Promise<?CqueryLanguageClient> {
-    const key = this._projectManager.getProjectKey(project);
+    const key = CqueryProjectManager.getProjectKey(project);
     const client = this._processes.get(key);
     if ((await client) == null) {
       this._logger.warn("Didn't find language service for ", project);

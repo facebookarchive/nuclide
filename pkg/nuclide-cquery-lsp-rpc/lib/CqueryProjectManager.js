@@ -11,24 +11,43 @@
 
 import type {CqueryProject, CqueryProjectKey} from './types';
 
+import LRUCache from 'lru-cache';
 import * as ClangService from '../../nuclide-clang-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
+// Remark: nuclide-clang-rpc uses server limit of 20.
+// This limit is lower because each cquery process may handle many files.
+const PROJECT_LIMIT = 8;
+
 /**
  * Manages the existing projects and the files associated with them
  */
 export class CqueryProjectManager {
-  _keyToProject: Map<CqueryProjectKey, CqueryProject> = new Map();
+  _keyToProject: LRUCache<CqueryProjectKey, CqueryProject>;
   _fileToProjectKey: Map<string, CqueryProjectKey> = new Map();
   _logger: log4js$Logger;
 
-  constructor(logger: log4js$Logger) {
+  constructor(logger: log4js$Logger, disposeProcess: CqueryProjectKey => void) {
+    this._keyToProject = new LRUCache({
+      max: PROJECT_LIMIT,
+      dispose: (key: CqueryProjectKey) => {
+        // Delete files associated with the project and its process.
+        logger.info('Cleaning project from LRU cache:', key);
+        for (const [file, _key] of this._fileToProjectKey) {
+          if (_key === key) {
+            this._fileToProjectKey.delete(file);
+          }
+        }
+        disposeProcess(key);
+      },
+    });
+
     this._logger = logger;
   }
 
-  getProjectKey(project: CqueryProject): CqueryProjectKey {
+  static getProjectKey(project: CqueryProject): CqueryProjectKey {
     return JSON.stringify(project);
   }
 
@@ -36,33 +55,32 @@ export class CqueryProjectManager {
     file: string,
     project: CqueryProject,
   ): Promise<void> {
-    const key = this.getProjectKey(project);
-    this._keyToProject.set(key, project);
-    if (this._fileToProjectKey.get(file) === key) {
-      return Promise.resolve();
+    const key = CqueryProjectManager.getProjectKey(project);
+    this._fileToProjectKey.set(file, key);
+    const projectAlreadySet = this._keyToProject.has(key);
+    if (!projectAlreadySet) {
+      this._keyToProject.set(key, project);
+      if (project.hasCompilationDb) {
+        const dbFile = nuclideUri.join(
+          project.compilationDbDir,
+          COMPILATION_DATABASE_FILE,
+        );
+        // Cache keys for all the files in the project.
+        return new Promise((resolve, reject) => {
+          ClangService.loadFilesFromCompilationDatabaseAndCacheThem(
+            dbFile,
+            project.flagsFile,
+          )
+            .refCount()
+            .subscribe(
+              path => this._fileToProjectKey.set(path, key),
+              reject, // on error
+              resolve, // on complete
+            );
+        });
+      }
     }
-    if (!this._keyToProject.has(key) && project.hasCompilationDb) {
-      const dbFile = nuclideUri.join(
-        project.compilationDbDir,
-        COMPILATION_DATABASE_FILE,
-      );
-      // Cache keys for all the files in the project.
-      return new Promise((resolve, reject) => {
-        ClangService.loadFilesFromCompilationDatabaseAndCacheThem(
-          dbFile,
-          project.flagsFile,
-        )
-          .refCount()
-          .subscribe(
-            path => this._fileToProjectKey.set(path, key),
-            reject, // on error
-            resolve, // on complete
-          );
-      });
-    } else {
-      this._fileToProjectKey.set(file, key);
-      return Promise.resolve();
-    }
+    return Promise.resolve();
   }
 
   getProjectForFile(file: string): ?CqueryProject {
@@ -75,17 +93,14 @@ export class CqueryProjectManager {
     return this._keyToProject.get(projectKey);
   }
 
-  getAllProjects(): Array<CqueryProject> {
-    return Array.from(this._keyToProject.values());
+  getMRUProjects(): Array<CqueryProject> {
+    const lru = [];
+    this._keyToProject.forEach(project => lru.push(project));
+    return lru;
   }
 
   delete(project: CqueryProject): void {
-    const key = this.getProjectKey(project);
-    for (const [file, _key] of this._fileToProjectKey.entries()) {
-      if (_key === key) {
-        this._fileToProjectKey.delete(file);
-      }
-    }
-    this._keyToProject.delete(key);
+    const key = CqueryProjectManager.getProjectKey(project);
+    this._keyToProject.del(key);
   }
 }

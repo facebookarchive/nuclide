@@ -181,6 +181,8 @@ export class CqueryLanguageClient extends LspLanguageService {
     return super._isFileInProject(file) && this._checkProject(file);
   }
 
+  // TODO pelmers: override handleClose
+
   async _notifyOnFail(success: boolean, falseMessage: string): Promise<void> {
     if (!success) {
       return this._host
