@@ -238,9 +238,11 @@ export class ServerConnection {
     // connection using cached credentials. This will fail fast (faster than infoService)
     // when we don't have cached credentials yet.
     const transport = client.getTransport();
-    // TODO: do we even want this for bigdig?
+
+    const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
+
+    // NOTE: BigDig's version may not actually match Nuclide's
     if (this._config.version !== 2) {
-      const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
       if (clientVersion !== heartbeatVersion) {
         throwVersionMismatch(heartbeatVersion);
       }
