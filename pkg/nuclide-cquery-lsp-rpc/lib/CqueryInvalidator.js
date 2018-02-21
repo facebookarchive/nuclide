@@ -10,38 +10,39 @@
  */
 
 import type {Subscription, Observable} from 'rxjs';
-import type {CqueryProjectManager} from './CqueryProjectManager';
 import type {CqueryProject} from './types';
 
-import {Cache} from 'nuclide-commons/cache';
 import {FileCache} from '../../nuclide-open-files-rpc';
 
 /*
  * Handles invalidation of caches and other data related to cquery projects and
  * processes.
  */
-export class CqueryInvalidator<T> {
+export class CqueryInvalidator {
   _fileCache: FileCache;
   _logger: log4js$Logger;
-  _projectManager: CqueryProjectManager;
-  _processes: Cache<string, T>;
+  _disposeProject: CqueryProject => void;
+  _getAllProjects: () => CqueryProject[];
 
   constructor(
     fileCache: FileCache,
-    projectManager: CqueryProjectManager,
     logger: log4js$Logger,
-    processes: Cache<string, T>,
+    disposeProject: CqueryProject => void,
+    getAllProjects: () => CqueryProject[],
   ) {
     this._fileCache = fileCache;
-    this._projectManager = projectManager;
-    this._processes = processes;
     this._logger = logger;
+    this._getAllProjects = getAllProjects;
+    this._disposeProject = disposeProject;
   }
 
   subscribe(): Subscription {
-    return this._observeFileSaveEvents().subscribe(projects =>
-      this._invalidateProjects(projects),
-    );
+    return this._observeFileSaveEvents().subscribe(projects => {
+      for (const project of projects) {
+        this._logger.info('Watch file saved, invalidating: ', project);
+        this._disposeProject(project);
+      }
+    });
   }
 
   _observeFileSaveEvents(): Observable<Array<CqueryProject>> {
@@ -49,20 +50,9 @@ export class CqueryInvalidator<T> {
       .observeFileEvents()
       .filter(event => event.kind === 'save')
       .map(({fileVersion: {filePath}}) =>
-        this._projectManager
-          .getAllProjects()
-          .filter(
-            project =>
-              project.hasCompilationDb && project.flagsFile === filePath,
-          ),
+        this._getAllProjects().filter(
+          project => project.hasCompilationDb && project.flagsFile === filePath,
+        ),
       );
-  }
-
-  _invalidateProjects(projects: CqueryProject[]): void {
-    for (const project of projects) {
-      this._logger.info('Watch file saved, invalidating: ', project);
-      this._processes.delete(this._projectManager.getProjectKey(project));
-      this._projectManager.delete(project);
-    }
   }
 }

@@ -39,6 +39,7 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 > implements CqueryLanguageService {
   // Maps clang settings => settings metadata with same key as _processes field.
   _projectManager: CqueryProjectManager;
+  _projectInvalidator: CqueryInvalidator;
   _fileCache: FileCache;
   _command: string;
   _host: HostServices;
@@ -61,6 +62,15 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._languageId = languageId;
     this._logger = logger;
     this._projectManager = new CqueryProjectManager(logger);
+    this._projectInvalidator = new CqueryInvalidator(
+      fileCache,
+      logger,
+      project => {
+        this._processes.delete(this._projectManager.getProjectKey(project));
+        this._projectManager.delete(project);
+      },
+      () => this._projectManager.getAllProjects(),
+    );
 
     this._processes = new Cache(
       (projectKey: CqueryProjectKey) =>
@@ -80,13 +90,8 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
   _registerDisposables(): void {
     this._disposables.add(
       this._host,
+      this._projectInvalidator.subscribe(),
       this._processes,
-      new CqueryInvalidator(
-        this._fileCache,
-        this._projectManager,
-        this._logger,
-        this._processes,
-      ).subscribe(),
       () => this._closeProcesses(),
     );
   }
