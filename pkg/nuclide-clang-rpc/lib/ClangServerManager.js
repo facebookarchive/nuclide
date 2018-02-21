@@ -15,12 +15,12 @@ import type {ClangRequestSettings} from './rpc-types';
 import LRUCache from 'lru-cache';
 import os from 'os';
 
-import {runCommand} from 'nuclide-commons/process';
 import {serializeAsyncCall} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 import findClangServerArgs from './find-clang-server-args';
+import {memoryUsagePerPid} from './utils';
 
 // Limit the number of active Clang servers.
 const SERVER_LIMIT = 20;
@@ -178,28 +178,8 @@ export default class ClangServerManager {
       return 0;
     }
 
-    let total = 0;
-    const usage = new Map();
-    try {
-      const stdout = await runCommand('ps', [
-        '-p',
-        serverPids.join(','),
-        '-o',
-        'pid=',
-        '-o',
-        'rss=',
-      ]).toPromise();
-      stdout.split('\n').forEach(line => {
-        const parts = line.split(/\s+/);
-        if (parts.length === 2) {
-          const [pid, rss] = parts.map(x => parseInt(x, 10));
-          usage.set(pid, rss);
-          total += rss;
-        }
-      });
-    } catch (err) {
-      // Ignore errors.
-    }
+    const usage = await memoryUsagePerPid(serverPids);
+    let total = Array.from(usage.values()).reduce((a, b) => a + b, 0);
 
     // Remove servers until we're under the memory limit.
     // Make sure we allow at least one server to stay alive.
