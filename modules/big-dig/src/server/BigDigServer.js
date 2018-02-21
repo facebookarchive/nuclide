@@ -89,12 +89,10 @@ export default class BigDigServer {
     const {pathname} = url.parse(req.url);
     this._logger.info(`connection negotiation via path ${String(pathname)}`);
 
-    // TODO: figure out how to modify NuclideSocket to use the full
-    // path, rather than just the host and the protocol
-    /* if (pathname !== '/v1') {
-     *   this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
-     *   return;
-     * } */
+    if (pathname !== '/v1') {
+      this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
+      return;
+    }
 
     // TODO: send clientId in the http headers on the websocket connection
 

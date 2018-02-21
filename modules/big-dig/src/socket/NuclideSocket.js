@@ -23,7 +23,6 @@ import {QueuedAckTransport} from './QueuedAckTransport';
 import {XhrConnectionHeartbeat} from '../client/XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
-import {maybeToString} from 'nuclide-commons/string';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-socket');
@@ -93,11 +92,14 @@ export class NuclideSocket {
       }
     });
 
-    const {protocol, host} = url.parse(serverUri);
-    // TODO verify that `host` is non-null rather than using maybeToString
+    const {protocol, host, path} = url.parse(serverUri);
+    invariant(host != null);
+    const pathString = path != null ? path : '';
     this._websocketUri = `ws${
       protocol === 'https:' ? 's' : ''
-    }://${maybeToString(host)}`;
+    }://${host}${pathString}`;
+
+    logger.info(`websocket uri: ${this._websocketUri}`);
 
     this._heartbeat = new XhrConnectionHeartbeat(
       serverUri,
