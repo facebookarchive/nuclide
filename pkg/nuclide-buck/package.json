@@ -27,11 +27,6 @@
         "default": "true",
         "description": "Attempt to detect and display compile errors in Diagnostics."
       },
-      "suggestTaskRunner": {
-        "title": "Suggest building with the Task Runner after detecting CLI Buck builds.",
-        "type": "boolean",
-        "default": "true"
-      },
       "buildDbErrorNotify": {
         "title": "Show notification for errors and warnings when building compilation database.",
         "type": "boolean",

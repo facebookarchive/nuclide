@@ -15,14 +15,13 @@ import type {ConnectableObservable} from 'rxjs';
 import type {
   BaseBuckBuildOptions,
   ResolvedRuleType,
-  CommandInfo,
   BuckClangCompilationDatabase,
 } from './types';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
-import {runCommand, observeProcess} from 'nuclide-commons/process';
+import {observeProcess} from 'nuclide-commons/process';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import createBuckWebSocket from './createBuckWebSocket';
@@ -629,45 +628,6 @@ export function getWebSocketStream(
   httpPort: number,
 ): ConnectableObservable<Object> {
   return createBuckWebSocket(httpPort).publish();
-}
-
-const LOG_PATH = 'buck-out/log/buck-0.log';
-const LOG_REGEX = /\[([^\]]+)]/g;
-
-function stripBrackets(str: string): string {
-  return str.substring(1, str.length - 1);
-}
-
-export async function getLastCommandInfo(
-  rootPath: NuclideUri,
-  maxArgs?: number,
-): Promise<?CommandInfo> {
-  const logFile = nuclideUri.join(rootPath, LOG_PATH);
-  if (await fsPromise.exists(logFile)) {
-    let line;
-    try {
-      line = await runCommand('head', ['-n', '1', logFile]).toPromise();
-    } catch (err) {
-      return null;
-    }
-    const matches = line.match(LOG_REGEX);
-    if (matches == null || matches.length < 2) {
-      return null;
-    }
-    // Log lines are of the form:
-    // [time][level][?][?][JavaClass] .... [args]
-    // Parse this to figure out what the last command was.
-    const timestamp = Number(new Date(stripBrackets(matches[0])));
-    if (isNaN(timestamp)) {
-      return null;
-    }
-    const args = stripBrackets(matches[matches.length - 1]).split(', ');
-    if (args.length <= 1 || (maxArgs != null && args.length - 1 > maxArgs)) {
-      return null;
-    }
-    return {timestamp, command: args[0], args: args.slice(1)};
-  }
-  return null;
 }
 
 export async function resetCompilationDatabaseForSource(

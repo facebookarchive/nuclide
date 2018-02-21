@@ -42,7 +42,6 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
 import BuckToolbar from './BuckToolbar';
-import observeBuildCommands from './observeBuildCommands';
 import * as React from 'react';
 import {arrayEqual} from 'nuclide-commons/collection';
 import shallowequal from 'shallowequal';
@@ -261,7 +260,6 @@ export class BuckTaskRunner {
         initialState,
         applyMiddleware(createEpicMiddleware(rootEpic)),
       );
-      this._disposables.add(observeBuildCommands(this._store));
     }
     return this._store;
   }
