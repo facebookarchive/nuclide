@@ -15,6 +15,7 @@ import type WS from 'ws';
 import type https from 'https';
 
 import {getLogger} from 'log4js';
+import invariant from 'assert';
 import url from 'url';
 import {Subject} from 'rxjs';
 import {getVersion} from '../common/getVersion';
@@ -101,30 +102,37 @@ export default class BigDigServer {
     // the clientId of the connecting client; the BigDig connection
     // is not actually made until we get this connection
     ws.once('message', (clientId: string) => {
-      // handle first message which should include the clientId
-      this._logger.info(
-        `got first message from client with clientId ${clientId}`,
-      );
-
+      const cachedTransport = this._clientIdToTransport.get(clientId);
       const wsTransport = new WebSocketTransport(clientId, ws);
-      const qaTransport = new QueuedAckTransport(clientId, wsTransport);
-      this._clientIdToTransport.set(clientId, qaTransport);
 
-      // Every subscriber must be notified of the new connection because it may
-      // want to broadcast messages to it.
-      const tagToTransport: Map<string, InternalTransport> = new Map();
-      for (const [tag, subscriber] of this._tagToSubscriber) {
-        const transport = new InternalTransport(tag, qaTransport);
-        this._logger.info(`Created new InternalTransport for ${tag}`);
-        tagToTransport.set(tag, transport);
-        subscriber.onConnection(transport);
+      if (cachedTransport == null) {
+        // handle first message which should include the clientId
+        this._logger.info(
+          `got first message from client with clientId ${clientId}`,
+        );
+
+        const qaTransport = new QueuedAckTransport(clientId, wsTransport);
+        this._clientIdToTransport.set(clientId, qaTransport);
+
+        // Every subscriber must be notified of the new connection because it may
+        // want to broadcast messages to it.
+        const tagToTransport: Map<string, InternalTransport> = new Map();
+        for (const [tag, subscriber] of this._tagToSubscriber) {
+          const transport = new InternalTransport(tag, qaTransport);
+          this._logger.info(`Created new InternalTransport for ${tag}`);
+          tagToTransport.set(tag, transport);
+          subscriber.onConnection(transport);
+        }
+
+        // subsequent messages will be BigDig messages
+        // TODO: could the message be a Buffer?
+        qaTransport.onMessage().subscribe(message => {
+          this._handleBigDigMessage(tagToTransport, message);
+        });
+      } else {
+        invariant(clientId === cachedTransport.id);
+        cachedTransport.reconnect(wsTransport);
       }
-
-      // subsequent messages will be BigDig messages
-      // TODO: could the message be a Buffer?
-      qaTransport.onMessage().subscribe(message => {
-        this._handleBigDigMessage(tagToTransport, message);
-      });
     });
 
     // TODO(mbolin): When ws disconnects, do we explicitly have to clear out
