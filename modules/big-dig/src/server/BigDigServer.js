@@ -19,6 +19,9 @@ import url from 'url';
 import {Subject} from 'rxjs';
 import {getVersion} from '../common/getVersion';
 
+import {WebSocketTransport} from '../socket/WebSocketTransport';
+import {QueuedAckTransport} from '../socket/QueuedAckTransport';
+
 export const HEARTBEAT_CHANNEL = 'big-dig-heartbeat';
 
 export type Transport = {
@@ -33,6 +36,7 @@ type Subscriber = {
 export default class BigDigServer {
   _logger: log4js$Logger;
   _tagToSubscriber: Map<string, Subscriber>;
+  _clientIdToTransport: Map<string, QueuedAckTransport>;
 
   _httpsServer: https.Server;
   _webSocketServer: WS.Server;
@@ -46,6 +50,7 @@ export default class BigDigServer {
     this._tagToSubscriber = new Map();
     this._httpsServer = httpsServer;
     this._httpsServer.on('request', this._onHttpsRequest.bind(this));
+    this._clientIdToTransport = new Map();
     this._webSocketServer = webSocketServer;
     this._webSocketServer.on(
       'connection',
@@ -71,7 +76,7 @@ export default class BigDigServer {
     response: http$ServerResponse,
   ) {
     const {pathname} = url.parse(request.url);
-    if (pathname === `/${HEARTBEAT_CHANNEL}`) {
+    if (pathname === `/v1/${HEARTBEAT_CHANNEL}`) {
       response.write(getVersion());
       response.end();
       return;
@@ -80,37 +85,46 @@ export default class BigDigServer {
   }
 
   _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
-    // Note that in ws@3.0.0, the upgradeReq property of ws has been removed:
-    // it is passed as the second argument to this callback instead.
     const {pathname} = url.parse(req.url);
-    if (pathname !== '/v1') {
-      this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
-      return;
-    }
+    this._logger.info(`connection negotiation via path ${String(pathname)}`);
 
-    // Every subscriber must be notified of the new connection because it may
-    // want to broadcast messages to it.
-    const tagToTransport: Map<string, InternalTransport> = new Map();
-    for (const [tag, subscriber] of this._tagToSubscriber) {
-      const transport = new InternalTransport(tag, ws);
-      this._logger.info(`Created new InternalTransport for ${tag}`);
-      tagToTransport.set(tag, transport);
-      subscriber.onConnection(transport);
-    }
+    // TODO: figure out how to modify NuclideSocket to use the full
+    // path, rather than just the host and the protocol
+    /* if (pathname !== '/v1') {
+     *   this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
+     *   return;
+     * } */
 
-    // Is message a string or could it be a Buffer?
-    ws.on('message', message => {
-      // The message must start with a header identifying its route.
-      const index = message.indexOf('\0');
-      const tag = message.substring(0, index);
-      const body = message.substring(index + 1);
+    // TODO: send clientId in the http headers on the websocket connection
 
-      const transport = tagToTransport.get(tag);
-      if (transport != null) {
-        transport.broadcastMessage(body);
-      } else {
-        this._logger.info(`No route for ${tag}.`);
+    // the first message after a connection should only include
+    // the clientId of the connecting client; the BigDig connection
+    // is not actually made until we get this connection
+    ws.once('message', (clientId: string) => {
+      // handle first message which should include the clientId
+      this._logger.info(
+        `got first message from client with clientId ${clientId}`,
+      );
+
+      const wsTransport = new WebSocketTransport(clientId, ws);
+      const qaTransport = new QueuedAckTransport(clientId, wsTransport);
+      this._clientIdToTransport.set(clientId, qaTransport);
+
+      // Every subscriber must be notified of the new connection because it may
+      // want to broadcast messages to it.
+      const tagToTransport: Map<string, InternalTransport> = new Map();
+      for (const [tag, subscriber] of this._tagToSubscriber) {
+        const transport = new InternalTransport(tag, qaTransport);
+        this._logger.info(`Created new InternalTransport for ${tag}`);
+        tagToTransport.set(tag, transport);
+        subscriber.onConnection(transport);
       }
+
+      // subsequent messages will be BigDig messages
+      // TODO: could the message be a Buffer?
+      qaTransport.onMessage().subscribe(message => {
+        this._handleBigDigMessage(tagToTransport, message);
+      });
     });
 
     // TODO(mbolin): When ws disconnects, do we explicitly have to clear out
@@ -118,6 +132,23 @@ export default class BigDigServer {
     // automatically, assuming this._webSocketServer no longer has a reference
     // to ws. But we should probably call InternalTransport.close() on all of
     // the entries in tagToTransport?
+  }
+
+  _handleBigDigMessage(
+    tagToTransport: Map<string, InternalTransport>,
+    message: string,
+  ) {
+    // The message must start with a header identifying its route.
+    const index = message.indexOf('\0');
+    const tag = message.substring(0, index);
+    const body = message.substring(index + 1);
+
+    const transport = tagToTransport.get(tag);
+    if (transport != null) {
+      transport.broadcastMessage(body);
+    } else {
+      this._logger.info(`No route for ${tag}.`);
+    }
   }
 }
 
@@ -130,22 +161,16 @@ export default class BigDigServer {
 class InternalTransport {
   _messages: Subject<string>;
   _tag: string;
-  _ws: WS;
+  _transport: QueuedAckTransport;
 
-  constructor(tag: string, ws: WS) {
+  constructor(tag: string, ws: QueuedAckTransport) {
     this._messages = new Subject();
     this._tag = tag;
-    this._ws = ws;
+    this._transport = ws;
   }
 
   send(message: string): void {
-    this._ws.send(`${this._tag}\0${message}`, err => {
-      if (err != null) {
-        // This may happen if the client disconnects.
-        // TODO: use the reliable transport from Nuclide when that's ready.
-        getLogger().warn('Error sending websocket message', err);
-      }
-    });
+    this._transport.send(`${this._tag}\0${message}`);
   }
 
   onMessage(): Observable<string> {

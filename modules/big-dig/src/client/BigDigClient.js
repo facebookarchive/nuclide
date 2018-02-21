@@ -11,10 +11,11 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {WebSocketTransport} from './WebSocketTransport';
+import type {NuclideSocket} from '../socket/NuclideSocket';
 import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 
 import {Subject} from 'rxjs';
+import {getLogger} from 'log4js';
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
@@ -22,18 +23,20 @@ import {Subject} from 'rxjs';
  * and stderr.
  */
 export class BigDigClient {
+  _logger: log4js$Logger;
   _heartbeat: XhrConnectionHeartbeat;
   _tagToSubject: Map<string, Subject<string>>;
-  _webSocketTransport: WebSocketTransport;
+  _transport: NuclideSocket;
 
   constructor(
-    webSocketTransport: WebSocketTransport,
+    nuclideSocketTransport: NuclideSocket,
     heartbeat: XhrConnectionHeartbeat,
   ) {
-    this._webSocketTransport = webSocketTransport;
+    this._logger = getLogger();
+    this._transport = nuclideSocketTransport;
     this._tagToSubject = new Map();
 
-    const observable = webSocketTransport.onMessage();
+    const observable = nuclideSocketTransport.onMessage();
     observable.subscribe({
       // Must use arrow function so that `this` is bound correctly.
       next: message => {
@@ -44,41 +47,41 @@ export class BigDigClient {
           const body = message.substring(index + 1);
           subject.next(body);
         } else {
-          // eslint-disable-next-line no-console
-          console.warn(`No one listening for tag "${tag}".`);
+          this._logger.warn(`No one listening for tag "${tag}".`);
         }
       },
       error(err) {
-        // eslint-disable-next-line no-console
-        console.error('Error received in ConnectionWrapper', err);
+        this._logger.error('Error received in ConnectionWrapper', err);
       },
       complete() {
-        // eslint-disable-next-line no-console
-        console.error('ConnectionWrapper completed()?');
+        this._logger.error('ConnectionWrapper completed()?');
       },
     });
 
     this._heartbeat = heartbeat;
     this._heartbeat.onConnectionRestored(() => {
-      // eslint-disable-next-line no-console
-      console.warn('TODO(T25533063): Implement reconnect logic');
+      this._logger.warn('TODO(T25533063): Implement reconnect logic');
     });
   }
 
   isClosed(): boolean {
-    return this._webSocketTransport.isClosed();
+    return this._transport.isClosed();
   }
 
+  // XXX: do we even need this now that we're using
+  // NuclideSocket and QueuedAckTransport?
   onClose(callback: () => mixed): IDisposable {
-    return this._webSocketTransport.onClose(callback);
+    return {
+      dispose: () => {},
+    };
   }
 
   close(): void {
-    this._webSocketTransport.close();
+    this._transport.close();
   }
 
   sendMessage(tag: string, body: string) {
-    this._webSocketTransport.send(`${tag}\0${body}`);
+    this._transport.send(`${tag}\0${body}`);
   }
 
   onMessage(tag: string): Observable<string> {
@@ -95,7 +98,7 @@ export class BigDigClient {
   }
 
   getAddress(): string {
-    return this._webSocketTransport.getAddress();
+    return this._transport.getAddress();
   }
 
   dispose() {

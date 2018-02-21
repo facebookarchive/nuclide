@@ -26,7 +26,7 @@ import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';
 import {getLogger} from 'log4js';
 
-const logger = getLogger('nuclide-server');
+const logger = getLogger('nuclide-socket');
 
 const PING_SEND_INTERVAL = 5000;
 const PING_WAIT_INTERVAL = 5000;
@@ -156,6 +156,7 @@ export class NuclideSocket {
     websocket.on('error', onSocketError);
 
     const onSocketOpen = async () => {
+      logger.info(`sending the id: ${this.id}`);
       const sendIdResult = await sendOneMessage(websocket, this.id);
       switch (sendIdResult.kind) {
         case 'close':
@@ -269,6 +270,10 @@ export class NuclideSocket {
   // Will reject quickly if the connection looks unhealthy.
   testConnection(): Promise<string> {
     return this._heartbeat.sendHeartBeat();
+  }
+
+  getAddress(): string {
+    return this._serverUri;
   }
 
   getServerUri(): string {

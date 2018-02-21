@@ -10,13 +10,9 @@
  * @format
  */
 
-import WS from 'ws';
-import https from 'https';
-
 import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
-import {WebSocketTransport} from './WebSocketTransport';
 import {BigDigClient} from './BigDigClient';
-import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
+import {NuclideSocket} from '../socket/NuclideSocket';
 
 export type BigDigClientConfig = {
   +host: string,
@@ -37,17 +33,14 @@ export default (async function createBigDigClient(
     cert: config.clientCertificate,
     key: config.clientKey,
   };
-  const socket = new WS(`wss://${config.host}:${config.port}/v1`, options);
-  await new Promise((resolve, reject) => {
-    socket.once('open', resolve);
-    socket.once('error', reject);
-  });
-  const agent = new https.Agent(options);
-  const webSocketTransport = new WebSocketTransport('test', agent, socket);
-  const heartbeat = new XhrConnectionHeartbeat(
-    `https://${config.host}:${config.port}`,
+
+  const serverUri = `https://${config.host}:${config.port}/v1`;
+
+  const nuclideSocket = new NuclideSocket(
+    serverUri,
     HEARTBEAT_CHANNEL,
     options,
   );
-  return new BigDigClient(webSocketTransport, heartbeat);
+
+  return new BigDigClient(nuclideSocket, nuclideSocket.getHeartbeat());
 });
