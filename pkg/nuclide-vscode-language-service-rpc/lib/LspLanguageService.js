@@ -160,6 +160,7 @@ export class LspLanguageService {
   // Disposing of the _lspConnection will dispose of all of them.
   _childOut: {stdout: ?string, stderr: string} = {stdout: '', stderr: ''};
   _lspConnection: LspConnection; // is really "?LspConnection"
+  _childPid: ?number; // child process id
   // Fields which become live after we receive an initializeResponse:
   _serverCapabilities: ServerCapabilities;
   _derivedServerCapabilities: DerivedServerCapabilities;
@@ -377,8 +378,9 @@ export class LspLanguageService {
         // disposing of the stream will kill the process, if it still exists
         const processPromise = childProcessStream.take(1).toPromise();
         perConnectionDisposables.add(childProcessStream.connect());
-        childProcess = await processPromise;
         // if spawn failed to launch it, this await will throw.
+        childProcess = await processPromise;
+        this._childPid = childProcess.pid;
       } catch (e) {
         this._logLspException(e);
         track('lsp-start', {
