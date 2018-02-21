@@ -70,14 +70,6 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         };
         expect(report).toEqual(expectedReport);
         expect(report.failures.hasOwnProperty('//:bad_rule')).toBe(true);
-
-        const lastCommand = await BuckService.getLastCommandInfo(buckRoot);
-        invariant(lastCommand);
-        expect(lastCommand.command).toBe('build');
-        expect(lastCommand.args.slice(0, 2)).toEqual([
-          '//:good_rule',
-          '//:bad_rule',
-        ]);
       });
     });
 
