@@ -9,10 +9,7 @@
  * @format
  */
 
-import {
-  getWindowLoadSettings,
-  setWindowLoadSettings,
-} from '../window-load-settings';
+import {getWindowLoadSettings} from '../window-load-settings';
 
 describe('getWindowLoadSettings', () => {
   it('should get the window load settings', () => {
@@ -20,13 +17,5 @@ describe('getWindowLoadSettings', () => {
     expect(keys).toContain('initialPaths');
     expect(keys).toContain('resourcePath');
     expect(keys).toContain('env');
-  });
-});
-
-describe('setWindowLoadSettings', () => {
-  it('should change the window load settings', () => {
-    const loadSettings = getWindowLoadSettings();
-    setWindowLoadSettings({...loadSettings, test: 'test1234'});
-    expect(getWindowLoadSettings().test).toBe('test1234');
   });
 });

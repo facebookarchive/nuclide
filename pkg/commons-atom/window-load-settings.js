@@ -29,16 +29,3 @@ export function getWindowLoadSettings(
     : // Atom 1.16.
       browserWindow.loadSettings || {};
 }
-
-export function setWindowLoadSettings(
-  settings: Object,
-  browserWindow: electron$BrowserWindow = remote.getCurrentWindow(),
-): void {
-  if (browserWindow.loadSettings) {
-    browserWindow.loadSettings = settings;
-  } else {
-    // Atom 1.17+ only.
-    // $FlowIgnore: add to defs when it comes.
-    browserWindow.loadSettingsJSON = JSON.stringify(settings);
-  }
-}
