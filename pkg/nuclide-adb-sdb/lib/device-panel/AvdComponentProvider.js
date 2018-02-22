@@ -17,6 +17,7 @@ import type {
 } from '../../../nuclide-device-panel/lib/types';
 
 import {View} from 'nuclide-commons-ui/View';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Expect} from '../../../commons-node/expected';
@@ -54,6 +55,12 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
     host: NuclideUri,
     callback: (?DeviceTypeOrderedComponent) => void,
   ): IDisposable {
+    // TODO (T26257016): Don't hide the table when ADB tunneling is on.
+    if (nuclideUri.isRemote(host)) {
+      callback(null);
+      return new UniversalDisposable();
+    }
+
     const headerElement = (
       <View
         item={renderReactRoot(
