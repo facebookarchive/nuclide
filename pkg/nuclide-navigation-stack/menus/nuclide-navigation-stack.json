@@ -1,20 +1,15 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "Go",
       "submenu": [
         {
-          "label": "Navigation Stack",
-          "submenu": [
-            {
-              "label": "Navigate Forwards",
-              "command": "nuclide-navigation-stack:navigate-forwards"
-            },
-            {
-              "label": "Navigate Backwards",
-              "command": "nuclide-navigation-stack:navigate-backwards"
-            }
-          ]
+          "label": "Back",
+          "command": "nuclide-navigation-stack:navigate-backwards"
+        },
+        {
+          "label": "Forward",
+          "command": "nuclide-navigation-stack:navigate-forwards"
         }
       ]
     }

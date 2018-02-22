@@ -71,7 +71,7 @@ class NavStackStatusBarTile extends React.Component<Props> {
           onClick={this.props.onBack}
           disabled={!this.props.enableBack}
           tooltip={{
-            title: 'Navigate Backwards',
+            title: 'Go Back',
             keyBindingCommand: 'nuclide-navigation-stack:navigate-backwards',
           }}
           className="nuclide-navigation-stack-button"
@@ -81,7 +81,7 @@ class NavStackStatusBarTile extends React.Component<Props> {
           onClick={this.props.onForward}
           disabled={!this.props.enableForward}
           tooltip={{
-            title: 'Navigate Forwards',
+            title: 'Go Forward',
             keyBindingCommand: 'nuclide-navigation-stack:navigate-forwards',
           }}
           className="nuclide-navigation-stack-button"
