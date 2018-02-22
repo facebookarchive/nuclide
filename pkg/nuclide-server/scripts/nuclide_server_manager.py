@@ -115,20 +115,20 @@ class NuclideServerManager(object):
             os.makedirs(CERTS_DIR)
         return CERTS_DIR
 
-    def _check_if_certs_files_exist(self, certs_generator):
-        server_cert_exists = os.path.exists(certs_generator.server_cert)
-        server_key_exists = os.path.exists(certs_generator.server_key)
-        ca_cert_exists = os.path.exists(certs_generator.ca_cert)
+    def _check_if_certs_files_exist(self, ca_cert, server_cert, server_key):
+        server_cert_exists = os.path.exists(server_cert)
+        server_key_exists = os.path.exists(server_key)
+        ca_cert_exists = os.path.exists(ca_cert)
         if server_cert_exists and server_key_exists and ca_cert_exists:
             return True
         else:
             message = 'The expected generated certificate files do not exist:'
             if not server_cert_exists:
-                message += '\n server cert: {0}'.format(certs_generator.server_cert)
+                message += '\n server cert: {0}'.format(server_cert)
             if not server_key_exists:
-                message += '\n server key: {0}'.format(certs_generator.server_key)
+                message += '\n server key: {0}'.format(server_key)
             if not ca_cert_exists:
-                message += '\n ca cert: {0}'.format(certs_generator.ca_cert)
+                message += '\n ca cert: {0}'.format(ca_cert)
             self.logger.error(message)
             return False
 
@@ -210,6 +210,19 @@ class NuclideServerManager(object):
             self.logger.info('Found an open port: {0}.'.format(port))
             return port
 
+    def _generate_certificates(self):
+        # Add prefix "user.nuclide" to avoid collision.
+        common_name = self.options.common_name or \
+            '%s.nuclide.%s' % (getpass.getuser(), socket.gethostname())
+        # TODO: Client common name is 'nuclide'.
+        # We may want to generate unique common name and verify it.
+        certs_dir = self.options.certs_dir or self._ensure_certs_dir()
+        generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
+                                                 expiration_days=CERTS_EXPIRATION_DAYS)
+        self.logger.info(
+            'Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name))
+        return generator.ca_cert, generator.server_cert, generator.server_key
+
     def start_nuclide(self):
         server = None
         self.logger.info('Trying to determine the port to use for Nuclide server...')
@@ -270,24 +283,18 @@ class NuclideServerManager(object):
         else:
             # Use https.
             self.logger.info('Using https.')
-            certs_dir = self.options.certs_dir or self._ensure_certs_dir()
-            # Add prefix "user.nuclide" to avoid collision.
-            common_name = self.options.common_name or \
-                '%s.nuclide.%s' % (getpass.getuser(), socket.gethostname())
-
-            # TODO: Client common name is 'nuclide'.
-            # We may want to generate unique common name and verify it.
-            certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
-                                                           expiration_days=CERTS_EXPIRATION_DAYS)
-            self.logger.info(
-                'Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name)
-            )
-            self._check_if_certs_files_exist(certs_generator)
+            if not self.options.server_cert and not self.options.server_key and not self.options.ca:
+                ca, server_cert, server_key = self._generate_certificates()
+            else:
+                ca = self.options.ca
+                server_cert = self.options.server_cert
+                server_key = self.options.server_key
+            self._check_if_certs_files_exist(ca, server_cert, server_key)
             return server.start(
                 self.options.timeout,
-                cert=certs_generator.server_cert,
-                key=certs_generator.server_key,
-                ca=certs_generator.ca_cert,
+                cert=server_cert,
+                key=server_key,
+                ca=ca,
                 quiet=self.options.quiet,
                 debug=self.options.debug,
                 inspect=self.options.inspect,
@@ -311,7 +318,19 @@ def get_option_parser():
         '-d',
         '--certs-dir',
         type=str,
-        help='directory to store certificate files, default: ~/.certs')
+        help='directory to store generated certificate files, default: ~/.certs')
+    parser.add_option(
+        '--server-cert',
+        type=str,
+        help='path to server cert to use')
+    parser.add_option(
+        '--server-key',
+        type=str,
+        help='path to server key to use')
+    parser.add_option(
+        '--ca',
+        type=str,
+        help='path to CA cert to use')
     parser.add_option('-n', '--common-name', type=str, help='the common name to use in certificate')
     parser.add_option(
         '-t',

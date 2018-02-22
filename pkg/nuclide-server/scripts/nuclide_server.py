@@ -141,6 +141,9 @@ class NuclideServer(object):
             output['cert'] = self._read_cert_file(client_cert)
             output['key'] = self._read_cert_file(client_key)
             output['ca'] = self._read_cert_file(ca)
+            output['ca_path'] = ca
+            output['server_cert_path'] = server_cert
+            output['server_key_path'] = server_key
             output['hostname'] = NuclideCertificatesGenerator.get_common_name(server_cert)
         return output
 
