@@ -30,7 +30,13 @@ import {runCommand} from 'nuclide-commons/process';
 import AvdTable from './ui/AvdTable';
 import AvdTableHeader from './ui/AvdTableHeader';
 
-export type Avd = string;
+export type Avd = {
+  name: string,
+  running: boolean,
+  pid?: number,
+};
+
+const AVD_LOCKFILE = 'hardware-qemu.ini.lock';
 
 export class AvdComponentProvider implements DeviceTypeComponentProvider {
   _refresh: Subject<void> = new Subject();
@@ -84,16 +90,38 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
     });
   }
 
-  _parseAvds(emulatorOutput: string): Avd[] {
+  _parseAvds(emulatorOutput: string): Array<string> {
     const trimmedOutput = emulatorOutput.trim();
     return trimmedOutput === '' ? [] : trimmedOutput.split(os.EOL);
   }
 
-  _getAvds(): Observable<Expected<Avd[]>> {
+  async _populateAvdPID(avdName: string): Promise<Avd> {
+    const lockFile = `${os.homedir()}/.android/avd/${avdName}.avd/${AVD_LOCKFILE}`;
+    if (await fsPromise.exists(lockFile)) {
+      const pid = parseInt(await fsPromise.readFile(lockFile, 'utf8'), 10);
+      return {
+        name: avdName,
+        running: true,
+        pid,
+      };
+    } else {
+      return {
+        name: avdName,
+        running: false,
+      };
+    }
+  }
+
+  _populateAvdPIDs = (avds: Array<string>): Observable<Array<Avd>> => {
+    return Observable.fromPromise(Promise.all(avds.map(this._populateAvdPID)));
+  };
+
+  _getAvds(): Observable<Expected<Array<Avd>>> {
     return this._getEmulator().switchMap(emulator => {
       return emulator != null
         ? runCommand(emulator, ['-list-avds'])
             .map(this._parseAvds)
+            .switchMap(this._populateAvdPIDs)
             .map(Expect.value)
         : Observable.of(
             Expect.error(new Error("Cannot find 'emulator' command.")),
@@ -107,11 +135,11 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
 
   _startAvd = (avd: Avd): void => {
     invariant(this._emulator != null);
-    runCommand(this._emulator, ['@' + avd]).subscribe(
+    runCommand(this._emulator, ['@' + avd.name]).subscribe(
       stdout => {},
       err => {
         atom.notifications.addError(
-          `Failed to start up emulator ${avd}. Perhaps it's already running?`,
+          `Failed to start up emulator ${avd.name}.`,
           {
             detail: err,
             dismissable: true,

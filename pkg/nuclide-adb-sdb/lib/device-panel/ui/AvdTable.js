@@ -12,6 +12,7 @@
 import type {Expected} from '../../../../commons-node/expected';
 import type {Avd} from '../AvdComponentProvider';
 
+import classnames from 'classnames';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Table} from 'nuclide-commons-ui/Table';
@@ -31,11 +32,16 @@ export default class AvdTable extends React.Component<Props> {
   _renderAvd = (rowProps: {data: Avd}): React.Node => {
     const {startAvd} = this.props;
     const avd = rowProps.data;
+
     return (
-      <div className="nuclide-adb-sdb-emulator-row">
-        {avd}
+      <div
+        className={classnames('nuclide-adb-sdb-emulator-row', {
+          'nuclide-adb-sdb-emulator-running': avd.running,
+        })}>
+        {avd.name} {avd.running ? ' (running)' : ''}
         <ButtonGroup>
           <Button
+            disabled={avd.running}
             icon={'triangle-right'}
             onClick={() => startAvd(avd)}
             size="SMALL"
