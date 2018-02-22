@@ -16,6 +16,7 @@ import type {TreeNode, NodePath} from 'nuclide-commons-ui/SelectableTree';
 
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import {arrayEqual} from 'nuclide-commons/collection';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
@@ -346,6 +347,10 @@ class OutlineViewCore extends React.PureComponent<
     pane.activateItem(editor);
   };
 
+  _getNodes = memoizeUntilChanged(outlineTrees => {
+    return outlineTrees.map(this._outlineTreeToNode);
+  });
+
   _outlineTreeToNode = (outlineTree: OutlineTreeForUi): TreeNode => {
     const searchResult = this.state.searchResults.get(outlineTree);
 
@@ -386,7 +391,7 @@ class OutlineViewCore extends React.PureComponent<
             className="outline-view-trees atom-ide-filterable"
             collapsedPaths={this.state.collapsedPaths}
             itemClassName="outline-view-item"
-            items={outline.outlineTrees.map(this._outlineTreeToNode)}
+            items={this._getNodes(outline.outlineTrees)}
             onCollapse={this._handleCollapse}
             onConfirm={this._handleConfirm}
             onExpand={this._handleExpand}
