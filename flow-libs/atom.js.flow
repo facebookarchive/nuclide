@@ -273,24 +273,26 @@ declare class atom$Gutter {
   onDidDestroy(callback: () => void): IDisposable,
 }
 
+declare type atom$MarkerChangeEvent = {
+  oldHeadScreenPosition: atom$Point,
+  newHeadScreenPosition: atom$Point,
+  oldTailScreenPosition: atom$Point,
+  newTailScreenPosition: atom$Point,
+
+  oldHeadBufferPosition: atom$Point,
+  newHeadBufferPosition: atom$Point,
+  oldTailBufferPosition: atom$Point,
+  newTailBufferPosition: atom$Point,
+
+  isValid: boolean,
+  textChanged: boolean,
+}
+
 declare class atom$Marker {
   destroy(): void,
   getBufferRange(): atom$Range,
   getStartBufferPosition(): atom$Point,
-  onDidChange(callback: (event: {
-    oldHeadScreenPosition: atom$Point,
-    newHeadScreenPosition: atom$Point,
-    oldTailScreenPosition: atom$Point,
-    newTailScreenPosition: atom$Point,
-
-    oldHeadBufferPosition: atom$Point,
-    newHeadBufferPosition: atom$Point,
-    oldTailBufferPosition: atom$Point,
-    newTailBufferPosition: atom$Point,
-
-    isValid: boolean,
-    textChanged: boolean,
-  }) => mixed): IDisposable,
+  onDidChange(callback: (event: atom$MarkerChangeEvent) => mixed): IDisposable,
   isValid(): boolean,
   isDestroyed(): boolean,
   onDidDestroy(callback: () => mixed): IDisposable,

@@ -94,6 +94,7 @@ export default class BreakpointConfigComponent extends React.Component<
       .getText()
       .trim();
     if (condition === (breakpoint.condition || '')) {
+      this.props.onDismiss();
       return;
     }
     await service.removeBreakpoints(breakpoint.getId());

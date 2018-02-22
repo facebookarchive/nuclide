@@ -189,6 +189,7 @@ export default class DebugService implements IDebugService {
   _emitter: Emitter;
   _viewModel: ViewModel;
   _timer: ?TimingTracker;
+  _breakpointsToSendOnSave: Set<NuclideUri>;
 
   constructor(state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
@@ -197,6 +198,7 @@ export default class DebugService implements IDebugService {
     this._emitter = new Emitter();
     this._debuggerMode = DebuggerMode.STOPPED;
     this._viewModel = new ViewModel();
+    this._breakpointsToSendOnSave = new Set();
 
     this._model = new Model(
       this._loadBreakpoints(state),
@@ -300,6 +302,27 @@ export default class DebugService implements IDebugService {
 
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
     this._sessionEndDisposables = new UniversalDisposable(session);
+
+    const openFilesSaved = observableFromSubscribeFunction(
+      atom.workspace.observeTextEditors.bind(atom.workspace),
+    ).flatMap(editor => {
+      return observableFromSubscribeFunction(editor.onDidSave.bind(editor))
+        .map(() => editor.getPath())
+        .takeUntil(
+          observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
+        );
+    });
+
+    this._sessionEndDisposables.add(
+      openFilesSaved.subscribe(async filePath => {
+        if (filePath == null || !this._breakpointsToSendOnSave.has(filePath)) {
+          return;
+        }
+        this._breakpointsToSendOnSave.delete(filePath);
+        await this._sendBreakpoints(filePath, true);
+      }),
+    );
+
     this._sessionEndDisposables.add(
       session.observeInitializeEvents().subscribe(async event => {
         const sendConfigurationDone = async () => {
@@ -784,6 +807,7 @@ export default class DebugService implements IDebugService {
     data: {[id: string]: DebugProtocol.Breakpoint},
   ) {
     this._model.updateBreakpoints(data);
+    this._breakpointsToSendOnSave.add(uri);
   }
 
   async removeBreakpoints(
