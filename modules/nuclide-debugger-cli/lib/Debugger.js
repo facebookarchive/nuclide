@@ -39,6 +39,7 @@ import VariablesCommand from './VariablesCommand';
 import ListCommand from './ListCommand';
 import RestartCommand from './RestartCommand';
 import PrintCommand from './PrintCommand';
+import RunCommand from './RunCommand';
 
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
@@ -75,6 +76,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new ListCommand(this._console, this));
     dispatcher.registerCommand(new RestartCommand(this));
     dispatcher.registerCommand(new PrintCommand(this._console, this));
+    dispatcher.registerCommand(new RunCommand(this));
   }
 
   getThreads(): Map<number, Thread> {
@@ -192,7 +194,8 @@ export default class Debugger implements DebuggerInterface {
     path: string,
     line: number,
   ): Promise<BreakpointSetResult> {
-    const session = this._ensureDebugSession();
+    // NB this call is allowed before the program is launched
+    const session = this._ensureDebugSession(true);
     const index = this._breakpoints.addSourceBreakpoint(path, line);
 
     const breakpoint = await this._setSourceBreakpointsForPath(
@@ -365,21 +368,36 @@ export default class Debugger implements DebuggerInterface {
     await this.createSession(adapter.adapterInfo);
 
     switch (adapter.action) {
-      case 'launch':
-        const launchArgs = adapter.launchArgs;
-        invariant(launchArgs != null);
-        await this._ensureDebugSession().launch(launchArgs);
-        break;
-
       case 'attach':
         const attachArgs = adapter.attachArgs;
         invariant(attachArgs != null);
-        await this._ensureDebugSession().attach(attachArgs);
+        await this._ensureDebugSession(true).attach(attachArgs);
+        await this._cacheThreads();
+        this._launching = false;
         break;
 
-      default:
-        invariant(false, 'Invalid action passed in adapter init state');
+      case 'launch':
+        // If we are launching, that will happen after the user issues the 'run'
+        // command.
+        this._console.startInput();
+        break;
     }
+  }
+
+  async run(): Promise<void> {
+    const adapter = this._adapter;
+
+    if (!this._launching || adapter == null || adapter.action !== 'launch') {
+      throw new Error(
+        'There is nothing to run, or already attached to a process.',
+      );
+    }
+
+    const launchArgs = adapter.launchArgs;
+    invariant(launchArgs != null);
+
+    await this._ensureDebugSession(true).launch(launchArgs);
+
     await this._cacheThreads();
     this._launching = false;
   }
@@ -478,7 +496,7 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _initializeObservers(): void {
-    const session = this._ensureDebugSession();
+    const session = this._ensureDebugSession(true);
 
     session.observeInitializeEvents().subscribe(() => {
       try {
@@ -599,7 +617,9 @@ export default class Debugger implements DebuggerInterface {
       '_cacheThreads called without session',
     );
 
-    const {body: {threads}} = await this._debugSession.threads();
+    const {body} = await this._debugSession.threads();
+    const threads = body.threads != null ? body.threads : [];
+
     this._threads = new Map(
       threads.map(thd => [thd.id, new Thread(thd.id, thd.name)]),
     );
@@ -673,10 +693,17 @@ export default class Debugger implements DebuggerInterface {
     return content;
   }
 
-  _ensureDebugSession(): VsDebugSession {
+  _ensureDebugSession(allowBeforeLaunch: boolean = false): VsDebugSession {
     if (this._debugSession == null) {
       throw new Error('There is no active debugging session.');
     }
+
+    if (this._launching && !allowBeforeLaunch) {
+      throw new Error(
+        "The program is not yet running (use 'run' to start it).",
+      );
+    }
+
     return this._debugSession;
   }
 }

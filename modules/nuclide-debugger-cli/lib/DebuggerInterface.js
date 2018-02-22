@@ -27,6 +27,7 @@ export type BreakpointSetResult = {
 };
 
 export interface DebuggerInterface {
+  run(): Promise<void>;
   getThreads(): Map<number, Thread>;
   getActiveThread(): Thread;
   stepIn(): Promise<void>;

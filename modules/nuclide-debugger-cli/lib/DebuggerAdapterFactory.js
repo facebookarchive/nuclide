@@ -228,7 +228,6 @@ export default class DebuggerAdapterFactory {
     commandLineArgs.set('args', launchArgs.splice(1));
     commandLineArgs.set('program', nuclideUri.resolve(program));
     commandLineArgs.set('noDebug', false);
-    commandLineArgs.set('stopOnEntry', true);
     commandLineArgs.set('cwd', nuclideUri.resolve('.'));
 
     // $TODO refactor this code to not be so hacky about adapter specific
