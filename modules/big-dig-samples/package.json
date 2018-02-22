@@ -2,11 +2,11 @@
   "name": "big-dig-samples",
   "description": "Sample library that uses big-dig.",
   "author": "Nuclide : Remote",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "dependencies": {
     "async-to-generator": "1.1.0",
-    "big-dig": "0.4.0",
+    "big-dig": "0.5.0",
     "log4js": "1.1.1",
     "yargs": "3.32.0"
   }
