@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,44 +29,38 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Observable} from 'rxjs';
-import type {IDebugService, IProcessConfig, IVspInstance} from './types';
-import type VspProcessInfo from '../../nuclide-debugger-vsp/lib/VspProcessInfo';
-import * as DebugProtocol from 'vscode-debugprotocol';
+class RemoteControlService {
 
-import {DebuggerMode} from './constants';
-import invariant from 'assert';
-
-export default class RemoteControlService {
-  _service: IDebugService;
-
-  constructor(service: IDebugService) {
+  constructor(service) {
     this._service = service;
   }
 
-  async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = this._startVspDebugging({
-      targetUri: processInfo.getTargetUri(),
-      debugMode: processInfo.getDebugMode(),
-      adapterType: processInfo.getAdapterType(),
-      adapterExecutable: processInfo._adapterExecutable,
-      capabilities: processInfo.getDebuggerCapabilities(),
-      properties: processInfo.getDebuggerProps(),
-      config: processInfo.getConfig(),
-      clientPreprocessor: processInfo.getVspClientPreprocessor(),
-      adapterPreprocessor: processInfo.getVspAdapterPreprocessor(),
-    });
+  startDebugging(processInfo) {
+    var _this = this;
 
-    processInfo.setVspDebuggerInstance(instance);
+    return (0, _asyncToGenerator.default)(function* () {
+      const instance = _this._startVspDebugging({
+        targetUri: processInfo.getTargetUri(),
+        debugMode: processInfo.getDebugMode(),
+        adapterType: processInfo.getAdapterType(),
+        adapterExecutable: processInfo._adapterExecutable,
+        capabilities: processInfo.getDebuggerCapabilities(),
+        properties: processInfo.getDebuggerProps(),
+        config: processInfo.getConfig(),
+        clientPreprocessor: processInfo.getVspClientPreprocessor(),
+        adapterPreprocessor: processInfo.getVspAdapterPreprocessor()
+      });
+
+      processInfo.setVspDebuggerInstance(instance);
+    })();
   }
 
-  getCurrentDebuggerName(): ?string {
-    const {focusedProcess} = this._service.viewModel;
+  getCurrentDebuggerName() {
+    const { focusedProcess } = this._service.viewModel;
     if (focusedProcess == null) {
       return null;
     } else {
@@ -50,59 +68,55 @@ export default class RemoteControlService {
     }
   }
 
-  _startVspDebugging(config: IProcessConfig): IVspInstance {
+  _startVspDebugging(config) {
     this._service.startDebugging(config);
 
-    const {viewModel} = this._service;
-    const {focusedProcess} = viewModel;
-    invariant(focusedProcess != null);
+    const { viewModel } = this._service;
+    const { focusedProcess } = viewModel;
 
-    const isFocusedProcess = (): boolean => {
-      return (
-        this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
-        viewModel.focusedProcess === focusedProcess
-      );
+    if (!(focusedProcess != null)) {
+      throw new Error('Invariant violation: "focusedProcess != null"');
+    }
+
+    const isFocusedProcess = () => {
+      return this._service.getDebuggerMode() !== (_constants || _load_constants()).DebuggerMode.STOPPED && viewModel.focusedProcess === focusedProcess;
     };
 
-    const customRequest = async (
-      request: string,
-      args: any,
-    ): Promise<DebugProtocol.CustomResponse> => {
-      if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
-      }
-      return focusedProcess.session.custom(request, args);
-    };
+    const customRequest = (() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (request, args) {
+        if (!isFocusedProcess()) {
+          throw new Error('Cannot send custom requests to a no longer active debug session!');
+        }
+        return focusedProcess.session.custom(request, args);
+      });
 
-    const observeCustomEvents = (): Observable<DebugProtocol.DebugEvent> => {
+      return function customRequest(_x, _x2) {
+        return _ref.apply(this, arguments);
+      };
+    })();
+
+    const observeCustomEvents = () => {
       if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+        throw new Error('Cannot send custom requests to a no longer active debug session!');
       }
       return focusedProcess.session.observeCustomEvents();
     };
 
     return Object.freeze({
       customRequest,
-      observeCustomEvents,
+      observeCustomEvents
     });
   }
 
-  canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {
+  canLaunchDebugTargetInTerminal(targetUri) {
     // Launcing in terminal isn't yet supported
     return false;
   }
 
-  async launchDebugTargetInTerminal(
-    targetUri: NuclideUri,
-    command: string,
-    args: Array<string>,
-    cwd: NuclideUri,
-    environmentVariables: Map<string, string>,
-  ): Promise<void> {
-    throw new Error('TODO: Add support for launching in terminal');
+  launchDebugTargetInTerminal(targetUri, command, args, cwd, environmentVariables) {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('TODO: Add support for launching in terminal');
+    })();
   }
 }
+exports.default = RemoteControlService;

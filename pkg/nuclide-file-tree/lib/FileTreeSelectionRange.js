@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RangeUtil = exports.SelectionRange = exports.RangeKey = undefined;
+
+var _FileTreeNode;
+
+function _load_FileTreeNode() {
+  return _FileTreeNode = require('./FileTreeNode');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,78 +18,71 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import {FileTreeNode} from './FileTreeNode';
-
-export class RangeKey {
-  _rootKey: NuclideUri;
-  _nodeKey: NuclideUri;
-  constructor(rootKey: NuclideUri, nodeKey: NuclideUri) {
+class RangeKey {
+  constructor(rootKey, nodeKey) {
     this._rootKey = rootKey;
     this._nodeKey = nodeKey;
   }
 
-  static of(node: FileTreeNode): RangeKey {
+  static of(node) {
     return new RangeKey(node.rootUri, node.uri);
   }
 
-  rootKey(): NuclideUri {
+  rootKey() {
     return this._rootKey;
   }
 
-  nodeKey(): NuclideUri {
+  nodeKey() {
     return this._nodeKey;
   }
 
-  equals(other: RangeKey): boolean {
+  equals(other) {
     return this._rootKey === other._rootKey && this._nodeKey === other._nodeKey;
   }
 }
 
-export class SelectionRange {
-  _anchor: RangeKey;
-  _range: RangeKey;
-  constructor(anchor: RangeKey, range: RangeKey) {
+exports.RangeKey = RangeKey;
+class SelectionRange {
+  constructor(anchor, range) {
     this._anchor = anchor;
     this._range = range;
   }
 
-  anchor(): RangeKey {
+  anchor() {
     return this._anchor;
   }
 
-  range(): RangeKey {
+  range() {
     return this._range;
   }
 
-  static ofSingleItem(anchor: RangeKey): SelectionRange {
+  static ofSingleItem(anchor) {
     return new SelectionRange(anchor, anchor);
   }
 
-  withNewRange(range: RangeKey): SelectionRange {
+  withNewRange(range) {
     return new SelectionRange(this._anchor, range);
   }
 
-  withNewAnchor(anchor: RangeKey): SelectionRange {
+  withNewAnchor(anchor) {
     return new SelectionRange(anchor, this._range);
   }
 
-  equals(other: SelectionRange): boolean {
-    return (
-      this._anchor.equals(other._anchor) && this._range.equals(other._range)
-    );
+  equals(other) {
+    return this._anchor.equals(other._anchor) && this._range.equals(other._range);
   }
 }
 
-/**
- * Returns the current node if it is shown.
- * Otherwise, returns a nearby node that is shown.
- */
-function findShownNode(node: FileTreeNode): ?FileTreeNode {
+exports.SelectionRange = SelectionRange; /**
+                                          * Returns the current node if it is shown.
+                                          * Otherwise, returns a nearby node that is shown.
+                                          */
+
+function findShownNode(node) {
   if (node.shouldBeShown) {
     return node;
   }
@@ -101,12 +107,12 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
   return null;
 }
 
-export class RangeUtil {
+class RangeUtil {
   /**
    * Returns the current node if it is shown and selected
    * Otherwise, returns a nearby selected node.
    */
-  static findSelectedNode(node: FileTreeNode): ?FileTreeNode {
+  static findSelectedNode(node) {
     const shown = findShownNode(node);
     if (shown == null) {
       return shown;
@@ -128,3 +134,4 @@ export class RangeUtil {
     return selected;
   }
 }
+exports.RangeUtil = RangeUtil;

@@ -1,93 +1,77 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  FindReferencesReturn,
-  FindReferencesProvider as FindReferencesProviderType,
-} from 'atom-ide-ui';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FindReferencesProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type FindReferencesConfig = {|
-  version: '0.1.0',
-  analyticsEventName: string,
-|};
+var _nuclideRemoteConnection;
 
-export class FindReferencesProvider<T: LanguageService> {
-  grammarScopes: Array<string>;
-  name: string;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    grammarScopes: Array<string>,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class FindReferencesProvider {
+
+  constructor(name, grammarScopes, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammarScopes: Array<string>,
-    config: FindReferencesConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'find-references',
-      config.version,
-      new FindReferencesProvider(
-        name,
-        grammarScopes,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammarScopes, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('find-references', config.version, new FindReferencesProvider(name, grammarScopes, config.analyticsEventName, connectionToLanguageService));
   }
 
-  async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
-    return (
-      textEditor.getPath() != null &&
-      this.grammarScopes.includes(textEditor.getGrammar().scopeName)
-    );
+  isEditorSupported(textEditor) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return textEditor.getPath() != null && _this.grammarScopes.includes(textEditor.getGrammar().scopeName);
+    })();
   }
 
-  findReferences(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  findReferences(editor, position) {
+    var _this2 = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this2._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return (await languageService)
-        .findReferences(fileVersion, position)
-        .refCount()
-        .toPromise();
-    });
+      return (yield languageService).findReferences(fileVersion, position).refCount().toPromise();
+    }));
   }
 }
 
-(((null: any): FindReferencesProvider<
-  LanguageService,
->): FindReferencesProviderType);
+exports.FindReferencesProvider = FindReferencesProvider; /**
+                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                          * All rights reserved.
+                                                          *
+                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                          * the root directory of this source tree.
+                                                          *
+                                                          * 
+                                                          * @format
+                                                          */
+
+null;

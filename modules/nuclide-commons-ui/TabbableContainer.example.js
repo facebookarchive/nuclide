@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TabbableContainerExamples = undefined;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('./AtomInput');
+}
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('./Button');
+}
+
+var _RadioGroup;
+
+function _load_RadioGroup() {
+  return _RadioGroup = _interopRequireDefault(require('./RadioGroup'));
+}
+
+var _TabbableContainer;
+
+function _load_TabbableContainer() {
+  return _TabbableContainer = _interopRequireDefault(require('./TabbableContainer'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,112 +49,119 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import * as React from 'react';
-import {AtomInput} from './AtomInput';
-import {Block} from './Block';
-import {Button} from './Button';
-import RadioGroup from './RadioGroup';
-import TabbableContainer from './TabbableContainer';
-
 const labels = ['radio 1', 'radio 2', 'radio 3'];
 
-class FormExample extends React.Component<any, {selectedIndex: number}> {
-  constructor(props: any) {
+class FormExample extends _react.Component {
+  constructor(props) {
     super(props);
+
+    this.onSelectedChange = selectedIndex => {
+      this.setState({
+        selectedIndex
+      });
+    };
+
     this.state = {
-      selectedIndex: 0,
+      selectedIndex: 0
     };
   }
 
-  onSelectedChange = (selectedIndex: number): void => {
-    this.setState({
-      selectedIndex,
-    });
-  };
-
-  render(): React.Node {
-    return (
-      <div>
-        <Block>
-          <AtomInput
-            disabled={false}
-            initialValue="input field 1"
-            placeholderText="placeholder text"
-          />
-        </Block>
-        <Block>
-          <AtomInput
-            disabled={false}
-            initialValue="input field 2"
-            placeholderText="placeholder text"
-          />
-        </Block>
-        <Block>
-          <AtomInput
-            disabled={false}
-            initialValue="input field 3"
-            placeholderText="placeholder text"
-          />
-        </Block>
-        <Block>
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-          <RadioGroup
-            selectedIndex={this.state.selectedIndex}
-            optionLabels={labels}
-            onSelectedChange={this.onSelectedChange}
-          />
-        </Block>
-        <Block>
-          <AtomInput
-            disabled={false}
-            initialValue="input field 4"
-            placeholderText="placeholder text"
-          />
-        </Block>
-        <Block>
-          <Button className="inline-block" size="SMALL">
-            button 1
-          </Button>
-          <Button className="inline-block" size="SMALL">
-            button 2
-          </Button>
-          <Button className="inline-block" size="SMALL">
-            button 3
-          </Button>
-        </Block>
-      </div>
+  render() {
+    return _react.createElement(
+      'div',
+      null,
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          disabled: false,
+          initialValue: 'input field 1',
+          placeholderText: 'placeholder text'
+        })
+      ),
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          disabled: false,
+          initialValue: 'input field 2',
+          placeholderText: 'placeholder text'
+        })
+      ),
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          disabled: false,
+          initialValue: 'input field 3',
+          placeholderText: 'placeholder text'
+        })
+      ),
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement((_RadioGroup || _load_RadioGroup()).default, {
+          selectedIndex: this.state.selectedIndex,
+          optionLabels: labels,
+          onSelectedChange: this.onSelectedChange
+        })
+      ),
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          disabled: false,
+          initialValue: 'input field 4',
+          placeholderText: 'placeholder text'
+        })
+      ),
+      _react.createElement(
+        (_Block || _load_Block()).Block,
+        null,
+        _react.createElement(
+          (_Button || _load_Button()).Button,
+          { className: 'inline-block', size: 'SMALL' },
+          'button 1'
+        ),
+        _react.createElement(
+          (_Button || _load_Button()).Button,
+          { className: 'inline-block', size: 'SMALL' },
+          'button 2'
+        ),
+        _react.createElement(
+          (_Button || _load_Button()).Button,
+          { className: 'inline-block', size: 'SMALL' },
+          'button 3'
+        )
+      )
     );
   }
 }
 
-const ContainedTabbableContainerExample = (): React.Element<any> => (
-  <TabbableContainer contained={true}>
-    <FormExample />
-  </TabbableContainer>
+const ContainedTabbableContainerExample = () => _react.createElement(
+  (_TabbableContainer || _load_TabbableContainer()).default,
+  { contained: true },
+  _react.createElement(FormExample, null)
 );
 
-const UncontainedTabbableContainerExample = (): React.Element<any> => (
-  <TabbableContainer contained={false}>
-    <FormExample />
-  </TabbableContainer>
+const UncontainedTabbableContainerExample = () => _react.createElement(
+  (_TabbableContainer || _load_TabbableContainer()).default,
+  { contained: false },
+  _react.createElement(FormExample, null)
 );
 
-export const TabbableContainerExamples = {
+const TabbableContainerExamples = exports.TabbableContainerExamples = {
   sectionName: 'TabbableContainer',
-  description:
-    'Allows tabbing and shift-tabbing to change the focus of the inputs.',
-  examples: [
-    {
-      title: 'Contained (focus will be contained in this section)',
-      component: ContainedTabbableContainerExample,
-    },
-    {
-      title: 'Uncontained',
-      component: UncontainedTabbableContainerExample,
-    },
-  ],
+  description: 'Allows tabbing and shift-tabbing to change the focus of the inputs.',
+  examples: [{
+    title: 'Contained (focus will be contained in this section)',
+    component: ContainedTabbableContainerExample
+  }, {
+    title: 'Uncontained',
+    component: UncontainedTabbableContainerExample
+  }]
 };

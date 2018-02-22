@@ -1,33 +1,39 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {MessageProcessor} from 'nuclide-debugger-common';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.remoteToLocalProcessor = remoteToLocalProcessor;
+exports.localToRemoteProcessor = localToRemoteProcessor;
+exports.pathProcessor = pathProcessor;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _nuclideUri;
 
-type PathMapper = (path: string) => string;
-
-export function remoteToLocalProcessor(): MessageProcessor {
-  return pathProcessor(path => nuclideUri.getPath(path));
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
 }
 
-export function localToRemoteProcessor(
-  targetUri: NuclideUri,
-): MessageProcessor {
-  const hostname = nuclideUri.getHostname(targetUri);
-  return pathProcessor(path => nuclideUri.createRemoteUri(hostname, path));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function remoteToLocalProcessor() {
+  return pathProcessor(path => (_nuclideUri || _load_nuclideUri()).default.getPath(path));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function localToRemoteProcessor(targetUri) {
+  const hostname = (_nuclideUri || _load_nuclideUri()).default.getHostname(targetUri);
+  return pathProcessor(path => (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, path));
 }
 
-export function pathProcessor(pathMapper: PathMapper): MessageProcessor {
+function pathProcessor(pathMapper) {
   return message => {
     processRequestsUris(message, pathMapper);
     processResponseUris(message, pathMapper);
@@ -35,7 +41,7 @@ export function pathProcessor(pathMapper: PathMapper): MessageProcessor {
   };
 }
 
-function processRequestsUris(message: Object, pathMapper: PathMapper): void {
+function processRequestsUris(message, pathMapper) {
   if (message.type !== 'request') {
     return;
   }
@@ -47,36 +53,28 @@ function processRequestsUris(message: Object, pathMapper: PathMapper): void {
   }
 }
 
-function processResponseUris(message: Object, pathMapper: PathMapper): void {
+function processResponseUris(message, pathMapper) {
   if (message.type !== 'response') {
     return;
   }
   switch (message.command) {
     case 'setBreakpoints':
     case 'setFunctionBreakpoints':
-      message.body.breakpoints.forEach(bp =>
-        translateField(bp, 'source.path', pathMapper),
-      );
+      message.body.breakpoints.forEach(bp => translateField(bp, 'source.path', pathMapper));
       break;
     case 'stackTrace':
-      message.body.stackFrames.forEach(frame =>
-        translateField(frame, 'source.path', pathMapper),
-      );
+      message.body.stackFrames.forEach(frame => translateField(frame, 'source.path', pathMapper));
       break;
     case 'modules':
-      message.body.modules.forEach(module =>
-        translateField(module, 'path', pathMapper),
-      );
+      message.body.modules.forEach(module => translateField(module, 'path', pathMapper));
       break;
     case 'loadedSources':
-      message.body.sources.forEach(source =>
-        translateField(source, 'path', pathMapper),
-      );
+      message.body.sources.forEach(source => translateField(source, 'path', pathMapper));
       break;
   }
 }
 
-function processEventsUris(message: Object, pathMapper: PathMapper): void {
+function processEventsUris(message, pathMapper) {
   if (message.type !== 'event') {
     return;
   }
@@ -97,11 +95,7 @@ function processEventsUris(message: Object, pathMapper: PathMapper): void {
 
 // Traverse the source `object` for a deeply nested field,
 // then apply the `pathMapper` to that field, if existing.
-function translateField(
-  object: Object,
-  fieldDescriptor: string,
-  pathMapper: PathMapper,
-): void {
+function translateField(object, fieldDescriptor, pathMapper) {
   const fields = fieldDescriptor.split('.');
   let lastObj = {};
   const value = fields.reduce((child, field) => {
@@ -114,6 +108,6 @@ function translateField(
   }, object);
   if (value != null) {
     const [lastField] = fields.slice(-1);
-    lastObj[lastField] = pathMapper((value: any));
+    lastObj[lastField] = pathMapper(value);
   }
 }

@@ -1,71 +1,77 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DatatipService} from 'atom-ide-ui';
-import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setConsoleService = setConsoleService;
+exports.getConsoleService = getConsoleService;
+exports.setConsoleRegisterExecutor = setConsoleRegisterExecutor;
+exports.getConsoleRegisterExecutor = getConsoleRegisterExecutor;
+exports.setDatatipService = setDatatipService;
+exports.getDatatipService = getDatatipService;
+exports.setNotificationService = setNotificationService;
+exports.getNotificationService = getNotificationService;
 
-type raiseNativeNotificationFunc = ?(
-  title: string,
-  body: string,
-  timeout: number,
-  raiseIfAtomHasFocus: boolean,
-) => ?IDisposable;
+var _UniversalDisposable;
 
-let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
-let _registerExecutor: ?RegisterExecutorFunction = null;
-let _datatipService: ?DatatipService = null;
-let _createConsole: ?ConsoleService = null;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-export function setConsoleService(createConsole: ConsoleService): IDisposable {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let _raiseNativeNotification = null; /**
+                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the license found in the LICENSE file in
+                                      * the root directory of this source tree.
+                                      *
+                                      * 
+                                      * @format
+                                      */
+
+let _registerExecutor = null;
+let _datatipService = null;
+let _createConsole = null;
+
+function setConsoleService(createConsole) {
   _createConsole = createConsole;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _createConsole = null;
   });
 }
 
-export function getConsoleService(): ?ConsoleService {
+function getConsoleService() {
   return _createConsole;
 }
 
-export function setConsoleRegisterExecutor(
-  registerExecutor: RegisterExecutorFunction,
-): IDisposable {
+function setConsoleRegisterExecutor(registerExecutor) {
   _registerExecutor = registerExecutor;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _registerExecutor = null;
   });
 }
 
-export function getConsoleRegisterExecutor(): ?RegisterExecutorFunction {
+function getConsoleRegisterExecutor() {
   return _registerExecutor;
 }
 
-export function setDatatipService(datatipService: DatatipService): IDisposable {
+function setDatatipService(datatipService) {
   _datatipService = datatipService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _datatipService = null;
   });
 }
 
-export function getDatatipService(): ?DatatipService {
+function getDatatipService() {
   return _datatipService;
 }
 
-export function setNotificationService(
-  raiseNativeNotification: raiseNativeNotificationFunc,
-): void {
+function setNotificationService(raiseNativeNotification) {
   _raiseNativeNotification = raiseNativeNotification;
 }
 
-export function getNotificationService(): ?raiseNativeNotificationFunc {
+function getNotificationService() {
   return _raiseNativeNotification;
 }
