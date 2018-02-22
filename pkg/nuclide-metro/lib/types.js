@@ -18,8 +18,10 @@ export type TunnelBehavior =
 
 // Manages starting Metro for the current working root and integrating it into Console.
 // Use this service instead of starting Metro via nuclide-metro-rpc yourself.
-export type MetroAtomService = {
-  start(tunnelBehavior: TunnelBehavior): Promise<void>,
-  stop(): void,
-  observeStatus(status: (OutputProviderStatus) => void): IDisposable,
-};
+export interface MetroAtomService {
+  start(tunnelBehavior: TunnelBehavior): Promise<void>;
+  stop(): void;
+  reloadApp(): void;
+  restart(): void;
+  observeStatus(callback: (OutputProviderStatus) => void): IDisposable;
+}

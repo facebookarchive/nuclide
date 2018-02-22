@@ -27,22 +27,8 @@ export async function openTunnel(
   if (!nuclideUri.isRemote(serviceUri) || behavior === 'do_not_open_tunnel') {
     return null;
   }
-  const tunnelService: ?SshTunnelService = await consumeFirstProvider(
-    'nuclide.ssh-tunnel',
-  );
-  if (tunnelService == null) {
-    throw new Error(
-      'No package to open a tunnel to the remote host available.',
-    );
-  }
-  const desired = {
-    description: 'Metro',
-    from: {
-      host: 'localhost',
-      port: 8081,
-    },
-    to: {host: nuclideUri.getHostname(serviceUri), port: 8081},
-  };
+  const tunnelService = await _getTunnelService();
+  const desired = _desiredTunnelTo(serviceUri);
   for (const tunnel of tunnelService.getOpenTunnels()) {
     const {from, to} = tunnel;
     if (from.port === desired.from.port && from.host === desired.from.host) {
@@ -108,4 +94,27 @@ function _requestTunnelFromService(
       () => {},
     );
   });
+}
+
+async function _getTunnelService(): Promise<SshTunnelService> {
+  const tunnelService: ?SshTunnelService = await consumeFirstProvider(
+    'nuclide.ssh-tunnel',
+  );
+  if (tunnelService == null) {
+    throw new Error(
+      'No package to open a tunnel to the remote host available.',
+    );
+  }
+  return tunnelService;
+}
+
+function _desiredTunnelTo(uri: NuclideUri): Tunnel {
+  return {
+    description: 'Metro',
+    from: {
+      host: 'localhost',
+      port: 8081,
+    },
+    to: {host: nuclideUri.getHostname(uri), port: 8081},
+  };
 }
