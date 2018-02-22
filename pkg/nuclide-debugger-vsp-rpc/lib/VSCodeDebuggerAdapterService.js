@@ -62,7 +62,7 @@ export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
 
   async sendCommand(message: string): Promise<void> {
     if (this._translator == null) {
-      this.getLogger().info(`No active session / translator: ${message}`);
+      this.getLogger().error(`No active session / translator: ${message}`);
     } else {
       this._translator.processCommand(JSON.parse(message));
     }
