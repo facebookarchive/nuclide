@@ -4,10 +4,15 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 from __future__ import print_function
 
 import getpass
-import json
 import logging
 import os
 import re
@@ -52,7 +57,9 @@ class NuclideServer(object):
     # Port is an optional filter.
     # By default, it only gets you your Nuclide server processes.
     @staticmethod
-    def get_processes(user=getpass.getuser(), port=None):
+    def get_processes(user=None, port=None):
+        if user is None:
+            user = getpass.getuser()
         matches = []
         procs = ProcessInfo.get_processes(user, re.escape(NuclideServer.script_name + " --port"))
         for proc in procs:
@@ -257,8 +264,8 @@ class NuclideServer(object):
                     return 0
                 time.sleep(0.1)
 
-            timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (
-                self.port, timeout)
+            timeoutMsg = 'Attempted to start Nuclide server on port %d, \
+                          but timed out after %d seconds.' % (self.port, timeout)
             self.logger.error(timeoutMsg)
         return 1
 

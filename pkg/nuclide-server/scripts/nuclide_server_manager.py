@@ -6,6 +6,9 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 from __future__ import print_function
 
 import getpass
@@ -25,7 +28,6 @@ from nuclide_server import LOG_FILE
 from nuclide_server import NuclideServer
 from nuclide_server_logger import configure_nuclide_logger, get_buffered_logs
 from nuclide_certificates_generator import NuclideCertificatesGenerator
-from process_info import ProcessInfo
 from utils import darwin_path_helper
 
 
@@ -95,14 +97,14 @@ class NuclideServerManager(object):
         try:
             with open(NuclideServerManager.package_file) as f:
                 package_json = json.load(f)
-        except IOError as e:
+        except IOError:
             NuclideServerManager.logger.error('No package.json. Skip version verification.')
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError):
             NuclideServerManager.logger.error('Corrupted package.json. Skip version verification.')
         try:
             match = SEMVERISH_RE.match(package_json['version'])
             version = match.group(2)
-        except:
+        except Exception:
             NuclideServerManager.logger.error('Bad version. Skip version verification.')
         return version
 
@@ -132,7 +134,11 @@ class NuclideServerManager(object):
 
     # If port_filter is given, only list servers in that list.
     @staticmethod
-    def list_servers(user=getpass.getuser(), port_filter=[]):
+    def list_servers(user=None, port_filter=None):
+        if user is None:
+            user = getpass.getuser()
+        if port_filter is None:
+            port_filter = []
         servers = []
         for proc in NuclideServer.get_processes(user):
             port = int(proc.get_command_param('port'))
@@ -233,8 +239,10 @@ class NuclideServerManager(object):
 
         version = NuclideServerManager._get_version()
         running_version = server.get_version()
-        self.logger.info('A Nuclide server is already running. \
-                          Running version: {0}. Desired version: {1}.'.format(running_version, version))
+        self.logger.info(
+            'A Nuclide server is already running. \
+            Running version: {0}. Desired version: {1}.'.format(running_version, version)
+        )
         # If the common names don't match, we restart.
         if (version and version != running_version) or (
                 self.options.common_name and server.get_common_name() != self.options.common_name):
@@ -272,7 +280,8 @@ class NuclideServerManager(object):
             certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
                                                            expiration_days=CERTS_EXPIRATION_DAYS)
             self.logger.info(
-                'Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name))
+                'Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name)
+            )
             self._check_if_certs_files_exist(certs_generator)
             return server.start(
                 self.options.timeout,
