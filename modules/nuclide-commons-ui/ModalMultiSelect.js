@@ -19,6 +19,7 @@ import {Modal} from './Modal';
 import {MultiSelectList} from './MultiSelectList';
 import classnames from 'classnames';
 import * as React from 'react';
+import ReactDOM from 'react-dom';
 
 type Option = {
   // $FlowFixMe(>=0.53.0) Flow suppress
@@ -47,6 +48,8 @@ type State = {
  * similar to `Dropdown` as possible, with extra props for customizing display options.
  */
 export class ModalMultiSelect extends React.Component<Props, State> {
+  _modal: ?Modal;
+
   static defaultProps = {
     className: '',
     disabled: false,
@@ -78,7 +81,15 @@ export class ModalMultiSelect extends React.Component<Props, State> {
         className={className}
         disabled={this.props.disabled}
         size={this.props.size}
-        onClick={this._showModal}>
+        onClick={event => {
+          // Because of how Portals work in React, this handler will actually be triggered for all
+          // clicks within the modal! We need to filter those out to separate button clicks.
+          // (see https://reactjs.org/docs/portals.html#event-bubbling-through-portals)
+          const modalElement = this._modal && ReactDOM.findDOMNode(this._modal);
+          if (modalElement == null || !modalElement.contains(event.target)) {
+            this._showModal();
+          }
+        }}>
         <LabelComponent selectedOptions={selectedOptions} />
         {this._renderModal()}
       </Button>
@@ -122,7 +133,11 @@ export class ModalMultiSelect extends React.Component<Props, State> {
     }
 
     return (
-      <Modal onDismiss={this._dismissModal}>
+      <Modal
+        ref={c => {
+          this._modal = c;
+        }}
+        onDismiss={this._dismissModal}>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <MultiSelectList
           commandScope={atom.views.getView(atom.workspace)}
