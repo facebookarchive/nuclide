@@ -23,7 +23,6 @@ import classnames from 'classnames';
 import invariant from 'assert';
 import idx from 'idx';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import humanizePath from 'nuclide-commons-atom/humanizePath';
 import {insideOut, arrayEqual} from 'nuclide-commons/collection';
 import * as React from 'react';
@@ -101,7 +100,6 @@ export default class DiagnosticsTable extends React.PureComponent<
 > {
   _previousSelectedIndex: number = -1;
   _table: ?Table<DisplayDiagnostic>;
-  _disposables: ?UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -119,11 +117,6 @@ export default class DiagnosticsTable extends React.PureComponent<
       sortDescending: true,
       sortedColumn: 'classification',
     };
-  }
-
-  componentWillUnmount(): void {
-    invariant(this._disposables != null);
-    this._disposables.dispose();
   }
 
   _handleSort = (sortedColumn: ColumnName, sortDescending: boolean): void => {
