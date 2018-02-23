@@ -127,17 +127,21 @@ export default class BigDigServer {
         qaTransport.onMessage().subscribe(message => {
           this._handleBigDigMessage(tagToTransport, message);
         });
+
+        ws.once('close', () => {
+          for (const transport of tagToTransport.values()) {
+            transport.close();
+          }
+          // This may be garbage-collected automatically, but clearing it won't hurt...
+          tagToTransport.clear();
+        });
       } else {
         invariant(clientId === cachedTransport.id);
         cachedTransport.reconnect(wsTransport);
       }
     });
 
-    // TODO(mbolin): When ws disconnects, do we explicitly have to clear out
-    // tagToTransport? It seems like it should get garbage-collected
-    // automatically, assuming this._webSocketServer no longer has a reference
-    // to ws. But we should probably call InternalTransport.close() on all of
-    // the entries in tagToTransport?
+    // TODO: need to handle ws errors.
   }
 
   _handleBigDigMessage(
