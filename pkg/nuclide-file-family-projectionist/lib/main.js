@@ -10,11 +10,13 @@
  */
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {FileFamilyProvider} from '../../nuclide-file-family/lib/types';
 
 import nullthrows from 'nullthrows';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
+import ProjectionistFileFamilyProvider from './ProjectionistFileFamilyProvider';
 
 class Activation {
   _cwdApis: BehaviorSubject<?CwdApi> = new BehaviorSubject(null);
@@ -30,6 +32,10 @@ class Activation {
 
   consumeCwdApi(cwdApi: CwdApi): void {
     this._cwdApis.next(cwdApi);
+  }
+
+  provideFileFamilyService(): FileFamilyProvider {
+    return new ProjectionistFileFamilyProvider(this._cwdApis.asObservable());
   }
 }
 
