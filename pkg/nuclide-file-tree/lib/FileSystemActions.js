@@ -237,16 +237,11 @@ class FileSystemActions {
   }
 
   async _onConfirmPaste(
-    newDirPath: string,
+    newPath: string,
     addToVCS: boolean,
     onDidConfirm: (filePath: Array<string>) => mixed = () => {},
   ): Promise<void> {
-    const newDir = FileTreeHelpers.getDirectoryByKey(newDirPath);
-    if (newDir == null) {
-      // bad target
-      return;
-    }
-
+    const copyPaths = [];
     const cb = atom.clipboard.readWithMetadata();
     const oldDir = this.getDirectoryFromMetadata(cb.metadata);
     if (oldDir == null) {
@@ -254,13 +249,43 @@ class FileSystemActions {
       return;
     }
 
-    const copyPaths = [];
-    cb.text.split(',').forEach(encodedFilename => {
-      const filename = decodeURIComponent(encodedFilename);
-      const oldPath = oldDir.getFile(filename).getPath();
-      const newPath = newDir.getFile(filename).getPath();
-      copyPaths.push({old: oldPath, new: newPath});
-    });
+    const filenames = cb.text.split(',');
+    const newFile = FileTreeHelpers.getFileByKey(newPath);
+    const newDir = FileTreeHelpers.getDirectoryByKey(newPath);
+
+    if (newFile == null && newDir == null) {
+      // newPath doesn't resolve to a file or path
+      atom.notifications.addError('Invalid target');
+      return;
+    } else if (filenames.length === 1) {
+      const origFilePath = oldDir.getFile(cb.text).getPath();
+      if (newFile != null) {
+        // single file on clibboard; Path resolves to a file.
+        // => copy old file into new file
+        const destFilePath = newFile.getPath();
+        copyPaths.push({old: origFilePath, new: destFilePath});
+      } else if (newDir != null) {
+        // single file on clibboard; Path resolves to a folder.
+        // => copy old file into new newDir folder
+        const destFilePath = newDir.getFile(cb.text).getPath();
+        copyPaths.push({old: origFilePath, new: destFilePath});
+      }
+    } else {
+      // multiple files in cb
+      if (newDir == null) {
+        atom.notifications.addError(
+          'Cannot rename when pasting multiple files',
+        );
+        return;
+      }
+
+      filenames.forEach(encodedFilename => {
+        const filename = decodeURIComponent(encodedFilename);
+        const origFilePath = oldDir.getFile(filename).getPath();
+        const destFilePath = newDir.getFile(filename).getPath();
+        copyPaths.push({old: origFilePath, new: destFilePath});
+      });
+    }
 
     await this._doCopy(copyPaths, addToVCS, onDidConfirm);
   }
@@ -403,6 +428,28 @@ class FileSystemActions {
     openDialog(dialogProps);
   }
 
+  // provide appropriate UI feedback depending on whether user
+  // has single or multiple files in the clipboard
+  _getPasteDialogProps(
+    path: Directory,
+  ): {initialValue: string, message: React.Element<string>} {
+    const cb = atom.clipboard.readWithMetadata();
+    const filenames = cb.text.split(',');
+    if (filenames.length === 1) {
+      return {
+        initialValue: path.getFile(cb.text).getPath(),
+        message: <span>Paste file from clipboard into</span>,
+      };
+    } else {
+      return {
+        initialValue: FileTreeHelpers.dirPathToKey(path.getPath()),
+        message: (
+          <span>Paste files from clipboard into the following folder</span>
+        ),
+      };
+    }
+  }
+
   openPasteDialog(): void {
     const store = FileTreeStore.getInstance();
     const node = store.getSingleSelectedNode();
@@ -410,15 +457,16 @@ class FileSystemActions {
       // don't paste if unselected
       return;
     }
-    let newDir = FileTreeHelpers.getDirectoryByKey(node.uri);
-    if (newDir == null) {
+
+    let newPath = FileTreeHelpers.getDirectoryByKey(node.uri);
+    if (newPath == null) {
       // maybe it's a file?
       const file = FileTreeHelpers.getFileByKey(node.uri);
       if (file == null) {
         // nope! do nothing if we can't find an entry
         return;
       }
-      newDir = file.getParent();
+      newPath = file.getParent();
     }
 
     const additionalOptions = {};
@@ -428,8 +476,7 @@ class FileSystemActions {
     }
     openDialog({
       iconClassName: 'icon-arrow-right',
-      initialValue: FileTreeHelpers.dirPathToKey(newDir.getPath()),
-      message: <span>Paste file(s) from clipboard into</span>,
+      ...this._getPasteDialogProps(newPath),
       onConfirm: (pasteDirPath: string, options: {addToVCS?: boolean}) => {
         this._onConfirmPaste(
           pasteDirPath.trim(),
