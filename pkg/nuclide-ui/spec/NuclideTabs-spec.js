@@ -16,6 +16,7 @@ import TestUtils from 'react-dom/test-utils';
 
 const {
   Simulate,
+  // $FlowFixMe(>=0.66.0) Flow suppress
   SimulateNative,
   renderIntoDocument,
   scryRenderedDOMComponentsWithClass,

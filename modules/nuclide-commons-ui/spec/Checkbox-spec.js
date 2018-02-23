@@ -63,6 +63,7 @@ describe('Checkbox', () => {
     const inputEl = nullthrows(
       TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input'),
     );
+    // $FlowFixMe(>=0.66.0) Flow suppress
     expect(inputEl.indeterminate).toBe(true);
   });
 });

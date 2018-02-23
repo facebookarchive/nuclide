@@ -27,7 +27,7 @@ function renderEntryComponentIntoDocument(
   componentKlass: Object,
   props: Object = {},
   conf: Object = {},
-): HTMLElement {
+): React.Component<any, any> {
   const selectionManager = new FileTreeSelectionManager(() => {});
   const nodeProps = {
     isExpanded: false,

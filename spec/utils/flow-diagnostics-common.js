@@ -24,6 +24,7 @@ import {
   getPanelDiagnosticElements,
 } from './diagnostics-common';
 import {setup} from './flow-common';
+import dedent from 'dedent';
 
 export function runTest(context: TestContext) {
   it('tests for flow ', () => {
@@ -49,12 +50,18 @@ export function runTest(context: TestContext) {
 
     runs(() => {
       // This may need to be updated if Flow changes error text
-      const expectedGutterText = 'property `baz`\nProperty not found in\nFoo';
+      const expectedGutterText = dedent(`
+        Flow
+        Cannot call \`new Foo().baz\` because property \`baz\` is missing in \`Foo\` [1].
+        [1]
+        : main.js:4
+      `);
       expectGutterDiagnosticToContain(expectedGutterText);
     });
 
     // The text is rendered slightly differently in the gutter and the panel
-    const expectedPanelText = 'property `baz` Property not found in Foo';
+    const expectedPanelText =
+      'Cannot call `new Foo().baz` because property `baz` is missing in `Foo` [1].';
     let diagnosticDescriptionElements;
     let diagnosticRowElement;
 

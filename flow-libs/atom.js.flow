@@ -970,6 +970,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Clipboard Operations
   pasteText: (options?: Object) => void,
+  copySelectedText: () => void,
 
   // Managing Syntax Scopes
   scopeDescriptorForBufferPosition(

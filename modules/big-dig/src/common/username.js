@@ -17,6 +17,6 @@ export function getUsername(): string {
   const {env} = process;
   // flowlint-next-line sketchy-null-string:off
   const username = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
-  invariant(username);
+  invariant(username != null);
   return username;
 }

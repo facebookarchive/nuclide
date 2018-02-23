@@ -361,8 +361,8 @@ export class PopoutView extends React.Component<Props, State> {
   _addContainer(): void {
     const host = document.createElement('div');
     host.id = 'nuclide-popout-container-root';
-    /* $FlowFixMe */
     host.style =
+      /* $FlowFixMe */
       'padding: 0px; width: 100%; height: 100%; margin: 0px; border: 0px;';
     if (document.body != null) {
       document.body.appendChild(host);

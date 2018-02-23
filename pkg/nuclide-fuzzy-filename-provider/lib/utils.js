@@ -16,9 +16,9 @@ type ParsedFileNameQuery = {|
 |};
 
 export function getIgnoredNames(): Array<string> {
-  // $FlowIssue: Filter predicates
   const ignoredNames = atom.config.get('core.ignoredNames');
   if (Array.isArray(ignoredNames)) {
+    // $FlowIssue: Filter predicates
     return ignoredNames.filter(x => typeof x === 'string');
   } else {
     return [];
