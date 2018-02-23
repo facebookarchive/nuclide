@@ -51,7 +51,9 @@ export type Nuclicon =
   | 'nuclicon-snapshot'
   | 'nuclicon-success'
   | 'nuclicon-time-start'
-  | 'nuclicon-time-end';
+  | 'nuclicon-time-end'
+  | 'nuclicon-metro-disabled'
+  | 'nuclicon-metro-waiting';
 
 export type IconName = Nuclicon | atom$Octicon;
 

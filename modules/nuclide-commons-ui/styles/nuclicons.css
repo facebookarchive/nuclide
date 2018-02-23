@@ -139,3 +139,9 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-time-end::before {
   content: "\f125";
 }
+.icon-nuclicon-metro-disabled::before {
+  content: "\f126";
+}
+.icon-nuclicon-metro-waiting::before {
+  content: "\f127";
+}
