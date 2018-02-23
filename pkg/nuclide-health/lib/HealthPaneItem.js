@@ -80,7 +80,6 @@ export default class HealthPaneItem extends React.Component<
         // Need native-key-bindings and tabIndex={-1} to be able to copy paste
         className="pane-item padded nuclide-health-pane-item native-key-bindings"
         tabIndex={-1}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <HealthPaneItemComponent
           cpuPercentage={stats.cpuPercentage}
           heapPercentage={stats.heapPercentage}

@@ -19,7 +19,6 @@ const NOOP = () => {};
 
 const ListviewExample1 = (): React.Element<any> => (
   <Block>
-    {/* $FlowFixMe(>=0.53.0) Flow suppress */}
     <ListView alternateBackground={true}>
       {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <ListViewItem value={{id: 1}}>test1</ListViewItem>
@@ -36,7 +35,6 @@ const ListviewExample1 = (): React.Element<any> => (
 );
 const ListviewExample2 = (): React.Element<any> => (
   <Block>
-    {/* $FlowFixMe(>=0.53.0) Flow suppress */}
     <ListView alternateBackground={true}>
       {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <ListViewItem>

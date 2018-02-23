@@ -87,11 +87,9 @@ export default ((func, keySelector_?, compareKeys_?) => {
   let prevResult;
   const keySelector = keySelector_ || DEFAULT_KEY_SELECTOR;
   const compareKeys = compareKeys_ || arrayEqual;
-  // $FlowIssue: Flow can't express that we want the args to be the same type as the input func's.
   return function(...args) {
     const key = (keySelector: Function)(...args);
     invariant(key != null, 'Key cannot be null');
-    // $FlowIssue: We can't tell Flow the relationship between keySelector and compareKeys
     if (prevKey == null || !compareKeys(key, prevKey)) {
       prevKey = key;
       prevResult = (func: Function).apply(this, args);

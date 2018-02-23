@@ -191,7 +191,6 @@ class Activation {
     atom.contextMenu.showForEvent = function(event) {
       const sub = nextAnimationFrame
         .repeat(3)
-        // $FlowFixMe: Add last() to type def
         .last()
         .subscribe(() => {
           showForEvent.call(atom.contextMenu, event);

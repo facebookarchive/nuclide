@@ -20,10 +20,8 @@ function writeTsv(
 ): void {
   const file = fs.openSync(location, 'a');
   if (record) {
-    // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, columns.map(column => record[column]).join('\t') + '\n');
   } else {
-    // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, columns.join('\t') + '\n');
   }
   fs.closeSync(file);

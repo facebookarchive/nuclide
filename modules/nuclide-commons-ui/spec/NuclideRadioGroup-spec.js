@@ -27,7 +27,6 @@ const {
 describe('RadioGroup', () => {
   it('honors the selectedIndex param', () => {
     const component = renderIntoDocument(
-      // $FlowFixMe(>=0.53.0) Flow suppress
       <RadioGroup optionLabels={['foo', 'bar']} selectedIndex={1} />,
     );
     expect(component.props.selectedIndex).toBe(1);
@@ -42,7 +41,6 @@ describe('RadioGroup', () => {
 
   it('should use the correct, unique radio group name', () => {
     const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
-    // $FlowFixMe(>=0.53.0) Flow suppress
     const component = renderIntoDocument(<RadioGroup {...props} />);
     const radioInputs = scryRenderedDOMComponentsWithTag(component, 'input');
     // Global uid is `1` as this point, since this is the second RadioGroup component to be created.
@@ -74,7 +72,6 @@ describe('RadioGroup', () => {
       selectedIndex: 0,
       onSelectedChange,
     };
-    // $FlowFixMe(>=0.53.0) Flow suppress
     const component = renderIntoDocument(<RadioGroup {...props} />);
     const radioInputs = scryRenderedDOMComponentsWithTag(component, 'input');
     const secondRadioElement = radioInputs[1];

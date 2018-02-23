@@ -84,7 +84,6 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
       return;
     }
 
-    // $FlowIssue https://github.com/facebook/flow/issues/582
     directory.getEntries((error, entries_) => {
       let entries = entries_;
       // Resolve to an empty array if the directory deson't exist.
