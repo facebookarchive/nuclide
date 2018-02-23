@@ -20,6 +20,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import shallowEqual from 'shallowequal';
+import * as analytics from '../../nuclide-analytics';
 
 type Props = {
   enableBack: boolean,
@@ -36,8 +37,14 @@ export function consumeStatusBar(
   statusBar: atom$StatusBar,
   navigationStack: NavigationStackService,
 ): IDisposable {
-  const onBack = navigationStack.navigateBackwards;
-  const onForward = navigationStack.navigateForwards;
+  const onBack = () => {
+    analytics.track('status-bar-nav-stack-clicked-back');
+    navigationStack.navigateBackwards;
+  };
+  const onForward = () => {
+    analytics.track('status-bar-nav-stack-clicked-forward');
+    navigationStack.navigateForwards;
+  };
   const props: Observable<Props> = observableFromSubscribeFunction(
     navigationStack.subscribe,
   )
