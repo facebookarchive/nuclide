@@ -833,6 +833,17 @@ describe('nuclide-commons/observable', () => {
         expect(spy.callCount).toBe(1);
       });
     });
+
+    it('polls synchronously completing observables', () => {
+      waitsForPromise(async () => {
+        const result = await Observable.of('hi')
+          .let(poll(10))
+          .take(2)
+          .toArray()
+          .toPromise();
+        expect(result).toEqual(['hi', 'hi']);
+      });
+    });
   });
 });
 
