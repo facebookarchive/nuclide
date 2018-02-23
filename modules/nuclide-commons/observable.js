@@ -26,7 +26,7 @@
 
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
-import {Observable, ReplaySubject} from 'rxjs';
+import {Observable, ReplaySubject, Subject} from 'rxjs';
 import {setDifference} from './collection';
 import debounce from './debounce';
 
@@ -540,17 +540,10 @@ export class SingletonExecutor<T> {
 export function poll<T>(delay: number): (Observable<T>) => Observable<T> {
   return (source: Observable<T>) =>
     Observable.defer(() => {
-      // Every time the source observable completes, we schedule another subscription to it by
-      // calling `delays.next()`. There's a subtle issue here; if the source observable completes
-      // synchronously, we'll end up calling `delays.next()` before we've subscribed to `delays`. To
-      // make sure we don't miss that first notification, we just use a `ReplaySubject`. We only
-      // ever subscribe to `delays` once so having access to the last value isn't generally useful,
-      // but it's the easiest way to make sure we don't miss that first notification because of
-      // subscription order.
-      const delays = new ReplaySubject(1);
+      const delays = new Subject();
       return delays
         .switchMap(n => Observable.timer(n))
-        .startWith(null)
+        .merge(Observable.of(null))
         .switchMap(() => {
           const subscribedAt = Date.now();
           return source.do({
