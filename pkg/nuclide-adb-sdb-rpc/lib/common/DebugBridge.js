@@ -91,4 +91,11 @@ export class DebugBridge {
         );
     });
   }
+
+  static killServer(): Promise<void> {
+    return this.configObs
+      .switchMap(config => runCommand(config.path, ['kill-server']))
+      .mapTo(undefined)
+      .toPromise();
+  }
 }

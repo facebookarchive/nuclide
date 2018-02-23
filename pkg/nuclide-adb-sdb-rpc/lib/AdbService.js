@@ -199,6 +199,10 @@ export function getAdbPorts(): Promise<Array<number>> {
   return Promise.resolve(getStore('adb').getPorts());
 }
 
+export async function killServer(): Promise<void> {
+  return Adb.killServer();
+}
+
 async function getAaptBinary(buildToolsVersion: ?string): Promise<string> {
   if (process.env.ANDROID_SDK == null || buildToolsVersion == null) {
     return 'aapt';
