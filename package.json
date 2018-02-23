@@ -29,7 +29,7 @@
   },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
-    "flow": "flow check --show-all-errors",
+    "flow": "flow check --show-all-errors --max-warnings 0",
     "lint": "eslint",
     "lint-all": "eslint .",
     "fix-all": "eslint --fix .",
