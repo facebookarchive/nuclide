@@ -97,12 +97,16 @@ export type {
 } from './pkg/hyperclick/lib/types';
 
 export type {
-  ConsoleApi,
   ConsoleService,
+  ConsoleApi,
   Level as ConsoleLevel,
   Message as ConsoleMessage,
+  SourceInfo as ConsoleSourceInfo,
   OutputProviderStatus,
+} from './pkg/atom-ide-console/lib/types';
+
+// Deprecated console types. Exported only for legacy users.
+export type {
   OutputService,
   RegisterExecutorFunction,
-  SourceInfo as ConsoleSourceInfo,
 } from './pkg/atom-ide-console/lib/types';

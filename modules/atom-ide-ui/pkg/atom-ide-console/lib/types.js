@@ -11,12 +11,57 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {Level as TaskLevelType} from 'nuclide-commons/process';
 import type {List} from 'immutable';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {ExpansionResult} from 'nuclide-commons-ui/LazyNestedValueComponent';
 
-export type Level = TaskLevelType | Color;
+// The type of the object passed to your package's `consumeConsole()` function.
+export type ConsoleService = (options: SourceInfo) => ConsoleApi;
+
+// The console API. An object of this type is returned when you invoke the function provided by the
+// console service.
+export type ConsoleApi = {
+  // The primary means of interacting with the console.
+  // TODO: Update these to be `(object: any, ...objects: Array<any>): void` to allow for logging objects.
+  log(object: string, _: void): void,
+  error(object: string, _: void): void,
+  warn(object: string, _: void): void,
+  info(object: string, _: void): void,
+
+  // A generic API for sending a message of any level (log, error, etc.).
+  append(message: Message): void,
+
+  // Dispose of the console. Invoke this when your package is disabled.
+  dispose(): void,
+
+  // Set the status of the source. See "Stoppable Sources" below.
+  setStatus(status: OutputProviderStatus): void,
+};
+
+// A type representing the possible values for the `console.setStatus()` API.
+export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
+
+// The shape of the argument to the `ConsoleService` function.
+export type SourceInfo = {
+  id: string, // A unique identifier representing this source.
+  name: string, // A human-readable name for the source. This will be used in the UI.
+
+  // `start()` and `stop()` functions can optionally be provided. See [User-Controllable Console
+  // Sources](https://github.com/facebook-atom/atom-ide-ui/blob/master/docs/console.md#user-controllable-console-sources)
+  // for more information.
+  start?: () => void,
+  stop?: () => void,
+};
+
+// Message levels. For use with the `console.append()` API.
+export type Level =
+  | 'info'
+  | 'log'
+  | 'warning'
+  | 'error'
+  | 'debug'
+  | 'success'
+  | Color;
 type Color =
   | 'red'
   | 'orange'
@@ -27,17 +72,54 @@ type Color =
   | 'violet'
   | 'rainbow';
 
-type MessageKind = 'message' | 'request' | 'response';
-
-// A regular message, emitted by output providers.
+// A message object, for use with the `console.append()` API.
 export type Message = {
   text: string,
   level: Level,
+
+  // Internally used properties. These are subject to change so don't use em!
   data?: EvaluationResult,
   tags?: ?Array<string>,
   kind?: ?MessageKind,
   scopeName?: ?string,
 };
+
+//
+//
+// The following types are part of deprecated APIs and shouldn't be used outside of this package.
+//
+//
+
+type BasicOutputProvider = {
+  messages: Observable<Message>,
+  // The source can't be part of the message because we want to be able to populate a filter menu
+  // before we even have any messages.
+  id: string,
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
+};
+
+type ControllableOutputProviderProps = {
+  observeStatus(callback: (status: OutputProviderStatus) => mixed): IDisposable,
+  start(): void,
+  stop(): void,
+};
+
+type ControllableOutputProvider = BasicOutputProvider &
+  ControllableOutputProviderProps;
+
+export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
+
+export type OutputService = {
+  registerOutputProvider(outputProvider: OutputProvider): IDisposable,
+};
+
+//
+//
+// The following types aren't part of public API but rather are used within the package.
+//
+//
+
+type MessageKind = 'message' | 'request' | 'response';
 
 // A normalized type used internally to represent all possible kinds of messages. Responses and
 // Messages are transformed into these.
@@ -88,26 +170,13 @@ export type RecordHeightChangeHandler = (
   callback: () => void,
 ) => void;
 
-export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
-
-type BasicOutputProvider = {
-  messages: Observable<Message>,
-  // The source can't be part of the message because we want to be able to populate a filter menu
-  // before we even have any messages.
+export type Source = {
   id: string,
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
+  name: string,
+  status: OutputProviderStatus,
+  start?: () => void,
+  stop?: () => void,
 };
-
-type ControllableOutputProviderProps = {
-  observeStatus(callback: (status: OutputProviderStatus) => mixed): IDisposable,
-  start(): void,
-  stop(): void,
-};
-
-type ControllableOutputProvider = BasicOutputProvider &
-  ControllableOutputProviderProps;
-
-export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
 
 type BasicRecordProvider = {
   records: Observable<Record>,
@@ -120,37 +189,9 @@ type ControllableRecordProvider = BasicRecordProvider &
 
 export type RecordProvider = BasicRecordProvider | ControllableRecordProvider;
 
-export type Source = {
-  id: string,
-  name: string,
-  status: OutputProviderStatus,
-  start?: () => void,
-  stop?: () => void,
-};
-
-export type OutputService = {
-  registerOutputProvider(outputProvider: OutputProvider): IDisposable,
-};
-
-export type SourceInfo = {
-  id: string,
-  name: string,
-  start?: () => void,
-  stop?: () => void,
-};
-export type ConsoleService = (options: SourceInfo) => ConsoleApi;
-export type ConsoleApi = {
-  setStatus(status: OutputProviderStatus): void,
-  append(message: Message): void,
-  dispose(): void,
-
-  // TODO: Update these to be (object: any, ...objects: Array<any>): void.
-  log(object: string, _: void): void,
-  error(object: string, _: void): void,
-  warn(object: string, _: void): void,
-  info(object: string, _: void): void,
-};
-
+// Serialized state specific to each instance of the console view. For example, each instance has
+// its own, distinct filter, so that's here. They don't, however, have distinct records, so they
+// aren't.
 export type ConsolePersistedState = {
   deserializer: 'nuclide.Console',
   filterText?: string,
