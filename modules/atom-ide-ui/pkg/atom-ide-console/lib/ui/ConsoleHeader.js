@@ -120,7 +120,19 @@ export default class ConsoleHeader extends React.Component<Props> {
         value: source.name,
       }));
 
-    const MultiSelectOption = this._renderOption;
+    const sourceButton =
+      options.length === 0 ? null : (
+        <ModalMultiSelect
+          labelComponent={MultiSelectLabel}
+          optionComponent={this._renderOption}
+          size={ButtonSizes.SMALL}
+          options={options}
+          value={this.props.selectedSourceIds}
+          onChange={this.props.onSelectedSourcesChange}
+          className="inline-block"
+        />
+      );
+
     const pasteButton =
       this.props.createPaste == null ? null : (
         <Button
@@ -137,15 +149,7 @@ export default class ConsoleHeader extends React.Component<Props> {
     return (
       <Toolbar location="top">
         <ToolbarLeft>
-          <ModalMultiSelect
-            labelComponent={MultiSelectLabel}
-            optionComponent={MultiSelectOption}
-            size={ButtonSizes.SMALL}
-            options={options}
-            value={this.props.selectedSourceIds}
-            onChange={this.props.onSelectedSourcesChange}
-            className="inline-block"
-          />
+          {sourceButton}
           <RegExpFilter
             value={{
               text: this.props.filterText,
