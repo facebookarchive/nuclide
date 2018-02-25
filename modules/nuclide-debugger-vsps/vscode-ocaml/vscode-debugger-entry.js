@@ -24,6 +24,7 @@
 // eslint-disable-next-line rulesdir/modules-dependencies
 const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
 if (__DEV__) {
+  // eslint-disable-next-line rulesdir/modules-dependencies
   require('nuclide-node-transpiler');
 }
 require('./OCamlDebugger');
