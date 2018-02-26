@@ -34,6 +34,7 @@ type State = {
   program: string,
   args: string,
   workingDirectory: string,
+  environmentVariables: string,
 };
 
 export default class NativeLaunchUiComponent extends React.Component<
@@ -45,6 +46,7 @@ export default class NativeLaunchUiComponent extends React.Component<
   _program: ?AtomInput;
   _args: ?AtomInput;
   _workingDirectory: ?AtomInput;
+  _environmentVariables: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -53,6 +55,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       program: '',
       args: '',
       workingDirectory: '',
+      environmentVariables: '',
     };
   }
 
@@ -79,10 +82,12 @@ export default class NativeLaunchUiComponent extends React.Component<
         const workingDirectory =
           savedSettings.workingDirectory ||
           (program.length > 0 ? nuclideUri.dirname(program) : '');
+        const environmentVariables = savedSettings.environmentVariables || '';
         this.setState({
           program,
           args: savedSettings.args || '',
           workingDirectory,
+          environmentVariables,
         });
       },
     );
@@ -135,13 +140,23 @@ export default class NativeLaunchUiComponent extends React.Component<
           value={this.state.args}
           onDidChange={value => this.setState({args: value})}
         />
-        <label>(Optional) Working directory: </label>
+        <label>Environment Variables: </label>
+        <AtomInput
+          ref={input => {
+            this._environmentVariables = input;
+          }}
+          tabIndex="3"
+          placeholderText="Environment variables (.e.g, SHELL=/bin/bash PATH=/bin) (optional)"
+          value={this.state.environmentVariables}
+          onDidChange={value => this.setState({environmentVariables: value})}
+        />
+        <label>Working directory: </label>
         <AtomInput
           ref={input => {
             this._workingDirectory = input;
           }}
           tabIndex="5"
-          placeholderText="Working directory for the launched program"
+          placeholderText="Working directory for the launched program (optional)"
           value={this.state.workingDirectory}
           onDidChange={value => this.setState({workingDirectory: value})}
         />
@@ -159,6 +174,26 @@ export default class NativeLaunchUiComponent extends React.Component<
       .getText()
       .trim();
 
+    const environmentVariables = shellParse(
+      nullthrows(this._environmentVariables).getText(),
+    );
+
+    // NB this is an object, not a map, because Map doesn't seem to be
+    // expressable in the VSP package.json type system
+    let environment = {};
+    environmentVariables.forEach(_ => {
+      const equal = _.indexOf('=');
+      if (equal === -1) {
+        throw new Error('Given environment is malformed.');
+      }
+      const key = _.substr(0, equal);
+      const value = _.substr(equal + 1);
+      environment = {
+        ...environment,
+        [key]: value,
+      };
+    });
+
     const {hostname} = nuclideUri.parse(this.props.targetUri);
     const programUri =
       hostname != null
@@ -169,6 +204,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       programUri,
       args,
       workingDirectory,
+      environment,
     );
 
     const debuggerService = await getDebuggerService();
@@ -178,6 +214,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       program: this.state.program,
       args: this.state.args,
       workingDirectory: this.state.workingDirectory,
+      environmentVariables: this.state.environmentVariables,
     });
   };
 }

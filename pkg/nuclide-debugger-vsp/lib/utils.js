@@ -255,6 +255,7 @@ export async function getGdbLaunchProcessInfo(
   program: NuclideUri,
   args: Array<string>,
   cwd: string,
+  environment: ?{[string]: string},
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getAdapterExecutableWithProperNode(
     'native',
@@ -266,7 +267,7 @@ export async function getGdbLaunchProcessInfo(
     VsAdapterTypes.NATIVE,
     adapterInfo,
     true, // showThreads
-    {program: nuclideUri.getPath(program), args, cwd},
+    {program: nuclideUri.getPath(program), args, cwd, environment},
   );
 }
 
