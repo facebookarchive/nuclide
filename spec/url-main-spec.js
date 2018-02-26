@@ -15,6 +15,7 @@ import invariant from 'assert';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 import temp from 'temp';
+// $FlowIgnore
 import {__test__} from '../lib/url-main';
 import * as pkgJson from '../package.json';
 
