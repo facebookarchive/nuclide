@@ -24,7 +24,6 @@ type RowData = {
 
 type Props = {
   avds: Expected<Avd[]>,
-  headerElement: React.Node,
   startAvd: (avd: Avd) => void,
 };
 
@@ -61,7 +60,7 @@ export default class AvdTable extends React.Component<Props> {
   };
 
   render(): React.Node {
-    const {avds, headerElement} = this.props;
+    const {avds} = this.props;
 
     const rowData: RowData[] = avds.getOrDefault([]).map(avd => {
       return {avd};
@@ -79,7 +78,6 @@ export default class AvdTable extends React.Component<Props> {
         ]}
         emptyComponent={this._renderEmptyComponent}
         fixedHeader={true}
-        headerElement={headerElement}
         rows={rowData.map(data => {
           return {data};
         })}

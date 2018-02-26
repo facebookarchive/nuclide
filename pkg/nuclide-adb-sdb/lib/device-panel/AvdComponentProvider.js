@@ -16,10 +16,8 @@ import type {
   DeviceTypeComponentProvider,
 } from '../../../nuclide-device-panel/lib/types';
 
-import {View} from 'nuclide-commons-ui/View';
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as React from 'react';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Expect} from '../../../commons-node/expected';
 import invariant from 'assert';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -29,7 +27,6 @@ import os from 'os';
 import {Observable, Subject} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
 import AvdTable from './ui/AvdTable';
-import AvdTableHeader from './ui/AvdTableHeader';
 
 export type Avd = {
   name: string,
@@ -37,7 +34,11 @@ export type Avd = {
   pid?: number,
 };
 
+const AVD_DIRECTORY = `${os.homedir()}/.android/avd`;
 const AVD_LOCKFILE = 'hardware-qemu.ini.lock';
+// We create a temporary .watchmanconfig so Watchman recognizes the AVD
+// directory as a project root.
+const AVD_WATCHMAN_CONFIG = `${AVD_DIRECTORY}/.watchmanconfig`;
 
 export class AvdComponentProvider implements DeviceTypeComponentProvider {
   _refresh: Subject<void> = new Subject();
@@ -61,17 +62,11 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
       return new UniversalDisposable();
     }
 
-    const headerElement = (
-      <View
-        item={renderReactRoot(
-          <AvdTableHeader refreshAvds={this._refreshAvds} />,
-        )}
-      />
-    );
+    const disposables = this._watchAvdDirectory();
+
     const getProps = this._getAvds().map(avds => {
       return {
         avds,
-        headerElement,
         startAvd: this._startAvd,
       };
     });
@@ -80,7 +75,36 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
       order: 0,
       component: bindObservableAsProps(props, AvdTable),
     });
-    return new UniversalDisposable();
+
+    return disposables;
+  }
+
+  _watchAvdDirectory(): IDisposable {
+    const watchmanClient = new WatchmanClient();
+
+    // Create a .watchmanconfig so Watchman recognizes the AVD directory as a
+    // project root.
+    const createWatchmanConfig = fsPromise.writeFile(AVD_WATCHMAN_CONFIG, '{}');
+
+    createWatchmanConfig
+      .then(() =>
+        watchmanClient.watchDirectoryRecursive(AVD_DIRECTORY, AVD_DIRECTORY, {
+          expression: ['match', '*.avd'],
+        }),
+      )
+      .then(subscription => {
+        subscription.on('change', () => {
+          this._refreshAvds();
+        });
+      });
+
+    return {
+      dispose: () => {
+        createWatchmanConfig.then(() => {
+          fsPromise.unlink(AVD_WATCHMAN_CONFIG).catch(() => {});
+        });
+      },
+    };
   }
 
   _getEmulator(): Observable<?string> {
@@ -103,7 +127,7 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
   }
 
   async _populateAvdPID(avdName: string): Promise<Avd> {
-    const lockFile = `${os.homedir()}/.android/avd/${avdName}.avd/${AVD_LOCKFILE}`;
+    const lockFile = `${AVD_DIRECTORY}/${avdName}.avd/${AVD_LOCKFILE}`;
     if (await fsPromise.exists(lockFile)) {
       const pid = parseInt(await fsPromise.readFile(lockFile, 'utf8'), 10);
       return {
