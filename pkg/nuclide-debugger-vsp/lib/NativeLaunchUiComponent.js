@@ -35,6 +35,7 @@ type State = {
   args: string,
   workingDirectory: string,
   environmentVariables: string,
+  sourcePath: string,
 };
 
 export default class NativeLaunchUiComponent extends React.Component<
@@ -56,6 +57,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       args: '',
       workingDirectory: '',
       environmentVariables: '',
+      sourcePath: '',
     };
   }
 
@@ -83,11 +85,13 @@ export default class NativeLaunchUiComponent extends React.Component<
           savedSettings.workingDirectory ||
           (program.length > 0 ? nuclideUri.dirname(program) : '');
         const environmentVariables = savedSettings.environmentVariables || '';
+        const sourcePath = savedSettings.sourcePath || '';
         this.setState({
           program,
           args: savedSettings.args || '',
           workingDirectory,
           environmentVariables,
+          sourcePath,
         });
       },
     );
@@ -160,6 +164,12 @@ export default class NativeLaunchUiComponent extends React.Component<
           value={this.state.workingDirectory}
           onDidChange={value => this.setState({workingDirectory: value})}
         />
+        <label>Source path: </label>
+        <AtomInput
+          placeholderText="Optional base path for sources"
+          value={this.state.sourcePath}
+          onDidChange={value => this.setState({sourcePath: value})}
+        />
       </div>
     );
   }
@@ -205,6 +215,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       args,
       workingDirectory,
       environment,
+      this.state.sourcePath,
     );
 
     const debuggerService = await getDebuggerService();
@@ -215,6 +226,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       args: this.state.args,
       workingDirectory: this.state.workingDirectory,
       environmentVariables: this.state.environmentVariables,
+      sourcePath: this.state.sourcePath,
     });
   };
 }

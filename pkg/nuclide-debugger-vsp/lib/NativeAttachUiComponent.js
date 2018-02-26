@@ -49,6 +49,7 @@ type State = {
   sortDescending: boolean,
   sortedColumn: ?ColumnName,
   filterText: string,
+  sourcePath: string,
 };
 
 function getColumns(): Array<Column<*>> {
@@ -129,6 +130,7 @@ export default class NativeAttachUiComponent extends React.Component<
       sortDescending: false,
       sortedColumn: null,
       filterText: '',
+      sourcePath: '',
     };
   }
 
@@ -152,6 +154,7 @@ export default class NativeAttachUiComponent extends React.Component<
       sortDescending: false,
       sortedColumn: null,
       filterText: '',
+      sourcePath: '',
     };
 
     deserializeDebuggerConfig(
@@ -280,6 +283,12 @@ export default class NativeAttachUiComponent extends React.Component<
           onSelect={this._handleSelectTableRow}
           collapsable={true}
         />
+        <label>Source path: </label>
+        <AtomInput
+          placeholderText="Optional base path for sources"
+          value={this.state.sourcePath}
+          onDidChange={value => this.setState({sourcePath: value})}
+        />
       </div>
     );
   }
@@ -292,7 +301,11 @@ export default class NativeAttachUiComponent extends React.Component<
 
     track('fb-native-debugger-attach-from-dialog');
     const pid = selectedProcess.pid;
-    const attachInfo = await getGdbAttachProcessInfo(this.props.targetUri, pid);
+    const attachInfo = await getGdbAttachProcessInfo(
+      this.props.targetUri,
+      pid,
+      this.state.sourcePath,
+    );
 
     const debuggerService = await getDebuggerService();
     debuggerService.startDebugging(attachInfo);
@@ -304,6 +317,7 @@ export default class NativeAttachUiComponent extends React.Component<
         sortDescending: this.state.sortDescending,
         sortedColumn: this.state.sortedColumn,
         filterText: this.state.filterText,
+        sourcePath: this.state.sourcePath,
       },
     );
   };
