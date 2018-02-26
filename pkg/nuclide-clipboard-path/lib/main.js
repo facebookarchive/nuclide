@@ -86,6 +86,20 @@ function copyRepositoryRelativePath(): void {
   });
 }
 
+function copyHostname(): void {
+  trackOperation('copyRepositoryRelativePath', async () => {
+    const uri = getCurrentNuclideUri();
+    if (uri == null) {
+      return;
+    }
+    const {hostname} = nuclideUri.parse(uri);
+    if (hostname == null) {
+      return;
+    }
+    copyToClipboard('Copied hostname', hostname);
+  });
+}
+
 function getRepositoryRelativePath(path: NuclideUri): ?string {
   // TODO(peterhal): repositoryForPath is the same as projectRelativePath
   // only less robust. We'll need a version of findHgRepository which is
@@ -146,6 +160,13 @@ class Activation {
         'atom-workspace',
         'nuclide-clipboard-path:copy-absolute-path',
         copyAbsolutePath,
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-clipboard-path:copy-hostname-of-current-path',
+        copyHostname,
       ),
     );
     this._subscriptions.add(
