@@ -23,6 +23,10 @@
   "homepage": "https://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main-entry.js",
+  "uriHandler": {
+    "method": "handleURI",
+    "deferActivation": false
+  },
   "urlMain": "./lib/url-main-entry.js",
   "bin": {
     "nuclide-start-server": "./pkg/nuclide-server/nuclide-start-server"

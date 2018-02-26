@@ -14,6 +14,8 @@ import electron from 'electron';
 import nullthrows from 'nullthrows';
 import DeepLinkService from '../lib/DeepLinkService';
 
+const remote = nullthrows(electron.remote);
+
 describe('DeepLinkService', () => {
   it('allows subscriptions to messages', () => {
     const service = new DeepLinkService();
@@ -29,7 +31,7 @@ describe('DeepLinkService', () => {
     );
 
     runs(() => {
-      const browserWindow = nullthrows(electron.remote).getCurrentWindow();
+      const browserWindow = remote.getCurrentWindow();
       service.sendDeepLink(browserWindow, 'test1', {a: '1'});
       service.sendDeepLink(browserWindow, 'test2/', {b: '2'});
     });
@@ -45,5 +47,22 @@ describe('DeepLinkService', () => {
       disposables.dispose();
       expect(service._observers.size).toBe(0);
     });
+  });
+
+  it('opens target=_blank links in a new window', () => {
+    const service = new DeepLinkService();
+    const windows = remote.BrowserWindow.getAllWindows();
+
+    runs(() => {
+      const browserWindow = remote.getCurrentWindow();
+      service.sendDeepLink(browserWindow, 'test1', {a: '1', target: '_blank'});
+    });
+
+    waitsFor(
+      () => remote.BrowserWindow.getAllWindows().length > windows.length,
+      'new window to open',
+    );
+
+    // Ideally we'd also check that the URL made it through.. but that's too difficult.
   });
 });
