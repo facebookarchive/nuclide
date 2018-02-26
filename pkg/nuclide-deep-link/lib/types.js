@@ -9,7 +9,9 @@
  * @format
  */
 
-export type DeepLinkParams = {[key: string]: string | Array<string>};
+import type {DeepLinkParams} from '../../commons-atom/deep-link';
+
+export type {DeepLinkParams};
 
 export type DeepLinkService = {
   /**

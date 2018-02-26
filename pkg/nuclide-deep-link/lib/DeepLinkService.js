@@ -16,12 +16,11 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observeDeepLinks, sendDeepLink} from '../../commons-atom/deep-link';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 const {ipcRenderer, remote} = electron;
 invariant(ipcRenderer != null && remote != null);
-
-const CHANNEL = 'nuclide-url-open';
 
 export default class DeepLinkService {
   _disposable: UniversalDisposable;
@@ -40,14 +39,7 @@ export default class DeepLinkService {
     });
 
     this._disposable = new UniversalDisposable(
-      // These events will be sent from lib/url-main.js.
-      // TODO: Use real Atom URI handler from
-      // https://github.com/atom/atom/pull/11399.
-      Observable.fromEvent(
-        ipcRenderer,
-        CHANNEL,
-        (event, data) => data,
-      ).subscribe(({message, params}) => {
+      observeDeepLinks().subscribe(({message, params}) => {
         const path = message.replace(/\/+$/, '');
         const observer = this._observers.get(path);
         if (observer != null) {
@@ -78,7 +70,7 @@ export default class DeepLinkService {
     path: string,
     params: DeepLinkParams,
   ): void {
-    browserWindow.webContents.send(CHANNEL, {message: path, params});
+    sendDeepLink(browserWindow, path, params);
     browserWindow.focus();
   }
 }
