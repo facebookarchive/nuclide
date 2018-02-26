@@ -23,9 +23,9 @@ import {Icon} from 'nuclide-commons-ui/Icon';
 import {AnalyticsEvents} from '../constants';
 import {openSourceLocation} from '../utils';
 
-type Props = {
+type Props = {|
   service: IDebugService,
-};
+|};
 
 type State = {
   supportsConditionalBreakpoints: boolean,
@@ -99,9 +99,6 @@ export default class BreakpointListComponent extends React.Component<
     } = this.state;
     const {service} = this.props;
     const isReadonlyTarget = false;
-    if (breakpoints == null || breakpoints.length === 0) {
-      return <span>(no breakpoints)</span>;
-    }
 
     const items = breakpoints
       // Show resolved breakpoints at the top of the list, then order by filename & line number.
@@ -216,13 +213,22 @@ export default class BreakpointListComponent extends React.Component<
           </ListViewItem>
         );
       });
+    const separator =
+      breakpoints.length !== 0 ? (
+        <hr className="nuclide-ui-hr nuclide-debugger-breakpoint-separator" />
+      ) : null;
     return (
       <div>
         {exceptionBreakpoints.map(exceptionBreakpoint => {
           return (
-            <div key={exceptionBreakpoint.getId()}>
+            <div
+              className="nuclide-debugger-breakpoint"
+              key={exceptionBreakpoint.getId()}>
               <Checkbox
-                className="nuclide-debugger-exception-checkbox"
+                className={classnames(
+                  'nuclide-debugger-breakpoint-checkbox',
+                  'nuclide-debugger-exception-checkbox',
+                )}
                 onChange={enabled =>
                   service.enableOrDisableBreakpoints(
                     enabled,
@@ -231,14 +237,13 @@ export default class BreakpointListComponent extends React.Component<
                 }
                 checked={exceptionBreakpoint.enabled}
                 disabled={isReadonlyTarget}
-                label={
-                  exceptionBreakpoint.label ||
-                  `${exceptionBreakpoint.filter} exceptions`
-                }
               />
+              {exceptionBreakpoint.label ||
+                `${exceptionBreakpoint.filter} exceptions`}
             </div>
           );
         })}
+        {separator}
         <ListView
           alternateBackground={true}
           onSelect={this._handleBreakpointClick}
