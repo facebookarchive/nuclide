@@ -24,10 +24,14 @@ import {track, trackTiming} from '../../nuclide-analytics';
 
 /**
  * Autocomplete is extremely critical to the user experience!
- * Don't tolerate anything longer than three seconds; just fail fast and
- * let the fallback providers provide something at least.
+ * Don't tolerate anything longer than AUTOCOMPLETE_TIMEOUT seconds; just fail
+ * fast and let the fallback providers provide something at least.
+ *
+ * NOTE: We keep a higher time limit for only testing envirnoment since the
+ * autocomplete check happens right after you open the file and providers don't
+ * have enough time to initialize.
  */
-const AUTOCOMPLETE_TIMEOUT = 3000;
+const AUTOCOMPLETE_TIMEOUT = atom.inSpecMode() ? 3000 : 500;
 
 const durationBySuggestion = new WeakMap();
 
