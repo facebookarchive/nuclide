@@ -60,6 +60,7 @@ export interface CqueryLanguageService extends LanguageService {
     file: NuclideUri,
     project: CqueryProject,
   ): Promise<void>;
+  deleteProject(project: CqueryProject): Promise<void>;
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;

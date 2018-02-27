@@ -54,11 +54,15 @@ export class CqueryInvalidator {
     );
   }
 
+  invalidate(project: CqueryProject): void {
+    this._disposeProject(project);
+  }
+
   subscribeFileEvents(): Subscription {
     return this._observeFileSaveEvents().subscribe(projects => {
       for (const project of projects) {
         this._logger.info('Watch file saved, invalidating: ', project);
-        this._disposeProject(project);
+        this.invalidate(project);
       }
     });
   }
@@ -106,7 +110,7 @@ export class CqueryInvalidator {
     }
     projectsToDispose.forEach(project => {
       this._logger.warn('Exceeded memory limit, disposing: ', project);
-      this._disposeProject(project);
+      this.invalidate(project);
     });
   }
 

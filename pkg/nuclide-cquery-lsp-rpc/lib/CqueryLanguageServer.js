@@ -218,6 +218,19 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     this._processes.get(CqueryProjectManager.getProjectKey(project)); // spawn the process ahead of time
   }
 
+  async deleteProject(project: CqueryProject): Promise<void> {
+    const key = CqueryProjectManager.getProjectKey(project);
+    if (this._processes.has(key)) {
+      const client = await this._processes.get(key);
+      if (client != null) {
+        const {cacheDirectory} = client._initializationOptions;
+        // Delete the project (which closes the process), then the cache directory
+        this._projectInvalidator.invalidate(project);
+        await fsPromise.rimraf(cacheDirectory);
+      }
+    }
+  }
+
   async getLanguageServiceForFile(
     file: string,
   ): Promise<?CqueryLanguageClient> {

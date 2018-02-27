@@ -49,6 +49,7 @@ import {Observable} from 'rxjs';
 import {
   registerClangProvider,
   formatCode,
+  resetForSource,
 } from '../../nuclide-clang/lib/libclang';
 import passesGK from '../../commons-node/passesGK';
 import {
@@ -101,6 +102,22 @@ class CqueryLSPClient extends NullLanguageService {
           }
         }
       }),
+      // Equivalent to 'clang:clean-and-rebuild'
+      atom.commands.add(
+        'atom-text-editor',
+        'cquery:clean-and-restart',
+        async () => {
+          const editor = atom.workspace.getActiveTextEditor();
+          if (editor) {
+            const path: ?NuclideUri = editor.getPath();
+            if (this._service && path != null) {
+              const project = await determineCqueryProject(path);
+              await resetForSource(editor);
+              await this._service.deleteProject(project);
+            }
+          }
+        },
+      ),
     ];
     // These commands all request locations in response to a position
     // which we can display in a find references pane.
