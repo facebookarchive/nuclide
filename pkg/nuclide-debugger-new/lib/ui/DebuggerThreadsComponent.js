@@ -219,7 +219,11 @@ export default class DebuggerThreadsComponent extends React.Component<
                 name: thread.name,
                 address: callstack.length === 0 ? null : callstack[0].name,
                 stopReason:
-                  stoppedDetails == null ? null : stoppedDetails.reason,
+                  stoppedDetails == null
+                    ? null
+                    : stoppedDetails.description != null
+                      ? stoppedDetails.description
+                      : stoppedDetails.reason,
                 isSelected: thread.threadId === selectedThreadId,
               },
             };
