@@ -56,8 +56,8 @@ export async function getPythonParLaunchProcessInfo(
     'launch',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(parPath),
-    true, // showThreads
     getPythonParConfig(parPath, args),
+    {threads: true},
   );
 }
 
@@ -73,8 +73,8 @@ export async function getPythonScriptLaunchProcessInfo(
     'launch',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(scriptPath),
-    true, // showThreads
     getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env),
+    {threads: true},
   );
 }
 
@@ -141,8 +141,8 @@ async function getPythonAttachTargetProcessInfo(
     'attach',
     VsAdapterTypes.PYTHON,
     await getPythonAdapterInfo(targetRootUri),
-    true, // showThreads
     getPythonAttachTargetConfig(target),
+    {threads: true},
   );
 }
 
@@ -184,8 +184,8 @@ export async function getPrepackLaunchProcessInfo(
     'launch',
     VsAdapterTypes.PREPACK,
     adapterInfo,
-    false,
     getPrepackScriptConfig(scriptPath, prepackPath, args),
+    {threads: false},
   );
 }
 
@@ -221,7 +221,6 @@ export async function getNodeLaunchProcessInfo(
     'launch',
     VsAdapterTypes.NODE,
     adapterInfo,
-    false, // showThreads
     getNodeScriptConfig(
       scriptPath,
       nodePath.length > 0 ? nodePath : adapterInfo.command,
@@ -230,6 +229,7 @@ export async function getNodeLaunchProcessInfo(
       env,
       outFiles,
     ),
+    {threads: false},
   );
 }
 
@@ -246,8 +246,8 @@ export async function getOCamlLaunchProcessInfo(
     'launch',
     VsAdapterTypes.OCAML,
     adapterInfo,
-    false, // showThreads
     {config: launchTarget},
+    {threads: false},
   );
 }
 
@@ -267,8 +267,8 @@ export async function getGdbLaunchProcessInfo(
     'launch',
     VsAdapterTypes.NATIVE,
     adapterInfo,
-    true, // showThreads
     {program: nuclideUri.getPath(program), args, cwd, environment, sourcePath},
+    {threads: true},
   );
 }
 
@@ -286,8 +286,8 @@ export async function getGdbAttachProcessInfo(
     'attach',
     VsAdapterTypes.NATIVE,
     adapterInfo,
-    true, // showThreads
     {pid, sourcePath},
+    {threads: true},
   );
 }
 
@@ -301,8 +301,8 @@ export async function getNodeAttachProcessInfo(
     'attach',
     VsAdapterTypes.NODE,
     adapterInfo,
-    false, // showThreads
     getAttachNodeConfig(port),
+    {threads: false},
   );
 }
 
@@ -341,8 +341,8 @@ export async function getReactNativeAttachProcessInfo(
     'attach',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
-    false, // showThreads
     args,
+    {threads: false},
   );
 }
 
@@ -355,8 +355,8 @@ export async function getReactNativeLaunchProcessInfo(
     'launch',
     VsAdapterTypes.REACT_NATIVE,
     adapterInfo,
-    false, // showThreads
     args,
+    {threads: false},
   );
 }
 
@@ -368,6 +368,18 @@ async function getReactNativeAdapterInfo(
 
 function getAttachNodeConfig(port: number): Object {
   return {port};
+}
+
+export async function getHhvmAdapterInfo(
+  path: NuclideUri,
+): Promise<VSAdapterExecutableInfo> {
+  return getAdapterExecutableWithProperNode('hhvm', path);
+}
+
+export async function getPhpXDebugAdapterInfo(
+  path: NuclideUri,
+): Promise<VSAdapterExecutableInfo> {
+  return getAdapterExecutableWithProperNode('php-xdebug', path);
 }
 
 export function listenToRemoteDebugCommands(): IDisposable {

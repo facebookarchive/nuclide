@@ -11,17 +11,17 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
+  ControlButtonSpecification,
+  DebuggerCapabilities,
   DebuggerConfigAction,
+  DebuggerInstanceInterface,
+  DebuggerProperties,
+  MessageProcessor,
   VsAdapterType,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
 import type {VSCodeDebuggerAdapterService} from '../../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService';
-import type {
-  DebuggerInstanceInterface,
-  DebuggerCapabilities,
-  DebuggerProperties,
-  MessageProcessor,
-} from 'nuclide-debugger-common';
+import type {} from 'nuclide-debugger-common';
 import type {IVspInstance} from '../../nuclide-debugger-new/lib/types';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
@@ -43,34 +43,52 @@ type MessagePreprocessors = {
   vspClientPreprocessor: MessageProcessor,
 };
 
+export type CustomDebuggerCapabilities = {
+  conditionalBreakpoints?: boolean,
+  continueToLocation?: boolean,
+  readOnlyTarget?: boolean,
+  setVariable?: boolean,
+  threads?: boolean,
+  completionsRequest?: boolean,
+};
+
+export type CustomDebuggerProperties = {
+  customControlButtons?: Array<ControlButtonSpecification>,
+  targetDescription?: () => ?string,
+  threadsComponentTitle?: string,
+};
+
 export default class VspProcessInfo extends DebuggerProcessInfo {
   _adapterType: VsAdapterType;
   _adapterExecutable: VSAdapterExecutableInfo;
   _debugMode: DebuggerConfigAction;
-  _showThreads: boolean;
   _config: Object;
   _rpcService: ?VSCodeDebuggerAdapterService;
   _vspInstance: ?IVspInstance;
   _preprocessors: ?MessagePreprocessors;
   _customDisposable: ?IDisposable;
+  _customCapabilities: CustomDebuggerCapabilities;
+  _customProperties: CustomDebuggerProperties;
 
   constructor(
     targetUri: NuclideUri,
     debugMode: DebuggerConfigAction,
     adapterType: VsAdapterType,
     adapterExecutable: VSAdapterExecutableInfo,
-    showThreads: boolean,
     config: Object,
+    customCapabilities?: ?CustomDebuggerCapabilities,
+    customProperties?: ?CustomDebuggerProperties,
     preprocessors?: ?MessagePreprocessors,
   ) {
     super(VSP_DEBUGGER_SERVICE_NAME, targetUri);
     this._debugMode = debugMode;
     this._adapterType = adapterType;
     this._adapterExecutable = adapterExecutable;
-    this._showThreads = showThreads;
     this._config = config;
-    this._rpcService = null;
+    this._customCapabilities = customCapabilities || {};
+    this._customProperties = customProperties || {};
     this._preprocessors = preprocessors;
+    this._rpcService = null;
     this._customDisposable = null;
   }
 
@@ -80,8 +98,10 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
       this._debugMode,
       this._adapterType,
       {...this._adapterExecutable},
-      this._showThreads,
       {...this._config},
+      {...this._customCapabilities},
+      {...this._customProperties},
+      this._preprocessors,
     );
   }
 
@@ -93,15 +113,16 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     return {
       ...super.getDebuggerCapabilities(),
       conditionalBreakpoints: true,
-      threads: this._showThreads,
       setVariable: true,
       completionsRequest: true,
+      ...this._customCapabilities,
     };
   }
 
   getDebuggerProps(): DebuggerProperties {
     return {
       ...super.getDebuggerProps(),
+      ...this._customProperties,
     };
   }
 

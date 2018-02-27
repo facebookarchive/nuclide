@@ -20,7 +20,9 @@ export type Adapter =
   | 'prepack'
   | 'react-native'
   | 'ocaml'
-  | 'native';
+  | 'native'
+  | 'hhvm'
+  | 'php-xdebug';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
@@ -113,6 +115,36 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(__dirname, 'fb-native-debugger-vsp/src'),
+    },
+  ],
+  [
+    'hhvm',
+    {
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            '../../pkg/nuclide-debugger-hhvm-rpc/lib/hhvmWrapper.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, '../../pkg/nuclide-debugger-hhvm-rpc'),
+    },
+  ],
+  [
+    'php-xdebug',
+    {
+      executable: {
+        command: 'node',
+        args: [
+          nuclideUri.join(
+            __dirname,
+            '../../pkg/nuclide-debugger-php-rpc/lib/vscode/hhvmDebugger.js',
+          ),
+        ],
+      },
+      root: nuclideUri.join(__dirname, '../../pkg/nuclide-debugger-php-rpc'),
     },
   ],
 ]);

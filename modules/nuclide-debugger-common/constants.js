@@ -14,6 +14,7 @@ import type {VsAdapterType} from './types';
 
 export const VsAdapterTypes = Object.freeze({
   HHVM: 'hhvm',
+  PHP_XDEBUG: 'php-xdebug',
   PYTHON: 'python',
   REACT_NATIVE: 'react_native',
   NODE: 'node',

@@ -32,6 +32,7 @@ export type VSAdapterExecutableInfo = {
 
 export type VsAdapterType =
   | 'hhvm'
+  | 'php-xdebug'
   | 'python'
   | 'node'
   | 'java'
