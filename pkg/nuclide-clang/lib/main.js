@@ -27,7 +27,6 @@ import type {
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeActions from './CodeActions';
@@ -71,17 +70,6 @@ export function activate() {
       },
     ),
   );
-  if (featureConfig.get('nuclide-cquery-lsp.use-cquery')) {
-    const deactivateSelf = () => {
-      if (atom.packages.isPackageActive(PACKAGE_NAME)) {
-        atom.packages.deactivatePackage(PACKAGE_NAME);
-      }
-    };
-    if (subscriptions != null) {
-      subscriptions.add(atom.packages.onDidActivatePackage(deactivateSelf));
-      deactivateSelf();
-    }
-  }
 }
 
 /** Provider for autocomplete service. */

@@ -20,7 +20,7 @@
         "title": "Use cquery instead of Nuclide's built-in C++ service",
         "type": "boolean",
         "default": "false",
-        "description": "You need cquery in your PATH and a restart is required"
+        "description": "Requires cquery in your PATH"
       },
       "enable-libclang-logs": {
         "title": "Enable libclang logs (for developers)",

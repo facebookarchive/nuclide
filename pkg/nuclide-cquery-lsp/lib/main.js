@@ -48,6 +48,7 @@ import {Observable} from 'rxjs';
 // TODO pelmers: maybe don't import from libclang
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
+import passesGK from '../../commons-node/passesGK';
 import {
   AtomLanguageService,
   getHostServices,
@@ -58,7 +59,15 @@ import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
 import {determineCqueryProject} from './CqueryProject';
 import {wordUnderPoint} from './utils';
 
+const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
+// Must match string in nuclide-clang/lib/constants.js
+const NUCLIDE_CLANG_PACKAGE_NAME = 'nuclide-clang';
+const USE_CQUERY_CONFIG = 'nuclide-cquery-lsp.use-cquery';
 let _referencesViewService: ?FindReferencesViewService;
+
+type SaveState = {
+  savedGkResult: boolean,
+};
 
 // Wrapper that queries for clang settings when new files seen.
 class CqueryLSPClient {
@@ -359,20 +368,40 @@ async function getConnection(connection): Promise<LanguageService> {
 }
 
 class Activation {
-  _languageService: ?AtomLanguageService<LanguageService>;
+  _languageService: ?IDisposable;
   _subscriptions = new UniversalDisposable();
+  _lastGkResult: boolean = false;
 
-  constructor(state: ?mixed) {
-    if (this._canInitializeLsp()) {
-      this._subscriptions.add(this.initializeLsp());
+  constructor(state: ?SaveState) {
+    if (state != null) {
+      this._lastGkResult = Boolean(state.savedGkResult);
     }
+    this._subscriptions.add(
+      Observable.fromPromise(passesGK(NUCLIDE_CQUERY_GK)).subscribe(result => {
+        // Only update the config if the GK value changed, since someone may
+        // not pass GK but still want to have the feature on.
+        if (this._lastGkResult !== result) {
+          this._lastGkResult = result;
+          featureConfig.set(USE_CQUERY_CONFIG, result);
+        }
+      }),
+      featureConfig.observeAsStream(USE_CQUERY_CONFIG).subscribe(config => {
+        if (config === true) {
+          if (this._languageService == null) {
+            this._languageService = this.initializeLsp();
+          }
+        } else {
+          if (this._languageService != null) {
+            this._languageService.dispose();
+            this._languageService = null;
+          }
+        }
+      }),
+    );
   }
 
-  _canInitializeLsp(): boolean {
-    return (
-      featureConfig.get('nuclide-cquery-lsp.use-cquery') === true &&
-      !this._subscriptions.disposed
-    );
+  serialize() {
+    return {savedGkResult: this._lastGkResult};
   }
 
   consumeClangConfigurationProvider(
@@ -389,6 +418,20 @@ class Activation {
   }
 
   initializeLsp(): IDisposable {
+    // First disable the built-in clang package if it's running.
+    const disableNuclideClang = () => {
+      if (atom.packages.isPackageActive(NUCLIDE_CLANG_PACKAGE_NAME)) {
+        const pack = atom.packages.disablePackage(NUCLIDE_CLANG_PACKAGE_NAME);
+        atom.packages.deactivatePackage(NUCLIDE_CLANG_PACKAGE_NAME).then(() => {
+          if (pack != null) {
+            // $FlowFixMe: fix failure to re-enable, at see atom/issues #16824
+            pack.activationDisposables = null;
+          }
+        });
+      }
+    };
+    disableNuclideClang();
+
     const atomConfig: AtomLanguageServiceConfig = {
       name: 'cquery',
       grammars: ['source.cpp', 'source.c', 'source.objc', 'source.objcpp'],
@@ -449,12 +492,18 @@ class Activation {
       getLogger('cquery-language-server'),
     );
     languageService.activate();
-    this._languageService = languageService;
-    return languageService;
+    return new UniversalDisposable(
+      languageService,
+      atom.packages.onDidActivatePackage(disableNuclideClang),
+      () => atom.packages.activatePackage(NUCLIDE_CLANG_PACKAGE_NAME),
+    );
   }
 
   dispose(): void {
     this._subscriptions.dispose();
+    if (this._languageService != null) {
+      this._languageService.dispose();
+    }
   }
 }
 

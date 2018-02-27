@@ -106,7 +106,6 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
 
   dispose(): void {
     this._disposables.dispose();
-    super.dispose();
   }
 
   async _createCqueryLanguageClient(
