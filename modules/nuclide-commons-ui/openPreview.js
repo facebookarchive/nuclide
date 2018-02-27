@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {GoToLocationOptions} from 'nuclide-commons-atom/go-to-location';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {isPending} from 'nuclide-commons-atom/pane-item';
 import {delayTime} from 'nuclide-commons/promise';
 
 type OpenablePreview = {|
@@ -216,9 +217,4 @@ export default function openPreview(
 
   lastOpenablePreview = openablePreview;
   return openablePreview;
-}
-
-function isPending(paneItem: atom$PaneItem) {
-  const pane = atom.workspace.paneForItem(paneItem);
-  return pane && pane.getPendingItem() === paneItem;
 }

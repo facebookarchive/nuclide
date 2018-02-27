@@ -487,7 +487,9 @@ declare interface atom$PaneItem {
   +getURI?: () => ?string,
   +onDidChangeIcon?: (cb: (icon: string) => void) => IDisposable,
   +onDidChangeTitle?: (cb: (title: string) => void) => IDisposable,
+  +onDidTerminatePendingState?: (() => mixed) => IDisposable;
   +serialize?: () => Object,
+  +terminatePendingState?: () => void,
 }
 
 // Undocumented class
@@ -839,6 +841,7 @@ declare class atom$TextEditor extends atom$Model {
   terminatePendingState(): void,
   transact(fn: () => mixed, _: void): void,
   transact(groupingInterval: number, fn: () => mixed): void,
+  onDidTerminatePendingState(() => mixed): IDisposable;
 
   // TextEditor Coordinates
   screenPositionForBufferPosition(

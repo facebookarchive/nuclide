@@ -33,6 +33,12 @@ import {getLogger} from 'log4js';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {
+  isPending,
+  observePendingStateEnd,
+} from 'nuclide-commons-atom/pane-item';
+
+const PENDING_PANE_LINT_DEBOUNCE = 10000; // defer linting pending panes for 10s
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(
@@ -260,14 +266,24 @@ export class LinterAdapter {
               const path = editor.getPath();
               const basename =
                 path == null ? '(untitled)' : nuclideUri.basename(path);
-              return Observable.using(
-                () =>
-                  new UniversalDisposable(
-                    busyReporter(
-                      `${this._provider.name}: running on "${basename}"`,
+
+              const startLinting = isPending(editor)
+                ? observePendingStateEnd(editor).timeoutWith(
+                    PENDING_PANE_LINT_DEBOUNCE,
+                    Observable.of(null),
+                  )
+                : Observable.of(null);
+
+              return startLinting.switchMap(() =>
+                Observable.using(
+                  () =>
+                    new UniversalDisposable(
+                      busyReporter(
+                        `${this._provider.name}: running on "${basename}"`,
+                      ),
                     ),
-                  ),
-                () => this._runLint(editor),
+                  () => this._runLint(editor),
+                ),
               );
             })
             // Track the previous update so we can invalidate its results.
