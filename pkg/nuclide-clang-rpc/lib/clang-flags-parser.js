@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.mapPathsInFlags = mapPathsInFlags;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,39 +11,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-type FlagStyle = 'joined' | 'separate' | 'both';
-type FlagSpec = {
-  name: string,
-  style: FlagStyle,
-};
-
-function Flag(name: string, style: FlagStyle): FlagSpec {
-  return {name, style};
+function Flag(name, style) {
+  return { name, style };
 }
 
 // List of clang flags which takes path arguments.
-const CLANG_FLAGS_THAT_TAKE_PATHS = [
-  Flag('-F', 'both'),
-  Flag('-I', 'both'),
-  Flag('-include', 'both'),
-  Flag('--include', 'both'),
-  Flag('-include-pch', 'separate'),
-  Flag('-iquote', 'both'),
-  Flag('-isysroot', 'both'),
-  Flag('-isystem', 'both'),
-  Flag('-fmodules-cache-path=', 'joined'),
-];
+const CLANG_FLAGS_THAT_TAKE_PATHS = [Flag('-F', 'both'), Flag('-I', 'both'), Flag('-include', 'both'), Flag('--include', 'both'), Flag('-include-pch', 'separate'), Flag('-iquote', 'both'), Flag('-isysroot', 'both'), Flag('-isystem', 'both'), Flag('-fmodules-cache-path=', 'joined')];
 
 // Flags that takes the following argument as its parameter.
 const separate = new Set();
 
 // Flags that takes text after the prefix as its parameter.
 // Represented as a map of prefix-length to prefixes.
-const joinedPrefixByLength: Map<number, Set<string>> = new Map();
+const joinedPrefixByLength = new Map();
 
 // Populate the data structures.
 for (const flag of CLANG_FLAGS_THAT_TAKE_PATHS) {
@@ -56,11 +46,11 @@ for (const flag of CLANG_FLAGS_THAT_TAKE_PATHS) {
 }
 
 // Internal helper which matches input string against known prefixes.
-function matchPrefix(flag: string): ?{prefix: string, rest: string} {
+function matchPrefix(flag) {
   for (const [len, prefixes] of joinedPrefixByLength) {
     const prefix = flag.slice(0, len);
     if (prefixes.has(prefix)) {
-      return {prefix, rest: flag.slice(len)};
+      return { prefix, rest: flag.slice(len) };
     }
   }
 }
@@ -70,11 +60,8 @@ function matchPrefix(flag: string): ?{prefix: string, rest: string} {
  *
  * @returns New array of flags in which paths are transformed.
  */
-export function mapPathsInFlags(
-  input: Iterable<string>,
-  mapper: string => string,
-): Array<string> {
-  const iterator = ((input: any)[Symbol.iterator](): Iterator<string>);
+function mapPathsInFlags(input, mapper) {
+  const iterator = input[Symbol.iterator]();
   const result = [];
   while (true) {
     const entry = iterator.next();

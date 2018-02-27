@@ -1,3 +1,49 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _client;
+
+function _load_client() {
+  return _client = require('big-dig/src/client');
+}
+
+var _nuclideMarshalersAtom;
+
+function _load_nuclideMarshalersAtom() {
+  return _nuclideMarshalersAtom = require('../../nuclide-marshalers-atom');
+}
+
+var _nuclideRpc;
+
+function _load_nuclideRpc() {
+  return _nuclideRpc = require('../../nuclide-rpc');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('../../nuclide-rpc/lib/config');
+}
+
+var _servicesConfig;
+
+function _load_servicesConfig() {
+  return _servicesConfig = _interopRequireDefault(require('../../nuclide-server/lib/servicesConfig'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../../nuclide-server2/lib/constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,46 +51,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ServerConnectionConfiguration} from './ServerConnection';
-import type {TransportWithHeartbeat} from '../../nuclide-rpc';
+exports.default = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (config) {
+    const bigDigClient = yield (0, (_client || _load_client()).createBigDigClient)(config);
+    const bigDigTransport = {
+      send(message) {
+        bigDigClient.sendMessage((_constants || _load_constants()).NUCLIDE_RPC_TAG, message);
+      },
+      onMessage() {
+        return bigDigClient.onMessage((_constants || _load_constants()).NUCLIDE_RPC_TAG);
+      },
+      close() {
+        bigDigClient.close();
+      },
+      isClosed() {
+        return bigDigClient.isClosed();
+      },
+      getHeartbeat() {
+        return bigDigClient.getHeartbeat();
+      }
+    };
+    return (_nuclideRpc || _load_nuclideRpc()).RpcConnection.createRemote(bigDigTransport, (0, (_nuclideMarshalersAtom || _load_nuclideMarshalersAtom()).getAtomSideMarshalers)(config.host), (_servicesConfig || _load_servicesConfig()).default, { trackSampleRate: 10 }, (_config || _load_config()).SERVICE_FRAMEWORK3_PROTOCOL);
+  });
 
-import {createBigDigClient} from 'big-dig/src/client';
-import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
-import {RpcConnection} from '../../nuclide-rpc';
-import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
-import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
+  function createBigDigRpcClient(_x) {
+    return _ref.apply(this, arguments);
+  }
 
-export default (async function createBigDigRpcClient(
-  config: ServerConnectionConfiguration,
-): Promise<RpcConnection<TransportWithHeartbeat>> {
-  const bigDigClient = await createBigDigClient(config);
-  const bigDigTransport: TransportWithHeartbeat = {
-    send(message: string) {
-      bigDigClient.sendMessage(NUCLIDE_RPC_TAG, message);
-    },
-    onMessage() {
-      return bigDigClient.onMessage(NUCLIDE_RPC_TAG);
-    },
-    close() {
-      bigDigClient.close();
-    },
-    isClosed() {
-      return bigDigClient.isClosed();
-    },
-    getHeartbeat() {
-      return bigDigClient.getHeartbeat();
-    },
-  };
-  return RpcConnection.createRemote(
-    bigDigTransport,
-    getAtomSideMarshalers(config.host),
-    servicesConfig,
-    {trackSampleRate: 10},
-    SERVICE_FRAMEWORK3_PROTOCOL,
-  );
-});
+  return createBigDigRpcClient;
+})();
