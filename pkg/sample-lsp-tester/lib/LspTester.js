@@ -19,7 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from 'nuclide-commons/process';
 import Model from 'nuclide-commons/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
+import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {PanelView} from './PanelView';
 import * as React from 'react';
 import * as rpc from 'vscode-jsonrpc';

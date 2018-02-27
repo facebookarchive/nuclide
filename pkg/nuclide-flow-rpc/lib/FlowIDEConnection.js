@@ -19,7 +19,7 @@ import * as rpc from 'vscode-jsonrpc';
 import through from 'through';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
+import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 

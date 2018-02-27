@@ -70,7 +70,7 @@ import type {
   CancellationTokenSource,
 } from './jsonrpc';
 
-import {runCommand} from '../../../modules/nuclide-commons/process';
+import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 import invariant from 'assert';
 import {sleep, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
@@ -79,8 +79,7 @@ import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
-import {getOriginalEnvironment} from '../../../modules/nuclide-commons/process';
-import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
+import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {track} from '../../nuclide-analytics';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {

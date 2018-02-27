@@ -15,7 +15,7 @@ import {createConnection} from 'vscode-languageserver';
 import {StreamMessageWriter} from 'vscode-jsonrpc';
 import {getLogger} from 'log4js';
 
-import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
+import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import TextDocuments from '../../nuclide-lsp-implementation-common/TextDocuments';
 import {ImportFormatter} from './lib/ImportFormatter';
