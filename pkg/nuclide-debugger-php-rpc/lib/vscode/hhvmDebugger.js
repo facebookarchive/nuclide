@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {PhpDebuggerSessionConfig} from '../PhpDebuggerService';
+import type {PhpDebuggerSessionConfig} from '../types';
 
 import {
   Logger,

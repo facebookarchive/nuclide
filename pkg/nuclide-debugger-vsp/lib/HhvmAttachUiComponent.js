@@ -11,7 +11,6 @@
 
 import * as React from 'react';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import {AttachProcessInfo} from './AttachProcessInfo';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -29,12 +28,17 @@ import {Expect} from '../../commons-node/expected';
 import type {Column} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from '../../commons-node/expected';
+import type VspProcessInfo from './VspProcessInfo';
 
 type AttachType = 'webserver' | 'script';
 
 type PropsType = {
   targetUri: NuclideUri,
   configIsValidChanged: (valid: boolean) => void,
+  getAttachProcessInfo: (
+    targetUri: NuclideUri,
+    debugPort: ?number,
+  ) => Promise<VspProcessInfo>,
 };
 
 type StateType = {
@@ -83,6 +87,10 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         this._gkSub = null;
       }
     });
+    (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(
+      this,
+    );
+
     this.state = {
       selectedPathIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
@@ -168,8 +176,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       this.props.targetUri,
     );
     if (service != null) {
-      const hhvmDebuggerService = new service.HhvmDebuggerService();
-      const attachTargets = await hhvmDebuggerService.getAttachTargetList();
+      const attachTargets = await service.getAttachTargetList();
       this.setState({attachTargets: Expect.value(attachTargets)});
     }
   }
@@ -315,7 +322,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
     });
   };
 
-  _handleAttachButtonClick = (): void => {
+  async _handleAttachButtonClick(): Promise<void> {
     // Start a debug session with the user-supplied information.
     const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
     const selectedPath =
@@ -323,17 +330,17 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         ? this.state.pathMenuItems[this.state.selectedPathIndex].label
         : '/';
 
-    const processInfo = new AttachProcessInfo(
+    const processInfo = await this.props.getAttachProcessInfo(
       nuclideUri.createRemoteUri(hostname, selectedPath),
       this.state.attachPort,
     );
-    getDebuggerService().then(debuggerService =>
-      debuggerService.startDebugging(processInfo),
-    );
+
+    const debuggerService = await getDebuggerService();
+    debuggerService.startDebugging(processInfo);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedPath,
       attachType: this.state.attachType,
     });
-  };
+  }
 }

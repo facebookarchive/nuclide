@@ -24,10 +24,8 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
-
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
-
+import {getAttachProcessInfo} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
@@ -172,7 +170,9 @@ class Activation {
         debuggerService.addBreakpoint(navUri, lineNumber - 1);
       }
 
-      await debuggerService.startDebugging(new AttachProcessInfo(hackRootUri));
+      await debuggerService.startDebugging(
+        await getAttachProcessInfo(hackRootUri),
+      );
     }
 
     notification.dismiss();

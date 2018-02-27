@@ -10,11 +10,12 @@
  */
 
 /* global localStorage */
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type VspProcessInfo from './VspProcessInfo';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
@@ -26,13 +27,19 @@ import {
 } from 'nuclide-debugger-common';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
 const MAX_RECENTLY_LAUNCHED = 5;
 
 type Props = {
   targetUri: NuclideUri,
   configIsValidChanged: (valid: boolean) => void,
+  getLaunchProcessInfo: (
+    targetUri: NuclideUri,
+    scriptPath: string,
+    scriptArgs: string,
+    scriptWrapperCommand: ?string,
+    runInTerminal: boolean,
+    cwdPath: string,
+  ) => Promise<VspProcessInfo>,
 };
 
 type State = {
@@ -49,13 +56,20 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   _scriptArgs: ?AtomInput;
   _cwdPath: ?AtomInput;
 
-  state = {
-    recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
-    recentlyLaunchedScript: null,
-    runInTerminal: false,
-    scriptArgs: null,
-    cwd: this._getLastCwd(),
-  };
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(
+      this,
+    );
+
+    this.state = {
+      recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
+      recentlyLaunchedScript: null,
+      runInTerminal: false,
+      scriptArgs: null,
+      cwd: this._getLastCwd(),
+    };
+  }
 
   _getSerializationArgs() {
     return [
@@ -236,7 +250,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     });
   };
 
-  _handleLaunchButtonClick = (): void => {
+  async _handleLaunchButtonClick(): Promise<void> {
     const scriptPath = nullthrows(this._scriptPath)
       .getText()
       .trim();
@@ -253,24 +267,24 @@ export class LaunchUiComponent extends React.Component<Props, State> {
       cwdPath,
     );
 
-    const processInfo = new LaunchProcessInfo(
+    const processInfo = await this.props.getLaunchProcessInfo(
       this.props.targetUri,
       scriptPath,
+      scriptArgs,
       null,
       this.state.runInTerminal,
-      scriptArgs,
       cwdPath,
     );
-    getDebuggerService().then(debuggerService =>
-      debuggerService.startDebugging(processInfo),
-    );
+
+    const debuggerService = await getDebuggerService();
+    debuggerService.startDebugging(processInfo);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       scriptPath,
       scriptArgs,
       cwdPath,
     });
-  };
+  }
 
   _getActiveFilePath = (): string => {
     const editor = atom.workspace.getActiveTextEditor();

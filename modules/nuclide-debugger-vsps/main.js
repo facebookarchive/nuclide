@@ -140,7 +140,7 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            '../../pkg/nuclide-debugger-php-rpc/lib/vscode/hhvmDebugger.js',
+            '../../pkg/nuclide-debugger-php-rpc/lib/vscode/vscode-debugger-entry.js',
           ),
         ],
       },

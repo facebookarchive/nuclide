@@ -85,10 +85,6 @@
     "name": "OpenFilesService"
   },
   {
-    "implementation": "../nuclide-debugger-php-rpc/lib/PhpDebuggerService.js",
-    "name": "PhpDebuggerService"
-  },
-  {
     "implementation": "../nuclide-debugger-hhvm-rpc/lib/main.js",
     "name": "HhvmDebuggerService"
   },

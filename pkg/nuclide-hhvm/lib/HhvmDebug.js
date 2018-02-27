@@ -13,10 +13,12 @@ import type {DebugMode} from './types';
 
 import {getDebuggerService} from '../../commons-atom/debugger';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 import invariant from 'assert';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {
+  getLaunchProcessInfo,
+  getAttachProcessInfo,
+} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 
 export async function debug(
   debugMode: DebugMode,
@@ -32,7 +34,7 @@ export async function debug(
   try {
     // $FlowFB
     const helper = require('./fb-hhvm');
-    processInfo = helper.getCustomLaunchInfo(
+    processInfo = await helper.getCustomLaunchInfo(
       debugMode,
       activeProjectRoot,
       target,
@@ -42,23 +44,19 @@ export async function debug(
 
   if (processInfo == null) {
     if (debugMode === 'script') {
-      processInfo = new LaunchProcessInfo(
+      processInfo = await getLaunchProcessInfo(
         activeProjectRoot,
         target,
-        null,
-        useTerminal,
         scriptArguments,
+        null /* script wrapper */,
+        useTerminal,
+        '' /* cwdPath */,
       );
     } else {
-      processInfo = new AttachProcessInfo(activeProjectRoot);
+      processInfo = await getAttachProcessInfo(activeProjectRoot, null);
     }
   }
 
-  // Use commands here to trigger package activation.
-  atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'nuclide-debugger:show',
-  );
   const debuggerService = await getDebuggerService();
   await debuggerService.startDebugging(processInfo);
 }

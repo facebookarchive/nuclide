@@ -239,6 +239,15 @@ class HHVMDebuggerWrapper {
     // to HHVM.
     if (requestMsg.command != null) {
       switch (requestMsg.command) {
+        case 'initialize':
+          // TODO(ericblue): Don't delay initialize response (until attach/launch is sent) on the HHVM side.
+          // Immediately respond to initialize to complete the initialization flow.
+          this._writeResponseMessage({
+            request_seq: requestMsg.seq,
+            success: true,
+            command: requestMsg.command,
+          });
+          break;
         case 'disconnect':
           this._writeResponseMessage({
             request_seq: requestMsg.seq,
@@ -288,7 +297,7 @@ class HHVMDebuggerWrapper {
       try {
         const obj = JSON.parse(message);
         obj.seq = ++this._sequenceNumber;
-        this._writeOutputWithHeader(JSON.stringify(obj));
+        this._writeOutputWithHeader(obj);
       } catch (e) {
         process.stderr.write(
           `Error parsing message from target: ${e.toString()}: ${message}`,
@@ -332,20 +341,23 @@ class HHVMDebuggerWrapper {
         output: message,
       },
     };
-    this._writeOutputWithHeader(JSON.stringify(outputEvent));
+    this._writeOutputWithHeader(outputEvent);
   }
 
   _writeResponseMessage(message: Object) {
-    this._writeOutputWithHeader(
-      JSON.stringify({
-        seq: ++this._sequenceNumber,
-        type: 'response',
-        ...message,
-      }),
-    );
+    this._writeOutputWithHeader({
+      seq: ++this._sequenceNumber,
+      type: 'response',
+      ...message,
+    });
   }
 
-  _writeOutputWithHeader(output: string) {
+  _writeOutputWithHeader(message: Object) {
+    if (message.command === 'threads' && Array.isArray(message.body)) {
+      // TODO(ericblue): Fix threads response on the HHVM side.
+      message.body = {threads: message.body};
+    }
+    const output = JSON.stringify(message);
     const length = Buffer.byteLength(output, 'utf8');
     process.stdout.write('Content-Length: ' + length + TWO_CRLF, 'utf8');
     process.stdout.write(output, 'utf8');

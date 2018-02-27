@@ -94,12 +94,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "nuclide-debugger.provider": {
-      "description": "PHP debugger provider.",
-      "versions": {
-        "0.0.0": "createDebuggerProvider"
-      }
-    },
     "additional-log-files": {
       "description": "HHVM debugger log files",
       "versions": {

@@ -78,7 +78,6 @@ import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import typeof * as PhpDebuggerService from '../../nuclide-debugger-php-rpc';
 import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
 import typeof * as PtyService from '../../nuclide-pty-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
@@ -182,12 +181,6 @@ export function getOpenFilesServiceByNuclideUri(
   uri: NuclideUri,
 ): OpenFilesService {
   return nullthrows(getServiceByNuclideUri('OpenFilesService', uri));
-}
-
-export function getPhpDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): PhpDebuggerService {
-  return nullthrows(getServiceByNuclideUri('PhpDebuggerService', uri));
 }
 
 export function getHhvmDebuggerServiceByNuclideUri(

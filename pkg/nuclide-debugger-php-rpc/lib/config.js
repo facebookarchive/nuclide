@@ -10,7 +10,7 @@
  */
 
 import logger from './utils';
-import type {PhpDebuggerSessionConfig} from './PhpDebuggerService';
+import type {PhpDebuggerSessionConfig} from './types';
 
 const defaultConfig: PhpDebuggerSessionConfig = {
   xdebugAttachPort: 9000,

@@ -77,6 +77,7 @@ import {AnalyticsEvents, UNKNOWN_SOURCE} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
 
+const UNKWOWN_SOURCE_NAMES = new Set([UNKNOWN_SOURCE, '<unknown>']);
 const DEBUG_SCHEME = 'debug';
 
 export class Source implements ISource {
@@ -90,7 +91,7 @@ export class Source implements ISource {
     } else {
       this._raw = raw;
     }
-    this.available = this._raw.name !== UNKNOWN_SOURCE;
+    this.available = !UNKWOWN_SOURCE_NAMES.has(this._raw.name);
     // flowlint-next-line sketchy-null-string:off
     const path = this._raw.path || this._raw.name || '';
     this.uri = path;

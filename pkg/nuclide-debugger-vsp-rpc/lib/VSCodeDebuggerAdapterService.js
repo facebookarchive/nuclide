@@ -55,7 +55,6 @@ export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
       translator.observeSessionEnd().subscribe(this.dispose.bind(this)),
       () => (this._translator = null),
     );
-    // Start the session, but don't wait for its initialization sequence.
     await translator.initilize();
     return `${this._adapterType} debugger launched`;
   }

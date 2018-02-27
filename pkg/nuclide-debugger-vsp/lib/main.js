@@ -16,6 +16,7 @@ import passesGK from '../../commons-node/passesGK';
 import {OcamlLaunchProvider} from './OCamlLaunchProvider';
 import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
 import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
+import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import PrepackLaunchAttachProvider from './PrepackLaunchAttachProvider';
 import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
@@ -51,6 +52,7 @@ class Activation {
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerOcamlDebugProvider();
       this._registerGdbDebugProvider();
+      this._registerHHVMDebugProvider();
     });
   }
 
@@ -126,6 +128,15 @@ class Activation {
         },
       });
     }
+  }
+
+  async _registerHHVMDebugProvider(): Promise<void> {
+    this._registerDebugProvider({
+      name: 'Hack / PHP',
+      getLaunchAttachProvider: connection => {
+        return new HhvmLaunchAttachProvider('Hack / PHP', connection);
+      },
+    });
   }
 
   dispose(): void {
