@@ -23,7 +23,7 @@
     "immutable": "4.0.0-rc.9",
     "log4js": "1.1.1",
     "marked": "0.3.9",
-    "nuclide-commons": "0.5.0",
+    "nuclide-commons": "0.5.1",
     "nuclide-commons-atom": "0.5.0",
     "nuclide-commons-ui": "0.5.0",
     "nullthrows": "1.0.0",

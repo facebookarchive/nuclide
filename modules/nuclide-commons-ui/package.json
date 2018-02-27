@@ -18,7 +18,7 @@
     "escape-string-regexp": "1.0.5",
     "idx": "1.2.0",
     "invariant": "2.2.2",
-    "nuclide-commons": "0.5.0",
+    "nuclide-commons": "0.5.1",
     "nuclide-commons-atom": "0.5.0",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
