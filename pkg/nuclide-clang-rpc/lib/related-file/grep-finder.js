@@ -49,13 +49,16 @@ function _findIncludingSourceFile(
   const regex = new RegExp(pattern);
   // We need both the file and the match to verify relative includes.
   // Relative includes may not always be correct, so we may have to go through all the results.
+  // TODO(wallace): use rg
   return observeProcess(
     'grep',
     [
+      '-m', // stop after the first match
+      '1',
       '-RE', // recursive, extended
       '--null', // separate file/match with \0
       pattern,
-      nuclideUri.dirname(headerFile),
+      projectRoot,
     ],
     {/* TODO(T17353599) */ isExitError: () => false},
   )

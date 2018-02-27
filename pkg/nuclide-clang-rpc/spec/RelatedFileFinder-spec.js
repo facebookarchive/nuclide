@@ -75,7 +75,7 @@ describe('getRelatedSourceForHeader', () => {
         new Map([
           [
             'a/project/subproject/subroot/source.cpp',
-            '#include "subroot/header.h"',
+            '#include "subroot/boom/header.h"',
           ],
         ]),
       );
@@ -84,7 +84,7 @@ describe('getRelatedSourceForHeader', () => {
         'a/project/subproject/subroot/source.cpp',
       );
       const file = await finder.getRelatedSourceForHeader(
-        nuclideUri.join(tmpdir, 'a/project/subproject/subroot/header.h'),
+        nuclideUri.join(tmpdir, 'a/project/subproject/subroot/boom/header.h'),
       );
       expect(file).toBe(sourceFile);
     });
@@ -138,7 +138,7 @@ describe('getRelatedSourceForHeader', () => {
     waitsForPromise(async () => {
       const file = await finder.getRelatedSourceForHeader(
         '/this/is/not/a/path',
-        '/',
+        '/lol',
       );
       expect(file).toBeNull();
     });
