@@ -16,11 +16,11 @@ import LRUCache from 'lru-cache';
 import os from 'os';
 
 import {serializeAsyncCall} from 'nuclide-commons/promise';
+import {memoryUsagePerPid} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 import findClangServerArgs from './find-clang-server-args';
-import {memoryUsagePerPid} from './utils';
 
 // Limit the number of active Clang servers.
 const SERVER_LIMIT = 20;

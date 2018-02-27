@@ -590,6 +590,35 @@ export function parsePsOutput(
   });
 }
 
+// Use `ps` to get memory usage for an array of process id's as a map.
+export async function memoryUsagePerPid(
+  pids: Array<number>,
+): Promise<Map<number, number>> {
+  const usage = new Map();
+  if (pids.length >= 1) {
+    try {
+      const stdout = await runCommand('ps', [
+        '-p',
+        pids.join(','),
+        '-o',
+        'pid=',
+        '-o',
+        'rss=',
+      ]).toPromise();
+      stdout.split('\n').forEach(line => {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length === 2) {
+          const [pid, rss] = parts.map(x => parseInt(x, 10));
+          usage.set(pid, rss);
+        }
+      });
+    } catch (err) {
+      // Ignore errors.
+    }
+  }
+  return usage;
+}
+
 /**
  * Add no-op error handlers to the process's streams so that Node doesn't throw them.
  */

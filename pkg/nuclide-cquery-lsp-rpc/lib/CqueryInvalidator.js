@@ -15,9 +15,9 @@ import type {CqueryProject} from './types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
 import {serializeAsyncCall} from 'nuclide-commons/promise';
+import {memoryUsagePerPid} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {track} from '../../nuclide-analytics';
-import {memoryUsagePerPid} from '../../nuclide-clang-rpc/lib/utils';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {CqueryProjectManager} from './CqueryProjectManager';
 
