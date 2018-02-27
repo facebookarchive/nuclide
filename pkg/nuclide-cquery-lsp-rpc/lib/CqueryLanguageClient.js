@@ -12,7 +12,8 @@
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Subscription} from 'rxjs';
+import type {Subscription, ConnectableObservable} from 'rxjs';
+import type {FileDiagnosticMap} from '../../nuclide-language-service/lib/LanguageService';
 import type {
   TextEdit,
   Command,
@@ -179,6 +180,21 @@ export class CqueryLanguageClient extends LspLanguageService {
 
   _isFileInProject(file: string): boolean {
     return super._isFileInProject(file) && this._checkProject(file);
+  }
+
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
+    // Only emit diagnostics for files in the project.
+    return super
+      .observeDiagnostics()
+      .refCount()
+      .do(diagnosticMap => {
+        for (const [file] of diagnosticMap) {
+          if (!this._isFileInProject(file)) {
+            diagnosticMap.delete(file);
+          }
+        }
+      })
+      .publish();
   }
 
   // TODO pelmers: override handleClose
