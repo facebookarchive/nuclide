@@ -108,12 +108,13 @@ export default class DebuggerSteppingComponent extends React.Component<
   componentDidMount(): void {
     const {service} = this.props;
     this._disposables.add(
-      Observable.of(null)
-        .concat(
-          observableFromSubscribeFunction(
-            service.onDidChangeMode.bind(service),
-          ),
-        )
+      Observable.merge(
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+        observableFromSubscribeFunction(
+          service.viewModel.onDidFocusStackFrame.bind(service.viewModel),
+        ),
+      )
+        .startWith(null)
         .subscribe(() => {
           const debuggerMode = service.getDebuggerMode();
           const {focusedProcess} = service.viewModel;

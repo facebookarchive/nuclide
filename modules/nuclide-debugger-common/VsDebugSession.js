@@ -95,6 +95,7 @@ export default class VsDebugSession extends V8Protocol {
     this._onDidLoadSource = new Subject();
     this._onDidCustom = new Subject();
     this._onDidEvent = new Subject();
+    this.capabilities = {};
   }
 
   observeInitializeEvents(): Observable<DebugProtocol.InitializedEvent> {
@@ -244,7 +245,7 @@ export default class VsDebugSession extends V8Protocol {
   }
 
   getCapabilities(): DebugProtocol.Capabilities {
-    return this.capabilities || {};
+    return this.capabilities;
   }
 
   async initialize(

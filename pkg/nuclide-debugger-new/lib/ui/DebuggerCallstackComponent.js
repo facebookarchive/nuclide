@@ -9,12 +9,16 @@
  * @format
  */
 
-import * as React from 'react';
 import type {IDebugService, IStackFrame} from '../types';
+import * as React from 'react';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {UNKNOWN_SOURCE} from '../constants';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Table} from 'nuclide-commons-ui/Table';
+import {Observable} from 'rxjs';
+import {fastDebounce} from 'nuclide-commons/observable';
 
 type DebuggerCallstackComponentProps = {
   service: IDebugService,
@@ -51,7 +55,9 @@ export default class DebuggerCallstackComponent extends React.Component<
     data: IStackFrame,
   }): React.Element<any> => {
     const {source, range} = props.data;
-    const basename = nuclideUri.basename(source.uri);
+    const basename = source.available
+      ? nuclideUri.basename(source.uri)
+      : source.name != null ? source.name : UNKNOWN_SOURCE;
     return (
       <div title={`${basename}:${range.start.row}`}>
         <span>
@@ -63,13 +69,17 @@ export default class DebuggerCallstackComponent extends React.Component<
 
   componentDidMount(): void {
     const {service} = this.props;
+    const model = service.getModel();
+    const {viewModel} = service;
     this._disposables.add(
-      service
-        .getModel()
-        .onDidChangeCallStack(() => this.setState(this._getState())),
-      service.viewModel.onDidFocusStackFrame(() =>
-        this.setState(this._getState()),
-      ),
+      Observable.merge(
+        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
+        observableFromSubscribeFunction(
+          viewModel.onDidFocusStackFrame.bind(viewModel),
+        ),
+      )
+        .let(fastDebounce(15))
+        .subscribe(() => this.setState(this._getState())),
     );
   }
 

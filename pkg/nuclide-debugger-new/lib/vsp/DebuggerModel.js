@@ -73,11 +73,10 @@ import invariant from 'assert';
 import {Emitter, Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../../nuclide-analytics';
-import {AnalyticsEvents} from '../constants';
+import {AnalyticsEvents, UNKNOWN_SOURCE} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
 
-const UNKNOWN_SOURCE_LABEL = 'Unknown Source';
 const DEBUG_SCHEME = 'debug';
 
 export class Source implements ISource {
@@ -87,11 +86,11 @@ export class Source implements ISource {
 
   constructor(raw: ?DebugProtocol.Source, sessionId: string) {
     if (raw == null) {
-      this._raw = {name: UNKNOWN_SOURCE_LABEL};
+      this._raw = {name: UNKNOWN_SOURCE};
     } else {
       this._raw = raw;
     }
-    this.available = this._raw.name !== UNKNOWN_SOURCE_LABEL;
+    this.available = this._raw.name !== UNKNOWN_SOURCE;
     // flowlint-next-line sketchy-null-string:off
     const path = this._raw.path || this._raw.name || '';
     this.uri = path;
@@ -1097,14 +1096,14 @@ export class Model implements IModel {
     }
   }
 
-  async fetchCallStack(thread: Thread): Promise<void> {
+  async fetchCallStack(threadI: IThread): Promise<void> {
+    const thread: Thread = (threadI: any);
     if (
       nullthrows(thread.process).session.capabilities
         .supportsDelayedStackTraceLoading
     ) {
       // For improved performance load the first stack frame and then load the rest async.
       await thread.fetchCallStack(1);
-      this._emitter.emit(CALLSTACK_CHANGED);
       if (!this._schedulers.has(thread.getId())) {
         this._schedulers.set(
           thread.getId(),
@@ -1118,9 +1117,11 @@ export class Model implements IModel {
           }),
         );
       }
+    } else {
+      thread.clearCallStack();
+      await thread.fetchCallStack();
     }
-
-    return thread.fetchCallStack();
+    this._emitter.emit(CALLSTACK_CHANGED);
   }
 
   getBreakpoints(): IBreakpoint[] {

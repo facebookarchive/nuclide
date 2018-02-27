@@ -59,3 +59,5 @@ export const BreakpointEventReasons = Object.freeze({
   CHANGED: 'changed',
   REMOVED: 'removed',
 });
+
+export const UNKNOWN_SOURCE = 'Unknown';

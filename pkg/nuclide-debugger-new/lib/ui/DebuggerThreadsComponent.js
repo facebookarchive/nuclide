@@ -12,6 +12,7 @@
 import type {IDebugService, IThread} from '../types';
 import type {Row} from 'nuclide-commons-ui/Table';
 
+import invariant from 'assert';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -37,13 +38,13 @@ type State = {
   threadsLoading: boolean,
 };
 
-type CellData = {
+type CellData = {|
   id: number,
   name: string,
   address: ?string,
   stopReason: ?string,
   isSelected: boolean,
-};
+|};
 
 type ColumnName = 'id' | 'name' | 'address' | 'stopReason' | 'isSelected';
 
@@ -125,8 +126,16 @@ export default class DebuggerThreadsComponent extends React.Component<
     };
   }
 
-  _handleSelectThread = (data: IThread): void => {
-    this.props.service.focusStackFrame(null, data, null, true);
+  _handleSelectThread = async (data: CellData): Promise<void> => {
+    const {service} = this.props;
+    const matchedThread = this.state.threadList.filter(
+      t => t.threadId === data.id,
+    );
+
+    invariant(matchedThread.length === 1);
+    const thread: IThread = matchedThread[0];
+    await service.getModel().fetchCallStack((thread: any));
+    this.props.service.focusStackFrame(null, thread, null, true);
   };
 
   _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {

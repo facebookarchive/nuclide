@@ -45,7 +45,6 @@ import type {
   IModel,
   IViewModel,
   IProcess,
-  IRawStoppedDetails,
   IThread,
   IEnableable,
   IEvaluatableExpression,
@@ -63,7 +62,7 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {sleep} from 'nuclide-commons/promise';
+import {sleep, serializeAsyncCall} from 'nuclide-commons/promise';
 import {VsDebugSession} from 'nuclide-debugger-common';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import capitalize from 'lodash/capitalize';
@@ -302,6 +301,20 @@ export default class DebugService implements IDebugService {
 
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
     this._sessionEndDisposables = new UniversalDisposable(session);
+    const sessionId = session.getId();
+
+    const threadFetcher = serializeAsyncCall(async () => {
+      const response = await session.threads();
+      if (response && response.body && response.body.threads) {
+        response.body.threads.forEach(thread => {
+          this._model.rawUpdate({
+            sessionId,
+            threadId: thread.id,
+            thread,
+          });
+        });
+      }
+    });
 
     const openFilesSaved = observableFromSubscribeFunction(
       atom.workspace.observeTextEditors.bind(atom.workspace),
@@ -348,39 +361,69 @@ export default class DebugService implements IDebugService {
             sendConfigurationDone,
             sendConfigurationDone,
           );
-          await this._fetchThreads(session);
+          await threadFetcher();
         } catch (error) {
           onUnexpectedError(error);
         }
       }),
     );
 
+    const toFocusThreads = new Subject();
+
     this._sessionEndDisposables.add(
       session.observeStopEvents().subscribe(async event => {
         this._updateModeAndEmit(DebuggerMode.PAUSED);
-        this._scheduleNativeNotification();
+        const {threadId} = event.body;
         try {
-          await this._fetchThreads(session, (event.body: any));
-          const thread =
-            event.body.threadId != null
-              ? process.getThread(event.body.threadId)
-              : null;
+          await threadFetcher();
+          if (threadId == null) {
+            return;
+          }
+          this._model.rawUpdate({
+            sessionId,
+            stoppedDetails: (event.body: any),
+            threadId,
+          });
+          const thread = process.getThread(threadId);
           if (thread != null) {
-            // UX: That'll fetch the top stack frame first (to allow the UI to focus on it),
-            // then the rest of the call stack.
-            await this._model.fetchCallStack(thread);
-            this._tryToAutoFocusStackFrame(thread);
+            toFocusThreads.next(thread);
           }
         } catch (error) {
           onUnexpectedError(error);
         }
       }),
+
+      toFocusThreads
+        .concatMap(thread => {
+          const {focusedThread} = this._viewModel;
+          if (
+            focusedThread != null &&
+            focusedThread.stopped &&
+            focusedThread.getId() !== thread.getId()
+          ) {
+            // The debugger is already stopped elsewhere.
+            return Observable.empty();
+          }
+          // UX: That'll fetch the top stack frame first (to allow the UI to focus on it),
+          // then the rest of the call stack.
+          return Observable.fromPromise(this._model.fetchCallStack(thread))
+            .ignoreElements()
+            .concat(Observable.of(thread))
+            .catch(error => {
+              onUnexpectedError(error);
+              return Observable.empty();
+            });
+        })
+        .subscribe(thread => {
+          this._tryToAutoFocusStackFrame(thread);
+          this._scheduleNativeNotification();
+        }),
     );
 
     this._sessionEndDisposables.add(
       session.observeThreadEvents().subscribe(async event => {
         if (event.body.reason === 'started') {
-          await this._fetchThreads(session);
+          await threadFetcher();
         } else if (event.body.reason === 'exited') {
           this._model.clearThreads(session.getId(), true, event.body.threadId);
         }
@@ -414,7 +457,7 @@ export default class DebugService implements IDebugService {
             : event.body.threadId;
         this._model.clearThreads(session.getId(), false, threadId);
         this.focusStackFrame(null, this._viewModel.focusedThread, null);
-        this._updateModeAndEmit(DebuggerMode.RUNNING);
+        this._updateModeAndEmit(this._computeDebugMode());
       }),
     );
 
@@ -613,26 +656,6 @@ export default class DebugService implements IDebugService {
 
   onDidChangeMode(callback: (mode: DebuggerModeType) => mixed): IDisposable {
     return this._emitter.on(CHANGE_DEBUG_MODE, callback);
-  }
-
-  async _fetchThreads(
-    session: VsDebugSession,
-    stoppedDetails?: IRawStoppedDetails,
-  ): Promise<void> {
-    const response = await session.threads();
-    if (response && response.body && response.body.threads) {
-      response.body.threads.forEach(thread => {
-        this._model.rawUpdate({
-          sessionId: session.getId(),
-          threadId: thread.id,
-          thread,
-          stoppedDetails:
-            stoppedDetails != null && thread.id === stoppedDetails.threadId
-              ? stoppedDetails
-              : null,
-        });
-      });
-    }
   }
 
   _loadBreakpoints(state: ?SerializedState): Breakpoint[] {
@@ -880,6 +903,10 @@ export default class DebugService implements IDebugService {
       process = this._model.addProcess(configuration, session);
       this.focusStackFrame(null, null, process);
       this._registerSessionListeners(process, session);
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-debugger:show',
+      );
       await session.initialize({
         clientID: 'atom',
         adapterID: configuration.adapterType,
@@ -993,10 +1020,6 @@ export default class DebugService implements IDebugService {
     // eslint-disable-next-line rulesdir/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
     this._consoleDisposables = this._registerConsoleExecutor();
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
     await this._doCreateProcess(config, uuid.v4());
   }
 

@@ -300,6 +300,7 @@ export interface IModel extends ITreeElement {
   getFunctionBreakpoints(): IFunctionBreakpoint[];
   getExceptionBreakpoints(): IExceptionBreakpoint[];
   getWatchExpressions(): IEvaluatableExpression[];
+  fetchCallStack(thread: IThread): Promise<void>;
 
   onDidChangeBreakpoints(
     callback: (event: ?IBreakpointsChangeEvent) => mixed,
