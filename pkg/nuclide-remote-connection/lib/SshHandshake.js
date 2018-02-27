@@ -67,7 +67,7 @@ const ErrorType = Object.freeze({
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
-  USER_CANCELLED: 'USER_CANCELLED',
+  USER_CANCELED: 'USER_CANCELLED',
 });
 
 export type SshHandshakeErrorType =
@@ -157,10 +157,10 @@ export class SshHandshake {
   _clientCertificate: Buffer;
   _clientKey: Buffer;
   _passwordRetryCount: number;
-  _cancelled: boolean;
+  _canceled: boolean;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
-    this._cancelled = false;
+    this._canceled = false;
     this._delegate = delegate;
     this._connection = connection ? connection : new SshConnection();
     this._connection.on('ready', this._onConnect.bind(this));
@@ -231,7 +231,7 @@ export class SshHandshake {
   async connect(config: SshConnectionConfiguration): Promise<void> {
     this._config = config;
     this._passwordRetryCount = 0;
-    this._cancelled = false;
+    this._canceled = false;
     this._willConnect();
 
     let lookup;
@@ -302,7 +302,7 @@ export class SshHandshake {
   }
 
   cancel() {
-    this._cancelled = true;
+    this._canceled = true;
     this._connection.end();
   }
 
@@ -407,10 +407,10 @@ export class SshHandshake {
         stream
           .on('close', async (exitCode, signal) => {
             if (exitCode !== 0) {
-              if (this._cancelled) {
+              if (this._canceled) {
                 this._error(
                   'Cancelled by user',
-                  SshHandshake.ErrorType.USER_CANCELLED,
+                  SshHandshake.ErrorType.USER_CANCELED,
                   new Error(stdOut),
                 );
               } else {

@@ -414,7 +414,7 @@ export class ServerConnection {
     );
     const cancelEvents = observableFromSubscribeFunction(
       ServerConnection.onDidCancelServerConnection,
-    ).filter(cancelledHostname => cancelledHostname === hostname);
+    ).filter(canceledHostname => canceledHostname === hostname);
     return Observable.merge(
       addEvents,
       cancelEvents.map(x => {

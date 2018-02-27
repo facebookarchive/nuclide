@@ -421,18 +421,18 @@ export const nextAnimationFrame = Observable.create(observer => {
   };
 });
 
-export type CancellablePromise<T> = {
+export type CancelablePromise<T> = {
   promise: Promise<T>,
   cancel: () => void,
 };
 
 /**
- * Thrown when a CancellablePromise is cancelled().
+ * Thrown when a CancelablePromise is canceled().
  */
-export class PromiseCancelledError extends Error {
+export class PromiseCanceledError extends Error {
   constructor() {
     super();
-    this.name = 'PromiseCancelledError';
+    this.name = 'PromiseCanceledError';
   }
 }
 
@@ -442,9 +442,9 @@ export class PromiseCancelledError extends Error {
 // then unsubscribe from the underlying Promise and have the returned Promise throw.
 // If the cancellation function is called after the returned promise resolves,
 // then it does nothing.
-export function toCancellablePromise<T>(
+export function toCancelablePromise<T>(
   observable: Observable<T>,
-): CancellablePromise<T> {
+): CancelablePromise<T> {
   // Assign a dummy value to keep flow happy
   let cancel: () => void = () => {};
 
@@ -468,7 +468,7 @@ export function toCancellablePromise<T>(
         subscription.unsubscribe();
       } catch (e) {}
       try {
-        reject(new PromiseCancelledError());
+        reject(new PromiseCanceledError());
       } catch (e) {}
     };
   });
@@ -480,7 +480,7 @@ export function toCancellablePromise<T>(
 // This class is handy for expensive tasks like processes, provided
 // you never want the result of a previous task after a new task has started.
 export class SingletonExecutor<T> {
-  _currentTask: ?CancellablePromise<T> = null;
+  _currentTask: ?CancelablePromise<T> = null;
 
   // Executes(subscribes to) the task.
   // Will terminate(unsubscribe) to any previously executing task.
@@ -491,14 +491,14 @@ export class SingletonExecutor<T> {
     this.cancel();
 
     // Start a new process
-    const task = toCancellablePromise(createTask);
+    const task = toCancelablePromise(createTask);
     this._currentTask = task;
 
-    // Wait for the process to complete or be cancelled ...
+    // Wait for the process to complete or be canceled ...
     try {
       return await task.promise;
     } finally {
-      // ... and always clean up if we haven't been cancelled already.
+      // ... and always clean up if we haven't been canceled already.
       if (task === this._currentTask) {
         this._currentTask = null;
       }
@@ -509,7 +509,7 @@ export class SingletonExecutor<T> {
     return this._currentTask != null;
   }
 
-  // Cancells any currently executing tasks.
+  // Cancels any currently executing tasks.
   cancel(): void {
     if (this._currentTask != null) {
       this._currentTask.cancel();

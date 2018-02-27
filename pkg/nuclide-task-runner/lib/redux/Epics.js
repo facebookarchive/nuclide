@@ -484,7 +484,7 @@ export function setToolbarVisibilityEpic(
   });
 }
 
-export function printTaskCancelledEpic(
+export function printTaskCanceledEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {

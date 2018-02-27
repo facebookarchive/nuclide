@@ -54,7 +54,7 @@ export default function openPreview(
     lastOpenablePreview.cancel();
   }
 
-  let cancelled;
+  let canceled;
   let confirmed;
 
   const activeItem = atom.workspace.getActivePaneItem();
@@ -85,7 +85,7 @@ export default function openPreview(
       // a common case is scrolling through many results, cancelling one after
       // the other. give things a chance to cancel before going throught the work
       // of rendering a preview
-      if (cancelled) {
+      if (canceled) {
         return Promise.resolve();
       } else {
         return goToLocation(uri, {
@@ -98,7 +98,7 @@ export default function openPreview(
           moveCursor: false,
         }).then(newPreview => {
           if (
-            cancelled &&
+            canceled &&
             isPending(newPreview) &&
             // don't destroy the pane if it's not new (e.g. within the same file --
             // like a symbol within the originating file)
@@ -146,7 +146,7 @@ export default function openPreview(
 
   const openablePreview = {
     cancel() {
-      cancelled = true;
+      canceled = true;
 
       if (activeOpenableId !== thisOpenableId) {
         // the next preview has cleaned up our markers for us
@@ -180,7 +180,7 @@ export default function openPreview(
         );
       }
 
-      if (cancelled) {
+      if (canceled) {
         throw new Error(
           'A preview cannot be confirmed after it has been cancelled',
         );

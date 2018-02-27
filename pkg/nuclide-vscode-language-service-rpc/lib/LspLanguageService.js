@@ -911,6 +911,7 @@ export class LspLanguageService {
 
     if (
       e.code != null &&
+      // eslint-disable-next-line rulesdir/api-spelling
       Number(e.code) === ErrorCodes.RequestCancelled &&
       this._state === 'Running'
     ) {

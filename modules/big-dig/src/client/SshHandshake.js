@@ -82,7 +82,7 @@ const ErrorType = Object.freeze({
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
   UNSUPPORTED_AUTH_METHOD: 'UNSUPPORTED_AUTH_METHOD',
-  USER_CANCELLED: 'USER_CANCELLED',
+  USER_CANCELED: 'USER_CANCELLED',
   SERVER_SETUP_FAILED: 'SERVER_SETUP_FAILED',
 });
 
@@ -241,7 +241,7 @@ export class SshHandshakeError extends Error {
     this.message = message;
     this.errorType = errorType;
     this.innerError = innerError;
-    this.isCancellation = errorType === SshHandshake.ErrorType.USER_CANCELLED;
+    this.isCancellation = errorType === SshHandshake.ErrorType.USER_CANCELED;
   }
 }
 
@@ -282,10 +282,10 @@ export class SshHandshake {
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
-  _cancelled: boolean;
+  _canceled: boolean;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
-    this._cancelled = false;
+    this._canceled = false;
     this._delegate = delegate;
     this._connection = new SshClient(
       connection ? connection : new SshConnection(),
@@ -483,10 +483,10 @@ export class SshHandshake {
    * not an `SshHandshakeError`, then wrap it with `UNKNOWN`.
    */
   _wrapError(error: any): SshHandshakeError {
-    if (this._cancelled) {
+    if (this._canceled) {
       return new SshHandshakeError(
         'Cancelled by user',
-        SshHandshake.ErrorType.USER_CANCELLED,
+        SshHandshake.ErrorType.USER_CANCELED,
         error,
       );
     } else if (error instanceof SshHandshakeError) {
@@ -510,7 +510,7 @@ export class SshHandshake {
   ): Promise<[RemoteConnectionConfiguration, SshConnectionConfiguration]> {
     try {
       this._config = config;
-      this._cancelled = false;
+      this._canceled = false;
       this._willConnect();
 
       let address;
@@ -550,7 +550,7 @@ export class SshHandshake {
   }
 
   async cancel(): Promise<void> {
-    this._cancelled = true;
+    this._canceled = true;
     await this._connection.end();
   }
 

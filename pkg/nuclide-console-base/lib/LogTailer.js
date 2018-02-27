@@ -93,7 +93,7 @@ export class LogTailer {
         complete: () => {
           // If the process completed without ever entering the "running" state, invoke the
           // `onRunning` callback with a cancellation error.
-          this._invokeRunningCallbacks(new ProcessCancelledError(this._name));
+          this._invokeRunningCallbacks(new ProcessCanceledError(this._name));
           this._stop();
         },
       })
@@ -169,7 +169,7 @@ export class LogTailer {
     // error.
     this._startCount = 0;
     this._runningCallbacks.forEach(cb => {
-      cb(new ProcessCancelledError(this._name));
+      cb(new ProcessCanceledError(this._name));
     });
 
     this._stop();
@@ -272,7 +272,7 @@ export class LogTailer {
   }
 }
 
-class ProcessCancelledError extends Error {
+class ProcessCanceledError extends Error {
   constructor(logProducerName: string) {
     super(`${logProducerName} was stopped`);
     this.name = 'ProcessCancelledError';
