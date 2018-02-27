@@ -18,6 +18,7 @@
 
 module.exports = {
   rules: {
+    'api-spelling': require('./api-spelling'),
     'atom-apis': require('./atom-apis'),
     'consistent-import-name': require('./consistent-import-name'),
     'disallowed-modules': require('./disallowed-modules'),
@@ -35,6 +36,7 @@ module.exports = {
     'use-nuclide-ui-components': require('./use-nuclide-ui-components'),
   },
   rulesConfig: {
+    'api-spelling': 0,
     'atom-apis': 0,
     'consistent-import-name': 0,
     'disallowed-modules': 0,
