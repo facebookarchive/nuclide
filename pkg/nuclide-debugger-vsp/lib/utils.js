@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
-import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
+import type {OCamlDebugStartInfo} from 'nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,

@@ -16,10 +16,7 @@ import type {
 } from './types';
 
 import performanceNow from 'nuclide-commons/performanceNow';
-import {
-  timeoutPromise,
-  TimedOutError,
-} from '../../../modules/nuclide-commons/promise';
+import {timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import {track, trackTiming} from '../../nuclide-analytics';
 
 /**

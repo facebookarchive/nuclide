@@ -11,7 +11,7 @@
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import UniversalDisposable from '../../../modules/nuclide-commons/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import passesGK from '../../commons-node/passesGK';
 
 const GATEKEEPER_NAME = 'nuclide_blame_toggle_button';

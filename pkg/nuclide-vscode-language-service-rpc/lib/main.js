@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {SearchStrategy} from '../../../modules/nuclide-commons/ConfigCache';
+import type {SearchStrategy} from 'nuclide-commons/ConfigCache';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
