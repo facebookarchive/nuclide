@@ -14,9 +14,9 @@ import type {
   DefinitionQueryResult,
   Outline,
   CodeAction,
+  CodeFormatProvider,
 } from 'atom-ide-ui';
 import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
@@ -29,7 +29,6 @@ import type {
   LanguageService,
   SymbolResult,
   FileDiagnosticMap,
-  FormatOptions,
   AutocompleteResult,
   AutocompleteRequest,
   FileDiagnosticMessage,
@@ -47,7 +46,10 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 // TODO pelmers: maybe don't import from libclang
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {registerClangProvider} from '../../nuclide-clang/lib/libclang';
+import {
+  registerClangProvider,
+  formatCode,
+} from '../../nuclide-clang/lib/libclang';
 import passesGK from '../../commons-node/passesGK';
 import {
   AtomLanguageService,
@@ -63,6 +65,7 @@ const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
 // Must match string in nuclide-clang/lib/constants.js
 const NUCLIDE_CLANG_PACKAGE_NAME = 'nuclide-clang';
 const USE_CQUERY_CONFIG = 'nuclide-cquery-lsp.use-cquery';
+const GRAMMARS = ['source.cpp', 'source.c', 'source.objc', 'source.objcpp'];
 let _referencesViewService: ?FindReferencesViewService;
 
 type SaveState = {
@@ -70,12 +73,13 @@ type SaveState = {
 };
 
 // Wrapper that queries for clang settings when new files seen.
-class CqueryLSPClient {
+class CqueryLSPClient extends NullLanguageService {
   _service: CqueryLanguageService;
   _logger: log4js$Logger;
   _subscriptions = new UniversalDisposable();
 
   constructor(service: CqueryLanguageService) {
+    super();
     this._service = service;
     this._logger = getLogger('cquery-language-server');
     this._subscriptions.add(service, this._addCommands());
@@ -236,48 +240,6 @@ class CqueryLSPClient {
       : this._service.highlight(fileVersion, position);
   }
 
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatSource(fileVersion, range, options);
-  }
-
-  async formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatAtPosition(
-          fileVersion,
-          position,
-          triggerCharacter,
-          options,
-        );
-  }
-
-  async formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.formatEntireFile(fileVersion, range, options);
-  }
-
   async getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
@@ -322,28 +284,6 @@ class CqueryLSPClient {
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
     return this._service.symbolSearch(query, directories);
-  }
-
-  async getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
-    return this._service.getExpandedSelectionRange(
-      fileVersion,
-      currentSelection,
-    );
-  }
-
-  async getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
-    return this._service.getCollapsedSelectionRange(
-      fileVersion,
-      currentSelection,
-      originalCursorPosition,
-    );
   }
 }
 
@@ -417,6 +357,14 @@ class Activation {
     });
   }
 
+  provideCodeFormat(): CodeFormatProvider {
+    return {
+      grammarScopes: GRAMMARS,
+      priority: 1,
+      formatEntireFile: formatCode,
+    };
+  }
+
   initializeLsp(): IDisposable {
     // First disable the built-in clang package if it's running.
     const disableNuclideClang = () => {
@@ -434,7 +382,7 @@ class Activation {
 
     const atomConfig: AtomLanguageServiceConfig = {
       name: 'cquery',
-      grammars: ['source.cpp', 'source.c', 'source.objc', 'source.objcpp'],
+      grammars: GRAMMARS,
       autocomplete: {
         inclusionPriority: 1,
         suggestionPriority: 3,
@@ -466,13 +414,6 @@ class Activation {
         analyticsEventName: 'cquery.outline',
         updateOnEdit: true,
         priority: 1,
-      },
-      codeFormat: {
-        version: '0.1.0',
-        priority: 1,
-        analyticsEventName: 'cquery.codeFormat',
-        canFormatAtPosition: false,
-        canFormatRanges: true,
       },
       typeHint: {
         version: '0.0.0',

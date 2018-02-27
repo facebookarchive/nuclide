@@ -37,6 +37,13 @@
       }
     }
   },
+  "providedServices": {
+    "code-format.file": {
+      "versions": {
+        "0.1.0": "provideCodeFormat"
+      }
+    }
+  },
   "activationHooks": [
     "language-c:grammar-used",
     "language-cpp14:grammar-used",
