@@ -67,8 +67,7 @@ export class VSCodeDebuggerAdapterService extends DebuggerRpcServiceBase {
     }
   }
 
-  // Explicit override of service APIs for framrwork parser.
-
+  // Explicit override of service APIs for framework parser.
   getOutputWindowObservable(): ConnectableObservable<string> {
     return super.getOutputWindowObservable();
   }
