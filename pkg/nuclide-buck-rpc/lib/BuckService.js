@@ -456,26 +456,18 @@ export async function _buildRuleTypeFor(
   }
 
   const canonicalName = _normalizeNameForBuckQuery(aliasOrTarget);
-  const args = [
-    'query',
-    canonicalName,
-    '--json',
-    '--output-attributes',
-    'buck.type',
-  ];
-  let result;
+  let result: {[target: string]: Object};
   try {
-    result = await BuckServiceImpl.runBuckCommandFromProjectRoot(
-      rootPath,
-      args,
-    );
+    result = await BuckServiceImpl.query(rootPath, canonicalName, [
+      '--output-attributes',
+      'buck.type',
+    ]);
   } catch (error) {
     getLogger('nuclide-buck-rpc').error(error.message);
     return null;
   }
-  const json: {[target: string]: Object} = JSON.parse(result);
   // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
-  const targets = Object.keys(json);
+  const targets = Object.keys(result);
   if (targets.length === 0) {
     return null;
   }
@@ -488,7 +480,7 @@ export async function _buildRuleTypeFor(
     type = MULTIPLE_TARGET_RULE_TYPE;
   } else {
     qualifiedName = targets[0];
-    type = json[qualifiedName]['buck.type'];
+    type = result[qualifiedName]['buck.type'];
   }
   return {
     buildTarget: {

@@ -250,11 +250,29 @@ export async function query(
   rootPath: NuclideUri,
   queryString: string,
   extraArguments: Array<string>,
-): Promise<Array<string>> {
-  const args = ['query', ...extraArguments, '--json', queryString];
+): Promise<any> {
+  const fbRepoSpecificArgs = await _getFbRepoSpecificArgs(rootPath);
+  const args = [
+    'query',
+    ...extraArguments,
+    '--json',
+    queryString,
+    ...fbRepoSpecificArgs,
+  ];
   const result = await runBuckCommandFromProjectRoot(rootPath, args);
-  const json: Array<string> = JSON.parse(result);
-  return json;
+  return JSON.parse(result);
+}
+
+export async function _getFbRepoSpecificArgs(
+  buckRoot: NuclideUri,
+): Promise<Array<string>> {
+  try {
+    // $FlowFB
+    const {getFbRepoSpecificArgs} = require('./fb/repoSpecificArgs');
+    return await getFbRepoSpecificArgs(buckRoot);
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getBuildFile(

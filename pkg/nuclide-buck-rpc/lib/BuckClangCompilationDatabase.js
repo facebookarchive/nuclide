@@ -158,19 +158,6 @@ class BuckClangCompilationDatabaseHandler {
     );
   }
 
-  async _getExtraArguments(
-    buckRoot: string,
-    target: string,
-  ): Promise<Array<string>> {
-    try {
-      // $FlowFB
-      const {getExtraArguments} = require('./fb/getExtraArguments');
-      return await getExtraArguments(buckRoot, target);
-    } catch (e) {
-      return [];
-    }
-  }
-
   async _loadCompilationDatabaseForBuckTarget(
     buckProjectRoot: string,
     target: string,
@@ -183,7 +170,7 @@ class BuckClangCompilationDatabaseHandler {
     ];
     const allArgs =
       this._params.args.length === 0
-        ? await this._getExtraArguments(buckProjectRoot, target)
+        ? await BuckService._getFbRepoSpecificArgs(buckProjectRoot)
         : this._params.args;
     const buildTarget = target + '#' + allFlavors.join(',');
     const buildReport = await BuckService.build(
