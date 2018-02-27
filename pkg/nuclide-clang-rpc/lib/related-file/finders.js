@@ -11,6 +11,7 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getFileBasename, isHeaderFile, isSourceFile} from '../utils';
+import {findSourceFileInSameFolderIfBelongsToBuck} from './buck-finder';
 import {searchFileWithBasename, findSubArrayIndex} from './common';
 import {
   getRelatedHeaderForSourceFromFramework,
@@ -59,10 +60,16 @@ export class RelatedFileFinder {
       }
     }
 
-    return findIncludingSourceFile(
+    source = await findIncludingSourceFile(
       header,
       this._inferProjectRoot(header),
     ).toPromise();
+
+    if (source != null) {
+      return source;
+    }
+
+    return findSourceFileInSameFolderIfBelongsToBuck(header);
   }
 
   _getProjectRoots(): string[] {
