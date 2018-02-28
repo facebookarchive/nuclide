@@ -259,13 +259,13 @@ export async function getGdbLaunchProcessInfo(
   sourcePath: string,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getAdapterExecutableWithProperNode(
-    'native',
+    VsAdapterTypes.NATIVE_GDB,
     program,
   );
   return new VspProcessInfo(
     program,
     'launch',
-    VsAdapterTypes.NATIVE,
+    VsAdapterTypes.NATIVE_GDB,
     adapterInfo,
     {program: nuclideUri.getPath(program), args, cwd, environment, sourcePath},
     {threads: true},
@@ -278,13 +278,13 @@ export async function getGdbAttachProcessInfo(
   sourcePath: string,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getAdapterExecutableWithProperNode(
-    'native',
+    VsAdapterTypes.NATIVE_GDB,
     targetUri,
   );
   return new VspProcessInfo(
     targetUri,
     'attach',
-    VsAdapterTypes.NATIVE,
+    VsAdapterTypes.NATIVE_GDB,
     adapterInfo,
     {pid, sourcePath},
     {threads: true},

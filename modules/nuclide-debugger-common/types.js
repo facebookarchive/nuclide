@@ -40,7 +40,7 @@ export type VsAdapterType =
   | 'prepack'
   | 'ocaml'
   | 'mobilejs'
-  | 'native';
+  | 'native_gdb';
 
 export type UserOutputLevel =
   | 'debug'

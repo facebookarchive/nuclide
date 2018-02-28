@@ -20,9 +20,9 @@ export type Adapter =
   | 'prepack'
   | 'react-native'
   | 'ocaml'
-  | 'native'
   | 'hhvm'
-  | 'php-xdebug';
+  | 'php-xdebug'
+  | 'native_gdb';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
@@ -103,18 +103,18 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
     },
   ],
   [
-    'native',
+    'native_gdb',
     {
       executable: {
         command: 'node',
         args: [
           nuclideUri.join(
             __dirname,
-            'fb-native-debugger-vsp/src/RunTranspiledServer.js',
+            'fb-native-debugger-gdb-vsp/src/RunTranspiledServer.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'fb-native-debugger-vsp/src'),
+      root: nuclideUri.join(__dirname, 'fb-native-debugger-gdb-vsp/src'),
     },
   ],
   [
