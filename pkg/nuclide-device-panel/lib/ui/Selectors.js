@@ -11,9 +11,11 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Option} from '../../../nuclide-ui/Dropdown';
+import type {DeviceTypeComponent} from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
+import * as Immutable from 'immutable';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
@@ -28,6 +30,7 @@ type Props = {|
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
+  hostSelectorComponents: Immutable.List<DeviceTypeComponent>,
 |};
 
 export class Selectors extends React.Component<Props> {
@@ -52,6 +55,13 @@ export class Selectors extends React.Component<Props> {
       return {value: host, label: this._getLabelForHost(host)};
     });
   }
+
+  _getHostSelectorNodes = (): Immutable.List<React.Element<any>> => {
+    return this.props.hostSelectorComponents.map(component => {
+      const Type = component.type;
+      return <Type key={component.key} />;
+    });
+  };
 
   _getTypesButtons(): React.Element<any>[] {
     return this.props.deviceTypes.map(deviceType => {
@@ -87,15 +97,18 @@ export class Selectors extends React.Component<Props> {
 
   _getHostSelector(): React.Element<any> {
     return (
-      <Dropdown
-        options={this._getHostOptions()}
-        onChange={host => {
-          this.props.setHost(host);
-          this._updateDeviceType();
-        }}
-        value={this.props.host}
-        key="connection"
-      />
+      <div className="nuclide-device-panel-host-selector">
+        {this._getHostSelectorNodes()}
+        <Dropdown
+          options={this._getHostOptions()}
+          onChange={host => {
+            this.props.setHost(host);
+            this._updateDeviceType();
+          }}
+          value={this.props.host}
+          key="connection"
+        />
+      </div>
     );
   }
 
@@ -111,7 +124,7 @@ export class Selectors extends React.Component<Props> {
 
   render(): React.Node {
     return (
-      <div className="nuclide-device-panel-host-type-row">
+      <div className="block nuclide-device-panel-navigation-row">
         {this._getTypesSelector()}
         {this._getHostSelector()}
       </div>

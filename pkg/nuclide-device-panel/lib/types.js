@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from '../../commons-node/expected';
 import type {Device as DeviceIdType} from '../../nuclide-device-panel/lib/types';
 
+import * as Immutable from 'immutable';
 import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
 
@@ -104,29 +105,21 @@ export interface DeviceActionProvider {
   getActionsForDevice(device: Device): Array<DeviceAction>;
 }
 
-export type DevicesProps = {
-  devices: Expected<Array<Device>>,
-};
+export type ComponentPosition = 'host_selector' | 'above_table' | 'below_table';
 
-export type DeviceTypeOrderedComponent = {
-  component: React$ComponentType<DevicesProps>,
-  order: number,
+export type DeviceTypeComponent = {
+  position: ComponentPosition,
+  type: React$ComponentType<any>,
+  key: string,
 };
 
 export interface DeviceTypeComponentProvider {
   getType(): string;
-  getName(): string;
   observe(
     host: NuclideUri,
-    callback: (?DeviceTypeOrderedComponent) => void,
+    callback: (?DeviceTypeComponent) => void,
   ): IDisposable;
 }
-
-// This is just a type internal to this package, it conveniently includes the React key
-export type DeviceTypeComponent = {
-  type: React$ComponentType<DevicesProps>,
-  key: string,
-};
 
 //
 // Store
@@ -147,7 +140,10 @@ export type AppState = {
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
   isPollingDevices: boolean,
-  deviceTypeComponents: Array<DeviceTypeComponent>,
+  deviceTypeComponents: Immutable.Map<
+    ComponentPosition,
+    Immutable.List<DeviceTypeComponent>,
+  >,
 };
 
 export type Store = {
@@ -300,7 +296,10 @@ export type SetDeviceTypeTasksAction = {
 export type SetDeviceTypeComponentsAction = {
   type: 'SET_DEVICE_TYPE_COMPONENTS',
   payload: {
-    components: Array<DeviceTypeComponent>,
+    components: Immutable.Map<
+      ComponentPosition,
+      Immutable.List<DeviceTypeComponent>,
+    >,
   },
 };
 

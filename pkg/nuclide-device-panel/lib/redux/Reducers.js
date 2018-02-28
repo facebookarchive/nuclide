@@ -13,6 +13,7 @@ import type {Action, AppState, Device} from '../types';
 import type {Expected} from '../../../commons-node/expected';
 
 import * as Actions from './Actions';
+import * as Immutable from 'immutable';
 import {Expect} from '../../../commons-node/expected';
 
 export function app(state: AppState, action: Action): AppState {
@@ -27,7 +28,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: Expect.pendingValue([]),
         actions: [],
         processTasks: [],
-        deviceTypeComponents: [],
+        deviceTypeComponents: Immutable.Map(),
         isDeviceConnected: false,
         host,
       };
@@ -46,7 +47,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: Expect.pendingValue([]),
         actions: [],
         processTasks: [],
-        deviceTypeComponents: [],
+        deviceTypeComponents: Immutable.Map(),
         isDeviceConnected: false,
       };
 

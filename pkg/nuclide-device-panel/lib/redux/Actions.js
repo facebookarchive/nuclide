@@ -31,9 +31,11 @@ import type {
   ProcessTask,
   AppInfoRow,
   DeviceTypeComponent,
+  ComponentPosition,
 } from '../types';
 import type {Expected} from '../../../commons-node/expected';
 
+import * as Immutable from 'immutable';
 import {DeviceTask} from '../DeviceTask';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
@@ -165,7 +167,10 @@ export function setDeviceTypeTasks(
 }
 
 export function setDeviceTypeComponents(
-  components: Array<DeviceTypeComponent>,
+  components: Immutable.Map<
+    ComponentPosition,
+    Immutable.List<DeviceTypeComponent>,
+  >,
 ): SetDeviceTypeComponentsAction {
   return {type: SET_DEVICE_TYPE_COMPONENTS, payload: {components}};
 }

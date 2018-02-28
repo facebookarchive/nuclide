@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from '../../../commons-node/expected';
 import type {
-  DeviceTypeOrderedComponent,
+  DeviceTypeComponent,
   DeviceTypeComponentProvider,
 } from '../../../nuclide-device-panel/lib/types';
 
@@ -48,13 +48,9 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
     return 'Android';
   }
 
-  getName(): string {
-    return 'Emulators';
-  }
-
   observe(
     host: NuclideUri,
-    callback: (?DeviceTypeOrderedComponent) => void,
+    callback: (?DeviceTypeComponent) => void,
   ): IDisposable {
     // TODO (T26257016): Don't hide the table when ADB tunneling is on.
     if (nuclideUri.isRemote(host)) {
@@ -72,8 +68,9 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
     });
     const props = getProps.concat(this._refresh.exhaustMap(_ => getProps));
     callback({
-      order: 0,
-      component: bindObservableAsProps(props, AvdTable),
+      position: 'below_table',
+      type: bindObservableAsProps(props, AvdTable),
+      key: 'emulators',
     });
 
     return disposables;

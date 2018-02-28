@@ -12,6 +12,7 @@
 import type {AppState} from '../types';
 
 import {Expect} from '../../../commons-node/expected';
+import * as Immutable from 'immutable';
 
 export function createEmptyAppState(): AppState {
   return {
@@ -30,6 +31,6 @@ export function createEmptyAppState(): AppState {
     supportedPidsPerTask: new Map(),
     deviceTypeTasks: [],
     isPollingDevices: false,
-    deviceTypeComponents: [],
+    deviceTypeComponents: Immutable.Map(),
   };
 }

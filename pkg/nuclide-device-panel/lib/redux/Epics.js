@@ -9,6 +9,19 @@
  * @format
  */
 
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
+import type {
+  Action,
+  Store,
+  AppState,
+  ProcessTask,
+  Process,
+  AppInfoRow,
+  DeviceAppInfoProvider,
+  DeviceTypeComponent,
+} from '../types';
+import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
+
 import log4js from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
@@ -20,19 +33,7 @@ import {getProviders} from '../providers';
 import {DeviceTask} from '../DeviceTask';
 import {Cache} from '../../../commons-node/cache';
 import shallowEqual from 'shallowequal';
-
-import type {ActionsObservable} from 'nuclide-commons/redux-observable';
-import type {
-  Action,
-  Store,
-  AppState,
-  ProcessTask,
-  Process,
-  AppInfoRow,
-  DeviceAppInfoProvider,
-  DeviceTypeOrderedComponent,
-} from '../types';
-import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
+import * as Immutable from 'immutable';
 
 export function pollDevicesEpic(
   actions: ActionsObservable<Action>,
@@ -215,8 +216,8 @@ export function setDeviceTypeComponentsEpic(
       return Observable.empty();
     }
 
-    const gatheredComponents: Observable<
-      Array<?{ordered: DeviceTypeOrderedComponent, key: string}>,
+    const combinedComponents: Observable<
+      Array<?DeviceTypeComponent>,
     > = Observable.from(
       providers.map(provider =>
         Observable.create(observer => {
@@ -231,27 +232,24 @@ export function setDeviceTypeComponentsEpic(
           .catch(e => {
             log4js.getLogger().error(e);
             return Observable.of(null);
-          })
-          .map(
-            ordered =>
-              ordered == null ? null : {ordered, key: provider.getName()},
-          ),
+          }),
       ),
       // $FlowFixMe add combineAll to flow
     ).combineAll();
 
-    const components = gatheredComponents.map(array =>
-      array
-        .filter(value => value != null)
-        .map(value => {
-          invariant(value != null);
-          return value;
+    const groupedComponents = combinedComponents.map(components =>
+      Immutable.List(components)
+        .filter(c => c != null)
+        .map(c => {
+          invariant(c != null);
+          return c;
         })
-        .sort((a, b) => a.ordered.order - a.ordered.order)
-        .map(value => ({type: value.ordered.component, key: value.key})),
+        .groupBy(c => c.position),
     );
 
-    return components.map(value => Actions.setDeviceTypeComponents(value));
+    return groupedComponents.map(value =>
+      Actions.setDeviceTypeComponents(Immutable.Map(value)),
+    );
   });
 }
 

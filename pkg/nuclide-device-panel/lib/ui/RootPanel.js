@@ -11,11 +11,12 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
+  AppInfoRow,
+  ComponentPosition,
   Device,
+  DeviceTypeComponent,
   Process,
   ProcessTask,
-  AppInfoRow,
-  DeviceTypeComponent,
 } from '../types';
 import type {Expected} from '../../../commons-node/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
@@ -30,6 +31,7 @@ import invariant from 'assert';
 import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
 import {DevicePanel} from './DevicePanel';
+import * as Immutable from 'immutable';
 
 export type Props = {|
   setHost: (host: NuclideUri) => void,
@@ -50,7 +52,10 @@ export type Props = {|
   processes: Expected<Process[]>,
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
-  deviceTypeComponents: Array<DeviceTypeComponent>,
+  deviceTypeComponents: Immutable.Map<
+    ComponentPosition,
+    Immutable.List<DeviceTypeComponent>,
+  >,
 |};
 
 export class RootPanel extends React.Component<Props> {
@@ -113,21 +118,30 @@ export class RootPanel extends React.Component<Props> {
     );
   }
 
-  _getDeviceTypeComponents(): ?React.Element<any> {
-    const components = this.props.deviceTypeComponents.map(component => {
-      const Type = component.type;
-      return <Type key={component.key} devices={this.props.devices} />;
-    });
-    if (components.length < 1) {
+  _getHostSelectorComponents = (): Immutable.List<DeviceTypeComponent> => {
+    return (
+      this.props.deviceTypeComponents.get('host_selector') || Immutable.List()
+    );
+  };
+
+  _getDeviceTypeComponents = (
+    position: 'above_table' | 'below_table',
+  ): ?React.Element<any> => {
+    const components = this.props.deviceTypeComponents.get(position);
+    if (components == null) {
       return null;
     }
+    const nodes = components.map(component => {
+      const Type = component.type;
+      return <Type key={component.key} />;
+    });
 
     return (
-      <div className="block nuclide-device-panel-additional-components">
-        {components}
+      <div className={`block nuclide-device-panel-components-${position}`}>
+        {nodes}
       </div>
     );
-  }
+  };
 
   _goToRootPanel = (): void => {
     this.props.setDevice(null);
@@ -150,22 +164,23 @@ export class RootPanel extends React.Component<Props> {
         </div>
       );
     }
+
     return (
       <div>
-        <div className="block">
-          <Selectors
-            deviceType={this.props.deviceType}
-            deviceTypes={this.props.deviceTypes}
-            hosts={this.props.hosts}
-            host={this.props.host}
-            setDeviceType={this.props.setDeviceType}
-            toggleDevicePolling={this.props.toggleDevicePolling}
-            setHost={this.props.setHost}
-          />
-        </div>
+        <Selectors
+          deviceType={this.props.deviceType}
+          deviceTypes={this.props.deviceTypes}
+          hosts={this.props.hosts}
+          host={this.props.host}
+          setDeviceType={this.props.setDeviceType}
+          toggleDevicePolling={this.props.toggleDevicePolling}
+          setHost={this.props.setHost}
+          hostSelectorComponents={this._getHostSelectorComponents()}
+        />
+        {this._getDeviceTypeComponents('above_table')}
         <div className="block">{this._createDeviceTable()}</div>
         {this._getTasks()}
-        {this._getDeviceTypeComponents()}
+        {this._getDeviceTypeComponents('below_table')}
       </div>
     );
   }
