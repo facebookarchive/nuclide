@@ -1325,7 +1325,7 @@ export class HgService {
   }
 
   show(revision: number): ConnectableObservable<RevisionShowInfo> {
-    const args = ['show', `${revision}`, '-Tjson'];
+    const args = ['show', `${revision}`, '--git', '-Tjson'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
