@@ -23,8 +23,13 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observeProcess} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
+import {track} from '../../../nuclide-analytics';
 import {isSourceFile} from '../utils';
 import escapeStringRegExp from 'escape-string-regexp';
+import {findSubArrayIndex} from './common';
+import {getLogger} from 'log4js';
+
+const logger = getLogger('nuclide-clang-rpc');
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
 
@@ -34,16 +39,50 @@ export function findIncludingSourceFile(
 ): Observable<?string> {
   return _findIncludingSourceFile(headerFile, projectRoot)
     .timeout(INCLUDE_SEARCH_TIMEOUT)
-    .catch(() => Observable.of(null));
+    .catch(e => {
+      track('nuclide-clang-rpc.source-to-header.grep-error', {
+        header: headerFile,
+        projectRoot,
+        error: e.toString(),
+      });
+      return Observable.of(null);
+    });
+}
+
+function getFBProjectRoots(): string[] {
+  try {
+    // $FlowFB
+    return require('./fb-project-roots').getFBProjectRoots();
+  } catch (e) {}
+  return [];
+}
+
+export function getSearchFolder(projectRoot: string, header: string): string {
+  const roots = getFBProjectRoots();
+  // if the projectRoot is a fb root, then search in the first subdirectory,
+  // using the whole root is too expensive and might timeout
+  if (roots.some(root => projectRoot.endsWith(root))) {
+    const headerParts = nuclideUri.split(header);
+    for (const root of roots) {
+      const rootParts = nuclideUri.split(root);
+      const offset = findSubArrayIndex(headerParts, rootParts);
+      if (offset !== -1) {
+        return nuclideUri.join(
+          ...headerParts.slice(0, offset + rootParts.length + 1),
+        );
+      }
+    }
+  }
+  return projectRoot;
 }
 
 function _findIncludingSourceFile(
-  headerFile: string,
+  header: string,
   projectRoot: string,
 ): Observable<?string> {
-  const basename = escapeStringRegExp(nuclideUri.basename(headerFile));
+  const basename = escapeStringRegExp(nuclideUri.basename(header));
   const relativePath = escapeStringRegExp(
-    nuclideUri.relative(projectRoot, headerFile),
+    nuclideUri.relative(projectRoot, header),
   );
   const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
   const regex = new RegExp(pattern);
@@ -53,12 +92,10 @@ function _findIncludingSourceFile(
   return observeProcess(
     'grep',
     [
-      '-m', // stop after the first match
-      '1',
       '-RE', // recursive, extended
       '--null', // separate file/match with \0
       pattern,
-      projectRoot,
+      getSearchFolder(projectRoot, header),
     ],
     {/* TODO(T17353599) */ isExitError: () => false},
   )
@@ -66,8 +103,10 @@ function _findIncludingSourceFile(
     .flatMap(message => {
       switch (message.kind) {
         case 'stdout':
-          const file = processGrepResult(message.data, headerFile, regex);
-          return file == null ? Observable.empty() : Observable.of(file);
+          const file = processGrepResult(message.data, header, regex);
+          return file == null || !isSourceFile(file)
+            ? Observable.empty()
+            : Observable.of(file);
         case 'error':
           throw new Error(String(message.error));
         case 'exit':
@@ -76,6 +115,7 @@ function _findIncludingSourceFile(
           return Observable.empty();
       }
     })
+    .do(file => logger.info('found source file by grepping', file))
     .take(1);
 }
 

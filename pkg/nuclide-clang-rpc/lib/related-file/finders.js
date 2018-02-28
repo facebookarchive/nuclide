@@ -72,7 +72,7 @@ export class RelatedFileFinder {
     return findSourceFileInSameFolderIfBelongsToBuck(header);
   }
 
-  _getProjectRoots(): string[] {
+  _getFBProjectRoots(): string[] {
     try {
       // $FlowFB
       return require('./fb-project-roots').getFBProjectRoots();
@@ -87,7 +87,7 @@ export class RelatedFileFinder {
    */
   _inferProjectRoot(file: string): string {
     const pathParts = nuclideUri.split(file);
-    for (const root of this._getProjectRoots()) {
+    for (const root of this._getFBProjectRoots()) {
       const offset = findSubArrayIndex(pathParts, nuclideUri.split(root));
       if (offset !== -1) {
         return nuclideUri.join(...pathParts.slice(0, offset), root);

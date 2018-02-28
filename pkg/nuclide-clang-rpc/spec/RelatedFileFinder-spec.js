@@ -45,7 +45,7 @@ describe('getRelatedSourceForHeader', () => {
 
   it('is able to find an absolute include with project root but with a different real root', () => {
     waitsForPromise(async () => {
-      spyOn(finder, '_getProjectRoots').andReturn(['project/subproject']);
+      spyOn(finder, '_getFBProjectRoots').andReturn(['project/subproject']);
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([
@@ -68,7 +68,7 @@ describe('getRelatedSourceForHeader', () => {
   });
 
   it('is able to find an absolute include without project root', () => {
-    spyOn(finder, '_getProjectRoots').andReturn(['project/subproject']);
+    spyOn(finder, '_getFBProjectRoots').andReturn(['project/subproject']);
     waitsForPromise(async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
