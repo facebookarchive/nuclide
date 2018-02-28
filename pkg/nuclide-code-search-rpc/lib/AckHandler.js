@@ -43,5 +43,5 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
         regex.source,
       ])
       .concat(searchSources),
-  ).flatMap(event => parseAckRgLine(event));
+  ).flatMap(event => parseAckRgLine(event, regex));
 }

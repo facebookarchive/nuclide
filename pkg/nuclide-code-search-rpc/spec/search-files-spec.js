@@ -18,7 +18,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import which from 'nuclide-commons/which';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 
-describe('Remote Atom Search in files', () => {
+describe('Code search in files', () => {
   let folder;
   beforeEach(function() {
     addMatchers(this);
@@ -116,6 +116,19 @@ describe('Remote Atom Search in files', () => {
         sortResults(results2);
 
         expect(results2).diffJson(expected2);
+
+        // Match any console.<method> calls (tests variable matchLength).
+        const results3 = await searchWithTool(tool, {
+          regex: /console\.[^(]+/,
+          recursive: false,
+          files: joinFolder(folder, ['file1.js', 'directory/file2.js']),
+        })
+          .toArray()
+          .toPromise();
+        const expected3 = loadExpectedFixture(folder, 'regex-files-3.json');
+        sortResults(results3);
+
+        expect(results3).diffJson(expected3);
       });
     });
     it('Respects result limits', () => {

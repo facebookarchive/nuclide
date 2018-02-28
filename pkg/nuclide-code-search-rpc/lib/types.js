@@ -32,6 +32,7 @@ export type CodeSearchResult = {
   row: number,
   column: number,
   line: string,
+  matchLength: number,
 };
 
 export type search$Match = {

@@ -21,16 +21,25 @@ const GREP_PARSE_REGEX = /^(.+):(\d+):(.*)$/;
 
 export function parseAckRgLine(
   event: ProcessMessage,
+  regex: RegExp,
 ): Observable<CodeSearchResult> {
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(ACK_PARSE_REGEX);
     if (matches != null && matches.length === 5) {
       const [file, row, column, line] = matches.slice(1);
+      const columnNumber = parseInt(column, 10) - 1;
+      const match = regex.exec(line.slice(columnNumber));
+      // match cannot be null because the tool used the regex to find this line.
+      invariant(match != null);
+      const matchLength = match[0].length;
+      // Remember to reset the regex!
+      regex.lastIndex = 0;
       return Observable.of({
         file,
         row: parseInt(row, 10) - 1,
-        column: parseInt(column, 10) - 1,
+        column: columnNumber,
         line,
+        matchLength,
       });
     }
   }
@@ -51,6 +60,7 @@ export function parseGrepLine(
       // match cannot be null because grep used the regex to find this line.
       invariant(match != null);
       const column = match.index;
+      const matchLength = match[0].length;
       // Then reset the regex for the next search.
       regex.lastIndex = 0;
       return Observable.of({
@@ -58,6 +68,7 @@ export function parseGrepLine(
         row: parseInt(row, 10) - 1,
         column,
         line,
+        matchLength,
       });
     }
   }
