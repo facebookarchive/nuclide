@@ -12,7 +12,7 @@
 import type {search$FileResult, CodeSearchResult} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {resolveTool} from './searchTools';
+import {resolveTool, searchWithTool} from './searchTools';
 import {searchInDirectory, searchInDirectories} from './searchInDirectory';
 import {
   isFuse,
@@ -57,6 +57,28 @@ export function codeSearch(
   return searchInDirectory(directory, regex, tool, useVcsSearch)
     .take(maxResults)
     .publish();
+}
+
+/**
+ * @param files - The files in which to perform a search.
+ * @param regex - The pattern to match.
+ * @param tool - Which tool to use from POSIX_TOOLS or WINDOWS_TOOLS,
+ *   default to first one available.
+ * @param maxResults - Maximum number of results to emit.
+ * @returns An observable that emits results.
+ */
+export function searchFiles(
+  files: Array<NuclideUri>,
+  regex: RegExp,
+  tool: ?string,
+  maxResults?: number,
+): ConnectableObservable<CodeSearchResult> {
+  return searchWithTool(tool, {
+    recursive: false,
+    files,
+    regex,
+    limit: maxResults,
+  }).publish();
 }
 
 /**
