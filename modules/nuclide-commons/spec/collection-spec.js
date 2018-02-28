@@ -43,6 +43,7 @@ import {
   range,
   mapFromObject,
   distinct,
+  takeIterable,
 } from '../collection';
 
 describe('ensureArray', () => {
@@ -505,6 +506,19 @@ describe('filterIterable', () => {
       Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false)),
     ).toEqual([]);
     expect(Array.from(filterIterable([], element => true))).toEqual([]);
+  });
+});
+
+describe('takeIterable', () => {
+  it('returns a (lazy) iterable containing the first n elements', () => {
+    expect(
+      Array.from(takeIterable(new Set([1, 2, 3, 4, 5]), 3)).length,
+    ).toEqual(3);
+    expect(Array.from(takeIterable([1, 2, 3], 0)).length).toEqual(0);
+    expect(Array.from(takeIterable([1, 2, 3], 1)).length).toEqual(1);
+    expect(Array.from(takeIterable([1, 2, 3], 2)).length).toEqual(2);
+    expect(Array.from(takeIterable([1, 2, 3], 3)).length).toEqual(3);
+    expect(Array.from(takeIterable([1, 2, 3], 4)).length).toEqual(3);
   });
 });
 

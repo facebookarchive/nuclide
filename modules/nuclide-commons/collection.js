@@ -485,6 +485,19 @@ export function* mapIterable<T, M>(
   }
 }
 
+export function* takeIterable<T>(
+  iterable: Iterable<T>,
+  limit: number,
+): Iterable<T> {
+  let i = 0;
+  for (const element of iterable) {
+    if (++i > limit) {
+      break;
+    }
+    yield element;
+  }
+}
+
 // Return an iterable of the numbers start (inclusive) through stop (exclusive)
 export function* range(
   start: number,
