@@ -44,7 +44,7 @@ export const CodeSearchProvider: Provider<FileResult> = {
   display: {
     action: 'nuclide-code-search:toggle-provider',
     prompt:
-      'Search code using tools like ag, rg or ack. Configure using the Nuclide config...',
+      'Search code using tools like rg or ack. Configure using the Nuclide config...',
     title: 'Code Search',
   },
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {

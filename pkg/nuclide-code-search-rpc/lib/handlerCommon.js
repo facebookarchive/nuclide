@@ -14,7 +14,7 @@ import type {ProcessMessage} from 'nuclide-commons/process';
 import {observeProcess} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 
-// Grep and related tools (ag, ack, rg) have exit code 1 with no results.
+// Grep and related tools (ack, rg) have exit code 1 with no results.
 export function observeGrepLikeProcess(
   command: string,
   args: Array<string>,

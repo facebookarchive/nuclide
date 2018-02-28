@@ -19,7 +19,6 @@
         "enum": [
           { "value": "", "description": "Let Nuclide use any available tool" },
           { "value": "rg", "description": "ripgrep (rg)" },
-          { "value": "ag", "description": "silversearcher (ag)" },
           { "value": "ack", "description": "ack" },
           { "value": "grep", "description": "grep" }
         ],
@@ -38,7 +37,6 @@
         "enum": [
           { "value": "", "description": "Let Nuclide use any available tool" },
           { "value": "rg", "description": "ripgrep (rg)" },
-          { "value": "ag", "description": "silversearcher (ag)" },
           { "value": "ack", "description": "ack" },
           { "value": "grep", "description": "grep" }
         ],

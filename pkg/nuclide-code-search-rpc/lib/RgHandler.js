@@ -14,7 +14,7 @@ import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
 import {observeGrepLikeProcess} from './handlerCommon';
-import {parseAgAckRgLine} from './parser';
+import {parseAckRgLine} from './parser';
 
 export function search(
   directory: NuclideUri,
@@ -39,5 +39,5 @@ export function search(
       source,
       directory,
     ]),
-  ).flatMap(event => parseAgAckRgLine(event));
+  ).flatMap(event => parseAckRgLine(event));
 }

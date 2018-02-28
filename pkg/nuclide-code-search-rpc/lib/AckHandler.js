@@ -14,23 +14,18 @@ import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
 import {observeGrepLikeProcess} from './handlerCommon';
-import {parseAgAckRgLine} from './parser';
+import {parseAckRgLine} from './parser';
 
 export function search(
   directory: NuclideUri,
   regex: RegExp,
-  tool: 'ag' | 'ack',
 ): Observable<CodeSearchResult> {
   const baseArgs = [];
-  // ag does not search hidden files without --hidden flag.
-  if (tool === 'ag') {
-    baseArgs.push('--hidden');
-  }
   if (regex.ignoreCase) {
     baseArgs.push('--ignore-case');
   }
   return observeGrepLikeProcess(
-    tool,
+    'ack',
     baseArgs.concat([
       // no colors, always show column of first match, one result per line
       '--nocolor',
@@ -39,5 +34,5 @@ export function search(
       regex.source,
       directory,
     ]),
-  ).flatMap(event => parseAgAckRgLine(event));
+  ).flatMap(event => parseAckRgLine(event));
 }

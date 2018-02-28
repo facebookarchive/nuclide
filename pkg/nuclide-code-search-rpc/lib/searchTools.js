@@ -16,22 +16,15 @@ import os from 'os';
 
 import which from 'nuclide-commons/which';
 import {Observable} from 'rxjs';
-import {search as agAckSearch} from './AgAckHandler';
+import {search as ackSearch} from './AckHandler';
 import {search as grepSearch} from './GrepHandler';
 import {search as rgSearch} from './RgHandler';
 
 export const WINDOWS_TOOLS = ['rg', 'grep'];
-export const POSIX_TOOLS = ['ag', 'rg', 'ack', 'grep'];
+export const POSIX_TOOLS = ['rg', 'ack', 'grep'];
 
 const searchToolHandlers = new Map([
-  [
-    'ag',
-    (directory: string, query: RegExp) => agAckSearch(directory, query, 'ag'),
-  ],
-  [
-    'ack',
-    (directory: string, query: RegExp) => agAckSearch(directory, query, 'ack'),
-  ],
+  ['ack', ackSearch],
   ['rg', rgSearch],
   ['grep', grepSearch],
 ]);

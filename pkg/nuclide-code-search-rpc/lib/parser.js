@@ -19,7 +19,7 @@ import {Observable} from 'rxjs';
 const ACK_PARSE_REGEX = /^(.+):(\d+):(\d+):(.*)$/;
 const GREP_PARSE_REGEX = /^(.+):(\d+):(.*)$/;
 
-export function parseAgAckRgLine(
+export function parseAckRgLine(
   event: ProcessMessage,
 ): Observable<CodeSearchResult> {
   if (event.kind === 'stdout') {
