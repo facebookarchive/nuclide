@@ -10,6 +10,7 @@
  * @format
  */
 
+import {sleep} from 'nuclide-commons/promise';
 import {AtomInput} from '../AtomInput';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -109,7 +110,7 @@ describe('AtomInput', () => {
       ReactDOM.unmountComponentAtNode(hostEl);
 
       // Cleanup occurs during the next tick.
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await sleep(0);
       expect(element.component).toBe(null);
     });
   });

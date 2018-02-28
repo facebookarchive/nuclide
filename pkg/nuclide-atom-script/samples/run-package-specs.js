@@ -17,6 +17,7 @@ import invariant from 'assert';
 import electron from 'electron';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
+import {sleep} from 'nuclide-commons/promise';
 
 const {ipcRenderer, remote} = electron;
 invariant(ipcRenderer != null && remote != null);
@@ -35,7 +36,7 @@ export default (async function runCommand(
   ipcRenderer.send('run-package-specs', packageSpecPath);
 
   // Wait for the window to load
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await sleep(1000);
 
   const testWindow = remote.BrowserWindow.getAllWindows().find(
     browserWindow => {

@@ -9,6 +9,7 @@
  * @format
  */
 
+import {sleep} from 'nuclide-commons/promise';
 import typeof * as HackConnectionService from './HackConnectionService';
 import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
@@ -303,7 +304,7 @@ async function retryCreateHackProcess(
       logger.error(`Couldn't create HackProcess: ${e.message}`);
       logger.error(`Waiting ${waitTimeMs}ms before retrying...`);
 
-      await new Promise(resolve => setTimeout(resolve, waitTimeMs));
+      await sleep(waitTimeMs);
       waitTimeMs *= 2;
 
       const hackProcessNeeded =

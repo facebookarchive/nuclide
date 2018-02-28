@@ -10,6 +10,7 @@
  * @format
  */
 
+import {sleep} from 'nuclide-commons/promise';
 import {AtomTextEditor} from '../AtomTextEditor';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -181,7 +182,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       ReactDOM.unmountComponentAtNode(hostEl);
 
       // Cleanup occurs during the next tick.
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await sleep(0);
       expect(element.component).toBe(null);
     });
   });
