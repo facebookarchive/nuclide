@@ -21,6 +21,7 @@ import type {AutocompleteAnalytics} from '../../nuclide-autocomplete/lib/types';
 
 import invariant from 'assert';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
+import {getNonWordCharacters} from 'nuclide-commons-atom/text-editor';
 import {Point, Range} from 'simple-text-buffer';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -240,9 +241,8 @@ function getLanguageSpecificPrefix(request: atom$AutocompleteRequest): string {
   const {editor} = request;
   const position = getPosition(request);
 
-  const defaultWordRules = editor.getNonWordCharacters();
-  const scope = editor.scopeDescriptorForBufferPosition(position);
-  const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
+  const defaultWordRules = getNonWordCharacters(editor);
+  const langWordRules = getNonWordCharacters(editor, position);
   if (defaultWordRules !== langWordRules) {
     return findAtomWordPrefix(editor, position);
   }

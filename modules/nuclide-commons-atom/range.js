@@ -12,6 +12,7 @@
 
 import {Range} from 'atom';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
+import {getNonWordCharacters} from './text-editor';
 
 /**
  * Finds the word at the position. You can either provide a word regex yourself,
@@ -32,8 +33,7 @@ export function wordAtPosition(
     // atom$Cursor.wordRegExp, except that function gets the regex associated
     // with the editor's current cursor while we want the regex associated with
     // the specific position. So we re-implement it ourselves...
-    const scopeDescriptor = editor.scopeDescriptorForBufferPosition(position);
-    const nonWordChars = editor.getNonWordCharacters(scopeDescriptor);
+    const nonWordChars = getNonWordCharacters(editor, position);
     const escaped = nonWordChars.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     // We copied this escaping regex from atom$Cursor.wordRegexp, rather than
     // using the library function 'escapeStringRegExp'. That's because the
