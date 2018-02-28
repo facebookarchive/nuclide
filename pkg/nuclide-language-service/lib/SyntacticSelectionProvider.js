@@ -1,44 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {LanguageService} from './LanguageService';
-import type {SyntacticSelectionProvider as SyntacticSelectionProviderType} from '../../nuclide-syntactic-selection/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SyntacticSelectionProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type SyntacticSelectionConfig = {|
-  version: '0.1.0',
-  priority: number,
-  expandAnalyticsEventName: string,
-  collapseAnalyticsEventName: string,
-|};
+var _nuclideRemoteConnection;
 
-export class SyntacticSelectionProvider<T: LanguageService> {
-  grammarScopes: Array<string>;
-  priority: number;
-  name: string;
-  _expandAnalyticsEventName: string;
-  _collapseAnalyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    grammarScopes: Array<string>,
-    priority: number,
-    expandAnalyticsEventName: string,
-    collapseAnalyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class SyntacticSelectionProvider {
+
+  constructor(name, grammarScopes, priority, expandAnalyticsEventName, collapseAnalyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
@@ -47,67 +38,50 @@ export class SyntacticSelectionProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammarScopes: Array<string>,
-    config: SyntacticSelectionConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-syntactic-selection',
-      config.version,
-      new SyntacticSelectionProvider(
-        name,
-        grammarScopes,
-        config.priority,
-        config.expandAnalyticsEventName,
-        config.collapseAnalyticsEventName,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammarScopes, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-syntactic-selection', config.version, new SyntacticSelectionProvider(name, grammarScopes, config.priority, config.expandAnalyticsEventName, config.collapseAnalyticsEventName, connectionToLanguageService));
   }
 
-  getExpandedSelectionRange(editor: atom$TextEditor): Promise<?atom$Range> {
-    return trackTiming(this._expandAnalyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  getExpandedSelectionRange(editor) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._expandAnalyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return (await languageService).getExpandedSelectionRange(
-        fileVersion,
-        editor.getSelectedBufferRange(),
-      );
-    });
+      return (yield languageService).getExpandedSelectionRange(fileVersion, editor.getSelectedBufferRange());
+    }));
   }
 
-  getCollapsedSelectionRange(
-    editor: atom$TextEditor,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
-    return trackTiming(this._collapseAnalyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  getCollapsedSelectionRange(editor, originalCursorPosition) {
+    var _this2 = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._collapseAnalyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this2._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      return (await languageService).getCollapsedSelectionRange(
-        fileVersion,
-        editor.getSelectedBufferRange(),
-        originalCursorPosition,
-      );
-    });
+      return (yield languageService).getCollapsedSelectionRange(fileVersion, editor.getSelectedBufferRange(), originalCursorPosition);
+    }));
   }
 }
 
-// Ensures that SyntacticSelectionProvider has all the fields and methods defined in
+exports.SyntacticSelectionProvider = SyntacticSelectionProvider; // Ensures that SyntacticSelectionProvider has all the fields and methods defined in
 // the SyntacticSelectionProvider type in the atom-ide-syntactic-selection package.
-(((null: any): SyntacticSelectionProvider<
-  LanguageService,
->): SyntacticSelectionProviderType);
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+null;

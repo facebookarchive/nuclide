@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteSocket = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.createTunnel = createTunnel;
+exports.tunnelDescription = tunnelDescription;
+exports.shortenHostname = shortenHostname;
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _net = _interopRequireDefault(require('net'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const LOG_DELTA = 500000; // log for every half megabyte of transferred data
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,115 +32,98 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {getLogger} from 'log4js';
-import {ConnectableObservable, Observable} from 'rxjs';
+function createTunnel(td, cf) {
+  var _this = this;
 
-import net from 'net';
-
-import type {Connection, ConnectionFactory} from './Connection';
-import type {SocketEvent, TunnelDescriptor, IRemoteSocket} from './types.js';
-
-const LOG_DELTA = 500000; // log for every half megabyte of transferred data
-
-export function createTunnel(
-  td: TunnelDescriptor,
-  cf: ConnectionFactory,
-): ConnectableObservable<SocketEvent> {
   const logStatsIfNecessary = getStatLogger(LOG_DELTA);
-  let bytesReceived: number = 0;
-  let bytesWritten: number = 0;
+  let bytesReceived = 0;
+  let bytesWritten = 0;
 
-  return Observable.create(observer => {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     const descriptor = td;
     trace(`Tunnel: creating tunnel -- ${tunnelDescription(descriptor)}`);
 
-    const {port, family} = descriptor.from;
-    const connections: Map<number, Promise<Connection>> = new Map();
+    const { port, family } = descriptor.from;
+    const connections = new Map();
 
     // set up server to start listening for connections
     // on client_connected
-    const listener: net.Server = net.createServer(async socket => {
-      const clientPort = socket.remotePort;
+    const listener = _net.default.createServer((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (socket) {
+        const clientPort = socket.remotePort;
 
-      trace('Tunnel: client connected on remote port ' + clientPort);
-      observer.next({type: 'client_connected', clientPort});
+        trace('Tunnel: client connected on remote port ' + clientPort);
+        observer.next({ type: 'client_connected', clientPort });
 
-      // create outgoing connection using connection factory
-      const localSocket = new LocalSocket(socket);
-      localSocket.onWrite(count => {
-        bytesWritten += count;
-        logStatsIfNecessary(bytesWritten, bytesReceived);
-      });
-      const remoteSocket = new RemoteSocket(localSocket);
-      const connectionPromise = cf.createConnection(td.to, remoteSocket);
-      connections.set(clientPort, connectionPromise);
-
-      // set up socket listeners
-      socket.on('timeout', () => {
-        trace(`Tunnel: timeout (port: ${clientPort}, ${this.toString()})`);
-      });
-
-      socket.on('end', () => {
-        trace(
-          `Tunnel: end (port: ${clientPort}, ${tunnelDescription(descriptor)})`,
-        );
-      });
-
-      socket.on('error', err => {
-        trace(
-          `Tunnel: error (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
-        );
-        trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
-        socket.destroy(err);
-      });
-
-      // on data from incoming client
-      // write data to the outgoing connection
-      socket.on('data', data => {
-        connectionPromise.then(connection => {
-          connection.write(data);
-          bytesReceived += data.length;
+        // create outgoing connection using connection factory
+        const localSocket = new LocalSocket(socket);
+        localSocket.onWrite(function (count) {
+          bytesWritten += count;
           logStatsIfNecessary(bytesWritten, bytesReceived);
         });
+        const remoteSocket = new RemoteSocket(localSocket);
+        const connectionPromise = cf.createConnection(td.to, remoteSocket);
+        connections.set(clientPort, connectionPromise);
+
+        // set up socket listeners
+        socket.on('timeout', function () {
+          trace(`Tunnel: timeout (port: ${clientPort}, ${_this.toString()})`);
+        });
+
+        socket.on('end', function () {
+          trace(`Tunnel: end (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+        });
+
+        socket.on('error', function (err) {
+          trace(`Tunnel: error (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+          trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
+          socket.destroy(err);
+        });
+
+        // on data from incoming client
+        // write data to the outgoing connection
+        socket.on('data', function (data) {
+          connectionPromise.then(function (connection) {
+            connection.write(data);
+            bytesReceived += data.length;
+            logStatsIfNecessary(bytesWritten, bytesReceived);
+          });
+        });
+
+        socket.on('close', function () {
+          // on client_disconnect remove and dispose the connection
+          trace(`Tunnel: close (port: ${clientPort}, ${tunnelDescription(descriptor)})`);
+          connectionPromise.then(function (connection) {
+            connection.dispose();
+            connections.delete(clientPort);
+          });
+          observer.next({ type: 'client_disconnected', clientPort });
+        });
       });
 
-      socket.on('close', () => {
-        // on client_disconnect remove and dispose the connection
-        trace(
-          `Tunnel: close (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
-        );
-        connectionPromise.then(connection => {
-          connection.dispose();
-          connections.delete(clientPort);
-        });
-        observer.next({type: 'client_disconnected', clientPort});
-      });
-    });
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })());
 
     listener.on('error', err => {
       observer.error(err);
     });
 
-    listener.listen({host: family === 6 ? '::' : '0.0.0.0', port}, () => {
+    listener.listen({ host: family === 6 ? '::' : '0.0.0.0', port }, () => {
       trace('Tunnel: server listening on port ' + port);
-      observer.next({type: 'server_started'});
+      observer.next({ type: 'server_started' });
     });
 
     return () => {
       trace('Tunnel: shutting down tunnel');
-      connections.forEach(connectionPromise =>
-        connectionPromise.then(conn => {
-          conn.dispose();
-        }),
-      );
+      connections.forEach(connectionPromise => connectionPromise.then(conn => {
+        conn.dispose();
+      }));
       connections.clear();
       cf.dispose();
       listener.close();
@@ -121,13 +131,11 @@ export function createTunnel(
   }).publish();
 }
 
-export function tunnelDescription(tunnel: TunnelDescriptor) {
-  return `${shortenHostname(tunnel.from.host)}:${
-    tunnel.from.port
-  }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
+function tunnelDescription(tunnel) {
+  return `${shortenHostname(tunnel.from.host)}:${tunnel.from.port}->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
 }
 
-export function shortenHostname(host: string): string {
+function shortenHostname(host) {
   let result = host;
   if (result.endsWith('.facebook.com')) {
     result = result.slice(0, host.length - '.facebook.com'.length);
@@ -142,47 +150,45 @@ export function shortenHostname(host: string): string {
 }
 
 class LocalSocket {
-  _socket: net.Socket;
-  _writeListener: (byteCount: number) => void;
 
-  constructor(socket: net.Socket) {
+  constructor(socket) {
     this._socket = socket;
-    this._writeListener = (byteCount: number) => {};
+    this._writeListener = byteCount => {};
   }
 
-  onWrite(listener: (byteCount: number) => void) {
+  onWrite(listener) {
     this._writeListener = listener;
   }
 
-  write(data: Buffer): void {
+  write(data) {
     this._socket.write(data);
     this._writeListener(data.length);
   }
 
-  end(): void {
+  end() {
     this._socket.end();
   }
 }
 
-export class RemoteSocket implements IRemoteSocket {
-  _socket: LocalSocket | net.Socket;
+class RemoteSocket {
 
-  constructor(socket: LocalSocket | net.Socket) {
+  constructor(socket) {
     this._socket = socket;
   }
 
-  write(data: Buffer): void {
+  write(data) {
     this._socket.write(data);
   }
 
-  dispose(): void {
+  dispose() {
     this._socket.end();
   }
 }
 
-function getStatLogger(delta): (number, number) => void {
-  let lastLoggedBytes: number = 0;
-  return (bytesWritten: number, bytesReceived: number): void => {
+exports.RemoteSocket = RemoteSocket;
+function getStatLogger(delta) {
+  let lastLoggedBytes = 0;
+  return (bytesWritten, bytesReceived) => {
     const totalBytes = bytesWritten + bytesReceived;
     if (totalBytes > lastLoggedBytes + delta) {
       lastLoggedBytes = totalBytes;
@@ -191,16 +197,10 @@ function getStatLogger(delta): (number, number) => void {
   };
 }
 
-function logStats(
-  bytesWritten: number,
-  bytesReceived: number,
-  totalBytes: number,
-): void {
-  trace(
-    `Tunnel: ${totalBytes} bytes transferred; ${bytesWritten} written, ${bytesReceived} received`,
-  );
+function logStats(bytesWritten, bytesReceived, totalBytes) {
+  trace(`Tunnel: ${totalBytes} bytes transferred; ${bytesWritten} written, ${bytesReceived} received`);
 }
 
-function trace(message: string) {
-  getLogger('SocketService').trace(message);
+function trace(message) {
+  (0, (_log4js || _load_log4js()).getLogger)('SocketService').trace(message);
 }

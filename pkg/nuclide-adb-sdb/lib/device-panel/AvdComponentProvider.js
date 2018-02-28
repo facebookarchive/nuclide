@@ -1,3 +1,82 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AvdComponentProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _View;
+
+function _load_View() {
+  return _View = require('nuclide-commons-ui/View');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('nuclide-commons-ui/renderReactRoot');
+}
+
+var _expected;
+
+function _load_expected() {
+  return _expected = require('../../../commons-node/expected');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _AvdTable;
+
+function _load_AvdTable() {
+  return _AvdTable = _interopRequireDefault(require('./ui/AvdTable'));
+}
+
+var _AvdTableHeader;
+
+function _load_AvdTableHeader() {
+  return _AvdTableHeader = _interopRequireDefault(require('./ui/AvdTableHeader'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,154 +84,115 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from '../../../commons-node/expected';
-import type {
-  DeviceTypeOrderedComponent,
-  DeviceTypeComponentProvider,
-} from '../../../nuclide-device-panel/lib/types';
-
-import {View} from 'nuclide-commons-ui/View';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as React from 'react';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {Expect} from '../../../commons-node/expected';
-import invariant from 'assert';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import os from 'os';
-import {Observable, Subject} from 'rxjs';
-import {runCommand} from 'nuclide-commons/process';
-import AvdTable from './ui/AvdTable';
-import AvdTableHeader from './ui/AvdTableHeader';
-
-export type Avd = {
-  name: string,
-  running: boolean,
-  pid?: number,
-};
-
 const AVD_LOCKFILE = 'hardware-qemu.ini.lock';
 
-export class AvdComponentProvider implements DeviceTypeComponentProvider {
-  _refresh: Subject<void> = new Subject();
-  _emulator: ?string;
+class AvdComponentProvider {
+  constructor() {
+    this._refresh = new _rxjsBundlesRxMinJs.Subject();
 
-  getType(): string {
+    this._populateAvdPIDs = avds => {
+      return _rxjsBundlesRxMinJs.Observable.fromPromise(Promise.all(avds.map(this._populateAvdPID)));
+    };
+
+    this._refreshAvds = () => {
+      this._refresh.next();
+    };
+
+    this._startAvd = avd => {
+      if (!(this._emulator != null)) {
+        throw new Error('Invariant violation: "this._emulator != null"');
+      }
+
+      (0, (_process || _load_process()).runCommand)(this._emulator, ['@' + avd.name]).subscribe(stdout => {}, err => {
+        atom.notifications.addError(`Failed to start up emulator ${avd.name}.`, {
+          detail: err,
+          dismissable: true
+        });
+      });
+    };
+  }
+
+  getType() {
     return 'Android';
   }
 
-  getName(): string {
+  getName() {
     return 'Emulators';
   }
 
-  observe(
-    host: NuclideUri,
-    callback: (?DeviceTypeOrderedComponent) => void,
-  ): IDisposable {
+  observe(host, callback) {
     // TODO (T26257016): Don't hide the table when ADB tunneling is on.
-    if (nuclideUri.isRemote(host)) {
+    if ((_nuclideUri || _load_nuclideUri()).default.isRemote(host)) {
       callback(null);
-      return new UniversalDisposable();
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
 
-    const headerElement = (
-      <View
-        item={renderReactRoot(
-          <AvdTableHeader refreshAvds={this._refreshAvds} />,
-        )}
-      />
-    );
+    const headerElement = _react.createElement((_View || _load_View()).View, {
+      item: (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_react.createElement((_AvdTableHeader || _load_AvdTableHeader()).default, { refreshAvds: this._refreshAvds }))
+    });
     const getProps = this._getAvds().map(avds => {
       return {
         avds,
         headerElement,
-        startAvd: this._startAvd,
+        startAvd: this._startAvd
       };
     });
     const props = getProps.concat(this._refresh.exhaustMap(_ => getProps));
     callback({
       order: 0,
-      component: bindObservableAsProps(props, AvdTable),
+      component: (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props, (_AvdTable || _load_AvdTable()).default)
     });
-    return new UniversalDisposable();
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  _getEmulator(): Observable<?string> {
-    return Observable.defer(async () => {
+  _getEmulator() {
+    var _this = this;
+
+    return _rxjsBundlesRxMinJs.Observable.defer((0, _asyncToGenerator.default)(function* () {
       const androidHome = process.env.ANDROID_HOME;
-      const emulator =
-        androidHome != null ? `${androidHome}/tools/emulator` : null;
+      const emulator = androidHome != null ? `${androidHome}/tools/emulator` : null;
       if (emulator == null) {
         return null;
       }
-      const exists = await fsPromise.exists(emulator);
-      this._emulator = exists ? emulator : null;
-      return this._emulator;
-    });
+      const exists = yield (_fsPromise || _load_fsPromise()).default.exists(emulator);
+      _this._emulator = exists ? emulator : null;
+      return _this._emulator;
+    }));
   }
 
-  _parseAvds(emulatorOutput: string): Array<string> {
+  _parseAvds(emulatorOutput) {
     const trimmedOutput = emulatorOutput.trim();
-    return trimmedOutput === '' ? [] : trimmedOutput.split(os.EOL);
+    return trimmedOutput === '' ? [] : trimmedOutput.split(_os.default.EOL);
   }
 
-  async _populateAvdPID(avdName: string): Promise<Avd> {
-    const lockFile = `${os.homedir()}/.android/avd/${avdName}.avd/${AVD_LOCKFILE}`;
-    if (await fsPromise.exists(lockFile)) {
-      const pid = parseInt(await fsPromise.readFile(lockFile, 'utf8'), 10);
-      return {
-        name: avdName,
-        running: true,
-        pid,
-      };
-    } else {
-      return {
-        name: avdName,
-        running: false,
-      };
-    }
+  _populateAvdPID(avdName) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const lockFile = `${_os.default.homedir()}/.android/avd/${avdName}.avd/${AVD_LOCKFILE}`;
+      if (yield (_fsPromise || _load_fsPromise()).default.exists(lockFile)) {
+        const pid = parseInt((yield (_fsPromise || _load_fsPromise()).default.readFile(lockFile, 'utf8')), 10);
+        return {
+          name: avdName,
+          running: true,
+          pid
+        };
+      } else {
+        return {
+          name: avdName,
+          running: false
+        };
+      }
+    })();
   }
 
-  _populateAvdPIDs = (avds: Array<string>): Observable<Array<Avd>> => {
-    return Observable.fromPromise(Promise.all(avds.map(this._populateAvdPID)));
-  };
-
-  _getAvds(): Observable<Expected<Array<Avd>>> {
+  _getAvds() {
     return this._getEmulator().switchMap(emulator => {
-      return emulator != null
-        ? runCommand(emulator, ['-list-avds'])
-            .map(this._parseAvds)
-            .switchMap(this._populateAvdPIDs)
-            .map(Expect.value)
-        : Observable.of(
-            Expect.error(new Error("Cannot find 'emulator' command.")),
-          );
+      return emulator != null ? (0, (_process || _load_process()).runCommand)(emulator, ['-list-avds']).map(this._parseAvds).switchMap(this._populateAvdPIDs).map((_expected || _load_expected()).Expect.value) : _rxjsBundlesRxMinJs.Observable.of((_expected || _load_expected()).Expect.error(new Error("Cannot find 'emulator' command.")));
     });
   }
 
-  _refreshAvds = (): void => {
-    this._refresh.next();
-  };
-
-  _startAvd = (avd: Avd): void => {
-    invariant(this._emulator != null);
-    runCommand(this._emulator, ['@' + avd.name]).subscribe(
-      stdout => {},
-      err => {
-        atom.notifications.addError(
-          `Failed to start up emulator ${avd.name}.`,
-          {
-            detail: err,
-            dismissable: true,
-          },
-        );
-      },
-    );
-  };
 }
+exports.AvdComponentProvider = AvdComponentProvider;
