@@ -16,6 +16,7 @@ import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
+import {takeIterable} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
@@ -84,6 +85,7 @@ const COMMIT_CHANGE_DEBOUNCE_MS = 1000;
 // This is typically caused by a large rebase or a Watchman re-crawl.
 // We'll just report that the repository state changed, which should trigger a full client refresh.
 const FILES_CHANGED_LIMIT = 1000;
+const NUM_FETCH_STATUSES_LIMIT = 200;
 
 // Suffixes of hg error messages that indicate that an error is safe to ignore,
 // and should not warrant a user-visible error. These generally happen
@@ -416,7 +418,7 @@ export class HgService {
       .map(stdout => {
         const statusMap = new Map();
         const statuses = JSON.parse(stdout);
-        for (const status of statuses) {
+        for (const status of takeIterable(statuses, NUM_FETCH_STATUSES_LIMIT)) {
           statusMap.set(
             nuclideUri.join(this._workingDirectory, status.path),
             status.status,
