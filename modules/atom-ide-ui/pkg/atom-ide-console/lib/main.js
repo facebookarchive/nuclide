@@ -328,7 +328,12 @@ class Activation {
       records: this._store
         .getState()
         .records.slice(-maximumSerializedMessages)
-        .toArray(),
+        .toArray()
+        .map(record => {
+          // `Executor` is not serializable. Make sure to remove it first.
+          const {executor, ...rest} = record;
+          return rest;
+        }),
       history: this._store.getState().history.slice(-maximumSerializedHistory),
     };
   }
