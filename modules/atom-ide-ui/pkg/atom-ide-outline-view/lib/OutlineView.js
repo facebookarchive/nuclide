@@ -64,38 +64,13 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
 };
 
 export class OutlineView extends React.PureComponent<Props, State> {
-  subscription: ?UniversalDisposable;
   _outlineViewRef: ?React.ElementRef<typeof OutlineViewComponent>;
-  state = {
-    fontFamily: (atom.config.get('editor.fontFamily'): any),
-    fontSize: (atom.config.get('editor.fontSize'): any),
-    lineHeight: (atom.config.get('editor.lineHeight'): any),
-  };
 
   componentDidMount(): void {
-    invariant(this.subscription == null);
-    this.subscription = new UniversalDisposable(
-      atom.config.observe('editor.fontSize', (size: mixed) => {
-        this.setState({fontSize: (size: any)});
-      }),
-      atom.config.observe('editor.fontFamily', (font: mixed) => {
-        this.setState({fontFamily: (font: any)});
-      }),
-      atom.config.observe('editor.lineHeight', (size: mixed) => {
-        this.setState({lineHeight: (size: any)});
-      }),
-    );
-
     // Ensure that focus() gets called during the initial mount.
     if (this.props.visible) {
       this.focus();
     }
-  }
-
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
-    this.subscription.unsubscribe();
-    this.subscription = null;
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -119,17 +94,6 @@ export class OutlineView extends React.PureComponent<Props, State> {
   render(): React.Node {
     return (
       <div className="outline-view">
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              .outline-view-core {
-                line-height: ${this.state.lineHeight};
-                font-size: ${this.state.fontSize}px;
-                font-family: ${this.state.fontFamily};
-              }
-          `,
-          }}
-        />
         <OutlineViewComponent
           outline={this.props.outline}
           ref={this._setOutlineViewRef}
