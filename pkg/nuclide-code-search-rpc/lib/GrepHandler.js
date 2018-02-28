@@ -9,26 +9,29 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CodeSearchResult} from './types';
+import type {CodeSearchResult, CodeSearchParams} from './types';
 
 import {Observable} from 'rxjs';
 import {observeGrepLikeProcess} from './handlerCommon';
 import {parseGrepLine} from './parser';
 
-export function search(
-  directory: NuclideUri,
-  regex: RegExp,
-): Observable<CodeSearchResult> {
-  const args = (regex.ignoreCase ? ['-i'] : []).concat([
-    // recursive, always print filename, print line number, use regex
-    '-rHn',
-    '-E',
-    '-e',
-    regex.source,
-    directory,
-  ]);
-  return observeGrepLikeProcess('grep', args, directory).flatMap(event =>
-    parseGrepLine(event, directory, regex),
+export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
+  const {regex, limit} = params;
+  const searchSources = params.recursive ? [params.directory] : params.files;
+  if (searchSources.length === 0) {
+    return Observable.empty();
+  }
+  const args = (regex.ignoreCase ? ['-i'] : [])
+    .concat(limit != null ? ['-m', String(limit)] : [])
+    .concat([
+      // recursive, always print filename, print line number, use regex
+      '-rHn',
+      '-E',
+      '-e',
+      regex.source,
+    ])
+    .concat(searchSources);
+  return observeGrepLikeProcess('grep', args).flatMap(event =>
+    parseGrepLine(event, regex),
   );
 }

@@ -1,0 +1,8 @@
+[
+  {
+    "column": 8,
+    "file": "directory/file2.js",
+    "line": "        console.log(a); // good",
+    "row": 4
+  }
+]

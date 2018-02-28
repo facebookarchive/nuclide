@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CodeSearchResult} from './types';
+import type {CodeSearchResult, CodeSearchParams} from './types';
 import {asyncFind} from 'nuclide-commons/promise';
 import os from 'os';
 
@@ -40,13 +39,12 @@ export async function resolveTool(tool: ?string): Promise<?string> {
 
 export function searchWithTool(
   tool: ?string,
-  directory: NuclideUri,
-  regex: RegExp,
+  params: CodeSearchParams,
 ): Observable<CodeSearchResult> {
   return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
     const handler = searchToolHandlers.get(actualTool);
     if (handler != null) {
-      return handler(directory, regex);
+      return handler(params);
     }
     return Observable.empty();
   });

@@ -11,6 +11,22 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+type CodeSearchParamsBase = {
+  regex: RegExp,
+  limit?: number,
+};
+
+export type CodeSearchParams =
+  | (CodeSearchParamsBase & {
+      recursive: true,
+      directory: string,
+    })
+  | (CodeSearchParamsBase & {
+      recursive: false,
+      files: Array<string>,
+    });
+
+// Note: rows and columns are 0-based.
 export type CodeSearchResult = {
   file: NuclideUri,
   row: number,

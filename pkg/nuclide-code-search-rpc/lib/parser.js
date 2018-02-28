@@ -39,7 +39,6 @@ export function parseAckRgLine(
 
 export function parseGrepLine(
   event: ProcessMessage,
-  cwd: string,
   regex: RegExp,
 ): Observable<CodeSearchResult> {
   if (event.kind === 'stdout') {
@@ -54,10 +53,8 @@ export function parseGrepLine(
       const column = match.index;
       // Then reset the regex for the next search.
       regex.lastIndex = 0;
-      // Note: the vcs-grep searches return paths rooted from their cwd,
-      // so join the paths to make them absolute.
       return Observable.of({
-        file: nuclideUri.isAbsolute(file) ? file : nuclideUri.join(cwd, file),
+        file,
         row: parseInt(row, 10) - 1,
         column,
         line,
@@ -65,4 +62,19 @@ export function parseGrepLine(
     }
   }
   return Observable.empty();
+}
+
+export function parseVcsGrepLine(
+  event: ProcessMessage,
+  cwd: string,
+  regex: RegExp,
+): Observable<CodeSearchResult> {
+  // Note: the vcs-grep searches return paths rooted from their cwd,
+  // so join the paths to make them absolute.
+  return parseGrepLine(event, regex).map(result => ({
+    ...result,
+    file: nuclideUri.isAbsolute(result.file)
+      ? result.file
+      : nuclideUri.join(cwd, result.file),
+  }));
 }

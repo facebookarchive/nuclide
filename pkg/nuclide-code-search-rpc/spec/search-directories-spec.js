@@ -20,7 +20,7 @@ import {runCommand} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 
-describe('Remote Atom Search', () => {
+describe('Remote Atom Search by directory', () => {
   beforeEach(function() {
     addMatchers(this);
   });

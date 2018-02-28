@@ -1,0 +1,20 @@
+[
+  {
+    "column": 11,
+    "file": "directory/file2.js",
+    "line": "        // console.log(x);",
+    "row": 1
+  },
+  {
+    "column": 8,
+    "file": "directory/file2.js",
+    "line": "        console.log(a); // good",
+    "row": 4
+  },
+  {
+    "column": 8,
+    "file": "file1.js",
+    "line": "        console.log(n); //bad",
+    "row": 4
+  }
+]

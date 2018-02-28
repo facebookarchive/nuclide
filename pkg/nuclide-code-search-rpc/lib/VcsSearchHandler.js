@@ -14,7 +14,7 @@ import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
 import {observeProcess} from 'nuclide-commons/process';
-import {parseGrepLine} from './parser';
+import {parseVcsGrepLine} from './parser';
 
 export function search(
   directory: NuclideUri,
@@ -38,7 +38,7 @@ export function search(
           !signal && (exitCode == null || (exitCode > 1 && exitCode !== 123))
         );
       },
-    }).flatMap(event => parseGrepLine(event, directory, regex));
+    }).flatMap(event => parseVcsGrepLine(event, directory, regex));
   };
   // Try running search commands, falling through to the next if there is an error.
   return parseGrepResults('git', ['grep'].concat(sharedArgs)).catch(() =>

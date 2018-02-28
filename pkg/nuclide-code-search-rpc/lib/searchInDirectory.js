@@ -25,11 +25,10 @@ export function searchInDirectory(
   tool: ?string,
   useVcsSearch: boolean,
 ): Observable<CodeSearchResult> {
+  const params = {regex, directory, recursive: true};
   return useVcsSearch
-    ? vcsSearch(directory, regex).catch(() =>
-        searchWithTool(tool, directory, regex),
-      )
-    : searchWithTool(tool, directory, regex);
+    ? vcsSearch(directory, regex).catch(() => searchWithTool(tool, params))
+    : searchWithTool(tool, params);
 }
 
 export function searchInDirectories(
