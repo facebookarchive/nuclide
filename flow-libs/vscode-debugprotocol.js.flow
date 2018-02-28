@@ -1075,6 +1075,10 @@ declare module 'vscode-debugprotocol' {
     supportsExceptionInfoRequest?: boolean,
     /** The debug adapter supports the 'terminateDebuggee' attribute on the 'disconnect' request. */
     supportTerminateDebuggee?: boolean,
+    /** The debug adapter supports custom `continueToLocation` logic.
+     * This is not part of the standard Visual Studio Code debug protocol.
+     */
+    supportsContinueToLocation?: boolean,
   };
 
   /** An ExceptionBreakpointsFilter is shown in the UI as an option for configuring how exceptions are dealt with. */

@@ -57,8 +57,10 @@ import type {MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TimingTracker} from '../../../nuclide-analytics';
-import * as DebugProtocol from 'vscode-debugprotocol';
 
+import idx from 'idx';
+import invariant from 'assert';
+import * as DebugProtocol from 'vscode-debugprotocol';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -874,6 +876,61 @@ export default class DebugService implements IDebugService {
     return this._sendFunctionBreakpoints();
   }
 
+  runToLocation = async (uri: NuclideUri, line: number): Promise<void> => {
+    const {focusedThread, focusedProcess} = this.viewModel;
+    const session = idx(focusedProcess, _ => _.session);
+    if (focusedThread == null || focusedProcess == null || session == null) {
+      return;
+    }
+
+    track(AnalyticsEvents.DEBUGGER_STEP_RUN_TO_LOCATION);
+    if (Boolean(session.capabilities.supportsContinueToLocation)) {
+      await session.custom('continueToLocation', {
+        source: focusedProcess.getSource({path: uri}).raw,
+        line,
+        threadId: focusedThread.threadId,
+      });
+      return;
+    }
+    const existing = this._model.getBreakpointAtLine(uri, line);
+    if (existing == null) {
+      await this.addBreakpoints(uri, [{line}]);
+      const runToLocationBreakpoint = this._model.getBreakpointAtLine(
+        uri,
+        line,
+      );
+      invariant(runToLocationBreakpoint != null);
+
+      const removeBreakpoint = () => {
+        this.removeBreakpoints(
+          runToLocationBreakpoint.getId(),
+          true /* skip analytics */,
+        ).catch(error =>
+          onUnexpectedError(
+            `Failed to clear run-to-location breakpoint! - ${String(error)}`,
+          ),
+        );
+        removeBreakpointDisposable.dispose();
+        this._sessionEndDisposables.remove(removeBreakpointDisposable);
+        this._sessionEndDisposables.remove(removeBreakpoint);
+      };
+
+      // Remove if the debugger stopped at any location.
+      const removeBreakpointDisposable = new UniversalDisposable(
+        session
+          .observeStopEvents()
+          .take(1)
+          .subscribe(removeBreakpoint),
+      );
+      // Remove if the session has ended without hitting it.
+      this._sessionEndDisposables.add(
+        removeBreakpointDisposable,
+        removeBreakpoint,
+      );
+    }
+    await focusedThread.continue();
+  };
+
   addWatchExpression(name: string): void {
     track(AnalyticsEvents.DEBUGGER_WATCH_ADD_EXPRESSION);
     return this._model.addWatchExpression(name);
@@ -1071,6 +1128,17 @@ export default class DebugService implements IDebugService {
     await this._sendExceptionBreakpoints();
   }
 
+  _generateSource(uri: NuclideUri, process: IProcess): DebugProtocol.Source {
+    const source = process.sources.get(uri);
+    return source != null
+      ? source.raw
+      : ({
+          name: nuclideUri.basename(uri),
+          path: uri,
+          sourceReference: undefined,
+        }: DebugProtocol.Source);
+  }
+
   async _sendBreakpoints(
     modelUri: NuclideUri,
     sourceModified?: boolean = false,
@@ -1094,18 +1162,7 @@ export default class DebugService implements IDebugService {
           bp.uri.toString() === modelUri,
       );
 
-    const source = process.sources.get(modelUri);
-    let rawSource: DebugProtocol.Source;
-    if (source != null) {
-      rawSource = source.raw;
-    } else {
-      // TODO const data = Source.getEncodedDebugData(modelUri);
-      rawSource = ({
-        name: nuclideUri.basename(modelUri),
-        path: modelUri,
-        sourceReference: undefined,
-      }: DebugProtocol.Source);
-    }
+    const rawSource = this._generateSource(modelUri, process);
 
     if (breakpointsToSend.length && !rawSource.adapterData) {
       rawSource.adapterData = breakpointsToSend[0].adapterData;

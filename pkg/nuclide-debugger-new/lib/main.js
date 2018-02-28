@@ -199,6 +199,9 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
       }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:run-to-location': this._runToLocation.bind(this),
+      }),
       atom.commands.add('.nuclide-debugger-expression-value-list', {
         'nuclide-debugger:copy-debugger-expression-value': this._copyDebuggerExpressionValue.bind(
           this,
@@ -315,6 +318,12 @@ class Activation {
                     !textEditor.getSelectedBufferRange().isEmpty()
                   );
                 },
+              },
+              {
+                label: 'Run to Location',
+                command: 'nuclide-debugger:run-to-location',
+                shouldDisplay: event =>
+                  this._service.getDebuggerMode() === DebuggerMode.PAUSED,
               },
             ],
           },
@@ -710,6 +719,12 @@ class Activation {
     if (watchExpression != null && watchExpression.length > 0) {
       this._service.addWatchExpression(watchExpression);
     }
+  }
+
+  _runToLocation(event) {
+    this._executeWithEditorPath(event, (path, line) => {
+      this._service.runToLocation(path, line);
+    });
   }
 
   _copyDebuggerExpressionValue(event: Event) {

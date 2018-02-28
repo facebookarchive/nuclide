@@ -125,6 +125,7 @@ export interface ISession {
   custom(request: string, args: any): Promise<DebugProtocol.CustomResponse>;
   observeInitializeEvents(): Observable<DebugProtocol.InitializedEvent>;
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
+  observeStopEvents(): Observable<DebugProtocol.StoppedEvent>;
   restartFrame(
     args: DebugProtocol.RestartFrameArguments,
     threadId: number,
