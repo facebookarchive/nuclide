@@ -23,6 +23,7 @@ export const VsAdapterTypes = Object.freeze({
   OCAML: 'ocaml',
   MOBILEJS: 'mobilejs',
   NATIVE_GDB: 'native_gdb',
+  NATIVE_LLDB: 'native_lldb',
 });
 
 // This is to work around flow's missing support of enums.

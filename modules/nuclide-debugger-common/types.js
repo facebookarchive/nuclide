@@ -40,6 +40,7 @@ export type VsAdapterType =
   | 'prepack'
   | 'ocaml'
   | 'mobilejs'
+  | 'native_lldb'
   | 'native_gdb';
 
 export type UserOutputLevel =

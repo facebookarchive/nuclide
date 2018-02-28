@@ -12,6 +12,8 @@
 import type {Column} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ProcessInfo} from 'nuclide-commons/process';
+import type {VsAdapterType} from 'nuclide-debugger-common';
+import type {Option} from '../../nuclide-ui/Dropdown';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -23,16 +25,19 @@ import {
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import {getGdbAttachProcessInfo} from './utils';
+import {getNativeVSPAttachProcessInfo} from './utils';
 import {psTree} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {Table} from 'nuclide-commons-ui/Table';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 
 const PROCESS_UPDATES_INTERVAL_MS = 2000;
 
 type Props = {|
   +targetUri: NuclideUri,
   +configIsValidChanged: (valid: boolean) => void,
+  +debuggerBackends: Array<Option>,
+  +defaultDebuggerBackend: VsAdapterType,
 |};
 
 type ColumnName = 'process' | 'pid' | 'command';
@@ -50,6 +55,7 @@ type State = {
   sortedColumn: ?ColumnName,
   filterText: string,
   sourcePath: string,
+  debuggerBackend: VsAdapterType,
 };
 
 function getColumns(): Array<Column<*>> {
@@ -131,6 +137,7 @@ export default class NativeAttachUiComponent extends React.Component<
       sortedColumn: null,
       filterText: '',
       sourcePath: '',
+      debuggerBackend: props.defaultDebuggerBackend,
     };
   }
 
@@ -234,6 +241,10 @@ export default class NativeAttachUiComponent extends React.Component<
     });
   };
 
+  _onDebuggerBackendChange = (debuggerBackend: ?string): void => {
+    this.setState({debuggerBackend});
+  };
+
   render(): React.Node {
     const {
       processList,
@@ -289,6 +300,12 @@ export default class NativeAttachUiComponent extends React.Component<
           value={this.state.sourcePath}
           onDidChange={value => this.setState({sourcePath: value})}
         />
+        <label>Debugger backend: </label>
+        <Dropdown
+          options={this.props.debuggerBackends}
+          onChange={this._onDebuggerBackendChange}
+          value={this.state.debuggerBackend}
+        />
       </div>
     );
   }
@@ -301,7 +318,8 @@ export default class NativeAttachUiComponent extends React.Component<
 
     track('fb-native-debugger-attach-from-dialog');
     const pid = selectedProcess.pid;
-    const attachInfo = await getGdbAttachProcessInfo(
+    const attachInfo = await getNativeVSPAttachProcessInfo(
+      this.state.debuggerBackend,
       this.props.targetUri,
       pid,
       this.state.sourcePath,

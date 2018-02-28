@@ -22,7 +22,8 @@ export type Adapter =
   | 'ocaml'
   | 'hhvm'
   | 'php-xdebug'
-  | 'native_gdb';
+  | 'native_gdb'
+  | 'native_lldb';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,

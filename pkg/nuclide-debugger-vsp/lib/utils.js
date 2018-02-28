@@ -10,8 +10,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
-import type {OCamlDebugStartInfo} from 'nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
+import type {
+  VSAdapterExecutableInfo,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
+import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
@@ -251,40 +254,69 @@ export async function getOCamlLaunchProcessInfo(
   );
 }
 
-export async function getGdbLaunchProcessInfo(
+async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
+  try {
+    // $FlowFB
+    return require('./fb-LldbVspAdapterPath').getLldbVspAdapterPath(program);
+  } catch (ex) {
+    return 'lldb-vscode';
+  }
+}
+
+async function getNativeVSPAdapterExecutable(
+  adapter: VsAdapterType,
+  program: string,
+): Promise<VSAdapterExecutableInfo> {
+  if (adapter === 'native_gdb') {
+    return getAdapterExecutableWithProperNode(adapter, program);
+  }
+
+  const adapterInfo = {
+    command: await lldbVspAdapterWrapperPath(program),
+    args: [],
+  };
+
+  return adapterInfo;
+}
+
+export async function getNativeVSPLaunchProcessInfo(
+  adapter: VsAdapterType,
   program: NuclideUri,
   args: Array<string>,
   cwd: string,
   environment: ?{[string]: string},
   sourcePath: string,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getAdapterExecutableWithProperNode(
-    VsAdapterTypes.NATIVE_GDB,
-    program,
-  );
+  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
+
   return new VspProcessInfo(
     program,
     'launch',
-    VsAdapterTypes.NATIVE_GDB,
+    adapter,
     adapterInfo,
-    {program: nuclideUri.getPath(program), args, cwd, environment, sourcePath},
+    {
+      program: nuclideUri.getPath(program),
+      args,
+      cwd,
+      environment,
+      sourcePath,
+    },
     {threads: true},
   );
 }
 
-export async function getGdbAttachProcessInfo(
+export async function getNativeVSPAttachProcessInfo(
+  adapter: VsAdapterType,
   targetUri: NuclideUri,
   pid: number,
   sourcePath: string,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getAdapterExecutableWithProperNode(
-    VsAdapterTypes.NATIVE_GDB,
-    targetUri,
-  );
+  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, targetUri);
+
   return new VspProcessInfo(
     targetUri,
     'attach',
-    VsAdapterTypes.NATIVE_GDB,
+    adapter,
     adapterInfo,
     {pid, sourcePath},
     {threads: true},

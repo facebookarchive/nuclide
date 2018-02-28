@@ -9,8 +9,13 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Option} from '../../nuclide-ui/Dropdown';
+import type {VsAdapterType} from 'nuclide-debugger-common';
+
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {shellParse} from 'nuclide-commons/string';
@@ -21,13 +26,13 @@ import {
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import {getGdbLaunchProcessInfo} from './utils';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {getNativeVSPLaunchProcessInfo} from './utils';
 
 type Props = {|
   +targetUri: NuclideUri,
   +configIsValidChanged: (valid: boolean) => void,
+  +debuggerBackends: Array<Option>,
+  +defaultDebuggerBackend: VsAdapterType,
 |};
 
 type State = {
@@ -36,6 +41,7 @@ type State = {
   workingDirectory: string,
   environmentVariables: string,
   sourcePath: string,
+  debuggerBackend: VsAdapterType,
 };
 
 export default class NativeLaunchUiComponent extends React.Component<
@@ -58,6 +64,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       workingDirectory: '',
       environmentVariables: '',
       sourcePath: '',
+      debuggerBackend: props.defaultDebuggerBackend,
     };
   }
 
@@ -120,6 +127,10 @@ export default class NativeLaunchUiComponent extends React.Component<
     return true;
   }
 
+  _onDebuggerBackendChange = (debuggerBackend: ?VsAdapterType): void => {
+    this.setState({debuggerBackend});
+  };
+
   render(): React.Node {
     return (
       <div className="block">
@@ -170,6 +181,12 @@ export default class NativeLaunchUiComponent extends React.Component<
           value={this.state.sourcePath}
           onDidChange={value => this.setState({sourcePath: value})}
         />
+        <label>Debugger backend: </label>
+        <Dropdown
+          options={this.props.debuggerBackends}
+          onChange={this._onDebuggerBackendChange}
+          value={this.state.debuggerBackend}
+        />
       </div>
     );
   }
@@ -210,7 +227,8 @@ export default class NativeLaunchUiComponent extends React.Component<
         ? nuclideUri.createRemoteUri(hostname, program)
         : program;
 
-    const launchInfo = await getGdbLaunchProcessInfo(
+    const launchInfo = await getNativeVSPLaunchProcessInfo(
+      this.state.debuggerBackend,
       programUri,
       args,
       workingDirectory,

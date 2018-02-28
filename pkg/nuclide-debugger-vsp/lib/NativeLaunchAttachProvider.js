@@ -9,17 +9,30 @@
  * @format
  */
 
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+import type {Option} from '../../nuclide-ui/Dropdown';
+import type {VsAdapterType} from 'nuclide-debugger-common';
+
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import * as React from 'react';
 import NativeLaunchUiComponent from './NativeLaunchUiComponent';
 import NativeAttachUiComponent from './NativeAttachUiComponent';
 import invariant from 'assert';
 
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-
 export default class NativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
+  _debuggerBackends: Array<Option>;
+  _defaultDebuggerBackend: VsAdapterType;
+
   constructor(targetUri: string) {
     super('Native (VSP)', targetUri);
+
+    this._debuggerBackends = [
+      {value: VsAdapterTypes.NATIVE_GDB, label: 'gdb'},
+      {value: VsAdapterTypes.NATIVE_LLDB, label: 'lldb'},
+    ];
+
+    this._defaultDebuggerBackend = VsAdapterTypes.NATIVE_LLDB;
   }
 
   getCallbacksForAction(action: DebuggerConfigAction) {
@@ -48,6 +61,8 @@ export default class NativeLaunchAttachProvider extends DebuggerLaunchAttachProv
           return (
             <NativeLaunchUiComponent
               targetUri={this.getTargetUri()}
+              debuggerBackends={this._debuggerBackends}
+              defaultDebuggerBackend={this._defaultDebuggerBackend}
               configIsValidChanged={configIsValidChanged}
             />
           );
@@ -55,6 +70,8 @@ export default class NativeLaunchAttachProvider extends DebuggerLaunchAttachProv
           return (
             <NativeAttachUiComponent
               targetUri={this.getTargetUri()}
+              debuggerBackends={this._debuggerBackends}
+              defaultDebuggerBackend={this._defaultDebuggerBackend}
               configIsValidChanged={configIsValidChanged}
             />
           );
