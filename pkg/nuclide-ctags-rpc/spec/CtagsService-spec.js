@@ -35,6 +35,14 @@ describe('getCtagsService', () => {
       expect(svc).toBe(null);
     });
   });
+
+  it('returns null when a TAGS file exists', () => {
+    waitsForPromise(async () => {
+      const filePath = nuclideUri.join(__dirname, 'emacs', 'test');
+      const svc = await getCtagsService(filePath);
+      expect(svc).toBe(null);
+    });
+  });
 });
 
 describe('CtagsService.findTags', () => {
