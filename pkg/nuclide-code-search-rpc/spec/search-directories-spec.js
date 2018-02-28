@@ -13,7 +13,7 @@ import type {search$FileResult} from '../lib/types';
 
 import {addMatchers} from '../../nuclide-test-helpers';
 import {remoteAtomSearch} from '../lib/CodeSearchService';
-import {POSIX_TOOLS} from '../lib/searchInDirectory';
+import {POSIX_TOOLS} from '../lib/searchTools';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';

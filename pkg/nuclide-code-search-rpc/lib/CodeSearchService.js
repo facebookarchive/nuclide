@@ -12,11 +12,8 @@
 import type {search$FileResult, CodeSearchResult} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {
-  resolveTool,
-  searchInDirectory,
-  searchInDirectories,
-} from './searchInDirectory';
+import {resolveTool} from './searchTools';
+import {searchInDirectory, searchInDirectories} from './searchInDirectory';
 import {
   isFuse,
   isNfs,
