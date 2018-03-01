@@ -205,22 +205,6 @@ export default class NativeLaunchUiComponent extends React.Component<
       nullthrows(this._environmentVariables).getText(),
     );
 
-    // NB this is an object, not a map, because Map doesn't seem to be
-    // expressable in the VSP package.json type system
-    let environment = {};
-    environmentVariables.forEach(_ => {
-      const equal = _.indexOf('=');
-      if (equal === -1) {
-        throw new Error('Given environment is malformed.');
-      }
-      const key = _.substr(0, equal);
-      const value = _.substr(equal + 1);
-      environment = {
-        ...environment,
-        [key]: value,
-      };
-    });
-
     const {hostname} = nuclideUri.parse(this.props.targetUri);
     const programUri =
       hostname != null
@@ -232,7 +216,7 @@ export default class NativeLaunchUiComponent extends React.Component<
       programUri,
       args,
       workingDirectory,
-      environment,
+      environmentVariables,
       this.state.sourcePath,
     );
 

@@ -284,7 +284,7 @@ export async function getNativeVSPLaunchProcessInfo(
   program: NuclideUri,
   args: Array<string>,
   cwd: string,
-  environment: ?{[string]: string},
+  env: Array<string>,
   sourcePath: string,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
@@ -298,7 +298,7 @@ export async function getNativeVSPLaunchProcessInfo(
       program: nuclideUri.getPath(program),
       args,
       cwd,
-      environment,
+      env,
       sourcePath,
     },
     {threads: true},
