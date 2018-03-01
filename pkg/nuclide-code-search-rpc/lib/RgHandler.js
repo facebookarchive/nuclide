@@ -30,7 +30,7 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
     (regex.ignoreCase ? ['--ignore-case'] : [])
       .concat([
         // no colors, show line number, search hidden files,
-        // show column number, one result per line, show filename
+        // show column number, one result per line, show filename with null byte
         '--color',
         'never',
         '--line-number',
@@ -38,10 +38,11 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
         '--column',
         '--no-heading',
         '-H',
+        '-0',
         '-e',
         source,
       ])
       .concat(searchSources),
-  ).flatMap(event => parseAckRgLine(event, regex));
+  ).flatMap(event => parseAckRgLine(event, regex, 'rg'));
   return limit != null ? output.take(limit) : output;
 }

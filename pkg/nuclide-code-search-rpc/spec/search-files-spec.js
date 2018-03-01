@@ -42,8 +42,10 @@ describe('Code search in files', () => {
         // console.log(x);
         console.log();
         // next it is reading a variable
-        console.log(a); // good`,
+        console.log(a); // good
+../file1.js:3:6: // looks like a grep output`,
           ],
+          ['file:1:2:3:::-1', '// filename has lots of colons'],
         ]),
       );
     });
@@ -168,6 +170,44 @@ describe('Code search in files', () => {
           .toArray()
           .toPromise();
         expect(results).diffJson([]);
+      });
+    });
+    it('Parser does not fail when line contents look like grep result', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool === 'ack') {
+          return;
+        }
+        const results = await searchWithTool(tool, {
+          regex: /looks like a grep output/,
+          recursive: false,
+          files: joinFolder(folder, ['file1.js', 'directory/file2.js']),
+        })
+          .toArray()
+          .toPromise();
+        const expected = loadExpectedFixture(folder, 'parser-files-1.json');
+        sortResults(results);
+
+        expect(results).diffJson(expected);
+      });
+    });
+    it('Parser does not fail if filename has a colon', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool === 'ack') {
+          return;
+        }
+        const results = await searchWithTool(tool, {
+          regex: /lots of colons/,
+          recursive: false,
+          files: joinFolder(folder, ['file:1:2:3:::-1', 'file1.js']),
+        })
+          .toArray()
+          .toPromise();
+        const expected = loadExpectedFixture(folder, 'parser-files-2.json');
+        sortResults(results);
+
+        expect(results).diffJson(expected);
       });
     });
   });

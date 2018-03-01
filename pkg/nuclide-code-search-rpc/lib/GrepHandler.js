@@ -24,14 +24,16 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   const args = (regex.ignoreCase ? ['-i'] : [])
     .concat(limit != null ? ['-m', String(limit)] : [])
     .concat([
-      // recursive, always print filename, print line number, use regex
+      // recursive, always print filename, print line number with null byte,
+      // use extended regex
       '-rHn',
+      '--null',
       '-E',
       '-e',
       regex.source,
     ])
     .concat(searchSources);
   return observeGrepLikeProcess('grep', args).flatMap(event =>
-    parseGrepLine(event, regex),
+    parseGrepLine(event, regex, 'grep'),
   );
 }
