@@ -312,9 +312,13 @@ class OutlineViewCore extends React.PureComponent<
     pane.activateItem(editor);
   };
 
-  _getNodes = memoizeUntilChanged(outlineTrees => {
-    return outlineTrees.map(this._outlineTreeToNode);
-  });
+  _getNodes = memoizeUntilChanged(
+    outlineTrees => outlineTrees.map(this._outlineTreeToNode),
+    // searchResults is passed here as a cache key for the memoization.
+    // Since tree nodes contain `hidden` within them, we need to rerender
+    // whenever searchResults changes to reflect that.
+    outlineTrees => [outlineTrees, this.state.searchResults],
+  );
 
   _outlineTreeToNode = (outlineTree: OutlineTreeForUi): TreeNode => {
     const searchResult = this.state.searchResults.get(outlineTree);
