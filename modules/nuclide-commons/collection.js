@@ -188,7 +188,7 @@ export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
   return setFilter(a, e => b.has(e));
 }
 
-export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
+function setUnionTwo<T>(a: Set<T>, b: Set<T>): Set<T> {
   // Avoids the extra Array allocations that `new Set([...a, ...b])` would incur. Some quick tests
   // indicate it would be about 60% slower.
   const result = new Set(a);
@@ -196,6 +196,18 @@ export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
     result.add(x);
   });
   return result;
+}
+
+export function setUnion<T>(...sets: Array<Set<T>>): Set<T> {
+  if (sets.length < 1) {
+    return new Set();
+  }
+
+  const setReducer = (accumulator: Set<T>, current: Set<T>): Set<T> => {
+    return setUnionTwo(accumulator, current);
+  };
+
+  return sets.reduce(setReducer);
 }
 
 export function setDifference<T>(
