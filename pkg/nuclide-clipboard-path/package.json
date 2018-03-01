@@ -12,6 +12,7 @@
   "activationCommands": {
     "atom-text-editor:not(.mini)": [
       "nuclide-clipboard-path:copy-absolute-path",
+      "nuclide-clipboard-path:copy-hostname-of-current-path",
       "nuclide-clipboard-path:copy-repository-relative-path",
       "nuclide-clipboard-path:copy-project-relative-path"
     ]
