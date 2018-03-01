@@ -17,6 +17,7 @@ import {
   request,
 } from 'vscode-debugadapter';
 import net from 'net';
+import os from 'os';
 
 const TWO_CRLF = '\r\n\r\n';
 const CONTENT_LENGTH_PATTERN = new RegExp('Content-Length: (\\d+)');
@@ -55,7 +56,10 @@ class HHVMDebuggerWrapper {
   }
 
   _attachTarget(attachMessage: attachRequest, retries: number = 0) {
-    const args = attachMessage.arguments || {};
+    if (attachMessage.arguments == null) {
+      attachMessage.arguments = {};
+    }
+    const args = attachMessage.arguments;
     const attachPort =
       args.debugPort != null
         ? parseInt(args.debugPort, 10)
@@ -63,6 +67,10 @@ class HHVMDebuggerWrapper {
 
     if (Number.isNaN(attachPort)) {
       throw new Error('Invalid HHVM debug port specified.');
+    }
+
+    if (args.sandboxUser == null || args.sandboxUser.trim() === '') {
+      args.sandboxUser = os.userInfo().username;
     }
 
     const socket = new net.Socket();
@@ -121,10 +129,17 @@ class HHVMDebuggerWrapper {
   }
 
   _launchTarget(launchMessage: launchRequest) {
-    const args = launchMessage.arguments || {};
+    if (launchMessage.arguments == null) {
+      launchMessage.arguments = {};
+    }
+    const args = launchMessage.arguments;
     const hhvmPath = args.hhvmPath;
     if (hhvmPath == null || hhvmPath === '') {
       throw new Error('Expected a path to HHVM.');
+    }
+
+    if (args.sandboxUser == null || args.sandboxUser.trim() === '') {
+      args.sandboxUser = os.userInfo().username;
     }
 
     const hhvmArgs = args.hhvmArgs;
