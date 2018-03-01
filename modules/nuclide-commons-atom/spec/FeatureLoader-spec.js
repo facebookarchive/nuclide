@@ -22,6 +22,11 @@ const FEATURE_PACKAGE_PATH = path.join(
   'fixtures',
   'feature-package',
 );
+
+const ALWAYS_ENABLED = 'always';
+const NEVER_ENABLED = 'never';
+const DEFAULT = 'default';
+
 const featurePkg = JSON.parse(
   fs.readFileSync(path.join(FEATURE_PACKAGE_PATH, 'package.json')).toString(),
 );
@@ -54,7 +59,7 @@ describe('FeatureLoader', () => {
   describe('load', () => {
     beforeEach(() => {
       spyOn(atom.packages, 'loadPackage');
-      atom.config.set(`${rootName}.use.${featureName}`, true);
+      atom.config.set(`${rootName}.use.${featureName}`, ALWAYS_ENABLED);
       loader.load();
       atom.packages.emitter.emit('did-load-package', {
         name: ROOT_PACKAGE_DIRNAME,
@@ -84,12 +89,71 @@ describe('FeatureLoader', () => {
     });
   });
 
+  describe('enum migration', () => {
+    let samplefeature;
+    let normalfeature;
+
+    beforeEach(() => {
+      samplefeature = {
+        path: 'bar/sample-feature',
+        pkg: featurePkg,
+      };
+
+      normalfeature = {
+        path: 'bar/normal-feature',
+        pkg: featurePkg,
+      };
+    });
+    it("handles when sample- feature' current state is undefined", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        undefined,
+        samplefeature,
+      );
+      expect(newValue).toBe(NEVER_ENABLED);
+    });
+    it("handles when sample- feature's current state is true", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        true,
+        samplefeature,
+      );
+      expect(newValue).toBe(ALWAYS_ENABLED);
+    });
+    it("handles when sample- feature's current state is false", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        false,
+        samplefeature,
+      );
+      expect(newValue).toBe(DEFAULT);
+    });
+    it("handles when normal feature's current state is undefined", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        undefined,
+        normalfeature,
+      );
+      expect(newValue).toBe(DEFAULT);
+    });
+    it("handles when normal feature's current state is true", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        true,
+        normalfeature,
+      );
+      expect(newValue).toBe(DEFAULT);
+    });
+    it("handles when normal feature's current state is false", () => {
+      const newValue = loader.getValueForFeatureToEnumMigration(
+        false,
+        normalfeature,
+      );
+      expect(newValue).toBe(NEVER_ENABLED);
+    });
+  });
+
   describe('activate', () => {
     it('activates the feature package right away if enabled', () => {
       spyOn(atom.packages, 'activatePackage');
 
       loader.load();
-      atom.config.set(`${rootName}.use.${featureName}`, true);
+      atom.config.set(`${rootName}.use.${featureName}`, ALWAYS_ENABLED);
       atom.packages.emitter.emit('did-load-package', {
         name: ROOT_PACKAGE_DIRNAME,
       });
@@ -109,7 +173,7 @@ describe('FeatureLoader', () => {
       spyOn(atom.packages, 'deactivatePackage');
 
       loader.load();
-      atom.config.set(`${rootName}.use.${featureName}`, true);
+      atom.config.set(`${rootName}.use.${featureName}`, ALWAYS_ENABLED);
       atom.packages.emitter.emit('did-load-package', {
         name: ROOT_PACKAGE_DIRNAME,
       });

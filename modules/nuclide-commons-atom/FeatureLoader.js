@@ -38,6 +38,10 @@ type FeatureLoaderParams = {
   features: Array<Feature>,
 };
 
+const ALWAYS_ENABLED = 'always';
+const NEVER_ENABLED = 'never';
+const DEFAULT = 'default';
+
 const {devMode} = atom.getLoadSettings();
 
 export default class FeatureLoader {
@@ -52,7 +56,6 @@ export default class FeatureLoader {
   constructor({features, path: _path}: FeatureLoaderParams) {
     this._path = _path;
     this._features = features;
-
     this._loadDisposable = new UniversalDisposable();
     this._pkgName = packageNameFromPath(this._path);
     this._config = {
@@ -99,19 +102,27 @@ export default class FeatureLoader {
       const featurePkg = feature.pkg;
       const name = packageNameFromPath(feature.path);
 
-      // Sample packages are disabled by default. They are meant for development
-      // use only, and aren't included in Nuclide builds.
-      const enabled = !name.startsWith('sample-');
-
       // Entry for enabling/disabling the feature
+
+      // Migrate the current feature (from boolean on/off to enumerated states).
+      this.migrateFeature(feature);
+
       const setting = {
         title:
           featurePkg.displayName == null
             ? `Enable the "${name}" feature`
             : `Enable ${featurePkg.displayName}`,
         description: featurePkg.description || '',
-        type: 'boolean',
-        default: enabled,
+        type: 'string',
+        enum: [
+          {value: ALWAYS_ENABLED, description: 'Always enabled'},
+          {value: NEVER_ENABLED, description: 'Never enabled'},
+          {
+            value: DEFAULT,
+            description: 'Only when in an enabled package group',
+          },
+        ],
+        default: getFeatureDefaultValue(feature),
       };
 
       if (devMode) {
@@ -164,17 +175,7 @@ export default class FeatureLoader {
       // https://github.com/atom/atom/blob/v1.1.0/src/atom-environment.coffee#L625-L631
       // https://atom.io/docs/api/latest/PackageManager
       this._features.forEach(feature => {
-        // Config defaults are not merged with user defaults until activate. At
-        // this point `atom.config.get` returns the user set value. If it's
-        // `undefined`, then the user has not set it.
-        const enabled = atom.config.get(this.useKeyPathForFeature(feature));
-        const shouldEnable =
-          enabled == null
-            ? this._config.use.properties[packageNameFromPath(feature.path)]
-                .default
-            : enabled;
-
-        if (shouldEnable) {
+        if (this.shouldEnable(feature)) {
           atom.packages.loadPackage(feature.path);
         }
       });
@@ -201,7 +202,7 @@ export default class FeatureLoader {
     );
 
     this._features.forEach(feature => {
-      if (atom.config.get(this.useKeyPathForFeature(feature))) {
+      if (this.shouldEnable(feature)) {
         atom.packages.activatePackage(feature.path);
       }
     });
@@ -210,9 +211,9 @@ export default class FeatureLoader {
     this._activationDisposable = new UniversalDisposable(
       ...this._features.map(feature =>
         atom.config.onDidChange(this.useKeyPathForFeature(feature), event => {
-          if (event.newValue === true) {
+          if (this.shouldEnable(feature)) {
             atom.packages.activatePackage(feature.path);
-          } else if (event.newValue === false) {
+          } else {
             safeDeactivate(feature);
           }
         }),
@@ -252,6 +253,59 @@ export default class FeatureLoader {
   useKeyPathForFeature(feature: Feature): string {
     return `${this._pkgName}.use.${packageNameFromPath(feature.path)}`;
   }
+
+  shouldEnable(feature: Feature): boolean {
+    const name = packageNameFromPath(feature.path);
+    const currentState = atom.config.get(this.useKeyPathForFeature(feature));
+    switch (currentState) {
+      // Previously, this setting was a boolean. They should be migrated but handle it just in case.
+      case true:
+      case false:
+        return currentState;
+      case ALWAYS_ENABLED:
+        return true;
+      case NEVER_ENABLED:
+        return false;
+      case DEFAULT:
+        // TODO: This will become dependent on project configuration.
+        return true;
+      default:
+        // This default will trigger if the user explicitly
+        // sets a package's state to undefined or to a non-enum value.
+        // If this is the case, set to false if it begins with sample- and true otherwise.
+        return !name.startsWith('sample-');
+    }
+  }
+
+  migrateFeature(feature: Feature): void {
+    const keyPath = this.useKeyPathForFeature(feature);
+    const currentState = atom.config.get(keyPath);
+    const setTo = this.getValueForFeatureToEnumMigration(currentState, feature);
+    if (setTo !== currentState) {
+      atom.config.set(keyPath, setTo);
+    }
+  }
+
+  getValueForFeatureToEnumMigration(
+    currentState: mixed,
+    feature: Feature,
+  ): string {
+    const name = packageNameFromPath(feature.path);
+
+    switch (currentState) {
+      case true:
+        return name.startsWith('sample-') ? ALWAYS_ENABLED : DEFAULT;
+      case false:
+        return name.startsWith('sample-') ? DEFAULT : NEVER_ENABLED;
+      case ALWAYS_ENABLED:
+      case NEVER_ENABLED:
+      case DEFAULT:
+        invariant(typeof currentState === 'string');
+        return currentState;
+      default:
+        return getFeatureDefaultValue(feature);
+    }
+  }
 }
 
 function safeDeactivate(
@@ -268,6 +322,11 @@ function safeDeactivate(
     // eslint-disable-next-line no-console
     console.error(`Error deactivating "${name}": ${err.message}`);
   }
+}
+
+function getFeatureDefaultValue(feature: Feature): string {
+  const name = packageNameFromPath(feature.path);
+  return name.startsWith('sample-') ? NEVER_ENABLED : DEFAULT;
 }
 
 function safeSerialize(feature: Feature) {
