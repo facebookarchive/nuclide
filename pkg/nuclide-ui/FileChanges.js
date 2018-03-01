@@ -21,6 +21,7 @@ import ReactDOM from 'react-dom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Section} from './Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import classnames from 'classnames';
 
 type Props = {
   collapsable?: boolean,
@@ -67,8 +68,12 @@ export function createCustomLineNumberGutter(
   editor: atom$TextEditor,
   lineNumbers: Iterable<?number>,
   gutterWidth: number,
-  extraName?: string,
+  options: {
+    extraName?: string,
+    onClick?: (lineNumber: number) => mixed,
+  } = {},
 ): atom$Gutter {
+  const {extraName, onClick} = options;
   // 'nuclide-ui-file-changes-line-number-gutter-wX' makes a gutter Xem wide.
   // 'nuclide-ui-file-changes-line-number-gutter' makes a gutter 5em wide
   const suffix =
@@ -88,7 +93,7 @@ export function createCustomLineNumberGutter(
     const marker = editor.markBufferPosition([index, 0], {
       invalidate: 'touch',
     });
-    const item = createGutterItem(lineNumber, gutterWidth);
+    const item = createGutterItem(lineNumber, gutterWidth, onClick);
     gutter.decorateMarker(marker, {
       type: 'gutter',
       item,
@@ -106,6 +111,7 @@ const NBSP = '\xa0';
 function createGutterItem(
   lineNumber: number,
   gutterWidth: number,
+  onClick: ?(lineNumber: number) => mixed,
 ): HTMLElement {
   const fillWidth = gutterWidth - String(lineNumber).length;
   // Paralleling the original line-number implementation,
@@ -113,7 +119,9 @@ function createGutterItem(
   const filler = fillWidth > 0 ? new Array(fillWidth).fill(NBSP).join('') : '';
   // Attempt to reuse the existing line-number styles.
   return renderReactRoot(
-    <div className="line-number">
+    <div
+      onClick={onClick && (() => onClick(lineNumber))}
+      className={classnames('line-number', {clickable: onClick != null})}>
       {filler}
       {lineNumber}
     </div>,
