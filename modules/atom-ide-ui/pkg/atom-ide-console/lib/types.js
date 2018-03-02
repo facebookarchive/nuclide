@@ -27,6 +27,7 @@ export type ConsoleApi = {
   error(object: string, _: void): void,
   warn(object: string, _: void): void,
   info(object: string, _: void): void,
+  success(object: string, _: void): void,
 
   // A generic API for sending a message of any level (log, error, etc.).
   append(message: Message): void,

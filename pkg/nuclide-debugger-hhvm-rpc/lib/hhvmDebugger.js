@@ -392,11 +392,59 @@ class HHVMDebuggerWrapper {
     });
   }
 
-  _writeOutputWithHeader(message: Object) {
-    if (message.command === 'threads' && Array.isArray(message.body)) {
-      // TODO(ericblue): Fix threads response on the HHVM side.
-      message.body = {threads: message.body};
+  // Helper to apply compatibility fixes and errata to messages coming
+  // from HHVM. Since we have the ability to update this wrapper much
+  // more quickly than a new HHVM release, this allows us to modify
+  // behavior and fix compatibility bugs before presenting the messages
+  // to the client.
+  _applyCompatabilityFixes(message: Object) {
+    if (message.type === 'response') {
+      switch (message.command) {
+        case 'threads': {
+          if (Array.isArray(message.body)) {
+            // TODO(ericblue): Fix threads response on the HHVM side.
+            message.body = {threads: message.body};
+          }
+          break;
+        }
+        default:
+          // No fixes needed.
+          break;
+      }
+    } else if (message.type === 'event') {
+      switch (message.event) {
+        case 'output': {
+          // Nuclide console requires all output messages to end with a newline
+          // to work properly.
+          if (message.body != null && !message.body.output.endsWith('\n')) {
+            message.body.output += '\n';
+          }
+
+          // Map custom output types onto explicit protocol types.
+          switch (message.body.category) {
+            case 'warning':
+              message.body.category = 'console';
+              break;
+            case 'error':
+              message.body.category = 'stderr';
+              break;
+            case 'stdout':
+            case 'info':
+              message.body.category = 'log';
+              break;
+          }
+          break;
+        }
+        default:
+          // No fixes needed.
+          break;
+      }
     }
+  }
+
+  _writeOutputWithHeader(message: Object) {
+    this._applyCompatabilityFixes(message);
+
     const output = JSON.stringify(message);
     const length = Buffer.byteLength(output, 'utf8');
     process.stdout.write('Content-Length: ' + length + TWO_CRLF, 'utf8');

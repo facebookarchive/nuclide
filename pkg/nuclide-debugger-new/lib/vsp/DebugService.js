@@ -603,10 +603,21 @@ export default class DebugService implements IDebugService {
           event => event.body != null && typeof event.body.output === 'string',
         )
         .share();
-      const [errorStream, warningsStream, logStream] = [
+      const KNOWN_CATEGORIES = new Set([
         'stderr',
         'console',
-        'stdout',
+        'telemetry',
+        'success',
+      ]);
+      const logStream = splitStream(
+        outputEvents
+          .filter(e => !KNOWN_CATEGORIES.has(e.body.category))
+          .map(e => stripAnsi(e.body.output)),
+      );
+      const [errorStream, warningsStream, successStream] = [
+        'stderr',
+        'console',
+        'success',
       ].map(category =>
         splitStream(
           outputEvents
@@ -626,6 +637,9 @@ export default class DebugService implements IDebugService {
         }),
         warningsStream.subscribe(line => {
           consoleApi.append({text: line, level: 'warning'});
+        }),
+        successStream.subscribe(line => {
+          consoleApi.append({text: line, level: 'success'});
         }),
         logStream.subscribe(line => {
           consoleApi.append({text: line, level: 'log'});

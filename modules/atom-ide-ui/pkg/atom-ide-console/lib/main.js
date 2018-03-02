@@ -231,6 +231,9 @@ class Activation {
         info(object: string): void {
           console.append({text: object, level: 'info'});
         },
+        success(object: string): void {
+          console.append({text: object, level: 'success'});
+        },
         append(message: Message): void {
           invariant(activation != null && !disposed);
           activation._getStore().dispatch(
