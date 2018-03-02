@@ -27,7 +27,6 @@
     "method": "handleURI",
     "deferActivation": false
   },
-  "urlMain": "./lib/url-main-entry.js",
   "bin": {
     "nuclide-start-server": "./pkg/nuclide-server/nuclide-start-server"
   },
