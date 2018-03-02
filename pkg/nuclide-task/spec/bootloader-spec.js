@@ -18,7 +18,7 @@ describe('Task', () => {
     let task: ?Task = null;
 
     beforeEach(() => {
-      task = new Task();
+      task = new Task('test');
     });
 
     afterEach(() => {
@@ -136,7 +136,7 @@ describe('Task', () => {
 
   it('calls onError upon error', () => {
     const spy = jasmine.createSpy('exit');
-    const task = new Task();
+    const task = new Task('test');
     task.onError(spy);
     task._initialize();
     invariant(task._child != null);
@@ -151,7 +151,7 @@ describe('Task', () => {
     runs(() => {
       // eslint-disable-next-line no-console
       expect(console.log.argsForCall[0]).toMatch(
-        /TASK\(\d+\): Error: channel closed/,
+        /TASK\(test, \d+\): Error: channel closed/,
       );
     });
   });

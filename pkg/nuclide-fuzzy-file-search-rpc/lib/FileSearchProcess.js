@@ -33,7 +33,7 @@ class FileSearchProcess {
   }
 
   async initialize(): Promise<void> {
-    const task = new Task();
+    const task = new Task('FileSearchProcess');
     this._task = task;
     task.onError(buffer => {
       logger.error(
