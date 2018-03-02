@@ -13,7 +13,6 @@ import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {BuckClangCompilationDatabase} from './types';
 
 import * as ClangService from '../../nuclide-clang-rpc';
-import {RelatedFileFinder} from '../../nuclide-clang-rpc/lib/related-file/finders';
 import * as BuckService from './BuckServiceImpl';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -66,9 +65,7 @@ class BuckClangCompilationDatabaseHandler {
   getCompilationDatabase(file: string): Promise<?BuckClangCompilationDatabase> {
     return this._sourceCache.getOrCreate(file, async () => {
       if (isHeaderFile(file)) {
-        const source = await new RelatedFileFinder().getRelatedSourceForHeader(
-          file,
-        );
+        const source = await ClangService.getRelatedSourceOrHeader(file);
         if (source != null) {
           logger.info(
             `${file} is a header, thus using ${source} for getting the compilation flags.`,

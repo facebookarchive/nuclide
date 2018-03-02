@@ -10,6 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Cache} from '../../../commons-node/cache';
 import {getFileBasename, isHeaderFile, isSourceFile} from '../utils';
 import {findSourceFileInSameFolderIfBelongsToBuck} from './buck-finder';
 import {searchFileWithBasename, findSubArrayIndex} from './common';
@@ -19,7 +20,17 @@ import {
 } from './objc-framework';
 import {findIncludingSourceFile} from './grep-finder';
 
+// If the source for a header is null, recheck after 10 minutes.
+const SOURCE_FOR_HEADER_RECHECK_INTERVAL = 10 * 60 * 1000;
+
 export class RelatedFileFinder {
+  // Finding the source file that relates to header may be very expensive
+  // because we grep for '#include' directives, so cache the results.
+  _sourceForHeaderCache: Cache<
+    {header: string, projectRoot: ?string},
+    Promise<{source: ?string, time: number}>,
+  > = new Cache({keyFactory: key => JSON.stringify(key)});
+
   async getRelatedHeaderForSource(src: string): Promise<?string> {
     // search in folder
     const header = await searchFileWithBasename(
@@ -35,6 +46,26 @@ export class RelatedFileFinder {
   }
 
   async getRelatedSourceForHeader(
+    header: string,
+    projectRoot: ?string,
+  ): Promise<?string> {
+    const {source, time} = await this._sourceForHeaderCache.getOrCreate(
+      {header, projectRoot},
+      () =>
+        this._getRelatedSourceForHeaderImpl(header, projectRoot).then(src => ({
+          source: src,
+          time: Date.now(),
+        })),
+    );
+    const now = Date.now();
+    if (source == null && now > time + SOURCE_FOR_HEADER_RECHECK_INTERVAL) {
+      this._sourceForHeaderCache.delete({header, projectRoot});
+      return this.getRelatedHeaderForSource(header);
+    }
+    return source;
+  }
+
+  async _getRelatedSourceForHeaderImpl(
     header: string,
     projectRoot: ?string,
   ): Promise<?string> {

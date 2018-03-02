@@ -9,6 +9,7 @@
  * @format
  */
 
+import {range} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 import {RelatedFileFinder} from '../lib/related-file/finders';
@@ -141,6 +142,33 @@ describe('getRelatedSourceForHeader', () => {
         '/lol',
       );
       expect(file).toBeNull();
+    });
+  });
+
+  it('caches results of finding source for header', () => {
+    waitsForPromise(async () => {
+      const implSpy = spyOn(
+        finder,
+        '_getRelatedSourceForHeaderImpl',
+      ).andCallThrough();
+      const tmpdir = await generateFixture(
+        'clang_rpc',
+        new Map([['a/x.cpp', '#include <../x.h>']]),
+      );
+      const sourceFile = nuclideUri.join(tmpdir, 'a/x.cpp');
+      // Call it a few times and make sure the underlying impl only ran once.
+      const results = await Promise.all(
+        Array.from(range(0, 10)).map(() =>
+          finder.getRelatedSourceForHeader(
+            nuclideUri.join(tmpdir, 'x.h'),
+            tmpdir,
+          ),
+        ),
+      );
+      for (const file of results) {
+        expect(file).toBe(sourceFile);
+      }
+      expect(implSpy.callCount).toBe(1);
     });
   });
 });

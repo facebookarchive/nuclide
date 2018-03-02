@@ -88,6 +88,8 @@ export default class ClangFlagsManager {
     keyFactory: ([parent, relative]) => relative + parent,
   });
 
+  _relatedFileFinder: RelatedFileFinder = new RelatedFileFinder();
+
   constructor() {
     this._realpathCache = {};
     this._clangProjectFlags = new Map();
@@ -238,7 +240,7 @@ export default class ClangFlagsManager {
     dbFlags: ?Map<string, ClangFlagsHandle>,
     projectRoot: ?string,
   ): Promise<?string> {
-    const source = await new RelatedFileFinder().getRelatedSourceForHeader(
+    const source = await this._relatedFileFinder.getRelatedSourceForHeader(
       header,
     );
     if (source != null) {
@@ -254,7 +256,7 @@ export default class ClangFlagsManager {
       }
     }
     return projectRoot != null
-      ? new RelatedFileFinder().getRelatedSourceForHeader(header, projectRoot)
+      ? this._relatedFileFinder.getRelatedSourceForHeader(header, projectRoot)
       : null;
   }
 
@@ -276,7 +278,7 @@ export default class ClangFlagsManager {
         projectRoot || dbDir,
       );
     }
-    return new RelatedFileFinder().getRelatedHeaderForSource(src);
+    return this._relatedFileFinder.getRelatedHeaderForSource(src);
   }
 
   async _getFlagsForSrcImpl(
