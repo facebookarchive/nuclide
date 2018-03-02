@@ -20,28 +20,28 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {Observable} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
 
-type DebuggerCallstackComponentProps = {
+type Props = {
   service: IDebugService,
 };
 
-type DebuggerCallstackComponentState = {
+type State = {
   callstack: Array<IStackFrame>,
   selectedCallFrameId: number,
 };
 
 export default class DebuggerCallstackComponent extends React.Component<
-  DebuggerCallstackComponentProps,
-  DebuggerCallstackComponentState,
+  Props,
+  State,
 > {
   _disposables: UniversalDisposable;
 
-  constructor(props: DebuggerCallstackComponentProps) {
+  constructor(props: Props) {
     super(props);
     this._disposables = new UniversalDisposable();
     this.state = this._getState();
   }
 
-  _getState(): DebuggerCallstackComponentState {
+  _getState(): State {
     const {focusedStackFrame, focusedThread} = this.props.service.viewModel;
     return {
       callstack: focusedThread == null ? [] : focusedThread.getCallStack(),
@@ -148,7 +148,7 @@ export default class DebuggerCallstackComponent extends React.Component<
         columns={columns}
         emptyComponent={emptyComponent}
         rows={rows}
-        selectable={true}
+        selectable={cellData => cellData.frame.source.available}
         resizable={true}
         onSelect={this._handleStackFrameClick}
         sortable={false}
