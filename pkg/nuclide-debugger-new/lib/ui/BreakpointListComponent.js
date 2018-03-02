@@ -191,6 +191,7 @@ export default class BreakpointListComponent extends React.Component<
                         event.target,
                         'nuclide-debugger:remove-breakpoint',
                       );
+                      event.stopPropagation();
                     }}
                   />
                 </div>
