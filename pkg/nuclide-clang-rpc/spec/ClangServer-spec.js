@@ -20,7 +20,12 @@ import * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import ClangServer from '../lib/ClangServer';
 import findClangServerArgs from '../lib/find-clang-server-args';
 
-const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
+const TEST_FILE = nuclideUri.join(
+  __dirname,
+  'fixtures',
+  'cpp_buck_project',
+  'test.cpp',
+);
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 const EXPECTED_FILE_OUTLINE = [
   {
@@ -68,21 +73,21 @@ describe('ClangServer', () => {
             severity: 3,
             ranges: [
               {
-                file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+                file: TEST_FILE,
                 range: new Range([5, 2], [5, 6]),
               },
             ],
             fixits: [],
             location: {
               point: new Point(5, 2),
-              file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+              file: TEST_FILE,
             },
             spelling: "no matching function for call to 'main'",
             children: [
               {
                 location: {
                   point: new Point(3, 4),
-                  file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+                  file: TEST_FILE,
                 },
                 ranges: [],
                 spelling:
@@ -96,7 +101,7 @@ describe('ClangServer', () => {
             fixits: [
               {
                 range: {
-                  file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+                  file: TEST_FILE,
                   range: new Range([6, 10], [6, 10]),
                 },
                 value: ';',
@@ -104,7 +109,7 @@ describe('ClangServer', () => {
             ],
             location: {
               point: new Point(6, 10),
-              file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+              file: TEST_FILE,
             },
             spelling: "expected ';' after return statement",
             children: [],
@@ -188,7 +193,12 @@ describe('ClangServer', () => {
 
   it('supports get_local_references', () => {
     waitsForPromise(async () => {
-      const file = nuclideUri.join(__dirname, 'fixtures', 'references.cpp');
+      const file = nuclideUri.join(
+        __dirname,
+        'fixtures',
+        'cpp_buck_project',
+        'references.cpp',
+      );
       const fileContents = fs.readFileSync(file).toString('utf8');
       const serverArgs = findClangServerArgs();
       const server = new ClangServer(

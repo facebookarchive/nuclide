@@ -19,7 +19,7 @@ describe('ClangService.formatCode', () => {
   it('uses clang-format correctly', () => {
     waitsForPromise(async () => {
       const fixtureCode = await fsPromise.readFile(
-        nuclideUri.join(__dirname, 'fixtures/test.cpp'),
+        nuclideUri.join(__dirname, 'fixtures/cpp_buck_project/test.cpp'),
         'utf8',
       );
       const projectDir = await generateFixture(
