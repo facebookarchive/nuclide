@@ -225,50 +225,7 @@ export default class DebugService implements IDebugService {
   }
 
   _registerListeners(): void {
-    // this._disposables.add(this.fileService.onFileChanges(e => this.onFileChanges(e)));
-    let selectedFrameMarker: ?atom$Marker = null;
     this._disposables.add(
-      this._viewModel.onDidFocusStackFrame(async event => {
-        const {stackFrame, explicit} = event;
-        if (selectedFrameMarker != null) {
-          selectedFrameMarker.destroy();
-          selectedFrameMarker = null;
-        }
-        if (stackFrame == null || !stackFrame.source.available) {
-          if (explicit) {
-            atom.notifications.addWarning(
-              'No source available for the selected stack frame',
-            );
-          }
-          return;
-        } else {
-          const editor = await stackFrame.openInEditor();
-          if (editor == null) {
-            atom.notifications.addError(
-              'Failed to open source file for stack frame!',
-            );
-            return;
-          }
-          const line = stackFrame.range.start.row;
-          selectedFrameMarker = editor.markBufferRange(
-            [[line, 0], [line, Infinity]],
-            {
-              invalidate: 'never',
-            },
-          );
-          editor.decorateMarker(selectedFrameMarker, {
-            type: 'line',
-            class: 'nuclide-current-line-highlight',
-          });
-        }
-      }),
-      () => {
-        if (selectedFrameMarker != null) {
-          selectedFrameMarker.destroy();
-          selectedFrameMarker = null;
-        }
-      },
-
       atom.workspace.addOpener(uri => {
         if (uri.startsWith(DEBUG_SOURCES_URI)) {
           if (this._debuggerMode !== DebuggerMode.STOPPED) {
@@ -375,8 +332,67 @@ export default class DebugService implements IDebugService {
     this.focusStackFrame(stackFrameToFocus, null, null);
   }
 
+  _registerMarkers(): IDisposable {
+    let selectedFrameMarker: ?atom$Marker = null;
+
+    const cleaupMarkers = () => {
+      if (selectedFrameMarker != null) {
+        selectedFrameMarker.destroy();
+        selectedFrameMarker = null;
+      }
+    };
+
+    return new UniversalDisposable(
+      observableFromSubscribeFunction(
+        this._viewModel.onDidFocusStackFrame.bind(this._viewModel),
+      )
+        .concatMap(event => {
+          cleaupMarkers();
+
+          const {stackFrame, explicit} = event;
+
+          if (stackFrame == null || !stackFrame.source.available) {
+            if (explicit) {
+              atom.notifications.addWarning(
+                'No source available for the selected stack frame',
+              );
+            }
+            return Observable.empty();
+          }
+          return Observable.fromPromise(stackFrame.openInEditor()).switchMap(
+            editor => {
+              if (editor == null) {
+                atom.notifications.addError(
+                  'Failed to open source file for stack frame!',
+                );
+                return Observable.empty();
+              }
+              return Observable.of({editor, explicit, stackFrame});
+            },
+          );
+        })
+        .subscribe(({editor, explicit, stackFrame}) => {
+          const line = stackFrame.range.start.row;
+          selectedFrameMarker = editor.markBufferRange(
+            [[line, 0], [line, Infinity]],
+            {
+              invalidate: 'never',
+            },
+          );
+          editor.decorateMarker(selectedFrameMarker, {
+            type: 'line',
+            class: 'nuclide-current-line-highlight',
+          });
+        }),
+
+      cleaupMarkers,
+    );
+  }
+
   _registerSessionListeners(process: Process, session: VsDebugSession): void {
     this._sessionEndDisposables = new UniversalDisposable(session);
+    this._sessionEndDisposables.add(this._registerMarkers());
+
     const sessionId = session.getId();
 
     const threadFetcher = serializeAsyncCall(async () => {
@@ -508,17 +524,19 @@ export default class DebugService implements IDebugService {
 
     this._sessionEndDisposables.add(
       session.observeTerminateDebugeeEvents().subscribe(event => {
-        if (event.body && event.body.restart) {
-          this.restartProcess().catch(err => {
-            atom.notifications.addError('Failed to restart debugger', {
-              detail: err.stack || String(err),
+        if (session && session.getId() === event.sessionId) {
+          if (event.body && event.body.restart && process) {
+            this.restartProcess().catch(err => {
+              atom.notifications.addError('Failed to restart debugger', {
+                detail: err.stack || String(err),
+              });
             });
-          });
-        } else {
-          session
-            .disconnect()
-            .catch(onUnexpectedError)
-            .then(this._onSessionEnd);
+          } else {
+            session
+              .disconnect()
+              .catch(onUnexpectedError)
+              .then(this._onSessionEnd);
+          }
         }
       }),
     );
@@ -693,7 +711,10 @@ export default class DebugService implements IDebugService {
 
     this._sessionEndDisposables.add(
       session.observeAdapterExitedEvents().subscribe(event => {
-        this._onSessionEnd();
+        // 'Run without debugging' mode VSCode must terminate the extension host. More details: #3905
+        if (session && session.getId() === event.body.sessionId) {
+          this._onSessionEnd();
+        }
       }),
     );
 
