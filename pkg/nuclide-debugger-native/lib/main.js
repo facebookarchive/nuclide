@@ -38,6 +38,12 @@ import invariant from 'assert';
 import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {
+  getNativeVSPLaunchProcessInfo,
+  getNativeVSPAttachProcessInfo,
+} from '../../nuclide-debugger-vsp/lib/utils';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   getServiceByNuclideUri,
@@ -45,6 +51,7 @@ import {
 } from '../../nuclide-remote-connection';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
+import passesGK from '../../commons-node/passesGK';
 
 const SUPPORTED_RULE_TYPES = new Set(['cxx_binary', 'cxx_test']);
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
@@ -74,6 +81,8 @@ class Activation {
     this._disposables.dispose();
   }
 
+  // $TODO this and everything behind it can go away once we flip
+  // the switch to pure VSP globally
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
       name: 'lldb',
@@ -277,7 +286,19 @@ class Activation {
   }
 
   async _debugPidWithLLDB(pid: number, buckRoot: string): Promise<void> {
-    const attachInfo = await this._getAttachProcessInfoFromPid(pid, buckRoot);
+    let attachInfo;
+
+    if (await passesGK('nuclide_debugger_native_vsp')) {
+      attachInfo = await getNativeVSPAttachProcessInfo(
+        VsAdapterTypes.NATIVE_LLDB,
+        buckRoot,
+        pid,
+        nuclideUri.getPath(buckRoot),
+      );
+    } else {
+      attachInfo = await this._getAttachProcessInfoFromPid(pid, buckRoot);
+    }
+
     invariant(attachInfo);
     const debuggerService = await getDebuggerService();
     debuggerService.startDebugging(attachInfo);
@@ -341,16 +362,29 @@ class Activation {
       }
     }
 
-    const info = new LaunchProcessInfo(buckRoot, {
-      executablePath: remoteOutputPath,
-      // Allow overriding of a test's default arguments if provided.
-      arguments: (runArguments.length ? runArguments : targetOutput.args) || [],
-      environmentVariables: env,
-      workingDirectory: remoteBuckRoot,
-      basepath: remoteBuckRoot,
-      lldbPythonPath: null,
-    });
+    let info;
 
+    if (await passesGK('nuclide_debugger_native_vsp')) {
+      info = await getNativeVSPLaunchProcessInfo(
+        VsAdapterTypes.NATIVE_LLDB,
+        nuclideUri.join(buckRoot, relativeOutputPath),
+        (runArguments.length ? runArguments : targetOutput.args) || [],
+        remoteBuckRoot,
+        env,
+        remoteBuckRoot,
+      );
+    } else {
+      info = new LaunchProcessInfo(buckRoot, {
+        executablePath: remoteOutputPath,
+        // Allow overriding of a test's default arguments if provided.
+        arguments:
+          (runArguments.length ? runArguments : targetOutput.args) || [],
+        environmentVariables: env,
+        workingDirectory: remoteBuckRoot,
+        basepath: remoteBuckRoot,
+        lldbPythonPath: null,
+      });
+    }
     const debuggerService = await getDebuggerService();
     await debuggerService.startDebugging(info);
     return remoteOutputPath;
