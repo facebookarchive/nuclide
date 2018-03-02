@@ -358,7 +358,7 @@ export async function getLaunchProcessInfo(
   );
 }
 
-async function _getHHVMAttachConfig(targetUri: NuclideUri): Object {
+async function _getHHVMAttachConfig(targetUri: NuclideUri): Promise<Object> {
   // Note: not specifying startup document or debug port here, the backend
   // will use the default parameters. We can surface these options in the
   // Attach Dialog if users need to be able to customize them in the future.
@@ -367,18 +367,8 @@ async function _getHHVMAttachConfig(targetUri: NuclideUri): Object {
     action: 'attach',
   };
 
-  let debugPort = null;
-  try {
-    // $FlowFB
-    const fetch = require('../../commons-node/fb-sitevar').fetchSitevarOnce;
-    debugPort = await fetch('NUCLIDE_HHVM_DEBUG_PORT');
-  } catch (e) {}
-
-  if (debugPort != null) {
-    config.debugPort = debugPort;
-  }
-
-  return config;
+  const service = getHhvmDebuggerServiceByNuclideUri(targetUri);
+  return service.getDebuggerArgs(config);
 }
 
 export async function getAttachProcessInfo(

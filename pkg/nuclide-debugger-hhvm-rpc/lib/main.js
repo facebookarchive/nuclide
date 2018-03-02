@@ -160,8 +160,25 @@ export async function createLogFilePaste(): Promise<string> {
 async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
   const startupDocumentPath: ?string = await _getStartupDocumentPath(config);
   const logFilePath = await _getHHVMLogFilePath();
+
+  let debugPort = config.debugPort;
+  if (debugPort == null) {
+    try {
+      // $FlowFB
+      const fetch = require('../../commons-node/fb-sitevar').fetchSitevarOnce;
+      const siteVar = await fetch('NUCLIDE_VSP_DEBUGGER_CONFIG');
+      if (siteVar != null && siteVar.hhvm_attach_port != null) {
+        debugPort = siteVar.hhvm_attach_port;
+      }
+    } catch (e) {}
+
+    if (debugPort != null) {
+      config.debugPort = debugPort;
+    }
+  }
+
   return {
-    debugPort: config.debugPort,
+    debugPort,
     startupDocumentPath,
     logFilePath,
   };
