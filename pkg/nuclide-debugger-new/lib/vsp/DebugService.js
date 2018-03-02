@@ -139,9 +139,7 @@ class ViewModel implements IViewModel {
   get focusedThread(): ?IThread {
     return this._focusedStackFrame != null
       ? this._focusedStackFrame.thread
-      : this._focusedProcess != null
-        ? this._focusedProcess.getAllThreads().pop()
-        : null;
+      : this._focusedThread;
   }
 
   get focusedStackFrame(): ?IStackFrame {
@@ -504,7 +502,7 @@ export default class DebugService implements IDebugService {
         this._updateModeAndEmit(DebuggerMode.PAUSED);
         const {threadId} = event.body;
         try {
-          await threadFetcher();
+          const threadFetecherPromise = threadFetcher();
           if (threadId == null) {
             return;
           }
@@ -513,6 +511,7 @@ export default class DebugService implements IDebugService {
             stoppedDetails: (event.body: any),
             threadId,
           });
+          await threadFetecherPromise;
           const thread = process.getThread(threadId);
           if (thread != null) {
             toFocusThreads.next(thread);
@@ -871,28 +870,20 @@ export default class DebugService implements IDebugService {
       } else if (thread != null) {
         focusProcess = thread.process;
       } else {
-        const processes = this._model.getProcesses();
-        focusProcess = processes.length ? processes[0] : null;
+        focusProcess = this._model.getProcesses()[0];
       }
     }
     let focusThread: ?IThread = thread;
     let focusStackFrame = stackFrame;
 
-    if (focusThread == null) {
-      if (stackFrame != null) {
-        focusThread = stackFrame.thread;
-      } else {
-        const threads =
-          focusProcess != null ? focusProcess.getAllThreads() : [];
-        focusThread = threads[0];
-      }
+    if (focusThread == null && stackFrame != null) {
+      focusThread = stackFrame.thread;
+    } else if (focusThread != null && focusProcess != null) {
+      focusThread = focusProcess.getThread(focusThread.threadId);
     }
 
-    if (stackFrame == null) {
-      if (thread != null) {
-        const callStack = thread.getCallStack();
-        focusStackFrame = callStack[0];
-      }
+    if (stackFrame == null && thread != null) {
+      focusStackFrame = thread.getCallStack()[0];
     }
 
     this._viewModel.setFocus(
@@ -905,8 +896,11 @@ export default class DebugService implements IDebugService {
   }
 
   _computeDebugMode(): DebuggerModeType {
-    const focusedThread = this._viewModel.focusedThread;
-    if (focusedThread && focusedThread.stopped) {
+    const {focusedThread, focusedStackFrame} = this._viewModel;
+    if (
+      focusedStackFrame != null ||
+      (focusedThread != null && focusedThread.stopped)
+    ) {
       return DebuggerMode.PAUSED;
     } else if (this._getCurrentProcess() == null) {
       return DebuggerMode.STOPPED;

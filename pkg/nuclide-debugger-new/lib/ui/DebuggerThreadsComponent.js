@@ -12,8 +12,10 @@
 import type {IDebugService, IThread} from '../types';
 import type {Row} from 'nuclide-commons-ui/Table';
 
-import invariant from 'assert';
 import * as React from 'react';
+import invariant from 'assert';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
 import ReactDOM from 'react-dom';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {Table} from 'nuclide-commons-ui/Table';
@@ -22,8 +24,8 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
-import debounce from 'nuclide-commons/debounce';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
+import {Observable} from 'rxjs';
 
 type Props = {|
   +service: IDebugService,
@@ -65,10 +67,6 @@ export default class DebuggerThreadsComponent extends React.Component<
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleThreadsChanged = debounce(
-      this._handleThreadsChanged,
-      150,
-    );
 
     this._disposables = new UniversalDisposable();
     this.state = {
@@ -76,16 +74,24 @@ export default class DebuggerThreadsComponent extends React.Component<
       sortDescending: false,
       threadList: [],
       selectedThreadId: -1,
-      threadsLoading: false,
+      threadsLoading: false, // TODO
       ...this._getState(),
     };
   }
 
   componentDidMount(): void {
+    const {service} = this.props;
+    const {viewModel} = service;
+    const model = service.getModel();
     this._disposables.add(
-      this.props.service
-        .getModel()
-        .onDidChangeCallStack(() => this._handleThreadsChanged()),
+      Observable.merge(
+        observableFromSubscribeFunction(
+          viewModel.onDidFocusStackFrame.bind(viewModel),
+        ),
+        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
+      )
+        .let(fastDebounce(150))
+        .subscribe(this._handleThreadsChanged),
     );
   }
 
@@ -113,16 +119,15 @@ export default class DebuggerThreadsComponent extends React.Component<
     }
   }
 
-  _handleThreadsChanged(): void {
+  _handleThreadsChanged = (): void => {
     this.setState(this._getState());
-  }
+  };
 
   _getState(): $Shape<State> {
     const {focusedThread, focusedProcess} = this.props.service.viewModel;
     return {
       threadList: focusedProcess == null ? [] : focusedProcess.getAllThreads(),
       selectedThreadId: focusedThread == null ? -1 : focusedThread.threadId,
-      threadsLoading: false, // TODO
     };
   }
 
