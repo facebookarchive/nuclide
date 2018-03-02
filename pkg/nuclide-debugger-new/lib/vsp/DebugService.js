@@ -56,11 +56,11 @@ import type {
 import type {MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from '../../../nuclide-analytics';
-
-import invariant from 'assert';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
+import invariant from 'assert';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -77,6 +77,7 @@ import {
   getConsoleRegisterExecutor,
   getConsoleService,
   getNotificationService,
+  getDatatipService,
 } from '../AtomServiceContainer';
 import {
   expressionAsEvaluationResultStream,
@@ -334,11 +335,18 @@ export default class DebugService implements IDebugService {
 
   _registerMarkers(): IDisposable {
     let selectedFrameMarker: ?atom$Marker = null;
+    let threadChangeDatatip: ?IDisposable;
+    let lastFocusedThreadId: ?number;
 
     const cleaupMarkers = () => {
       if (selectedFrameMarker != null) {
         selectedFrameMarker.destroy();
         selectedFrameMarker = null;
+      }
+
+      if (threadChangeDatatip != null) {
+        threadChangeDatatip.dispose();
+        threadChangeDatatip = null;
       }
     };
 
@@ -383,6 +391,35 @@ export default class DebugService implements IDebugService {
             type: 'line',
             class: 'nuclide-current-line-highlight',
           });
+
+          const datatipService = getDatatipService();
+          if (datatipService == null) {
+            return;
+          }
+
+          if (
+            lastFocusedThreadId != null &&
+            !explicit &&
+            stackFrame.thread.threadId !== lastFocusedThreadId
+          ) {
+            const message = `Active thread changed from ${lastFocusedThreadId} to ${
+              stackFrame.thread.threadId
+            }`;
+            threadChangeDatatip = datatipService.createPinnedDataTip(
+              {
+                component: () => (
+                  <div className="nuclide-debugger-thread-switch-alert">
+                    <Icon icon="alert" />
+                    {message}
+                  </div>
+                ),
+                range: stackFrame.range,
+                pinnable: true,
+              },
+              editor,
+            );
+          }
+          lastFocusedThreadId = stackFrame.thread.threadId;
         }),
 
       cleaupMarkers,

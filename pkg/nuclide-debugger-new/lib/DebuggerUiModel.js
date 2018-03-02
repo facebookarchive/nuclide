@@ -16,12 +16,9 @@ import type {
 } from 'nuclide-debugger-common';
 import type {IDebugService} from './types';
 
-import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Emitter} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {getDatatipService} from './AtomServiceContainer';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
 
@@ -37,9 +34,6 @@ export default class DebuggerModel {
   _emitter: Emitter;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
 
-  // Threads state
-  _threadChangeDatatip: ?IDisposable;
-
   // Debugger providers
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
@@ -53,9 +47,7 @@ export default class DebuggerModel {
     // There is always a local connection.
     this._connections = ['local'];
 
-    this._disposables = new UniversalDisposable(() => {
-      this._cleanUpDatatip();
-    }, this._listenForProjectChange());
+    this._disposables = new UniversalDisposable(this._listenForProjectChange());
   }
 
   _listenForProjectChange(): IDisposable {
@@ -154,49 +146,5 @@ export default class DebuggerModel {
       }
     }
     return availableLaunchAttachProviders;
-  }
-
-  _cleanUpDatatip(): void {
-    if (this._threadChangeDatatip != null) {
-      this._threadChangeDatatip.dispose();
-      this._threadChangeDatatip = null;
-    }
-  }
-
-  async _notifyThreadSwitch(
-    sourceURL: string,
-    lineNumber: number,
-    message: string,
-  ): Promise<void> {
-    // TODO use
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
-    // we want to put the message one line above the current line unless the selected
-    // line is the top line, in which case we will put the datatip next to the line.
-    const notificationLineNumber = lineNumber === 0 ? 0 : lineNumber - 1;
-    // only handle real files for now
-    const datatipService = getDatatipService();
-    if (datatipService != null && path != null && atom.workspace != null) {
-      // This should be goToLocation instead but since the searchAllPanes option is correctly
-      // provided it's not urgent.
-      // eslint-disable-next-line rulesdir/atom-apis
-      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-        const buffer = editor.getBuffer();
-        const rowRange = buffer.rangeForRow(notificationLineNumber);
-        this._cleanUpDatatip();
-        this._threadChangeDatatip = datatipService.createPinnedDataTip(
-          {
-            component: () => (
-              <div className="nuclide-debugger-thread-switch-alert">
-                <Icon icon="alert" />
-                {message}
-              </div>
-            ),
-            range: rowRange,
-            pinnable: true,
-          },
-          editor,
-        );
-      });
-    }
   }
 }
