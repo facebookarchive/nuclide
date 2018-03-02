@@ -178,6 +178,11 @@ async function generateKeyPairPaths(
 
 function generateEnvironmentForOpenSSLCalls(serverCommonName: string): Object {
   const env = {...process.env};
+  if (process.platform === 'darwin') {
+    // High Sierra comes with LibreSSL by default, which is not supported.
+    // Often, OpenSSL may be installed by Homebrew.
+    env.PATH = '/opt/homebrew/bin:' + env.PATH;
+  }
   // Usually, we don't have to make the common name a SAN,
   // but our openssl.cnf requires a value via $OPENSSL_SAN.
   env.OPENSSL_SAN = net.isIP(serverCommonName)
