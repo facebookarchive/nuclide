@@ -803,7 +803,7 @@ export class SshHandshake {
       if (code !== 0) {
         throw new SshHandshakeError(
           'Remote shell execution failed',
-          SshHandshake.ErrorType.UNKNOWN,
+          SshHandshake.ErrorType.SERVER_START_FAILED,
           new Error(stdout),
         );
       }
