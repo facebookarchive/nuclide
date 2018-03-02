@@ -255,12 +255,37 @@ class HHVMDebuggerWrapper {
     if (requestMsg.command != null) {
       switch (requestMsg.command) {
         case 'initialize':
-          // TODO(ericblue): Don't delay initialize response (until attach/launch is sent) on the HHVM side.
-          // Immediately respond to initialize to complete the initialization flow.
           this._writeResponseMessage({
             request_seq: requestMsg.seq,
             success: true,
             command: requestMsg.command,
+            body: {
+              exceptionBreakpointFilters: [
+                {
+                  default: false,
+                  label: 'Break On All Exceptions',
+                  filter: 'all',
+                },
+              ],
+              supportsLoadedSourcesRequest: false,
+              supportTerminateDebuggee: false,
+              supportsExceptionOptions: true,
+              supportsModulesRequest: false,
+              supportsHitConditionalBreakpoints: false,
+              supportsConfigurationDoneRequest: true,
+              supportsDelayedStackTraceLoading: true,
+              supportsSetVariable: true,
+              supportsGotoTargetsRequest: false,
+              supportsExceptionInfoRequest: false,
+              supportsValueFormattingOptions: true,
+              supportsEvaluateForHovers: true,
+              supportsRestartRequest: false,
+              supportsConditionalBreakpoints: true,
+              supportsStepBack: false,
+              supportsCompletionsRequest: true,
+              supportsRestartFrame: false,
+              supportsStepInTargetsRequest: false,
+            },
           });
           break;
         case 'disconnect':
