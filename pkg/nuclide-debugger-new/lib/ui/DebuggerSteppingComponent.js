@@ -225,17 +225,26 @@ export default class DebuggerSteppingComponent extends React.Component<
       />
     );
 
+    let playPauseTitle;
+    if (isPausing) {
+      playPauseTitle = 'Waiting for pause...';
+    } else if (isPaused) {
+      playPauseTitle = 'Continue';
+    } else if (focusedThread == null) {
+      playPauseTitle = 'No running threads to pause!';
+    } else {
+      playPauseTitle = 'Pause';
+    }
+
     return (
       <div className="nuclide-debugger-stepping-component">
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
-            disabled={isStopped || isPausing || isReadonlyTarget}
+            disabled={isPausing || isReadonlyTarget || focusedThread == null}
             tooltip={{
               ...defaultTooltipOptions,
-              title: isPausing
-                ? 'Waiting for pause...'
-                : isPaused ? 'Continue' : 'Pause',
+              title: playPauseTitle,
               keyBindingCommand: isPaused
                 ? 'nuclide-debugger:continue-debugging'
                 : undefined,
