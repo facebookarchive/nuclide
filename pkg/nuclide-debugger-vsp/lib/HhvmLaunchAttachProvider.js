@@ -350,7 +350,7 @@ export async function getLaunchProcessInfo(
   }
   return new VspProcessInfo(
     targetUri,
-    'launch',
+    runInTerminal ? 'attach' : 'launch',
     adapterType,
     adapterExecutable,
     config,

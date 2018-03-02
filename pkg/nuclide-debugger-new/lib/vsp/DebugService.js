@@ -508,19 +508,17 @@ export default class DebugService implements IDebugService {
 
     this._sessionEndDisposables.add(
       session.observeTerminateDebugeeEvents().subscribe(event => {
-        if (session && session.getId() === event.sessionId) {
-          if (event.body && event.body.restart && process) {
-            this.restartProcess().catch(err => {
-              atom.notifications.addError('Failed to restart debugger', {
-                detail: err.stack || String(err),
-              });
+        if (event.body && event.body.restart) {
+          this.restartProcess().catch(err => {
+            atom.notifications.addError('Failed to restart debugger', {
+              detail: err.stack || String(err),
             });
-          } else {
-            session
-              .disconnect()
-              .catch(onUnexpectedError)
-              .then(this._onSessionEnd);
-          }
+          });
+        } else {
+          session
+            .disconnect()
+            .catch(onUnexpectedError)
+            .then(this._onSessionEnd);
         }
       }),
     );
@@ -695,10 +693,7 @@ export default class DebugService implements IDebugService {
 
     this._sessionEndDisposables.add(
       session.observeAdapterExitedEvents().subscribe(event => {
-        // 'Run without debugging' mode VSCode must terminate the extension host. More details: #3905
-        if (session && session.getId() === event.body.sessionId) {
-          this._onSessionEnd();
-        }
+        this._onSessionEnd();
       }),
     );
 
