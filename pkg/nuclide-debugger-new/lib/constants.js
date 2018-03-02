@@ -61,3 +61,4 @@ export const BreakpointEventReasons = Object.freeze({
 });
 
 export const UNKNOWN_SOURCE = 'Unknown';
+export const DEBUG_SOURCES_URI = 'atom://debug-sources';

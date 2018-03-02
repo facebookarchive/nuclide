@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   IExpression,
   IExpressionContainer,
@@ -73,15 +72,15 @@ import invariant from 'assert';
 import {Emitter, Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../../nuclide-analytics';
-import {AnalyticsEvents, UNKNOWN_SOURCE} from '../constants';
+import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
+import url from 'url';
 
 const UNKWOWN_SOURCE_NAMES = new Set([UNKNOWN_SOURCE, '<unknown>']);
-const DEBUG_SCHEME = 'debug';
 
 export class Source implements ISource {
-  +uri: NuclideUri;
+  +uri: string;
   available: boolean;
   _raw: DebugProtocol.Source;
 
@@ -92,11 +91,19 @@ export class Source implements ISource {
       this._raw = raw;
     }
     this.available = !UNKWOWN_SOURCE_NAMES.has(this._raw.name);
-    // flowlint-next-line sketchy-null-string:off
-    const path = this._raw.path || this._raw.name || '';
-    this.uri = path;
-    // TODO
-    // this.uri = uri.parse(`${DEBUG_SCHEME}:${encodeURIComponent(path)}?session=${encodeURIComponent(sessionId)}&ref=${this._raw.sourceReference}`);
+    if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
+      this.uri = url.format({
+        protocol: 'atom',
+        host: 'debug-sources',
+        slashes: true,
+        query: {
+          sessionId,
+          sourceReference: this._raw.sourceReference,
+        },
+      });
+    } else {
+      this.uri = this._raw.path || '';
+    }
   }
 
   get name(): ?string {
@@ -120,8 +127,7 @@ export class Source implements ISource {
   }
 
   get inMemory(): boolean {
-    // TODO
-    return this.uri === DEBUG_SCHEME;
+    return this.uri.startsWith(DEBUG_SOURCES_URI);
   }
 
   openInEditor(): Promise<atom$TextEditor> {
@@ -929,7 +935,7 @@ export class Breakpoint implements IBreakpoint {
   endLine: ?number;
   endColumn: ?number;
   id: string;
-  uri: NuclideUri;
+  uri: string;
   line: number;
   column: number;
   enabled: boolean;
@@ -938,7 +944,7 @@ export class Breakpoint implements IBreakpoint {
   adapterData: any;
 
   constructor(
-    uri: NuclideUri,
+    uri: string,
     line: number,
     column: ?number,
     enabled: ?boolean,
@@ -1129,7 +1135,7 @@ export class Model implements IModel {
     return (this._breakpoints: any);
   }
 
-  getBreakpointAtLine(uri: NuclideUri, line: number): ?IBreakpoint {
+  getBreakpointAtLine(uri: string, line: number): ?IBreakpoint {
     return this._breakpoints.find(bp => bp.uri === uri && bp.line === line);
   }
 
@@ -1167,7 +1173,7 @@ export class Model implements IModel {
   }
 
   addBreakpoints(
-    uri: NuclideUri,
+    uri: string,
     rawData: IRawBreakpoint[],
     fireEvent?: boolean = true,
   ): Breakpoint[] {
@@ -1351,7 +1357,7 @@ export class Model implements IModel {
     this._emitter.emit(WATCH_EXPRESSIONS_CHANGED);
   }
 
-  sourceIsNotAvailable(uri: NuclideUri): void {
+  sourceIsNotAvailable(uri: string): void {
     this._processes.forEach(p => {
       if (p.sources.has(uri)) {
         nullthrows(p.sources.get(uri)).available = false;

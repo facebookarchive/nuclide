@@ -15,10 +15,11 @@ import * as React from 'react';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {UNKNOWN_SOURCE} from '../constants';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Observable} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
+import * as path from 'path';
 
 type Props = {
   service: IDebugService,
@@ -55,13 +56,14 @@ export default class DebuggerCallstackComponent extends React.Component<
     data: IStackFrame,
   }): React.Element<any> => {
     const {source, range} = props.data;
-    const basename = source.available
-      ? nuclideUri.basename(source.uri)
-      : source.name != null ? source.name : UNKNOWN_SOURCE;
+    const name =
+      source.name != null
+        ? source.name
+        : path.basename(source.uri) || UNKNOWN_SOURCE;
     return (
-      <div title={`${basename}:${range.start.row}`}>
+      <div title={`${name}:${range.start.row}`}>
         <span>
-          {basename}:{range.start.row}
+          {name}:{range.start.row}
         </span>
       </div>
     );

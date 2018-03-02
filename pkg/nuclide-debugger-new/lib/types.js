@@ -66,7 +66,7 @@ export interface ITreeElement {
 export interface ISource {
   available: boolean;
   +name: ?string;
-  +uri: NuclideUri;
+  +uri: string;
   +origin: ?string;
   +presentationHint: ?SourcePresentationHint;
   +raw: DebugProtocol.Source;
@@ -296,7 +296,7 @@ export interface IViewModel {
 export interface IModel extends ITreeElement {
   getProcesses(): IProcess[];
   getBreakpoints(): IBreakpoint[];
-  getBreakpointAtLine(uri: NuclideUri, line: number): ?IBreakpoint;
+  getBreakpointAtLine(uri: string, line: number): ?IBreakpoint;
   areBreakpointsActivated(): boolean;
   getFunctionBreakpoints(): IFunctionBreakpoint[];
   getExceptionBreakpoints(): IExceptionBreakpoint[];
@@ -348,16 +348,13 @@ export interface IDebugService {
   /**
    * Adds new breakpoints to the model for the file specified with the uri. Notifies debug adapter of breakpoint changes.
    */
-  addBreakpoints(
-    uri: NuclideUri,
-    rawBreakpoints: IRawBreakpoint[],
-  ): Promise<void>;
+  addBreakpoints(uri: string, rawBreakpoints: IRawBreakpoint[]): Promise<void>;
 
   /**
    * Updates the breakpoints.
    */
   updateBreakpoints(
-    uri: NuclideUri,
+    uri: string,
     data: {[id: string]: DebugProtocol.Breakpoint},
   ): void;
 
@@ -370,7 +367,7 @@ export interface IDebugService {
     breakpoint?: IEnableable,
   ): Promise<void>;
 
-  toggleSourceBreakpoint(uri: NuclideUri, line: number): Promise<void>;
+  toggleSourceBreakpoint(uri: string, line: number): Promise<void>;
 
   /**
    * Sets the global activated property for all breakpoints.
@@ -439,11 +436,6 @@ export interface IDebugService {
   stopProcess(): Promise<void>;
 
   /**
-   * Makes unavailable all sources with the passed uri. Source will appear as grayed out in callstack view.
-   */
-  sourceIsNotAvailable(uri: NuclideUri): void;
-
-  /**
    * Gets the current debug model.
    */
   getModel(): IModel;
@@ -464,7 +456,7 @@ export interface IStackFrame extends ITreeElement {
 }
 
 export interface IBreakpoint extends IEnableable {
-  uri: NuclideUri;
+  uri: string;
   line: number;
   endLine: ?number;
   column: number;

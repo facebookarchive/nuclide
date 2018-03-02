@@ -55,12 +55,12 @@ import type {
 } from '../types';
 import type {MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TimingTracker} from '../../../nuclide-analytics';
 
-import idx from 'idx';
 import invariant from 'assert';
 import * as DebugProtocol from 'vscode-debugprotocol';
+import * as React from 'react';
+
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -68,6 +68,8 @@ import {sleep, serializeAsyncCall} from 'nuclide-commons/promise';
 import {VsDebugSession} from 'nuclide-debugger-common';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import capitalize from 'lodash/capitalize';
+import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
+import ReadOnlyNotice from 'nuclide-commons-ui/ReadOnlyNotice';
 import {track, startTracking} from '../../../nuclide-analytics';
 import nullthrows from 'nullthrows';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../../nuclide-remote-connection';
@@ -89,7 +91,7 @@ import {
   Process,
 } from './DebuggerModel';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Emitter} from 'atom';
+import {Emitter, TextBuffer} from 'atom';
 import {distinct} from 'nuclide-commons/collection';
 import {onUnexpectedError} from '../utils';
 import uuid from 'uuid';
@@ -97,10 +99,12 @@ import {
   BreakpointEventReasons,
   DebuggerMode,
   AnalyticsEvents,
+  DEBUG_SOURCES_URI,
 } from '../constants';
 import logger from '../logger';
 import stripAnsi from 'strip-ansi';
 import {remoteToLocalProcessor, localToRemoteProcessor} from './processors';
+import url from 'url';
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
@@ -190,7 +194,7 @@ export default class DebugService implements IDebugService {
   _emitter: Emitter;
   _viewModel: ViewModel;
   _timer: ?TimingTracker;
-  _breakpointsToSendOnSave: Set<NuclideUri>;
+  _breakpointsToSendOnSave: Set<string>;
 
   constructor(state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
@@ -264,7 +268,77 @@ export default class DebugService implements IDebugService {
           selectedFrameMarker = null;
         }
       },
+
+      atom.workspace.addOpener(uri => {
+        if (uri.startsWith(DEBUG_SOURCES_URI)) {
+          if (this._debuggerMode !== DebuggerMode.STOPPED) {
+            return this._openSourceView(uri);
+          } else {
+            throw new Error(
+              'Cannot open debug source views - no active debug session',
+            );
+          }
+        }
+      }),
     );
+  }
+
+  async _openSourceView(uri: string): Promise<atom$TextEditor> {
+    const query = nullthrows(url.parse(uri, true).query);
+    const sessionId = query.sessionId;
+    const sourceReference = parseInt(query.sourceReference, 10);
+
+    const process =
+      this._model.getProcesses().find(p => p.getId() === sessionId) ||
+      this._viewModel.focusedProcess;
+    if (process == null) {
+      throw new Error(`No debug session for source: ${sourceReference}`);
+    }
+
+    const source = process.getSource({
+      path: uri,
+      sourceReference,
+    });
+
+    let content = '';
+    try {
+      const response = await process.session.source({
+        sourceReference,
+        source: source.raw,
+      });
+      content = response.body.content;
+    } catch (error) {
+      this._sourceIsNotAvailable(uri);
+      throw new Error('Debug source is not available');
+    }
+
+    const editor = atom.workspace.buildTextEditor({
+      buffer: new DebugSourceTextBufffer(content, uri, source.name),
+      autoHeight: false,
+      readOnly: true,
+    });
+
+    // $FlowFixMe Debugger source views shouldn't persist between reload.
+    editor.serialize = () => null;
+    editor.setGrammar(atom.grammars.selectGrammar(source.name || '', content));
+    const textEditorBanner = new TextEditorBanner(editor);
+    textEditorBanner.render(
+      <ReadOnlyNotice
+        detailedMessage="This is a debug source view that may not exist on the filesystem."
+        canEditAnyway={false}
+        onDismiss={textEditorBanner.dispose.bind(textEditorBanner)}
+      />,
+    );
+
+    const disposable = new UniversalDisposable(
+      textEditorBanner,
+      editor.onDidDestroy(() => disposable.dispose()),
+      () => editor.destroy(),
+    );
+
+    this._sessionEndDisposables.add(disposable);
+
+    return editor;
   }
 
   /**
@@ -808,16 +882,13 @@ export default class DebugService implements IDebugService {
     return this._sendAllBreakpoints();
   }
 
-  addBreakpoints(
-    uri: NuclideUri,
-    rawBreakpoints: IRawBreakpoint[],
-  ): Promise<void> {
+  addBreakpoints(uri: string, rawBreakpoints: IRawBreakpoint[]): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_ADD);
     this._model.addBreakpoints(uri, rawBreakpoints);
     return this._sendBreakpoints(uri);
   }
 
-  toggleSourceBreakpoint(uri: NuclideUri, line: number): Promise<void> {
+  toggleSourceBreakpoint(uri: string, line: number): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE);
     const existing = this._model.getBreakpointAtLine(uri, line);
     if (existing == null) {
@@ -828,7 +899,7 @@ export default class DebugService implements IDebugService {
   }
 
   updateBreakpoints(
-    uri: NuclideUri,
+    uri: string,
     data: {[id: string]: DebugProtocol.Breakpoint},
   ) {
     this._model.updateBreakpoints(data);
@@ -842,9 +913,7 @@ export default class DebugService implements IDebugService {
     const toRemove = this._model
       .getBreakpoints()
       .filter(bp => id == null || bp.getId() === id);
-    const urisToClear = distinct(toRemove, bp => bp.uri.toString()).map(
-      bp => bp.uri,
-    );
+    const urisToClear = distinct(toRemove, bp => bp.uri).map(bp => bp.uri);
 
     this._model.removeBreakpoints(toRemove);
 
@@ -876,12 +945,13 @@ export default class DebugService implements IDebugService {
     return this._sendFunctionBreakpoints();
   }
 
-  runToLocation = async (uri: NuclideUri, line: number): Promise<void> => {
+  async runToLocation(uri: string, line: number): Promise<void> {
     const {focusedThread, focusedProcess} = this.viewModel;
-    const session = idx(focusedProcess, _ => _.session);
-    if (focusedThread == null || focusedProcess == null || session == null) {
+    if (focusedThread == null || focusedProcess == null) {
       return;
     }
+
+    const session = focusedProcess.session;
 
     track(AnalyticsEvents.DEBUGGER_STEP_RUN_TO_LOCATION);
     if (Boolean(session.capabilities.supportsContinueToLocation)) {
@@ -929,7 +999,7 @@ export default class DebugService implements IDebugService {
       );
     }
     await focusedThread.continue();
-  };
+  }
 
   addWatchExpression(name: string): void {
     track(AnalyticsEvents.DEBUGGER_WATCH_ADD_EXPRESSION);
@@ -1046,7 +1116,7 @@ export default class DebugService implements IDebugService {
     );
   }
 
-  sourceIsNotAvailable(uri: NuclideUri): void {
+  _sourceIsNotAvailable(uri: string): void {
     this._model.sourceIsNotAvailable(uri);
   }
 
@@ -1119,7 +1189,7 @@ export default class DebugService implements IDebugService {
 
   async _sendAllBreakpoints(): Promise<void> {
     await Promise.all(
-      distinct(this._model.getBreakpoints(), bp => bp.uri.toString()).map(bp =>
+      distinct(this._model.getBreakpoints(), bp => bp.uri).map(bp =>
         this._sendBreakpoints(bp.uri, false),
       ),
     );
@@ -1128,19 +1198,8 @@ export default class DebugService implements IDebugService {
     await this._sendExceptionBreakpoints();
   }
 
-  _generateSource(uri: NuclideUri, process: IProcess): DebugProtocol.Source {
-    const source = process.sources.get(uri);
-    return source != null
-      ? source.raw
-      : ({
-          name: nuclideUri.basename(uri),
-          path: uri,
-          sourceReference: undefined,
-        }: DebugProtocol.Source);
-  }
-
   async _sendBreakpoints(
-    modelUri: NuclideUri,
+    uri: string,
     sourceModified?: boolean = false,
   ): Promise<void> {
     const process = this._getCurrentProcess();
@@ -1157,12 +1216,10 @@ export default class DebugService implements IDebugService {
       .getBreakpoints()
       .filter(
         bp =>
-          this._model.areBreakpointsActivated() &&
-          bp.enabled &&
-          bp.uri.toString() === modelUri,
+          this._model.areBreakpointsActivated() && bp.enabled && bp.uri === uri,
       );
 
-    const rawSource = this._generateSource(modelUri, process);
+    const rawSource = process.getSource({path: uri}).raw;
 
     if (breakpointsToSend.length && !rawSource.adapterData) {
       rawSource.adapterData = breakpointsToSend[0].adapterData;
@@ -1320,5 +1377,28 @@ export default class DebugService implements IDebugService {
     this._disposables.dispose();
     this._consoleDisposables.dispose();
     this._sessionEndDisposables.dispose();
+  }
+}
+
+class DebugSourceTextBufffer extends TextBuffer {
+  _uri: string;
+  _name: ?string;
+
+  constructor(contents: string, uri: string, name: ?string) {
+    super(contents);
+    this._uri = uri;
+    this._name = name;
+  }
+
+  getUri() {
+    return this._uri;
+  }
+
+  getPath() {
+    return this._name;
+  }
+
+  isModified() {
+    return false;
   }
 }
