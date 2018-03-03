@@ -36,6 +36,7 @@ import type {
   FileDiagnosticMessage,
   FormatOptions,
   SymbolResult,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   HostServices,
@@ -1435,8 +1436,43 @@ export class LspLanguageService {
 
     return {
       isIncomplete,
-      items: responseArray.map(convert.lspCompletionItem_atomCompletion),
+      items: responseArray.map(x =>
+        convert.lspCompletionItem_atomCompletion(
+          x,
+          this._supportsAutocompleteResolve(),
+        ),
+      ),
     };
+  }
+
+  async resolveAutocompleteSuggestion(
+    suggestion: Completion,
+  ): Promise<?Completion> {
+    if (this._state !== 'Running' || !this._supportsAutocompleteResolve()) {
+      return null;
+    }
+
+    invariant(typeof suggestion.extraData === 'string');
+
+    try {
+      const result = await this._lspConnection.completionItemResolve(
+        JSON.parse(suggestion.extraData),
+      );
+      return {
+        ...suggestion,
+        ...convert.lspCompletionItem_atomCompletion(result, true),
+      };
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
+  }
+
+  _supportsAutocompleteResolve(): boolean {
+    return (
+      this._serverCapabilities.completionProvider != null &&
+      this._serverCapabilities.completionProvider.resolveProvider === true
+    );
   }
 
   async getDefinition(

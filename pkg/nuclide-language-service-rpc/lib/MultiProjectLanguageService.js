@@ -31,11 +31,13 @@ import type {
   FormatOptions,
   LanguageService,
   SymbolResult,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 
+import invariant from 'assert';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
@@ -245,6 +247,22 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).getAutocompleteSuggestions(fileVersion, position, request);
+  }
+
+  async resolveAutocompleteSuggestion(
+    suggestion: Completion,
+  ): Promise<?Completion> {
+    invariant(
+      suggestion.remoteUri != null,
+      'remoteUri for autocomplete resolution should have been set by AutocompleteProvider.',
+    );
+
+    // We're running this "locally" (from RPC point of view), so strip remote
+    // URIs and just take the path.
+    const languageService = await this._getLanguageServiceForFile(
+      suggestion.remoteUri,
+    );
+    return languageService.resolveAutocompleteSuggestion(suggestion);
   }
 
   async getDefinition(

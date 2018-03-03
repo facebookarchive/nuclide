@@ -29,6 +29,7 @@ import type {
   FormatOptions,
   LanguageService,
   SymbolResult,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -58,6 +59,8 @@ export type SingleFileLanguageService = {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?AutocompleteResult>,
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion>,
 
   getDefinition(
     filePath: NuclideUri,
@@ -194,6 +197,12 @@ export class ServerLanguageService<
       request.activatedManually,
       request.prefix,
     );
+  }
+
+  async resolveAutocompleteSuggestion(
+    suggestion: Completion,
+  ): Promise<?Completion> {
+    return this._service.resolveAutocompleteSuggestion(suggestion);
   }
 
   async getDefinition(

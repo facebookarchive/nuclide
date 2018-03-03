@@ -16,6 +16,7 @@ import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc
 import type {
   FormatOptions,
   LanguageService,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -173,6 +174,10 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     }
   }
 
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
+  }
+
   /**
    * Does this service want the symbol-search tab to appear in quick-open?
    */
@@ -274,6 +279,10 @@ class HackSingleFileLanguageService {
     activatedManually: boolean,
   ): Promise<?AutocompleteResult> {
     throw new Error('replaced by persistent connection');
+  }
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
   }
 
   async getDefinition(

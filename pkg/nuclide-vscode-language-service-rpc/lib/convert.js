@@ -261,6 +261,7 @@ function lspCompletionItemKind_atomIcon(kind: ?number): ?string {
 
 export function lspCompletionItem_atomCompletion(
   item: CompletionItem,
+  supportsResolve: boolean,
 ): Completion {
   const useSnippet = item.insertTextFormat === InsertTextFormat.Snippet;
   const lspTextEdits = getCompletionTextEdits(item);
@@ -273,6 +274,21 @@ export function lspCompletionItem_atomCompletion(
   } else {
     iconHTML = `<span class="icon-${icon}"></span>`;
   }
+
+  const descriptionItems = [];
+  if (item.detail != null && item.detail !== '') {
+    descriptionItems.push(item.detail);
+  }
+
+  let descriptionMarkdown;
+  const documentation = item.documentation;
+  if (typeof documentation === 'string') {
+    descriptionItems.push(documentation);
+  } else if (documentation != null) {
+    // documentation is a MarkupContent.
+    descriptionMarkdown = documentation.value;
+  }
+
   return {
     // LSP: label is what should be displayed in the autocomplete list
     // Atom: displayText is what's displayed
@@ -295,13 +311,18 @@ export function lspCompletionItem_atomCompletion(
     // ATOM: iconHTML can be used to override the icon
     type: lspCompletionItemKind_atomCompletionType(item.kind),
     iconHTML,
-    // LSP detail is the thing's signature
+    // LSP: create from detail (signature) and documentation (doc block)
     // Atom: description is displayed in the footer of the autocomplete tab
-    description: item.detail,
+    description: descriptionItems.join('\n\n'),
+    descriptionMarkdown,
     textEdits:
       lspTextEdits != null
         ? lspTextEdits_atomTextEdits(lspTextEdits)
         : undefined,
+    // Resolving a completion item in the LSP requires passing in the original
+    // completion item, and since completion items are sent over the wire we
+    // already know they're serializable to JSON.
+    extraData: supportsResolve ? JSON.stringify(item) : undefined,
   };
 }
 

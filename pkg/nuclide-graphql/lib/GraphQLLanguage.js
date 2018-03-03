@@ -77,6 +77,7 @@ async function createLanguageService(): Promise<
     },
     disableForSelector: null,
     autocompleteCacherConfig: null,
+    supportsResolve: false,
   };
 
   const atomConfig: AtomLanguageServiceConfig = {

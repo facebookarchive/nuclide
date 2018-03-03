@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AutocompleteResult} from '../lib/LanguageService';
+import type {AutocompleteResult, Completion} from '../lib/LanguageService';
 
 import {Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -22,39 +22,60 @@ describe('AutocompleteProvider', () => {
   let editor: atom$TextEditor;
   let disposables: UniversalDisposable;
   const onDidInsertSuggestionSpy = jasmine.createSpy('onDidInsertSuggestion');
+  let calledResolve;
 
   beforeEach(() => {
     jasmineAttachWorkspace();
     jasmine.useRealClock();
+    calledResolve = false;
+
+    const suggestion1 = {
+      displayText: 'editSuggestion',
+      textEdits: [
+        {
+          oldRange: new Range([0, 0], [0, 9]),
+          newText: "this won't be selected; it'll be replaced in resolving.",
+        },
+      ],
+      // should be ignored
+      text: 'blah',
+      snippet: 'blah',
+
+      // Add extra data to the completion to make sure that it gets returned as
+      // well, rather than Atom making a fresh copy.
+      notInSpec: 'blah',
+    };
+    const suggestion2 = {
+      displayText: 'editSuggestion2',
+      textEdits: [],
+      // should be ignored
+      text: 'blah',
+      snippet: 'blah',
+    };
 
     const mockCache = new ConnectionCache(connection => {
       return ({
         getAutocompleteSuggestions(): Promise<?AutocompleteResult> {
           return Promise.resolve({
             isIncomplete: false,
-            items: [
+            items: [suggestion1, suggestion2],
+          });
+        },
+        resolveAutocompleteSuggestion(
+          completion: Completion,
+        ): Promise<?Completion> {
+          calledResolve = true;
+          expect(completion).toBe(suggestion1);
+          return Promise.resolve({
+            ...suggestion1,
+            textEdits: [
               {
-                displayText: 'editSuggestion',
-                textEdits: [
-                  {
-                    oldRange: new Range([0, 0], [0, 9]),
-                    newText: 'replaced line',
-                  },
-                  {
-                    oldRange: new Range([1, 0], [2, 0]),
-                    newText: '',
-                  },
-                ],
-                // should be ignored
-                text: 'blah',
-                snippet: 'blah',
+                oldRange: new Range([0, 0], [0, 9]),
+                newText: 'replaced line',
               },
               {
-                displayText: 'editSuggestion2',
-                textEdits: [],
-                // should be ignored
-                text: 'blah',
-                snippet: 'blah',
+                oldRange: new Range([1, 0], [2, 0]),
+                newText: '',
               },
             ],
           });
@@ -76,6 +97,7 @@ describe('AutocompleteProvider', () => {
             shouldLogInsertedSuggestion: false,
           },
           autocompleteCacherConfig: null,
+          supportsResolve: true,
         },
         onDidInsertSuggestionSpy,
         mockCache,
@@ -120,6 +142,7 @@ describe('AutocompleteProvider', () => {
     runs(() => {
       expect(suggestionList[0].innerText).toMatch(/^editSuggestion\s+/);
       expect(suggestionList[1].innerText).toMatch(/^editSuggestion2\s+/);
+      expect(calledResolve).toBeTruthy();
 
       // Confirm the autocomplete suggestion.
       atom.commands.dispatch(

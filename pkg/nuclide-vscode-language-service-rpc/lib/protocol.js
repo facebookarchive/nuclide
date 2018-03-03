@@ -435,6 +435,16 @@ export const InsertTextFormat = {
   Snippet: 2,
 };
 
+export type MarkupKind = 'plaintext' | 'markdown';
+
+export type MarkupContent = {
+  // The type of the Markup
+  kind: MarkupKind,
+
+  // The content itself
+  value: string,
+};
+
 export type CompletionItem = {
   //  The label of this completion item. By default
   //  also the text that is inserted when selecting
@@ -458,7 +468,7 @@ export type CompletionItem = {
   // If absent, then the type of the item won't be displayed.
   itemType?: string,
   // A human-readable string that represents a doc-comment.
-  documentation?: string,
+  documentation?: string | MarkupContent,
   //  A string that should be used when comparing this item
   //  with other items. When `falsy` the label is used.
   sortText?: string,

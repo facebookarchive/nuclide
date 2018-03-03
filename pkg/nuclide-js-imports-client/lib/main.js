@@ -83,6 +83,7 @@ function createLanguageService(): AtomLanguageService<LanguageService> {
     },
     disableForSelector: null,
     autocompleteCacherConfig: null,
+    supportsResolve: false,
   };
 
   const codeActionConfig: CodeActionConfig = {

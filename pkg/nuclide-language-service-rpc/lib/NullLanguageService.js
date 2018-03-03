@@ -32,6 +32,7 @@ import type {
   FormatOptions,
   LanguageService,
   SymbolResult,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {Observable} from 'rxjs';
@@ -52,6 +53,10 @@ export class NullLanguageService {
     position: atom$Point,
     request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
+    return Promise.resolve(null);
+  }
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
     return Promise.resolve(null);
   }
 

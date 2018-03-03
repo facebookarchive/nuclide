@@ -32,6 +32,7 @@ import type {
   AutocompleteResult,
   AutocompleteRequest,
   FileDiagnosticMessage,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -195,6 +196,10 @@ class CqueryLSPClient extends NullLanguageService {
           position,
           request,
         );
+  }
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
   }
 
   async getAdditionalLogFiles(
@@ -410,6 +415,7 @@ class Activation {
           eventName: 'nuclide-cquery-lsp',
           shouldLogInsertedSuggestion: false,
         },
+        supportsResolve: false,
       },
       definition: {
         version: '0.1.0',

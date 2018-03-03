@@ -160,6 +160,7 @@ async function createLanguageService(): Promise<
         : {
             updateResults: hackUpdateAutocompleteResults,
           },
+      supportsResolve: true,
     },
     diagnostics: {
       version: '0.2.0',

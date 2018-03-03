@@ -375,6 +375,10 @@ export class FlowSingleProjectLanguageService {
     }
   }
 
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
+    return Promise.resolve(null);
+  }
+
   async typeHint(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,

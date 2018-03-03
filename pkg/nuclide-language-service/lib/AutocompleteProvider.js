@@ -46,6 +46,7 @@ export type AutocompleteConfig = {|
   excludeLowerPriority: boolean,
   analytics: AutocompleteAnalytics,
   autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
+  supportsResolve: boolean,
 |};
 
 export class AutocompleteProvider<T: LanguageService> {
@@ -60,6 +61,7 @@ export class AutocompleteProvider<T: LanguageService> {
   _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
   _connectionToLanguageService: ConnectionCache<T>;
   _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
+  _supportsResolve: boolean;
 
   constructor(
     name: string,
@@ -72,6 +74,7 @@ export class AutocompleteProvider<T: LanguageService> {
     onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
     autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
     connectionToLanguageService: ConnectionCache<T>,
+    supportsResolve: boolean,
   ) {
     this.name = name;
     this.selector = selector;
@@ -80,6 +83,7 @@ export class AutocompleteProvider<T: LanguageService> {
     this.disableForSelector = disableForSelector;
     this.excludeLowerPriority = excludeLowerPriority;
     this._connectionToLanguageService = connectionToLanguageService;
+    this._supportsResolve = supportsResolve;
 
     if (autocompleteCacherConfig != null) {
       this._autocompleteCacher = new AutocompleteCacher(
@@ -121,6 +125,7 @@ export class AutocompleteProvider<T: LanguageService> {
         onDidInsertSuggestion,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
+        config.supportsResolve,
       ),
     );
   }
@@ -141,8 +146,9 @@ export class AutocompleteProvider<T: LanguageService> {
     request: atom$AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     const {editor} = request;
+    const editorPath = editor.getPath();
     const languageService = this._connectionToLanguageService.getForUri(
-      editor.getPath(),
+      editorPath,
     );
     const fileVersion = await getFileVersionOfEditor(editor);
     if (languageService == null || fileVersion == null) {
@@ -193,9 +199,29 @@ export class AutocompleteProvider<T: LanguageService> {
         // Here's where we patch up the prefix in the results, if necessary
         c.replacementPrefix = langSpecificPrefix;
       }
+
+      invariant(editorPath != null);
+      c.remoteUri = editorPath;
     });
 
     return results;
+  }
+
+  async getSuggestionDetailsOnSelect(
+    suggestion: Completion,
+  ): Promise<?Completion> {
+    if (!this._supportsResolve) {
+      return null;
+    }
+
+    const languageService = this._connectionToLanguageService.getForUri(
+      suggestion.remoteUri,
+    );
+    if (languageService == null) {
+      return null;
+    }
+
+    return (await languageService).resolveAutocompleteSuggestion(suggestion);
   }
 }
 

@@ -24,6 +24,9 @@ type AutocompleteProviderBase<Suggestion: atom$AutocompleteSuggestion> = {
   +getSuggestions: (
     request: atom$AutocompleteRequest,
   ) => Promise<?Array<Suggestion>> | ?Array<Suggestion>,
+  +getSuggestionDetailsOnSelect?: (
+    suggestion: Suggestion,
+  ) => Promise<?Suggestion>,
   +disableForSelector?: string,
   +inclusionPriority?: number,
   +excludeLowerPriority?: boolean,
@@ -52,5 +55,7 @@ export type AutocompleteAnalyticEventNames = {|
   +errorOnGetSuggestions: string,
   +onDidInsertSuggestion: string,
   +onGetSuggestions: string,
+  +errorOnGetSuggestionDetailsOnSelect: string,
+  +onGetSuggestionDetailsOnSelect: string,
   +timeoutOnGetSuggestions: string,
 |};

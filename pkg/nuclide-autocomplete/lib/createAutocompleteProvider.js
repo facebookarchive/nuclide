@@ -49,6 +49,12 @@ export default function createAutocompleteProvider<
           return getSuggestions.bind(null, target, eventNames);
         case 'onDidInsertSuggestion':
           return onDidInsertSuggestion.bind(null, target, eventNames);
+        case 'getSuggestionDetailsOnSelect':
+          if (target.getSuggestionDetailsOnSelect != null) {
+            return getSuggestionDetailsOnSelect.bind(null, target, eventNames);
+          } else {
+            return () => Promise.resolve(null);
+          }
         default:
           return Reflect.get(target, prop, receiver);
       }
@@ -99,6 +105,32 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
           durationBySuggestion.set(suggestion, endTime - startTime),
         );
       }
+      return result;
+    },
+    logObject,
+  );
+}
+
+function getSuggestionDetailsOnSelect<Suggestion: atom$AutocompleteSuggestion>(
+  provider: AutocompleteProvider<Suggestion>,
+  eventNames: AutocompleteAnalyticEventNames,
+  suggestion: Suggestion,
+): Promise<?Suggestion> {
+  const logObject = {};
+
+  return trackTiming(
+    eventNames.onGetSuggestionDetailsOnSelect,
+    async () => {
+      let result = null;
+      if (provider.getSuggestionDetailsOnSelect != null) {
+        try {
+          result = await provider.getSuggestionDetailsOnSelect(suggestion);
+        } catch (e) {
+          track(eventNames.errorOnGetSuggestionDetailsOnSelect);
+        }
+      }
+      logObject.isEmpty = result == null;
+
       return result;
     },
     logObject,
@@ -156,5 +188,11 @@ function getAnalytics<Suggestion: atom$AutocompleteSuggestion>(
     onDidInsertSuggestion: eventNameFor('on-did-insert-suggestion'),
     onGetSuggestions: eventNameFor('on-get-suggestions'),
     timeoutOnGetSuggestions: eventNameFor('timeout-on-get-suggestions'),
+    errorOnGetSuggestionDetailsOnSelect: eventNameFor(
+      'error-on-get-suggestion-details-on-select',
+    ),
+    onGetSuggestionDetailsOnSelect: eventNameFor(
+      'on-get-suggestion-details-on-select',
+    ),
   };
 }

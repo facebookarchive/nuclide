@@ -258,6 +258,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
           filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },
+      supportsResolve: false,
     },
     diagnostics: (await shouldUsePushDiagnostics())
       ? {

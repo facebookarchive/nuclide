@@ -20,6 +20,7 @@ import type {
   FileDiagnosticMessage,
   FormatOptions,
   SymbolResult,
+  Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
@@ -192,6 +193,8 @@ export interface FlowLanguageServiceType {
     position: atom$Point,
     request: AutocompleteRequest,
   ): Promise<?AutocompleteResult>;
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion>;
 
   getDefinition(
     fileVersion: FileVersion,

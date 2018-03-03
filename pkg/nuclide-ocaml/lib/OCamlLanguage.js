@@ -124,6 +124,7 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
         shouldLogInsertedSuggestion: false,
       },
       autocompleteCacherConfig: null,
+      supportsResolve: true,
     },
     diagnostics: {
       version: '0.2.0',

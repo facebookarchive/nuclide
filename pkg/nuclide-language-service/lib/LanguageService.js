@@ -58,6 +58,11 @@ export type Completion = {
   // The edits must not overlap and should contain the position of the completion request.
   // Note: this is implemented in AutocompletionProvider and is not part of Atom's API.
   textEdits?: Array<TextEdit>,
+
+  // Remote URI (or local path if the file is local) of the file in which we're
+  // requesting the autocomplete. This needs to be tracked inside the Completion
+  // in order to find the correct language server to send the resolve request to
+  remoteUri?: NuclideUri,
 };
 
 // This assertion ensures that Completion is a subtype of atom$AutocompleteSuggestion. If you are
@@ -120,6 +125,8 @@ export interface LanguageService {
     position: atom$Point,
     request: AutocompleteRequest,
   ): Promise<?AutocompleteResult>;
+
+  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion>;
 
   getDefinition(
     fileVersion: FileVersion,

@@ -85,6 +85,7 @@ const atomConfig: AtomLanguageServiceConfig = {
       updateResults: updateAutocompleteResults,
       updateFirstResults: updateAutocompleteFirstResults,
     },
+    supportsResolve: false,
   },
   definition: {
     version: '0.1.0',
