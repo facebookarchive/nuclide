@@ -16,12 +16,75 @@ import {repositoryForPath} from '../nuclide-vcs-base';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ChangedFile from './ChangedFile';
 
 function isHgPath(path: NuclideUri): boolean {
   const repo = repositoryForPath(path);
   return repo != null && repo.getType() === 'hg';
+}
+
+// Computes the minimally differentiable display path for each file.
+// The algorithm is O(n*m^2) where n = filePaths.length and m = maximum number
+// parts in a given path and the implementation is semi-optimized for
+// performance.
+//
+// ['/a/b/c.js', '/a/d/c.js'] would return ['b/c.js', 'd/c.js']
+// ['/a/b/c.js', '/a/b/d.js'] would return ['c.js', 'd.js']
+// ['/a/b.js', '/c/a/b.js'] would return ['/a/b.js', 'c/a/b.js']
+export function computeDisplayPaths(
+  filePaths: Array<NuclideUri>,
+  maxDepth: number = 5,
+): Array<string> {
+  const displayPaths = filePaths.map(path => {
+    const separator = nuclideUri.pathSeparatorFor(path);
+    return {
+      separator,
+      pathParts: path.split(separator).reverse(),
+      depth: 1,
+      done: false,
+    };
+  });
+
+  let seenCount: {[NuclideUri]: number} = {};
+  let currentDepth = 1;
+  let toProcess = displayPaths;
+  while (currentDepth < maxDepth && toProcess.length > 0) {
+    // Compute number of times each display path is seen.
+    toProcess.forEach(({pathParts, depth}) => {
+      const path = pathParts.slice(0, depth).join('/');
+      if (seenCount[path] == null) {
+        seenCount[path] = 1;
+      } else {
+        seenCount[path]++;
+      }
+    });
+
+    // Mark the display paths seen exactly once as done.
+    // Increment the depth otherwise.
+    toProcess.forEach(displayPath => {
+      const {depth, pathParts} = displayPath;
+      const path = pathParts.slice(0, depth).join('/');
+
+      if (seenCount[path] === 1 || depth === pathParts.length) {
+        displayPath.done = true;
+      } else {
+        displayPath.depth++;
+      }
+    });
+
+    toProcess = toProcess.filter(displayPath => !displayPath.done);
+    seenCount = {};
+    currentDepth++;
+  }
+
+  return displayPaths.map(({separator, pathParts, depth}) =>
+    pathParts
+      .slice(0, depth)
+      .reverse()
+      .join(separator),
+  );
 }
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
@@ -90,10 +153,15 @@ export default class ChangedFilesList extends React.Component<Props, State> {
 
     const filesToShow =
       FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
-    const sizeLimitedFileChanges = Array.from(fileStatuses.entries()).slice(
-      0,
-      filesToShow,
-    );
+    const filePaths = Array.from(fileStatuses.keys()).slice(0, filesToShow);
+    const displayPaths = computeDisplayPaths(filePaths);
+    const sizeLimitedFileChanges = filePaths.map((filePath, index) => {
+      return {
+        filePath,
+        displayPath: displayPaths[index],
+        fileStatus: nullthrows(fileStatuses.get(filePath)),
+      };
+    });
 
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
@@ -135,31 +203,36 @@ export default class ChangedFilesList extends React.Component<Props, State> {
             </div>
           ) : null}
           <ul className="list-tree has-flat-children">
-            {sizeLimitedFileChanges.map(([filePath, fileStatus]) => (
-              <ChangedFile
-                commandPrefix={commandPrefix}
-                enableFileExpansion={enableFileExpansion}
-                enableInlineActions={enableInlineActions}
-                filePath={filePath}
-                fileStatus={fileStatus}
-                isChecked={
-                  checkedFiles == null ? null : checkedFiles.has(filePath)
-                }
-                isHgPath={isHgRoot}
-                isSelected={selectedFile === filePath}
-                key={filePath}
-                onAddFile={onAddFile}
-                onDeleteFile={onDeleteFile}
-                onFileChecked={onFileChecked}
-                onFileChosen={onFileChosen}
-                onForgetFile={onForgetFile}
-                onMarkFileResolved={onMarkFileResolved}
-                onOpenFileInDiffView={onOpenFileInDiffView}
-                openInDiffViewOption={openInDiffViewOption}
-                onRevertFile={onRevertFile}
-                rootPath={rootPath}
-              />
-            ))}
+            {sizeLimitedFileChanges.map(
+              ({displayPath, filePath, fileStatus}) => {
+                return (
+                  <ChangedFile
+                    commandPrefix={commandPrefix}
+                    displayPath={displayPath}
+                    enableFileExpansion={enableFileExpansion}
+                    enableInlineActions={enableInlineActions}
+                    filePath={filePath}
+                    fileStatus={fileStatus}
+                    isChecked={
+                      checkedFiles == null ? null : checkedFiles.has(filePath)
+                    }
+                    isHgPath={isHgRoot}
+                    isSelected={selectedFile === filePath}
+                    key={filePath}
+                    onAddFile={onAddFile}
+                    onDeleteFile={onDeleteFile}
+                    onFileChecked={onFileChecked}
+                    onFileChosen={onFileChosen}
+                    onForgetFile={onForgetFile}
+                    onMarkFileResolved={onMarkFileResolved}
+                    onOpenFileInDiffView={onOpenFileInDiffView}
+                    openInDiffViewOption={openInDiffViewOption}
+                    onRevertFile={onRevertFile}
+                    rootPath={rootPath}
+                  />
+                );
+              },
+            )}
             <li>{showMoreFilesElement}</li>
           </ul>
         </li>

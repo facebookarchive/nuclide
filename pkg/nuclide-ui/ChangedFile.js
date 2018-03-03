@@ -21,7 +21,6 @@ import {
   FileChangeStatusToLabel,
   FileChangeStatusToTextColor,
 } from '../nuclide-vcs-base';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -32,6 +31,7 @@ const ANALYTICS_SOURCE_KEY = 'inline';
 const LF = '\u000A';
 type Props = {
   commandPrefix: string,
+  displayPath: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   // TODO: remove disable
   // eslint-disable-next-line react/no-unused-prop-types
@@ -182,10 +182,10 @@ export default class ChangedFile extends React.Component<Props> {
       enableInlineActions,
       isChecked,
       isHgPath,
+      displayPath,
       filePath,
       fileStatus,
     } = this.props;
-    const baseName = nuclideUri.basename(filePath);
     let actions;
     if (enableInlineActions && isHgPath) {
       const eligibleActions = [this._renderOpenInDiffViewAction(filePath)];
@@ -234,7 +234,7 @@ export default class ChangedFile extends React.Component<Props> {
       ) : null;
     return (
       <li
-        data-name={baseName}
+        data-name={displayPath}
         data-path={filePath}
         data-root={this.props.rootPath}
         className={this._getFileClassname()}
@@ -248,7 +248,7 @@ export default class ChangedFile extends React.Component<Props> {
             icon={FileChangeStatusToIcon[fileStatus]}
           />
           <PathWithFileIcon
-            path={baseName}
+            path={displayPath}
             title={`${statusName}:${LF}${projectRelativePath}${LF}(Click to open in Nuclide)`}
           />
         </span>
