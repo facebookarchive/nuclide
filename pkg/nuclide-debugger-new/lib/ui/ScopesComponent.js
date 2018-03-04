@@ -26,6 +26,7 @@ import {
   expressionAsEvaluationResult,
 } from '../utils';
 import {Expect} from '../../../commons-node/expected';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {|
   +service: IDebugService,
@@ -42,7 +43,7 @@ const NO_VARIABLES = (
 const LOADING = (
   <div className="nuclide-debugger-expression-value-row">
     <span className="nuclide-debugger-expression-value-content">
-      Loading...
+      <LoadingSpinner size="MEDIUM" />
     </span>
   </div>
 );
