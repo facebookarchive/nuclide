@@ -435,6 +435,18 @@ class HHVMDebuggerWrapper {
           }
           break;
         }
+        case 'stopped': {
+          if (message.body.threadCausedFocus == null) {
+            const reason = (message.body.reason || '')
+              .toLowerCase()
+              .split(' ')[0];
+            message.body.threadCausedFocus =
+              reason === 'step' ||
+              reason === 'breakpoint' ||
+              reason === 'exception';
+          }
+          break;
+        }
         default:
           // No fixes needed.
           break;
