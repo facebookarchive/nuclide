@@ -16,6 +16,8 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import semver from 'semver';
 
+const DEFAULT_FONT_STACK = "Menlo, Consolas, 'DejaVu Sans Mono', monospace";
+
 export default function installTextEditorStyles(): IDisposable {
   if (semver.gte(atom.appVersion, '1.26.0')) {
     // this behavior is part of 1.26 and greater
@@ -46,7 +48,7 @@ export default function installTextEditorStyles(): IDisposable {
       const styleSheetSource = `
         atom-workspace {
           --editor-font-size: ${fontSize}px;
-          --editor-font-family: ${fontFamily};
+          --editor-font-family: ${fontFamily || DEFAULT_FONT_STACK};
           --editor-line-height: ${lineHeight};
         }
       `;
