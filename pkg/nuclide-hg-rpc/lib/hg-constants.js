@@ -112,6 +112,7 @@ const MergeConflictFileStatus = Object.freeze({
 
 const HEAD_REVISION_EXPRESSION = '.';
 const PARENT_REVISION_EXPRESSION = '.^';
+const STACK_BASE_REVISION_EXPRESSION = 'ancestor(.,master)';
 
 const HisteditActions = Object.freeze({
   PICK: 'pick',
@@ -147,6 +148,7 @@ module.exports = {
   CommitPhase,
   HEAD_REVISION_EXPRESSION,
   PARENT_REVISION_EXPRESSION,
+  STACK_BASE_REVISION_EXPRESSION,
   MergeConflictStatus,
   MergeConflictFileStatus,
   StatusCodeId,
