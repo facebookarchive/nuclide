@@ -364,17 +364,23 @@ All the changes across your entire stacked diff.
       );
 
       uncommittedChangesSection = (
-        <Section
-          className="nuclide-file-tree-section-caption"
-          collapsable={true}
-          collapsed={!this.state.uncommittedChangesExpanded}
-          headline={uncommittedChangesHeadline}
-          onChange={this._handleUncommittedFilesExpandedChange}
-          size="small">
-          <PanelComponentScroller>
-            {uncommittedChangesList}
-          </PanelComponentScroller>
-        </Section>
+        <div
+          className="nuclide-file-tree-uncommitted-changes-container"
+          data-show-uncommitted-changes-kind={
+            this.state.showUncommittedChangesKind
+          }>
+          <Section
+            className="nuclide-file-tree-section-caption"
+            collapsable={true}
+            collapsed={!this.state.uncommittedChangesExpanded}
+            headline={uncommittedChangesHeadline}
+            onChange={this._handleUncommittedFilesExpandedChange}
+            size="small">
+            <PanelComponentScroller>
+              {uncommittedChangesList}
+            </PanelComponentScroller>
+          </Section>
+        </div>
       );
     }
 
