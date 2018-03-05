@@ -660,25 +660,31 @@ export function deserializeTerminalView(
 }
 
 function registerLinkHandlers(terminal: Terminal): void {
+  const diffPattern = toString(
+    featureConfig.get('atom-ide-console.diffUrlPattern'),
+  );
+  const taskPattern = toString(
+    featureConfig.get('atom-ide-console.taskUrlPattern'),
+  );
   const bindings = [
     {
       // Diff (e.g. 'D1234') with word boundary on either side.
       regex: /\bD[1-9][0-9]{3,}\b/,
       matchIndex: 0,
-      urlPrefix: 'https://phabricator.intern.facebook.com/',
+      urlPattern: diffPattern,
     },
     {
       // Paste (e.g. 'P1234') with word boundary on either side.
       regex: /\bP[1-9][0-9]{3,}\b/,
       matchIndex: 0,
-      urlPrefix: 'https://phabricator.intern.facebook.com/',
+      urlPattern: diffPattern,
     },
     {
       // Task (e.g. 't1234' or 'T1234') with word boundary on either side.
       // Note the [tT] is not included in the resulting URL.
       regex: /\b[tT]([1-9][0-9]{3,})\b/,
       matchIndex: 1,
-      urlPrefix: 'https://our.intern.facebook.com/intern/tasks?t=',
+      urlPattern: taskPattern,
     },
     {
       // Task (e.g. '#1234') preceded by beginning-of-line or whitespace and followed
@@ -686,14 +692,19 @@ function registerLinkHandlers(terminal: Terminal): void {
       // it is not normally a word boundary, so this has to be registered separately.
       regex: /(^|\s)#([1-9][0-9]{3,})\b/,
       matchIndex: 2,
-      urlPrefix: 'https://our.intern.facebook.com/intern/tasks?t=',
+      urlPattern: taskPattern,
     },
   ];
 
-  for (const {regex, matchIndex, urlPrefix} of bindings) {
+  for (const {regex, matchIndex, urlPattern} of bindings) {
     terminal.linkifier.registerLinkMatcher(
       regex,
-      (event, match) => shell.openExternal(urlPrefix + match),
+      (event, match) => {
+        const replacedUrl = urlPattern.replace('%s', match);
+        if (replacedUrl !== '') {
+          shell.openExternal(replacedUrl);
+        }
+      },
       {matchIndex},
     );
   }
@@ -705,6 +716,10 @@ function openLink(event: Event, link: string): void {
 
 function trimTrailingDot(s: string): string {
   return s.endsWith('.') ? s.substring(0, s.length - 1) : s;
+}
+
+function toString(value: mixed): string {
+  return typeof value === 'string' ? value : '';
 }
 
 // As a precaution, we should not let any undisplayable or potentially unsafe characters through
