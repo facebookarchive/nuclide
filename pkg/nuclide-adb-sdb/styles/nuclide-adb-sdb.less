@@ -42,3 +42,18 @@ atom-panel.modal.nuclide-adb-sdb-custom-path-modal {
   padding: 1em;
   text-align: center;
 }
+
+.nuclide-adb-sdb-tunnel-control {
+  order: -1;
+
+  &.active {
+    color: @text-color-info;
+    &:hover {
+      color: @text-color-info;
+    }
+  }
+
+  &.inactive {
+    color: @text-color-subtle;
+  }
+}

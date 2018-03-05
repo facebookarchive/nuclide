@@ -14,6 +14,7 @@ import type {DevicePanelServiceApi} from '../../../nuclide-device-panel/lib/type
 import {AndroidBridge} from '../bridges/AndroidBridge';
 import {TizenBridge} from '../bridges/TizenBridge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {AdbTunnelingProvider} from './AdbTunnelingProvider';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
@@ -35,6 +36,7 @@ export function registerDevicePanelProviders(
       new ATConfigurePathTaskProvider(android),
     ),
     api.registerDeviceTypeComponentProvider(new AvdComponentProvider()),
+    api.registerDeviceTypeComponentProvider(new AdbTunnelingProvider()),
   );
 
   if (atom.config.get('nuclide.nuclide-adb-sdb.tizen')) {
