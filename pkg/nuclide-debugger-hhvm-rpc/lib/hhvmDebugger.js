@@ -457,6 +457,16 @@ class HHVMDebuggerWrapper {
   _writeOutputWithHeader(message: Object) {
     this._applyCompatabilityFixes(message);
 
+    // TODO(ericblue): Fix breakpoint events format on the HHVM side.
+    if (message.type === 'event' && message.event === 'breakpoint') {
+      // * Skip 'new' & 'removed' breakpoint events as these weren't triggered by the backend.
+      if (message.body.reason !== 'changed') {
+        return;
+      }
+      // * Change `breakpoint.column` to `1` insead of `0`
+      message.body.breakpoint.column = 1;
+    }
+
     const output = JSON.stringify(message);
     const length = Buffer.byteLength(output, 'utf8');
     process.stdout.write('Content-Length: ' + length + TWO_CRLF, 'utf8');
