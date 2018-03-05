@@ -106,6 +106,7 @@ import logger from '../logger';
 import stripAnsi from 'strip-ansi';
 import {remoteToLocalProcessor, localToRemoteProcessor} from './processors';
 import url from 'url';
+import idx from 'idx';
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
@@ -524,14 +525,21 @@ export default class DebugService implements IDebugService {
       toFocusThreads
         .concatMap(thread => {
           const {focusedThread} = this._viewModel;
+          // Prioritize auto-focusing the thread that caused stop.
+          // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
+          const threadCausedFocus =
+            idx(thread, _ => _.stoppedDetails.threadCausedFocus) || false;
+
           if (
             focusedThread != null &&
             focusedThread.stopped &&
-            focusedThread.getId() !== thread.getId()
+            focusedThread.getId() !== thread.getId() &&
+            !threadCausedFocus
           ) {
             // The debugger is already stopped elsewhere.
             return Observable.empty();
           }
+
           // UX: That'll fetch the top stack frame first (to allow the UI to focus on it),
           // then the rest of the call stack.
           return Observable.fromPromise(this._model.fetchCallStack(thread))
