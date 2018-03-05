@@ -9,14 +9,19 @@
  * @format
  */
 
+import type {RegisterProvider} from '../../fb-dash/lib/types';
+
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import Module from 'module';
 import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 
+import NuclidePackageReloadDashProvider from './NuclidePackageReloadDashProvider';
+
 class Activation {
   _disposables: UniversalDisposable;
+  _reloader: string => Promise<void>;
 
   constructor() {
     this._disposables = new UniversalDisposable(
@@ -87,42 +92,47 @@ class Activation {
           });
         },
       ),
-      () => {
-        delete global.nuclide_contributors_tryReloadingPackage;
-      },
     );
+  }
 
-    global.nuclide_contributors_tryReloadingPackage = name => {
-      const pack = atom.packages.getLoadedPackage(name);
-      if (pack == null) {
-        atom.notifications.addWarning(`${name} package is not loaded`);
-        return;
-      }
+  _reloader = async name => {
+    const pack = atom.packages.getLoadedPackage(name);
+    if (pack == null) {
+      atom.notifications.addWarning(`${name} package is not loaded`);
+      return;
+    }
 
-      atom.packages.deactivatePackage(name);
-      atom.packages.unloadPackage(name);
+    await atom.packages.deactivatePackage(name);
+    atom.packages.unloadPackage(name);
 
-      // remove cache
-      Object.keys(require.cache)
-        .filter(p => p.indexOf(pack.path + path.sep) === 0)
+    // remove cache
+    Object.keys(require.cache)
+      .filter(p => p.indexOf(pack.path + path.sep) === 0)
+      .forEach(p => {
+        delete require.cache[p];
+      });
+
+    // For Atom 1.17+
+    if (global.snapshotResult && global.snapshotResult.customRequire) {
+      Object.keys(global.snapshotResult.customRequire.cache)
+        .filter(p => p.indexOf(pack.path + path.sep) !== -1)
         .forEach(p => {
-          delete require.cache[p];
+          delete global.snapshotResult.customRequire.cache[p];
         });
+    }
 
-      // For Atom 1.17+
-      if (global.snapshotResult && global.snapshotResult.customRequire) {
-        Object.keys(global.snapshotResult.customRequire.cache)
-          .filter(p => p.indexOf(pack.path + path.sep) !== -1)
-          .forEach(p => {
-            delete global.snapshotResult.customRequire.cache[p];
-          });
-      }
+    const pkg = atom.packages.loadPackage(pack.path);
+    invariant(pkg != null);
+    pkg.activateResources();
+    pkg.activateNow();
+  };
 
-      const pkg = atom.packages.loadPackage(pack.path);
-      invariant(pkg != null);
-      pkg.activateResources();
-      pkg.activateNow();
-    };
+  consumeDash(registerProvider: RegisterProvider): IDisposable {
+    const disposable = new UniversalDisposable(
+      registerProvider(new NuclidePackageReloadDashProvider(this._reloader)),
+    );
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   dispose(): void {
