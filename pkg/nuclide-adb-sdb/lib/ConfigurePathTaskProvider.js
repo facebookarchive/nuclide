@@ -9,17 +9,17 @@
  * @format
  */
 
-import type {DeviceTypeTaskProvider} from '../../../nuclide-device-panel/lib/types';
+import type {DeviceTypeTaskProvider} from '../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
-import type {Bridge} from '../types';
+import type {Bridge} from './types';
 
 import showModal from 'nuclide-commons-ui/showModal';
-import {ATCustomDBPathModal} from './ui/ATCustomDBPathModal';
+import {CustomPathModal} from './CustomPathModal';
 import {Observable} from 'rxjs';
 import * as React from 'react';
 
-export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
+export class ConfigurePathTaskProvider implements DeviceTypeTaskProvider {
   _bridge: Bridge;
 
   constructor(bridge: Bridge) {
@@ -40,7 +40,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
         return Observable.create(observer => {
           const disposable = showModal(
             ({dismiss}) => (
-              <ATCustomDBPathModal
+              <CustomPathModal
                 dismiss={dismiss}
                 activePath={fullConfig.active}
                 currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}

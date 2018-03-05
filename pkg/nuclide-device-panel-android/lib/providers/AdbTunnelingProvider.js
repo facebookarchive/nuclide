@@ -25,7 +25,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, BehaviorSubject} from 'rxjs';
 import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {AdbTunnelButton} from './ui/AdbTunnelButton';
+import {AdbTunnelButton} from '../ui/AdbTunnelButton';
 import * as React from 'react';
 
 export class AdbTunnelingProvider implements DeviceTypeComponentProvider {

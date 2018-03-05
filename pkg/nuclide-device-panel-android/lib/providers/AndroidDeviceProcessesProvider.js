@@ -15,19 +15,13 @@ import type {
   Process,
 } from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Bridge} from '../types';
 
 import {Observable} from 'rxjs';
+import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
-export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
-  _bridge: Bridge;
-
-  constructor(bridge: Bridge) {
-    this._bridge = bridge;
-  }
-
+export class AndroidDeviceProcessesProvider implements DeviceProcessesProvider {
   getType(): string {
-    return this._bridge.name;
+    return 'Android';
   }
 
   observe(host: NuclideUri, device: Device): Observable<Process[]> {
@@ -35,8 +29,7 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
     return Observable.interval(intervalTime)
       .startWith(0)
       .switchMap(() =>
-        this._bridge
-          .getService(host)
+        getAdbServiceByNuclideUri(host)
           .getProcesses(device, intervalTime)
           .refCount()
           .catch(() => Observable.of([])),

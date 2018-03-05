@@ -18,6 +18,7 @@ import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {ConfigurePathTaskProvider} from './ConfigurePathTaskProvider';
 import {createEmptyAppState, deserialize, serialize} from './redux/AppState';
 import * as Reducers from './redux/Reducers';
 import * as Epics from './redux/Epics';
@@ -26,7 +27,6 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
-import {registerDevicePanelProviders} from './device-panel/Registration';
 import {AndroidBridge} from './bridges/AndroidBridge';
 import {TizenBridge} from './bridges/TizenBridge';
 
@@ -84,10 +84,11 @@ class Activation {
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
     this._disposables.add(
-      registerDevicePanelProviders(
-        api,
-        new AndroidBridge(this._store),
-        new TizenBridge(this._store),
+      api.registerDeviceTypeTaskProvider(
+        new ConfigurePathTaskProvider(new AndroidBridge(this._store)),
+      ),
+      api.registerDeviceTypeTaskProvider(
+        new ConfigurePathTaskProvider(new TizenBridge(this._store)),
       ),
     );
   }

@@ -1,8 +1,8 @@
 {
-  "name": "nuclide-adb-sdb",
+  "name": "nuclide-device-panel-android",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Path/port configuration for adb and sdb",
+  "description": "Android support for nuclide-device-panel",
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {

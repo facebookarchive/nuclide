@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {Expected} from '../../../../commons-node/expected';
-import type {Avd} from '../AvdComponentProvider';
+import type {Expected} from '../../../commons-node/expected';
+import type {Avd} from '../providers/AvdComponentProvider';
 
 import classnames from 'classnames';
 import {Button} from 'nuclide-commons-ui/Button';
@@ -34,8 +34,8 @@ export default class AvdTable extends React.Component<Props> {
 
     return (
       <div
-        className={classnames('nuclide-adb-sdb-emulator-row', {
-          'nuclide-adb-sdb-emulator-running': avd.running,
+        className={classnames('nuclide-device-panel-android-emulator-row', {
+          'nuclide-device-panel-android-emulator-running': avd.running,
         })}>
         {avd.name} {avd.running ? ' (running)' : ''}
         <ButtonGroup>
@@ -53,7 +53,7 @@ export default class AvdTable extends React.Component<Props> {
   _renderEmptyComponent = (): React.Node => {
     const {avds} = this.props;
     return (
-      <div className="nuclide-adb-sdb-emulator-empty-message">
+      <div className="nuclide-device-panel-android-emulator-empty-message">
         {avds.isError ? avds.error.message : 'No emulators found.'}
       </div>
     );

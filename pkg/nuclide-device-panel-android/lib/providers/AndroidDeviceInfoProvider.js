@@ -11,25 +11,18 @@
 
 import type {DeviceInfoProvider} from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Bridge} from '../types';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import {Observable} from 'rxjs';
+import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
-export class ATDeviceInfoProvider implements DeviceInfoProvider {
-  _bridge: Bridge;
-
-  constructor(bridge: Bridge) {
-    this._bridge = bridge;
-  }
-
+export class AndroidDeviceInfoProvider implements DeviceInfoProvider {
   getType(): string {
-    return this._bridge.name;
+    return 'Android';
   }
 
   fetch(host: NuclideUri, device: Device): Observable<Map<string, string>> {
-    return this._bridge
-      .getService(host)
+    return getAdbServiceByNuclideUri(host)
       .getDeviceInfo(device)
       .refCount()
       .map(props => {

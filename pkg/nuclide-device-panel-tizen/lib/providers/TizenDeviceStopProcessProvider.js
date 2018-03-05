@@ -17,19 +17,13 @@ import type {
 } from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {AndroidBridge} from '../bridges/AndroidBridge';
-import {TizenBridge} from '../bridges/TizenBridge';
 import {Observable} from 'rxjs';
+import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
-export class ATDeviceStopProcessProvider implements DeviceProcessTaskProvider {
-  _bridge: AndroidBridge | TizenBridge;
-
-  constructor(bridge: AndroidBridge | TizenBridge) {
-    this._bridge = bridge;
-  }
-
+export class TizenDeviceStopProcessProvider
+  implements DeviceProcessTaskProvider {
   getType(): string {
-    return this._bridge.name;
+    return 'Tizen';
   }
 
   getTaskType(): ProcessTaskType {
@@ -53,8 +47,10 @@ export class ATDeviceStopProcessProvider implements DeviceProcessTaskProvider {
   }
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return this._bridge
-      .getService(host)
-      .stopProcess(device, proc.name, proc.pid);
+    return getSdbServiceByNuclideUri(host).stopProcess(
+      device,
+      proc.name,
+      proc.pid,
+    );
   }
 }

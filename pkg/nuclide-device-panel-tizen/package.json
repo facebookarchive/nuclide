@@ -1,0 +1,33 @@
+{
+  "name": "nuclide-device-panel-tizen",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Tizen support for nuclide-device-panel",
+  "author": "NEEDS OWNER",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Tizen"
+      ]
+    },
+    "config": {
+      "register": {
+        "title": "Show Tizen devices",
+        "type": "boolean",
+        "default": "false",
+        "description": "Whether to show a Tizen tab in the Devices panel."
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide.devices": {
+      "versions": {
+        "0.0.0": "consumeDevicePanelServiceApi"
+      }
+    }
+  }
+}

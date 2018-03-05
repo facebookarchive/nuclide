@@ -26,7 +26,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {Observable, Subject} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
-import AvdTable from './ui/AvdTable';
+import AvdTable from '../ui/AvdTable';
 
 export type Avd = {
   name: string,
