@@ -37,7 +37,7 @@ export function getSimulatorPlatform(
     }
     let deviceGroups;
     if (simulators.length === 0) {
-      deviceGroups = NO_SIMULATORS_FOUND_GROUPS;
+      deviceGroups = BUILD_ONLY_SIMULATOR_GROUPS;
     } else {
       deviceGroups = Array.from(groupByOs(simulators).entries()).map(
         ([os, simsForOs]) => ({
@@ -146,9 +146,9 @@ function groupByOs(devices: Array<Device>): Map<string, Array<Device>> {
   return devicesByOs;
 }
 
-const NO_SIMULATORS_FOUND_GROUPS = [
+const BUILD_ONLY_SIMULATOR_GROUPS = [
   {
-    name: '(none installed)',
+    name: 'Generic',
     devices: [
       {
         name: '64-bit',
