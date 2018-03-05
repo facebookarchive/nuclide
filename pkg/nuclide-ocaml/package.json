@@ -50,6 +50,11 @@
           "FATAL",
           "OFF"
         ]
+      },
+      "codeLens": {
+        "title": "Enable code lens support (requires restart).",
+        "type": "boolean",
+        "default": true
       }
     },
     "packageType": "Atom",

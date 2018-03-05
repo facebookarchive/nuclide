@@ -37,6 +37,7 @@ import type {
   FormatOptions,
   SymbolResult,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   HostServices,
@@ -1763,6 +1764,58 @@ export class LspLanguageService {
     }
 
     return root;
+  }
+
+  /** Returns code lens information for the given file. */
+  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    if (
+      this._state !== 'Running' ||
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+    }
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+    };
+
+    try {
+      const response = await this._lspConnection.codeLens(params);
+      invariant(response != null, 'null textDocument/codeLens');
+      return response.map(convert.lspCodeLens_codeLensData);
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
+  }
+
+  /** Resolves an individual code lens. */
+  async resolveCodeLens(
+    filePath: NuclideUri,
+    data: CodeLensData,
+  ): Promise<?CodeLensData> {
+    if (this._state !== 'Running') {
+      return null;
+    }
+
+    if (
+      !this._serverCapabilities.codeLensProvider ||
+      !this._serverCapabilities.codeLensProvider.resolveProvider
+    ) {
+      return data;
+    }
+
+    try {
+      const response = await this._lspConnection.codeLensResolve(
+        convert.codeLensData_lspCodeLens(data),
+      );
+      invariant(response != null, 'null textDocument/codeLensResolve');
+      return convert.lspCodeLens_codeLensData(response);
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
   }
 
   // Private API to send executeCommand requests to the server. Returns a

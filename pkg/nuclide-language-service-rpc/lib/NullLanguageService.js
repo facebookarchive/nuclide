@@ -33,6 +33,7 @@ import type {
   LanguageService,
   SymbolResult,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {Observable} from 'rxjs';
@@ -79,6 +80,17 @@ export class NullLanguageService {
   }
 
   getOutline(fileVersion: FileVersion): Promise<?Outline> {
+    return Promise.resolve(null);
+  }
+
+  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    return Promise.resolve(null);
+  }
+
+  resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData> {
     return Promise.resolve(null);
   }
 

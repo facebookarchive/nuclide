@@ -30,6 +30,7 @@ import type {
   LanguageService,
   SymbolResult,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -257,6 +258,17 @@ export class ServerLanguageService<
       return null;
     }
     return this._service.getOutline(filePath, buffer);
+  }
+
+  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    return null;
+  }
+
+  async resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData> {
+    return null;
   }
 
   async typeHint(

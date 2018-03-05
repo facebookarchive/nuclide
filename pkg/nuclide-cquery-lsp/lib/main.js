@@ -33,6 +33,7 @@ import type {
   AutocompleteRequest,
   FileDiagnosticMessage,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -239,6 +240,18 @@ class CqueryLSPClient extends NullLanguageService {
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
     const project = await this.ensureProject(fileVersion.filePath);
     return project == null ? null : this._service.getOutline(fileVersion);
+  }
+
+  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null ? null : this._service.getCodeLens(fileVersion);
+  }
+
+  async resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData> {
+    return null;
   }
 
   async getCodeActions(

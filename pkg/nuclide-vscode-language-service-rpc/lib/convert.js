@@ -23,12 +23,14 @@ import type {
   Diagnostic,
   PublishDiagnosticsParams,
   RelatedLocation,
+  CodeLens,
 } from './protocol';
 import type {
   Completion,
   FileDiagnosticMap,
   FileDiagnosticMessage,
   SymbolResult,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {ShowNotificationLevel} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
@@ -600,4 +602,32 @@ export function lspDiagnostics_atomDiagnostics(
       params.diagnostics.map(d => lspDiagnostic_atomDiagnostic(d, filePath)),
     ],
   ]);
+}
+
+export function codeLensData_lspCodeLens(codeLensData: CodeLensData): CodeLens {
+  return {
+    range: {
+      start: {
+        line: codeLensData.range.start.row,
+        character: codeLensData.range.start.column,
+      },
+      end: {
+        line: codeLensData.range.end.row,
+        character: codeLensData.range.end.column,
+      },
+    },
+    command: codeLensData.command,
+    data: codeLensData.data,
+  };
+}
+
+export function lspCodeLens_codeLensData(codeLens: CodeLens): CodeLensData {
+  return {
+    range: new atom$Range(
+      new Point(codeLens.range.start.line, codeLens.range.start.character),
+      new Point(codeLens.range.end.line, codeLens.range.end.character),
+    ),
+    command: codeLens.command,
+    data: codeLens.data,
+  };
 }

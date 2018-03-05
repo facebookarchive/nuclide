@@ -17,6 +17,9 @@ import type {
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 
+import {getLogger} from 'log4js';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {observeForCodeLens} from './CodeLensListener';
 import HyperclickProvider from './HyperclickProvider';
 import AutoComplete from './AutoComplete';
 import {GRAMMARS} from './constants';
@@ -87,6 +90,12 @@ export async function activate(): Promise<void> {
     const ocamlLspLanguageService = createLanguageService();
     ocamlLspLanguageService.activate();
     disposables.add(ocamlLspLanguageService);
+
+    if (featureConfig.get('nuclide-ocaml.codeLens')) {
+      disposables.add(
+        observeForCodeLens(ocamlLspLanguageService, getLogger('OcamlService')),
+      );
+    }
   } else {
     disposables.add(
       atom.commands.add('atom-workspace', 'nuclide-ocaml:destructure', () => {

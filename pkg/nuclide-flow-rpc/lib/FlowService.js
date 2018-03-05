@@ -21,6 +21,7 @@ import type {
   FormatOptions,
   SymbolResult,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
@@ -209,6 +210,12 @@ export interface FlowLanguageServiceType {
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>;
+
+  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>>;
+  resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData>;
 
   getCodeActions(
     fileVersion: FileVersion,

@@ -240,6 +240,7 @@ declare class atom$DisplayMarkerLayer {
   destroy(): void,
   clear(): void,
   isDestroyed(): boolean,
+  markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
   markBufferRange(range: atom$Range | atom$RangeLike, options: MarkerOptions): atom$Marker,
   getMarkers(): Array<atom$Marker>,
 }
@@ -773,7 +774,7 @@ declare class atom$TextEditor extends atom$Model {
   // Event Subscription
   onDidChange(callback: () => void): IDisposable,
   onDidChangePath(callback: (newPath: string) => mixed): IDisposable,
-  onDidStopChanging(callback: () => void): IDisposable,
+  onDidStopChanging(callback: () => mixed): IDisposable,
   onDidChangeCursorPosition(callback: (event: ChangeCursorPositionEvent) => mixed):
     IDisposable,
   onDidDestroy(callback: () => mixed): IDisposable,
@@ -818,6 +819,7 @@ declare class atom$TextEditor extends atom$Model {
   getText(): string,
   getTextInBufferRange(range: atom$RangeLike): string,
   getLineCount(): number,
+  getLastScreenRow(): number,
 
   // Mutating Text
   setText(text: string, options?: InsertTextOptions): void,
@@ -874,6 +876,7 @@ declare class atom$TextEditor extends atom$Model {
   getDecorations(options?: {class?: string, type?: string}): Array<atom$Decoration>,
 
   // Markers
+  addMarkerLayer(): atom$DisplayMarkerLayer,
   getDefaultMarkerLayer(): atom$DisplayMarkerLayer,
   markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
   markBufferRange(range: atom$RangeLike, options?: MarkerOptions): atom$Marker,

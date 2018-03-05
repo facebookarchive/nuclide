@@ -114,6 +114,15 @@ export type FileDiagnosticMessage = {|
 (((null: any): FileDiagnosticMessage): DiagnosticMessage);
 
 export type FileDiagnosticMap = Map<NuclideUri, Array<FileDiagnosticMessage>>;
+export type CodeLensData = {
+  range: atom$Range,
+  command?: {
+    title: string,
+    command: string,
+    arguments?: Array<any>,
+  },
+  data?: any,
+};
 
 export interface LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
@@ -141,6 +150,13 @@ export interface LanguageService {
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>;
+
+  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>>;
+
+  resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData>;
 
   /**
    * Requests CodeActions from a language service. This function can be called either

@@ -32,6 +32,7 @@ import type {
   LanguageService,
   SymbolResult,
   Completion,
+  CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
@@ -295,6 +296,22 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).getOutline(fileVersion);
+  }
+
+  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).getCodeLens(fileVersion);
+  }
+
+  async resolveCodeLens(
+    filePath: NuclideUri,
+    codeLens: CodeLensData,
+  ): Promise<?CodeLensData> {
+    return (await this._getLanguageServiceForFile(filePath)).resolveCodeLens(
+      filePath,
+      codeLens,
+    );
   }
 
   async getAdditionalLogFiles(

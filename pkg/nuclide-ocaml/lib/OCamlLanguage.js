@@ -53,7 +53,8 @@ async function createOCamlLanguageService(
       additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
       initializationOptions: {
         codelens: {
-          unicode: true,
+          enabled: true,
+          unicode: false,
         },
         debounce: {
           linter: 10 * 1000, // 10s
