@@ -128,20 +128,13 @@ export default class BigDigServer {
           this._handleBigDigMessage(tagToTransport, message);
         });
 
-        ws.once('close', () => {
-          for (const transport of tagToTransport.values()) {
-            transport.close();
-          }
-          // This may be garbage-collected automatically, but clearing it won't hurt...
-          tagToTransport.clear();
-        });
+        // TODO: Either garbage collect inactive transports, or implement
+        // an explicit "close" action in the big-dig protocol.
       } else {
         invariant(clientId === cachedTransport.id);
         cachedTransport.reconnect(wsTransport);
       }
     });
-
-    // TODO: need to handle ws errors.
   }
 
   _handleBigDigMessage(

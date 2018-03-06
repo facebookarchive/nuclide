@@ -59,9 +59,6 @@ export class BigDigClient {
     });
 
     this._heartbeat = heartbeat;
-    this._heartbeat.onConnectionRestored(() => {
-      this._logger.warn('TODO(T25533063): Implement reconnect logic');
-    });
   }
 
   isClosed(): boolean {

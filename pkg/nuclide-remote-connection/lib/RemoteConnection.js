@@ -132,14 +132,13 @@ export class RemoteConnection {
   ): Promise<?RemoteConnection> {
     let connectionConfig = await getConnectionConfig(host);
     if (!connectionConfig) {
-      return null;
-    }
-    try {
-      // Connection configs are also stored by IP address to share between hostnames.
-      const {address} = await lookupPreferIpv6(host);
-      connectionConfig = await getConnectionConfig(address);
-    } catch (err) {
-      // It's OK if the backup IP check fails.
+      try {
+        // Connection configs are also stored by IP address to share between hostnames.
+        const {address} = await lookupPreferIpv6(host);
+        connectionConfig = await getConnectionConfig(address);
+      } catch (err) {
+        // It's OK if the backup IP check fails.
+      }
     }
     if (!connectionConfig) {
       return null;
