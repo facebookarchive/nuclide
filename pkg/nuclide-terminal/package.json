@@ -40,6 +40,12 @@
         "type": "boolean",
         "default": false
       },
+      "documentationMessage": {
+        "title": "Documentation Message",
+        "type": "boolean",
+        "description": "Hide/show documentation url at the top of new terminal instances",
+        "default": true
+      },
       "preservedCommands": {
         "title": "Preserved Commands",
         "type": "array",

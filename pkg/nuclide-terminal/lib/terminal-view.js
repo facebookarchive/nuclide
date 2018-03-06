@@ -53,6 +53,7 @@ const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'nuclide-terminal.cursorBlink';
+const DOCUMENTATION_MESSAGE_CONFIG = 'nuclide-terminal.documentationMessage';
 const ADD_ESCAPE_COMMAND = 'nuclide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
@@ -165,6 +166,11 @@ export class TerminalView implements PtyClient {
     );
     this._subscriptions.add(() => terminal.destroy());
     registerLinkHandlers(terminal);
+
+    if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
+      const docsUrl = 'https://nuclide.io/docs/features/terminal';
+      terminal.writeln(`For more info check out the docs: ${docsUrl}`);
+    }
 
     this._subscriptions.add(
       atom.commands.add(div, 'core:copy', () => {
