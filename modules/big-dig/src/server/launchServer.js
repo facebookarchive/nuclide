@@ -50,11 +50,13 @@ log4js.configure({
   ],
 });
 
-main();
+main().catch(error => {
+  log4js.getLogger().fatal('launchServer failed:', error);
+  log4js.shutdown(() => process.exit(1));
+});
 
 process.on('unhandledRejection', error => {
-  log4js.getLogger().fatal('Unhandled rejection:', error);
-  log4js.shutdown(() => process.exit(1));
+  log4js.getLogger().error('Unhandled rejection:', error);
 });
 
 process.on('uncaughtException', error => {

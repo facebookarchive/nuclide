@@ -785,8 +785,8 @@ export class SshHandshake {
     const params = {
       cname: this._config.host,
       jsonOutputFile: remoteTempFile,
-      timeout: '60s', // Currently unused and not configurable.
-      expiration: '7d',
+      timeout: 60000,
+      expiration: '14d',
       serverParams: this._config.remoteServerCustomParams,
       port: this._config.remoteServerPort,
     };

@@ -20,7 +20,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import {SshHandshake} from 'big-dig/src/client/index';
-import {shellParse} from 'nuclide-commons/string';
+import yargs from 'yargs';
 import {getNuclideVersion} from '../../commons-node/system-info';
 import {
   SshHandshake as NuclideSshHandshake,
@@ -101,25 +101,28 @@ export default function connectBigDigSshHandshake(
     authMethod,
     password,
   } = connectionConfig;
-  // TODO(T25636858): Have the server auto-detect FB-friendly ports
-  let remoteServerPort = 9091;
   let {remoteServerCommand} = connectionConfig;
+  let remoteServerPort;
+  // Add the current Nuclide version, unless explicitly provided.
+  let version = getNuclideVersion();
   // big-dig doesn't parse extra arguments.
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {
-    const argv = shellParse(remoteServerCommand);
-    remoteServerCommand = argv[0];
-    for (let i = 1; i < argv.length - 1; i++) {
-      if (argv[i] === '--port' || argv[i] === '-p') {
-        remoteServerPort = parseInt(argv[i + 1], 10);
-      }
-      // TODO(T25636823): Also support debug flags
+    const parsed = yargs.parse(remoteServerCommand);
+    remoteServerCommand = parsed._[0];
+    if (parsed.version != null) {
+      version = parsed.version;
+    }
+    if (typeof parsed.port === 'number') {
+      remoteServerPort = parsed.port;
+    }
+    if (typeof parsed.p === 'number') {
+      remoteServerPort = parsed.p;
     }
   }
   // Add an extra flag to indicate the use of big-dig.
   remoteServerCommand += ' --big-dig';
-  // And the current Nuclide version.
-  remoteServerCommand += ` --version=${getNuclideVersion()}`;
+  remoteServerCommand += ` --version=${version}`;
   sshHandshake.connect({
     host,
     sshPort,

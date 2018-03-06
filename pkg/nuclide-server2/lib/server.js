@@ -33,9 +33,6 @@ function launch(launcherParams: LauncherParameters): Promise<void> {
   const {server} = launcherParams;
   server.addSubscriber(NUCLIDE_RPC_TAG, {
     onConnection(transport: Transport) {
-      // TODO: we need some way of identifying a connection
-      // so that a client can resume its prior RpcConnection.
-      // Right now the client doesn't even reconnect though :D
       const rpcTransport: RpcTransportType = {
         send(message) {
           transport.send(message);
@@ -43,10 +40,7 @@ function launch(launcherParams: LauncherParameters): Promise<void> {
         onMessage() {
           return transport.onMessage();
         },
-        // Assuming we have a reliable connection, it'd be OK to just
-        // pretend the transport is always open.
-        // (Note that right now big-dig's WebSocketTransport *does* close
-        // and it *will* throw errors when we try to send messages.)
+        // TODO: Right now, connections are never closed.
         close() {},
         isClosed() {
           return false;

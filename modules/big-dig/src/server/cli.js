@@ -29,6 +29,7 @@ log4js.configure({
 });
 
 const DEFAULT_PORT = 0;
+const DEFAULT_TIMEOUT = 60000;
 
 /**
  * @param absolutePathToServerMain The code that bootstraps the server will load the code at this
@@ -40,7 +41,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   // All arguments expect for the last one are ignored.
   const params = JSON.parse(process.argv[process.argv.length - 1]);
   const {cname, expiration, jsonOutputFile} = params;
-  let {port} = params;
+  let {port, timeout} = params;
   if (typeof cname !== 'string') {
     throw Error(`cname must be specified as string but was: '${cname}'`);
   }
@@ -63,6 +64,13 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     throw Error(`port must be >=0 but was ${port}`);
   }
 
+  if (timeout == null) {
+    timeout = DEFAULT_TIMEOUT;
+  }
+  if (typeof timeout !== 'number') {
+    throw Error(`timeout must be specified as number but was: '${timeout}'`);
+  }
+
   // expiration arg validation
   if (typeof expiration !== 'string') {
     throw Error(
@@ -82,14 +90,15 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   const serverCommonName = cname || `${getUsername()}.nuclide.${os.hostname()}`;
   const openSSLConfigPath = require.resolve('./openssl.cnf');
 
-  await generateCertificatesAndStartServer(
+  await generateCertificatesAndStartServer({
     clientCommonName,
     serverCommonName,
     openSSLConfigPath,
     port,
+    timeout,
     expirationDays,
     jsonOutputFile,
     absolutePathToServerMain,
-    params.serverParams,
-  );
+    serverParams: params.serverParams,
+  });
 }
