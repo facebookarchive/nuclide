@@ -72,10 +72,11 @@ export default class ScopesComponent extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const {service} = this.props;
-    const model = service.getModel();
+    const {viewModel} = this.props.service;
     this._disposables.add(
-      observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model))
+      observableFromSubscribeFunction(
+        viewModel.onDidFocusStackFrame.bind(viewModel),
+      )
         .debounceTime(100)
         .switchMap(() => this._getScopes())
         .subscribe(scopes => {
