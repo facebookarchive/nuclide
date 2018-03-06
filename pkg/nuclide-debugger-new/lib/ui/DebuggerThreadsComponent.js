@@ -41,14 +41,21 @@ type State = {
 };
 
 type CellData = {|
-  id: number,
-  name: string,
-  address: ?string,
-  stopReason: ?string,
-  isSelected: boolean,
+  +id: number,
+  +name: string,
+  +address: ?string,
+  +stopped: boolean,
+  +stopReason: ?string,
+  +isSelected: boolean,
 |};
 
-type ColumnName = 'id' | 'name' | 'address' | 'stopReason' | 'isSelected';
+type ColumnName =
+  | 'id'
+  | 'name'
+  | 'address'
+  | 'stopReason'
+  | 'isSelected'
+  | 'stopped';
 
 const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
   <div className="nuclide-debugger-thread-list-item-current-indicator">
@@ -223,6 +230,7 @@ export default class DebuggerThreadsComponent extends React.Component<
                 id: thread.threadId,
                 name: thread.name,
                 address: callstack.length === 0 ? null : callstack[0].name,
+                stopped: thread.stopped,
                 stopReason:
                   stoppedDetails == null
                     ? null
@@ -258,7 +266,7 @@ export default class DebuggerThreadsComponent extends React.Component<
           this.state.sortedColumn,
           this.state.sortDescending,
         )}
-        selectable={true}
+        selectable={cellData => cellData.stopped}
         resizable={true}
         onSelect={this._handleSelectThread}
         sortable={true}
