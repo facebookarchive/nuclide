@@ -41,6 +41,10 @@ export type NuclideServerOptions = {
   serverParams: mixed,
 };
 
+// When a port of 0 is specified, it still makes sense to prefer certain ports over others.
+// TODO(hansonw): Make this configurable.
+const PREFERRED_PORTS = [9093, 9092, 9091, 9090];
+
 /**
  * Launch a NuclideServer with the specified parameters.
  *
@@ -52,45 +56,66 @@ export type NuclideServerOptions = {
  * Note that if options.port=0 is specified to choose an ephemeral port, then the caller should
  * check server.address().port to see what the actual port is.
  */
-export function launchServer(options: NuclideServerOptions): Promise<number> {
+export async function launchServer(
+  options: NuclideServerOptions,
+): Promise<number> {
   const webServer = https.createServer(options.webServer);
 
+  const ports = [];
+  if (options.port === 0) {
+    ports.push(...PREFERRED_PORTS);
+  }
+  ports.push(options.port);
+
+  let found = false;
+  for (const port of ports) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await tryListen(webServer, port)) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    throw Error(`Port ${options.port} is already in use`);
+  }
+
+  const webSocketServer = new WS.Server({
+    server: webServer,
+    perMessageDeflate: true,
+  });
+
+  // Let unhandled WS server errors go through to the global exception handler.
+
+  // $FlowIgnore
+  const launcher: LauncherType = require(options.absolutePathToServerMain);
+
+  const bigDigServer = new BigDigServer(webServer, webSocketServer);
+  await launcher({
+    server: bigDigServer,
+    serverParams: options.serverParams,
+  });
+  return webServer.address().port;
+}
+
+/**
+ * Attempts to have the https server listen to the specified port.
+ * Returns true if successful or false if the port is already in use.
+ * Any other errors result in a rejection.
+ */
+function tryListen(server: https.Server, port: number): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    // TODO(mbolin): Once the webServer is up and running and this Promise is resolved,
-    // rejecting the Promise will be a noop. We need better error handling here.
-    const onError = error => {
+    function onError(error) {
       if (error.errno === 'EADDRINUSE') {
-        // eslint-disable-next-line
-        console.error(`ERROR: Port ${options.port} is already in use.`);
-        process.exit(1);
+        return resolve(false);
       }
-      // Note that `error` could be an EADDRINUSE error.
-      webServer.removeAllListeners();
       reject(error);
-    };
-    // TODO(mbolin): If we want the new WebSocketServer to get the 'connection' event,
-    // then we need to get it wired up before the webServer is connected.
-    webServer.on('listening', () => {
-      const webSocketServer = new WS.Server({
-        server: webServer,
-        perMessageDeflate: true,
-      });
-      webSocketServer.on('error', onError);
+    }
 
-      // $FlowIgnore
-      const launcher: LauncherType = require(options.absolutePathToServerMain);
-
-      const bigDigServer = new BigDigServer(webServer, webSocketServer);
-      launcher({
-        server: bigDigServer,
-        serverParams: options.serverParams,
-      }).then(() => {
-        // Now the NuclideServer should have attached its own error handler.
-        webServer.removeListener('error', onError);
-        resolve(webServer.address().port);
-      });
+    server.once('error', onError);
+    server.listen(port, () => {
+      // Let errors after the initial listen fall through to the global exception handler.
+      server.removeListener('error', onError);
+      resolve(true);
     });
-    webServer.on('error', onError);
-    webServer.listen(options.port);
   });
 }
