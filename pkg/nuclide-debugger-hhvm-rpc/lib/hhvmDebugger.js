@@ -33,6 +33,7 @@ class HHVMDebuggerWrapper {
   _bufferedRequests: Array<request>;
   _debugging: boolean;
   _debuggerWriteCallback: ?DebuggerWriteCallback;
+  _nonLoaderBreakSeen: boolean;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -42,6 +43,7 @@ class HHVMDebuggerWrapper {
     this._bufferedRequests = [];
     this._debugging = false;
     this._debuggerWriteCallback = null;
+    this._nonLoaderBreakSeen = false;
   }
 
   debug() {
@@ -465,6 +467,23 @@ class HHVMDebuggerWrapper {
       }
       // * Change `breakpoint.column` to `1` insead of `0`
       message.body.breakpoint.column = 1;
+    }
+
+    if (
+      !this._nonLoaderBreakSeen &&
+      message.type === 'event' &&
+      message.event === 'stopped'
+    ) {
+      if (
+        message.body != null &&
+        message.body.description !== 'execution paused'
+      ) {
+        // This is the first real (non-loader-break) stopped event.
+        this._nonLoaderBreakSeen = true;
+      } else {
+        // Hide the loader break from Nuclide.
+        return;
+      }
     }
 
     const output = JSON.stringify(message);
