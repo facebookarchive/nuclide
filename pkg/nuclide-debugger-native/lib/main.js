@@ -11,7 +11,6 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
-import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {PlatformGroup} from '../../nuclide-buck/lib/types';
@@ -75,23 +74,31 @@ class Activation {
     (this: any).provideLLDBPlatformGroup = this.provideLLDBPlatformGroup.bind(
       this,
     );
+    this._createDebuggerProvider();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  // $TODO this and everything behind it can go away once we flip
+  // TODO(jimge) this and everything behind it can go away once we flip
   // the switch to pure VSP globally
-  createDebuggerProvider(): NuclideDebuggerProvider {
-    return {
+  async _createDebuggerProvider(): Promise<void> {
+    if (await passesGK('nuclide_debugger_native_vsp')) {
+      return;
+    }
+    const provider: NuclideDebuggerProvider = {
       name: 'lldb',
-      getLaunchAttachProvider(
-        connection: NuclideUri,
-      ): ?DebuggerLaunchAttachProvider {
-        return new LLDBLaunchAttachProvider('Native', connection);
-      },
+      getLaunchAttachProvider: connection =>
+        new LLDBLaunchAttachProvider('Native', connection),
     };
+    this._disposables.add(
+      atom.packages.serviceHub.provide(
+        'nuclide-debugger.provider',
+        '0.0.0',
+        provider,
+      ),
+    );
   }
 
   createNativeDebuggerService(): NativeDebuggerService {

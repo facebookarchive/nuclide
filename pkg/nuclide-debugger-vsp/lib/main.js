@@ -51,7 +51,7 @@ class Activation {
       this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerOcamlDebugProvider();
-      this._registerGdbDebugProvider();
+      this._registerNativeVspProvider();
       this._registerHHVMDebugProvider();
     });
   }
@@ -119,7 +119,7 @@ class Activation {
     }
   }
 
-  async _registerGdbDebugProvider(): Promise<void> {
+  async _registerNativeVspProvider(): Promise<void> {
     if (await passesGK('nuclide_debugger_native_vsp')) {
       this._registerDebugProvider({
         name: 'Native (VSP)',
