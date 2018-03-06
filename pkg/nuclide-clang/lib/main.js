@@ -18,6 +18,10 @@ import type {
   LinterProvider,
   OutlineProvider,
 } from 'atom-ide-ui';
+import type {
+  FileFamilyProvider,
+  FileGraph,
+} from '../../nuclide-file-family/lib/types';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
 import type {
@@ -170,6 +174,35 @@ export function provideRelatedFiles(): RelatedFilesProvider {
       return getRelatedSourceOrHeader(filePath).then(
         related => (related == null ? [] : [related]),
       );
+    },
+  };
+}
+
+export function provideFileFamily(): FileFamilyProvider {
+  return {
+    async getRelatedFiles(filePath: NuclideUri): Promise<FileGraph> {
+      const relatedSourceOrHeader = await getRelatedSourceOrHeader(filePath);
+      if (relatedSourceOrHeader == null) {
+        return {
+          files: new Map(),
+          relations: [],
+        };
+      }
+
+      return {
+        files: new Map([
+          [filePath, {labels: new Set()}],
+          [relatedSourceOrHeader, {labels: new Set()}],
+        ]),
+        relations: [
+          {
+            from: filePath,
+            to: relatedSourceOrHeader,
+            labels: new Set(['alternate']),
+            directed: true,
+          },
+        ],
+      };
     },
   };
 }

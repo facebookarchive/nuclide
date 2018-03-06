@@ -82,6 +82,11 @@
         "0.0.0": "createAutocompleteProvider"
       }
     },
+    "file-family-backend": {
+      "versions": {
+        "0.0.0": "provideFileFamily"
+      }
+    },
     "code-actions": {
       "versions": {
         "0.1.0": "provideCodeActions"
