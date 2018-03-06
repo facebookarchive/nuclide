@@ -314,9 +314,10 @@ export default class DebugService implements IDebugService {
   _tryToAutoFocusStackFrame(thread: IThread): void {
     const callStack = thread.getCallStack();
     if (
-      !callStack.length ||
+      callStack.length === 0 ||
       (this._viewModel.focusedStackFrame &&
-        this._viewModel.focusedStackFrame.thread.getId() === thread.getId())
+        this._viewModel.focusedStackFrame.thread.getId() === thread.getId() &&
+        callStack.includes(this._viewModel.focusedStackFrame))
     ) {
       return;
     }
