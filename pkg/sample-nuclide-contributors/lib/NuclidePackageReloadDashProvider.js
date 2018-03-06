@@ -9,11 +9,11 @@
  * @format
  */
 
-// $FlowFB
 import type {
   GenericResult,
   DashProvider,
   QueryContext,
+  // $FlowFB
 } from '../../fb-dash/lib/types';
 import fuzzAldrinPlus from 'fuzzaldrin-plus';
 

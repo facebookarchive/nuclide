@@ -9,6 +9,7 @@
  * @format
  */
 
+// $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
