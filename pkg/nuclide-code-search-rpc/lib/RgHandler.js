@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.search = search;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _handlerCommon;
+
+function _load_handlerCommon() {
+  return _handlerCommon = require('./handlerCommon');
+}
+
+var _parser;
+
+function _load_parser() {
+  return _parser = require('./parser');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,44 +26,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CodeSearchResult, CodeSearchParams} from './types';
-
-import {Observable} from 'rxjs';
-import {observeGrepLikeProcess} from './handlerCommon';
-import {parseAckRgLine} from './parser';
-
-export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
-  const {regex, limit} = params;
+function search(params) {
+  const { regex, limit } = params;
   const searchSources = params.recursive ? [params.directory] : params.files;
   if (searchSources.length === 0) {
-    return Observable.empty();
+    return _rxjsBundlesRxMinJs.Observable.empty();
   }
   // Javascript escapes the slash when constructing the regexp,
   // but Rust's regex library is picky about extra escapes:
   // see https://github.com/rust-lang/regex/issues/93#issuecomment-196022003
   const source = regex.source.split('\\/').join('/');
-  const output = observeGrepLikeProcess(
-    'rg',
-    (regex.ignoreCase ? ['--ignore-case'] : [])
-      .concat([
-        // no colors, show line number, search hidden files,
-        // show column number, one result per line, show filename with null byte
-        '--color',
-        'never',
-        '--line-number',
-        '--hidden',
-        '--column',
-        '--no-heading',
-        '-H',
-        '-0',
-        '-e',
-        source,
-      ])
-      .concat(searchSources),
-  ).flatMap(event => parseAckRgLine(event, regex, 'rg'));
+  const output = (0, (_handlerCommon || _load_handlerCommon()).observeGrepLikeProcess)('rg', (regex.ignoreCase ? ['--ignore-case'] : []).concat([
+  // no colors, show line number, search hidden files,
+  // show column number, one result per line, show filename with null byte
+  '--color', 'never', '--line-number', '--hidden', '--column', '--no-heading', '-H', '-0', '-e', source]).concat(searchSources)).flatMap(event => (0, (_parser || _load_parser()).parseAckRgLine)(event, regex, 'rg'));
   return limit != null ? output.take(limit) : output;
 }

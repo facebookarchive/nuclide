@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseHgDiffUnifiedOutput = parseHgDiffUnifiedOutput;
+exports.parseMultiFileHgDiffUnifiedOutput = parseMultiFileHgDiffUnifiedOutput;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +23,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -18,18 +36,14 @@ const HUNK_DIFF_REGEX = /@@ .* @@/g;
 const HUNK_OLD_INFO_REGEX = /-([0-9]+)((?:,[0-9]+)?)/;
 const HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
-import {lastFromArray} from 'nuclide-commons/collection';
-import os from 'os';
-import type {DiffInfo} from './HgService';
-
 /**
  * Parses the output of `hg diff --unified 0`.
  */
-export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
+function parseHgDiffUnifiedOutput(output) {
   const diffInfo = {
     added: 0,
     deleted: 0,
-    lineDiffs: [],
+    lineDiffs: []
   };
   if (!output) {
     return diffInfo;
@@ -55,7 +69,7 @@ export function parseHgDiffUnifiedOutput(output: string): DiffInfo {
 
     diffInfo.added += newLines;
     diffInfo.deleted += oldLines;
-    diffInfo.lineDiffs.push({oldStart, oldLines, newStart, newLines});
+    diffInfo.lineDiffs.push({ oldStart, oldLines, newStart, newLines });
   });
 
   return diffInfo;
@@ -70,9 +84,7 @@ const DEV_NULL_FILE_PATH = '/dev/null';
  * @return A map of each file path in the output (relative to the root of the
  *   repo) to its parsed DiffInfo.
  */
-export function parseMultiFileHgDiffUnifiedOutput(
-  output: string,
-): Map<string, DiffInfo> {
+function parseMultiFileHgDiffUnifiedOutput(output) {
   const filePathToDiffInfo = new Map();
   // Split the output by the symbols '--- '. This is specified in the Unified diff format:
   // http://www.gnu.org/software/diffutils/manual/html_node/Detailed-Unified.html#Detailed-Unified.
@@ -83,31 +95,23 @@ export function parseMultiFileHgDiffUnifiedOutput(
   for (const diffOutputForFile of diffOutputs) {
     // First, extract the file name. The first line of the string should be the
     // old file path, except if the file was newly added.
-    const newLineChar = os.EOL;
+    const newLineChar = _os.default.EOL;
     const firstNewline = diffOutputForFile.indexOf(newLineChar);
     const oldFilePath = diffOutputForFile.slice(0, firstNewline).trim();
 
     // line immediately following starts with "+++ ", containing the new
     // file path.
     const secondLineStart = firstNewline + newLineChar.length;
-    const secondNewLine = diffOutputForFile.indexOf(
-      newLineChar,
-      secondLineStart,
-    );
+    const secondNewLine = diffOutputForFile.indexOf(newLineChar, secondLineStart);
     const secondLine = diffOutputForFile.slice(secondLineStart, secondNewLine);
-    const newFilePath = lastFromArray(
-      secondLine.split(SINGLE_UNIFIED_DIFF_SECOND_LINE_REGEX),
-    ).trim();
+    const newFilePath = (0, (_collection || _load_collection()).lastFromArray)(secondLine.split(SINGLE_UNIFIED_DIFF_SECOND_LINE_REGEX)).trim();
 
     // Then, get the parsed diff info.
     const lineDiffs = parseHgDiffUnifiedOutput(diffOutputForFile);
     // We should always try to use the new file name. If the unified diff piece
     // represents a deletion, the new file path is /dev/null, so we then
     // need to fallback to the old file path.
-    filePathToDiffInfo.set(
-      newFilePath !== DEV_NULL_FILE_PATH ? newFilePath : oldFilePath,
-      lineDiffs,
-    );
+    filePathToDiffInfo.set(newFilePath !== DEV_NULL_FILE_PATH ? newFilePath : oldFilePath, lineDiffs);
   }
   return filePathToDiffInfo;
 }

@@ -1,3 +1,53 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
+var _AtomServiceContainer;
+
+function _load_AtomServiceContainer() {
+  return _AtomServiceContainer = require('../../nuclide-debugger/lib/AtomServiceContainer');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,81 +55,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  ControlButtonSpecification,
-  DebuggerCapabilities,
-  DebuggerConfigAction,
-  DebuggerInstanceInterface,
-  DebuggerProperties,
-  MessageProcessor,
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
-import type {VSCodeDebuggerAdapterService} from '../../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService';
-import type {} from 'nuclide-debugger-common';
-import type {IVspInstance} from '../../nuclide-debugger-new/lib/types';
-import * as DebugProtocol from 'vscode-debugprotocol';
-
-import {DebuggerProcessInfo, DebuggerInstance} from 'nuclide-debugger-common';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {registerConsoleLogging} from '../../nuclide-debugger/lib/AtomServiceContainer';
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
-import {Observable} from 'rxjs';
-
 const VSP_DEBUGGER_SERVICE_NAME = 'vscode-adapter';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+class VspProcessInfo extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerProcessInfo {
 
-type MessagePreprocessors = {
-  chromeAdapterPreprocessor: (message: string) => string,
-  chromeClientPreprocessor: (message: string) => string,
-  vspAdapterPreprocessor: MessageProcessor,
-  vspClientPreprocessor: MessageProcessor,
-};
-
-export type CustomDebuggerCapabilities = {
-  conditionalBreakpoints?: boolean,
-  continueToLocation?: boolean,
-  readOnlyTarget?: boolean,
-  setVariable?: boolean,
-  threads?: boolean,
-  completionsRequest?: boolean,
-};
-
-export type CustomDebuggerProperties = {
-  customControlButtons?: Array<ControlButtonSpecification>,
-  targetDescription?: () => ?string,
-  threadsComponentTitle?: string,
-};
-
-export default class VspProcessInfo extends DebuggerProcessInfo {
-  _adapterType: VsAdapterType;
-  _adapterExecutable: VSAdapterExecutableInfo;
-  _debugMode: DebuggerConfigAction;
-  _config: Object;
-  _rpcService: ?VSCodeDebuggerAdapterService;
-  _vspInstance: ?IVspInstance;
-  _preprocessors: ?MessagePreprocessors;
-  _customDisposable: ?IDisposable;
-  _customCapabilities: CustomDebuggerCapabilities;
-  _customProperties: CustomDebuggerProperties;
-
-  constructor(
-    targetUri: NuclideUri,
-    debugMode: DebuggerConfigAction,
-    adapterType: VsAdapterType,
-    adapterExecutable: VSAdapterExecutableInfo,
-    config: Object,
-    customCapabilities?: ?CustomDebuggerCapabilities,
-    customProperties?: ?CustomDebuggerProperties,
-    preprocessors?: ?MessagePreprocessors,
-  ) {
+  constructor(targetUri, debugMode, adapterType, adapterExecutable, config, customCapabilities, customProperties, preprocessors) {
     super(VSP_DEBUGGER_SERVICE_NAME, targetUri);
     this._debugMode = debugMode;
     this._adapterType = adapterType;
@@ -92,114 +76,91 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     this._customDisposable = null;
   }
 
-  clone(): VspProcessInfo {
-    return new VspProcessInfo(
-      this._targetUri,
-      this._debugMode,
-      this._adapterType,
-      {...this._adapterExecutable},
-      {...this._config},
-      {...this._customCapabilities},
-      {...this._customProperties},
-      this._preprocessors,
-    );
+  clone() {
+    return new VspProcessInfo(this._targetUri, this._debugMode, this._adapterType, Object.assign({}, this._adapterExecutable), Object.assign({}, this._config), Object.assign({}, this._customCapabilities), Object.assign({}, this._customProperties), this._preprocessors);
   }
 
-  setVspDebuggerInstance(vspInstance: IVspInstance): void {
+  setVspDebuggerInstance(vspInstance) {
     this._vspInstance = vspInstance;
   }
 
-  getDebuggerCapabilities(): DebuggerCapabilities {
-    return {
-      ...super.getDebuggerCapabilities(),
+  getDebuggerCapabilities() {
+    return Object.assign({}, super.getDebuggerCapabilities(), {
       conditionalBreakpoints: true,
       setVariable: true,
-      completionsRequest: true,
-      ...this._customCapabilities,
-    };
+      completionsRequest: true
+    }, this._customCapabilities);
   }
 
-  getDebuggerProps(): DebuggerProperties {
-    return {
-      ...super.getDebuggerProps(),
-      ...this._customProperties,
-    };
+  getDebuggerProps() {
+    return Object.assign({}, super.getDebuggerProps(), this._customProperties);
   }
 
-  getVspAdapterPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspAdapterPreprocessor;
+  getVspAdapterPreprocessor() {
+    return this._preprocessors == null ? null : this._preprocessors.vspAdapterPreprocessor;
   }
 
-  getVspClientPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspClientPreprocessor;
+  getVspClientPreprocessor() {
+    return this._preprocessors == null ? null : this._preprocessors.vspClientPreprocessor;
   }
 
-  async debug(): Promise<DebuggerInstanceInterface> {
-    const rpcService = this._getRpcService();
-    this._rpcService = rpcService;
-    const outputDisposable = registerConsoleLogging(
-      this._adapterType,
-      rpcService.getOutputWindowObservable().refCount(),
-    );
-    track('fb-vscode-debugger-launch', {
-      type: this._adapterType,
-      mode: this._debugMode,
-    });
-    invariant(outputDisposable, 'Debugger output service not available');
-    try {
-      await rpcService.debug(
-        this._adapterExecutable,
-        this._debugMode,
-        this._config,
-      );
-      return new ChromeDebuggerInstance(
-        this,
-        rpcService,
-        new UniversalDisposable(outputDisposable, () => {
-          this._rpcService = null;
-        }),
-        this._preprocessors,
-      );
-    } catch (error) {
-      outputDisposable.dispose();
-      throw error;
-    }
+  debug() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = _this._getRpcService();
+      _this._rpcService = rpcService;
+      const outputDisposable = (0, (_AtomServiceContainer || _load_AtomServiceContainer()).registerConsoleLogging)(_this._adapterType, rpcService.getOutputWindowObservable().refCount());
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-vscode-debugger-launch', {
+        type: _this._adapterType,
+        mode: _this._debugMode
+      });
+
+      if (!outputDisposable) {
+        throw new Error('Debugger output service not available');
+      }
+
+      try {
+        yield rpcService.debug(_this._adapterExecutable, _this._debugMode, _this._config);
+        return new ChromeDebuggerInstance(_this, rpcService, new (_UniversalDisposable || _load_UniversalDisposable()).default(outputDisposable, function () {
+          _this._rpcService = null;
+        }), _this._preprocessors);
+      } catch (error) {
+        outputDisposable.dispose();
+        throw error;
+      }
+    })();
   }
 
-  async customRequest(
-    request: string,
-    args: any,
-  ): Promise<DebugProtocol.CustomResponse> {
-    if (this._rpcService != null) {
-      return this._rpcService.custom(request, args);
-    } else if (this._vspInstance != null) {
-      return this._vspInstance.customRequest(request, args);
-    } else {
-      throw new Error('Cannot send custom requests to inactive debug sessions');
-    }
+  customRequest(request, args) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this2._rpcService != null) {
+        return _this2._rpcService.custom(request, args);
+      } else if (_this2._vspInstance != null) {
+        return _this2._vspInstance.customRequest(request, args);
+      } else {
+        throw new Error('Cannot send custom requests to inactive debug sessions');
+      }
+    })();
   }
 
-  observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
+  observeCustomEvents() {
     if (this._rpcService != null) {
       return this._rpcService.observeCustomEvents().refCount();
     } else if (this._vspInstance != null) {
       return this._vspInstance.observeCustomEvents();
     } else {
-      return Observable.throw(
-        new Error('Cannot send custom requests to inactive debug sessions'),
-      );
+      return _rxjsBundlesRxMinJs.Observable.throw(new Error('Cannot send custom requests to inactive debug sessions'));
     }
   }
 
-  setCustomDisposable(disposable: IDisposable): void {
+  setCustomDisposable(disposable) {
     this._customDisposable = disposable;
   }
 
-  dispose(): void {
+  dispose() {
     if (this._rpcService != null) {
       this._rpcService.dispose();
       this._rpcService = null;
@@ -211,42 +172,35 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     this._vspInstance = null;
   }
 
-  getAdapterType(): VsAdapterType {
+  getAdapterType() {
     return this._adapterType;
   }
 
-  getDebugMode(): DebuggerConfigAction {
+  getDebugMode() {
     return this._debugMode;
   }
 
-  getConfig(): Object {
+  getConfig() {
     return this._config;
   }
 
-  _getRpcService(): VSCodeDebuggerAdapterService {
-    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(
-      this.getTargetUri(),
-    );
+  _getRpcService() {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getVSCodeDebuggerAdapterServiceByNuclideUri)(this.getTargetUri());
     return new service.VSCodeDebuggerAdapterService(this._adapterType);
   }
 }
 
-class ChromeDebuggerInstance extends DebuggerInstance {
-  _processors: ?MessagePreprocessors;
+exports.default = VspProcessInfo;
+class ChromeDebuggerInstance extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerInstance {
 
-  constructor(
-    processInfo: VspProcessInfo,
-    rpcService: Object,
-    disposables: UniversalDisposable,
-    processors: ?MessagePreprocessors,
-  ) {
+  constructor(processInfo, rpcService, disposables, processors) {
     super(processInfo, rpcService, disposables);
     this._processors = processors;
   }
 
   // Preprocessing hook for messages sent from the device to Nuclide. This includes messages
   // that are device events or responses to requests.
-  preProcessServerMessage(message: string): string {
+  preProcessServerMessage(message) {
     if (this._processors == null) {
       return message;
     }
@@ -254,10 +208,14 @@ class ChromeDebuggerInstance extends DebuggerInstance {
   }
 
   // This is a hook for messages sent from Nuclide to the device.
-  async preProcessClientMessage(message: string): Promise<string> {
-    if (this._processors == null) {
-      return message;
-    }
-    return this._processors.chromeClientPreprocessor(message);
+  preProcessClientMessage(message) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this3._processors == null) {
+        return message;
+      }
+      return _this3._processors.chromeClientPreprocessor(message);
+    })();
   }
 }

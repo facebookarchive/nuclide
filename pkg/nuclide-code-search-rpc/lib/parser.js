@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PARSE_REGEXES = undefined;
+exports.parseAckRgLine = parseAckRgLine;
+exports.parseGrepLine = parseGrepLine;
+exports.parseVcsGrepLine = parseVcsGrepLine;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,28 +25,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CodeSearchResult} from './types';
-import type {ProcessMessage} from 'nuclide-commons/process';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable} from 'rxjs';
-
-export const PARSE_REGEXES = Object.freeze({
+const PARSE_REGEXES = exports.PARSE_REGEXES = Object.freeze({
   rg: /^(.+)\0(\d+):(\d+):(.*)$/,
   ack: /^(.+):(\d+):(\d+):(.*)$/,
   grep: /^(.+)\0(\d+):(.*)$/,
-  vcsGrep: /^(.+):(\d+):(.*)$/,
+  vcsGrep: /^(.+):(\d+):(.*)$/
 });
 
-export function parseAckRgLine(
-  event: ProcessMessage,
-  regex: RegExp,
-  tool: 'rg' | 'ack',
-): Observable<CodeSearchResult> {
+function parseAckRgLine(event, regex, tool) {
   const parseRegex = PARSE_REGEXES[tool];
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(parseRegex);
@@ -36,28 +46,24 @@ export function parseAckRgLine(
       const match = regex.exec(line.slice(columnNumber));
       // match should not be null, but in some edge cases it might be.
       if (match == null) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
       const matchLength = match[0].length;
       // Remember to reset the regex!
       regex.lastIndex = 0;
-      return Observable.of({
+      return _rxjsBundlesRxMinJs.Observable.of({
         file,
         row: parseInt(row, 10) - 1,
         column: columnNumber,
         line,
-        matchLength,
+        matchLength
       });
     }
   }
-  return Observable.empty();
+  return _rxjsBundlesRxMinJs.Observable.empty();
 }
 
-export function parseGrepLine(
-  event: ProcessMessage,
-  regex: RegExp,
-  tool: 'grep' | 'vcsGrep',
-): Observable<CodeSearchResult> {
+function parseGrepLine(event, regex, tool) {
   const parseRegex = PARSE_REGEXES[tool];
   if (event.kind === 'stdout') {
     const matches = event.data.trim().match(parseRegex);
@@ -68,35 +74,28 @@ export function parseGrepLine(
       const match = regex.exec(line);
       // match should not be null, but in some edge cases it might be.
       if (match == null) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
       const column = match.index;
       const matchLength = match[0].length;
       // Then reset the regex for the next search.
       regex.lastIndex = 0;
-      return Observable.of({
+      return _rxjsBundlesRxMinJs.Observable.of({
         file,
         row: parseInt(row, 10) - 1,
         column,
         line,
-        matchLength,
+        matchLength
       });
     }
   }
-  return Observable.empty();
+  return _rxjsBundlesRxMinJs.Observable.empty();
 }
 
-export function parseVcsGrepLine(
-  event: ProcessMessage,
-  cwd: string,
-  regex: RegExp,
-): Observable<CodeSearchResult> {
+function parseVcsGrepLine(event, cwd, regex) {
   // Note: the vcs-grep searches return paths rooted from their cwd,
   // so join the paths to make them absolute.
-  return parseGrepLine(event, regex, 'vcsGrep').map(result => ({
-    ...result,
-    file: nuclideUri.isAbsolute(result.file)
-      ? result.file
-      : nuclideUri.join(cwd, result.file),
+  return parseGrepLine(event, regex, 'vcsGrep').map(result => Object.assign({}, result, {
+    file: (_nuclideUri || _load_nuclideUri()).default.isAbsolute(result.file) ? result.file : (_nuclideUri || _load_nuclideUri()).default.join(cwd, result.file)
   }));
 }

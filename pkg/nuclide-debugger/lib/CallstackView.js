@@ -1,77 +1,91 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type DebuggerModel from './DebuggerModel';
-import type {DebuggerModeType} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CallstackView = undefined;
 
-import classnames from 'classnames';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
-import {DebuggerMode} from './constants';
+var _classnames;
 
-type Props = {
-  model: DebuggerModel,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export class CallstackView extends React.PureComponent<
-  Props,
-  {
-    mode: DebuggerModeType,
-  },
-> {
-  _disposables: UniversalDisposable;
+var _UniversalDisposable;
 
-  constructor(props: Props) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _DebuggerCallstackComponent;
+
+function _load_DebuggerCallstackComponent() {
+  return _DebuggerCallstackComponent = require('./DebuggerCallstackComponent');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CallstackView extends _react.PureComponent {
+
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
-      mode: props.model.getDebuggerMode(),
+      mode: props.model.getDebuggerMode()
     };
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      this.props.model.onChange(() => {
-        this.setState({
-          mode: this.props.model.getDebuggerMode(),
-        });
-      }),
-    );
+  componentDidMount() {
+    this._disposables.add(this.props.model.onChange(() => {
+      this.setState({
+        mode: this.props.model.getDebuggerMode()
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    const {model} = this.props;
+  render() {
+    const { model } = this.props;
     const actions = model.getActions();
-    const {mode} = this.state;
-    const disabledClass =
-      mode !== DebuggerMode.RUNNING
-        ? ''
-        : ' nuclide-debugger-container-new-disabled';
+    const { mode } = this.state;
+    const disabledClass = mode !== (_constants || _load_constants()).DebuggerMode.RUNNING ? '' : ' nuclide-debugger-container-new-disabled';
 
-    return (
-      <div
-        className={classnames('nuclide-debugger-container-new', disabledClass)}>
-        <div className="nuclide-debugger-pane-content">
-          <DebuggerCallstackComponent actions={actions} model={model} />
-        </div>
-      </div>
+    return _react.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-container-new', disabledClass) },
+      _react.createElement(
+        'div',
+        { className: 'nuclide-debugger-pane-content' },
+        _react.createElement((_DebuggerCallstackComponent || _load_DebuggerCallstackComponent()).DebuggerCallstackComponent, { actions: actions, model: model })
+      )
     );
   }
 }
+exports.CallstackView = CallstackView; /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        * @format
+                                        */

@@ -1,78 +1,140 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DatatipService} from 'atom-ide-ui';
-import type {
-  ControlButtonSpecification,
-  DebuggerInstanceInterface,
-  DebuggerLaunchAttachProvider,
-  DebuggerProcessInfo,
-  NuclideDebuggerProvider,
-  NuclideEvaluationExpressionProvider,
-} from 'nuclide-debugger-common';
-import type {DebuggerAction} from './DebuggerDispatcher';
-import type {
-  BreakpointUserChangeArgType,
-  Callstack,
-  ChromeProtocolResponse,
-  DebuggerModeType,
-  DebuggerSettings,
-  Expression,
-  EvalCommand,
-  EvaluatedExpression,
-  EvaluatedExpressionList,
-  EvaluationResult,
-  ExpansionResult,
-  FileLineBreakpoint,
-  FileLineBreakpoints,
-  NuclideThreadData,
-  ObjectGroup,
-  SerializedBreakpoint,
-  ScopesMap,
-  ScopeSection,
-  ScopeSectionPayload,
-  ThreadItem,
-} from './types';
-import type {
-  SetVariableResponse,
-  RemoteObjectId,
-} from 'nuclide-debugger-common/protocol-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WORKSPACE_VIEW_URI = undefined;
 
-import * as React from 'react';
-import BreakpointManager from './BreakpointManager';
-import DebuggerActions from './DebuggerActions';
-import Bridge from './Bridge';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import DebuggerDispatcher from './DebuggerDispatcher';
-import {Emitter} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ActionTypes} from './DebuggerDispatcher';
-import debounce from 'nuclide-commons/debounce';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {DebuggerMode} from './constants';
-import nullthrows from 'nullthrows';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {track} from '../../nuclide-analytics';
-import {AnalyticsEvents} from './constants';
-import {reportError} from './Protocol/EventReporter';
-import {isLocalScopeName} from './utils';
-import {Deferred} from 'nuclide-commons/promise';
-import {getLogger} from 'log4js';
-import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
-import invariant from 'assert';
-import {getNotificationService} from './AtomServiceContainer';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {SerializedState} from '..';
+var _react = _interopRequireWildcard(require('react'));
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/debugger';
+var _BreakpointManager;
+
+function _load_BreakpointManager() {
+  return _BreakpointManager = _interopRequireDefault(require('./BreakpointManager'));
+}
+
+var _DebuggerActions;
+
+function _load_DebuggerActions() {
+  return _DebuggerActions = _interopRequireDefault(require('./DebuggerActions'));
+}
+
+var _Bridge;
+
+function _load_Bridge() {
+  return _Bridge = _interopRequireDefault(require('./Bridge'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = _interopRequireDefault(require('./DebuggerDispatcher'));
+}
+
+var _DebuggerDispatcher2;
+
+function _load_DebuggerDispatcher2() {
+  return _DebuggerDispatcher2 = require('./DebuggerDispatcher');
+}
+
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('nuclide-commons/debounce'));
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./Protocol/EventReporter');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _normalizeRemoteObjectValue;
+
+function _load_normalizeRemoteObjectValue() {
+  return _normalizeRemoteObjectValue = require('./normalizeRemoteObjectValue');
+}
+
+var _AtomServiceContainer;
+
+function _load_AtomServiceContainer() {
+  return _AtomServiceContainer = require('./AtomServiceContainer');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/debugger'; /**
+                                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                    * All rights reserved.
+                                                                                    *
+                                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                                    * the root directory of this source tree.
+                                                                                    *
+                                                                                    * 
+                                                                                    * @format
+                                                                                    */
 
 const CALLSTACK_CHANGE_EVENT = 'CALLSTACK_CHANGE_EVENT';
 const THREADS_CHANGED_EVENT = 'THREADS_CHANGED_EVENT';
@@ -85,81 +147,56 @@ const BREAKPOINT_USER_CHANGED = 'BREAKPOINT_USER_CHANGED';
 const ADD_BREAKPOINT_ACTION = 'AddBreakpoint';
 const DELETE_BREAKPOINT_ACTION = 'DeleteBreakpoint';
 
-type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
-
 /**
  * Atom ViewProvider compatible model object.
  */
-export default class DebuggerModel {
-  _disposables: UniversalDisposable;
-  _actions: DebuggerActions;
-  _breakpointManager: BreakpointManager;
-  _dispatcher: DebuggerDispatcher;
-  _bridge: Bridge;
-  _emitter: Emitter;
-  _datatipService: ?DatatipService;
-  _debuggerSettings: DebuggerSettings;
-  _debuggerInstance: ?DebuggerInstanceInterface;
-  _error: ?string;
-  _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
-  _debuggerMode: DebuggerModeType;
-  _togglePauseOnException: boolean;
-  _togglePauseOnCaughtException: boolean;
-  _enableShowDisassembly: boolean;
-  _onLoaderBreakpointResume: () => void;
-  _registerExecutor: ?() => IDisposable;
-  _consoleDisposable: ?IDisposable;
-  _customControlButtons: Array<ControlButtonSpecification>;
-  _debugProcessInfo: ?DebuggerProcessInfo;
-  _setSourcePathCallback: ?() => void;
-  loaderBreakpointResumePromise: Promise<void>;
-
-  // CallStack state
-  _callstack: ?Callstack;
-  _selectedCallFrameIndex: number;
-  _selectedCallFrameMarker: ?atom$Marker;
-
-  // Threads state
-  _threadMap: Map<number, ThreadItem>;
-  _owningProcessId: number;
-  _selectedThreadId: number;
-  _stopThreadId: number;
-  _threadChangeDatatip: ?IDisposable;
-  _threadsReloading: boolean;
-
-  // Scopes
-  _scopes: BehaviorSubject<ScopesMap>;
-  _expandedScopes: Map<string, boolean>;
-
-  // Debugger providers
-  _debuggerProviders: Set<NuclideDebuggerProvider>;
-  _connections: Array<string>;
+class DebuggerModel {
 
   // Watch expressions
-  _watchExpressions: Map<Expression, BehaviorSubject<?EvaluationResult>>;
-  _previousEvaluationSubscriptions: UniversalDisposable;
-  _evaluationId: number;
-  _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
-  _watchExpressionsList: BehaviorSubject<EvaluatedExpressionList>;
 
-  // Breakpoints
-  _breakpointIdSeed: number;
-  _breakpoints: Map<string, LineToBreakpointMap>;
-  _idToBreakpointMap: Map<number, FileLineBreakpoint>;
 
-  constructor(state: ?SerializedState) {
-    this._dispatcher = new DebuggerDispatcher();
+  // Debugger providers
+
+
+  // Scopes
+
+
+  // Threads state
+  constructor(state) {
+    this._convertScopeSectionPayloadToScopeSection = scopeSectionPayload => {
+      const expandedState = this._expandedScopes.get(scopeSectionPayload.name);
+      return Object.assign({}, scopeSectionPayload, {
+        scopeVariables: [],
+        loaded: false,
+        expanded: expandedState != null ? expandedState : (0, (_utils || _load_utils()).isLocalScopeName)(scopeSectionPayload.name)
+      });
+    };
+
+    this._setVariable = (scopeName, expression, confirmedNewValue) => {
+      const scopes = this._scopes.getValue();
+      const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
+      const variableToChangeIndex = selectedScope.scopeVariables.findIndex(v => v.name === expression);
+      const variableToChange = (0, (_nullthrows || _load_nullthrows()).default)(selectedScope.scopeVariables[variableToChangeIndex]);
+      const newVariable = Object.assign({}, variableToChange, {
+        value: Object.assign({}, variableToChange.value, {
+          value: confirmedNewValue,
+          description: confirmedNewValue
+        })
+      });
+      selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
+      this._handleUpdateScopes(scopes);
+    };
+
+    this._dispatcher = new (_DebuggerDispatcher || _load_DebuggerDispatcher()).default();
     this._debuggerSettings = {
       supportThreadsWindow: false,
-      threadsComponentTitle: 'Threads',
+      threadsComponentTitle: 'Threads'
     };
     this._debuggerInstance = null;
     this._error = null;
     this._evaluationExpressionProviders = new Set();
-    this._togglePauseOnException =
-      state != null ? state.pauseOnException : true;
-    this._togglePauseOnCaughtException =
-      state != null ? state.pauseOnCaughtException : false;
+    this._togglePauseOnException = state != null ? state.pauseOnException : true;
+    this._togglePauseOnCaughtException = state != null ? state.pauseOnCaughtException : false;
     this._enableShowDisassembly = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
@@ -173,26 +210,26 @@ export default class DebuggerModel {
     this._callstack = null;
     this._selectedCallFrameIndex = 0;
     this._selectedCallFrameMarker = null;
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._datatipService = null;
     this._threadMap = new Map();
     this._owningProcessId = 0;
     this._selectedThreadId = 0;
     this._stopThreadId = 0;
     this._threadsReloading = false;
-    this._debuggerMode = DebuggerMode.STOPPED;
+    this._debuggerMode = (_constants || _load_constants()).DebuggerMode.STOPPED;
     this._debuggerProviders = new Set();
     // There is always a local connection.
     this._connections = ['local'];
-    this._scopes = new BehaviorSubject(new Map());
+    this._scopes = new _rxjsBundlesRxMinJs.BehaviorSubject(new Map());
     this._expandedScopes = new Map();
     this._evaluationId = 0;
     this._watchExpressions = new Map();
     this._evaluationRequestsInFlight = new Map();
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
-    this._previousEvaluationSubscriptions = new UniversalDisposable();
-    this._watchExpressionsList = new BehaviorSubject([]);
+    this._previousEvaluationSubscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._watchExpressionsList = new _rxjsBundlesRxMinJs.BehaviorSubject([]);
 
     this._breakpointIdSeed = 0;
     this._breakpoints = new Map();
@@ -201,43 +238,39 @@ export default class DebuggerModel {
     // Debounce calls to _openPathInEditor to work around an Atom bug that causes
     // two editor windows to be opened if multiple calls to atom.workspace.open
     // are made close together, even if {searchAllPanes: true} is set.
-    (this: any)._openPathInEditor = debounce(this._openPathInEditor, 100, true);
-    this._actions = new DebuggerActions(this._dispatcher, this);
-    this._breakpointManager = new BreakpointManager(this._actions, this);
-    this._bridge = new Bridge(this);
-    const initialWatchExpressions =
-      state != null ? state.watchExpressions : null;
+    this._openPathInEditor = (0, (_debounce || _load_debounce()).default)(this._openPathInEditor, 100, true);
+    this._actions = new (_DebuggerActions || _load_DebuggerActions()).default(this._dispatcher, this);
+    this._breakpointManager = new (_BreakpointManager || _load_BreakpointManager()).default(this._actions, this);
+    this._bridge = new (_Bridge || _load_Bridge()).default(this);
+    const initialWatchExpressions = state != null ? state.watchExpressions : null;
     this._deserializeWatchExpressions(initialWatchExpressions);
     this._deserializeBreakpoints(state != null ? state.breakpoints : null);
 
-    const dispatcherToken = this._dispatcher.register(
-      this._handlePayload.bind(this),
-    );
+    const dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
 
-    this._disposables = new UniversalDisposable(
-      this._actions,
-      this._breakpointManager,
-      this._bridge,
-      () => {
-        this._dispatcher.unregister(dispatcherToken);
-        this._clearSelectedCallFrameMarker();
-        this._cleanUpDatatip();
-        this._watchExpressions.clear();
-        if (this._debuggerInstance != null) {
-          this._debuggerInstance.dispose();
-          this._debuggerInstance = null;
-        }
-        if (this._debugProcessInfo != null) {
-          this._debugProcessInfo.dispose();
-          this._debugProcessInfo = null;
-        }
-      },
-      this._listenForProjectChange(),
-      this._previousEvaluationSubscriptions,
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._actions, this._breakpointManager, this._bridge, () => {
+      this._dispatcher.unregister(dispatcherToken);
+      this._clearSelectedCallFrameMarker();
+      this._cleanUpDatatip();
+      this._watchExpressions.clear();
+      if (this._debuggerInstance != null) {
+        this._debuggerInstance.dispose();
+        this._debuggerInstance = null;
+      }
+      if (this._debugProcessInfo != null) {
+        this._debugProcessInfo.dispose();
+        this._debugProcessInfo = null;
+      }
+    }, this._listenForProjectChange(), this._previousEvaluationSubscriptions);
   }
 
-  _listenForProjectChange(): IDisposable {
+  // Breakpoints
+
+
+  // CallStack state
+
+
+  _listenForProjectChange() {
     return atom.project.onDidChangePaths(() => {
       this._actions.updateConnections();
     });
@@ -247,111 +280,101 @@ export default class DebuggerModel {
     this._disposables.dispose();
   }
 
-  getActions(): DebuggerActions {
+  getActions() {
     return this._actions;
   }
 
-  getBridge(): Bridge {
+  getBridge() {
     return this._bridge;
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Debugger';
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 500;
   }
 
-  selectThread(threadId: string): void {
+  selectThread(threadId) {
     this._bridge.selectThread(threadId);
   }
 
-  setSelectedCallFrameIndex(callFrameIndex: number): void {
+  setSelectedCallFrameIndex(callFrameIndex) {
     this._bridge.setSelectedCallFrameIndex(callFrameIndex);
     this._actions.setSelectedCallFrameIndex(callFrameIndex);
   }
 
-  _handlePayload(payload: DebuggerAction): void {
+  _handlePayload(payload) {
     switch (payload.actionType) {
-      case ActionTypes.CLEAR_INTERFACE:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.CLEAR_INTERFACE:
         this._handleClearInterface();
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
-      case ActionTypes.SET_SELECTED_CALLFRAME_LINE:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_SELECTED_CALLFRAME_LINE:
         // TODO: update _selectedCallFrameIndex.
         this._setSelectedCallFrameLine(payload.data.options);
         break;
-      case ActionTypes.OPEN_SOURCE_LOCATION:
-        this._openSourceLocation(
-          payload.data.sourceURL,
-          payload.data.lineNumber,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.OPEN_SOURCE_LOCATION:
+        this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
         break;
-      case ActionTypes.UPDATE_CALLSTACK:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_CALLSTACK:
         this._updateCallstack(payload.data.callstack);
         break;
-      case ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
         this._clearScopesInterface();
         this._updateSelectedCallFrameIndex(payload.data.index);
         break;
-      case ActionTypes.UPDATE_THREADS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_THREADS:
         this._threadsReloading = false;
         this._updateThreads(payload.data.threadData);
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
-      case ActionTypes.UPDATE_THREAD:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_THREAD:
         this._threadsReloading = false;
         this._updateThread(payload.data.thread);
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
-      case ActionTypes.UPDATE_STOP_THREAD:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_STOP_THREAD:
         this._updateStopThread(payload.data.id);
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
-      case ActionTypes.UPDATE_SELECTED_THREAD:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_SELECTED_THREAD:
         this._updateSelectedThread(payload.data.id);
         this._emitter.emit(THREADS_CHANGED_EVENT);
         break;
-      case ActionTypes.NOTIFY_THREAD_SWITCH:
-        this._notifyThreadSwitch(
-          payload.data.sourceURL,
-          payload.data.lineNumber,
-          payload.data.message,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.NOTIFY_THREAD_SWITCH:
+        this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber, payload.data.message);
         break;
-      case ActionTypes.DEBUGGER_MODE_CHANGE:
-        if (
-          this._debuggerMode === DebuggerMode.RUNNING &&
-          payload.data === DebuggerMode.PAUSED
-        ) {
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.DEBUGGER_MODE_CHANGE:
+        if (this._debuggerMode === (_constants || _load_constants()).DebuggerMode.RUNNING && payload.data === (_constants || _load_constants()).DebuggerMode.PAUSED) {
           // If the debugger just transitioned from running to paused, the debug server should
           // be sending updated thread stacks. This may take a moment.
           this._threadsReloading = true;
-        } else if (payload.data === DebuggerMode.RUNNING) {
+        } else if (payload.data === (_constants || _load_constants()).DebuggerMode.RUNNING) {
           // The UI is never waiting for threads if it's running.
           this._threadsReloading = false;
         }
 
-        if (payload.data === DebuggerMode.PAUSED) {
+        if (payload.data === (_constants || _load_constants()).DebuggerMode.PAUSED) {
           this.triggerReevaluation();
           // Moving from non-pause to pause state.
           this._scheduleNativeNotification();
-        } else if (payload.data === DebuggerMode.STOPPED) {
+        } else if (payload.data === (_constants || _load_constants()).DebuggerMode.STOPPED) {
           this._cancelRequestsToBridge();
           this._handleClearInterface();
           this.loaderBreakpointResumePromise = new Promise(resolve => {
             this._onLoaderBreakpointResume = resolve;
           });
-        } else if (payload.data === DebuggerMode.STARTING) {
+        } else if (payload.data === (_constants || _load_constants()).DebuggerMode.STARTING) {
           this._refetchWatchSubscriptions();
         }
 
@@ -360,7 +383,7 @@ export default class DebuggerModel {
         this._emitter.emit(THREADS_CHANGED_EVENT);
 
         // Breakpoint handling
-        if (this._debuggerMode === DebuggerMode.STOPPED) {
+        if (this._debuggerMode === (_constants || _load_constants()).DebuggerMode.STOPPED) {
           // All breakpoints should be unresolved after stop debugging.
           this._resetBreakpoints();
         } else {
@@ -371,8 +394,8 @@ export default class DebuggerModel {
           }
         }
         break;
-      case ActionTypes.SET_PROCESS_SOCKET:
-        const {data} = payload;
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_PROCESS_SOCKET:
+        const { data } = payload;
         if (data == null) {
           this._bridge.leaveDebugMode();
         } else {
@@ -381,59 +404,58 @@ export default class DebuggerModel {
           this._bridge.enableEventsListening();
         }
         break;
-      case ActionTypes.TRIGGER_DEBUGGER_ACTION:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.TRIGGER_DEBUGGER_ACTION:
         this._bridge.triggerAction(payload.data.actionId);
         break;
-      case ActionTypes.ADD_DEBUGGER_PROVIDER:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ADD_DEBUGGER_PROVIDER:
         if (this._debuggerProviders.has(payload.data)) {
           return;
         }
         this._debuggerProviders.add(payload.data);
         this._emitter.emit(PROVIDERS_UPDATED_EVENT);
         break;
-      case ActionTypes.REMOVE_DEBUGGER_PROVIDER:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.REMOVE_DEBUGGER_PROVIDER:
         if (!this._debuggerProviders.has(payload.data)) {
           return;
         }
         this._debuggerProviders.delete(payload.data);
         break;
-      case ActionTypes.UPDATE_CONNECTIONS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_CONNECTIONS:
         this._connections = payload.data;
         this._emitter.emit(CONNECTIONS_UPDATED_EVENT);
         break;
-      case ActionTypes.UPDATE_SCOPES:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_SCOPES:
         this._handleUpdateScopesAsPayload(payload.data);
         break;
-      case ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE: {
-        const {id, response} = payload.data;
-        this._handleResponseForPendingRequest(id, response);
-        break;
-      }
-      case ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE: {
-        const {id, response} = payload.data;
-        response.result = normalizeRemoteObjectValue(response.result);
-        this._handleResponseForPendingRequest(id, response);
-        break;
-      }
-      case ActionTypes.ADD_WATCH_EXPRESSION:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE:
+        {
+          const { id, response } = payload.data;
+          this._handleResponseForPendingRequest(id, response);
+          break;
+        }
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE:
+        {
+          const { id, response } = payload.data;
+          response.result = (0, (_normalizeRemoteObjectValue || _load_normalizeRemoteObjectValue()).normalizeRemoteObjectValue)(response.result);
+          this._handleResponseForPendingRequest(id, response);
+          break;
+        }
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ADD_WATCH_EXPRESSION:
         this._addWatchExpression(payload.data.expression);
         break;
-      case ActionTypes.REMOVE_WATCH_EXPRESSION:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.REMOVE_WATCH_EXPRESSION:
         this._removeWatchExpression(payload.data.index);
         break;
-      case ActionTypes.UPDATE_WATCH_EXPRESSION:
-        this._updateWatchExpression(
-          payload.data.index,
-          payload.data.newExpression,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_WATCH_EXPRESSION:
+        this._updateWatchExpression(payload.data.index, payload.data.newExpression);
         break;
-      case ActionTypes.SET_ERROR:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_ERROR:
         this._error = payload.data;
         break;
-      case ActionTypes.SET_DEBUGGER_INSTANCE:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_DEBUGGER_INSTANCE:
         this._debuggerInstance = payload.data;
         break;
-      case ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION:
         const pauseOnException = payload.data;
         this._togglePauseOnException = pauseOnException;
         if (!this._togglePauseOnException) {
@@ -442,115 +464,103 @@ export default class DebuggerModel {
         if (this.isDebugging()) {
           this.getBridge().setPauseOnException(pauseOnException);
           if (!pauseOnException) {
-            this.getBridge().setPauseOnCaughtException(
-              this._togglePauseOnCaughtException,
-            );
+            this.getBridge().setPauseOnCaughtException(this._togglePauseOnCaughtException);
           }
         }
         break;
-      case ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
         const pauseOnCaughtException = payload.data;
         this._togglePauseOnCaughtException = pauseOnCaughtException;
         if (this.isDebugging()) {
           this.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
         }
         break;
-      case ActionTypes.ADD_EVALUATION_EXPRESSION_PROVIDER:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ADD_EVALUATION_EXPRESSION_PROVIDER:
         if (this._evaluationExpressionProviders.has(payload.data)) {
           return;
         }
         this._evaluationExpressionProviders.add(payload.data);
         break;
-      case ActionTypes.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.REMOVE_EVALUATION_EXPRESSION_PROVIDER:
         if (!this._evaluationExpressionProviders.has(payload.data)) {
           return;
         }
         this._evaluationExpressionProviders.delete(payload.data);
         break;
-      case ActionTypes.ADD_REGISTER_EXECUTOR:
-        invariant(this._registerExecutor == null);
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ADD_REGISTER_EXECUTOR:
+        if (!(this._registerExecutor == null)) {
+          throw new Error('Invariant violation: "this._registerExecutor == null"');
+        }
+
         this._registerExecutor = payload.data;
         break;
-      case ActionTypes.REMOVE_REGISTER_EXECUTOR:
-        invariant(this._registerExecutor === payload.data);
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.REMOVE_REGISTER_EXECUTOR:
+        if (!(this._registerExecutor === payload.data)) {
+          throw new Error('Invariant violation: "this._registerExecutor === payload.data"');
+        }
+
         this._registerExecutor = null;
         break;
-      case ActionTypes.REGISTER_CONSOLE:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.REGISTER_CONSOLE:
         if (this._registerExecutor != null) {
           this._consoleDisposable = this._registerExecutor();
         }
         break;
-      case ActionTypes.UNREGISTER_CONSOLE:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UNREGISTER_CONSOLE:
         if (this._consoleDisposable != null) {
           this._consoleDisposable.dispose();
           this._consoleDisposable = null;
         }
         break;
-      case ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_CUSTOM_CONTROL_BUTTONS:
         this._customControlButtons = payload.data;
         break;
-      case ActionTypes.UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK:
         this._setSourcePathCallback = payload.data;
         break;
-      case ActionTypes.CONFIGURE_SOURCE_PATHS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.CONFIGURE_SOURCE_PATHS:
         if (this._setSourcePathCallback != null) {
           this._setSourcePathCallback();
         }
         break;
-      case ActionTypes.SET_DEBUG_PROCESS_INFO:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.SET_DEBUG_PROCESS_INFO:
         if (this._debugProcessInfo != null) {
           this._debugProcessInfo.dispose();
         }
         this._debugProcessInfo = payload.data;
         break;
-      case ActionTypes.ADD_BREAKPOINT:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ADD_BREAKPOINT:
         this._addBreakpoint(payload.data.path, payload.data.line);
         break;
-      case ActionTypes.UPDATE_BREAKPOINT_CONDITION:
-        this._updateBreakpointCondition(
-          payload.data.breakpointId,
-          payload.data.condition,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_BREAKPOINT_CONDITION:
+        this._updateBreakpointCondition(payload.data.breakpointId, payload.data.condition);
         break;
-      case ActionTypes.UPDATE_BREAKPOINT_ENABLED:
-        this._updateBreakpointEnabled(
-          payload.data.breakpointId,
-          payload.data.enabled,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_BREAKPOINT_ENABLED:
+        this._updateBreakpointEnabled(payload.data.breakpointId, payload.data.enabled);
         break;
-      case ActionTypes.DELETE_BREAKPOINT:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.DELETE_BREAKPOINT:
         this._deleteBreakpoint(payload.data.path, payload.data.line);
         break;
-      case ActionTypes.DELETE_ALL_BREAKPOINTS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.DELETE_ALL_BREAKPOINTS:
         this._deleteAllBreakpoints();
         break;
-      case ActionTypes.ENABLE_ALL_BREAKPOINTS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.ENABLE_ALL_BREAKPOINTS:
         this._enableAllBreakpoints();
         break;
-      case ActionTypes.DISABLE_ALL_BREAKPOINTS:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.DISABLE_ALL_BREAKPOINTS:
         this._disableAllBreakpoints();
         break;
-      case ActionTypes.TOGGLE_BREAKPOINT:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.TOGGLE_BREAKPOINT:
         this._toggleBreakpoint(payload.data.path, payload.data.line);
         break;
-      case ActionTypes.DELETE_BREAKPOINT_IPC:
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.DELETE_BREAKPOINT_IPC:
         this._deleteBreakpoint(payload.data.path, payload.data.line, false);
         break;
-      case ActionTypes.UPDATE_BREAKPOINT_HITCOUNT:
-        this._updateBreakpointHitcount(
-          payload.data.path,
-          payload.data.line,
-          payload.data.hitCount,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.UPDATE_BREAKPOINT_HITCOUNT:
+        this._updateBreakpointHitcount(payload.data.path, payload.data.line, payload.data.hitCount);
         break;
-      case ActionTypes.BIND_BREAKPOINT_IPC:
-        this._bindBreakpoint(
-          payload.data.path,
-          payload.data.line,
-          payload.data.condition,
-          payload.data.enabled,
-          payload.data.resolved,
-        );
+      case (_DebuggerDispatcher2 || _load_DebuggerDispatcher2()).ActionTypes.BIND_BREAKPOINT_IPC:
+        this._bindBreakpoint(payload.data.path, payload.data.line, payload.data.condition, payload.data.enabled, payload.data.resolved);
         break;
       default:
         return;
@@ -558,20 +568,20 @@ export default class DebuggerModel {
     this._emitter.emit(DEBUGGER_CHANGE_EVENT);
   }
 
-  _updateCallstack(callstack: Callstack): void {
+  _updateCallstack(callstack) {
     this._selectedCallFrameIndex = 0;
     this._callstack = callstack;
     this._emitter.emit(CALLSTACK_CHANGE_EVENT);
   }
 
-  _updateSelectedCallFrameIndex(index: number): void {
+  _updateSelectedCallFrameIndex(index) {
     this._selectedCallFrameIndex = index;
     this._emitter.emit(CALLSTACK_CHANGE_EVENT);
   }
 
-  _openSourceLocation(sourceURL: string, lineNumber: number): void {
+  _openSourceLocation(sourceURL, lineNumber) {
     try {
-      const path = nuclideUri.uriToNuclideUri(sourceURL);
+      const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
       if (path != null && atom.workspace != null) {
         // only handle real files for now.
         // This should be goToLocation instead but since the searchAllPanes option is correctly
@@ -583,20 +593,20 @@ export default class DebuggerModel {
     } catch (e) {}
   }
 
-  _openPathInEditor(path: string): Promise<atom$TextEditor> {
+  _openPathInEditor(path) {
     // eslint-disable-next-line rulesdir/atom-apis
     return atom.workspace.open(path, {
       searchAllPanes: true,
-      pending: true,
+      pending: true
     });
   }
 
-  _nagivateToLocation(editor: atom$TextEditor, line: number): void {
+  _nagivateToLocation(editor, line) {
     editor.scrollToBufferPosition([line, 0]);
     editor.setCursorBufferPosition([line, 0]);
   }
 
-  _handleClearInterface(): void {
+  _handleClearInterface() {
     this._selectedCallFrameIndex = 0;
     this._setSelectedCallFrameLine(null);
     this._updateCallstack([]);
@@ -607,10 +617,10 @@ export default class DebuggerModel {
     this._clearEvaluationValues();
   }
 
-  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
+  _setSelectedCallFrameLine(options) {
     if (options) {
-      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
-      const {lineNumber} = options;
+      const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(options.sourceURL);
+      const { lineNumber } = options;
       if (path != null && atom.workspace != null) {
         // only handle real files for now
         // This should be goToLocation instead but since the searchAllPanes option is correctly
@@ -626,13 +636,13 @@ export default class DebuggerModel {
     }
   }
 
-  _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
+  _highlightCallFrameLine(editor, line) {
     const marker = editor.markBufferRange([[line, 0], [line, Infinity]], {
-      invalidate: 'never',
+      invalidate: 'never'
     });
     editor.decorateMarker(marker, {
       type: 'line',
-      class: 'nuclide-current-line-highlight',
+      class: 'nuclide-current-line-highlight'
     });
     this._selectedCallFrameMarker = marker;
   }
@@ -644,62 +654,53 @@ export default class DebuggerModel {
     }
   }
 
-  onCallstackChange(callback: () => void): IDisposable {
+  onCallstackChange(callback) {
     return this._emitter.on(CALLSTACK_CHANGE_EVENT, callback);
   }
 
-  getCallstack(): ?Callstack {
+  getCallstack() {
     return this._callstack;
   }
 
-  getSelectedCallFrameIndex(): number {
+  getSelectedCallFrameIndex() {
     return this._selectedCallFrameIndex;
   }
 
-  setDatatipService(service: DatatipService) {
+  setDatatipService(service) {
     this._datatipService = service;
   }
 
-  _updateThreads(threadData: NuclideThreadData): void {
+  _updateThreads(threadData) {
     this._threadMap.clear();
     this._owningProcessId = threadData.owningProcessId;
-    if (
-      !Number.isNaN(threadData.stopThreadId) &&
-      threadData.stopThreadId >= 0
-    ) {
+    if (!Number.isNaN(threadData.stopThreadId) && threadData.stopThreadId >= 0) {
       this._stopThreadId = threadData.stopThreadId;
       this._selectedThreadId = threadData.stopThreadId;
     }
 
     this._threadsReloading = false;
-    threadData.threads.forEach(thread =>
-      this._threadMap.set(Number(thread.id), thread),
-    );
+    threadData.threads.forEach(thread => this._threadMap.set(Number(thread.id), thread));
   }
 
-  _updateThread(thread: ThreadItem): void {
+  _updateThread(thread) {
     // TODO(jonaldislarry): add deleteThread API so that this stop reason checking is not needed.
-    if (
-      thread.stopReason === 'end' ||
-      thread.stopReason === 'error' ||
-      thread.stopReason === 'stopped'
-    ) {
+    if (thread.stopReason === 'end' || thread.stopReason === 'error' || thread.stopReason === 'stopped') {
       this._threadMap.delete(Number(thread.id));
     } else {
       this._threadMap.set(Number(thread.id), thread);
     }
   }
 
-  _updateStopThread(id: number) {
+  _updateStopThread(id) {
     this._stopThreadId = Number(id);
     this._selectedThreadId = Number(id);
   }
 
-  _updateSelectedThread(id: number) {
+  _updateSelectedThread(id) {
     this._selectedThreadId = Number(id);
   }
 
-  _cleanUpDatatip(): void {
+  _cleanUpDatatip() {
     if (this._threadChangeDatatip) {
       if (this._datatipService != null) {
         this._threadChangeDatatip.dispose();
@@ -709,78 +710,75 @@ export default class DebuggerModel {
   }
 
   // TODO(dbonafilia): refactor this code along with the ui code in callstackStore to a ui controller.
-  async _notifyThreadSwitch(
-    sourceURL: string,
-    lineNumber: number,
-    message: string,
-  ): Promise<void> {
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
-    // we want to put the message one line above the current line unless the selected
-    // line is the top line, in which case we will put the datatip next to the line.
-    const notificationLineNumber = lineNumber === 0 ? 0 : lineNumber - 1;
-    // only handle real files for now
-    const datatipService = this._datatipService;
-    if (datatipService != null && path != null && atom.workspace != null) {
-      // This should be goToLocation instead but since the searchAllPanes option is correctly
-      // provided it's not urgent.
-      // eslint-disable-next-line rulesdir/atom-apis
-      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-        const buffer = editor.getBuffer();
-        const rowRange = buffer.rangeForRow(notificationLineNumber);
-        this._cleanUpDatatip();
-        this._threadChangeDatatip = datatipService.createPinnedDataTip(
-          {
-            component: this._createAlertComponentClass(message),
+  _notifyThreadSwitch(sourceURL, lineNumber, message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
+      // we want to put the message one line above the current line unless the selected
+      // line is the top line, in which case we will put the datatip next to the line.
+      const notificationLineNumber = lineNumber === 0 ? 0 : lineNumber - 1;
+      // only handle real files for now
+      const datatipService = _this._datatipService;
+      if (datatipService != null && path != null && atom.workspace != null) {
+        // This should be goToLocation instead but since the searchAllPanes option is correctly
+        // provided it's not urgent.
+        // eslint-disable-next-line rulesdir/atom-apis
+        atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+          const buffer = editor.getBuffer();
+          const rowRange = buffer.rangeForRow(notificationLineNumber);
+          _this._cleanUpDatatip();
+          _this._threadChangeDatatip = datatipService.createPinnedDataTip({
+            component: _this._createAlertComponentClass(message),
             range: rowRange,
-            pinnable: true,
-          },
-          editor,
-        );
-      });
-    }
+            pinnable: true
+          }, editor);
+        });
+      }
+    })();
   }
 
-  getThreadList(): Array<ThreadItem> {
+  getThreadList() {
     return Array.from(this._threadMap.values());
   }
 
-  getSelectedThreadId(): number {
+  getSelectedThreadId() {
     return this._selectedThreadId;
   }
 
-  getThreadsReloading(): boolean {
+  getThreadsReloading() {
     return this._threadsReloading;
   }
 
-  getStopThread(): ?number {
+  getStopThread() {
     return this._stopThreadId;
   }
 
-  onThreadsChanged(callback: () => void): IDisposable {
+  onThreadsChanged(callback) {
     return this._emitter.on(THREADS_CHANGED_EVENT, callback);
   }
 
-  _createAlertComponentClass(message: string): React.ComponentType<any> {
-    return () => (
-      <div className="nuclide-debugger-thread-switch-alert">
-        <Icon icon="alert" />
-        {message}
-      </div>
+  _createAlertComponentClass(message) {
+    return () => _react.createElement(
+      'div',
+      { className: 'nuclide-debugger-thread-switch-alert' },
+      _react.createElement((_Icon || _load_Icon()).Icon, { icon: 'alert' }),
+      message
     );
   }
 
   /**
    * Subscribe to new connection updates from DebuggerActions.
    */
-  onConnectionsUpdated(callback: () => void): IDisposable {
+  onConnectionsUpdated(callback) {
     return this._emitter.on(CONNECTIONS_UPDATED_EVENT, callback);
   }
 
-  onProvidersUpdated(callback: () => void): IDisposable {
+  onProvidersUpdated(callback) {
     return this._emitter.on(PROVIDERS_UPDATED_EVENT, callback);
   }
 
-  getConnections(): Array<string> {
+  getConnections() {
     return this._connections;
   }
 
@@ -788,9 +786,7 @@ export default class DebuggerModel {
    * Return available launch/attach provider for input connection.
    * Caller is responsible for disposing the results.
    */
-  getLaunchAttachProvidersForConnection(
-    connection: string,
-  ): Array<DebuggerLaunchAttachProvider> {
+  getLaunchAttachProvidersForConnection(connection) {
     const availableLaunchAttachProviders = [];
     for (const provider of this._debuggerProviders) {
       const launchAttachProvider = provider.getLaunchAttachProvider(connection);
@@ -801,7 +797,7 @@ export default class DebuggerModel {
     return availableLaunchAttachProviders;
   }
 
-  _clearScopesInterface(): void {
+  _clearScopesInterface() {
     this._expandedScopes.clear();
     this.getScopesNow().forEach(scope => {
       this._expandedScopes.set(scope.name, scope.expanded);
@@ -809,71 +805,44 @@ export default class DebuggerModel {
     this._scopes.next(new Map());
   }
 
-  _handleUpdateScopesAsPayload(
-    scopeSectionsPayload: Array<ScopeSectionPayload>,
-  ): void {
-    this._handleUpdateScopes(
-      new Map(
-        scopeSectionsPayload
-          .map(this._convertScopeSectionPayloadToScopeSection)
-          .map(section => [section.name, section]),
-      ),
-    );
+  _handleUpdateScopesAsPayload(scopeSectionsPayload) {
+    this._handleUpdateScopes(new Map(scopeSectionsPayload.map(this._convertScopeSectionPayloadToScopeSection).map(section => [section.name, section])));
   }
 
-  _convertScopeSectionPayloadToScopeSection = (
-    scopeSectionPayload: ScopeSectionPayload,
-  ): ScopeSection => {
-    const expandedState = this._expandedScopes.get(scopeSectionPayload.name);
-    return {
-      ...scopeSectionPayload,
-      scopeVariables: [],
-      loaded: false,
-      expanded:
-        expandedState != null
-          ? expandedState
-          : isLocalScopeName(scopeSectionPayload.name),
-    };
-  };
-
-  _handleUpdateScopes(scopeSections: ScopesMap): void {
+  _handleUpdateScopes(scopeSections) {
     this._scopes.next(scopeSections);
     scopeSections.forEach(scopeSection => {
-      const {expanded, loaded, name} = scopeSection;
+      const { expanded, loaded, name } = scopeSection;
       if (expanded && !loaded) {
         this._loadScopeVariablesFor(name);
       }
     });
   }
 
-  async _loadScopeVariablesFor(scopeName: string): Promise<void> {
-    const scopes = this.getScopesNow();
-    const selectedScope = nullthrows(scopes.get(scopeName));
-    const expressionEvaluationManager = nullthrows(
-      this._bridge.getCommandDispatcher().getBridgeAdapter(),
-    ).getExpressionEvaluationManager();
-    selectedScope.scopeVariables = await expressionEvaluationManager.getScopeVariablesFor(
-      nullthrows(
-        expressionEvaluationManager
-          .getRemoteObjectManager()
-          .getRemoteObjectFromId(selectedScope.scopeObjectId),
-      ),
-    );
-    selectedScope.loaded = true;
-    this._handleUpdateScopes(scopes);
+  _loadScopeVariablesFor(scopeName) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const scopes = _this2.getScopesNow();
+      const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
+      const expressionEvaluationManager = (0, (_nullthrows || _load_nullthrows()).default)(_this2._bridge.getCommandDispatcher().getBridgeAdapter()).getExpressionEvaluationManager();
+      selectedScope.scopeVariables = yield expressionEvaluationManager.getScopeVariablesFor((0, (_nullthrows || _load_nullthrows()).default)(expressionEvaluationManager.getRemoteObjectManager().getRemoteObjectFromId(selectedScope.scopeObjectId)));
+      selectedScope.loaded = true;
+      _this2._handleUpdateScopes(scopes);
+    })();
   }
 
-  getScopes(): Observable<ScopesMap> {
+  getScopes() {
     return this._scopes.asObservable();
   }
 
-  getScopesNow(): ScopesMap {
+  getScopesNow() {
     return this._scopes.getValue();
   }
 
-  setExpanded(scopeName: string, expanded: boolean) {
+  setExpanded(scopeName, expanded) {
     const scopes = this.getScopesNow();
-    const selectedScope = nullthrows(scopes.get(scopeName));
+    const selectedScope = (0, (_nullthrows || _load_nullthrows()).default)(scopes.get(scopeName));
     selectedScope.expanded = expanded;
     if (expanded) {
       selectedScope.loaded = false;
@@ -882,70 +851,39 @@ export default class DebuggerModel {
   }
 
   // Returns a promise of the updated value after it has been set.
-  async sendSetVariableRequest(
-    scopeObjectId: RemoteObjectId,
-    scopeName: string,
-    expression: string,
-    newValue: string,
-  ): Promise<string> {
-    const debuggerInstance = this.getDebuggerInstance();
-    if (debuggerInstance == null) {
-      const errorMsg = 'setVariable failed because debuggerInstance is null';
-      reportError(errorMsg);
-      return Promise.reject(new Error(errorMsg));
-    }
-    track(AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
-      language: debuggerInstance.getProviderName(),
-    });
-    return new Promise((resolve, reject) => {
-      function callback(error: Error, response: SetVariableResponse) {
-        if (error != null) {
-          const message = JSON.stringify(error);
-          reportError(`setVariable failed with ${message}`);
-          atom.notifications.addError(message);
-          reject(error);
-        } else {
-          resolve(response.value);
-        }
+  sendSetVariableRequest(scopeObjectId, scopeName, expression, newValue) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerInstance = _this3.getDebuggerInstance();
+      if (debuggerInstance == null) {
+        const errorMsg = 'setVariable failed because debuggerInstance is null';
+        (0, (_EventReporter || _load_EventReporter()).reportError)(errorMsg);
+        return Promise.reject(new Error(errorMsg));
       }
-      this._bridge.sendSetVariableCommand(
-        Number(scopeObjectId),
-        expression,
-        newValue,
-        callback,
-      );
-    }).then(confirmedNewValue => {
-      this._setVariable(scopeName, expression, confirmedNewValue);
-      return confirmedNewValue;
-    });
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)((_constants || _load_constants()).AnalyticsEvents.DEBUGGER_EDIT_VARIABLE, {
+        language: debuggerInstance.getProviderName()
+      });
+      return new Promise(function (resolve, reject) {
+        function callback(error, response) {
+          if (error != null) {
+            const message = JSON.stringify(error);
+            (0, (_EventReporter || _load_EventReporter()).reportError)(`setVariable failed with ${message}`);
+            atom.notifications.addError(message);
+            reject(error);
+          } else {
+            resolve(response.value);
+          }
+        }
+        _this3._bridge.sendSetVariableCommand(Number(scopeObjectId), expression, newValue, callback);
+      }).then(function (confirmedNewValue) {
+        _this3._setVariable(scopeName, expression, confirmedNewValue);
+        return confirmedNewValue;
+      });
+    })();
   }
 
-  _setVariable = (
-    scopeName: string,
-    expression: string,
-    confirmedNewValue: string,
-  ): void => {
-    const scopes = this._scopes.getValue();
-    const selectedScope = nullthrows(scopes.get(scopeName));
-    const variableToChangeIndex = selectedScope.scopeVariables.findIndex(
-      v => v.name === expression,
-    );
-    const variableToChange = nullthrows(
-      selectedScope.scopeVariables[variableToChangeIndex],
-    );
-    const newVariable = {
-      ...variableToChange,
-      value: {
-        ...variableToChange.value,
-        value: confirmedNewValue,
-        description: confirmedNewValue,
-      },
-    };
-    selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
-    this._handleUpdateScopes(scopes);
-  };
-
-  triggerReevaluation(): void {
+  triggerReevaluation() {
     this._cancelRequestsToBridge();
     for (const [expression, subject] of this._watchExpressions) {
       if (subject.observers == null || subject.observers.length === 0) {
@@ -953,21 +891,18 @@ export default class DebuggerModel {
         this._watchExpressions.delete(expression);
         continue;
       }
-      this._requestExpressionEvaluation(
-        expression,
-        subject,
-        false /* no REPL support */,
+      this._requestExpressionEvaluation(expression, subject, false /* no REPL support */
       );
     }
   }
 
-  _cancelRequestsToBridge(): void {
+  _cancelRequestsToBridge() {
     this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new UniversalDisposable();
+    this._previousEvaluationSubscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   // Resets all values to N/A, for examples when the debugger resumes or stops.
-  _clearEvaluationValues(): void {
+  _clearEvaluationValues() {
     for (const subject of this._watchExpressions.values()) {
       subject.next(null);
     }
@@ -977,26 +912,17 @@ export default class DebuggerModel {
    * Returns an observable of child properties for the given objectId.
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
-  getProperties(objectId: string): Observable<?ExpansionResult> {
-    const getPropertiesPromise: Promise<?ExpansionResult> = this._sendEvaluationCommand(
-      'getProperties',
-      objectId,
-    );
-    return Observable.fromPromise(getPropertiesPromise);
+  getProperties(objectId) {
+    const getPropertiesPromise = this._sendEvaluationCommand('getProperties', objectId);
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(getPropertiesPromise);
   }
 
-  evaluateConsoleExpression(
-    expression: Expression,
-  ): Observable<?EvaluationResult> {
+  evaluateConsoleExpression(expression) {
     return this._evaluateExpression(expression, true /* support REPL */);
   }
 
-  evaluateWatchExpression(
-    expression: Expression,
-  ): Observable<?EvaluationResult> {
-    return this._evaluateExpression(
-      expression,
-      false /* do not support REPL */,
+  evaluateWatchExpression(expression) {
+    return this._evaluateExpression(expression, false /* do not support REPL */
     );
   }
 
@@ -1006,15 +932,12 @@ export default class DebuggerModel {
    *
    * The supportRepl boolean indicates if we allow evaluation in a non-paused state.
    */
-  _evaluateExpression(
-    expression: Expression,
-    supportRepl: boolean,
-  ): Observable<?EvaluationResult> {
+  _evaluateExpression(expression, supportRepl) {
     if (!supportRepl && this._watchExpressions.has(expression)) {
       const cachedResult = this._watchExpressions.get(expression);
-      return nullthrows(cachedResult);
+      return (0, (_nullthrows || _load_nullthrows()).default)(cachedResult);
     }
-    const subject = new BehaviorSubject(null);
+    const subject = new _rxjsBundlesRxMinJs.BehaviorSubject(null);
     this._requestExpressionEvaluation(expression, subject, supportRepl);
     if (!supportRepl) {
       this._watchExpressions.set(expression, subject);
@@ -1023,29 +946,16 @@ export default class DebuggerModel {
     return subject.asObservable();
   }
 
-  _requestExpressionEvaluation(
-    expression: Expression,
-    subject: BehaviorSubject<?EvaluationResult>,
-    supportRepl: boolean,
-  ): void {
+  _requestExpressionEvaluation(expression, subject, supportRepl) {
     let evaluationPromise;
     if (supportRepl) {
-      evaluationPromise =
-        this._debuggerMode === DebuggerMode.PAUSED
-          ? this._evaluateOnSelectedCallFrame(expression, 'console')
-          : this._runtimeEvaluate(expression);
+      evaluationPromise = this._debuggerMode === (_constants || _load_constants()).DebuggerMode.PAUSED ? this._evaluateOnSelectedCallFrame(expression, 'console') : this._runtimeEvaluate(expression);
     } else {
-      evaluationPromise = this._evaluateOnSelectedCallFrame(
-        expression,
-        'watch-group',
-      );
+      evaluationPromise = this._evaluateOnSelectedCallFrame(expression, 'watch-group');
     }
 
-    const evaluationDisposable = new UniversalDisposable(
-      Observable.fromPromise(evaluationPromise)
-        .merge(Observable.never()) // So that we do not unsubscribe `subject` when disposed.
-        .subscribe(subject),
-    );
+    const evaluationDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(_rxjsBundlesRxMinJs.Observable.fromPromise(evaluationPromise).merge(_rxjsBundlesRxMinJs.Observable.never()) // So that we do not unsubscribe `subject` when disposed.
+    .subscribe(subject));
 
     // Non-REPL environments will want to record these requests so they can be canceled on
     // re-evaluation, e.g. in the case of stepping.  REPL environments should let them complete so
@@ -1057,69 +967,62 @@ export default class DebuggerModel {
     }
   }
 
-  async _evaluateOnSelectedCallFrame(
-    expression: string,
-    objectGroup: ObjectGroup,
-  ): Promise<EvaluationResult> {
-    const result: ?EvaluationResult = await this._sendEvaluationCommand(
-      'evaluateOnSelectedCallFrame',
-      expression,
-      objectGroup,
-    );
-    if (result == null) {
-      // Backend returned neither a result nor an error message
-      return {
-        type: 'text',
-        value: `Failed to evaluate: ${expression}`,
-      };
-    } else {
+  _evaluateOnSelectedCallFrame(expression, objectGroup) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this4._sendEvaluationCommand('evaluateOnSelectedCallFrame', expression, objectGroup);
+      if (result == null) {
+        // Backend returned neither a result nor an error message
+        return {
+          type: 'text',
+          value: `Failed to evaluate: ${expression}`
+        };
+      } else {
+        return result;
+      }
+    })();
+  }
+
+  _runtimeEvaluate(expression) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this5._sendEvaluationCommand('runtimeEvaluate', expression);
+      if (result == null) {
+        // Backend returned neither a result nor an error message
+        return {
+          type: 'text',
+          value: `Failed to evaluate: ${expression}`
+        };
+      } else {
+        return result;
+      }
+    })();
+  }
+
+  _sendEvaluationCommand(command, ...args) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const deferred = new (_promise || _load_promise()).Deferred();
+      const evalId = _this6._evaluationId;
+      ++_this6._evaluationId;
+      _this6._evaluationRequestsInFlight.set(evalId, deferred);
+      _this6._bridge.sendEvaluationCommand(command, evalId, ...args);
+      let result = null;
+      try {
+        result = yield deferred.promise;
+      } catch (e) {
+        (0, (_log4js || _load_log4js()).getLogger)('nuclide-debugger').warn(`${command}: Error getting result.`, e);
+      }
+      _this6._evaluationRequestsInFlight.delete(evalId);
       return result;
-    }
+    })();
   }
 
-  async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
-    const result: ?EvaluationResult = await this._sendEvaluationCommand(
-      'runtimeEvaluate',
-      expression,
-    );
-    if (result == null) {
-      // Backend returned neither a result nor an error message
-      return {
-        type: 'text',
-        value: `Failed to evaluate: ${expression}`,
-      };
-    } else {
-      return result;
-    }
-  }
-
-  async _sendEvaluationCommand(
-    command: EvalCommand,
-    ...args: Array<mixed>
-  ): Promise<any> {
-    const deferred = new Deferred();
-    const evalId = this._evaluationId;
-    ++this._evaluationId;
-    this._evaluationRequestsInFlight.set(evalId, deferred);
-    this._bridge.sendEvaluationCommand(command, evalId, ...args);
-    let result = null;
-    try {
-      result = await deferred.promise;
-    } catch (e) {
-      getLogger('nuclide-debugger').warn(
-        `${command}: Error getting result.`,
-        e,
-      );
-    }
-    this._evaluationRequestsInFlight.delete(evalId);
-    return result;
-  }
-
-  _handleResponseForPendingRequest(
-    id: number,
-    response: ChromeProtocolResponse,
-  ): void {
-    const {result, error} = response;
+  _handleResponseForPendingRequest(id, response) {
+    const { result, error } = response;
     const deferred = this._evaluationRequestsInFlight.get(id);
     if (deferred == null) {
       // Nobody is listening for the result of this expression.
@@ -1132,50 +1035,41 @@ export default class DebuggerModel {
     }
   }
 
-  _deserializeWatchExpressions(watchExpressions: ?Array<Expression>): void {
+  _deserializeWatchExpressions(watchExpressions) {
     if (watchExpressions != null) {
-      this._watchExpressionsList.next(
-        watchExpressions.map(expression =>
-          this._getExpressionEvaluationFor(expression),
-        ),
-      );
+      this._watchExpressionsList.next(watchExpressions.map(expression => this._getExpressionEvaluationFor(expression)));
     }
   }
 
-  _getExpressionEvaluationFor(expression: Expression): EvaluatedExpression {
+  _getExpressionEvaluationFor(expression) {
     return {
       expression,
-      value: this.evaluateWatchExpression(expression),
+      value: this.evaluateWatchExpression(expression)
     };
   }
 
-  getWatchExpressions(): Observable<EvaluatedExpressionList> {
+  getWatchExpressions() {
     return this._watchExpressionsList.asObservable();
   }
 
-  getSerializedWatchExpressions(): Array<Expression> {
-    return this._watchExpressionsList
-      .getValue()
-      .map(evaluatedExpression => evaluatedExpression.expression);
+  getSerializedWatchExpressions() {
+    return this._watchExpressionsList.getValue().map(evaluatedExpression => evaluatedExpression.expression);
   }
 
-  _addWatchExpression(expression: Expression): void {
+  _addWatchExpression(expression) {
     if (expression === '') {
       return;
     }
-    this._watchExpressionsList.next([
-      ...this._watchExpressionsList.getValue(),
-      this._getExpressionEvaluationFor(expression),
-    ]);
+    this._watchExpressionsList.next([...this._watchExpressionsList.getValue(), this._getExpressionEvaluationFor(expression)]);
   }
 
-  _removeWatchExpression(index: number): void {
+  _removeWatchExpression(index) {
     const watchExpressions = this._watchExpressionsList.getValue().slice();
     watchExpressions.splice(index, 1);
     this._watchExpressionsList.next(watchExpressions);
   }
 
-  _updateWatchExpression(index: number, newExpression: Expression): void {
+  _updateWatchExpression(index, newExpression) {
     if (newExpression === '') {
       return this._removeWatchExpression(index);
     }
@@ -1184,129 +1078,105 @@ export default class DebuggerModel {
     this._watchExpressionsList.next(watchExpressions);
   }
 
-  _refetchWatchSubscriptions(): void {
+  _refetchWatchSubscriptions() {
     const watchExpressions = this._watchExpressionsList.getValue().slice();
-    const refetchedWatchExpressions = watchExpressions.map(({expression}) => {
+    const refetchedWatchExpressions = watchExpressions.map(({ expression }) => {
       return this._getExpressionEvaluationFor(expression);
     });
     this._watchExpressionsList.next(refetchedWatchExpressions);
   }
 
-  loaderBreakpointResumed(): void {
+  loaderBreakpointResumed() {
     this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
   }
 
-  getCustomControlButtons(): Array<ControlButtonSpecification> {
+  getCustomControlButtons() {
     return this._customControlButtons;
   }
 
-  getDebuggerInstance(): ?DebuggerInstanceInterface {
+  getDebuggerInstance() {
     return this._debuggerInstance;
   }
 
-  getError(): ?string {
+  getError() {
     return this._error;
   }
 
-  getDebuggerMode(): DebuggerModeType {
+  getDebuggerMode() {
     return this._debuggerMode;
   }
 
-  isDebugging(): boolean {
-    return (
-      this._debuggerMode !== DebuggerMode.STOPPED &&
-      this._debuggerMode !== DebuggerMode.STOPPING
-    );
+  isDebugging() {
+    return this._debuggerMode !== (_constants || _load_constants()).DebuggerMode.STOPPED && this._debuggerMode !== (_constants || _load_constants()).DebuggerMode.STOPPING;
   }
 
-  getTogglePauseOnException(): boolean {
+  getTogglePauseOnException() {
     return this._togglePauseOnException;
   }
 
-  getTogglePauseOnCaughtException(): boolean {
+  getTogglePauseOnCaughtException() {
     return this._togglePauseOnCaughtException;
   }
 
-  getIsReadonlyTarget(): boolean {
-    return (
-      this._debugProcessInfo != null &&
-      this._debugProcessInfo.getDebuggerCapabilities().readOnlyTarget
-    );
+  getIsReadonlyTarget() {
+    return this._debugProcessInfo != null && this._debugProcessInfo.getDebuggerCapabilities().readOnlyTarget;
   }
 
-  getSettings(): DebuggerSettings {
+  getSettings() {
     return this._debuggerSettings;
   }
 
-  getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
+  getEvaluationExpressionProviders() {
     return this._evaluationExpressionProviders;
   }
 
-  getCanSetSourcePaths(): boolean {
+  getCanSetSourcePaths() {
     return this._setSourcePathCallback != null;
   }
 
-  getCanRestartDebugger(): boolean {
+  getCanRestartDebugger() {
     return this._debugProcessInfo != null;
   }
 
-  getDebugProcessInfo(): ?DebuggerProcessInfo {
+  getDebugProcessInfo() {
     return this._debugProcessInfo;
   }
 
-  onChange(callback: () => void): IDisposable {
+  onChange(callback) {
     return this._emitter.on(DEBUGGER_CHANGE_EVENT, callback);
   }
 
-  onDebuggerModeChange(callback: () => void): IDisposable {
+  onDebuggerModeChange(callback) {
     return this._emitter.on(DEBUGGER_MODE_CHANGE_EVENT, callback);
   }
 
-  setShowDisassembly(enable: boolean): void {
+  setShowDisassembly(enable) {
     this._enableShowDisassembly = enable;
     if (this.isDebugging()) {
       this.getBridge().setShowDisassembly(enable);
     }
   }
 
-  getShowDisassembly(): boolean {
-    return (
-      this._debugProcessInfo != null &&
-      this._debugProcessInfo.getDebuggerCapabilities().disassembly &&
-      this._enableShowDisassembly
-    );
+  getShowDisassembly() {
+    return this._debugProcessInfo != null && this._debugProcessInfo.getDebuggerCapabilities().disassembly && this._enableShowDisassembly;
   }
 
-  supportsSetVariable(): boolean {
+  supportsSetVariable() {
     const currentDebugInfo = this.getDebugProcessInfo();
-    return currentDebugInfo
-      ? currentDebugInfo.getDebuggerCapabilities().setVariable
-      : false;
+    return currentDebugInfo ? currentDebugInfo.getDebuggerCapabilities().setVariable : false;
   }
 
-  _scheduleNativeNotification(): void {
-    const raiseNativeNotification = getNotificationService();
+  _scheduleNativeNotification() {
+    const raiseNativeNotification = (0, (_AtomServiceContainer || _load_AtomServiceContainer()).getNotificationService)();
     if (raiseNativeNotification != null) {
-      const pendingNotification = raiseNativeNotification(
-        'Nuclide Debugger',
-        'Paused at a breakpoint',
-        3000,
-        false,
-      );
+      const pendingNotification = raiseNativeNotification('Nuclide Debugger', 'Paused at a breakpoint', 3000, false);
       if (pendingNotification != null) {
         this._disposables.add(pendingNotification);
       }
     }
   }
 
-  _addBreakpoint(
-    path: string,
-    line: number,
-    condition: string = '',
-    resolved: boolean = false,
-    userAction: boolean = true,
-    enabled: boolean = true,
-  ): void {
+  _addBreakpoint(path, line, condition = '', resolved = false, userAction = true, enabled = true) {
     this._breakpointIdSeed++;
     const breakpoint = {
       id: this._breakpointIdSeed,
@@ -1314,29 +1184,29 @@ export default class DebuggerModel {
       line,
       condition,
       enabled,
-      resolved,
+      resolved
     };
     this._idToBreakpointMap.set(breakpoint.id, breakpoint);
     if (!this._breakpoints.has(path)) {
       this._breakpoints.set(path, new Map());
     }
     const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
+
+    if (!(lineMap != null)) {
+      throw new Error('Invariant violation: "lineMap != null"');
+    }
+
     lineMap.set(line, breakpoint);
     this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
     if (userAction) {
       this._emitter.emit(BREAKPOINT_USER_CHANGED, {
         action: ADD_BREAKPOINT_ACTION,
-        breakpoint,
+        breakpoint
       });
     }
   }
 
-  _updateBreakpointHitcount(
-    path: string,
-    line: number,
-    hitCount: number,
-  ): void {
+  _updateBreakpointHitcount(path, line, hitCount) {
     const breakpoint = this.getBreakpointAtLine(path, line);
     if (breakpoint == null) {
       return;
@@ -1345,7 +1215,7 @@ export default class DebuggerModel {
     this._updateBreakpoint(breakpoint);
   }
 
-  _updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
+  _updateBreakpointEnabled(breakpointId, enabled) {
     const breakpoint = this._idToBreakpointMap.get(breakpointId);
     if (breakpoint == null) {
       return;
@@ -1361,7 +1231,7 @@ export default class DebuggerModel {
     this._updateBreakpoint(breakpoint);
   }
 
-  _updateBreakpointCondition(breakpointId: number, condition: string): void {
+  _updateBreakpointCondition(breakpointId, condition) {
     const breakpoint = this._idToBreakpointMap.get(breakpointId);
     if (breakpoint == null) {
       return;
@@ -1370,75 +1240,78 @@ export default class DebuggerModel {
     this._updateBreakpoint(breakpoint);
   }
 
-  _updateBreakpoint(breakpoint: FileLineBreakpoint): void {
+  _updateBreakpoint(breakpoint) {
     this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
     this._emitter.emit(BREAKPOINT_USER_CHANGED, {
       action: 'UpdateBreakpoint',
-      breakpoint,
+      breakpoint
     });
   }
 
-  _forEachBreakpoint(
-    callback: (path: string, line: number, breakpointId: number) => void,
-  ) {
+  _forEachBreakpoint(callback) {
     for (const path of this._breakpoints.keys()) {
       const lineMap = this._breakpoints.get(path);
-      invariant(lineMap != null);
+
+      if (!(lineMap != null)) {
+        throw new Error('Invariant violation: "lineMap != null"');
+      }
+
       for (const line of lineMap.keys()) {
         const bp = lineMap.get(line);
-        invariant(bp != null);
+
+        if (!(bp != null)) {
+          throw new Error('Invariant violation: "bp != null"');
+        }
+
         callback(path, line, bp.id);
       }
     }
   }
 
-  _deleteAllBreakpoints(): void {
-    this._forEachBreakpoint((path, line, breakpointId) =>
-      this._deleteBreakpoint(path, line),
-    );
+  _deleteAllBreakpoints() {
+    this._forEachBreakpoint((path, line, breakpointId) => this._deleteBreakpoint(path, line));
   }
 
-  _enableAllBreakpoints(): void {
-    this._forEachBreakpoint((path, line, breakpointId) =>
-      this._updateBreakpointEnabled(breakpointId, true),
-    );
+  _enableAllBreakpoints() {
+    this._forEachBreakpoint((path, line, breakpointId) => this._updateBreakpointEnabled(breakpointId, true));
   }
 
-  _disableAllBreakpoints(): void {
-    this._forEachBreakpoint((path, line, breakpointId) =>
-      this._updateBreakpointEnabled(breakpointId, false),
-    );
+  _disableAllBreakpoints() {
+    this._forEachBreakpoint((path, line, breakpointId) => this._updateBreakpointEnabled(breakpointId, false));
   }
 
-  _deleteBreakpoint(
-    path: string,
-    line: number,
-    userAction: boolean = true,
-  ): void {
+  _deleteBreakpoint(path, line, userAction = true) {
     const lineMap = this._breakpoints.get(path);
     if (lineMap == null) {
       return;
     }
     const breakpoint = lineMap.get(line);
     if (lineMap.delete(line)) {
-      invariant(breakpoint);
+      if (!breakpoint) {
+        throw new Error('Invariant violation: "breakpoint"');
+      }
+
       this._idToBreakpointMap.delete(breakpoint.id);
       this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
       if (userAction) {
         this._emitter.emit(BREAKPOINT_USER_CHANGED, {
           action: DELETE_BREAKPOINT_ACTION,
-          breakpoint,
+          breakpoint
         });
       }
     }
   }
 
-  _toggleBreakpoint(path: string, line: number): void {
+  _toggleBreakpoint(path, line) {
     if (!this._breakpoints.has(path)) {
       this._breakpoints.set(path, new Map());
     }
     const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
+
+    if (!(lineMap != null)) {
+      throw new Error('Invariant violation: "lineMap != null"');
+    }
+
     if (lineMap.has(line)) {
       this._deleteBreakpoint(path, line);
     } else {
@@ -1446,26 +1319,14 @@ export default class DebuggerModel {
     }
   }
 
-  _bindBreakpoint(
-    path: string,
-    line: number,
-    condition: string,
-    enabled: boolean,
-    resolved: boolean,
-  ): void {
+  _bindBreakpoint(path, line, condition, enabled, resolved) {
     // The Chrome devtools always bind a new breakpoint as enabled the first time. If this
     // breakpoint is known to be disabled in the front-end, sync the enabled state with Chrome.
     const existingBp = this.getBreakpointAtLine(path, line);
     const updateEnabled = existingBp != null && existingBp.enabled !== enabled;
 
-    this._addBreakpoint(
-      path,
-      line,
-      condition,
-      resolved,
-      false, // userAction
-      enabled,
-    );
+    this._addBreakpoint(path, line, condition, resolved, false, // userAction
+    enabled);
 
     if (updateEnabled) {
       const updatedBp = this.getBreakpointAtLine(path, line);
@@ -1476,19 +1337,11 @@ export default class DebuggerModel {
     }
 
     const currentInfo = this.getDebugProcessInfo();
-    if (
-      condition !== '' &&
-      currentInfo != null &&
-      !currentInfo.getDebuggerCapabilities().conditionalBreakpoints
-    ) {
+    if (condition !== '' && currentInfo != null && !currentInfo.getDebuggerCapabilities().conditionalBreakpoints) {
       // If the current debugger does not support conditional breakpoints, and the bp that
       // was just bound has a condition on it, warn the user that the condition isn't going
       // to be honored.
-      atom.notifications.addWarning(
-        'The current debugger does not support conditional breakpoints. The breakpoint at this location will hit without ' +
-          'evaluating the specified condition expression:\n' +
-          `${nuclideUri.basename(path)}:${line}`,
-      );
+      atom.notifications.addWarning('The current debugger does not support conditional breakpoints. The breakpoint at this location will hit without ' + 'evaluating the specified condition expression:\n' + `${(_nuclideUri || _load_nuclideUri()).default.basename(path)}:${line}`);
       const updatedBp = this.getBreakpointAtLine(path, line);
       if (updatedBp != null) {
         this._updateBreakpointCondition(updatedBp.id, '');
@@ -1496,7 +1349,7 @@ export default class DebuggerModel {
     }
   }
 
-  _resetBreakpoints(): void {
+  _resetBreakpoints() {
     for (const breakpoint of this.getAllBreakpoints()) {
       breakpoint.resolved = false;
       breakpoint.hitCount = undefined;
@@ -1504,21 +1357,25 @@ export default class DebuggerModel {
     }
   }
 
-  getBreakpointsForPath(path: string): LineToBreakpointMap {
+  getBreakpointsForPath(path) {
     if (!this._breakpoints.has(path)) {
       this._breakpoints.set(path, new Map());
     }
     const ret = this._breakpoints.get(path);
-    invariant(ret);
+
+    if (!ret) {
+      throw new Error('Invariant violation: "ret"');
+    }
+
     return ret;
   }
 
-  getBreakpointLinesForPath(path: string): Set<number> {
+  getBreakpointLinesForPath(path) {
     const lineMap = this._breakpoints.get(path);
     return lineMap != null ? new Set(lineMap.keys()) : new Set();
   }
 
-  getBreakpointAtLine(path: string, line: number): ?FileLineBreakpoint {
+  getBreakpointAtLine(path, line) {
     const lineMap = this._breakpoints.get(path);
     if (lineMap == null) {
       return null;
@@ -1526,8 +1383,8 @@ export default class DebuggerModel {
     return lineMap.get(line);
   }
 
-  getAllBreakpoints(): FileLineBreakpoints {
-    const breakpoints: FileLineBreakpoints = [];
+  getAllBreakpoints() {
+    const breakpoints = [];
     for (const [, lineMap] of this._breakpoints) {
       for (const breakpoint of lineMap.values()) {
         breakpoints.push(breakpoint);
@@ -1536,7 +1393,7 @@ export default class DebuggerModel {
     return breakpoints;
   }
 
-  getSerializedBreakpoints(): Array<SerializedBreakpoint> {
+  getSerializedBreakpoints() {
     const breakpoints = [];
     for (const [path, lineMap] of this._breakpoints) {
       for (const line of lineMap.keys()) {
@@ -1549,20 +1406,19 @@ export default class DebuggerModel {
           line,
           sourceURL: path,
           disabled: !breakpoint.enabled,
-          condition: breakpoint.condition,
+          condition: breakpoint.condition
         });
       }
     }
     return breakpoints;
   }
 
-  breakpointSupportsConditions(breakpoint: FileLineBreakpoint): boolean {
+  breakpointSupportsConditions(breakpoint) {
     // If currently debugging, return whether or not the current debugger supports this.
-    if (this.getDebuggerMode() !== DebuggerMode.STOPPED) {
+    if (this.getDebuggerMode() !== (_constants || _load_constants()).DebuggerMode.STOPPED) {
       const currentDebugInfo = this.getDebugProcessInfo();
       if (currentDebugInfo != null) {
-        return currentDebugInfo.getDebuggerCapabilities()
-          .conditionalBreakpoints;
+        return currentDebugInfo.getDebuggerCapabilities().conditionalBreakpoints;
       }
     }
 
@@ -1572,19 +1428,15 @@ export default class DebuggerModel {
     return true;
   }
 
-  _deserializeBreakpoints(breakpoints: ?Array<SerializedBreakpoint>): void {
+  _deserializeBreakpoints(breakpoints) {
     if (breakpoints == null) {
       return;
     }
     for (const breakpoint of breakpoints) {
-      const {line, sourceURL, disabled, condition} = breakpoint;
-      this._addBreakpoint(
-        sourceURL,
-        line,
-        condition || '',
-        false, // resolved
-        false, // user action
-        !disabled, // enabled
+      const { line, sourceURL, disabled, condition } = breakpoint;
+      this._addBreakpoint(sourceURL, line, condition || '', false, // resolved
+      false, // user action
+      !disabled // enabled
       );
     }
   }
@@ -1593,7 +1445,7 @@ export default class DebuggerModel {
    * Register a change handler that is invoked when the breakpoints UI
    * needs to be updated for a file.
    */
-  onNeedUIUpdate(callback: (path: string) => void): IDisposable {
+  onNeedUIUpdate(callback) {
     return this._emitter.on(BREAKPOINT_NEED_UI_UPDATE, callback);
   }
 
@@ -1601,9 +1453,8 @@ export default class DebuggerModel {
    * Register a change handler that is invoked when a breakpoint is changed
    * by user action, like user explicitly added, deleted a breakpoint.
    */
-  onUserChange(
-    callback: (params: BreakpointUserChangeArgType) => void,
-  ): IDisposable {
+  onUserChange(callback) {
     return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
   }
 }
+exports.default = DebuggerModel;

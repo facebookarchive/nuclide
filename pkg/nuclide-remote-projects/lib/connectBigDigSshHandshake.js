@@ -1,3 +1,38 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = connectBigDigSshHandshake;
+
+var _index;
+
+function _load_index() {
+  return _index = require('big-dig/src/client/index');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _systemInfo;
+
+function _load_systemInfo() {
+  return _systemInfo = require('../../commons-node/system-info');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+/**
+ * Adapts big-dig's SshHandshake to what Nuclide expects.
+ * After the migration is complete, we should be able to refactor this away.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,50 +40,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  SshHandshakeErrorType,
-  SshConnectionConfiguration,
-  RemoteConnectionConfiguration,
-} from 'big-dig/src/client/SshHandshake';
-import type {
-  SshConnectionConfiguration as NuclideSshConnectionConfigurationType,
-  SshConnectionDelegate as NuclideSshConnectionDelegateType,
-} from '../../nuclide-remote-connection/lib/SshHandshake';
-
-import {SshHandshake} from 'big-dig/src/client/index';
-import {shellParse} from 'nuclide-commons/string';
-import {getNuclideVersion} from '../../commons-node/system-info';
-import {
-  SshHandshake as NuclideSshHandshake,
-  RemoteConnection,
-} from '../../nuclide-remote-connection';
-
-/**
- * Adapts big-dig's SshHandshake to what Nuclide expects.
- * After the migration is complete, we should be able to refactor this away.
- */
-export default function connectBigDigSshHandshake(
-  connectionConfig: NuclideSshConnectionConfigurationType,
-  delegate: NuclideSshConnectionDelegateType,
-): SshHandshake {
-  const sshHandshake = new SshHandshake({
+function connectBigDigSshHandshake(connectionConfig, delegate) {
+  const sshHandshake = new (_index || _load_index()).SshHandshake({
     onKeyboardInteractive(name, instructions, instructionsLang, prompts) {
       const prompt = prompts[0];
       return new Promise(resolve => {
         switch (prompt.kind) {
           case 'ssh':
           case 'private-key':
-            delegate.onKeyboardInteractive(
-              name,
-              instructions,
-              instructionsLang,
-              [{prompt: prompt.prompt, echo: prompt.echo}],
-              resolve,
-            );
+            delegate.onKeyboardInteractive(name, instructions, instructionsLang, [{ prompt: prompt.prompt, echo: prompt.echo }], resolve);
             break;
           default:
             // No need to handle update/install for unmanaged startups.
@@ -56,42 +60,25 @@ export default function connectBigDigSshHandshake(
         }
       });
     },
-    onWillConnect(config: SshConnectionConfiguration) {
+    onWillConnect(config) {
       delegate.onWillConnect(connectionConfig);
     },
-    onDidConnect(
-      remoteConfig: RemoteConnectionConfiguration,
-      config: SshConnectionConfiguration,
-    ) {
-      RemoteConnection.findOrCreate({
-        ...remoteConfig,
+    onDidConnect(remoteConfig, config) {
+      (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.findOrCreate(Object.assign({}, remoteConfig, {
         cwd: connectionConfig.cwd,
         displayTitle: connectionConfig.displayTitle,
         // TODO(T25637185): Get family from SshHandshake
-        version: 2,
-      }).then(
-        connection => {
-          delegate.onDidConnect(connection, connectionConfig);
-        },
-        err => {
-          delegate.onError(
-            NuclideSshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
-            err,
-            connectionConfig,
-          );
-        },
-      );
+        version: 2
+      })).then(connection => {
+        delegate.onDidConnect(connection, connectionConfig);
+      }, err => {
+        delegate.onError((_nuclideRemoteConnection || _load_nuclideRemoteConnection()).SshHandshake.ErrorType.SERVER_CANNOT_CONNECT, err, connectionConfig);
+      });
     },
-    onError(
-      errorType: SshHandshakeErrorType,
-      error: Error,
-      config: SshConnectionConfiguration,
-    ) {
-      const nuclideErrorType =
-        NuclideSshHandshake.ErrorType[(errorType: any)] ||
-        NuclideSshHandshake.ErrorType.UNKNOWN;
+    onError(errorType, error, config) {
+      const nuclideErrorType = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).SshHandshake.ErrorType[errorType] || (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).SshHandshake.ErrorType.UNKNOWN;
       delegate.onError(nuclideErrorType, error, connectionConfig);
-    },
+    }
   });
   const {
     host,
@@ -99,15 +86,15 @@ export default function connectBigDigSshHandshake(
     username,
     pathToPrivateKey,
     authMethod,
-    password,
+    password
   } = connectionConfig;
   // TODO(T25636858): Have the server auto-detect FB-friendly ports
   let remoteServerPort = 9091;
-  let {remoteServerCommand} = connectionConfig;
+  let { remoteServerCommand } = connectionConfig;
   // big-dig doesn't parse extra arguments.
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {
-    const argv = shellParse(remoteServerCommand);
+    const argv = (0, (_string || _load_string()).shellParse)(remoteServerCommand);
     remoteServerCommand = argv[0];
     for (let i = 1; i < argv.length - 1; i++) {
       if (argv[i] === '--port' || argv[i] === '-p') {
@@ -119,18 +106,18 @@ export default function connectBigDigSshHandshake(
   // Add an extra flag to indicate the use of big-dig.
   remoteServerCommand += ' --big-dig';
   // And the current Nuclide version.
-  remoteServerCommand += ` --version=${getNuclideVersion()}`;
+  remoteServerCommand += ` --version=${(0, (_systemInfo || _load_systemInfo()).getNuclideVersion)()}`;
   sshHandshake.connect({
     host,
     sshPort,
     username,
     pathToPrivateKey,
     remoteServer: {
-      command: remoteServerCommand,
+      command: remoteServerCommand
     },
     remoteServerPort,
     authMethod,
-    password,
+    password
   });
   return sshHandshake;
 }
