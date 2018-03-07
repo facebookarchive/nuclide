@@ -39,11 +39,11 @@ export function consumeStatusBar(
 ): IDisposable {
   const onBack = () => {
     analytics.track('status-bar-nav-stack-clicked-back');
-    navigationStack.navigateBackwards;
+    navigationStack.navigateBackwards();
   };
   const onForward = () => {
     analytics.track('status-bar-nav-stack-clicked-forward');
-    navigationStack.navigateForwards;
+    navigationStack.navigateForwards();
   };
   const props: Observable<Props> = observableFromSubscribeFunction(
     navigationStack.subscribe,
