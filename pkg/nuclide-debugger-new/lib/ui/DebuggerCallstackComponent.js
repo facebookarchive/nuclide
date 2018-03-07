@@ -60,10 +60,12 @@ export default class DebuggerCallstackComponent extends React.Component<
       source.name != null
         ? source.name
         : path.basename(source.uri) || UNKNOWN_SOURCE;
+
+    // Note: IStackFrame ranges are 0-based.
     return (
-      <div title={`${name}:${range.start.row}`}>
+      <div title={`${name}:${range.start.row + 1}`}>
         <span>
-          {name}:{range.start.row}
+          {name}:{range.start.row + 1}
         </span>
       </div>
     );
