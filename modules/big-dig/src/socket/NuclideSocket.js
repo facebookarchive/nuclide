@@ -76,8 +76,7 @@ export class NuclideSocket {
     this._serverUri = serverUri;
     this._options = options;
     this._heartbeatChannel = heartbeatChannel;
-    // TODO: ACK can be removed after the release of 0.282.
-    this.id = 'ACK' + uuid.v4();
+    this.id = uuid.v4();
     this._pingTimer = null;
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
