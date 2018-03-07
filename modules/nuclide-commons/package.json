@@ -1,6 +1,6 @@
 {
   "name": "nuclide-commons",
-  "version": "0.5.1",
+  "version": "0.5.1-dev",
   "description": "Common Nuclide node modules.",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
