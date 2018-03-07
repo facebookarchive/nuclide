@@ -25,7 +25,10 @@ type Props = {
 
 export function AdbTunnelButton(props: Props): React.Element<any> {
   const {host, enable, disable, status} = props;
-  const className = classnames('nuclide-adb-sdb-tunnel-control', status);
+  const className = classnames(
+    'nuclide-device-panel-android-tunnel-control',
+    status,
+  );
   const tooltipAction =
     status === 'inactive'
       ? 'Reroute adb to know about localhost (where Atom is running) devices'
