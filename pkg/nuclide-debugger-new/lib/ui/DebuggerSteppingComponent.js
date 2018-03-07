@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DebuggerModeType, IDebugService} from '../types';
+import type {DebuggerModeType, IDebugService, IThread} from '../types';
 import type {ControlButtonSpecification} from 'nuclide-debugger-common';
 import {
   LoadingSpinner,
@@ -17,6 +17,7 @@ import {
 } from 'nuclide-commons-ui/LoadingSpinner';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -107,14 +108,17 @@ export default class DebuggerSteppingComponent extends React.Component<
 
   componentDidMount(): void {
     const {service} = this.props;
+    const model = service.getModel();
     this._disposables.add(
       Observable.merge(
         observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
+        observableFromSubscribeFunction(model.onDidChangeCallStack.bind(model)),
         observableFromSubscribeFunction(
           service.viewModel.onDidFocusStackFrame.bind(service.viewModel),
         ),
       )
         .startWith(null)
+        .let(fastDebounce(10))
         .subscribe(() => {
           const debuggerMode = service.getDebuggerMode();
           const {focusedProcess} = service.viewModel;
@@ -146,21 +150,29 @@ export default class DebuggerSteppingComponent extends React.Component<
     });
   }
 
+  _getPausableThread(): ?IThread {
+    const {focusedThread, focusedProcess} = this.props.service.viewModel;
+    if (focusedThread != null) {
+      return focusedThread;
+    } else if (focusedProcess != null) {
+      return focusedProcess.getAllThreads()[0];
+    } else {
+      return null;
+    }
+  }
+
   _togglePauseState = () => {
-    const {focusedThread} = this.props.service.viewModel;
-    if (focusedThread == null) {
-      logger.error('No focussed thread to pause/resume');
+    const pausableThread = this._getPausableThread();
+    if (pausableThread == null) {
+      logger.error('No thread to pause/resume');
       return;
     }
 
-    const {debuggerMode} = this.state;
-    if (debuggerMode === DebuggerMode.RUNNING) {
-      this._setWaitingForPause(true);
-      focusedThread.pause();
-    } else if (debuggerMode === DebuggerMode.PAUSED) {
-      focusedThread.continue();
+    if (pausableThread.stopped) {
+      pausableThread.continue();
     } else {
-      logger.error('Unable to pause/resume in debug mode', debuggerMode);
+      this._setWaitingForPause(true);
+      pausableThread.pause();
     }
   };
 
@@ -225,12 +237,13 @@ export default class DebuggerSteppingComponent extends React.Component<
       />
     );
 
+    const pausableThread = this._getPausableThread();
     let playPauseTitle;
     if (isPausing) {
       playPauseTitle = 'Waiting for pause...';
     } else if (isPaused) {
       playPauseTitle = 'Continue';
-    } else if (focusedThread == null) {
+    } else if (pausableThread == null) {
       playPauseTitle = 'No running threads to pause!';
     } else {
       playPauseTitle = 'Pause';
@@ -241,7 +254,7 @@ export default class DebuggerSteppingComponent extends React.Component<
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
-            disabled={isPausing || isReadonlyTarget || focusedThread == null}
+            disabled={isPausing || isReadonlyTarget || pausableThread == null}
             tooltip={{
               ...defaultTooltipOptions,
               title: playPauseTitle,
