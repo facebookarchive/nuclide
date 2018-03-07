@@ -4,6 +4,12 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import errno
 import getpass
 import hashlib
 import json
@@ -19,7 +25,6 @@ import jedi
 from parso.python.tree import ImportFrom
 import outline
 
-LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
 LIB_DIR = os.path.abspath('../VendorLib')
 WORKING_DIR = os.getcwd()
 
@@ -56,7 +61,19 @@ class JediServer:
 
     def init_logging(self):
         # Be consistent with the main Nuclide logs.
-        log_path = os.path.join(tempfile.gettempdir(), 'nuclide-jedi.log')
+        log_dir = os.path.join(
+            tempfile.gettempdir(),
+            'nuclide-%s-logs' % getpass.getuser()
+        )
+        try:
+            os.makedirs(log_dir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                # Skip logging on any other exception.
+                return
+        except Exception as e:
+            return
+        log_path = os.path.join(log_dir, 'nuclide-jedi.log')
         handler = FileHandler(log_path)
         handler.setFormatter(logging.Formatter(
             'nuclide-jedi-py %(asctime)s: [%(name)s] %(message)s'
