@@ -217,6 +217,14 @@ export default class BreakpointDisplayController {
     return false;
   }
 
+  _getLineForBp(bp: IBreakpoint): number {
+    // Zero-based breakpoints line map (to match UI markers).
+    return (
+      (bp.endLine != null && !Number.isNaN(bp.endLine) ? bp.endLine : bp.line) -
+      1
+    );
+  }
+
   /**
    * Update the display with the current set of breakpoints for this editor.
    */
@@ -234,8 +242,9 @@ export default class BreakpointDisplayController {
     }
     const allBreakpoints = this._service.getModel().getBreakpoints();
     const breakpoints = allBreakpoints.filter(bp => bp.uri === path);
-    // Zero-based breakpoints line map (to match UI markers).
-    const lineMap = new Map(breakpoints.map(bp => [bp.line - 1, bp]));
+    const lineMap = new Map(
+      breakpoints.map(bp => [this._getLineForBp(bp), bp]),
+    );
 
     // A mutable unhandled lines map.
     const unhandledLines = new Set(lineMap.keys());
@@ -277,9 +286,7 @@ export default class BreakpointDisplayController {
       const marker = this._createBreakpointMarkerAtLine(
         line,
         false, // isShadow
-        breakpoint.enabled,
-        breakpoint.verified,
-        breakpoint.condition,
+        breakpoint,
       );
 
       // Remember the properties of the marker at this line so it's easy to tell if it
@@ -452,9 +459,7 @@ export default class BreakpointDisplayController {
       this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(
         line,
         true, // isShadow
-        true, // enabled
-        false, // resolved
-        null, // condition
+        null,
       );
     }
   }
@@ -462,10 +467,11 @@ export default class BreakpointDisplayController {
   _createBreakpointMarkerAtLine(
     line: number,
     isShadow: boolean,
-    enabled: boolean,
-    resolved: boolean,
-    condition: ?string,
+    breakpoint: ?IBreakpoint,
   ): atom$Marker {
+    const enabled = breakpoint != null ? breakpoint.enabled : true;
+    const resolved = breakpoint != null ? breakpoint.verified : false;
+    const condition = breakpoint != null ? breakpoint.condition : null;
     const marker = this._editor.markBufferPosition([line, 0], {
       invalidate: 'never',
     });
@@ -476,6 +482,11 @@ export default class BreakpointDisplayController {
     const conditional = condition != null;
     const elem: HTMLElement = document.createElement('span');
     elem.dataset.line = line.toString();
+
+    if (breakpoint != null) {
+      elem.dataset.bpId = breakpoint.getId();
+    }
+
     elem.className = classnames({
       'nuclide-debugger-breakpoint-icon': !isShadow && enabled && !unresolved,
       'nuclide-debugger-breakpoint-icon-conditional': conditional,

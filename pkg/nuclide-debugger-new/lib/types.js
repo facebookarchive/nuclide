@@ -297,6 +297,8 @@ export interface IModel extends ITreeElement {
   getProcesses(): IProcess[];
   getBreakpoints(): IBreakpoint[];
   getBreakpointAtLine(uri: string, line: number): ?IBreakpoint;
+  getBreakpointById(id: string): ?IBreakpoint;
+
   areBreakpointsActivated(): boolean;
   getFunctionBreakpoints(): IFunctionBreakpoint[];
   getExceptionBreakpoints(): IExceptionBreakpoint[];

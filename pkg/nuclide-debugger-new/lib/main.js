@@ -20,13 +20,13 @@ import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
-import type {SerializedState} from './types';
+import type {SerializedState, IBreakpoint} from './types';
 
 import BreakpointManager from './BreakpointManager';
 import {AnalyticsEvents, DebuggerMode} from './constants';
 import BreakpointConfigComponent from './ui/BreakpointConfigComponent';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {getBreakpointEventLocation, getLineForEvent} from './utils';
+import {getLineForEvent} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
@@ -240,16 +240,8 @@ class Activation {
             label: 'Edit breakpoint...',
             command: 'nuclide-debugger:edit-breakpoint',
             shouldDisplay: event => {
-              const location = getBreakpointEventLocation(
-                (event.target: HTMLElement),
-              );
-              if (location != null) {
-                const bp = this._service
-                  .getModel()
-                  .getBreakpointAtLine(location.path, location.line);
-                return bp != null && this._supportsConditionalBreakpoints();
-              }
-              return false;
+              const bp = this._getBreakpointFromEvent(event);
+              return bp != null && this._supportsConditionalBreakpoints();
             },
           },
           {
@@ -541,33 +533,42 @@ class Activation {
     });
   }
 
-  _getLocationOfEvent(event: any): ?{path: string, line: number} {
-    return (
-      getBreakpointEventLocation((event.target: HTMLElement)) ||
-      this._executeWithEditorPath(event, (path, line) => ({path, line}))
-    );
+  _getBreakpointFromEvent(event: any): ?IBreakpoint {
+    const target: HTMLElement = event.target;
+    let bp = null;
+    if (target != null && target.dataset != null) {
+      if (target.dataset.bpid != null) {
+        const bpId = target.dataset.bpid;
+        bp = this._service.getModel().getBreakpointById(bpId);
+      }
+
+      if (bp == null) {
+        const path = target.dataset.path;
+        const line = parseInt(target.dataset.line, 10);
+        if (path != null && line != null) {
+          bp = this._service.getModel().getBreakpointAtLine(path, line);
+        }
+      }
+    }
+
+    return bp;
   }
 
   _configureBreakpoint(event: any) {
-    const location = this._getLocationOfEvent(event);
-    if (location != null) {
-      const bp = this._service
-        .getModel()
-        .getBreakpointAtLine(location.path, location.line);
-      if (bp != null && this._supportsConditionalBreakpoints()) {
-        // Open the configuration dialog.
-        const container = new ReactMountRootElement();
-        ReactDOM.render(
-          <BreakpointConfigComponent
-            breakpoint={bp}
-            service={this._service}
-            onDismiss={() => {
-              ReactDOM.unmountComponentAtNode(container);
-            }}
-          />,
-          container,
-        );
-      }
+    const bp = this._getBreakpointFromEvent(event);
+    if (bp != null && this._supportsConditionalBreakpoints()) {
+      // Open the configuration dialog.
+      const container = new ReactMountRootElement();
+      ReactDOM.render(
+        <BreakpointConfigComponent
+          breakpoint={bp}
+          service={this._service}
+          onDismiss={() => {
+            ReactDOM.unmountComponentAtNode(container);
+          }}
+        />,
+        container,
+      );
     }
   }
 
@@ -585,13 +586,7 @@ class Activation {
   }
 
   _deleteBreakpoint(event: any): void {
-    const location = this._getLocationOfEvent(event);
-    if (location == null) {
-      return;
-    }
-    const breakpoint = this._service
-      .getModel()
-      .getBreakpointAtLine(location.path, location.line);
+    const breakpoint = this._getBreakpointFromEvent(event);
     if (breakpoint != null) {
       this._service.removeBreakpoints(breakpoint.getId());
     }

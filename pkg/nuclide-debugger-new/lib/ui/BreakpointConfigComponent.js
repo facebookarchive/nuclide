@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IBreakpoint, IDebugService} from '../types';
+import type {IBreakpoint, IRawBreakpoint, IDebugService} from '../types';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import * as React from 'react';
@@ -97,15 +97,19 @@ export default class BreakpointConfigComponent extends React.Component<
       this.props.onDismiss();
       return;
     }
+
     await service.removeBreakpoints(breakpoint.getId());
-    await service.addBreakpoints(breakpoint.uri, [
-      {
-        line: breakpoint.line,
-        column: breakpoint.column,
-        enabled: breakpoint.enabled,
-        condition,
-      },
-    ]);
+
+    const bp: IRawBreakpoint = {
+      line: breakpoint.line,
+      column: breakpoint.column,
+      enabled: breakpoint.enabled,
+    };
+    if (condition !== '') {
+      bp.condition = condition;
+    }
+
+    await service.addBreakpoints(breakpoint.uri, [bp]);
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_UPDATE_CONDITION, {
       path: breakpoint.uri,
       line: breakpoint.line,
@@ -124,7 +128,9 @@ export default class BreakpointConfigComponent extends React.Component<
             <label>
               Breakpoint at {nuclideUri.basename(this.props.breakpoint.uri)}
               :
-              {this.props.breakpoint.line}
+              {this.props.breakpoint.endLine != null
+                ? this.props.breakpoint.endLine
+                : this.props.breakpoint.line}
             </label>
           </div>
           <div className="block">

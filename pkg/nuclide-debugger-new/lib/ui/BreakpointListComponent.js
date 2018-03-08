@@ -101,23 +101,29 @@ export default class BreakpointListComponent extends React.Component<
     const isReadonlyTarget = false;
 
     const items = breakpoints
-      // Show resolved breakpoints at the top of the list, then order by filename & line number.
-      .sort(
-        (breakpointA, breakpointB) =>
-          100 * (Number(breakpointB.verified) - Number(breakpointA.verified)) +
-          10 *
-            nuclideUri
-              .basename(breakpointA.uri)
-              .localeCompare(nuclideUri.basename(breakpointB.uri)) +
-          Math.sign(breakpointA.line - breakpointB.line),
-      )
+      .sort((breakpointA, breakpointB) => {
+        const fileA = nuclideUri.basename(breakpointA.uri);
+        const fileB = nuclideUri.basename(breakpointB.uri);
+        if (fileA !== fileB) {
+          return fileA.localeCompare(fileB);
+        }
+
+        const lineA =
+          breakpointA.endLine != null ? breakpointA.endLine : breakpointA.line;
+        const lineB =
+          breakpointB.endLine != null ? breakpointB.endLine : breakpointB.line;
+        return lineA - lineB;
+      })
       .map((breakpoint, i) => {
         const basename = nuclideUri.basename(breakpoint.uri);
-        const {line, enabled, verified: resolved, uri: path} = breakpoint;
-        const label = `${basename}:${line}`;
+        const {line, endLine, enabled, verified, uri: path} = breakpoint;
+        const dataLine =
+          endLine != null && !Number.isNaN(endLine) ? endLine : line;
+        const bpId = breakpoint.getId();
+        const label = `${basename}:${dataLine}`;
         const title = !enabled
           ? 'Disabled breakpoint'
-          : !resolved
+          : !verified
             ? 'Unresolved Breakpoint'
             : `Breakpoint at ${label} (resolved)`;
 
@@ -128,6 +134,7 @@ export default class BreakpointListComponent extends React.Component<
               title={`Breakpoint condition: ${breakpoint.condition}`}
               data-path={path}
               data-line={line}
+              data-bpid={bpId}
               onClick={event => {
                 atom.commands.dispatch(
                   event.target,
@@ -150,8 +157,6 @@ export default class BreakpointListComponent extends React.Component<
               key={i}>
               <Checkbox
                 checked={enabled}
-                indeterminate={!resolved}
-                disabled={!resolved}
                 onChange={this._handleBreakpointEnabledChange.bind(
                   this,
                   breakpoint,
@@ -159,16 +164,21 @@ export default class BreakpointListComponent extends React.Component<
                 onClick={(event: SyntheticEvent<>) => event.stopPropagation()}
                 title={title}
                 className={classnames(
-                  resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
+                  verified ? '' : 'nuclide-debugger-breakpoint-unresolved',
                   'nuclide-debugger-breakpoint-checkbox',
                 )}
               />
-              <span title={title} data-path={path} data-line={line}>
+              <span
+                title={title}
+                data-path={path}
+                data-bpid={bpId}
+                data-line={line}>
                 <div className="nuclide-debugger-breakpoint-condition-controls">
                   <Icon
                     icon="pencil"
                     className="nuclide-debugger-breakpoint-condition-control"
                     data-path={path}
+                    data-bpid={bpId}
                     data-line={line}
                     onClick={event => {
                       track(AnalyticsEvents.DEBUGGER_EDIT_BREAKPOINT_FROM_ICON);
@@ -182,6 +192,7 @@ export default class BreakpointListComponent extends React.Component<
                     icon="x"
                     className="nuclide-debugger-breakpoint-condition-control"
                     data-path={path}
+                    data-bpid={bpId}
                     data-line={line}
                     onClick={event => {
                       track(
@@ -207,6 +218,7 @@ export default class BreakpointListComponent extends React.Component<
             index={i}
             value={breakpoint}
             data-path={path}
+            data-bpid={bpId}
             data-line={line}
             title={title}
             className="nuclide-debugger-breakpoint">

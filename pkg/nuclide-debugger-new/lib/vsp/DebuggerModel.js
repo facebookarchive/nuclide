@@ -1153,6 +1153,10 @@ export class Model implements IModel {
     return this._breakpoints.find(bp => bp.uri === uri && bp.line === line);
   }
 
+  getBreakpointById(id: string): ?IBreakpoint {
+    return this._breakpoints.find(bp => bp.getId() === id);
+  }
+
   getFunctionBreakpoints(): IFunctionBreakpoint[] {
     return (this._functionBreakpoints: any);
   }
@@ -1226,7 +1230,7 @@ export class Model implements IModel {
       const bpData = data[bp.getId()];
       if (bpData != null) {
         bp.line = bpData.line != null ? bpData.line : bp.line;
-        bp.endLine = bpData.endLine;
+        bp.endLine = bpData.endLine != null ? bpData.endLine : bp.endLine;
         bp.column = bpData.column != null ? bpData.column : bp.column;
         bp.endColumn = bpData.endColumn;
         bp.verified = bpData.verified != null ? bpData.verified : bp.verified;

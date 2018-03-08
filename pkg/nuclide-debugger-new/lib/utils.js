@@ -30,20 +30,6 @@ function getGutterLineNumber(target: HTMLElement): ?number {
   }
 }
 
-export function getBreakpointEventLocation(
-  target: HTMLElement,
-): ?{path: string, line: number} {
-  if (
-    target != null &&
-    target.dataset != null &&
-    target.dataset.path != null &&
-    target.dataset.line != null
-  ) {
-    return {path: target.dataset.path, line: parseInt(target.dataset.line, 10)};
-  }
-  return null;
-}
-
 const SCREEN_ROW_ATTRIBUTE_NAME = 'data-screen-row';
 
 function getEditorLineNumber(
