@@ -31,6 +31,7 @@ export const AnalyticsEvents = Object.freeze({
   DEBUGGER_STEP_RUN_TO_LOCATION: 'debugger-step-run-to-location',
   DEBUGGER_STEP_PAUSE: 'debugger-step-pause',
   DEBUGGER_STOP: 'debugger-stop',
+  DEBUGGER_TERMINATE_THREAD: 'debugger-terminate-thread',
   DEBUGGER_TOGGLE_ATTACH_DIALOG: 'debugger-toggle-attach-dialog',
   DEBUGGER_TOGGLE_EXCEPTION_BREAKPOINT: 'debugger-toggle-exception-breakpoint',
   DEBUGGER_WATCH_ADD_EXPRESSION: 'debugger-watch-add-expression',

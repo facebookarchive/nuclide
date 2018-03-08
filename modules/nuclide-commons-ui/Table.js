@@ -53,8 +53,9 @@ export type Column<T: Object> = {
 };
 
 export type Row<T: Object> = {
-  +className?: string,
-  +data: T,
+  className?: string,
+  data: T,
+  rowAttributes?: Object,
 };
 
 type PercentageWidthMap<T> = {[key: $Keys<T>]: number};
@@ -550,7 +551,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         })
       );
     let body = rows.map((row, i) => {
-      const {className: rowClassName, data} = row;
+      const {className: rowClassName, data, rowAttributes} = row;
       const renderedRow = columns.map((column, j) => {
         const {
           key,
@@ -577,7 +578,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             })}
             key={j}
             style={cellStyle}
-            title={typeof datum !== 'object' ? String(datum) : null}>
+            title={typeof datum !== 'object' ? String(datum) : null}
+            {...rowAttributes}>
             {datum}
           </div>
         );

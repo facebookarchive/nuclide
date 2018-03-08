@@ -41,12 +41,13 @@ type State = {
 };
 
 type CellData = {|
-  +id: number,
-  +name: string,
-  +address: ?string,
-  +stopped: boolean,
-  +stopReason: ?string,
-  +isSelected: boolean,
+  id: number,
+  name: string,
+  address: ?string,
+  stopped: boolean,
+  stopReason: ?string,
+  isSelected: boolean,
+  terminateThread?: number,
 |};
 
 type ColumnName =
@@ -55,7 +56,8 @@ type ColumnName =
   | 'address'
   | 'stopReason'
   | 'isSelected'
-  | 'stopped';
+  | 'stopped'
+  | 'terminateThread';
 
 const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
   <div className="nuclide-debugger-thread-list-item-current-indicator">
@@ -190,6 +192,16 @@ export default class DebuggerThreadsComponent extends React.Component<
       width: 0.05,
     };
 
+    let supportsTerminateThread = false;
+    const {focusedProcess} = this.props.service.viewModel;
+    if (
+      focusedProcess != null &&
+      focusedProcess.session != null &&
+      Boolean(focusedProcess.session.capabilities.supportsTerminateThread)
+    ) {
+      supportsTerminateThread = true;
+    }
+
     const columns = [
       activeThreadCol,
       {
@@ -205,7 +217,7 @@ export default class DebuggerThreadsComponent extends React.Component<
       {
         title: 'Address',
         key: 'address',
-        width: 0.45,
+        width: supportsTerminateThread ? 0.35 : 0.45,
       },
       {
         title: 'Stop Reason',
@@ -213,6 +225,27 @@ export default class DebuggerThreadsComponent extends React.Component<
         width: 0.25,
       },
     ];
+
+    if (supportsTerminateThread) {
+      columns.push({
+        title: 'Terminate',
+        key: 'terminateThread',
+        width: 0.1,
+        component: () => (
+          <Icon
+            icon="x"
+            title="Terminate Thread"
+            onClick={event => {
+              atom.commands.dispatch(
+                event.target.parentElement,
+                'nuclide-debugger:terminate-thread',
+              );
+              event.stopPropagation();
+            }}
+          />
+        ),
+      });
+    }
 
     const emptyComponent = () => (
       <div className="nuclide-debugger-thread-list-empty">
@@ -225,7 +258,7 @@ export default class DebuggerThreadsComponent extends React.Component<
         : threadList.map(thread => {
             const stoppedDetails = thread.stoppedDetails;
             const callstack = thread.getCallStack();
-            const cellData = {
+            const cellData: Row<CellData> = {
               data: {
                 id: thread.threadId,
                 name: thread.name,
@@ -238,12 +271,22 @@ export default class DebuggerThreadsComponent extends React.Component<
                       ? stoppedDetails.description
                       : stoppedDetails.reason,
                 isSelected: thread.threadId === selectedThreadId,
+                terminateThread: thread.threadId,
               },
             };
             if (thread.threadId === selectedThreadId) {
-              // $FlowIssue className is an optional property of a table row
-              cellData.className = 'nuclide-debugger-thread-list-item-selected';
+              cellData.className =
+                'nuclide-debugger-thread-list-item nuclide-debugger-thread-list-item-selected';
+            } else {
+              cellData.className = 'nuclide-debugger-thread-list-item';
             }
+
+            // Decorate the cells with the thread ID they correspond to
+            // so context menus know what thread to target for commands.
+            cellData.rowAttributes = {
+              'data-threadId': thread.threadId,
+            };
+
             return cellData;
           });
 

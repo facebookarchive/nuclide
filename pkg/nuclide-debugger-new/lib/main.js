@@ -178,6 +178,9 @@ class Activation {
           this,
         ),
       }),
+      atom.commands.add('.nuclide-debugger-thread-list-item', {
+        'nuclide-debugger:terminate-thread': this._terminateThread.bind(this),
+      }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(
           this,
@@ -249,6 +252,22 @@ class Activation {
             command: 'nuclide-debugger:remove-breakpoint',
           },
           {type: 'separator'},
+        ],
+        '.nuclide-debugger-thread-list-item': [
+          {
+            label: 'Terminate thread',
+            command: 'nuclide-debugger:terminate-thread',
+            shouldDisplay: event => {
+              const target: HTMLElement = event.target;
+              if (target.dataset.threadid) {
+                const threadId = parseInt(target.dataset.threadid, 10);
+                if (!Number.isNaN(threadId)) {
+                  return this._supportsTerminateThread();
+                }
+              }
+              return false;
+            },
+          },
         ],
         '.nuclide-debugger-callstack-table': [
           {
@@ -343,6 +362,18 @@ class Activation {
     } else {
       return Boolean(
         focusedProcess.session.capabilities.supportsConditionalBreakpoints,
+      );
+    }
+  }
+
+  _supportsTerminateThread(): boolean {
+    // If currently debugging, return whether or not the current debugger supports this.
+    const {focusedProcess} = this._service.viewModel;
+    if (focusedProcess == null) {
+      return false;
+    } else {
+      return Boolean(
+        focusedProcess.session.capabilities.supportsTerminateThread,
       );
     }
   }
@@ -569,6 +600,16 @@ class Activation {
         />,
         container,
       );
+    }
+  }
+
+  _terminateThread(event: any) {
+    const target: HTMLElement = event.target;
+    if (target.dataset.threadid) {
+      const threadId = parseInt(target.dataset.threadid, 10);
+      if (!Number.isNaN(threadId) && this._supportsTerminateThread()) {
+        this._service.terminateThread(threadId);
+      }
     }
   }
 
