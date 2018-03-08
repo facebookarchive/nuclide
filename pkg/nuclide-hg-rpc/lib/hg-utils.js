@@ -241,15 +241,3 @@ function getAtomRpcScriptPath(): string {
   }
   return atomRpcEditorPath;
 }
-
-export function processExitCodeAndThrow(
-  processMessage: LegacyProcessMessage,
-): Observable<LegacyProcessMessage> {
-  // TODO(T17463635)
-  if (processMessage.kind === 'exit' && processMessage.exitCode !== 0) {
-    return Observable.throw(
-      new Error(`HG failed with exit code: ${String(processMessage.exitCode)}`),
-    );
-  }
-  return Observable.of(processMessage);
-}

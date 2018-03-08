@@ -49,7 +49,6 @@ import {
   hgAsyncExecute,
   hgObserveExecution,
   hgRunCommand,
-  processExitCodeAndThrow,
 } from './hg-utils';
 import fsPromise from 'nuclide-commons/fsPromise';
 import debounce from 'nuclide-commons/debounce';
@@ -1321,9 +1320,7 @@ export class HgService {
     const executionOptions = {
       cwd: this._workingDirectory,
     };
-    return hgObserveExecution(args, executionOptions)
-      .switchMap(processExitCodeAndThrow)
-      .publish();
+    return hgObserveExecution(args, executionOptions).publish();
   }
 
   show(revision: number): ConnectableObservable<RevisionShowInfo> {
@@ -1593,9 +1590,7 @@ export class HgService {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return this._hgObserveExecution(args, execOptions)
-      .switchMap(processExitCodeAndThrow)
-      .publish();
+    return this._hgObserveExecution(args, execOptions).publish();
   }
 
   continueOperation(
@@ -1606,9 +1601,7 @@ export class HgService {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return this._hgObserveExecution(args, execOptions)
-      .switchMap(processExitCodeAndThrow)
-      .publish();
+    return this._hgObserveExecution(args, execOptions).publish();
   }
 
   abortOperation(
@@ -1625,9 +1618,7 @@ export class HgService {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return this._hgObserveExecution(args, execOptions)
-      .switchMap(processExitCodeAndThrow)
-      .publish();
+    return this._hgObserveExecution(args, execOptions).publish();
   }
 
   rebase(
