@@ -209,6 +209,16 @@ export default class FeatureLoader {
     );
 
     this._features.forEach(feature => {
+      // Since the migration from bool to enum occurs before the config defaults
+      // are changed, the user's config gets filled with every Nuclide feature.
+      // Since these values are already the default, this `config.set`
+      // removes these uneccessary values from the user's config file.
+      // TODO: When enough users have migrated, this should be removed along with the enum migration.
+      atom.config.set(
+        this.useKeyPathForFeature(feature),
+        atom.config.get(this.useKeyPathForFeature(feature)),
+      );
+
       if (this.shouldEnable(feature)) {
         atom.packages.activatePackage(feature.path);
       }
