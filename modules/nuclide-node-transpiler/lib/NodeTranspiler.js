@@ -57,6 +57,9 @@ const BABEL_OPTIONS = {
       module: 'async-to-generator',
       method: 'default',
     }],
+    // babel-plugin-transform-async-super is used to workaround a bug in Babel
+    // 6. Remove this once we upgrade to Babel 7.
+    [require.resolve('babel-plugin-transform-async-super')],
     [require.resolve('babel-plugin-transform-class-properties')],
     [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
     [require.resolve('babel-plugin-transform-strict-mode')],
