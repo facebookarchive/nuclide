@@ -337,6 +337,28 @@ async function getConnection(connection): Promise<LanguageService> {
     enableLibclangLogs:
       featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true,
   });
+  if (cqueryService == null && featureConfig.get(USE_CQUERY_CONFIG)) {
+    const notification = atom.notifications.addWarning(
+      'Could not enable cquery, would you like to switch to built-in C++ support?',
+      {
+        buttons: [
+          {
+            text: 'Use built-in C++ services',
+            onDidClick: () => {
+              featureConfig.set(USE_CQUERY_CONFIG, false);
+              notification.dismiss();
+            },
+          },
+          {
+            text: 'Ignore',
+            onDidClick: () => {
+              notification.dismiss();
+            },
+          },
+        ],
+      },
+    );
+  }
   return cqueryService != null
     ? new CqueryLSPClient(cqueryService)
     : new NullLanguageService();

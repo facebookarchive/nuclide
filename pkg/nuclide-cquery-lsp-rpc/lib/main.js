@@ -171,7 +171,6 @@ async function ensureCommandExists(
   if ((await which(command)) == null) {
     const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
     logger.warn(message);
-    host.consoleNotification(languageId, 'warning', message);
     return false;
   }
   return true;
