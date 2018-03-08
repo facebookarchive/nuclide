@@ -1317,7 +1317,10 @@ export default class DebugService implements IDebugService {
           this._model.areBreakpointsActivated() && bp.enabled && bp.uri === uri,
       );
 
-    const rawSource = process.getSource({path: uri}).raw;
+    const rawSource = process.getSource({
+      path: uri,
+      name: nuclideUri.basename(uri),
+    }).raw;
 
     if (breakpointsToSend.length && !rawSource.adapterData) {
       rawSource.adapterData = breakpointsToSend[0].adapterData;

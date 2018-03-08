@@ -94,11 +94,6 @@ class OCamlDebugSession extends LoggingDebugSession {
     response: DebugProtocol.InitializeResponse,
     args: DebugProtocol.InitializeRequestArguments,
   ): void {
-    // since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
-    // we request them early by sending an 'initializeRequest' to the frontend.
-    // The frontend will end the configuration sequence by calling 'configurationDone' request.
-    this.sendEvent(new InitializedEvent());
-
     response.body = {
       supportsConfigurationDoneRequest: true,
       supportsEvaluateForHovers: true,
@@ -122,6 +117,10 @@ class OCamlDebugSession extends LoggingDebugSession {
         error => this._handleProgramExitedEvent(error),
       );
       this._breakAfterStart = args.config.breakAfterStart;
+
+      // Now send the initialized event as we're ready to process breakpoint requests
+      this.sendEvent(new InitializedEvent());
+
       this.sendResponse(response);
       this.sendEvent(new StoppedEvent('Program entry', THREAD_ID));
     });
