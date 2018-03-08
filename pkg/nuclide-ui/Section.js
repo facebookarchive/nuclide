@@ -14,9 +14,9 @@ import classnames from 'classnames';
 
 type SectionSize = 'large' | 'medium' | 'small';
 type Props = {
-  headline: React.Element<any> | string,
+  headline: React.Node,
   className?: string,
-  children?: React.Element<any>,
+  children?: React.Node,
   // Option A: Specify just `collapsable` for uncontrolled toggle behavior.
   collapsable?: boolean,
   // `collapsable` overrides this when specified.

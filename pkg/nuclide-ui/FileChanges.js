@@ -369,7 +369,6 @@ export default class FileChanges extends React.Component<Props> {
       </span>
     );
     return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
       <Section
         collapsable={collapsable}
         collapsedByDefault={collapsedByDefault}

@@ -398,7 +398,6 @@ All the changes across your entire stacked diff.
       }
       openFilesSection = (
         <LockableHeight isLocked={this.state.isFileTreeHovered}>
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <Section
             className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
             collapsable={true}
