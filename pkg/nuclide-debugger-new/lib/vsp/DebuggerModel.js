@@ -45,6 +45,8 @@ import type {
   IStackFrame,
   IBreakpoint,
   IRawModelUpdate,
+  IRawStopppedUpdate,
+  IRawThreadUpdate,
   ISession,
   IThread,
   IModel,
@@ -843,35 +845,41 @@ export class Process implements IProcess {
     return this._session.getId();
   }
 
-  rawUpdate(data: IRawModelUpdate): void {
-    if (data.thread && !this._threads.has(data.threadId)) {
-      // A new thread came in, initialize it.
-      this._threads.set(
-        data.threadId,
-        new Thread(this, data.thread.name, data.thread.id),
-      );
-    } else if (data.thread && data.thread.name) {
-      // Just the thread name got updated #18244
-      nullthrows(this._threads.get(data.threadId)).name = data.thread.name;
+  rawStoppedUpdate(data: IRawStopppedUpdate): void {
+    const {threadId, stoppedDetails} = data;
+    if (threadId != null && !this._threads.has(threadId)) {
+      // We're being asked to update a thread we haven't seen yet, so
+      // create it
+      const thread = new Thread(this, 'PENDING_UPDATE', threadId);
+      this._threads.set(threadId, thread);
     }
 
-    if (data.stoppedDetails != null) {
-      // Set the availability of the threads' callstacks depending on
-      // whether the thread is stopped or not
-      if (data.stoppedDetails.allThreadsStopped) {
-        this._threads.forEach(thread => {
-          thread.stoppedDetails =
-            thread.threadId === data.threadId ? data.stoppedDetails : {};
-          thread.stopped = true;
-          thread.clearCallStack();
-        });
-      } else if (this._threads.has(data.threadId)) {
-        // One thread is stopped, only update that thread.
-        const thread = nullthrows(this._threads.get(data.threadId));
-        thread.stoppedDetails = data.stoppedDetails || null;
-        thread.clearCallStack();
+    // Set the availability of the threads' callstacks depending on
+    // whether the thread is stopped or not
+    if (stoppedDetails.allThreadsStopped) {
+      this._threads.forEach(thread => {
+        thread.stoppedDetails =
+          thread.threadId === threadId ? stoppedDetails : {};
         thread.stopped = true;
-      }
+        thread.clearCallStack();
+      });
+    } else if (threadId != null) {
+      // One thread is stopped, only update that thread.
+      const thread = nullthrows(this._threads.get(threadId));
+      thread.stoppedDetails = stoppedDetails;
+      thread.clearCallStack();
+      thread.stopped = true;
+    }
+  }
+
+  rawThreadUpdate(data: IRawThreadUpdate): void {
+    const {thread} = data;
+    if (!this._threads.has(thread.id)) {
+      // A new thread came in, initialize it.
+      this._threads.set(thread.id, new Thread(this, thread.name, thread.id));
+    } else if (thread.name) {
+      // Just the thread name got updated #18244
+      nullthrows(this._threads.get(thread.id)).name = thread.name;
     }
   }
 
@@ -1086,10 +1094,16 @@ export class Model implements IModel {
     const process = this._processes
       .filter(p => p.getId() === data.sessionId)
       .pop();
-    if (process != null) {
-      process.rawUpdate(data);
-      this._emitter.emit(CALLSTACK_CHANGED);
+    if (process == null) {
+      return;
     }
+    if (data.stoppedDetails != null) {
+      process.rawStoppedUpdate((data: any));
+    } else {
+      process.rawThreadUpdate((data: any));
+    }
+
+    this._emitter.emit(CALLSTACK_CHANGED);
   }
 
   clearThreads(id: string, removeThreads: boolean, reference?: number): void {

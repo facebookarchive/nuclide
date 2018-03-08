@@ -438,7 +438,6 @@ export default class DebugService implements IDebugService {
         response.body.threads.forEach(thread => {
           this._model.rawUpdate({
             sessionId,
-            threadId: thread.id,
             thread,
           });
         });
@@ -499,29 +498,52 @@ export default class DebugService implements IDebugService {
 
     const toFocusThreads = new Subject();
 
+    const observeContinuedTo = (threadId: ?number) => {
+      return session
+        .observeContinuedEvents()
+        .filter(
+          continued =>
+            continued.body.allThreadsContinued ||
+            (threadId != null && threadId === continued.body.threadId),
+        )
+        .take(1);
+    };
+
     this._sessionEndDisposables.add(
-      session.observeStopEvents().subscribe(async event => {
+      session.observeStopEvents().subscribe(() => {
         this._updateModeAndEmit(DebuggerMode.PAUSED);
-        const {threadId} = event.body;
-        try {
-          const threadFetecherPromise = threadFetcher();
-          if (threadId == null) {
-            return;
-          }
+      }),
+      session
+        .observeStopEvents()
+        .flatMap(event =>
+          Observable.fromPromise(threadFetcher())
+            .ignoreElements()
+            .concat(Observable.of(event))
+            .catch(error => {
+              onUnexpectedError(error);
+              return Observable.empty();
+            })
+            // Proceeed processing the stopped event only if there wasn't
+            // a continued event while we're fetching the threads
+            .takeUntil(observeContinuedTo(event.body.threadId)),
+        )
+        .subscribe((event: DebugProtocol.StoppedEvent) => {
+          const {threadId} = event.body;
+          // Updating stopped state needs to happen after fetching the threads
           this._model.rawUpdate({
             sessionId,
             stoppedDetails: (event.body: any),
             threadId,
           });
-          await threadFetecherPromise;
+
+          if (threadId == null) {
+            return;
+          }
           const thread = process.getThread(threadId);
           if (thread != null) {
             toFocusThreads.next(thread);
           }
-        } catch (error) {
-          onUnexpectedError(error);
-        }
-      }),
+        }),
 
       toFocusThreads
         .concatMap(thread => {
@@ -543,13 +565,19 @@ export default class DebugService implements IDebugService {
 
           // UX: That'll fetch the top stack frame first (to allow the UI to focus on it),
           // then the rest of the call stack.
-          return Observable.fromPromise(this._model.fetchCallStack(thread))
-            .ignoreElements()
-            .concat(Observable.of(thread))
-            .catch(error => {
-              onUnexpectedError(error);
-              return Observable.empty();
-            });
+          return (
+            Observable.fromPromise(this._model.fetchCallStack(thread))
+              .ignoreElements()
+              .concat(Observable.of(thread))
+              // Avoid focusing a continued thread.
+              .takeUntil(observeContinuedTo(thread.threadId))
+              // Verify the thread is still stopped.
+              .filter(() => thread.stopped)
+              .catch(error => {
+                onUnexpectedError(error);
+                return Observable.empty();
+              })
+          );
         })
         .subscribe(thread => {
           this._tryToAutoFocusStackFrame(thread);

@@ -477,13 +477,18 @@ export interface IFunctionBreakpoint extends IEnableable {
   hitCondition?: ?string;
 }
 
-export interface IRawModelUpdate {
-  threadId: number;
-  sessionId: string;
-  thread?: ?DebugProtocol.Thread;
-  callStack?: ?(DebugProtocol.StackFrame[]);
-  stoppedDetails?: ?IRawStoppedDetails;
-}
+export type IRawStopppedUpdate = {
+  sessionId: string,
+  threadId: ?number,
+  stoppedDetails: IRawStoppedDetails,
+};
+
+export type IRawThreadUpdate = {
+  sessionId: string,
+  thread: DebugProtocol.Thread,
+};
+
+export type IRawModelUpdate = IRawStopppedUpdate | IRawThreadUpdate;
 
 export interface IRawStoppedDetails {
   reason?: string;
