@@ -129,6 +129,12 @@ class Activation {
           line: definition.position.row,
           column: definition.position.column,
         });
+        analytics.track('go-to-definition', {
+          path: definition.path,
+          line: definition.position.row,
+          column: definition.position.column,
+          from: editor.getPath(),
+        });
       };
     }
 
