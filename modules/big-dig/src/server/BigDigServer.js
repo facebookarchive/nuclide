@@ -77,12 +77,14 @@ export default class BigDigServer {
     response: http$ServerResponse,
   ) {
     const {pathname} = url.parse(request.url);
-    if (pathname === `/v1/${HEARTBEAT_CHANNEL}`) {
+    if (request.method === 'POST' && pathname === `/v1/${HEARTBEAT_CHANNEL}`) {
       response.write(getVersion());
       response.end();
       return;
     }
-    this._logger.info(`Ignored HTTPS request for ${request.url}`);
+    this._logger.info(
+      `Ignored HTTPS ${request.method} request for ${request.url}`,
+    );
   }
 
   _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
