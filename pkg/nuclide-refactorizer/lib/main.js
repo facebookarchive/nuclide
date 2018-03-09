@@ -132,7 +132,12 @@ class Activation {
             mouseEvent,
             editor,
           );
-          editor.setCursorBufferPosition(bufferPosition);
+          // If the user selected some text and clicked within it,
+          // we'll treat it as a 'range refactor'.
+          const currentSelection = editor.getSelectedBufferRange();
+          if (!currentSelection.containsPoint(bufferPosition)) {
+            editor.setCursorBufferPosition(bufferPosition);
+          }
 
           this._store.dispatch(Actions.open('generic'));
         },
