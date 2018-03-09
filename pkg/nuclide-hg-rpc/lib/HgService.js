@@ -255,20 +255,23 @@ export type CheckoutOptions = {
 };
 
 export type OperationProgressState = {
-  active: boolean,
+  active: ?boolean,
   estimate_sec: ?number,
   estimate_str: ?string,
   item: ?string,
-  pos: number,
+  pos: ?number,
   speed_str: ?string,
-  topic: string,
+  topic: ?string,
   total: ?number,
   unit: ?string,
   units_per_sec: ?number,
 };
 export type OperationProgress = {
   topics: Array<string>,
-  state: {[key: string]: OperationProgressState},
+  // TODO(T26794506): We expect that the state field will conform to OperationProgressState
+  // but any unknown fields (due to changes in hg) will break us at the rpc layer.
+  // So we type it as Object to save ourselves a crash.
+  state: Object,
 };
 
 async function logWhenSubscriptionEstablished(
