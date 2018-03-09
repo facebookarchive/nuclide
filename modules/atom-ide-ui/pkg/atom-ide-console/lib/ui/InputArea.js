@@ -22,6 +22,7 @@ type Props = {
   scopeName: ?string,
   history: Array<string>,
   watchEditor: ?WatchEditorFunction,
+  onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
 };
 
 type State = {
@@ -97,13 +98,13 @@ export default class InputArea extends React.Component<Props, State> {
       event.preventDefault();
       event.stopImmediatePropagation();
 
-      if (event.ctrlKey) {
+      if (event.ctrlKey || event.altKey || event.shiftKey) {
         editor.insertNewline();
         return;
       }
 
       this._submit();
-    } else if (event.which === UP_KEY_CODE) {
+    } else if (event.which === UP_KEY_CODE && editor.getLineCount() <= 1) {
       if (this.props.history.length === 0 || isAutocompleteOpen) {
         return;
       }
@@ -121,7 +122,7 @@ export default class InputArea extends React.Component<Props, State> {
       editor.setText(
         this.props.history[this.props.history.length - historyIndex - 1],
       );
-    } else if (event.which === DOWN_KEY_CODE) {
+    } else if (event.which === DOWN_KEY_CODE && editor.getLineCount() <= 1) {
       if (this.props.history.length === 0 || isAutocompleteOpen) {
         return;
       }
@@ -154,6 +155,7 @@ export default class InputArea extends React.Component<Props, State> {
           lineNumberGutterVisible={false}
           onConfirm={this._submit}
           onInitialized={this._attachLabel}
+          onDidTextBufferChange={this.props.onDidTextBufferChange}
         />
       </div>
     );
