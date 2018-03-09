@@ -65,7 +65,11 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {sleep, serializeAsyncCall} from 'nuclide-commons/promise';
-import {VsDebugSession} from 'nuclide-debugger-common';
+import {
+  VsDebugSession,
+  localToRemoteProcessor,
+  remoteToLocalProcessor,
+} from 'nuclide-debugger-common';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import capitalize from 'lodash/capitalize';
 import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
@@ -104,7 +108,6 @@ import {
 } from '../constants';
 import logger from '../logger';
 import stripAnsi from 'strip-ansi';
-import {remoteToLocalProcessor, localToRemoteProcessor} from './processors';
 import url from 'url';
 import idx from 'idx';
 

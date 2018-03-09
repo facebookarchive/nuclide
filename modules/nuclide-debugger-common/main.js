@@ -60,4 +60,10 @@ export {
   serializeDebuggerConfig,
 } from './DebuggerConfigSerializer';
 
+export {
+  localToRemoteProcessor,
+  pathProcessor,
+  remoteToLocalProcessor,
+} from './processors';
+
 export {default as VsAdapterSpawner} from './VsAdapterSpawner';
