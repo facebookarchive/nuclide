@@ -1746,4 +1746,20 @@ export class HgService {
 
     return this._hgRunCommand(args, execOptions).publish();
   }
+
+  runCommand(args: Array<string>): ConnectableObservable<string> {
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgRunCommand(args, execOptions).publish();
+  }
+
+  observeExecution(
+    args: Array<string>,
+  ): ConnectableObservable<LegacyProcessMessage> {
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgObserveExecution(args, execOptions).publish();
+  }
 }

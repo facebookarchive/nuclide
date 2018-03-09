@@ -1316,4 +1316,12 @@ export class HgRepositoryClient {
   requestPathStatusRefresh(): void {
     this._manualStatusRefreshRequests.next();
   }
+
+  runCommand(args: Array<string>): Observable<string> {
+    return this._service.runCommand(args).refCount();
+  }
+
+  observeExecution(args: Array<string>): Observable<LegacyProcessMessage> {
+    return this._service.observeExecution(args).refCount();
+  }
 }
