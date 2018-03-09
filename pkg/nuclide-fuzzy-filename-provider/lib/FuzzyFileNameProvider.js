@@ -14,6 +14,8 @@ import type {
   DirectoryProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {isGkEnabled} from '../../commons-node/passesGK';
 import {
   RemoteDirectory,
   getFuzzyFileSearchServiceByNuclideUri,
@@ -48,11 +50,12 @@ export default ({
 
     const directoryPath = directory.getPath();
     const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
-    const results = await service.queryFuzzyFile(
-      directoryPath,
-      fileName,
-      getIgnoredNames(),
-    );
+    const results = await service.queryFuzzyFile({
+      rootDirectory: directoryPath,
+      queryRoot: getQueryRoot(),
+      queryString: fileName,
+      ignoredNames: getIgnoredNames(),
+    });
 
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
     if (RemoteDirectory.isRemoteDirectory(directory)) {
@@ -76,3 +79,16 @@ export default ({
     }));
   },
 }: DirectoryProviderType<FileResult>);
+
+// Returns the directory of the active text editor which will be used to unbreak
+// ties when sorting the suggestions.
+// TODO(T26559382) Extract to util function
+function getQueryRoot(): string | void {
+  if (!isGkEnabled('nuclide_fuzzy_file_search_with_root_path')) {
+    return undefined;
+  }
+  const editor = atom.workspace.getActiveTextEditor();
+  const uri = editor ? editor.getURI() : null;
+
+  return uri != null ? nuclideUri.dirname(uri) : undefined;
+}

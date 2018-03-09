@@ -45,27 +45,30 @@ const filesystemCache: LRUCache<NuclideUri, Promise<FileSystemMetadata>> = LRU({
 /**
  * Performs a fuzzy file search in the specified directory.
  */
-export async function queryFuzzyFile(
+export async function queryFuzzyFile(config: {|
   rootDirectory: NuclideUri,
+  queryRoot?: NuclideUri,
   queryString: string,
   ignoredNames: Array<string>,
-): Promise<Array<FileSearchResult>> {
-  let metadataPromise = filesystemCache.get(rootDirectory);
+|}): Promise<Array<FileSearchResult>> {
+  let metadataPromise = filesystemCache.get(config.rootDirectory);
   if (metadataPromise == null) {
-    metadataPromise = getFileSystemMetadata(rootDirectory);
-    filesystemCache.set(rootDirectory, metadataPromise);
+    metadataPromise = getFileSystemMetadata(config.rootDirectory);
+    filesystemCache.set(config.rootDirectory, metadataPromise);
   }
-
   const metadata = await metadataPromise;
   if (!metadata.isEden) {
-    const search = await fileSearchForDirectory(rootDirectory, ignoredNames);
-    return search.query(queryString);
+    const search = await fileSearchForDirectory(
+      config.rootDirectory,
+      config.ignoredNames,
+    );
+    return search.query(config.queryString, config.queryRoot);
   } else {
     // $FlowFB
     const {doSearch} = require('./fb-EdenFileSearch');
     const {edenFsRoot} = metadata;
     invariant(edenFsRoot != null);
-    return doSearch(queryString, edenFsRoot, rootDirectory);
+    return doSearch(config.queryString, edenFsRoot, config.rootDirectory);
   }
 }
 
@@ -94,7 +97,11 @@ export async function queryAllExistingFuzzyFile(
   const directories = getExistingSearchDirectories();
   const aggregateResults = await Promise.all(
     directories.map(rootDirectory =>
-      queryFuzzyFile(rootDirectory, queryString, ignoredNames),
+      queryFuzzyFile({
+        ignoredNames,
+        queryString,
+        rootDirectory,
+      }),
     ),
   );
   // Optimize for the common case.

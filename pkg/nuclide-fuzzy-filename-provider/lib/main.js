@@ -110,7 +110,11 @@ class Activation {
     // search speeds up the next search much more than simply doing the setup
     // kicked off by 'fileSearchForDirectory'.
     try {
-      await service.queryFuzzyFile(projectPath, 'a', getIgnoredNames());
+      await service.queryFuzzyFile({
+        rootDirectory: projectPath,
+        queryString: 'a',
+        ignoredNames: getIgnoredNames(),
+      });
     } catch (err) {
       throw err;
     } finally {

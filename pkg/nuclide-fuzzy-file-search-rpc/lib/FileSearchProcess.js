@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from './rpc-types';
 
 import {getLogger} from 'log4js';
@@ -56,7 +57,10 @@ class FileSearchProcess {
     }
   }
 
-  async query(query: string): Promise<Array<FileSearchResult>> {
+  async query(
+    query: string,
+    queryRoot: ?NuclideUri = undefined,
+  ): Promise<Array<FileSearchResult>> {
     const task = this._task;
     if (task == null) {
       throw new Error('Task has been disposed');
@@ -64,7 +68,7 @@ class FileSearchProcess {
     return task.invokeRemoteMethod({
       file: require.resolve('./process/FileSearch'),
       method: 'doSearch',
-      args: [this._directory, query],
+      args: [this._directory, query, queryRoot],
     });
   }
 

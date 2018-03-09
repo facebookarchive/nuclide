@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from '../rpc-types';
 
 import os from 'os';
@@ -50,7 +51,10 @@ export class PathSet {
     this._matcher.removeCandidates(this._transformPaths(paths));
   }
 
-  query(query: string): Array<FileSearchResult> {
+  query(
+    query: string,
+    queryRoot: ?NuclideUri = undefined,
+  ): Array<FileSearchResult> {
     // Attempt to relativize paths that people might e.g. copy + paste.
     let relQuery = query;
     // Remove the leading home directory qualifier.
@@ -66,12 +70,18 @@ export class PathSet {
       relQuery = relQuery.substr(rootPath.length);
     }
 
+    let relQueryRoot;
+    if (queryRoot != null && nuclideUri.contains(basePath, queryRoot)) {
+      relQueryRoot = nuclideUri.relative(basePath, queryRoot);
+    }
+
     return (
       this._matcher
         .match(relQuery, {
           maxResults: 20,
           numThreads: os.cpus().length,
           recordMatchIndexes: true,
+          rootPath: relQueryRoot,
         })
         // Expand the search results to the full path.
         .map(result => {

@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from '../rpc-types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -75,7 +76,8 @@ export async function initFileSearchForDirectory(
 export async function doSearch(
   directory: string,
   query: string,
+  queryRoot: ?NuclideUri,
 ): Promise<Array<FileSearchResult>> {
   const pathSet = await fileSearchForDirectory(directory);
-  return pathSet.query(query);
+  return pathSet.query(query, queryRoot);
 }

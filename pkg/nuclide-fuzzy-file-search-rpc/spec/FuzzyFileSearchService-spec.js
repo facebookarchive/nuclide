@@ -49,7 +49,11 @@ describe('FuzzyFileSearchService.queryFuzzyFile', () => {
     waitsForPromise(async () => {
       // This test can't actually perform a search because path-search
       // uses watchman and we don't have a good way to mock dependencies.
-      const fileSearchResults = await queryFuzzyFile(__dirname, 'anything', []);
+      const fileSearchResults = await queryFuzzyFile({
+        rootDirectory: __dirname,
+        queryString: 'anything',
+        ignoredNames: [],
+      });
       expect(fileSearchResults).toEqual([]);
     });
   });
