@@ -10,17 +10,15 @@
  */
 
 import type {Store, TaskRunner} from '../types';
+import type {Props} from './Toolbar';
 
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import {nextAnimationFrame, throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
-import {Toolbar} from './Toolbar';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import shallowequal from 'shallowequal';
 
-export function createPanelItem(store: Store): Object {
+export default function getToolbarProps(store: Store): Observable<Props> {
   const staticProps = {
     runTask: taskMeta => {
       store.dispatch(Actions.runTask(taskMeta));
@@ -79,8 +77,7 @@ export function createPanelItem(store: Store): Object {
     }),
   ).let(throttle(() => nextAnimationFrame));
 
-  const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-  return viewableFromReactElement(<StatefulToolbar />);
+  return props;
 }
 
 // Since `getExtraUi` may create a React class dynamically, the classes are cached

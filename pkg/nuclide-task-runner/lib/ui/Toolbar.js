@@ -22,7 +22,7 @@ import * as React from 'react';
 import invariant from 'assert';
 import * as Immutable from 'immutable';
 
-type Props = {
+export type Props = {
   toolbarDisabled: boolean,
   taskRunners: Immutable.List<TaskRunner>,
   statesForTaskRunners: Immutable.Map<TaskRunner, TaskRunnerState>,
@@ -37,7 +37,7 @@ type Props = {
   runningTaskIsCancelable: boolean | void,
 };
 
-export class Toolbar extends React.Component<Props> {
+export default class Toolbar extends React.Component<Props> {
   render(): React.Node {
     const className = classnames('nuclide-task-runner-toolbar', {
       disabled: this.props.toolbarDisabled,

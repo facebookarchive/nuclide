@@ -23,11 +23,13 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {ConsoleService} from 'atom-ide-ui';
 
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
-import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {memoize} from 'lodash';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {
   combineEpics,
@@ -38,7 +40,8 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
 import {trackingMiddleware} from './trackingMiddleware';
-import {createPanelItem} from './ui/createPanelItem';
+import getToolbarProps from './ui/getToolbarProps';
+import Toolbar from './ui/Toolbar';
 import invariant from 'assert';
 import {
   applyMiddleware,
@@ -48,6 +51,7 @@ import {
 } from 'redux';
 import {Observable} from 'rxjs';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
+import * as React from 'react';
 
 // TODO: use a more general versioning mechanism.
 // Perhaps Atom should provide packages with some way of doing this.
@@ -66,7 +70,7 @@ function getVisible(event: Event): ?boolean {
 class Activation {
   _disposables: UniversalDisposable;
   _actionCreators: BoundActionCreators;
-  _panelRenderer: PanelRenderer;
+  _panel: atom$Panel;
   _store: Store;
 
   constructor(rawState: ?SerializedAppState): void {
@@ -106,9 +110,15 @@ class Activation {
       .distinctUntilChanged()
       .share();
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
-    this._panelRenderer = new PanelRenderer({
-      location: 'top',
-      createItem: () => createPanelItem(this._store),
+    this._panel = atom.workspace.addTopPanel({
+      item: {
+        getElement: memoize(() => {
+          const props = getToolbarProps(this._store);
+          const StatefulToolbar = bindObservableAsProps(props, Toolbar);
+          return renderReactRoot(<StatefulToolbar />);
+        }),
+      },
+      visible: false,
     });
 
     this._disposables = new UniversalDisposable(
@@ -116,7 +126,9 @@ class Activation {
       activateInitialPackagesObservable().subscribe(() => {
         this._store.dispatch(Actions.didActivateInitialPackages());
       }),
-      this._panelRenderer,
+      () => {
+        this._panel.destroy();
+      },
       atom.commands.add('atom-workspace', {
         'nuclide-task-runner:toggle-toolbar-visibility': event => {
           this._actionCreators.requestToggleToolbarVisibility(
@@ -221,7 +233,11 @@ class Activation {
         .map(state => state.visible)
         .distinctUntilChanged()
         .subscribe(visible => {
-          this._panelRenderer.render({visible});
+          if (visible) {
+            this._panel.show();
+          } else {
+            this._panel.hide();
+          }
         }),
       // Add a "stop" command when a task is running.
       states
