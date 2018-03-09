@@ -134,7 +134,17 @@ export class HunkDiff extends React.Component<HunkProps> {
 
   constructor(props: HunkProps) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new UniversalDisposable(
+      // enable copying filename
+      atom.contextMenu.add({
+        '.nuclide-ui-file-changes-item': [
+          {
+            label: 'Copy',
+            command: 'core:copy',
+          },
+        ],
+      }),
+    );
   }
 
   componentDidMount(): void {
@@ -344,7 +354,7 @@ export default class FileChanges extends React.Component<Props> {
       addedOrDeletedString = 'file added - ';
     }
     const diffDetails = (
-      <span>
+      <span className="nuclide-ui-file-changes-details">
         {annotationComponent} (
         {addedOrDeletedString}
         {additions + deletions} {pluralize('line', additions + deletions)}
@@ -354,7 +364,11 @@ export default class FileChanges extends React.Component<Props> {
 
     const renderedFilename =
       fullPath != null ? (
-        <a onClick={this._handleFilenameClick}>{fileName}</a>
+        <a
+          className="nuclide-ui-file-changes-name"
+          onClick={this._handleFilenameClick}>
+          {fileName}
+        </a>
       ) : (
         fileName
       );
@@ -364,7 +378,12 @@ export default class FileChanges extends React.Component<Props> {
     }
 
     const headline = (
-      <span className="nuclide-ui-file-changes-item">
+      <span
+        className={classnames(
+          'nuclide-ui-file-changes-item',
+          'native-key-bindings',
+        )}
+        tabIndex={-1}>
         {renderedFilename} {diffDetails}
       </span>
     );
