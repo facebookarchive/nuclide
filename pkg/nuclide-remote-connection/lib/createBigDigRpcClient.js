@@ -22,7 +22,10 @@ import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
 export default (async function createBigDigRpcClient(
   config: ServerConnectionConfiguration,
 ): Promise<RpcConnection<TransportWithHeartbeat>> {
-  const bigDigClient = await createBigDigClient(config);
+  const bigDigClient = await createBigDigClient({
+    ...config,
+    ignoreIntransientErrors: true,
+  });
   const bigDigTransport: TransportWithHeartbeat = {
     send(message: string) {
       bigDigClient.sendMessage(NUCLIDE_RPC_TAG, message);

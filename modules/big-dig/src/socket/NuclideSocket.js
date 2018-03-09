@@ -149,6 +149,12 @@ export class NuclideSocket {
     // events specially.
     const onSocketError = error => {
       logger.warn(`WebSocket Error while connecting... ${error.message}`);
+      if (error.code === 'ECONNREFUSED') {
+        // Error: "Connection Refused"
+        // The remote machine is reachable, but the server is not running.
+        // Listeners may choose to close this socket.
+        this._emitter.emit('intransient-error', error);
+      }
       if (this.isDisconnected()) {
         logger.info('WebSocket reconnecting after error.');
         this._scheduleReconnect();
@@ -294,6 +300,7 @@ export class NuclideSocket {
     if (transport != null) {
       this._transport = null;
       transport.close();
+      this._emitter.emit('close');
     }
     this._clearReconnectTimer();
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
@@ -323,6 +330,23 @@ export class NuclideSocket {
 
   onDisconnect(callback: () => mixed): IDisposable {
     return this._emitter.on('disconnect', callback);
+  }
+
+  /**
+   * Called if there is an intransient error. I.e. when we cannot recover from
+   * an error by attempting to reconnect. It is up to the listener to decide
+   * whether to close this socket.
+   */
+  onIntransientError(callback: (error: Error) => mixed): IDisposable {
+    return this._emitter.on('intransient-error', callback);
+  }
+
+  /**
+   * Called just once if the state of this socket goes from opened to closed.
+   * E.g. this socket is closed via its `close` method.
+   */
+  onClose(callback: () => mixed): IDisposable {
+    return this._emitter.on('close', callback);
   }
 }
 

@@ -234,15 +234,14 @@ export class ServerConnection {
       throw err;
     }
 
-    // Test connection first. First time we get here we're checking to reestablish
-    // connection using cached credentials. This will fail fast (faster than infoService)
-    // when we don't have cached credentials yet.
-    const transport = client.getTransport();
-
-    const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
-
     // NOTE: BigDig's version may not actually match Nuclide's
     if (this._config.version !== 2) {
+      // Test connection first. First time we get here we're checking to reestablish
+      // connection using cached credentials. This will fail fast (faster than infoService)
+      // when we don't have cached credentials yet.
+      const transport = client.getTransport();
+
+      const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
       if (clientVersion !== heartbeatVersion) {
         throwVersionMismatch(heartbeatVersion);
       }

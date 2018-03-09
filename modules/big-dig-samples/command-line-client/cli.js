@@ -74,7 +74,10 @@ function parseArgsAndRunMain(): Promise<void> {
         connectionConfig: RemoteConnectionConfiguration,
         config: SshConnectionConfiguration,
       ) {
-        createBigDigClient(connectionConfig).then(
+        createBigDigClient({
+          ...connectionConfig,
+          ignoreIntransientErrors: true,
+        }).then(
           connection => {
             getLogger().info(
               `Connected to server at: ${connection.getAddress()}`,

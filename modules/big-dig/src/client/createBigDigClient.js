@@ -20,6 +20,7 @@ export type BigDigClientConfig = {
   +certificateAuthorityCertificate?: Buffer | string,
   +clientCertificate?: Buffer | string,
   +clientKey?: Buffer | string,
+  +ignoreIntransientErrors: boolean,
 };
 
 /**
@@ -42,5 +43,17 @@ export default (async function createBigDigClient(
     options,
   );
 
-  return new BigDigClient(nuclideSocket, nuclideSocket.getHeartbeat());
+  if (!config.ignoreIntransientErrors) {
+    nuclideSocket.onIntransientError(error => nuclideSocket.close());
+  }
+
+  const client = new BigDigClient(nuclideSocket, nuclideSocket.getHeartbeat());
+  try {
+    // Make sure we're able to make the initial connection
+    await nuclideSocket.testConnection();
+    return client;
+  } catch (error) {
+    client.close();
+    throw error;
+  }
 });

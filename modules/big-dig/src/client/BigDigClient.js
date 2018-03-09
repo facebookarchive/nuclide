@@ -65,12 +65,8 @@ export class BigDigClient {
     return this._transport.isClosed();
   }
 
-  // XXX: do we even need this now that we're using
-  // NuclideSocket and QueuedAckTransport?
   onClose(callback: () => mixed): IDisposable {
-    return {
-      dispose: () => {},
-    };
+    return this._transport.onClose(callback);
   }
 
   close(): void {
