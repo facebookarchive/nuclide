@@ -170,9 +170,9 @@ async function decryptConfig(
   }
 
   const restoredClientKey = decryptString(encryptedString, password, salt);
-  // "nolint" is to suppress ArcanistPrivateKeyLinter errors
   if (
-    !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----') // nolint
+    // @lint-ignore PRIVATEKEY1
+    !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')
   ) {
     getLogger('nuclide-remote-connection').error(
       `decrypted client key did not start with expected header: ${restoredClientKey}`,

@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
+import {runCommand, ProcessExitError} from 'nuclide-commons/process';
 
 /**
  * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
@@ -28,9 +28,9 @@ const getPasswordScriptAsync = `
     keytar.getPassword(data.service, data.account).then(function(password) {
       console.log(JSON.stringify(password));
       rl.close();
-    }, function() {
-      console.log(null);
-      rl.close();
+    }, function(err) {
+      console.error(err);
+      process.exit(1);
     });
   });
 `;
@@ -43,11 +43,11 @@ const replacePasswordScriptAsync = `
   rl.on('line', function(input) {
     var data = JSON.parse(input);
     keytar.setPassword(data.service, data.account, data.password).then(function() {
-      console.log(JSON.stringify(true));
-    }, function() {
-      console.log(JSON.stringify(false));
-    })
-    .then(rl.close.bind(rl), rl.close.bind(rl))
+      rl.close();
+    }, function(err) {
+      console.error(err);
+      process.exit(1);
+    });
   });
 `;
 
@@ -60,10 +60,11 @@ const deletePasswordScriptAsync = `
     var data = JSON.parse(input);
     keytar.deletePassword(data.service, data.account).then(function(result) {
       console.log(JSON.stringify(result));
-    }, function() {
-      console.log(JSON.stringify(false));
-    })
-    .then(rl.close.bind(rl), rl.close.bind(rl))
+      rl.close();
+    }, function(err) {
+      console.error(err);
+      process.exit(1);
+    });
   });
 `;
 
@@ -92,10 +93,22 @@ function runScriptInApmNode(
       NODE_PATH: getApmNodeModulesPath(),
     },
   };
-  return runCommand(getApmNodePath(), args, options).toPromise();
+  return runCommand(getApmNodePath(), args, options)
+    .toPromise()
+    .catch(err => {
+      if (err instanceof ProcessExitError) {
+        // Unwrap underlying error from stderr (as it already has a stack!)
+        throw Error(err.stderr);
+      }
+      throw err;
+    });
 }
 
 export default {
+  /**
+   * Returns the password (or null if it doesn't exist).
+   * Rejects on keychain access failure.
+   */
   async getPassword(service: string, account: string): Promise<?string> {
     if (typeof atom === 'object') {
       return JSON.parse(
@@ -105,25 +118,31 @@ export default {
     return keytar.getPassword(service, account);
   },
 
+  /**
+   * Returns nothing.
+   * Rejects on keychain access failure.
+   */
   async replacePassword(
     service: string,
     account: string,
     password: string,
-  ): Promise<?boolean> {
+  ): Promise<void> {
     if (typeof atom === 'object') {
-      return JSON.parse(
-        await runScriptInApmNode(
-          replacePasswordScriptAsync,
-          service,
-          account,
-          password,
-        ),
+      await runScriptInApmNode(
+        replacePasswordScriptAsync,
+        service,
+        account,
+        password,
       );
     }
     return keytar.setPassword(service, account, password);
   },
 
-  async deletePassword(service: string, account: string): Promise<?boolean> {
+  /**
+   * Returns true if a password was deleted, or false if it didn't exist.
+   * Rejects on keychain access failure.
+   */
+  async deletePassword(service: string, account: string): Promise<boolean> {
     if (typeof atom === 'object') {
       return JSON.parse(
         await runScriptInApmNode(deletePasswordScriptAsync, service, account),
