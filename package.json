@@ -64,6 +64,7 @@
     "event-kit": "2.2.0",
     "fb-watchman": "2.0.0",
     "flatten-source-map": "0.0.2",
+    "flow-language-server": "0.4.3",
     "fs-plus": "2.9.3",
     "fuzzaldrin-plus": "0.4.1",
     "glob": "7.1.1",

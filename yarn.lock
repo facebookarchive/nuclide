@@ -28,7 +28,7 @@ acorn@^5.1.1:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.1.2.tgz#911cb53e036807cf0fa778dc5d370fbd864246d7"
 
-adm-zip@0.4.7:
+adm-zip@0.4.7, adm-zip@^0.4.7:
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.7.tgz#8606c2cbf1c426ce8c8ec00174447fd49b6eafc1"
 
@@ -1551,7 +1551,7 @@ entities@^1.1.1, entities@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.1.tgz#6e5c2d0a5621b5dadaecef80b90edfb5cd7772f0"
 
-error-ex@^1.2.0:
+error-ex@^1.2.0, error-ex@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/error-ex/-/error-ex-1.3.1.tgz#f855a86ce61adc4e8621c3cda21e7a7612c3a8dc"
   dependencies:
@@ -1987,6 +1987,43 @@ flatten-source-map@0.0.2:
 flow-bin@0.66.0:
   version "0.66.0"
   resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.66.0.tgz#a96dde7015dc3343fd552a7b4963c02be705ca26"
+
+flow-language-server@0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/flow-language-server/-/flow-language-server-0.4.3.tgz#48cb5a024ea5ab59423deb9b0cfb95063bcc3875"
+  dependencies:
+    async-to-generator "1.1.0"
+    event-kit "2.2.0"
+    flow-versions "^0.3.1"
+    fuzzaldrin-plus "0.4.1"
+    log4js "1.1.1"
+    nuclide-commons "0.5.1"
+    semver "5.3.0"
+    simple-text-buffer "9.2.11"
+    temp "0.8.3"
+    through "2.3.8"
+    vscode-jsonrpc "3.3.0"
+    vscode-languageserver "^3.3.0"
+    vscode-uri "^1.0.1"
+    yargs "^8.0.2"
+
+flow-versions@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/flow-versions/-/flow-versions-0.3.1.tgz#99e3f4ea97a8e97ae2d81194e80812b0c6562be2"
+  dependencies:
+    adm-zip "^0.4.7"
+    async-to-generator "1.1.0"
+    idx "^1.5.0"
+    ini "^1.3.5"
+    invariant "2.2.2"
+    log4js "1.1.1"
+    node-fetch "^2.0.0"
+    nuclide-commons "0.5.1"
+    nullthrows "1.0.0"
+    read-pkg-up "^3.0.0"
+    rimraf "2.5.4"
+    semver "5.3.0"
+    temp "0.8.3"
 
 for-in@^1.0.1, for-in@^1.0.2:
   version "1.0.2"
@@ -2609,6 +2646,10 @@ idx@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/idx/-/idx-1.2.0.tgz#be4f41fb82bed571f65362e79add27e0ae74f691"
 
+idx@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/idx/-/idx-1.5.0.tgz#2ce9665945fdb36544308f930c78e3f1ef6c4315"
+
 ignore@^3.3.3:
   version "3.3.5"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.3.5.tgz#c4e715455f6073a8d7e5dae72d2fc9d71663dba6"
@@ -2639,6 +2680,10 @@ inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.0, inherits@~2.0.1, 
 ini@1.3.4:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.4.tgz#0537cb79daf59b59a1a517dff706c86ec039162e"
+
+ini@^1.3.5:
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
 
 inquirer@^3.0.6:
   version "3.3.0"
@@ -3035,6 +3080,10 @@ jsesc@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-1.3.0.tgz#46c3fec8c1892b12b0833db9bc7622176dbab34b"
 
+json-parse-better-errors@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.1.tgz#50183cd1b2d25275de069e9e71b467ac9eab973a"
+
 json-schema-traverse@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.3.1.tgz#349a6d44c53a51de89b40805c5d5e59b417d3340"
@@ -3176,6 +3225,15 @@ load-json-file@^2.0.0:
     graceful-fs "^4.1.2"
     parse-json "^2.2.0"
     pify "^2.0.0"
+    strip-bom "^3.0.0"
+
+load-json-file@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-4.0.0.tgz#2f5f45ab91e33216234fd53adab668eb4ec0993b"
+  dependencies:
+    graceful-fs "^4.1.2"
+    parse-json "^4.0.0"
+    pify "^3.0.0"
     strip-bom "^3.0.0"
 
 locate-path@^2.0.0:
@@ -3682,6 +3740,10 @@ node-fetch@1.6.3, node-fetch@^1.0.1:
     encoding "^0.1.11"
     is-stream "^1.0.1"
 
+node-fetch@^2.0.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.1.tgz#369ca70b82f50c86496104a6c776d274f4e4a2d4"
+
 node-int64@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
@@ -3728,6 +3790,29 @@ nth-check@~1.0.1:
   resolved "https://registry.yarnpkg.com/nth-check/-/nth-check-1.0.1.tgz#9929acdf628fc2c41098deab82ac580cf149aae4"
   dependencies:
     boolbase "~1.0.0"
+
+nuclide-commons@0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/nuclide-commons/-/nuclide-commons-0.5.1.tgz#243826dce1ec5e79ef19719af20f457a9eb3c569"
+  dependencies:
+    async-to-generator "1.1.0"
+    event-kit "2.2.0"
+    fs-plus "2.9.3"
+    glob "7.1.1"
+    idx "1.2.0"
+    log4js "1.1.1"
+    lru-cache "4.0.2"
+    mime-types "2.1.16"
+    mkdirp "0.5.1"
+    mv "2.1.1"
+    nullthrows "1.0.0"
+    rimraf "2.6.2"
+    rxjs "5.5.5"
+    shell-quote "1.6.1"
+    temp "0.8.3"
+    uuid "3.0.1"
+    vscode-jsonrpc "3.3.0"
+    vscode-uri "1.0.1"
 
 nuclide-prebuilt-libs@0.3.3:
   version "0.3.3"
@@ -3931,6 +4016,13 @@ parse-json@^2.2.0:
   dependencies:
     error-ex "^1.2.0"
 
+parse-json@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/parse-json/-/parse-json-4.0.0.tgz#be35f5425be1f7f6c747184f98a788cb99477ee0"
+  dependencies:
+    error-ex "^1.3.1"
+    json-parse-better-errors "^1.0.1"
+
 parse5@^3.0.1:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/parse5/-/parse5-3.0.3.tgz#042f792ffdd36851551cf4e9e066b3874ab45b5c"
@@ -3989,6 +4081,12 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
+path-type@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/path-type/-/path-type-3.0.0.tgz#cef31dc8e0a1a3bb0d105c0cd97cf3bf47f4e36f"
+  dependencies:
+    pify "^3.0.0"
+
 pause-stream@0.0.11:
   version "0.0.11"
   resolved "https://registry.yarnpkg.com/pause-stream/-/pause-stream-0.0.11.tgz#fe5a34b0cbce12b5aa6a2b403ee2e73b602f1445"
@@ -4006,6 +4104,10 @@ performance-now@^2.1.0:
 pify@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-2.3.0.tgz#ed141a6ac043a849ea588498e7dca8b15330e90c"
+
+pify@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/pify/-/pify-3.0.0.tgz#e5a4acd2c101fdf3d9a4d07f0dbc4db49dd28176"
 
 pinkie-promise@^2.0.0:
   version "2.0.1"
@@ -4215,6 +4317,13 @@ read-pkg-up@^2.0.0:
     find-up "^2.0.0"
     read-pkg "^2.0.0"
 
+read-pkg-up@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/read-pkg-up/-/read-pkg-up-3.0.0.tgz#3ed496685dba0f8fe118d0691dc51f4a1ff96f07"
+  dependencies:
+    find-up "^2.0.0"
+    read-pkg "^3.0.0"
+
 read-pkg@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/read-pkg/-/read-pkg-1.1.0.tgz#f5ffaa5ecd29cb31c0474bca7d756b6bb29e3f28"
@@ -4230,6 +4339,14 @@ read-pkg@^2.0.0:
     load-json-file "^2.0.0"
     normalize-package-data "^2.3.2"
     path-type "^2.0.0"
+
+read-pkg@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/read-pkg/-/read-pkg-3.0.0.tgz#9cbc686978fee65d16c00e2b19c237fcf6e38389"
+  dependencies:
+    load-json-file "^4.0.0"
+    normalize-package-data "^2.3.2"
+    path-type "^3.0.0"
 
 read@^1.0.7:
   version "1.0.7"
@@ -4516,6 +4633,12 @@ right-align@^0.1.1:
 rimraf@2, rimraf@2.6.2, rimraf@^2.2.8, rimraf@^2.3.3, rimraf@^2.5.4, rimraf@^2.6.1:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
+  dependencies:
+    glob "^7.0.5"
+
+rimraf@2.5.4:
+  version "2.5.4"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.5.4.tgz#96800093cbf1a0c86bd95b4625467535c29dfa04"
   dependencies:
     glob "^7.0.5"
 
@@ -5575,7 +5698,7 @@ vscode-nls@^1.0.4:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-1.0.7.tgz#298c01fce87802c644c0a15ef526a33c62c0d58e"
 
-vscode-uri@1.0.1:
+vscode-uri@1.0.1, vscode-uri@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.1.tgz#11a86befeac3c4aa3ec08623651a3c81a6d0bbc8"
 
@@ -5763,7 +5886,7 @@ yargs@3.32.0, "yargs@^3.32.0 || ^7.0.0":
     window-size "^0.1.4"
     y18n "^3.2.0"
 
-yargs@^8.0.1:
+yargs@^8.0.1, yargs@^8.0.2:
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-8.0.2.tgz#6299a9055b1cefc969ff7e79c1d918dceb22c360"
   dependencies:
