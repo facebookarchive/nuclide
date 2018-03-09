@@ -1984,9 +1984,9 @@ flatten-source-map@0.0.2:
   dependencies:
     source-map "^0.1.43"
 
-flow-bin@0.66.0:
-  version "0.66.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.66.0.tgz#a96dde7015dc3343fd552a7b4963c02be705ca26"
+flow-bin@0.67.1:
+  version "0.67.1"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.67.1.tgz#eabb7197cce870ac9442cfd04251c7ddc30377db"
 
 flow-language-server@0.4.3:
   version "0.4.3"

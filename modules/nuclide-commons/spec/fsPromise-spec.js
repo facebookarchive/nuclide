@@ -168,7 +168,6 @@ describe('fsPromise test suite', () => {
         );
         // eslint-disable-next-line no-bitwise
         expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(
-          // $FlowIssue: umask argument is optional
           0o666 & ~process.umask(), // eslint-disable-line no-bitwise
         );
       });

@@ -271,7 +271,6 @@ async function copyFilePermissions(
     // For new files, use the default process file creation mask.
     await chmod(
       destinationPath,
-      // $FlowIssue: umask argument is optional
       0o666 & ~process.umask(), // eslint-disable-line no-bitwise
     );
   }
