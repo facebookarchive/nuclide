@@ -79,6 +79,7 @@ export type OpenTunnelAction = {
   type: 'OPEN_TUNNEL',
   payload: {
     tunnel: Tunnel,
+    open: () => void,
     close: (?Error) => void,
   },
 };

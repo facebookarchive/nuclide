@@ -63,34 +63,38 @@ export function requestTunnelEpic(
       const toService = getSocketServiceByHost(to.host);
       let clientCount = 0;
       const connectionFactory = await toService.getConnectionFactory();
-      const events = fromService.createTunnel(
-        tunnelDescriptor,
-        connectionFactory,
-      );
 
-      const subscription = events.refCount().subscribe({
-        next: event => {
-          if (event.type === 'server_started') {
-            store.getState().consoleOutput.next({
-              text: `Opened tunnel: ${friendlyString}`,
-              level: 'info',
-            });
-            store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
-            onOpen();
-          } else if (event.type === 'client_connected') {
-            clientCount++;
-            store.dispatch(Actions.setTunnelState(tunnel, 'active'));
-          } else if (event.type === 'client_disconnected') {
-            clientCount--;
-            if (clientCount === 0) {
+      let subscription;
+
+      const open = () => {
+        const events = fromService.createTunnel(
+          tunnelDescriptor,
+          connectionFactory,
+        );
+        subscription = events.refCount().subscribe({
+          next: event => {
+            if (event.type === 'server_started') {
+              store.getState().consoleOutput.next({
+                text: `Opened tunnel: ${friendlyString}`,
+                level: 'info',
+              });
               store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
+              onOpen();
+            } else if (event.type === 'client_connected') {
+              clientCount++;
+              store.dispatch(Actions.setTunnelState(tunnel, 'active'));
+            } else if (event.type === 'client_disconnected') {
+              clientCount--;
+              if (clientCount === 0) {
+                store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
+              }
             }
-          }
-        },
-        error: error => store.dispatch(Actions.closeTunnel(tunnel, error)),
-      });
+          },
+          error: error => store.dispatch(Actions.closeTunnel(tunnel, error)),
+        });
+      };
 
-      return Actions.openTunnel(tunnel, error => {
+      const close = error => {
         subscription.unsubscribe();
         let message;
         if (error == null) {
@@ -106,7 +110,9 @@ export function requestTunnelEpic(
         }
         store.getState().consoleOutput.next(message);
         onClose(error);
-      });
+      };
+
+      return Actions.openTunnel(tunnel, open, close);
     })
     .switchMap(action => {
       if (action == null) {
@@ -115,6 +121,19 @@ export function requestTunnelEpic(
         return Observable.of(action);
       }
     });
+}
+
+export function openTunnelEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.OPEN_TUNNEL)
+    .do(action => {
+      invariant(action.type === Actions.OPEN_TUNNEL);
+      action.payload.open();
+    })
+    .ignoreElements();
 }
 
 function getSocketServiceByHost(host) {

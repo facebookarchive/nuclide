@@ -34,11 +34,12 @@ export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
 
 export function openTunnel(
   tunnel: Tunnel,
+  open: () => void,
   close: (?Error) => void,
 ): OpenTunnelAction {
   return {
     type: OPEN_TUNNEL,
-    payload: {tunnel, close},
+    payload: {tunnel, open, close},
   };
 }
 
