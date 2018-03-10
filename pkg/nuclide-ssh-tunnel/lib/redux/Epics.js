@@ -10,14 +10,14 @@
  */
 
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
-import type {Action, Store, Tunnel} from '../types';
+import type {Action, Store} from '../types';
 
+import {validateTunnel} from '../Whitelist';
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {memoize} from 'lodash';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import * as SocketService from '../../../nuclide-socket-rpc';
 
@@ -125,39 +125,4 @@ function getSocketServiceByHost(host) {
     const uri = nuclideUri.createRemoteUri(host, '/');
     return getSocketServiceByNuclideUri(uri);
   }
-}
-
-// require fb-sitevar module lazily
-const requireFetchSitevarOnce = memoize(() => {
-  try {
-    // $FlowFB
-    return require('../../../commons-node/fb-sitevar').fetchSitevarOnce;
-  } catch (e) {
-    return null;
-  }
-});
-
-// returns either a list of allowed ports, or null if not restricted
-async function getAllowedPorts(): Promise<?Array<number>> {
-  const fetchSitevarOnce = requireFetchSitevarOnce();
-  if (fetchSitevarOnce == null) {
-    return null;
-  }
-  const allowedPorts = await fetchSitevarOnce('NUCLIDE_TUNNEL_ALLOWED_PORTS');
-  if (allowedPorts == null) {
-    return [];
-  }
-  return allowedPorts;
-}
-
-async function validateTunnel(tunnel: Tunnel): Promise<boolean> {
-  if (tunnel.to.host === 'localhost') {
-    return true;
-  }
-  const allowedPorts = await getAllowedPorts();
-  if (allowedPorts == null) {
-    return true;
-  }
-
-  return allowedPorts.includes(tunnel.to.port);
 }
