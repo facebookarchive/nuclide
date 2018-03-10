@@ -61,20 +61,11 @@ export type OpenTunnel = {
 export type TunnelState = 'initializing' | 'ready' | 'active';
 
 export type Action =
-  | OpenTunnelAction
   | AddOpenTunnelAction
   | CloseTunnelAction
-  | SetTunnelStateAction
-  | SetCurrentWorkingDirectoryAction;
-
-export type OpenTunnelAction = {
-  type: 'OPEN_TUNNEL',
-  payload: {
-    tunnel: Tunnel,
-    onOpen: (?Error) => void,
-    onClose: (?Error) => void,
-  },
-};
+  | RequestTunnelAction
+  | SetCurrentWorkingDirectoryAction
+  | SetTunnelStateAction;
 
 export type AddOpenTunnelAction = {
   type: 'ADD_OPEN_TUNNEL',
@@ -92,11 +83,12 @@ export type CloseTunnelAction = {
   },
 };
 
-export type SetTunnelStateAction = {
-  type: 'SET_TUNNEL_STATE',
+export type RequestTunnelAction = {
+  type: 'REQUEST_TUNNEL',
   payload: {
     tunnel: Tunnel,
-    state: TunnelState,
+    onOpen: (?Error) => void,
+    onClose: (?Error) => void,
   },
 };
 
@@ -104,5 +96,13 @@ export type SetCurrentWorkingDirectoryAction = {
   type: 'SET_CURRENT_WORKING_DIRECTORY',
   payload: {
     directory: ?Directory,
+  },
+};
+
+export type SetTunnelStateAction = {
+  type: 'SET_TUNNEL_STATE',
+  payload: {
+    tunnel: Tunnel,
+    state: TunnelState,
   },
 };

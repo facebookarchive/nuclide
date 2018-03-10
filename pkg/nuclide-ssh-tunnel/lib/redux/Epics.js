@@ -21,14 +21,14 @@ import {memoize} from 'lodash';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import * as SocketService from '../../../nuclide-socket-rpc';
 
-export function openTunnelEpic(
+export function requestTunnelEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
   return actions
-    .ofType(Actions.OPEN_TUNNEL)
+    .ofType(Actions.REQUEST_TUNNEL)
     .mergeMap(async action => {
-      invariant(action.type === Actions.OPEN_TUNNEL);
+      invariant(action.type === Actions.REQUEST_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
       const {from, to} = tunnel;
       const tunnelDescriptor = {

@@ -72,7 +72,7 @@ export class TunnelsPanel {
             return;
           }
           this._store.dispatch(
-            Actions.openTunnel(
+            Actions.requestTunnel(
               tunnel,
               // onOpen
               error => {

@@ -96,7 +96,7 @@ class Activation {
 
     return {
       openTunnel: (tunnel, onOpen, onClose) => {
-        this._store.dispatch(Actions.openTunnel(tunnel, onOpen, onClose));
+        this._store.dispatch(Actions.requestTunnel(tunnel, onOpen, onClose));
         return new UniversalDisposable(() =>
           this._store.dispatch(Actions.closeTunnel(tunnel)),
         );
