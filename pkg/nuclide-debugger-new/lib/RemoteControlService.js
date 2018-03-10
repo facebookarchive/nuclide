@@ -45,6 +45,20 @@ export default class RemoteControlService {
     });
 
     processInfo.setVspDebuggerInstance(instance);
+
+    const {focusedProcess} = this._service.viewModel;
+    invariant(focusedProcess != null);
+    const disposable = this._service.viewModel.onDidFocusProcess(() => {
+      if (
+        !this._service
+          .getModel()
+          .getProcesses()
+          .includes(focusedProcess)
+      ) {
+        processInfo.dispose();
+        disposable.dispose();
+      }
+    });
   }
 
   getCurrentDebuggerName(): ?string {
