@@ -68,9 +68,6 @@ export class TunnelsPanel {
       return {
         tunnels: Array.from(state.openTunnels.entries()),
         openTunnel: tunnel => {
-          if (this._store.getState().status === 'opening') {
-            return;
-          }
           this._store.dispatch(
             Actions.requestTunnel(
               tunnel,
