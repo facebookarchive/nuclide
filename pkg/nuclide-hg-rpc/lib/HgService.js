@@ -834,6 +834,7 @@ export class HgService {
     OperationProgress,
   > {
     return this._hgOperationProgressDidChangeObserver
+      .let(fastDebounce(50))
       .switchMap(() =>
         Observable.fromPromise(
           fsPromise.readFile(
