@@ -23,12 +23,6 @@ export function openTunnels(
   action: Action,
 ) {
   switch (action.type) {
-    case Actions.ADD_OPEN_TUNNEL:
-      const {close, tunnel} = action.payload;
-      return state.set(tunnel, {
-        close,
-        state: 'initializing',
-      });
     case Actions.CLOSE_TUNNEL:
       const toClose = action.payload.tunnel;
       const openTunnel = state.get(toClose);
@@ -37,6 +31,12 @@ export function openTunnels(
       }
       openTunnel.close(action.payload.error);
       return state.delete(toClose);
+    case Actions.OPEN_TUNNEL:
+      const {close, tunnel} = action.payload;
+      return state.set(tunnel, {
+        close,
+        state: 'initializing',
+      });
     case Actions.SET_TUNNEL_STATE:
       invariant(state.get(action.payload.tunnel) != null);
       return state.update(action.payload.tunnel, value => ({

@@ -11,19 +11,36 @@
 
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {
-  AddOpenTunnelAction,
   CloseTunnelAction,
+  OpenTunnelAction,
   RequestTunnelAction,
   SetTunnelStateAction,
   Tunnel,
   TunnelState,
 } from '../types';
 
-export const ADD_OPEN_TUNNEL = 'ADD_OPEN_TUNNEL';
 export const CLOSE_TUNNEL = 'CLOSE_TUNNEL';
+export const OPEN_TUNNEL = 'OPEN_TUNNEL';
 export const REQUEST_TUNNEL = 'REQUEST_TUNNEL';
 export const SET_TUNNEL_STATE = 'SET_TUNNEL_STATE';
 export const SET_CURRENT_WORKING_DIRECTORY = 'SET_CURRENT_WORKING_DIRECTORY';
+
+export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
+  return {
+    type: CLOSE_TUNNEL,
+    payload: {tunnel, error},
+  };
+}
+
+export function openTunnel(
+  tunnel: Tunnel,
+  close: (?Error) => void,
+): OpenTunnelAction {
+  return {
+    type: OPEN_TUNNEL,
+    payload: {tunnel, close},
+  };
+}
 
 export function requestTunnel(
   tunnel: Tunnel,
@@ -33,23 +50,6 @@ export function requestTunnel(
   return {
     type: REQUEST_TUNNEL,
     payload: {tunnel, onOpen, onClose},
-  };
-}
-
-export function addOpenTunnel(
-  tunnel: Tunnel,
-  close: (?Error) => void,
-): AddOpenTunnelAction {
-  return {
-    type: ADD_OPEN_TUNNEL,
-    payload: {tunnel, close},
-  };
-}
-
-export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
-  return {
-    type: CLOSE_TUNNEL,
-    payload: {tunnel, error},
   };
 }
 

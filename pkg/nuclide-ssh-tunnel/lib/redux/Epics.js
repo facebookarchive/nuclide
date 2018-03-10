@@ -90,7 +90,7 @@ export function requestTunnelEpic(
         error: error => store.dispatch(Actions.closeTunnel(tunnel, error)),
       });
 
-      return Actions.addOpenTunnel(tunnel, error => {
+      return Actions.openTunnel(tunnel, error => {
         subscription.unsubscribe();
         let message;
         if (error == null) {
