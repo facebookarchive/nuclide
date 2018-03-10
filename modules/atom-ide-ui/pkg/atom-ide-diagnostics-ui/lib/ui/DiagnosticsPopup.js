@@ -16,6 +16,7 @@ import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import * as React from 'react';
 import classnames from 'classnames';
+import analytics from 'nuclide-commons-atom/analytics';
 import {mapUnion} from 'nuclide-commons/collection';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 import DiagnosticsCodeActions from './DiagnosticsCodeActions';
@@ -94,13 +95,25 @@ function getCodeActions(
 }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {fixer, goToLocation, codeActionsForMessage, messages, ...rest} = props;
-  return (
-    <div className="diagnostics-popup" {...rest}>
-      {messages.map(
-        renderMessage.bind(null, fixer, goToLocation, codeActionsForMessage),
-      )}
-    </div>
-  );
-};
+export class DiagnosticsPopup extends React.Component<DiagnosticsPopupProps> {
+  componentDidMount() {
+    analytics.track('diagnostics-show-popup');
+  }
+
+  render() {
+    const {
+      fixer,
+      goToLocation,
+      codeActionsForMessage,
+      messages,
+      ...rest
+    } = this.props;
+    return (
+      <div className="diagnostics-popup" {...rest}>
+        {messages.map(
+          renderMessage.bind(null, fixer, goToLocation, codeActionsForMessage),
+        )}
+      </div>
+    );
+  }
+}
