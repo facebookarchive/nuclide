@@ -219,6 +219,7 @@ export class DiagnosticsViewModel {
       nextHiddenTypes.add(type);
     }
     this._model.setState({hiddenGroups: nextHiddenTypes});
+    analytics.track('diagnostics-panel-change-filter');
   };
 
   _handleTextFilterChange = (value: RegExpFilterChange): void => {
@@ -228,6 +229,7 @@ export class DiagnosticsViewModel {
     this._model.setState({
       textFilter: {text, isRegExp, invalid, pattern},
     });
+    analytics.track('diagnostics-panel-change-filter');
   };
 
   _filterDiagnostics(

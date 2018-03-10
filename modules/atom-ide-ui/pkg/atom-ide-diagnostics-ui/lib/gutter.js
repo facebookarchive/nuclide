@@ -195,6 +195,7 @@ export function applyUpdateToEditor(
   // TextEditor.
   if (update.messages.length > 0) {
     gutter.show();
+    analytics.track('diagnostics-show-editor-diagnostics');
   }
 }
 
