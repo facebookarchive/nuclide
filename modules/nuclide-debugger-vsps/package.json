@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
+    "big-integer": "1.6.17",
     "nuclide-commons": "0.5.1-dev",
     "nuclide-debugger-common": "0.5.1-dev",
     "nuclide-prebuilt-libs": "0.3.3",
