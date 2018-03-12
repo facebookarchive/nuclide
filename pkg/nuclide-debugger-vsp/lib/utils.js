@@ -58,7 +58,7 @@ export type VspNativeDebuggerLaunchBuilderParms = {
 };
 
 export type VspNativeDebuggerAttachBuilderParms = {
-  pid: number,
+  pid?: number,
   sourcePath: string,
 };
 
