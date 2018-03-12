@@ -169,7 +169,7 @@ export function observeForCodeLens(
               lens.range.start.column,
             ]);
 
-            const element = document.createElement('div');
+            const element = document.createElement('span');
             // Put in a nonbreaking space to reserve the space in the editor. If
             // the space is already reserved, Atom won't have to scroll the
             // editor down as we resolve code lenses.
@@ -186,11 +186,6 @@ export function observeForCodeLens(
                 atom.notifications.addSuccess('Copied code lens to clipboard.');
               }
             });
-            elementsDisposable.add(
-              atom.tooltips.add(element, {
-                title: 'Click on a code lens to copy it to the clipboard.',
-              }),
-            );
 
             return {lens, element, resolved: false, retries: 0};
           });
