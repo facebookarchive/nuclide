@@ -142,6 +142,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
   };
 
   _onDidChange = debounce(query => {
+    analytics.track('outline-view:change-query');
     this.setState({currentQuery: query});
   }, this.DEBOUNCE_TIME);
 
