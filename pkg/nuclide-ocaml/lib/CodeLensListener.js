@@ -16,6 +16,7 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
@@ -181,7 +182,10 @@ export function observeForCodeLens(
               item: element,
             });
             element.addEventListener('click', () => {
-              if (element.innerText != null) {
+              if (
+                element.innerText != null &&
+                featureConfig.get('nuclide-ocaml.codeLensCopy')
+              ) {
                 atom.clipboard.write(element.innerText);
                 atom.notifications.addSuccess('Copied code lens to clipboard.');
               }

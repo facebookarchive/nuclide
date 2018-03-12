@@ -55,6 +55,11 @@
         "title": "Enable code lens support (requires restart).",
         "type": "boolean",
         "default": true
+      },
+      "codeLensCopy": {
+        "title": "Enable copy-on-click for code lenses.",
+        "type": "boolean",
+        "default": true
       }
     },
     "packageType": "Atom",
