@@ -50,6 +50,18 @@ export const REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
 // Delay starting the remote debug server to avoid affecting Nuclide's startup.
 const REMOTE_DEBUG_SERVICES_DELAYED_STARTUP_MS = 10 * 1000;
 
+export type VspNativeDebuggerLaunchBuilderParms = {
+  args: Array<string>,
+  cwd: string,
+  env: Array<string>,
+  sourcePath: string,
+};
+
+export type VspNativeDebuggerAttachBuilderParms = {
+  pid: number,
+  sourcePath: string,
+};
+
 export async function getPythonParLaunchProcessInfo(
   parPath: NuclideUri,
   args: Array<string>,
@@ -282,10 +294,7 @@ async function getNativeVSPAdapterExecutable(
 export async function getNativeVSPLaunchProcessInfo(
   adapter: VsAdapterType,
   program: NuclideUri,
-  args: Array<string>,
-  cwd: string,
-  env: Array<string>,
-  sourcePath: string,
+  args: VspNativeDebuggerLaunchBuilderParms,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
 
@@ -296,10 +305,7 @@ export async function getNativeVSPLaunchProcessInfo(
     adapterInfo,
     {
       program: nuclideUri.getPath(program),
-      args,
-      cwd,
-      env,
-      sourcePath,
+      ...args,
     },
     {threads: true},
   );
@@ -308,19 +314,13 @@ export async function getNativeVSPLaunchProcessInfo(
 export async function getNativeVSPAttachProcessInfo(
   adapter: VsAdapterType,
   targetUri: NuclideUri,
-  pid: number,
-  sourcePath: string,
+  args: VspNativeDebuggerAttachBuilderParms,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getNativeVSPAdapterExecutable(adapter, targetUri);
 
-  return new VspProcessInfo(
-    targetUri,
-    'attach',
-    adapter,
-    adapterInfo,
-    {pid, sourcePath},
-    {threads: true},
-  );
+  return new VspProcessInfo(targetUri, 'attach', adapter, adapterInfo, args, {
+    threads: true,
+  });
 }
 
 export async function getNodeAttachProcessInfo(

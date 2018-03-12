@@ -321,8 +321,10 @@ export default class NativeAttachUiComponent extends React.Component<
     const attachInfo = await getNativeVSPAttachProcessInfo(
       this.state.debuggerBackend,
       this.props.targetUri,
-      pid,
-      this.state.sourcePath,
+      {
+        pid,
+        sourcePath: this.state.sourcePath,
+      },
     );
 
     const debuggerService = await getDebuggerService();

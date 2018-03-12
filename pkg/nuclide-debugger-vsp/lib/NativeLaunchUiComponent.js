@@ -197,13 +197,11 @@ export default class NativeLaunchUiComponent extends React.Component<
       .getText()
       .trim();
     const args = shellParse(nullthrows(this._args).getText());
-    const workingDirectory = nullthrows(this._workingDirectory)
+    const cwd = nullthrows(this._workingDirectory)
       .getText()
       .trim();
 
-    const environmentVariables = shellParse(
-      nullthrows(this._environmentVariables).getText(),
-    );
+    const env = shellParse(nullthrows(this._environmentVariables).getText());
 
     const {hostname} = nuclideUri.parse(this.props.targetUri);
     const programUri =
@@ -214,10 +212,12 @@ export default class NativeLaunchUiComponent extends React.Component<
     const launchInfo = await getNativeVSPLaunchProcessInfo(
       this.state.debuggerBackend,
       programUri,
-      args,
-      workingDirectory,
-      environmentVariables,
-      this.state.sourcePath,
+      {
+        args,
+        cwd,
+        env,
+        sourcePath: this.state.sourcePath,
+      },
     );
 
     const debuggerService = await getDebuggerService();

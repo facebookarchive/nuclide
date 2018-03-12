@@ -299,8 +299,10 @@ class Activation {
       attachInfo = await getNativeVSPAttachProcessInfo(
         VsAdapterTypes.NATIVE_LLDB,
         buckRoot,
-        pid,
-        nuclideUri.getPath(buckRoot),
+        {
+          pid,
+          sourcePath: nuclideUri.getPath(buckRoot),
+        },
       );
     } else {
       attachInfo = await this._getAttachProcessInfoFromPid(pid, buckRoot);
@@ -375,10 +377,12 @@ class Activation {
       info = await getNativeVSPLaunchProcessInfo(
         VsAdapterTypes.NATIVE_LLDB,
         nuclideUri.join(buckRoot, relativeOutputPath),
-        (runArguments.length ? runArguments : targetOutput.args) || [],
-        remoteBuckRoot,
-        env,
-        remoteBuckRoot,
+        {
+          args: (runArguments.length ? runArguments : targetOutput.args) || [],
+          cwd: remoteBuckRoot,
+          env,
+          sourcePath: remoteBuckRoot,
+        },
       );
     } else {
       info = new LaunchProcessInfo(buckRoot, {
