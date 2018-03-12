@@ -26,15 +26,15 @@ export type LaunchTargetInfo = {
   environmentVariables: Array<string>,
   workingDirectory: string,
   stdinFilePath?: string,
-  basepath?: NuclideUri,
-  lldbPythonPath?: ?NuclideUri, // see DebuggerConfig
+  basepath?: string,
+  lldbPythonPath?: ?string, // see DebuggerConfig
   coreDump?: string,
 };
 
 export type BootstrapDebuggerInfo = {
   lldbBootstrapFiles: Array<string>,
-  basepath?: NuclideUri,
-  lldbPythonPath?: ?NuclideUri, // see DebuggerConfig
+  basepath?: string,
+  lldbPythonPath?: ?string, // see DebuggerConfig
 };
 
 export type DebuggerConfig = {
@@ -42,7 +42,7 @@ export type DebuggerConfig = {
   logLevel: LogLevel,
   pythonBinaryPath: ?string, // path of the actual python binary, e.g /usr/bin/python
   buckConfigRootFile: string,
-  lldbPythonPath: ?NuclideUri, // path of the lldb python modules
+  lldbPythonPath: ?string, // path of the lldb python modules
   envPythonPath: string, // sets the PYTHONPATH env var when spawning the lldb server
 };
 
