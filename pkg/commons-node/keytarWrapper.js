@@ -134,6 +134,7 @@ export default {
         account,
         password,
       );
+      return;
     }
     return keytar.setPassword(service, account, password);
   },
