@@ -171,17 +171,22 @@ export function observeForCodeLens(
             ]);
 
             const element = document.createElement('span');
+            element.classList.add('code-lens-content');
 
             // Put in a nonbreaking space to reserve the space in the editor. If
             // the space is already reserved, Atom won't have to scroll the
             // editor down as we resolve code lenses.
             element.innerHTML = '\xa0';
 
+            const leadingWhitespace = document.createElement('span');
+            leadingWhitespace.innerText = ' '.repeat(lens.range.start.column);
+
             // We do a span inside a div so that the tooltip and clickable area
             // only cover the part of the code lens that has text, but the
             // code-lens style will be applied to the entire editor row.
             const containingElement = document.createElement('div');
             containingElement.classList.add('code-lens');
+            containingElement.appendChild(leadingWhitespace);
             containingElement.appendChild(element);
 
             editor.decorateMarker(marker, {
