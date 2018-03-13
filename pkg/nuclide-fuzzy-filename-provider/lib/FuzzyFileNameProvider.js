@@ -52,7 +52,7 @@ export default ({
     const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
     const results = await service.queryFuzzyFile({
       rootDirectory: directoryPath,
-      queryRoot: getQueryRoot(),
+      queryRoot: getQueryRoot(directoryPath),
       queryString: fileName,
       ignoredNames: getIgnoredNames(),
     });
@@ -83,12 +83,14 @@ export default ({
 // Returns the directory of the active text editor which will be used to unbreak
 // ties when sorting the suggestions.
 // TODO(T26559382) Extract to util function
-function getQueryRoot(): string | void {
+function getQueryRoot(directoryPath: string): string | void {
   if (!isGkEnabled('nuclide_fuzzy_file_search_with_root_path')) {
     return undefined;
   }
   const editor = atom.workspace.getActiveTextEditor();
   const uri = editor ? editor.getURI() : null;
 
-  return uri != null ? nuclideUri.dirname(uri) : undefined;
+  return uri != null && nuclideUri.contains(directoryPath, uri)
+    ? nuclideUri.dirname(uri)
+    : undefined;
 }
