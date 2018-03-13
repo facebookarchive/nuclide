@@ -171,15 +171,23 @@ export function observeForCodeLens(
             ]);
 
             const element = document.createElement('span');
+
             // Put in a nonbreaking space to reserve the space in the editor. If
             // the space is already reserved, Atom won't have to scroll the
             // editor down as we resolve code lenses.
             element.innerHTML = '\xa0';
-            element.classList.add('code-lens');
+
+            // We do a span inside a div so that the tooltip and clickable area
+            // only cover the part of the code lens that has text, but the
+            // code-lens style will be applied to the entire editor row.
+            const containingElement = document.createElement('div');
+            containingElement.classList.add('code-lens');
+            containingElement.appendChild(element);
+
             editor.decorateMarker(marker, {
               type: 'block',
               position: 'before',
-              item: element,
+              item: containingElement,
             });
             element.addEventListener('click', () => {
               if (
@@ -187,7 +195,12 @@ export function observeForCodeLens(
                 featureConfig.get('nuclide-ocaml.codeLensCopy')
               ) {
                 atom.clipboard.write(element.innerText);
-                atom.notifications.addSuccess('Copied code lens to clipboard.');
+                const tooltipDispose = atom.tooltips.add(element, {
+                  title: 'Copied code lens to clipboard.',
+                  placement: 'auto',
+                  trigger: 'manual',
+                });
+                setTimeout(() => tooltipDispose.dispose(), 3000);
               }
             });
 
