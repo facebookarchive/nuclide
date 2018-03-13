@@ -287,6 +287,9 @@ class HHVMDebuggerWrapper {
               supportsCompletionsRequest: true,
               supportsRestartFrame: false,
               supportsStepInTargetsRequest: false,
+
+              // Experimental support for terminate thread
+              supportsTerminateThread: true,
             },
           });
           break;
