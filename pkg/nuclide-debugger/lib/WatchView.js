@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WatchView = undefined;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _WatchExpressionComponent;
+
+function _load_WatchExpressionComponent() {
+  return _WatchExpressionComponent = require('./WatchExpressionComponent');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,53 +42,36 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type DebuggerModel from './DebuggerModel';
+class WatchView extends _react.PureComponent {
 
-import classnames from 'classnames';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {WatchExpressionComponent} from './WatchExpressionComponent';
-
-type Props = {
-  model: DebuggerModel,
-};
-
-export class WatchView extends React.PureComponent<Props> {
-  _watchExpressionComponentWrapped: React.ComponentType<any>;
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._watchExpressionComponentWrapped = bindObservableAsProps(
-      props.model
-        .getWatchExpressions()
-        .map(watchExpressions => ({watchExpressions})),
-      WatchExpressionComponent,
-    );
+    this._watchExpressionComponentWrapped = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(props.model.getWatchExpressions().map(watchExpressions => ({ watchExpressions })), (_WatchExpressionComponent || _load_WatchExpressionComponent()).WatchExpressionComponent);
   }
 
-  render(): React.Node {
-    const {model} = this.props;
+  render() {
+    const { model } = this.props;
     const actions = model.getActions();
-    const WatchExpressionComponentWrapped = this
-      ._watchExpressionComponentWrapped;
+    const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
 
-    return (
-      <div className={classnames('nuclide-debugger-container-new')}>
-        <div className="nuclide-debugger-pane-content">
-          <WatchExpressionComponentWrapped
-            onAddWatchExpression={actions.addWatchExpression.bind(model)}
-            onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-            onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-            getProperties={model.getProperties.bind(model)}
-          />
-        </div>
-      </div>
+    return _react.createElement(
+      'div',
+      { className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-container-new') },
+      _react.createElement(
+        'div',
+        { className: 'nuclide-debugger-pane-content' },
+        _react.createElement(WatchExpressionComponentWrapped, {
+          onAddWatchExpression: actions.addWatchExpression.bind(model),
+          onRemoveWatchExpression: actions.removeWatchExpression.bind(model),
+          onUpdateWatchExpression: actions.updateWatchExpression.bind(model),
+          getProperties: model.getProperties.bind(model)
+        })
+      )
     );
   }
 }
+exports.WatchView = WatchView;

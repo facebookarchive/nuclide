@@ -1,30 +1,11 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.generateFixture = exports.expectObservableToStartWith = exports.expectAsyncFailure = undefined;
 
-import invariant from 'assert';
-import fs from 'fs';
-import temp from 'temp';
-import uuid from 'uuid';
-import fsPromise from './fsPromise';
-import nuclideUri from './nuclideUri';
-import {asyncLimit} from './promise';
-
-invariant(
-  (typeof atom !== 'undefined' && atom.inSpecMode()) ||
-    process.env.NODE_ENV === 'test',
-  'Test helpers should only be used in spec mode',
-);
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /**
  * Verifies that a Promise fails with an Error with specific expectations. When
@@ -39,19 +20,20 @@ invariant(
  *     rejection of `promise`. If these expectations are not met, then
  *     `verify()` must throw an exception.
  */
-export async function expectAsyncFailure(
-  promise: Promise<any>,
-  verify: (error: Error) => void,
-): Promise<any> {
-  try {
-    await promise;
-    return Promise.reject(
-      new Error('Promise should have failed, but did not.'),
-    );
-  } catch (e) {
-    verify(e);
-  }
-}
+let expectAsyncFailure = exports.expectAsyncFailure = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (promise, verify) {
+    try {
+      yield promise;
+      return Promise.reject(new Error('Promise should have failed, but did not.'));
+    } catch (e) {
+      verify(e);
+    }
+  });
+
+  return function expectAsyncFailure(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
 /**
  * This is useful for mocking a module that the module under test requires.
@@ -62,11 +44,153 @@ export async function expectAsyncFailure(
  * The require parameter is needed because require is bound differently in each
  * file, and we need to execute this in the caller's context.
  */
-export function clearRequireCache(require: Object, module: string): void {
+
+
+/**
+ * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
+ * misattributed.
+ */
+let expectObservableToStartWith = exports.expectObservableToStartWith = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (source, expected) {
+    const actual = yield source.take(expected.length).toArray().toPromise();
+    expect(actual).toEqual(expected);
+  });
+
+  return function expectObservableToStartWith(_x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+/**
+ * Takes of Map of file/file-content pairs, and creates a temp dir that matches
+ * the file structure of the Map. Example:
+ *
+ * generateFixture('myfixture', new Map([
+ *   ['foo.js'],
+ *   ['bar/baz.txt', 'some text'],
+ * ]));
+ *
+ * Creates:
+ *
+ * /tmp/myfixture_1/foo.js (empty file)
+ * /tmp/myfixture_1/bar/baz.txt (with 'some text')
+ */
+
+
+let generateFixture = exports.generateFixture = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (fixtureName, files) {
+    (_temp || _load_temp()).default.track();
+
+    const MAX_CONCURRENT_FILE_OPS = 100;
+    const tempDir = yield (_fsPromise || _load_fsPromise()).default.tempdir(fixtureName);
+
+    if (files == null) {
+      return tempDir;
+    }
+
+    // Map -> Array with full paths
+    const fileTuples = Array.from(files, function (tuple) {
+      // It's our own array - it's ok to mutate it
+      tuple[0] = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, tuple[0]);
+      return tuple;
+    });
+
+    // Dedupe the dirs that we have to make.
+    const dirsToMake = fileTuples.map(function ([filename]) {
+      return (_nuclideUri || _load_nuclideUri()).default.dirname(filename);
+    }).filter(function (dirname, i, arr) {
+      return arr.indexOf(dirname) === i;
+    });
+
+    yield (0, (_promise || _load_promise()).asyncLimit)(dirsToMake, MAX_CONCURRENT_FILE_OPS, function (dirname) {
+      return (_fsPromise || _load_fsPromise()).default.mkdirp(dirname);
+    });
+
+    yield (0, (_promise || _load_promise()).asyncLimit)(fileTuples, MAX_CONCURRENT_FILE_OPS, function ([filename, contents]) {
+      // We can't use fsPromise/fs-plus because it does too much extra work.
+      // They call `mkdirp` before `writeFile`. We know that the target dir
+      // exists, so we can optimize by going straight to `fs`. When you're
+      // making 10k files, this adds ~500ms.
+      return new Promise(function (resolve, reject) {
+        _fs.default.writeFile(filename, contents || '', function (err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    });
+
+    return tempDir;
+  });
+
+  return function generateFixture(_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+exports.clearRequireCache = clearRequireCache;
+exports.uncachedRequire = uncachedRequire;
+exports.spyOnGetterValue = spyOnGetterValue;
+exports.arePropertiesEqual = arePropertiesEqual;
+exports.writeCoverage = writeCoverage;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+var _uuid;
+
+function _load_uuid() {
+  return _uuid = _interopRequireDefault(require('uuid'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('./fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('./nuclideUri'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('./promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+if (!(typeof atom !== 'undefined' && atom.inSpecMode() || process.env.NODE_ENV === 'test')) {
+  throw new Error('Test helpers should only be used in spec mode');
+}
+
+function clearRequireCache(require, module) {
   delete require.cache[require.resolve(module)];
 }
 
-export function uncachedRequire(require: Object, module: string): mixed {
+function uncachedRequire(require, module) {
   clearRequireCache(require, module);
   // $FlowIgnore
   return require(module);
@@ -83,7 +207,7 @@ export function uncachedRequire(require: Object, module: string): mixed {
  * - The getter returns a function (otherwise, it doesn't make sense to spy on
  *   it)
  */
-export function spyOnGetterValue(object: Object, f: string): JasmineSpy {
+function spyOnGetterValue(object, f) {
   const value = object[f];
   delete object[f];
   object[f] = value;
@@ -94,7 +218,7 @@ export function spyOnGetterValue(object: Object, f: string): JasmineSpy {
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
-export function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
+function arePropertiesEqual(obj1, obj2) {
   const allProps = new Set();
   function addAllProps(obj) {
     for (const prop of Object.keys(obj)) {
@@ -108,98 +232,12 @@ export function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
     }
   }
   return true;
-}
-
-/**
- * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
- * misattributed.
- */
-export async function expectObservableToStartWith<T>(
-  source: Observable<T>,
-  expected: Array<T>,
-): Promise<void> {
-  const actual: Array<T> = await source
-    .take(expected.length)
-    .toArray()
-    .toPromise();
-  expect(actual).toEqual(expected);
-}
-
-/**
- * Takes of Map of file/file-content pairs, and creates a temp dir that matches
- * the file structure of the Map. Example:
- *
- * generateFixture('myfixture', new Map([
- *   ['foo.js'],
- *   ['bar/baz.txt', 'some text'],
- * ]));
- *
- * Creates:
- *
- * /tmp/myfixture_1/foo.js (empty file)
- * /tmp/myfixture_1/bar/baz.txt (with 'some text')
- */
-export async function generateFixture(
-  fixtureName: string,
-  files: ?Map<string, ?string>,
-): Promise<string> {
-  temp.track();
-
-  const MAX_CONCURRENT_FILE_OPS = 100;
-  const tempDir = await fsPromise.tempdir(fixtureName);
-
-  if (files == null) {
-    return tempDir;
-  }
-
-  // Map -> Array with full paths
-  const fileTuples = Array.from(files, tuple => {
-    // It's our own array - it's ok to mutate it
-    tuple[0] = nuclideUri.join(tempDir, tuple[0]);
-    return tuple;
-  });
-
-  // Dedupe the dirs that we have to make.
-  const dirsToMake = fileTuples
-    .map(([filename]) => nuclideUri.dirname(filename))
-    .filter((dirname, i, arr) => arr.indexOf(dirname) === i);
-
-  await asyncLimit(dirsToMake, MAX_CONCURRENT_FILE_OPS, dirname =>
-    fsPromise.mkdirp(dirname),
-  );
-
-  await asyncLimit(
-    fileTuples,
-    MAX_CONCURRENT_FILE_OPS,
-    ([filename, contents]) => {
-      // We can't use fsPromise/fs-plus because it does too much extra work.
-      // They call `mkdirp` before `writeFile`. We know that the target dir
-      // exists, so we can optimize by going straight to `fs`. When you're
-      // making 10k files, this adds ~500ms.
-      return new Promise((resolve, reject) => {
-        fs.writeFile(filename, contents || '', err => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      });
-    },
-  );
-
-  return tempDir;
-}
-
-export function writeCoverage(): void {
-  const {COVERAGE_DIR} = process.env;
+}function writeCoverage() {
+  const { COVERAGE_DIR } = process.env;
   if (COVERAGE_DIR != null) {
     const coverage = global.__coverage__;
     if (coverage != null) {
-      fs.writeFileSync(
-        nuclideUri.join(COVERAGE_DIR, uuid.v4() + '.json'),
-        JSON.stringify(coverage),
-      );
+      _fs.default.writeFileSync((_nuclideUri || _load_nuclideUri()).default.join(COVERAGE_DIR, (_uuid || _load_uuid()).default.v4() + '.json'), JSON.stringify(coverage));
     }
   }
 }

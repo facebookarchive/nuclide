@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _DebuggerCallstackComponent;
+
+function _load_DebuggerCallstackComponent() {
+  return _DebuggerCallstackComponent = _interopRequireDefault(require('./DebuggerCallstackComponent'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,66 +41,47 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DebuggerModeType, IDebugService} from '../types';
+class CallstackView extends _react.PureComponent {
 
-import classnames from 'classnames';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import DebuggerCallstackComponent from './DebuggerCallstackComponent';
-import {DebuggerMode} from '../constants';
-
-type Props = {
-  service: IDebugService,
-};
-
-type State = {
-  mode: DebuggerModeType,
-};
-
-export default class CallstackView extends React.PureComponent<Props, State> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
-      mode: props.service.getDebuggerMode(),
+      mode: props.service.getDebuggerMode()
     };
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      this.props.service.onDidChangeMode(() => {
-        this.setState({
-          mode: this.props.service.getDebuggerMode(),
-        });
-      }),
-    );
+  componentDidMount() {
+    this._disposables.add(this.props.service.onDidChangeMode(() => {
+      this.setState({
+        mode: this.props.service.getDebuggerMode()
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  render(): React.Node {
-    const {service} = this.props;
-    const {mode} = this.state;
-    const disabledClass =
-      mode !== DebuggerMode.RUNNING
-        ? ''
-        : ' nuclide-debugger-container-new-disabled';
+  render() {
+    const { service } = this.props;
+    const { mode } = this.state;
+    const disabledClass = mode !== (_constants || _load_constants()).DebuggerMode.RUNNING ? '' : ' nuclide-debugger-container-new-disabled';
 
-    return (
-      <div
-        className={classnames('nuclide-debugger-container-new', disabledClass)}>
-        <div className="nuclide-debugger-pane-content">
-          <DebuggerCallstackComponent service={service} />
-        </div>
-      </div>
+    return _react.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-container-new', disabledClass) },
+      _react.createElement(
+        'div',
+        { className: 'nuclide-debugger-pane-content' },
+        _react.createElement((_DebuggerCallstackComponent || _load_DebuggerCallstackComponent()).default, { service: service })
+      )
     );
   }
 }
+exports.default = CallstackView;

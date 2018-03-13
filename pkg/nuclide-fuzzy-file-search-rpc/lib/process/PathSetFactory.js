@@ -1,37 +1,93 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import child_process from 'child_process';
-import split from 'split';
-import {WatchmanClient} from 'nuclide-watchman-helpers';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
-import {asyncLimit} from 'nuclide-commons/promise';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
 
-function getFilesFromCommand(
-  command: string,
-  args: Array<string>,
-  localDirectory: string,
-  transform?: (path: string) => string,
-): Promise<Array<string>> {
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getFilesFromRepo = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (localDirectory) {
+    if (!(yield (_fsPromise || _load_fsPromise()).default.exists((_nuclideUri || _load_nuclideUri()).default.join(localDirectory, '.repo')))) {
+      throw new Error(`${localDirectory} is not a repo root`);
+    }
+    const subRoots = (yield (0, (_process || _load_process()).runCommand)('repo', ['list', '-p'], {
+      cwd: localDirectory
+    }).toPromise()).split(/\n/).filter(function (s) {
+      return s.length > 0;
+    });
+
+    const fileLists = yield (0, (_promise || _load_promise()).asyncLimit)(subRoots, 20, function (subRoot) {
+      return getFilesFromGit((_nuclideUri || _load_nuclideUri()).default.join(localDirectory, subRoot)).catch(function () {
+        return [];
+      }).then(function (files) {
+        return files.map(function (file) {
+          return (_nuclideUri || _load_nuclideUri()).default.join(subRoot, file);
+        });
+      });
+    });
+
+    return [].concat(...fileLists);
+  });
+
+  return function getFilesFromRepo(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.getPaths = getPaths;
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _split;
+
+function _load_split() {
+  return _split = _interopRequireDefault(require('split'));
+}
+
+var _nuclideWatchmanHelpers;
+
+function _load_nuclideWatchmanHelpers() {
+  return _nuclideWatchmanHelpers = require('nuclide-watchman-helpers');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getFilesFromCommand(command, args, localDirectory, transform) {
   return new Promise((resolve, reject) => {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
-    const proc = child_process.spawn(command, args, {cwd: localDirectory});
+    const proc = _child_process.default.spawn(command, args, { cwd: localDirectory });
 
     proc.on('error', reject);
 
     const filePaths = [];
-    proc.stdout.pipe(split()).on('data', filePath_ => {
+    proc.stdout.pipe((0, (_split || _load_split()).default)()).on('data', filePath_ => {
       let filePath = filePath_;
       if (transform) {
         filePath = transform(filePath);
@@ -55,46 +111,41 @@ function getFilesFromCommand(
       }
     });
   });
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return fsPromise
-    .exists(nuclideUri.join(localDirectory, '.hg'))
-    .then(isRoot => {
-      if (isRoot) {
-        return getFilesFromCommand('hg', ['locate'], localDirectory);
-      } else {
-        return getFilesFromCommand(
-          'hg',
-          ['locate', '--fullpath', '--include', '.'],
-          localDirectory,
-          filePath => filePath.slice(localDirectory.length + 1),
-        );
-      }
-    });
+function getTrackedHgFiles(localDirectory) {
+  return (_fsPromise || _load_fsPromise()).default.exists((_nuclideUri || _load_nuclideUri()).default.join(localDirectory, '.hg')).then(isRoot => {
+    if (isRoot) {
+      return getFilesFromCommand('hg', ['locate'], localDirectory);
+    } else {
+      return getFilesFromCommand('hg', ['locate', '--fullpath', '--include', '.'], localDirectory, filePath => filePath.slice(localDirectory.length + 1));
+    }
+  });
 }
 
 /**
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly hg-ignored.
  */
-function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-    'hg',
-    // Calling 'hg status' with a path has two side-effects:
-    // 1. It returns the status of only files under the given path. In this case,
-    //    we only want the untracked files under the given localDirectory.
-    // 2. It returns the paths relative to the directory in which this command is
-    //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
-    //    which is what we want.
-    [
-      'status',
-      '--unknown',
-      '--no-status' /* No status code. */,
-      localDirectory,
-    ],
-    localDirectory,
-  );
+function getUntrackedHgFiles(localDirectory) {
+  return getFilesFromCommand('hg',
+  // Calling 'hg status' with a path has two side-effects:
+  // 1. It returns the status of only files under the given path. In this case,
+  //    we only want the untracked files under the given localDirectory.
+  // 2. It returns the paths relative to the directory in which this command is
+  //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
+  //    which is what we want.
+  ['status', '--unknown', '--no-status' /* No status code. */
+  , localDirectory], localDirectory);
 }
 
 /**
@@ -104,18 +155,16 @@ function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
  */
-function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
-  return Promise.all([
-    getTrackedHgFiles(localDirectory),
-    // It's not a dealbreaker if untracked files fail to show up.
-    getUntrackedHgFiles(localDirectory).catch(() => []),
-  ]).then(returnedFiles => {
+function getFilesFromHg(localDirectory) {
+  return Promise.all([getTrackedHgFiles(localDirectory),
+  // It's not a dealbreaker if untracked files fail to show up.
+  getUntrackedHgFiles(localDirectory).catch(() => [])]).then(returnedFiles => {
     const [trackedFiles, untrackedFiles] = returnedFiles;
     return trackedFiles.concat(untrackedFiles);
   });
 }
 
-function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
+function getTrackedGitFiles(localDirectory) {
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
 
@@ -123,13 +172,9 @@ function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly git-ignored.
  */
-function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
+function getUntrackedGitFiles(localDirectory) {
   // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
-  return getFilesFromCommand(
-    'git',
-    ['ls-files', '--exclude-standard', '--others'],
-    localDirectory,
-  );
+  return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
 }
 
 /**
@@ -139,51 +184,22 @@ function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
  */
-function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
-  return Promise.all([
-    getTrackedGitFiles(localDirectory),
-    getUntrackedGitFiles(localDirectory),
-  ]).then(returnedFiles => {
+function getFilesFromGit(localDirectory) {
+  return Promise.all([getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(returnedFiles => {
     const [trackedFiles, untrackedFiles] = returnedFiles;
     return trackedFiles.concat(untrackedFiles);
   });
 }
 
-async function getFilesFromRepo(
-  localDirectory: string,
-): Promise<Array<string>> {
-  if (!await fsPromise.exists(nuclideUri.join(localDirectory, '.repo'))) {
-    throw new Error(`${localDirectory} is not a repo root`);
-  }
-  const subRoots = (await runCommand('repo', ['list', '-p'], {
-    cwd: localDirectory,
-  }).toPromise())
-    .split(/\n/)
-    .filter(s => s.length > 0);
-
-  const fileLists = await asyncLimit(subRoots, 20, subRoot => {
-    return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))
-      .catch(() => [])
-      .then(files => files.map(file => nuclideUri.join(subRoot, file)));
-  });
-
-  return [].concat(...fileLists);
-}
-
-function getAllFiles(localDirectory: string): Promise<Array<string>> {
-  return getFilesFromCommand(
-    'find',
-    ['.', '-type', 'f'],
-    localDirectory,
-    // Slice off the leading `./` that find will add on here.
-    filePath => filePath.substring(2),
-  );
+function getAllFiles(localDirectory) {
+  return getFilesFromCommand('find', ['.', '-type', 'f'], localDirectory,
+  // Slice off the leading `./` that find will add on here.
+  filePath => filePath.substring(2));
 }
 
 function getAllFilesFromWatchman( // eslint-disable-line no-unused-vars
-  localDirectory: string,
-): Promise<Array<string>> {
-  const client = new WatchmanClient();
+localDirectory) {
+  const client = new (_nuclideWatchmanHelpers || _load_nuclideWatchmanHelpers()).WatchmanClient();
   try {
     return client.listFiles(localDirectory);
   } finally {
@@ -191,24 +207,19 @@ function getAllFilesFromWatchman( // eslint-disable-line no-unused-vars
   }
 }
 
-export function getPaths(localDirectory: string): Promise<Array<string>> {
+function getPaths(localDirectory) {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  return (
-    getFilesFromHg(localDirectory)
-      .catch(() => getFilesFromGit(localDirectory))
-      // .catch(() => getAllFilesFromWatchman(localDirectory))
-      .catch(() => getFilesFromRepo(localDirectory))
-      .catch(() => getAllFiles(localDirectory))
-      .catch(() => {
-        throw new Error(`Failed to populate FileSearch for ${localDirectory}`);
-      })
-  );
+  return getFilesFromHg(localDirectory).catch(() => getFilesFromGit(localDirectory))
+  // .catch(() => getAllFilesFromWatchman(localDirectory))
+  .catch(() => getFilesFromRepo(localDirectory)).catch(() => getAllFiles(localDirectory)).catch(() => {
+    throw new Error(`Failed to populate FileSearch for ${localDirectory}`);
+  });
 }
 
-export const __test__ = {
+const __test__ = exports.__test__ = {
   getFilesFromGit,
-  getFilesFromHg,
+  getFilesFromHg
 };

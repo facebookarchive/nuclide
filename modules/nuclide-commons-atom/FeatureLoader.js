@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('./feature-config'));
+}
+
+var _path2 = _interopRequireDefault(require('path'));
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ALWAYS_ENABLED = 'always'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,61 +35,26 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 /* global localStorage */
 
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import featureConfig from './feature-config';
-import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
-import {MultiMap, setUnion} from 'nuclide-commons/collection';
-
-type FeaturePkg = {
-  atomConfig?: Object,
-  consumedServices?: Object,
-  description?: string,
-  displayName?: string,
-  nuclide?: {
-    config?: Object,
-  },
-  providedServices?: Object,
-  featureGroups?: Array<string>,
-};
-
-export type Feature = {
-  path: string,
-  pkg: FeaturePkg,
-};
-
-type FeatureLoaderParams = {
-  path: string,
-  features: Array<Feature>,
-};
-
-const ALWAYS_ENABLED = 'always';
 const NEVER_ENABLED = 'never';
 const DEFAULT = 'default';
 
-const {devMode} = atom.getLoadSettings();
+const { devMode } = atom.getLoadSettings();
 
-export default class FeatureLoader {
-  _activationDisposable: ?UniversalDisposable;
-  _loadDisposable: UniversalDisposable;
+class FeatureLoader {
 
-  _config: Object;
-  _features: Array<Feature>;
-  _featureGroupMap: MultiMap<string, Feature> = new MultiMap();
-  _pkgName: string;
-  _path: string;
-  _currentPackageState: Set<Feature> = new Set();
+  constructor({ features, path: _path }) {
+    this._featureGroupMap = new (_collection || _load_collection()).MultiMap();
+    this._currentPackageState = new Set();
 
-  constructor({features, path: _path}: FeatureLoaderParams) {
     this._path = _path;
     this._features = features;
-    this._loadDisposable = new UniversalDisposable();
+    this._loadDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._pkgName = packageNameFromPath(this._path);
     this._config = {
       use: {
@@ -68,14 +62,16 @@ export default class FeatureLoader {
         description: 'Enable and disable individual features',
         type: 'object',
         collapsed: true,
-        properties: {},
-      },
+        properties: {}
+      }
     };
   }
 
   // Build the config. Should occur with root package's load
-  load(): void {
-    invariant(!this._loadDisposable.disposed);
+  load() {
+    if (!!this._loadDisposable.disposed) {
+      throw new Error('Invariant violation: "!this._loadDisposable.disposed"');
+    }
 
     // Add a dummy deserializer. This forces Atom to load Nuclide's main module
     // (this file) when the package is loaded, which is super important because
@@ -87,12 +83,12 @@ export default class FeatureLoader {
     // features would never load again!
     //
     // [1] https://github.com/atom/atom/blob/v1.9.8/src/package.coffee#L442
-    this._loadDisposable.add(
-      atom.deserializers.add({
-        name: `${this._pkgName}.ForceMainModuleLoad`,
-        deserialize() {},
-      }),
-    );
+
+
+    this._loadDisposable.add(atom.deserializers.add({
+      name: `${this._pkgName}.ForceMainModuleLoad`,
+      deserialize() {}
+    }));
 
     //
     // Build the "config" object. This determines the config defaults and
@@ -115,21 +111,14 @@ export default class FeatureLoader {
       this.migrateFeature(feature);
 
       const setting = {
-        title:
-          featurePkg.displayName == null
-            ? `Enable the "${name}" feature`
-            : `Enable ${featurePkg.displayName}`,
+        title: featurePkg.displayName == null ? `Enable the "${name}" feature` : `Enable ${featurePkg.displayName}`,
         description: featurePkg.description || '',
         type: 'string',
-        enum: [
-          {value: ALWAYS_ENABLED, description: 'Always enabled'},
-          {value: NEVER_ENABLED, description: 'Never enabled'},
-          {
-            value: DEFAULT,
-            description: 'Only when in an enabled package group',
-          },
-        ],
-        default: getFeatureDefaultValue(feature),
+        enum: [{ value: ALWAYS_ENABLED, description: 'Always enabled' }, { value: NEVER_ENABLED, description: 'Never enabled' }, {
+          value: DEFAULT,
+          description: 'Only when in an enabled package group'
+        }],
+        default: getFeatureDefaultValue(feature)
       };
 
       if (devMode) {
@@ -146,9 +135,7 @@ export default class FeatureLoader {
       this._config.use.properties[name] = setting;
 
       // Merge in the feature's config
-      const featurePkgConfig =
-        featurePkg.atomConfig ||
-        (featurePkg.nuclide && featurePkg.nuclide.config);
+      const featurePkgConfig = featurePkg.atomConfig || featurePkg.nuclide && featurePkg.nuclide.config;
 
       if (featurePkgConfig) {
         this._config[name] = {
@@ -156,18 +143,17 @@ export default class FeatureLoader {
           title: featurePkg.displayName,
           description: featurePkg.description,
           collapsed: true,
-          properties: {},
+          properties: {}
         };
         Object.keys(featurePkgConfig).forEach(key => {
-          this._config[name].properties[key] = {
-            ...featurePkgConfig[key],
-            title: featurePkgConfig[key].title || key,
-          };
+          this._config[name].properties[key] = Object.assign({}, featurePkgConfig[key], {
+            title: featurePkgConfig[key].title || key
+          });
         });
       }
     });
 
-    featureConfig.setPackageName(this._pkgName);
+    (_featureConfig || _load_featureConfig()).default.setPackageName(this._pkgName);
 
     // Nesting loads within loads leads to reverse activation order- that is, if
     // the root package loads feature packages, then the feature package activations will
@@ -188,7 +174,10 @@ export default class FeatureLoader {
         }
       });
 
-      invariant(initialLoadDisposable != null);
+      if (!(initialLoadDisposable != null)) {
+        throw new Error('Invariant violation: "initialLoadDisposable != null"');
+      }
+
       this._loadDisposable.remove(initialLoadDisposable);
       initialLoadDisposable.dispose();
     });
@@ -196,17 +185,23 @@ export default class FeatureLoader {
     this._loadDisposable.add(initialLoadDisposable);
   }
 
-  activate(): void {
-    invariant(this._activationDisposable == null);
+  activate() {
+    if (!(this._activationDisposable == null)) {
+      throw new Error('Invariant violation: "this._activationDisposable == null"');
+    }
+
     const rootPackage = atom.packages.getLoadedPackage(this._pkgName);
-    invariant(rootPackage != null);
+
+    if (!(rootPackage != null)) {
+      throw new Error('Invariant violation: "rootPackage != null"');
+    }
 
     // This is a failsafe in case the `.ForceMainModuleLoad` deserializer
     // defined above does not register in time, or if the defer key has been set
     // w/o our knowledge. This can happen during OSS upgrades.
-    localStorage.removeItem(
-      rootPackage.getCanDeferMainModuleRequireStorageKey(),
-    );
+
+
+    localStorage.removeItem(rootPackage.getCanDeferMainModuleRequireStorageKey());
 
     this._features.forEach(feature => {
       // Since the migration from bool to enum occurs before the config defaults
@@ -214,10 +209,7 @@ export default class FeatureLoader {
       // Since these values are already the default, this `config.set`
       // removes these uneccessary values from the user's config file.
       // TODO: When enough users have migrated, this should be removed along with the enum migration.
-      atom.config.set(
-        this.useKeyPathForFeature(feature),
-        atom.config.get(this.useKeyPathForFeature(feature)),
-      );
+      atom.config.set(this.useKeyPathForFeature(feature), atom.config.get(this.useKeyPathForFeature(feature)));
 
       if (this.shouldEnable(feature)) {
         atom.packages.activatePackage(feature.path);
@@ -225,14 +217,7 @@ export default class FeatureLoader {
     });
 
     // Watch the config to manage toggling features
-    this._activationDisposable = new UniversalDisposable(
-      atom.config.onDidChange(this.useKeyPath(), event =>
-        this.updateActiveFeatures(),
-      ),
-      atom.config.onDidChange(this.useKeyPathForFeatureGroup(), event =>
-        this.updateActiveFeatures(),
-      ),
-    );
+    this._activationDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.config.onDidChange(this.useKeyPath(), event => this.updateActiveFeatures()), atom.config.onDidChange(this.useKeyPathForFeatureGroup(), event => this.updateActiveFeatures()));
 
     this.updateActiveFeatures();
   }
@@ -263,10 +248,10 @@ export default class FeatureLoader {
     this._currentPackageState = desiredState;
   }
 
-  deactivate(): void {
-    invariant(
-      this._activationDisposable && !this._activationDisposable.disposed,
-    );
+  deactivate() {
+    if (!(this._activationDisposable && !this._activationDisposable.disposed)) {
+      throw new Error('Invariant violation: "this._activationDisposable && !this._activationDisposable.disposed"');
+    }
 
     this._features.forEach(feature => {
       // Deactivate the package, but don't serialize. That needs to be done in a separate phase so that
@@ -274,25 +259,22 @@ export default class FeatureLoader {
       safeDeactivate(feature, true);
     });
 
-    invariant(this._activationDisposable); // reasserting for flow
+    if (!this._activationDisposable) {
+      throw new Error('Invariant violation: "this._activationDisposable"');
+    } // reasserting for flow
+
+
     this._activationDisposable.dispose();
     this._activationDisposable = null;
   }
 
-  getDesiredState(
-    featureState: Object,
-    featureGroupState: ?Array<string>,
-  ): Set<Feature> {
+  getDesiredState(featureState, featureGroupState) {
     // Figure out which features should be enabled:
     //  * Add all packages in nuclide.use
     //  * Remove any feature not in an active featureGroup.
     let groupedPackages;
     if (featureGroupState != null && featureGroupState.length > 0) {
-      groupedPackages = setUnion(
-        ...featureGroupState.map(featureGroup =>
-          this._featureGroupMap.get(featureGroup),
-        ),
-      );
+      groupedPackages = (0, (_collection || _load_collection()).setUnion)(...featureGroupState.map(featureGroup => this._featureGroupMap.get(featureGroup)));
     } else {
       // If featuregroups is empty or undefined, assume all features should be enabled.
       groupedPackages = new Set(this._features);
@@ -300,19 +282,13 @@ export default class FeatureLoader {
 
     // If a feature is "always enabled", it should be on whether or not a feature-group includes it.
     // If a feature is "default", it should be on if and only if a feature-group includes it.
-    return new Set(
-      this._features.filter(feature => {
-        const state = featureState[packageNameFromPath(feature.path)];
-        return (
-          state === ALWAYS_ENABLED ||
-          (groupedPackages.has(feature) && state === DEFAULT) ||
-          state === true
-        );
-      }),
-    );
+    return new Set(this._features.filter(feature => {
+      const state = featureState[packageNameFromPath(feature.path)];
+      return state === ALWAYS_ENABLED || groupedPackages.has(feature) && state === DEFAULT || state === true;
+    }));
   }
 
-  addToFeatureGroup(feature: Feature): void {
+  addToFeatureGroup(feature) {
     const featureGroups = feature.pkg.featureGroups;
     if (featureGroups != null) {
       for (const featureGroup of featureGroups) {
@@ -321,15 +297,15 @@ export default class FeatureLoader {
     }
   }
 
-  getFeatureGroups(): MultiMap<string, Feature> {
+  getFeatureGroups() {
     return this._featureGroupMap;
   }
 
-  getConfig(): Object {
+  getConfig() {
     return this._config;
   }
 
-  serialize(): void {
+  serialize() {
     // When the root package is serialized, all of its features need to be serialized. This is an abuse of
     // `serialize()` since we're using it to do side effects instead of returning the serialization,
     // but it ensures that serialization of the Atom packages happens at the right point in the
@@ -338,19 +314,19 @@ export default class FeatureLoader {
     this._features.forEach(safeSerialize);
   }
 
-  useKeyPathForFeature(feature: Feature): string {
+  useKeyPathForFeature(feature) {
     return `${this._pkgName}.use.${packageNameFromPath(feature.path)}`;
   }
 
-  useKeyPath(): string {
+  useKeyPath() {
     return `${this._pkgName}.use`;
   }
 
-  useKeyPathForFeatureGroup(): string {
+  useKeyPathForFeatureGroup() {
     return `${this._pkgName}.enabled-feature-groups`;
   }
 
-  shouldEnable(feature: Feature): boolean {
+  shouldEnable(feature) {
     const name = packageNameFromPath(feature.path);
     const currentState = atom.config.get(this.useKeyPathForFeature(feature));
     switch (currentState) {
@@ -373,7 +349,7 @@ export default class FeatureLoader {
     }
   }
 
-  migrateFeature(feature: Feature): void {
+  migrateFeature(feature) {
     const keyPath = this.useKeyPathForFeature(feature);
     const currentState = atom.config.get(keyPath);
     const setTo = this.getValueForFeatureToEnumMigration(currentState, feature);
@@ -382,10 +358,7 @@ export default class FeatureLoader {
     }
   }
 
-  getValueForFeatureToEnumMigration(
-    currentState: mixed,
-    feature: Feature,
-  ): string {
+  getValueForFeatureToEnumMigration(currentState, feature) {
     const name = packageNameFromPath(feature.path);
 
     switch (currentState) {
@@ -396,7 +369,10 @@ export default class FeatureLoader {
       case ALWAYS_ENABLED:
       case NEVER_ENABLED:
       case DEFAULT:
-        invariant(typeof currentState === 'string');
+        if (!(typeof currentState === 'string')) {
+          throw new Error('Invariant violation: "typeof currentState === \'string\'"');
+        }
+
         return currentState;
       default:
         return getFeatureDefaultValue(feature);
@@ -404,10 +380,8 @@ export default class FeatureLoader {
   }
 }
 
-function safeDeactivate(
-  feature: Feature,
-  suppressSerialization: boolean = false,
-) {
+exports.default = FeatureLoader;
+function safeDeactivate(feature, suppressSerialization = false) {
   const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getLoadedPackage(name);
@@ -420,12 +394,12 @@ function safeDeactivate(
   }
 }
 
-function getFeatureDefaultValue(feature: Feature): string {
+function getFeatureDefaultValue(feature) {
   const name = packageNameFromPath(feature.path);
   return name.startsWith('sample-') ? NEVER_ENABLED : DEFAULT;
 }
 
-function safeSerialize(feature: Feature) {
+function safeSerialize(feature) {
   const name = packageNameFromPath(feature.path);
   try {
     const pack = atom.packages.getActivePackage(name);
@@ -441,6 +415,6 @@ function safeSerialize(feature: Feature) {
 
 // this could be inlined into its use above, but this makes the intent more
 // explicit, and unifies it in the case this ever needs to change.
-function packageNameFromPath(pkgPath: string): string {
-  return path.basename(pkgPath);
+function packageNameFromPath(pkgPath) {
+  return _path2.default.basename(pkgPath);
 }
