@@ -16,6 +16,7 @@ import {getAvailableServerPort} from '../../commons-node/serverPort';
 import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
+import fs from 'fs';
 
 export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
 
@@ -130,6 +131,12 @@ async function _getHHVMLogFilePath(): Promise<string> {
     'hhvm-debugger.log',
   );
 
+  await _rotateHHVMLogs(path);
+  await _createLogFile(path);
+  return path;
+}
+
+async function _createLogFile(path: string): Promise<void> {
   // Ensure the log file exists, and is write-able by everyone so that
   // HHVM, which is running as a different user, can append to it.
   const mode = 0o666;
@@ -138,9 +145,37 @@ async function _getHHVMLogFilePath(): Promise<string> {
     if (fd >= 0) {
       await fsPromise.chmod(path, mode);
     }
+    fs.close(fd, () => {});
   } catch (_) {}
+}
 
-  return path;
+async function _rotateHHVMLogs(path: string): Promise<void> {
+  const fileStat = await fsPromise.stat(path);
+
+  // Cap the size of the log file so it can't grow forever.
+  const MAX_LOG_FILE_SIZE_BYTES = 512 * 1024; // 0.5 MB
+  const MAX_LOGS_TO_KEEP = 5;
+  if (fileStat.size >= MAX_LOG_FILE_SIZE_BYTES) {
+    // Rotate the logs.
+    for (let i = MAX_LOGS_TO_KEEP - 1; i >= 0; i--) {
+      const fromFile = i > 0 ? path + i : path;
+      const toFile = path + (i + 1);
+
+      // eslint-disable-next-line no-await-in-loop
+      const exists = await fsPromise.exists(toFile);
+      if (exists) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await fsPromise.unlink(toFile).catch(() => {});
+        } catch (_) {}
+      }
+
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await fsPromise.mv(fromFile, toFile).catch(() => {});
+      } catch (_) {}
+    }
+  }
 }
 
 export async function createLogFilePaste(): Promise<string> {
