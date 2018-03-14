@@ -97,46 +97,60 @@ export default class BigDigServer {
     }
 
     // TODO: send clientId in the http headers on the websocket connection
+    const headerClientId = req.headers.client_id;
 
-    // the first message after a connection should only include
-    // the clientId of the connecting client; the BigDig connection
-    // is not actually made until we get this connection
-    ws.once('message', (clientId: string) => {
-      const cachedTransport = this._clientIdToTransport.get(clientId);
-      const wsTransport = new WebSocketTransport(clientId, ws);
+    // TODO: after we start sending the clientId in headers, we can remove this check
+    if (headerClientId != null) {
+      this._logger.info(
+        `received clientId ${headerClientId} in header, not waiting for first clientId message`,
+      );
+      this._handleClientId(ws, headerClientId);
+    } else {
+      this._logger.info(
+        'did not receive clientId in header, will wait for first message',
+      );
+      // the first message after a connection should only include
+      // the clientId of the connecting client; the BigDig connection
+      // is not actually made until we get this connection
+      ws.once('message', (clientId: string) => {
+        this._handleClientId(ws, clientId);
+      });
+    }
+  }
 
-      if (cachedTransport == null) {
-        // handle first message which should include the clientId
-        this._logger.info(
-          `got first message from client with clientId ${clientId}`,
-        );
+  _handleClientId(ws: WS, clientId: string) {
+    const cachedTransport = this._clientIdToTransport.get(clientId);
+    const wsTransport = new WebSocketTransport(clientId, ws);
 
-        const qaTransport = new QueuedAckTransport(clientId, wsTransport);
-        this._clientIdToTransport.set(clientId, qaTransport);
+    if (cachedTransport == null) {
+      // handle first message which should include the clientId
+      this._logger.info(`creating new transport with clientId ${clientId}`);
 
-        // Every subscriber must be notified of the new connection because it may
-        // want to broadcast messages to it.
-        const tagToTransport: Map<string, InternalTransport> = new Map();
-        for (const [tag, subscriber] of this._tagToSubscriber) {
-          const transport = new InternalTransport(tag, qaTransport);
-          this._logger.info(`Created new InternalTransport for ${tag}`);
-          tagToTransport.set(tag, transport);
-          subscriber.onConnection(transport);
-        }
+      const qaTransport = new QueuedAckTransport(clientId, wsTransport);
+      this._clientIdToTransport.set(clientId, qaTransport);
 
-        // subsequent messages will be BigDig messages
-        // TODO: could the message be a Buffer?
-        qaTransport.onMessage().subscribe(message => {
-          this._handleBigDigMessage(tagToTransport, message);
-        });
-
-        // TODO: Either garbage collect inactive transports, or implement
-        // an explicit "close" action in the big-dig protocol.
-      } else {
-        invariant(clientId === cachedTransport.id);
-        cachedTransport.reconnect(wsTransport);
+      // Every subscriber must be notified of the new connection because it may
+      // want to broadcast messages to it.
+      const tagToTransport: Map<string, InternalTransport> = new Map();
+      for (const [tag, subscriber] of this._tagToSubscriber) {
+        const transport = new InternalTransport(tag, qaTransport);
+        this._logger.info(`Created new InternalTransport for ${tag}`);
+        tagToTransport.set(tag, transport);
+        subscriber.onConnection(transport);
       }
-    });
+
+      // subsequent messages will be BigDig messages
+      // TODO: could the message be a Buffer?
+      qaTransport.onMessage().subscribe(message => {
+        this._handleBigDigMessage(tagToTransport, message);
+      });
+
+      // TODO: Either garbage collect inactive transports, or implement
+      // an explicit "close" action in the big-dig protocol.
+    } else {
+      invariant(clientId === cachedTransport.id);
+      cachedTransport.reconnect(wsTransport);
+    }
   }
 
   _handleBigDigMessage(
