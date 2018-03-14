@@ -90,6 +90,11 @@
       "versions": {
         "0.0.0": "consumeDash"
       }
+    },
+    "nuclide-paste": {
+      "versions": {
+        "0.0.0": "consumePasteProvider"
+      }
     }
   }
 }

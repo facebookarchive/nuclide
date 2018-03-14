@@ -158,6 +158,7 @@ export class TerminalView implements PtyClient {
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
+    (div: any).terminal = terminal;
     terminal.open(this._div);
     terminal.setHypertextLinkHandler(openLink);
     this._syncAtomStyle();

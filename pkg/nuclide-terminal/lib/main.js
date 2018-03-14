@@ -25,6 +25,7 @@ import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {uriFromCwd, URI_PREFIX} from '../../commons-node/nuclide-terminal-uri';
 
 // $FlowFB
+import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
@@ -98,6 +99,52 @@ class Activation {
         priority: -1,
       },
     );
+  }
+
+  consumePasteProvider(provider: any): IDisposable {
+    const createPaste: CreatePasteFunction = provider.createPaste;
+    const disposable = new UniversalDisposable(
+      atom.commands.add(
+        '.terminal-pane',
+        'nuclide-terminal:create-paste',
+        async event => {
+          const {currentTarget: {terminal}} = (event: any);
+          const uri = await createPaste(
+            terminal.getSelection(),
+            {
+              title: 'Paste from Nuclide Terminal',
+            },
+            'terminal paste',
+          );
+          atom.notifications.addSuccess(`Created paste at ${uri}`);
+        },
+      ),
+      atom.contextMenu.add({
+        '.terminal-pane': [
+          {
+            label: 'Create Paste',
+            command: 'nuclide-terminal:create-paste',
+            shouldDisplay: event => {
+              const div = event.target.closest('.terminal-pane');
+              if (div == null) {
+                return false;
+              }
+              const {terminal} = (div: any);
+              if (terminal == null) {
+                return false;
+              }
+              return terminal.hasSelection();
+            },
+          },
+          {type: 'separator'},
+        ],
+      }),
+    );
+    this._subscriptions.add(disposable);
+    return new UniversalDisposable(() => {
+      disposable.dispose();
+      this._subscriptions.remove(disposable);
+    });
   }
 
   addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
