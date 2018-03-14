@@ -80,17 +80,19 @@ export function createManifest(
   version: string,
   manifestFilename: string,
   basePath: string,
-  files: Iterable<{
+  files: $ReadOnlyArray<{
     filename: string,
     +stats: FileStats & {isDirectory(): boolean},
   }>,
 ): Manifest {
   const hash = crypto.createHash('sha1');
-  for (const file of files) {
-    if (file.filename === manifestFilename || file.stats.isDirectory()) {
-      // Exclude the manifest file and directories from the manifest.
-      continue;
-    }
+  const sortedFiles = files
+    // Exclude the manifest file and directories from the manifest.
+    .filter(
+      file => file.filename !== manifestFilename && !file.stats.isDirectory(),
+    )
+    .sort((a, b) => a.filename.localeCompare(b.filename));
+  for (const file of sortedFiles) {
     const filename = path.relative(basePath, file.filename);
     const {mode, uid, gid, size, mtime} = file.stats;
     hash.update(`${filename}:${mode}.${uid}.${gid}.${size}.${mtime}`, 'utf8');
