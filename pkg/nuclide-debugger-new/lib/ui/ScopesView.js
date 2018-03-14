@@ -11,6 +11,7 @@
 
 import type {DebuggerModeType, IDebugService} from '../types';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import classnames from 'classnames';
@@ -39,11 +40,9 @@ export default class ScopesView extends React.PureComponent<Props, State> {
   componentDidMount(): void {
     const {service} = this.props;
     this._disposables.add(
-      service.onDidChangeMode(() => {
-        this.setState({
-          mode: service.getDebuggerMode(),
-        });
-      }),
+      observableFromSubscribeFunction(
+        service.onDidChangeMode.bind(service),
+      ).subscribe(mode => this.setState({mode})),
     );
   }
 

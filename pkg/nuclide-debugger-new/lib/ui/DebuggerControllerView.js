@@ -11,6 +11,7 @@
 
 import type {IDebugService} from '../types';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -29,8 +30,11 @@ export default class DebuggerControllerView extends React.Component<Props> {
   }
 
   componentDidMount() {
+    const {service} = this.props;
     this._disposables.add(
-      this.props.service.onDidChangeMode(() => this.forceUpdate()),
+      observableFromSubscribeFunction(
+        service.onDidChangeMode.bind(service),
+      ).subscribe(mode => this.forceUpdate()),
     );
   }
 

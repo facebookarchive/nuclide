@@ -12,6 +12,7 @@
 import type {DebuggerModeType, IDebugService} from '../types';
 
 import classnames from 'classnames';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import DebuggerThreadsComponent from './DebuggerThreadsComponent';
@@ -40,11 +41,9 @@ export default class ThreadsView extends React.PureComponent<
   componentDidMount(): void {
     const {service} = this.props;
     this._disposables.add(
-      service.onDidChangeMode(() => {
-        this.setState({
-          mode: service.getDebuggerMode(),
-        });
-      }),
+      observableFromSubscribeFunction(
+        service.onDidChangeMode.bind(service),
+      ).subscribe(mode => this.setState({mode})),
     );
   }
 

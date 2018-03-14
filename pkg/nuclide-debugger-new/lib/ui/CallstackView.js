@@ -12,6 +12,7 @@
 import type {DebuggerModeType, IDebugService} from '../types';
 
 import classnames from 'classnames';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import DebuggerCallstackComponent from './DebuggerCallstackComponent';
@@ -37,12 +38,11 @@ export default class CallstackView extends React.PureComponent<Props, State> {
   }
 
   componentDidMount(): void {
+    const {service} = this.props;
     this._disposables.add(
-      this.props.service.onDidChangeMode(() => {
-        this.setState({
-          mode: this.props.service.getDebuggerMode(),
-        });
-      }),
+      observableFromSubscribeFunction(
+        service.onDidChangeMode.bind(service),
+      ).subscribe(mode => this.setState({mode})),
     );
   }
 

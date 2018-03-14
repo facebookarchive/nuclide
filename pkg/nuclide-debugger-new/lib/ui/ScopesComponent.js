@@ -126,6 +126,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
     }
     return (
       <Section
+        key={scope.getId()}
         collapsable={true}
         collapsed={!expanded}
         onChange={isCollapsed => this._setScopeExpanded(scope, !isCollapsed)}

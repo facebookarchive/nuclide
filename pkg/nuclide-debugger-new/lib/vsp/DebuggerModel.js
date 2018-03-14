@@ -859,7 +859,7 @@ export class Process implements IProcess {
     if (stoppedDetails.allThreadsStopped) {
       this._threads.forEach(thread => {
         thread.stoppedDetails =
-          thread.threadId === threadId ? stoppedDetails : {};
+          thread.threadId === threadId ? stoppedDetails : thread.stoppedDetails;
         thread.stopped = true;
         thread.clearCallStack();
       });
@@ -888,7 +888,7 @@ export class Process implements IProcess {
       if (this._threads.has(reference)) {
         const thread = nullthrows(this._threads.get(reference));
         thread.clearCallStack();
-        thread.stoppedDetails = undefined;
+        thread.stoppedDetails = null;
         thread.stopped = false;
 
         if (removeThreads) {
@@ -898,7 +898,7 @@ export class Process implements IProcess {
     } else {
       this._threads.forEach(thread => {
         thread.clearCallStack();
-        thread.stoppedDetails = undefined;
+        thread.stoppedDetails = null;
         thread.stopped = false;
       });
 

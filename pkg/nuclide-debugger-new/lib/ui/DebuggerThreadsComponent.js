@@ -284,7 +284,7 @@ export default class DebuggerThreadsComponent extends React.Component<
             // Decorate the cells with the thread ID they correspond to
             // so context menus know what thread to target for commands.
             cellData.rowAttributes = {
-              'data-threadId': thread.threadId,
+              'data-threadid': thread.threadId,
             };
 
             return cellData;
