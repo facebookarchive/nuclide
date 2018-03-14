@@ -77,7 +77,6 @@ import {track} from '../../../nuclide-analytics';
 import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
-import url from 'url';
 
 const UNKWOWN_SOURCE_NAMES = new Set([UNKNOWN_SOURCE, '<unknown>']);
 
@@ -94,15 +93,9 @@ export class Source implements ISource {
     }
     this.available = !UNKWOWN_SOURCE_NAMES.has(this._raw.name);
     if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
-      this.uri = url.format({
-        protocol: 'atom',
-        host: 'debug-sources',
-        slashes: true,
-        query: {
-          sessionId,
-          sourceReference: this._raw.sourceReference,
-        },
-      });
+      this.uri = `${DEBUG_SOURCES_URI}/${sessionId}/${
+        this._raw.sourceReference
+      }/${this._raw.name == null ? UNKNOWN_SOURCE : this._raw.name}`;
     } else {
       this.uri = this._raw.path || '';
     }

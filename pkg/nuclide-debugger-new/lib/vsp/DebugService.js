@@ -244,9 +244,9 @@ export default class DebugService implements IDebugService {
   }
 
   async _openSourceView(uri: string): Promise<atom$TextEditor> {
-    const query = nullthrows(url.parse(uri, true).query);
-    const sessionId = query.sessionId;
-    const sourceReference = parseInt(query.sourceReference, 10);
+    const query = (url.parse(uri).path || '').split('/');
+    const [, sessionId, sourceReferenceRaw] = query;
+    const sourceReference = parseInt(sourceReferenceRaw, 10);
 
     const process =
       this._model.getProcesses().find(p => p.getId() === sessionId) ||
@@ -273,7 +273,7 @@ export default class DebugService implements IDebugService {
     }
 
     const editor = atom.workspace.buildTextEditor({
-      buffer: new DebugSourceTextBufffer(content, uri, source.name),
+      buffer: new DebugSourceTextBufffer(content, uri),
       autoHeight: false,
       readOnly: true,
     });
@@ -805,6 +805,16 @@ export default class DebugService implements IDebugService {
         this._emitter.emit(CUSTOM_DEBUG_EVENT, event);
       }),
     );
+
+    // Clear in memory breakpoints.
+    this._sessionEndDisposables.add(() => {
+      const sourceRefBreakpoints = this._model
+        .getBreakpoints()
+        .filter(bp => bp.uri.startsWith(DEBUG_SOURCES_URI));
+      if (sourceRefBreakpoints.length > 0) {
+        this._model.removeBreakpoints(sourceRefBreakpoints);
+      }
+    });
   }
 
   _scheduleNativeNotification(): void {
@@ -1491,12 +1501,10 @@ export default class DebugService implements IDebugService {
 
 class DebugSourceTextBufffer extends TextBuffer {
   _uri: string;
-  _name: ?string;
 
-  constructor(contents: string, uri: string, name: ?string) {
+  constructor(contents: string, uri: string) {
     super(contents);
     this._uri = uri;
-    this._name = name;
   }
 
   getUri() {
@@ -1504,7 +1512,7 @@ class DebugSourceTextBufffer extends TextBuffer {
   }
 
   getPath() {
-    return this._name;
+    return this._uri;
   }
 
   isModified() {

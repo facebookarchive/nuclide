@@ -236,7 +236,7 @@ export class RemoteDirectory {
   }
 
   relativize(uri: string): string {
-    if (!uri) {
+    if (!nuclideUri.isRemote(uri || '')) {
       return uri;
     }
     const parsedUrl = nuclideUri.parse(uri);
@@ -341,11 +341,11 @@ export class RemoteDirectory {
   }
 
   contains(pathToCheck: ?string): boolean {
-    if (pathToCheck == null) {
+    if (!nuclideUri.isRemote(pathToCheck || '')) {
       return false;
     }
 
-    return nuclideUri.contains(this.getPath(), pathToCheck);
+    return nuclideUri.contains(this.getPath(), pathToCheck || '');
   }
 
   off() {

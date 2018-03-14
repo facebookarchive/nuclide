@@ -429,11 +429,10 @@ export class ServerConnection {
   }
 
   static getForUri(uri: NuclideUri): ?ServerConnection {
-    const {hostname} = nuclideUri.parse(uri);
-    if (hostname == null) {
+    if (!nuclideUri.isRemote(uri)) {
       return null;
     }
-    return ServerConnection.getByHostname(hostname);
+    return ServerConnection.getByHostname(nuclideUri.getHostname(uri));
   }
 
   static getByHostname(hostname: string): ?ServerConnection {

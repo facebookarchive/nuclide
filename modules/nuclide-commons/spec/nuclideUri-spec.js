@@ -71,7 +71,6 @@ describe('nuclide-uri', () => {
     );
     expect(nuclideUri.join('/usr/local', '..')).toBe('/usr');
     expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com/usr');
-    expect(() => nuclideUri.join(atomUri)).toThrow();
     expect(() => nuclideUri.join(archiveSuffixUri)).toThrow();
   });
 
@@ -79,7 +78,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.archiveJoin('/file.zip', 'a.txt')).toBe(
       '/file.zip!a.txt',
     );
-    expect(() => nuclideUri.archiveJoin(atomUri, 'a.txt')).toThrow();
     expect(() => nuclideUri.archiveJoin(archiveSuffixUri, 'a.txt')).toThrow();
     expect(() => nuclideUri.archiveJoin('/dir', 'a.txt')).toThrow();
   });
@@ -102,9 +100,6 @@ describe('nuclide-uri', () => {
     });
 
     it('throws when given an illegal URI', () => {
-      expect(() => nuclideUri.getHostname(atomUri)).toThrow();
-      expect(() => nuclideUri.getPath(atomUri)).toThrow();
-      expect(() => nuclideUri.parse(atomUri)).toThrow();
       expect(() => nuclideUri.getHostname(archiveSuffixUri)).toThrow();
       expect(() => nuclideUri.getPath(archiveSuffixUri)).toThrow();
       expect(() => nuclideUri.parse(archiveSuffixUri)).toThrow();
@@ -167,7 +162,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.basename('\\abc\\def!ghi')).toBe('def!ghi');
     expect(nuclideUri.basename('\\abc\\def.txt!ghi')).toBe('def.txt!ghi');
 
-    expect(() => nuclideUri.basename(atomUri)).toThrow();
     expect(() => nuclideUri.basename(archiveSuffixUri)).toThrow();
   });
 
@@ -226,7 +220,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.dirname('\\abc\\def!ghi')).toBe('\\abc');
     expect(nuclideUri.dirname('\\abc\\def.txt!ghi')).toBe('\\abc');
 
-    expect(() => nuclideUri.dirname(atomUri)).toThrow();
     expect(() => nuclideUri.dirname(archiveSuffixUri)).toThrow();
   });
 
@@ -271,7 +264,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.extname('\\z.zip!abc.zip')).toBe('.zip');
     expect(nuclideUri.extname('\\abc.txt!def')).toBe('.txt!def');
 
-    expect(() => nuclideUri.extname(atomUri)).toThrow();
     expect(() => nuclideUri.extname(archiveSuffixUri)).toThrow();
   });
 
@@ -285,7 +277,6 @@ describe('nuclide-uri', () => {
     );
     expect(nuclideUri.getParent(endsWithExclamationUri)).toBe('/module');
     expect(nuclideUri.getParent('/abc/def!ghi')).toBe('/abc');
-    expect(() => nuclideUri.getParent(atomUri)).toThrow();
     expect(() => nuclideUri.getParent(archiveSuffixUri)).toThrow();
   });
 
@@ -313,8 +304,6 @@ describe('nuclide-uri', () => {
     ).toBe(true);
     expect(nuclideUri.contains('/abc', '/abc!def')).toBe(false);
 
-    expect(() => nuclideUri.contains(atomUri, '/foo/bar')).toThrow();
-    expect(() => nuclideUri.contains('/foo/bar', atomUri)).toThrow();
     expect(() => nuclideUri.contains(archiveSuffixUri, '/foo/bar')).toThrow();
     expect(() => nuclideUri.contains('/foo/bar', archiveSuffixUri)).toThrow();
   });
@@ -357,7 +346,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.normalize('/a/b.zip!c/..')).toBe('/a/b.zip');
     expect(nuclideUri.normalize('/a/b.zip!c/d/../../..')).toBe('/a');
     expect(nuclideUri.normalize('/a/b!c/..')).toBe('/a');
-    expect(() => nuclideUri.normalize(atomUri)).toThrow();
     expect(() => nuclideUri.normalize(archiveSuffixUri)).toThrow();
   });
 
@@ -407,7 +395,6 @@ describe('nuclide-uri', () => {
     ).toBe('..');
     expect(nuclideUri.relative('/a/b.zip!c', '/a/b.zip!d')).toBe('../d');
     expect(nuclideUri.relative('/a/b!c', '/a/b!d')).toBe('../b!d');
-    expect(() => nuclideUri.relative(atomUri, 'foo')).toThrow();
     expect(() => nuclideUri.relative(archiveSuffixUri, 'foo')).toThrow();
   });
 
@@ -425,7 +412,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.nuclideUriToDisplayString(endsWithExclamationUri)).toBe(
       '/module/!! WARNING !!',
     );
-    expect(() => nuclideUri.nuclideUriToDisplayString(atomUri)).toThrow();
     expect(() =>
       nuclideUri.nuclideUriToDisplayString(archiveSuffixUri),
     ).toThrow();
@@ -464,7 +450,6 @@ describe('nuclide-uri', () => {
     it('win relative', () => expect(nuclideUri.isRoot('abc\\def')).toBe(false));
 
     it('throws on illegal URIs', () => {
-      expect(() => nuclideUri.basename(atomUri)).toThrow();
       expect(() => nuclideUri.basename(archiveSuffixUri)).toThrow();
     });
   });
@@ -505,7 +490,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.ensureTrailingSeparator('\\abc\\def\\')).toBe(
       '\\abc\\def\\',
     );
-    expect(() => nuclideUri.ensureTrailingSeparator(atomUri)).toThrow();
     expect(() =>
       nuclideUri.ensureTrailingSeparator(archiveSuffixUri),
     ).toThrow();
@@ -556,7 +540,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.trimTrailingSeparator('\\\\')).toBe('\\');
     expect(nuclideUri.trimTrailingSeparator('\\abc\\def')).toBe('\\abc\\def');
     expect(nuclideUri.trimTrailingSeparator('\\abc\\def\\')).toBe('\\abc\\def');
-    expect(() => nuclideUri.trimTrailingSeparator(atomUri)).toThrow();
     expect(() => nuclideUri.trimTrailingSeparator(archiveSuffixUri)).toThrow();
   });
 
@@ -576,7 +559,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.isAbsolute('abc/def')).toBe(false);
 
     expect(nuclideUri.isAbsolute('abc\\def')).toBe(false);
-    expect(() => nuclideUri.isAbsolute(atomUri)).toThrow();
     expect(() => nuclideUri.isAbsolute(archiveSuffixUri)).toThrow();
   });
 
@@ -650,7 +632,6 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.resolve('\\abc', 'def')).toBe('\\abc\\def');
     expect(nuclideUri.resolve('\\abc', '..\\def')).toBe('\\def');
     expect(nuclideUri.resolve('\\abc', '..', 'def')).toBe('\\def');
-    expect(() => nuclideUri.resolve(atomUri, '..')).toThrow();
   });
 
   describe('expandHomeDir()', () => {
@@ -671,7 +652,6 @@ describe('nuclide-uri', () => {
     });
 
     it('throws on illegal URIs', () => {
-      expect(() => nuclideUri.expandHomeDir(atomUri)).toThrow();
       expect(() => nuclideUri.expandHomeDir(archiveSuffixUri)).toThrow();
     });
   });

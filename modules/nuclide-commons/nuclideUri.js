@@ -148,10 +148,6 @@ function parse(uri: NuclideUri): ParsedUrl {
   }
 
   invariant(
-    uri.indexOf('://') === -1,
-    'Nuclide URI must be either local file names or URLs starting with nuclide://',
-  );
-  invariant(
     !_endsWithArchiveSeparator(uri),
     `Path cannot end with archive separator. Failed to parse ${uri}`,
   );
@@ -803,9 +799,6 @@ function _isArchiveSeparator(path: string, index: number): boolean {
 
 function _testForIllegalUri(uri: ?NuclideUri): void {
   if (uri != null) {
-    if (isAtomUri(uri)) {
-      throw new Error(`Path operation invoked on Atom URI ${uri}`);
-    }
     if (_endsWithArchiveSeparator(uri)) {
       throw new Error(
         `Path operation invoked on URI ending with ${ARCHIVE_SEPARATOR}: ${uri}`,
