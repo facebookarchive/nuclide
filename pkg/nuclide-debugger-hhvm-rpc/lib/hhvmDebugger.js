@@ -10,6 +10,7 @@
  */
 
 import child_process from 'child_process';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   OutputEvent,
   launchRequest,
@@ -410,6 +411,22 @@ class HHVMDebuggerWrapper {
             // TODO(ericblue): Fix threads response on the HHVM side.
             message.body = {threads: message.body};
           }
+          break;
+        }
+        case 'stackTrace': {
+          message.body.stackFrames.forEach(stackFrame => {
+            if (stackFrame.source != null) {
+              if (stackFrame.source.path === '<unknown>') {
+                // TODO(ericblue): Delete source when there's none known.
+                delete stackFrame.source;
+              } else if (nuclideUri.isAbsolute(stackFrame.source.name)) {
+                // TODO(ericblue): source names shouldn't be absolute paths.
+                stackFrame.source.name = nuclideUri.basename(
+                  stackFrame.source.name,
+                );
+              }
+            }
+          });
           break;
         }
         default:

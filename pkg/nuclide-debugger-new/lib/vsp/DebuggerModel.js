@@ -78,8 +78,6 @@ import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
 
-const UNKWOWN_SOURCE_NAMES = new Set([UNKNOWN_SOURCE, '<unknown>']);
-
 export class Source implements ISource {
   +uri: string;
   available: boolean;
@@ -91,7 +89,7 @@ export class Source implements ISource {
     } else {
       this._raw = raw;
     }
-    this.available = !UNKWOWN_SOURCE_NAMES.has(this._raw.name);
+    this.available = this._raw.name !== UNKNOWN_SOURCE;
     if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
       this.uri = `${DEBUG_SOURCES_URI}/${sessionId}/${
         this._raw.sourceReference
