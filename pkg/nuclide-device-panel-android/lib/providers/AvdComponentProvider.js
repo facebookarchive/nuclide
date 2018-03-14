@@ -77,28 +77,35 @@ export class AvdComponentProvider implements DeviceTypeComponentProvider {
   }
 
   _watchAvdDirectory(): IDisposable {
-    const watchmanClient = new WatchmanClient();
+    const watchAvdDirectory: Promise<() => mixed> = (async () => {
+      const avdDirectoryExists = await fsPromise.exists(AVD_DIRECTORY);
+      if (!avdDirectoryExists) {
+        return () => {};
+      }
 
-    // Create a .watchmanconfig so Watchman recognizes the AVD directory as a
-    // project root.
-    const createWatchmanConfig = fsPromise.writeFile(AVD_WATCHMAN_CONFIG, '{}');
+      // Create a .watchmanconfig so Watchman recognizes the AVD directory as a
+      // project root.
+      await fsPromise.writeFile(AVD_WATCHMAN_CONFIG, '{}');
 
-    createWatchmanConfig
-      .then(() =>
-        watchmanClient.watchDirectoryRecursive(AVD_DIRECTORY, AVD_DIRECTORY, {
+      const watchmanClient = new WatchmanClient();
+      const watchmanSubscription = await watchmanClient.watchDirectoryRecursive(
+        AVD_DIRECTORY,
+        AVD_DIRECTORY,
+        {
           expression: ['match', '*.avd'],
-        }),
-      )
-      .then(subscription => {
-        subscription.on('change', () => {
-          this._refreshAvds();
-        });
+        },
+      );
+      watchmanSubscription.on('change', () => {
+        this._refreshAvds();
       });
+
+      return () => fsPromise.unlink(AVD_WATCHMAN_CONFIG).catch(() => {});
+    })();
 
     return {
       dispose: () => {
-        createWatchmanConfig.then(() => {
-          fsPromise.unlink(AVD_WATCHMAN_CONFIG).catch(() => {});
+        watchAvdDirectory.then(dispose => {
+          dispose();
         });
       },
     };
