@@ -25,10 +25,10 @@ import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {uriFromCwd, URI_PREFIX} from '../../commons-node/nuclide-terminal-uri';
 
 // $FlowFB
-import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
+import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 const TERMINAL_CONTEXT_MENU_PRIORITY = 100;
 
