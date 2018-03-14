@@ -9,6 +9,7 @@
  * @format
  */
 
+import * as DebugProtocol from 'vscode-debugprotocol';
 import child_process from 'child_process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
@@ -35,6 +36,7 @@ class HHVMDebuggerWrapper {
   _debugging: boolean;
   _debuggerWriteCallback: ?DebuggerWriteCallback;
   _nonLoaderBreakSeen: boolean;
+  _initializeArgs: DebugProtocol.InitializeRequestArguments;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -45,6 +47,7 @@ class HHVMDebuggerWrapper {
     this._debugging = false;
     this._debuggerWriteCallback = null;
     this._nonLoaderBreakSeen = false;
+    this._initializeArgs = {adapterID: 'hhvm'};
   }
 
   debug() {
@@ -258,6 +261,7 @@ class HHVMDebuggerWrapper {
     if (requestMsg.command != null) {
       switch (requestMsg.command) {
         case 'initialize':
+          this._initializeArgs = requestMsg.arguments;
           this._writeResponseMessage({
             request_seq: requestMsg.seq,
             success: true,
@@ -504,6 +508,18 @@ class HHVMDebuggerWrapper {
         // Hide the loader break from Nuclide.
         return;
       }
+    }
+
+    // Skip forwarding non-focused thread stop events to VSCode's UI
+    // to avoid confusing the UX on what thread to focus.
+    // https://github.com/Microsoft/vscode-debugadapter-node/issues/147
+    if (
+      message.type === 'event' &&
+      message.event === 'stopped' &&
+      !message.body.threadCausedFocus &&
+      !this._initializeArgs.supportsThreadCausedFocus
+    ) {
+      return;
     }
 
     const output = JSON.stringify(message);

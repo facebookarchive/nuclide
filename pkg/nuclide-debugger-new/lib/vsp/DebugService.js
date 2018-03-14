@@ -1161,6 +1161,8 @@ export default class DebugService implements IDebugService {
         supportsVariableType: true,
         supportsVariablePaging: false,
         supportsRunInTerminalRequest: false,
+        // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
+        supportsThreadCausedFocus: true,
         locale: 'en_US',
       });
       this._model.setExceptionBreakpoints(
