@@ -60,6 +60,7 @@ import invariant from 'assert';
 import {remote} from 'electron';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
 import Immutable from 'immutable';
+import {createSelector} from 'reselect';
 
 type State = {|
   shouldRenderToolbar: boolean,
@@ -303,9 +304,7 @@ export default class FileTreeSidebarComponent extends React.Component<
             analyticsSurface="file-tree-uncommitted-changes"
             commandPrefix="file-tree-sidebar"
             enableInlineActions={true}
-            fileStatuses={filterMultiRootFileChanges(
-              this.state.uncommittedFileChanges,
-            )}
+            fileStatuses={this._getFilteredUncommittedFileChanges(this.state)}
             selectedFile={this.state.activeUri}
             hideEmptyFolders={true}
             onFileChosen={this._onFileChosen}
@@ -594,6 +593,11 @@ All the changes across your entire stacked diff.
     // Do not store in state to not cause extra rendering loops on update
     this._scrollerScrollTop = scrollTop;
   };
+
+  _getFilteredUncommittedFileChanges = createSelector(
+    [(state: State) => state.uncommittedFileChanges],
+    filterMultiRootFileChanges,
+  );
 
   isFocused(): boolean {
     if (this._scrollerRef == null) {
