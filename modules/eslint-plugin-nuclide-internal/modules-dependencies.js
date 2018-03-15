@@ -25,6 +25,10 @@ const {ATOM_BUILTIN_PACKAGES, getPackage, isRequire} = require('./utils');
 const MODULES_DIR = path.join(__dirname, '..', '..', 'modules');
 const ASYNC_TO_GENERATOR = 'async-to-generator';
 
+function isType(kind) {
+  return kind === 'type' || kind === 'typeof';
+}
+
 module.exports = function(context) {
   const filename = context.getFilename();
   const relativePath = path.relative(MODULES_DIR, filename);
@@ -100,20 +104,24 @@ module.exports = function(context) {
       checkDependency(node, node.arguments[0].value);
     },
     ExportNamedDeclaration(node) {
-      if (node.source != null) {
+      if (node.source != null && !isType(node.exportKind)) {
         // export foo from "…"
         checkDependency(node, node.source.value);
       }
     },
     ExportAllDeclaration(node) {
-      // export * from "…"
-      checkDependency(node, node.source.value);
+      if (!isType(node.exportKind)) {
+        // export * from "…"
+        checkDependency(node, node.source.value);
+      }
     },
     FunctionDeclaration: checkAsyncToGenerator,
     FunctionExpression: checkAsyncToGenerator,
     ImportDeclaration(node) {
-      // import foo from "…"
-      checkDependency(node, node.source.value);
+      if (!isType(node.importKind)) {
+        // import foo from "…"
+        checkDependency(node, node.source.value);
+      }
     },
   };
 };

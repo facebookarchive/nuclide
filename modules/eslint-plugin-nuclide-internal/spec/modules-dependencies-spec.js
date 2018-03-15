@@ -48,6 +48,18 @@ ruleTester.run('modules-dependencies', rule, {
       code: 'require("../test");',
       filename: TEST_PATH,
     },
+    {
+      code: 'import type {test} from "test1234"',
+      filename: TEST_PATH,
+    },
+    {
+      code: 'import typeof * as test from "test1234"',
+      filename: TEST_PATH,
+    },
+    {
+      code: 'export type {test} from "test1234"',
+      filename: TEST_PATH,
+    },
   ],
   invalid: [
     {
