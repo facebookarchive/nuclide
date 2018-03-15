@@ -10,6 +10,11 @@
   "dependencies": {
     "async-to-generator": "1.1.0",
     "jest-cli": "22.4.2",
-    "jest-environment-node": "22.4.1"
+    "jest-environment-node": "22.4.1",
+    "nuclide-commons": "0.5.1-dev",
+    "nuclide-commons-ui": "0.5.1-dev",
+    "nullthrows": "1.0.0",
+    "react": "16.2.0",
+    "react-dom": "16.2.0"
   }
 }

@@ -32,26 +32,14 @@ const config = require('./jest.config.js');
 const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
 
-// Patch `console` to output through the main process.
-global.console = new Console(
-  /* stdout */ {
-    write(chunk) {
-      ipcRenderer.send('write-to-stdout', chunk);
-    },
-  },
-  /* stderr */ {
-    write(chunk) {
-      ipcRenderer.send('write-to-stderr', chunk);
-    },
-  }
-);
-
 module.exports = function(params) {
+  const firstTestPath = params.testPaths[0];
+  const cwd = path.dirname(getPackageFile(firstTestPath));
   // It's assumed that all of the tests belong to the same package.
-  const pkg = getPackage(params.testPaths[0]);
+  const pkg = getPackage(firstTestPath);
   if (pkg == null) {
     throw new Error(
-      `Couldn't find a parent "package.json" for ${params.testPaths[0]}`
+      `Couldn't find a parent "package.json" for ${firstTestPath}`
     );
   }
 
@@ -63,24 +51,56 @@ module.exports = function(params) {
     enablePersistence: true,
   });
 
+  if (params.headless) {
+    // Patch `console` to output through the main process.
+    global.console = new Console(
+      /* stdout */ {
+        write(chunk) {
+          ipcRenderer.send('write-to-stdout', chunk);
+        },
+      },
+      /* stderr */ {
+        write(chunk) {
+          ipcRenderer.send('write-to-stderr', chunk);
+        },
+      }
+    );
+  } else {
+    try {
+      // eslint-disable-next-line rulesdir/modules-dependencies
+      require('nuclide-node-transpiler');
+    } catch (e) {}
+  }
   return jestCLI.runCLI(
     {
       outputFile: params.logFile,
-      _: params.testPaths,
+      _: params.testPaths.map(testPath => fs.realpathSync(testPath)),
       cache: false,
       env: 'nuclide-jest/AtomJestEnvironment.js',
-      config: JSON.stringify(config),
+      config: JSON.stringify(Object.assign(
+        {},
+        config,
+        {
+          reporters: params.headless ?
+            ['default'] :
+            [path.join(__dirname, 'atom-reporter.js')],
+        }
+      )),
     },
-    [process.cwd()]
+    [cwd]
   ).then(response => response.results.success ? 0 : 1);
 };
 
 function getPackage(start) {
+  return JSON.parse(fs.readFileSync(getPackageFile(start), 'utf8'));
+}
+
+function getPackageFile(start) {
   let current = path.resolve(start);
   while (true) {
     const filename = path.join(current, 'package.json');
     if (fs.existsSync(filename)) {
-      return JSON.parse(fs.readFileSync(filename, 'utf8'));
+      return filename;
     } else {
       const next = path.join(current, '..');
       if (next === current) {
