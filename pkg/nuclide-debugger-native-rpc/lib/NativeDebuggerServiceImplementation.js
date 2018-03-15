@@ -18,6 +18,7 @@ import type {
   PrepareForLaunchResponse,
 } from './NativeDebuggerServiceInterface.js';
 import type {Socket} from 'net';
+import type {ProcessInfo} from 'nuclide-commons/process';
 
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -27,6 +28,7 @@ import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
 import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
+import {psTree} from 'nuclide-commons/process';
 import {track} from '../../nuclide-analytics';
 import net from 'net';
 
@@ -123,6 +125,10 @@ export async function getAttachTargetInfoList(
         commandName,
       };
     });
+}
+
+export async function getProcessTree(): Promise<Array<ProcessInfo>> {
+  return psTree();
 }
 
 async function _getDefaultLLDBConfig(): Promise<{

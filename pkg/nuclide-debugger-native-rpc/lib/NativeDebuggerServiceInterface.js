@@ -12,6 +12,7 @@
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ProcessInfo} from 'nuclide-commons/process';
 
 export type AttachTargetInfo = {
   pid: number,
@@ -56,6 +57,10 @@ export type PrepareForLaunchResponse = {
 export async function getAttachTargetInfoList(
   targetPid: ?number,
 ): Promise<Array<AttachTargetInfo>> {
+  throw new Error('Not implemented');
+}
+
+export async function getProcessTree(): Promise<Array<ProcessInfo>> {
   throw new Error('Not implemented');
 }
 

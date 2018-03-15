@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ProcessInfo} from 'nuclide-commons/process';
 import type {VsAdapterType} from 'nuclide-debugger-common';
 import type {Option} from '../../nuclide-ui/Dropdown';
+import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -25,8 +26,9 @@ import {
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from '../../commons-atom/debugger';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getNativeVSPAttachProcessInfo} from './utils';
-import {psTree} from 'nuclide-commons/process';
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
@@ -126,6 +128,7 @@ export default class NativeAttachUiComponent extends React.Component<
   State,
 > {
   _disposables: UniversalDisposable;
+  _nativeDebuggerService: NativeDebuggerService;
 
   constructor(props: Props) {
     super(props);
@@ -185,10 +188,12 @@ export default class NativeAttachUiComponent extends React.Component<
       }),
     );
 
+    this._nativeDebuggerService = this._getRpcService();
+
     this._disposables.add(
       Observable.interval(PROCESS_UPDATES_INTERVAL_MS)
         .startWith(0)
-        .flatMap(_ => psTree())
+        .flatMap(_ => this._nativeDebuggerService.getProcessTree())
         .subscribe(this._updateList),
     );
   }
@@ -341,4 +346,13 @@ export default class NativeAttachUiComponent extends React.Component<
       },
     );
   };
+
+  _getRpcService(): NativeDebuggerService {
+    const service: ?NativeDebuggerService = getServiceByNuclideUri(
+      'NativeDebuggerService',
+      this.props.targetUri,
+    );
+    invariant(service);
+    return service;
+  }
 }
