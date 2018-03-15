@@ -17,6 +17,7 @@ import {NuclideSocket} from '../socket/NuclideSocket';
 export type BigDigClientConfig = {
   +host: string,
   +port: number,
+  +family?: 4 | 6,
   +certificateAuthorityCertificate?: Buffer | string,
   +clientCertificate?: Buffer | string,
   +clientKey?: Buffer | string,
@@ -33,6 +34,7 @@ export default (async function createBigDigClient(
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
     key: config.clientKey,
+    family: config.family,
   };
 
   const serverUri = `https://${config.host}:${config.port}/v1`;

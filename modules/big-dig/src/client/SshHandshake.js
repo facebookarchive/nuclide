@@ -15,6 +15,7 @@ import type {
   ConnectConfig,
   Prompt as SshClientPromptType,
 } from './SshClient';
+import type {DnsFamily} from './lookup-prefer-ip-v6';
 
 import net from 'net';
 import invariant from 'assert';
@@ -40,6 +41,7 @@ export type {
 export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
+  family: DnsFamily, // IPv4/IPv6
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
@@ -278,6 +280,7 @@ export class SshHandshake {
   _config: SshConnectionConfiguration;
   _forwardingServer: net.Server;
   _remoteHost: ?string;
+  _remoteFamily: ?DnsFamily;
   _remotePort: number;
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
@@ -513,9 +516,9 @@ export class SshHandshake {
       this._canceled = false;
       this._willConnect();
 
-      let address;
+      let lookup;
       try {
-        address = await lookupPreferIpv6(config.host);
+        lookup = await lookupPreferIpv6(config.host);
       } catch (error) {
         throw new SshHandshakeError(
           'Failed to resolve DNS.',
@@ -523,6 +526,8 @@ export class SshHandshake {
           error,
         );
       }
+      const {address, family} = lookup;
+      this._remoteFamily = family;
 
       const connectConfig = await this._getConnectConfig(address, config);
       const authError = await this._connectOrNeedsAuth(connectConfig);
@@ -829,10 +834,11 @@ export class SshHandshake {
 
     // Use an ssh tunnel if server is not secure
     if (this._isSecure()) {
-      // flowlint-next-line sketchy-null-string:off
-      invariant(this._remoteHost);
+      invariant(this._remoteHost != null);
+      invariant(this._remoteFamily != null);
       return this._didConnect({
         host: this._remoteHost,
+        family: this._remoteFamily,
         port: this._remotePort,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
         clientCertificate: this._clientCertificate,
@@ -846,10 +852,11 @@ export class SshHandshake {
       this._forwardingServer.listen(0, 'localhost');
       await listening;
       const localPort = this._getLocalPort();
-      // flowlint-next-line sketchy-null-number:off
-      invariant(localPort);
+      invariant(localPort != null);
+      invariant(this._remoteFamily != null);
       return this._didConnect({
         host: 'localhost',
+        family: this._remoteFamily,
         port: localPort,
       });
     }

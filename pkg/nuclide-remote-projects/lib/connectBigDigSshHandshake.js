@@ -67,7 +67,6 @@ export default function connectBigDigSshHandshake(
         ...remoteConfig,
         cwd: connectionConfig.cwd,
         displayTitle: connectionConfig.displayTitle,
-        // TODO(T25637185): Get family from SshHandshake
         version: 2,
       }).then(
         connection => {
