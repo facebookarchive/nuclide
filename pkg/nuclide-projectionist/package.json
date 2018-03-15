@@ -7,7 +7,7 @@
   "main": "./lib/main.js",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+    "test": "node ../../modules/nuclide-jest/bin/jest-node.js spec"
   },
   "nuclide": {
     "packageType": "Node",

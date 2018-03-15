@@ -27,6 +27,8 @@ const os = require('os');
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 const path = require('path');
 
+const config = require('./jest.config.js');
+
 const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
 
@@ -67,12 +69,7 @@ module.exports = function(params) {
       _: params.testPaths,
       cache: false,
       env: 'nuclide-jest/AtomJestEnvironment.js',
-      config: JSON.stringify({
-        testMatch: ['**/spec/**/*-spec.js'],
-        transform: {
-          '\\.js$': 'nuclide-jest/jestTransformer.js',
-        },
-      }),
+      config: JSON.stringify(config),
     },
     [process.cwd()]
   ).then(response => response.results.success ? 0 : 1);
