@@ -41,12 +41,12 @@ export class Cache<KeyArgs, T> {
     return ((this.store.get(key): any): T);
   }
 
-  getOrCreate(keyArgs: KeyArgs, factory: () => T): T {
+  getOrCreate(keyArgs: KeyArgs, factory: (KeyArgs, mixed) => T): T {
     const key = this._keyFactory(keyArgs);
     if (this.store.has(key)) {
       return this._getUnsafe(key);
     }
-    const value = factory();
+    const value = factory(keyArgs, key);
     this.store.set(key, value);
     return value;
   }
