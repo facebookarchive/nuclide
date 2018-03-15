@@ -1,16 +1,27 @@
-'use strict';
+"use strict";
+// tslint:disable:no-any no-empty member-ordering prefer-const prefer-template no-var-self
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
 const path = require("path");
-const child_process = require("child_process");
-const telemetryContracts_1 = require("../common/telemetryContracts");
+const vscode = require("vscode");
+const vscode_1 = require("vscode");
+require("../common/extensions");
+const helpers_1 = require("../common/helpers");
+const types_1 = require("../common/process/types");
 const utils_1 = require("../common/utils");
-const envFileParser_1 = require("../common/envFileParser");
 class RefactorProxy extends vscode.Disposable {
-    constructor(extensionDir, pythonSettings, workspaceRoot = vscode.workspace.rootPath) {
+    constructor(extensionDir, pythonSettings, workspaceRoot, serviceContainer) {
         super(() => { });
         this.pythonSettings = pythonSettings;
         this.workspaceRoot = workspaceRoot;
+        this.serviceContainer = serviceContainer;
         this._previousOutData = '';
         this._previousStdErrData = '';
         this._startedSuccessfully = false;
@@ -22,7 +33,7 @@ class RefactorProxy extends vscode.Disposable {
         }
         catch (ex) {
         }
-        this._process = null;
+        this._process = undefined;
     }
     getOffsetAt(document, position) {
         if (!utils_1.IS_WINDOWS) {
@@ -40,30 +51,30 @@ class RefactorProxy extends vscode.Disposable {
         if (!options) {
             options = vscode.window.activeTextEditor.options;
         }
-        let command = {
-            "lookup": "rename",
-            "file": filePath,
-            "start": this.getOffsetAt(document, range.start).toString(),
-            "id": "1",
-            "name": name,
-            "indent_size": options.tabSize
+        const command = {
+            lookup: 'rename',
+            file: filePath,
+            start: this.getOffsetAt(document, range.start).toString(),
+            id: '1',
+            name: name,
+            indent_size: options.tabSize
         };
-        return this.sendCommand(JSON.stringify(command), telemetryContracts_1.REFACTOR.Rename);
+        return this.sendCommand(JSON.stringify(command));
     }
     extractVariable(document, name, filePath, range, options) {
         if (!options) {
             options = vscode.window.activeTextEditor.options;
         }
-        let command = {
-            "lookup": "extract_variable",
-            "file": filePath,
-            "start": this.getOffsetAt(document, range.start).toString(),
-            "end": this.getOffsetAt(document, range.end).toString(),
-            "id": "1",
-            "name": name,
-            "indent_size": options.tabSize
+        const command = {
+            lookup: 'extract_variable',
+            file: filePath,
+            start: this.getOffsetAt(document, range.start).toString(),
+            end: this.getOffsetAt(document, range.end).toString(),
+            id: '1',
+            name: name,
+            indent_size: options.tabSize
         };
-        return this.sendCommand(JSON.stringify(command), telemetryContracts_1.REFACTOR.ExtractVariable);
+        return this.sendCommand(JSON.stringify(command));
     }
     extractMethod(document, name, filePath, range, options) {
         if (!options) {
@@ -73,19 +84,20 @@ class RefactorProxy extends vscode.Disposable {
         if (!document.lineAt(document.lineCount - 1).isEmptyOrWhitespace && range.start.line === document.lineCount - 1) {
             return Promise.reject('Missing blank line at the end of document (PEP8).');
         }
-        let command = {
-            "lookup": "extract_method",
-            "file": filePath,
-            "start": this.getOffsetAt(document, range.start).toString(),
-            "end": this.getOffsetAt(document, range.end).toString(),
-            "id": "1",
-            "name": name,
-            "indent_size": options.tabSize
+        const command = {
+            lookup: 'extract_method',
+            file: filePath,
+            start: this.getOffsetAt(document, range.start).toString(),
+            end: this.getOffsetAt(document, range.end).toString(),
+            id: '1',
+            name: name,
+            indent_size: options.tabSize
         };
-        return this.sendCommand(JSON.stringify(command), telemetryContracts_1.REFACTOR.ExtractMethod);
+        return this.sendCommand(JSON.stringify(command));
     }
     sendCommand(command, telemetryEvent) {
         return this.initialize(this.pythonSettings.pythonPath).then(() => {
+            // tslint:disable-next-line:promise-must-complete
             return new Promise((resolve, reject) => {
                 this._commandResolve = resolve;
                 this._commandReject = reject;
@@ -94,31 +106,26 @@ class RefactorProxy extends vscode.Disposable {
         });
     }
     initialize(pythonPath) {
-        return new Promise((resolve, reject) => {
-            this._initializeReject = reject;
-            let environmentVariables = { 'PYTHONUNBUFFERED': '1' };
-            let customEnvironmentVars = utils_1.getCustomEnvVars();
-            if (customEnvironmentVars) {
-                environmentVariables = envFileParser_1.mergeEnvVariables(environmentVariables, customEnvironmentVars);
-            }
-            environmentVariables = envFileParser_1.mergeEnvVariables(environmentVariables);
-            this._process = child_process.spawn(pythonPath, ['refactor.py', this.workspaceRoot], {
-                cwd: path.join(this._extensionDir, 'pythonFiles'),
-                env: environmentVariables
-            });
-            this._process.stderr.setEncoding('utf8');
-            this._process.stderr.on('data', this.handleStdError.bind(this));
-            this._process.on('error', this.handleError.bind(this));
-            let that = this;
-            this._process.stdout.setEncoding('utf8');
-            this._process.stdout.on('data', (data) => {
-                let dataStr = data + '';
-                if (!that._startedSuccessfully && dataStr.startsWith('STARTED')) {
-                    that._startedSuccessfully = true;
-                    return resolve();
+        return __awaiter(this, void 0, void 0, function* () {
+            const pythonProc = yield this.serviceContainer.get(types_1.IPythonExecutionFactory).create(vscode_1.Uri.file(this.workspaceRoot));
+            this.initialized = helpers_1.createDeferred();
+            const args = ['refactor.py', this.workspaceRoot];
+            const cwd = path.join(this._extensionDir, 'pythonFiles');
+            const result = pythonProc.execObservable(args, { cwd });
+            this._process = result.proc;
+            result.out.subscribe(output => {
+                if (output.source === 'stdout') {
+                    if (!this._startedSuccessfully && output.out.startsWith('STARTED')) {
+                        this._startedSuccessfully = true;
+                        return this.initialized.resolve();
+                    }
+                    this.onData(output.out);
                 }
-                that.onData(data);
-            });
+                else {
+                    this.handleStdError(output.out);
+                }
+            }, error => this.handleError(error));
+            return this.initialized.promise;
         });
     }
     handleStdError(data) {
@@ -136,21 +143,25 @@ class RefactorProxy extends vscode.Disposable {
             return;
         }
         if (typeof errorResponse[0].message !== 'string' || errorResponse[0].message.length === 0) {
-            errorResponse[0].message = errorResponse[0].traceback.split(/\r?\n/g).pop();
+            errorResponse[0].message = errorResponse[0].traceback.splitLines().pop();
         }
         let errorMessage = errorResponse[0].message + '\n' + errorResponse[0].traceback;
         if (this._startedSuccessfully) {
             this._commandReject(`Refactor failed. ${errorMessage}`);
         }
         else {
-            this._initializeReject(`Refactor failed. ${errorMessage}`);
+            if (typeof errorResponse[0].type === 'string' && errorResponse[0].type === 'ModuleNotFoundError') {
+                this.initialized.reject('Not installed');
+                return;
+            }
+            this.initialized.reject(`Refactor failed. ${errorMessage}`);
         }
     }
     handleError(error) {
         if (this._startedSuccessfully) {
             return this._commandReject(error);
         }
-        this._initializeReject(error);
+        this.initialized.reject(error);
     }
     onData(data) {
         if (!this._commandResolve) {
@@ -170,7 +181,7 @@ class RefactorProxy extends vscode.Disposable {
         }
         this.dispose();
         this._commandResolve(response[0]);
-        this._commandResolve = null;
+        this._commandResolve = undefined;
     }
 }
 exports.RefactorProxy = RefactorProxy;

@@ -1,14 +1,14 @@
+// tslint:disable:quotemark ordered-imports promise-must-complete member-ordering no-any prefer-template cyclomatic-complexity no-empty no-multiline-string one-line no-invalid-template-strings no-suspicious-comment no-var-self no-require-imports prefer-const
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const ProxyCommands_1 = require("./ProxyCommands");
 const idDispenser_1 = require("../common/idDispenser");
 const PythonProcessCallbackHandler_1 = require("./PythonProcessCallbackHandler");
-const SocketStream_1 = require("../common/comms/SocketStream");
+const SocketStream_1 = require("../common/net/socket/SocketStream");
 class PythonProcess extends events_1.EventEmitter {
     constructor(id, guid, programDirectory) {
         super();
-        this.stream = null;
         this.breakpointCommands = [];
         this.id = id;
         this.guid = guid;
@@ -45,7 +45,7 @@ class PythonProcess extends events_1.EventEmitter {
             try {
                 let kill = require("tree-kill");
                 kill(this.pid);
-                this.pid = null;
+                this.pid = undefined;
             }
             catch (ex) { }
         }
@@ -58,7 +58,7 @@ class PythonProcess extends events_1.EventEmitter {
     }
     Connect(buffer, socket, isRemoteProcess = false) {
         this.isRemoteProcess = isRemoteProcess;
-        if (this.stream === null) {
+        if (!this.stream) {
             this.stream = new SocketStream_1.SocketStream(socket, buffer);
         }
         else {
@@ -67,7 +67,7 @@ class PythonProcess extends events_1.EventEmitter {
         if (!isRemoteProcess) {
             if (!this.guidRead) {
                 this.stream.BeginTransaction();
-                let guid = this.stream.ReadString();
+                this.stream.ReadString();
                 if (this.stream.HasInsufficientDataForReading) {
                     this.stream.RollBackTransaction();
                     return false;
@@ -77,7 +77,7 @@ class PythonProcess extends events_1.EventEmitter {
             }
             if (!this.statusRead) {
                 this.stream.BeginTransaction();
-                let result = this.stream.ReadInt32();
+                this.stream.ReadInt32();
                 if (this.stream.HasInsufficientDataForReading) {
                     this.stream.RollBackTransaction();
                     return false;
@@ -125,7 +125,7 @@ class PythonProcess extends events_1.EventEmitter {
         if (!this.isRemoteProcess) {
             if (!this.guidRead) {
                 this.stream.RollBackTransaction();
-                let guid = this.stream.ReadString();
+                this.stream.ReadString();
                 if (this.stream.HasInsufficientDataForReading) {
                     return;
                 }
@@ -134,7 +134,7 @@ class PythonProcess extends events_1.EventEmitter {
             }
             if (!this.statusRead) {
                 this.stream.BeginTransaction();
-                let result = this.stream.ReadInt32();
+                this.stream.ReadInt32();
                 if (this.stream.HasInsufficientDataForReading) {
                     this.stream.RollBackTransaction();
                     return;
@@ -165,6 +165,9 @@ class PythonProcess extends events_1.EventEmitter {
         this.stream.WriteInt64(threadId);
     }
     SendExceptionInfo(defaultBreakOnMode, breakOn) {
+        if (!this.stream) {
+            return;
+        }
         this.stream.Write(ProxyCommands_1.Commands.SetExceptionInfoCommandBytes);
         this.stream.WriteInt32(defaultBreakOnMode);
         if (breakOn === null || breakOn === undefined) {
@@ -187,17 +190,16 @@ class PythonProcess extends events_1.EventEmitter {
     SendStepInto(threadId) {
         return this.sendStepCommand(threadId, ProxyCommands_1.Commands.StepIntoCommandBytes);
     }
-    // #endregion    
+    // #endregion
     onBreakpointHit(pyThread, breakpointId) {
         this._lastExecutedThread = pyThread;
         this.emit("breakpointHit", pyThread, breakpointId);
     }
     onBreakpointSet(breakpointId, success) {
         // Find the last breakpoint command associated with this breakpoint
-        let index = this.breakpointCommands.findIndex(cmd => cmd.Id === breakpointId);
+        let index = this.breakpointCommands.findIndex(item => item.Id === breakpointId);
         if (index === -1) {
-            // Hmm this is not possible, log this exception and carry on
-            // this.emit("error", "command.breakpoint.hit", `Uknown Breakpoit Id ${breakpointId}`);
+            this.emit('breakpointChanged', breakpointId, success);
             return;
         }
         let cmd = this.breakpointCommands.splice(index, 1)[0];
@@ -222,6 +224,7 @@ class PythonProcess extends events_1.EventEmitter {
         }
     }
     BindBreakpoint(brkpoint) {
+        // tslint:disable-next-line:promise-must-complete
         return new Promise((resolve, reject) => {
             let bkCmd = {
                 Id: brkpoint.Id,
@@ -275,6 +278,7 @@ class PythonProcess extends events_1.EventEmitter {
         this.stream.Write(ProxyCommands_1.Commands.BreakAllCommandBytes);
     }
     ExecuteText(text, reprKind, stackFrame) {
+        // tslint:disable-next-line:promise-must-complete
         return new Promise((resolve, reject) => {
             let executeId = this._idDispenser.Allocate();
             let cmd = {
@@ -306,9 +310,6 @@ class PythonProcess extends events_1.EventEmitter {
     EnumChildren(text, stackFrame, timeout) {
         return new Promise((resolve, reject) => {
             let executeId = this._idDispenser.Allocate();
-            if (typeof (executeId) !== "number") {
-                let y = "";
-            }
             let cmd = {
                 Id: executeId,
                 Frame: stackFrame,
@@ -332,6 +333,24 @@ class PythonProcess extends events_1.EventEmitter {
         });
     }
     SetLineNumber(pythonStackFrame, lineNo) {
+    }
+    attach(proc) {
+        proc.on('error', error => {
+            this.emit("error", undefined, error.toString());
+        });
+        proc.stderr.setEncoding('utf8');
+        proc.stdout.setEncoding('utf8');
+        proc.stderr.on('data', (error) => {
+            this.emit("error", error.toString());
+        });
+        proc.stderr.on('error', () => { });
+        proc.stdout.on('data', (d) => {
+            this.emit("output", undefined, d);
+        });
+        proc.stdout.on('error', () => { });
+        proc.on('close', () => {
+            this.emit('detach');
+        });
     }
 }
 exports.PythonProcess = PythonProcess;

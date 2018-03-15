@@ -18,7 +18,7 @@ class CodeBlockFormatProvider {
         // for x in y:
         // while x:
         // We need to find a block statement that is less than or equal to this statement block (but not greater)
-        for (let lineNumber = position.line - 1; lineNumber >= 0; lineNumber--) {
+        for (let lineNumber = position.line - 1; lineNumber >= 0; lineNumber -= 1) {
             const prevLine = document.lineAt(lineNumber);
             const prevLineText = prevLine.text;
             // Oops, we've reached a boundary (like the function or class definition)

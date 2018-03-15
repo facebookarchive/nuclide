@@ -1,4 +1,10 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,38 +14,48 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
 const vscode = require("vscode");
-const configSettings_1 = require("../common/configSettings");
-const parser_1 = require("./parser");
-const utils_1 = require("../common/utils");
 const constants_1 = require("../common/constants");
-const pythonSettings = configSettings_1.PythonSettings.getInstance();
+const utils_1 = require("../common/utils");
+const telemetry_1 = require("../telemetry");
+const constants_2 = require("../telemetry/constants");
+const parser_1 = require("./parser");
 class WorkspaceSymbolProvider {
-    constructor(tagGenerator, outputChannel) {
-        this.tagGenerator = tagGenerator;
+    constructor(tagGenerators, outputChannel) {
+        this.tagGenerators = tagGenerators;
         this.outputChannel = outputChannel;
     }
     provideWorkspaceSymbols(query, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!pythonSettings.workspaceSymbols.enabled) {
+            if (this.tagGenerators.length === 0) {
                 return [];
             }
-            if (!vscode.workspace || typeof vscode.workspace.rootPath !== 'string' || vscode.workspace.rootPath.length === 0) {
-                return Promise.resolve([]);
+            const generatorsWithTagFiles = yield Promise.all(this.tagGenerators.map(generator => utils_1.fsExistsAsync(generator.tagFilePath)));
+            if (generatorsWithTagFiles.filter(exists => exists).length !== this.tagGenerators.length) {
+                yield vscode.commands.executeCommand(constants_1.Commands.Build_Workspace_Symbols, true, token);
             }
-            // check whether tag file needs to be built
-            const tagFileExists = yield utils_1.fsExistsAsync(pythonSettings.workspaceSymbols.tagFilePath);
-            if (!tagFileExists) {
-                yield vscode.commands.executeCommand(constants_1.Commands.Build_Workspace_Symbols, false, token);
-            }
-            // load tags
-            const items = yield parser_1.parseTags(query, token);
-            if (!Array.isArray(items)) {
-                return [];
-            }
-            return items.map(item => new vscode.SymbolInformation(item.symbolName, item.symbolKind, '', new vscode.Location(vscode.Uri.file(item.fileName), item.position)));
+            const generators = yield Promise.all(this.tagGenerators.map((generator) => __awaiter(this, void 0, void 0, function* () {
+                const tagFileExists = yield utils_1.fsExistsAsync(generator.tagFilePath);
+                return tagFileExists ? generator : undefined;
+            })));
+            const promises = generators
+                .filter(generator => generator !== undefined && generator.enabled)
+                .map((generator) => __awaiter(this, void 0, void 0, function* () {
+                // load tags
+                const items = yield parser_1.parseTags(generator.workspaceFolder.fsPath, generator.tagFilePath, query, token);
+                if (!Array.isArray(items)) {
+                    return [];
+                }
+                return items.map(item => new vscode.SymbolInformation(item.symbolName, item.symbolKind, '', new vscode.Location(vscode.Uri.file(item.fileName), item.position)));
+            }));
+            const symbols = yield Promise.all(promises);
+            return _.flatten(symbols);
         });
     }
 }
+__decorate([
+    telemetry_1.captureTelemetry(constants_2.WORKSPACE_SYMBOLS_GO_TO)
+], WorkspaceSymbolProvider.prototype, "provideWorkspaceSymbols", null);
 exports.WorkspaceSymbolProvider = WorkspaceSymbolProvider;
 //# sourceMappingURL=provider.js.map

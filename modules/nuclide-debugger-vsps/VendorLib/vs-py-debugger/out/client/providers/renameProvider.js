@@ -1,15 +1,25 @@
-'use strict';
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
-const proxy_1 = require("../refactor/proxy");
-const editor_1 = require("../common/editor");
 const path = require("path");
+const vscode = require("vscode");
 const configSettings_1 = require("../common/configSettings");
-const pythonSettings = configSettings_1.PythonSettings.getInstance();
+const constants_1 = require("../common/constants");
+const editor_1 = require("../common/editor");
+const types_1 = require("../common/types");
+const proxy_1 = require("../refactor/proxy");
+const telemetry_1 = require("../telemetry");
+const constants_2 = require("../telemetry/constants");
 const EXTENSION_DIR = path.join(__dirname, '..', '..', '..');
 class PythonRenameProvider {
-    constructor(outputChannel) {
-        this.outputChannel = outputChannel;
+    constructor(serviceContainer) {
+        this.serviceContainer = serviceContainer;
+        this.outputChannel = serviceContainer.get(types_1.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
     }
     provideRenameEdits(document, position, newName, token) {
         return vscode.workspace.saveAll(false).then(() => {
@@ -23,7 +33,7 @@ class PythonRenameProvider {
         if (position.character <= 0) {
             return;
         }
-        var range = document.getWordRangeAtPosition(position);
+        const range = document.getWordRangeAtPosition(position);
         if (!range || range.isEmpty) {
             return;
         }
@@ -31,17 +41,33 @@ class PythonRenameProvider {
         if (oldName === newName) {
             return;
         }
-        let proxy = new proxy_1.RefactorProxy(EXTENSION_DIR, pythonSettings, vscode.workspace.rootPath);
+        let workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        if (!workspaceFolder && Array.isArray(vscode.workspace.workspaceFolders) && vscode.workspace.workspaceFolders.length > 0) {
+            workspaceFolder = vscode.workspace.workspaceFolders[0];
+        }
+        const workspaceRoot = workspaceFolder ? workspaceFolder.uri.fsPath : __dirname;
+        const pythonSettings = configSettings_1.PythonSettings.getInstance(workspaceFolder ? workspaceFolder.uri : undefined);
+        const proxy = new proxy_1.RefactorProxy(EXTENSION_DIR, pythonSettings, workspaceRoot, this.serviceContainer);
         return proxy.rename(document, newName, document.uri.fsPath, range).then(response => {
-            //return response.results[0].diff;
-            const workspaceEdit = editor_1.getWorkspaceEditsFromPatch(response.results.map(fileChanges => fileChanges.diff));
-            return workspaceEdit;
+            const fileDiffs = response.results.map(fileChanges => fileChanges.diff);
+            return editor_1.getWorkspaceEditsFromPatch(fileDiffs, workspaceRoot);
         }).catch(reason => {
-            vscode.window.showErrorMessage(reason);
-            this.outputChannel.appendLine(reason);
+            if (reason === 'Not installed') {
+                const installer = this.serviceContainer.get(types_1.IInstaller);
+                installer.promptToInstall(types_1.Product.rope, document.uri)
+                    .catch(ex => console.error('Python Extension: promptToInstall', ex));
+                return Promise.reject('');
+            }
+            else {
+                vscode.window.showErrorMessage(reason);
+                this.outputChannel.appendLine(reason);
+            }
             return Promise.reject(reason);
         });
     }
 }
+__decorate([
+    telemetry_1.captureTelemetry(constants_2.REFACTOR_RENAME)
+], PythonRenameProvider.prototype, "provideRenameEdits", null);
 exports.PythonRenameProvider = PythonRenameProvider;
 //# sourceMappingURL=renameProvider.js.map

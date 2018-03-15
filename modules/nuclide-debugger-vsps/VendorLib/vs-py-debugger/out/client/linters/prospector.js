@@ -1,56 +1,51 @@
-'use strict';
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const baseLinter = require("./baseLinter");
-const utils_1 = require("./../common/utils");
-const installer_1 = require("../common/installer");
-class Linter extends baseLinter.BaseLinter {
-    constructor(outputChannel, workspaceRootPath) {
-        super('prospector', installer_1.Product.prospector, outputChannel, workspaceRootPath);
-    }
-    isEnabled() {
-        return this.pythonSettings.linting.prospectorEnabled;
+const types_1 = require("../common/types");
+const baseLinter_1 = require("./baseLinter");
+class Prospector extends baseLinter_1.BaseLinter {
+    constructor(outputChannel, serviceContainer) {
+        super(types_1.Product.prospector, outputChannel, serviceContainer);
     }
     runLinter(document, cancellation) {
-        if (!this.pythonSettings.linting.prospectorEnabled) {
-            return Promise.resolve([]);
-        }
-        let prospectorPath = this.pythonSettings.linting.prospectorPath;
-        let outputChannel = this.outputChannel;
-        let prospectorArgs = Array.isArray(this.pythonSettings.linting.prospectorArgs) ? this.pythonSettings.linting.prospectorArgs : [];
-        if (prospectorArgs.length === 0 && installer_1.ProductExecutableAndArgs.has(installer_1.Product.prospector) && prospectorPath.toLocaleLowerCase() === 'prospector') {
-            prospectorPath = installer_1.ProductExecutableAndArgs.get(installer_1.Product.prospector).executable;
-            prospectorArgs = installer_1.ProductExecutableAndArgs.get(installer_1.Product.prospector).args;
-        }
-        return new Promise((resolve, reject) => {
-            utils_1.execPythonFile(prospectorPath, prospectorArgs.concat(['--absolute-paths', '--output-format=json', document.uri.fsPath]), this.workspaceRootPath, false, null, cancellation).then(data => {
-                let parsedData;
-                try {
-                    parsedData = JSON.parse(data);
-                }
-                catch (ex) {
-                    outputChannel.append('#'.repeat(10) + 'Linting Output - ' + this.Id + '#'.repeat(10) + '\n');
-                    outputChannel.append(data);
-                    return resolve([]);
-                }
-                let diagnostics = [];
-                parsedData.messages.filter((value, index) => index <= this.pythonSettings.linting.maxNumberOfProblems).forEach(msg => {
-                    let lineNumber = msg.location.line === null || isNaN(msg.location.line) ? 1 : msg.location.line;
-                    diagnostics.push({
-                        code: msg.code,
-                        message: msg.message,
-                        column: msg.location.character,
-                        line: lineNumber,
-                        type: msg.code,
-                        provider: `${this.Id} - ${msg.source}`
-                    });
-                });
-                resolve(diagnostics);
-            }).catch(error => {
-                this.handleError(this.Id, prospectorPath, error);
-                resolve([]);
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.run(['--absolute-paths', '--output-format=json', document.uri.fsPath], document, cancellation);
+        });
+    }
+    parseMessages(output, document, token, regEx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let parsedData;
+            try {
+                parsedData = JSON.parse(output);
+            }
+            catch (ex) {
+                this.outputChannel.appendLine(`${'#'.repeat(10)}Linting Output - ${this.info.id}${'#'.repeat(10)}`);
+                this.outputChannel.append(output);
+                this.logger.logError('Failed to parse Prospector output', ex);
+                return [];
+            }
+            return parsedData.messages
+                .filter((value, index) => index <= this.pythonSettings.linting.maxNumberOfProblems)
+                .map(msg => {
+                const lineNumber = msg.location.line === null || isNaN(msg.location.line) ? 1 : msg.location.line;
+                return {
+                    code: msg.code,
+                    message: msg.message,
+                    column: msg.location.character,
+                    line: lineNumber,
+                    type: msg.code,
+                    provider: `${this.info.id} - ${msg.source}`
+                };
             });
         });
     }
 }
-exports.Linter = Linter;
+exports.Prospector = Prospector;
 //# sourceMappingURL=prospector.js.map

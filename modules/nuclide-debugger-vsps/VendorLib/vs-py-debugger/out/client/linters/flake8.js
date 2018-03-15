@@ -1,34 +1,29 @@
-'use strict';
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const baseLinter = require("./baseLinter");
-const installer_1 = require("../common/installer");
-class Linter extends baseLinter.BaseLinter {
-    constructor(outputChannel, workspaceRootPath) {
-        super('flake8', installer_1.Product.flake8, outputChannel, workspaceRootPath);
-        this._columnOffset = 1;
-    }
-    isEnabled() {
-        return this.pythonSettings.linting.flake8Enabled;
+const types_1 = require("../common/types");
+const baseLinter_1 = require("./baseLinter");
+const COLUMN_OFF_SET = 1;
+class Flake8 extends baseLinter_1.BaseLinter {
+    constructor(outputChannel, serviceContainer) {
+        super(types_1.Product.flake8, outputChannel, serviceContainer, COLUMN_OFF_SET);
     }
     runLinter(document, cancellation) {
-        if (!this.pythonSettings.linting.flake8Enabled) {
-            return Promise.resolve([]);
-        }
-        let flake8Path = this.pythonSettings.linting.flake8Path;
-        let flake8Args = Array.isArray(this.pythonSettings.linting.flake8Args) ? this.pythonSettings.linting.flake8Args : [];
-        if (flake8Args.length === 0 && installer_1.ProductExecutableAndArgs.has(installer_1.Product.flake8) && flake8Path.toLocaleLowerCase() === 'flake8') {
-            flake8Path = installer_1.ProductExecutableAndArgs.get(installer_1.Product.flake8).executable;
-            flake8Args = installer_1.ProductExecutableAndArgs.get(installer_1.Product.flake8).args;
-        }
-        return new Promise((resolve, reject) => {
-            this.run(flake8Path, flake8Args.concat(['--format=%(row)d,%(col)d,%(code).1s,%(code)s:%(text)s', document.uri.fsPath]), document, this.workspaceRootPath, cancellation).then(messages => {
-                messages.forEach(msg => {
-                    msg.severity = this.parseMessagesSeverity(msg.type, this.pythonSettings.linting.flake8CategorySeverity);
-                });
-                resolve(messages);
-            }, reject);
+        return __awaiter(this, void 0, void 0, function* () {
+            const messages = yield this.run(['--format=%(row)d,%(col)d,%(code).1s,%(code)s:%(text)s', document.uri.fsPath], document, cancellation);
+            messages.forEach(msg => {
+                msg.severity = this.parseMessagesSeverity(msg.type, this.pythonSettings.linting.flake8CategorySeverity);
+            });
+            return messages;
         });
     }
 }
-exports.Linter = Linter;
+exports.Flake8 = Flake8;
 //# sourceMappingURL=flake8.js.map

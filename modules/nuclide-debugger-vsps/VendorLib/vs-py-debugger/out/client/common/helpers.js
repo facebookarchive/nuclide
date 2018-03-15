@@ -1,21 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const moduleNotInstalledError_1 = require("./errors/moduleNotInstalledError");
+// tslint:disable-next-line:no-require-imports no-var-requires
 const tmp = require('tmp');
 function isNotInstalledError(error) {
     const isError = typeof (error) === 'object' && error !== null;
+    // tslint:disable-next-line:no-any
     const errorObj = error;
     if (!isError) {
         return false;
     }
-    const isModuleNoInstalledError = errorObj.code === 1 && error.message.indexOf('No module named') >= 0;
+    if (error instanceof moduleNotInstalledError_1.ModuleNotInstalledError) {
+        return true;
+    }
+    const isModuleNoInstalledError = error.message.indexOf('No module named') >= 0;
     return errorObj.code === 'ENOENT' || errorObj.code === 127 || isModuleNoInstalledError;
 }
 exports.isNotInstalledError = isNotInstalledError;
 class DeferredImpl {
+    // tslint:disable-next-line:no-any
     constructor(scope = null) {
         this.scope = scope;
         this._resolved = false;
         this._rejected = false;
+        // tslint:disable-next-line:promise-must-complete
         this._promise = new Promise((res, rej) => {
             this._resolve = res;
             this._reject = rej;
@@ -25,6 +33,7 @@ class DeferredImpl {
         this._resolve.apply(this.scope ? this.scope : this, arguments);
         this._resolved = true;
     }
+    // tslint:disable-next-line:no-any
     reject(reason) {
         this._reject.apply(this.scope ? this.scope : this, arguments);
         this._rejected = true;
@@ -42,17 +51,19 @@ class DeferredImpl {
         return this._rejected || this._resolved;
     }
 }
+// tslint:disable-next-line:no-any
 function createDeferred(scope = null) {
     return new DeferredImpl(scope);
 }
 exports.createDeferred = createDeferred;
 function createTemporaryFile(extension, temporaryDirectory) {
-    let options = { postfix: extension };
+    // tslint:disable-next-line:no-any
+    const options = { postfix: extension };
     if (temporaryDirectory) {
         options.dir = temporaryDirectory;
     }
     return new Promise((resolve, reject) => {
-        tmp.file(options, function _tempFileCreated(err, tmpFile, fd, cleanupCallback) {
+        tmp.file(options, (err, tmpFile, fd, cleanupCallback) => {
             if (err) {
                 return reject(err);
             }

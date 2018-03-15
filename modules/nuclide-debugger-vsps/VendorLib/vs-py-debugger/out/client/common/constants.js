@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PythonLanguage = { language: 'python', scheme: 'file' };
+const path = require("path");
+exports.PythonLanguage = { language: 'python' };
 var Commands;
 (function (Commands) {
     Commands.Set_Interpreter = 'python.setInterpreter';
+    Commands.Set_ShebangInterpreter = 'python.setShebangInterpreter';
     Commands.Exec_In_Terminal = 'python.execInTerminal';
     Commands.Exec_Selection_In_Terminal = 'python.execSelectionInTerminal';
     Commands.Exec_Selection_In_Django_Shell = 'python.execSelectionInDjangoShell';
@@ -28,32 +30,10 @@ var Commands;
     Commands.Update_SparkLibrary = 'python.updateSparkLibrary';
     Commands.Build_Workspace_Symbols = 'python.buildWorkspaceSymbols';
     Commands.Start_REPL = 'python.startREPL';
-    var Jupyter;
-    (function (Jupyter) {
-        Jupyter.Get_All_KernelSpecs_For_Language = 'jupyter.getAllKernelSpecsForLanguage';
-        Jupyter.Get_All_KernelSpecs = 'jupyter.getAllKernelSpecs';
-        Jupyter.Select_Kernel = 'jupyter.selectKernel';
-        Jupyter.Kernel_Options = 'jupyter.kernelOptions';
-        Jupyter.StartKernelForKernelSpeck = 'jupyter.sartKernelForKernelSpecs';
-        Jupyter.ExecuteRangeInKernel = 'jupyter.execRangeInKernel';
-        Jupyter.ExecuteSelectionOrLineInKernel = 'jupyter.runSelectionLine';
-        var Cell;
-        (function (Cell) {
-            Cell.ExecuteCurrentCell = 'jupyter.execCurrentCell';
-            Cell.ExecuteCurrentCellAndAdvance = 'jupyter.execCurrentCellAndAdvance';
-            Cell.AdcanceToCell = 'jupyter.advanceToNextCell';
-            Cell.DisplayCellMenu = 'jupyter.displayCellMenu';
-            Cell.GoToPreviousCell = 'jupyter.gotToPreviousCell';
-            Cell.GoToNextCell = 'jupyter.gotToNextCell';
-        })(Cell = Jupyter.Cell || (Jupyter.Cell = {}));
-        var Kernel;
-        (function (Kernel) {
-            Kernel.Kernel_Interrupt = 'jupyter.kernelInterrupt';
-            Kernel.Kernel_Restart = 'jupyter.kernelRestart';
-            Kernel.Kernel_Shut_Down = 'jupyter.kernelShutDown';
-            Kernel.Kernel_Details = 'jupyter.kernelDetails';
-        })(Kernel = Jupyter.Kernel || (Jupyter.Kernel = {}));
-    })(Jupyter = Commands.Jupyter || (Commands.Jupyter = {}));
+    Commands.Create_Terminal = 'python.createTerminal';
+    Commands.Set_Linter = 'python.setLinter';
+    Commands.Enable_Linter = 'python.enableLinting';
+    Commands.Run_Linter = 'python.runLinting';
 })(Commands = exports.Commands || (exports.Commands = {}));
 var Octicons;
 (function (Octicons) {
@@ -75,37 +55,24 @@ var Delays;
 })(Delays = exports.Delays || (exports.Delays = {}));
 var LinterErrors;
 (function (LinterErrors) {
-    var pylint;
+    let pylint;
     (function (pylint) {
         pylint.InvalidSyntax = 'E0001';
     })(pylint = LinterErrors.pylint || (LinterErrors.pylint = {}));
-    var prospector;
+    let prospector;
     (function (prospector) {
         prospector.InvalidSyntax = 'F999';
     })(prospector = LinterErrors.prospector || (LinterErrors.prospector = {}));
-    var flake8;
+    let flake8;
     (function (flake8) {
         flake8.InvalidSyntax = 'E999';
     })(flake8 = LinterErrors.flake8 || (LinterErrors.flake8 = {}));
 })(LinterErrors = exports.LinterErrors || (exports.LinterErrors = {}));
-var Documentation;
-(function (Documentation) {
-    Documentation.Home = '/docs/python-path/';
-    var Jupyter;
-    (function (Jupyter) {
-        Jupyter.GettingStarted = '/docs/jupyter_getting-started/';
-        Jupyter.Examples = '/docs/jupyter_examples/';
-        Jupyter.Setup = '/docs/jupyter_prerequisites/';
-        Jupyter.VersionIncompatiblity = '/docs/troubleshooting_jupyter/#Incompatible-dependencies';
-    })(Jupyter = Documentation.Jupyter || (Documentation.Jupyter = {}));
-    var Formatting;
-    (function (Formatting) {
-        Formatting.FormatOnSave = '/docs/formatting/';
-    })(Formatting = Documentation.Formatting || (Documentation.Formatting = {}));
-    var Workspace;
-    (function (Workspace) {
-        Workspace.Home = '/docs/workspaceSymbols/';
-        Workspace.InstallOnWindows = '/docs/workspaceSymbols/#Install-Windows';
-    })(Workspace = Documentation.Workspace || (Documentation.Workspace = {}));
-})(Documentation = exports.Documentation || (exports.Documentation = {}));
+exports.STANDARD_OUTPUT_CHANNEL = 'STANDARD_OUTPUT_CHANNEL';
+function isTestExecution() {
+    // tslint:disable-next-line:interface-name no-string-literal
+    return process.env['VSC_PYTHON_CI_TEST'] === '1';
+}
+exports.isTestExecution = isTestExecution;
+exports.EXTENSION_ROOT_DIR = path.join(__dirname, '..', '..', '..');
 //# sourceMappingURL=constants.js.map

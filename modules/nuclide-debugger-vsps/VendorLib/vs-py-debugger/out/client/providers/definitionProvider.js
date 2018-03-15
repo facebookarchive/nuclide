@@ -1,13 +1,18 @@
 'use strict';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const telemetry_1 = require("../telemetry");
+const constants_1 = require("../telemetry/constants");
 const proxy = require("./jediProxy");
 class PythonDefinitionProvider {
-    get JediProxy() {
-        return this.jediProxyHandler.JediProxy;
-    }
-    constructor(context) {
-        this.jediProxyHandler = new proxy.JediProxyHandler(context);
+    constructor(jediFactory) {
+        this.jediFactory = jediFactory;
     }
     static parseData(data, possibleWord) {
         if (data && Array.isArray(data.definitions) && data.definitions.length > 0) {
@@ -20,16 +25,16 @@ class PythonDefinitionProvider {
         return null;
     }
     provideDefinition(document, position, token) {
-        var filename = document.fileName;
+        const filename = document.fileName;
         if (document.lineAt(position.line).text.match(/^\s*\/\//)) {
             return Promise.resolve(null);
         }
         if (position.character <= 0) {
             return Promise.resolve(null);
         }
-        var range = document.getWordRangeAtPosition(position);
-        var columnIndex = range.isEmpty ? position.character : range.end.character;
-        var cmd = {
+        const range = document.getWordRangeAtPosition(position);
+        const columnIndex = range.isEmpty ? position.character : range.end.character;
+        const cmd = {
             command: proxy.CommandType.Definitions,
             fileName: filename,
             columnIndex: columnIndex,
@@ -38,11 +43,14 @@ class PythonDefinitionProvider {
         if (document.isDirty) {
             cmd.source = document.getText();
         }
-        let possibleWord = document.getText(range);
-        return this.jediProxyHandler.sendCommand(cmd, token).then(data => {
+        const possibleWord = document.getText(range);
+        return this.jediFactory.getJediProxyHandler(document.uri).sendCommand(cmd, token).then(data => {
             return PythonDefinitionProvider.parseData(data, possibleWord);
         });
     }
 }
+__decorate([
+    telemetry_1.captureTelemetry(constants_1.DEFINITION)
+], PythonDefinitionProvider.prototype, "provideDefinition", null);
 exports.PythonDefinitionProvider = PythonDefinitionProvider;
 //# sourceMappingURL=definitionProvider.js.map

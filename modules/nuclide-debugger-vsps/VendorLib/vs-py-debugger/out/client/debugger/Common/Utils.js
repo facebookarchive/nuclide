@@ -1,9 +1,9 @@
-"use strict";
+// tslint:disable:quotemark no-var-requires no-require-imports max-func-body-length prefer-const no-function-expression cyclomatic-complexity no-increment-decrement one-line
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-const path = require("path");
-const fs = require("fs");
 const child_process = require("child_process");
-const envFileParser_1 = require("../../common/envFileParser");
+const fs = require("fs");
+const path = require("path");
 const untildify = require("untildify");
 exports.IS_WINDOWS = /^win/.test(process.platform);
 exports.PATH_VARIABLE_NAME = exports.IS_WINDOWS ? 'Path' : 'PATH';
@@ -35,27 +35,28 @@ function validatePathSync(filePath) {
     return exists;
 }
 exports.validatePathSync = validatePathSync;
-function CreatePythonThread(id, isWorker, process, name = "") {
+function CreatePythonThread(id, isWorker, process, name = '', int32Id = 0) {
     return {
         IsWorkerThread: isWorker,
         Process: process,
         Name: name,
         Id: id,
-        Frames: []
+        Frames: [],
+        Int32Id: int32Id
     };
 }
 exports.CreatePythonThread = CreatePythonThread;
 function CreatePythonModule(id, fileName) {
     let name = fileName;
-    if (typeof fileName === "string") {
+    if (typeof fileName === 'string') {
         try {
             name = path.basename(fileName);
+            // tslint:disable-next-line:no-empty
         }
-        catch (ex) {
-        }
+        catch (_a) { }
     }
     else {
-        name = "";
+        name = '';
     }
     return {
         ModuleId: id,
@@ -70,7 +71,7 @@ function FixupEscapedUnicodeChars(value) {
 exports.FixupEscapedUnicodeChars = FixupEscapedUnicodeChars;
 function getPythonExecutable(pythonPath) {
     pythonPath = untildify(pythonPath);
-    // If only 'python'
+    // If only 'python'.
     if (pythonPath === 'python' ||
         pythonPath.indexOf(path.sep) === -1 ||
         path.basename(pythonPath) === path.dirname(pythonPath)) {
@@ -79,12 +80,12 @@ function getPythonExecutable(pythonPath) {
     if (isValidPythonPath(pythonPath)) {
         return pythonPath;
     }
-    // Keep python right on top, for backwards compatibility
+    // Keep python right on top, for backwards compatibility.
     const KnownPythonExecutables = ['python', 'python4', 'python3.6', 'python3.5', 'python3', 'python2.7', 'python2'];
     for (let executableName of KnownPythonExecutables) {
-        // Suffix with 'python' for linux and 'osx', and 'python.exe' for 'windows'
+        // Suffix with 'python' for linux and 'osx', and 'python.exe' for 'windows'.
         if (exports.IS_WINDOWS) {
-            executableName = executableName + '.exe';
+            executableName = `${executableName}.exe`;
             if (isValidPythonPath(path.join(pythonPath, executableName))) {
                 return path.join(pythonPath, executableName);
             }
@@ -109,38 +110,11 @@ function isValidPythonPath(pythonPath) {
         return true;
     }
     try {
-        let output = child_process.execFileSync(pythonPath, ['-c', 'print(1234)'], { encoding: 'utf8' });
+        const output = child_process.execFileSync(pythonPath, ['-c', 'print(1234)'], { encoding: 'utf8' });
         return output.startsWith('1234');
     }
-    catch (ex) {
+    catch (_a) {
         return false;
     }
 }
-function getCustomEnvVars(envVars, envFile) {
-    let envFileVars = null;
-    if (typeof envFile === 'string' && envFile.length > 0 && fs.existsSync(envFile)) {
-        try {
-            envFileVars = envFileParser_1.parseEnvFile(envFile);
-        }
-        catch (ex) {
-            console.error('Failed to load env file');
-            console.error(ex);
-        }
-    }
-    let configVars = null;
-    if (envVars && Object.keys(envVars).length > 0 && envFileVars) {
-        configVars = envFileParser_1.mergeEnvVariables(envVars, envFileVars);
-    }
-    if (envVars && Object.keys(envVars).length > 0) {
-        configVars = envVars;
-    }
-    if (envFileVars) {
-        configVars = envFileVars;
-    }
-    if (configVars && typeof configVars === 'object' && Object.keys(configVars).length > 0) {
-        return configVars;
-    }
-    return null;
-}
-exports.getCustomEnvVars = getCustomEnvVars;
 //# sourceMappingURL=Utils.js.map

@@ -50,7 +50,7 @@ class BlockFormatProviders {
             return [];
         }
         const currentLineText = currentLine.text;
-        const provider = this.providers.find(provider => provider.canProvideEdits(currentLineText));
+        const provider = this.providers.find(p => p.canProvideEdits(currentLineText));
         if (provider) {
             return provider.provideEdits(document, position, ch, options, currentLine);
         }

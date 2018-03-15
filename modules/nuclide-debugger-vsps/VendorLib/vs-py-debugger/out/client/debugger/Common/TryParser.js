@@ -1,3 +1,4 @@
+// tslint:disable:quotemark no-var-requires no-require-imports max-func-body-length prefer-const no-function-expression cyclomatic-complexity no-increment-decrement one-line
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const LineByLineReader = require("line-by-line");
@@ -49,7 +50,7 @@ function ExtractTryStatements(pythonFile) {
                     return;
                 }
                 let column = line.indexOf("except");
-                // Do we have a try block for this same column                
+                // Do we have a try block for this same column
                 if (!tryColumnBlocks.has(column)) {
                     return;
                 }
@@ -65,7 +66,7 @@ function ExtractTryStatements(pythonFile) {
             matches = line.match(/^\s*else(\s*):/);
             if (matches !== null && matches.length > 0 &&
                 (trimmedLine.startsWith("else ") || trimmedLine.startsWith("else:"))) {
-                // This is possibly an if else... 
+                // This is possibly an if else...
                 if (tryColumnBlocks.size === 0) {
                     return;
                 }

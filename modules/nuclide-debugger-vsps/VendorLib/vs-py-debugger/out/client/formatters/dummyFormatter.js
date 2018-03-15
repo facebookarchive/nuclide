@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const types_1 = require("../common/types");
 const baseFormatter_1 = require("./baseFormatter");
-const installer_1 = require("../common/installer");
 class DummyFormatter extends baseFormatter_1.BaseFormatter {
-    constructor(outputChannel, pythonSettings, workspaceRootPath) {
-        super('none', installer_1.Product.yapf, outputChannel, pythonSettings, workspaceRootPath);
+    constructor(serviceContainer) {
+        super('none', types_1.Product.yapf, serviceContainer);
     }
     formatDocument(document, options, token, range) {
         return Promise.resolve([]);

@@ -1,68 +1,124 @@
-'use strict';
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs-extra");
+const path = require("path");
 const vscode = require("vscode");
-const fs = require("fs");
-const utils_1 = require("./../common/utils");
-const editor_1 = require("./../common/editor");
+const types_1 = require("../common/application/types");
+const constants_1 = require("../common/constants");
+require("../common/extensions");
 const helpers_1 = require("../common/helpers");
-const installer_1 = require("../common/installer");
+const types_2 = require("../common/process/types");
+const types_3 = require("../common/types");
+const editor_1 = require("./../common/editor");
+const types_4 = require("./types");
 class BaseFormatter {
-    constructor(Id, product, outputChannel, pythonSettings, workspaceRootPath) {
+    constructor(Id, product, serviceContainer) {
         this.Id = Id;
         this.product = product;
-        this.outputChannel = outputChannel;
-        this.pythonSettings = pythonSettings;
-        this.workspaceRootPath = workspaceRootPath;
-        this.installer = new installer_1.Installer();
+        this.serviceContainer = serviceContainer;
+        this.outputChannel = serviceContainer.get(types_3.IOutputChannel, constants_1.STANDARD_OUTPUT_CHANNEL);
+        this.helper = serviceContainer.get(types_4.IFormatterHelper);
+        this.workspace = serviceContainer.get(types_1.IWorkspaceService);
     }
-    provideDocumentFormattingEdits(document, options, token, command, args, cwd = null) {
-        this.outputChannel.clear();
-        cwd = typeof cwd === 'string' && cwd.length > 0 ? cwd : (this.workspaceRootPath ? this.workspaceRootPath : vscode.workspace.rootPath);
-        // autopep8 and yapf have the ability to read from the process input stream and return the formatted code out of the output stream
-        // However they don't support returning the diff of the formatted text when reading data from the input stream
-        // Yes getting text formatted that way avoids having to create a temporary file, however the diffing will have
-        // to be done here in node (extension), i.e. extension cpu, i.e. les responsive solution
-        let tmpFileCreated = document.isDirty;
-        let filePromise = tmpFileCreated ? editor_1.getTempFileWithDocumentContents(document) : Promise.resolve(document.fileName);
-        const promise = filePromise.then(filePath => {
-            if (token && token.isCancellationRequested) {
-                return [filePath, ''];
+    getDocumentPath(document, fallbackPath) {
+        if (path.basename(document.uri.fsPath) === document.uri.fsPath) {
+            return fallbackPath;
+        }
+        return path.dirname(document.fileName);
+    }
+    getWorkspaceUri(document) {
+        const workspaceFolder = this.workspace.getWorkspaceFolder(document.uri);
+        if (workspaceFolder) {
+            return workspaceFolder.uri;
+        }
+        const folders = this.workspace.workspaceFolders;
+        if (Array.isArray(folders) && folders.length > 0) {
+            return folders[0].uri;
+        }
+        return vscode.Uri.file(__dirname);
+    }
+    provideDocumentFormattingEdits(document, options, token, args, cwd) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.outputChannel.clear();
+            if (typeof cwd !== 'string' || cwd.length === 0) {
+                cwd = this.getWorkspaceUri(document).fsPath;
             }
-            return Promise.all([Promise.resolve(filePath), utils_1.execPythonFile(command, args.concat([filePath]), cwd)]);
-        }).then(data => {
-            // Delete the temporary file created
-            if (tmpFileCreated) {
-                fs.unlink(data[0]);
-            }
-            if (token && token.isCancellationRequested) {
+            // autopep8 and yapf have the ability to read from the process input stream and return the formatted code out of the output stream.
+            // However they don't support returning the diff of the formatted text when reading data from the input stream.
+            // Yes getting text formatted that way avoids having to create a temporary file, however the diffing will have
+            // to be done here in node (extension), i.e. extension cpu, i.e. les responsive solution.
+            const tempFile = yield this.createTempFile(document);
+            if (this.checkCancellation(document.fileName, tempFile, token)) {
                 return [];
             }
-            return editor_1.getTextEditsFromPatch(document.getText(), data[1]);
-        }).catch(error => {
-            this.handleError(this.Id, command, error);
-            return [];
+            const executionInfo = this.helper.getExecutionInfo(this.product, args, document.uri);
+            executionInfo.args.push(tempFile);
+            const pythonToolsExecutionService = this.serviceContainer.get(types_2.IPythonToolExecutionService);
+            const promise = pythonToolsExecutionService.exec(executionInfo, { cwd, throwOnStdErr: true, token }, document.uri)
+                .then(output => output.stdout)
+                .then(data => {
+                if (this.checkCancellation(document.fileName, tempFile, token)) {
+                    return [];
+                }
+                return editor_1.getTextEditsFromPatch(document.getText(), data);
+            })
+                .catch(error => {
+                if (this.checkCancellation(document.fileName, tempFile, token)) {
+                    return [];
+                }
+                // tslint:disable-next-line:no-empty
+                this.handleError(this.Id, error, document.uri).catch(() => { });
+                return [];
+            })
+                .then(edits => {
+                this.deleteTempFile(document.fileName, tempFile).ignoreErrors();
+                return edits;
+            });
+            vscode.window.setStatusBarMessage(`Formatting with ${this.Id}`, promise);
+            return promise;
         });
-        vscode.window.setStatusBarMessage(`Formatting with ${this.Id}`, promise);
-        return promise;
     }
-    handleError(expectedFileName, fileName, error) {
-        let customError = `Formatting with ${this.Id} failed.`;
-        if (helpers_1.isNotInstalledError(error)) {
-            // Check if we have some custom arguments such as "pylint --load-plugins pylint_django"
-            // Such settings are no longer supported
-            let stuffAfterFileName = fileName.substring(fileName.toUpperCase().lastIndexOf(expectedFileName) + expectedFileName.length);
-            // Ok if we have a space after the file name, this means we have some arguments defined and this isn't supported
-            if (stuffAfterFileName.trim().indexOf(' ') > 0) {
-                customError = `Formatting failed, custom arguments in the 'python.formatting.${this.Id}Path' is not supported.\n` +
-                    `Custom arguments to the formatter can be defined in 'python.formatter.${this.Id}Args' setting of settings.json.\n` +
-                    'For further details, please see https://github.com/DonJayamanne/pythonVSCode/wiki/Troubleshooting-Linting#2-linting-with-xxx-failed-';
+    handleError(expectedFileName, error, resource) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let customError = `Formatting with ${this.Id} failed.`;
+            if (helpers_1.isNotInstalledError(error)) {
+                const installer = this.serviceContainer.get(types_3.IInstaller);
+                const isInstalled = yield installer.isInstalled(this.product, resource);
+                if (!isInstalled) {
+                    customError += `\nYou could either install the '${this.Id}' formatter, turn it off or use another formatter.`;
+                    installer.promptToInstall(this.product, resource).catch(ex => console.error('Python Extension: promptToInstall', ex));
+                }
             }
-            else {
-                customError += `\nYou could either install the '${this.Id}' formatter, turn it off or use another formatter.`;
-                this.installer.promptToInstall(this.product);
-            }
+            this.outputChannel.appendLine(`\n${customError}\n${error}`);
+        });
+    }
+    createTempFile(document) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return document.isDirty
+                ? yield editor_1.getTempFileWithDocumentContents(document)
+                : document.fileName;
+        });
+    }
+    deleteTempFile(originalFile, tempFile) {
+        if (originalFile !== tempFile) {
+            return fs.unlink(tempFile);
         }
-        this.outputChannel.appendLine(`\n${customError}\n${error + ''}`);
+        return Promise.resolve();
+    }
+    checkCancellation(originalFile, tempFile, token) {
+        if (token && token.isCancellationRequested) {
+            this.deleteTempFile(originalFile, tempFile).ignoreErrors();
+            return true;
+        }
+        return false;
     }
 }
 exports.BaseFormatter = BaseFormatter;

@@ -1,16 +1,16 @@
-"use strict";
+// tslint:disable:interface-name member-access no-single-line-block-comment no-any no-stateless-class member-ordering prefer-method-signature
+'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_debugadapter_1 = require("vscode-debugadapter");
 class TelemetryEvent extends vscode_debugadapter_1.OutputEvent {
     constructor(output, data) {
-        super(output, "telemetry");
+        super(output, 'telemetry');
         if (data) {
             this.body.data = data;
         }
     }
 }
 exports.TelemetryEvent = TelemetryEvent;
-exports.DjangoApp = "DJANGO";
 exports.VALID_DEBUG_OPTIONS = ['WaitOnAbnormalExit',
     'WaitOnNormalExit',
     'RedirectOutput',
@@ -23,12 +23,12 @@ var DebugFlags;
     DebugFlags[DebugFlags["IgnoreCommandBursts"] = 1] = "IgnoreCommandBursts";
 })(DebugFlags = exports.DebugFlags || (exports.DebugFlags = {}));
 class DebugOptions {
-    static get WaitOnAbnormalExit() { return "WaitOnAbnormalExit"; }
-    static get WaitOnNormalExit() { return "WaitOnNormalExit"; }
-    static get RedirectOutput() { return "RedirectOutput"; }
-    static get DjangoDebugging() { return "DjangoDebugging"; }
-    static get DebugStdLib() { return "DebugStdLib"; }
-    static get BreakOnSystemExitZero() { return "BreakOnSystemExitZero"; }
+    static get WaitOnAbnormalExit() { return 'WaitOnAbnormalExit'; }
+    static get WaitOnNormalExit() { return 'WaitOnNormalExit'; }
+    static get RedirectOutput() { return 'RedirectOutput'; }
+    static get DjangoDebugging() { return 'DjangoDebugging'; }
+    static get DebugStdLib() { return 'DebugStdLib'; }
+    static get BreakOnSystemExitZero() { return 'BreakOnSystemExitZero'; }
 }
 exports.DebugOptions = DebugOptions;
 var FrameKind;
@@ -37,7 +37,6 @@ var FrameKind;
     FrameKind[FrameKind["Python"] = 1] = "Python";
     FrameKind[FrameKind["Django"] = 2] = "Django";
 })(FrameKind = exports.FrameKind || (exports.FrameKind = {}));
-;
 var enum_EXCEPTION_STATE;
 (function (enum_EXCEPTION_STATE) {
     enum_EXCEPTION_STATE[enum_EXCEPTION_STATE["BREAK_MODE_NEVER"] = 0] = "BREAK_MODE_NEVER";

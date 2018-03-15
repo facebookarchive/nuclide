@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const RemoteDebugServer_1 = require("../DebugServers/RemoteDebugServer");
 const DebugClient_1 = require("./DebugClient");
 class RemoteDebugClient extends DebugClient_1.DebugClient {
+    // tslint:disable-next-line:no-any
     constructor(args, debugSession) {
         super(args, debugSession);
-        this.args = args;
     }
     CreateDebugServer(pythonProcess) {
         this.pythonProcess = pythonProcess;
@@ -21,7 +21,7 @@ class RemoteDebugClient extends DebugClient_1.DebugClient {
         }
         if (this.debugServer) {
             this.debugServer.Stop();
-            this.debugServer = null;
+            this.debugServer = undefined;
         }
     }
 }

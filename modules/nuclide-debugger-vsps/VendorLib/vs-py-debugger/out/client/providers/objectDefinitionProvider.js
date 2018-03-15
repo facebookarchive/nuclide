@@ -1,4 +1,10 @@
 'use strict';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -9,15 +15,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const telemetry_1 = require("../telemetry");
+const constants_1 = require("../telemetry/constants");
 const defProvider = require("./definitionProvider");
-function activateGoToObjectDefinitionProvider(context) {
-    let def = new PythonObjectDefinitionProvider(context);
-    return vscode.commands.registerCommand("python.goToPythonObject", () => def.goToObjectDefinition());
+function activateGoToObjectDefinitionProvider(jediFactory) {
+    const def = new PythonObjectDefinitionProvider(jediFactory);
+    const commandRegistration = vscode.commands.registerCommand("python.goToPythonObject", () => def.goToObjectDefinition());
+    return [def, commandRegistration];
 }
 exports.activateGoToObjectDefinitionProvider = activateGoToObjectDefinitionProvider;
 class PythonObjectDefinitionProvider {
-    constructor(context) {
-        this._defProvider = new defProvider.PythonDefinitionProvider(context);
+    constructor(jediFactory) {
+        this._defProvider = new defProvider.PythonDefinitionProvider(jediFactory);
     }
     goToObjectDefinition() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -90,5 +99,8 @@ class PythonObjectDefinitionProvider {
         });
     }
 }
+__decorate([
+    telemetry_1.captureTelemetry(constants_1.GO_TO_OBJECT_DEFINITION)
+], PythonObjectDefinitionProvider.prototype, "goToObjectDefinition", null);
 exports.PythonObjectDefinitionProvider = PythonObjectDefinitionProvider;
 //# sourceMappingURL=objectDefinitionProvider.js.map

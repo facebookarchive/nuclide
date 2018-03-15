@@ -1,12 +1,13 @@
-'use strict';
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
-const sortProvider = require("./providers/importSortProvider");
 const os = require("os");
-function activate(context, outChannel) {
-    let rootDir = context.asAbsolutePath('.');
-    let disposable = vscode.commands.registerCommand('python.sortImports', () => {
-        let activeEditor = vscode.window.activeTextEditor;
+const vscode = require("vscode");
+const types_1 = require("./common/process/types");
+const sortProvider = require("./providers/importSortProvider");
+function activate(context, outChannel, serviceContainer) {
+    const rootDir = context.asAbsolutePath('.');
+    const disposable = vscode.commands.registerCommand('python.sortImports', () => {
+        const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor || activeEditor.document.languageId !== 'python') {
             vscode.window.showErrorMessage('Please open a Python source file to sort the imports.');
             return Promise.resolve();
@@ -19,6 +20,7 @@ function activate(context, outChannel) {
         const lastLine = activeEditor.document.lineAt(activeEditor.document.lineCount - 1);
         let emptyLineAdded = Promise.resolve(true);
         if (lastLine.text.trim().length > 0) {
+            // tslint:disable-next-line:no-any
             emptyLineAdded = new Promise((resolve, reject) => {
                 activeEditor.edit(builder => {
                     builder.insert(lastLine.range.end, os.EOL);
@@ -26,16 +28,16 @@ function activate(context, outChannel) {
             });
         }
         return emptyLineAdded.then(() => {
-            return new sortProvider.PythonImportSortProvider().sortImports(rootDir, activeEditor.document);
+            const processService = serviceContainer.get(types_1.IProcessService);
+            const pythonExecutionFactory = serviceContainer.get(types_1.IPythonExecutionFactory);
+            return new sortProvider.PythonImportSortProvider(pythonExecutionFactory, processService).sortImports(rootDir, activeEditor.document);
         }).then(changes => {
-            if (changes.length === 0) {
+            if (!changes || changes.length === 0) {
                 return;
             }
-            return activeEditor.edit(builder => {
-                changes.forEach(change => builder.replace(change.range, change.newText));
-            });
+            return new Promise((resolve, reject) => activeEditor.edit(builder => changes.forEach(change => builder.replace(change.range, change.newText))).then(resolve, reject));
         }).catch(error => {
-            let message = typeof error === 'string' ? error : (error.message ? error.message : error);
+            const message = typeof error === 'string' ? error : (error.message ? error.message : error);
             outChannel.appendLine(error);
             outChannel.show();
             vscode.window.showErrorMessage(message);

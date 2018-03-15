@@ -1,71 +1,53 @@
 'use strict';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
-const proxy = require("./jediProxy");
-const telemetryHelper = require("../common/telemetry");
-const telemetryContracts = require("../common/telemetryContracts");
-const jediHelpers_1 = require("./jediHelpers");
-const configSettings_1 = require("../common/configSettings");
-const vscode_1 = require("vscode");
-const pythonSettings = configSettings_1.PythonSettings.getInstance();
+const types_1 = require("../common/types");
+const telemetry_1 = require("../telemetry");
+const constants_1 = require("../telemetry/constants");
+const completionSource_1 = require("./completionSource");
 class PythonCompletionItemProvider {
-    constructor(context, jediProxy = null) {
-        this.jediProxyHandler = new proxy.JediProxyHandler(context, jediProxy);
-    }
-    static parseData(data) {
-        if (data && data.items.length > 0) {
-            return data.items.map(item => {
-                const sigAndDocs = jediHelpers_1.extractSignatureAndDocumentation(item);
-                let completionItem = new vscode.CompletionItem(item.text);
-                completionItem.kind = item.type;
-                completionItem.documentation = sigAndDocs[1].length === 0 ? item.description : sigAndDocs[1];
-                completionItem.detail = sigAndDocs[0].split(/\r?\n/).join('');
-                if (pythonSettings.autoComplete.addBrackets === true &&
-                    (item.kind === vscode.SymbolKind.Function || item.kind === vscode.SymbolKind.Method)) {
-                    completionItem.insertText = new vscode_1.SnippetString(item.text).appendText("(").appendTabstop().appendText(")");
-                }
-                // ensure the built in memebers are at the bottom
-                completionItem.sortText = (completionItem.label.startsWith('__') ? 'z' : (completionItem.label.startsWith('_') ? 'y' : '__')) + completionItem.label;
-                return completionItem;
-            });
-        }
-        return [];
+    constructor(jediFactory, serviceContainer) {
+        this.completionSource = new completionSource_1.CompletionSource(jediFactory);
+        this.configService = serviceContainer.get(types_1.IConfigurationService);
     }
     provideCompletionItems(document, position, token) {
-        if (position.character <= 0) {
-            return Promise.resolve([]);
-        }
-        const filename = document.fileName;
-        const lineText = document.lineAt(position.line).text;
-        if (lineText.match(/^\s*\/\//)) {
-            return Promise.resolve([]);
-        }
-        // If starts with a comment, then return
-        if (lineText.trim().startsWith('#')) {
-            return Promise.resolve([]);
-        }
-        // If starts with a """ (possible doc string), then return
-        if (lineText.trim().startsWith('"""')) {
-            return Promise.resolve([]);
-        }
-        const type = proxy.CommandType.Completions;
-        const columnIndex = position.character;
-        const source = document.getText();
-        const cmd = {
-            command: type,
-            fileName: filename,
-            columnIndex: columnIndex,
-            lineIndex: position.line,
-            source: source
-        };
-        const timer = new telemetryHelper.Delays();
-        return this.jediProxyHandler.sendCommand(cmd, token).then(data => {
-            timer.stop();
-            telemetryHelper.sendTelemetryEvent(telemetryContracts.IDE.Completion, {}, timer.toMeasures());
-            const completions = PythonCompletionItemProvider.parseData(data);
-            return completions;
+        return __awaiter(this, void 0, void 0, function* () {
+            const items = yield this.completionSource.getVsCodeCompletionItems(document, position, token);
+            if (this.configService.isTestExecution()) {
+                for (let i = 0; i < Math.min(3, items.length); i += 1) {
+                    items[i] = yield this.resolveCompletionItem(items[i], token);
+                }
+            }
+            return items;
+        });
+    }
+    resolveCompletionItem(item, token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!item.documentation) {
+                const itemInfos = yield this.completionSource.getDocumentation(item, token);
+                if (itemInfos && itemInfos.length > 0) {
+                    item.documentation = itemInfos[0].tooltip;
+                }
+            }
+            return item;
         });
     }
 }
+__decorate([
+    telemetry_1.captureTelemetry(constants_1.COMPLETION)
+], PythonCompletionItemProvider.prototype, "provideCompletionItems", null);
 exports.PythonCompletionItemProvider = PythonCompletionItemProvider;
 //# sourceMappingURL=completionProvider.js.map

@@ -1,42 +1,43 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
-const settings = require("./configSettings");
-let outChannel;
-class Logger {
-    static initializeChannel() {
-        if (settings.PythonSettings.getInstance().devOptions.indexOf("DEBUG") >= 0) {
-            Logger.IsDebug = true;
-            outChannel = vscode.window.createOutputChannel("PythonExtLog");
+const inversify_1 = require("inversify");
+const PREFIX = 'Python Extension: ';
+let Logger = class Logger {
+    logError(message, ex) {
+        if (ex) {
+            console.error(`${PREFIX}${message}`, ex);
+        }
+        else {
+            console.error(`${PREFIX}${message}`);
         }
     }
-    static write(category = "log", title = "", message) {
-        Logger.initializeChannel();
-        if (title.length > 0) {
-            Logger.writeLine(category, "---------------------------");
-            Logger.writeLine(category, title);
+    logWarning(message, ex) {
+        if (ex) {
+            console.warn(`${PREFIX}${message}`, ex);
         }
-        Logger.writeLine(category, message);
-    }
-    static writeLine(category = "log", line) {
-        console[category](line);
-        if (outChannel) {
-            outChannel.appendLine(line);
+        else {
+            console.warn(`${PREFIX}${message}`);
         }
     }
-}
-function error(title = "", message) {
-    Logger.write.apply(Logger, ["error", title, message]);
+};
+Logger = __decorate([
+    inversify_1.injectable()
+], Logger);
+exports.Logger = Logger;
+// tslint:disable-next-line:no-any
+function error(title = '', message) {
+    new Logger().logError(`${title}, ${message}`);
 }
 exports.error = error;
-function warn(title = "", message) {
-    Logger.write.apply(Logger, ["warn", title, message]);
+// tslint:disable-next-line:no-any
+function warn(title = '', message) {
+    new Logger().logWarning(`${title}, ${message}`);
 }
 exports.warn = warn;
-function log(title = "", message) {
-    if (!Logger.IsDebug)
-        return;
-    Logger.write.apply(Logger, ["log", title, message]);
-}
-exports.log = log;
 //# sourceMappingURL=logger.js.map
