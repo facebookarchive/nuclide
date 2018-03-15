@@ -1,0 +1,13 @@
+"paths":
+    [
+      "fbsource/xplat/nuclide"
+    ]
+
+"config":
+  "*":
+    "nuclide":
+
+      # For now, no featuregroups are specified. This means all
+      # featuregroups will by default be loaded into Nuclide.
+      "enabled-feature-groups":
+        []
