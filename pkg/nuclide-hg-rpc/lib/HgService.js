@@ -268,9 +268,6 @@ export type OperationProgressState = {
 };
 export type OperationProgress = {
   topics: Array<string>,
-  // TODO(T26794506): We expect that the state field will conform to OperationProgressState
-  // but any unknown fields (due to changes in hg) will break us at the rpc layer.
-  // So we type it as Object to save ourselves a crash.
   state: Object,
 };
 
@@ -830,9 +827,12 @@ export class HgService {
   /**
    * Observes when the Mercurial operation progress has changed
    */
-  observeHgOperationProgressDidChange(): ConnectableObservable<
-    OperationProgress,
-  > {
+
+  observeHgOperationProgressDidChange(): ConnectableObservable<any> {
+    // TODO(T26794506): We expect this to return OperationProgress,
+    // but in some exceptional circumstances the object will fail marshalling
+    // for an unknown reason. We don't care about the type on the server, so
+    // we are sending `any` and letting the client do the type checking.
     return this._hgOperationProgressDidChangeObserver
       .let(fastDebounce(50))
       .switchMap(() =>
