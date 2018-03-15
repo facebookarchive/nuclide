@@ -374,14 +374,21 @@ class Activation {
     let info;
 
     if (await passesGK('nuclide_debugger_native_vsp')) {
+      let adapter = VsAdapterTypes.NATIVE_LLDB;
+
+      if (await passesGK('nuclide_buck_uses_gdb')) {
+        adapter = VsAdapterTypes.NATIVE_GDB;
+      }
+
       info = await getNativeVSPLaunchProcessInfo(
-        VsAdapterTypes.NATIVE_LLDB,
+        adapter,
         nuclideUri.join(buckRoot, relativeOutputPath),
         {
           args: (runArguments.length ? runArguments : targetOutput.args) || [],
           cwd: remoteBuckRoot,
           env,
           sourcePath: remoteBuckRoot,
+          debuggerRoot: remoteBuckRoot,
         },
       );
     } else {
