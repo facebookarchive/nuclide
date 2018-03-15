@@ -31,6 +31,15 @@ log4js.configure({
 const DEFAULT_PORT = 0;
 const DEFAULT_TIMEOUT = 60000;
 
+export type BigDigCliParams = {|
+  cname: string,
+  jsonOutputFile: string,
+  timeout: ?number,
+  expiration: string,
+  serverParams: mixed,
+  port: ?number,
+|};
+
 /**
  * @param absolutePathToServerMain The code that bootstraps the server will load the code at this
  *     path via require(). It is expected to have a default export that is a function that takes the
@@ -39,7 +48,9 @@ const DEFAULT_TIMEOUT = 60000;
  */
 export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   // All arguments expect for the last one are ignored.
-  const params = JSON.parse(process.argv[process.argv.length - 1]);
+  const params: BigDigCliParams = JSON.parse(
+    process.argv[process.argv.length - 1],
+  );
   const {cname, expiration, jsonOutputFile} = params;
   let {port, timeout} = params;
   if (typeof cname !== 'string') {

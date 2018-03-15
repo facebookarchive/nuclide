@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {BigDigCliParams} from '../server/cli';
 import type {
   ClientErrorExtensions,
   ConnectConfig,
@@ -787,7 +788,7 @@ export class SshHandshake {
    */
   async _startRemoteServer(server: RemotePackage): Promise<void> {
     const remoteTempFile = `/tmp/big-dig-sshhandshake-${Math.random()}`;
-    const params = {
+    const params: BigDigCliParams = {
       cname: this._config.host,
       jsonOutputFile: remoteTempFile,
       timeout: 60000,
