@@ -207,9 +207,23 @@ export default class NativeAttachUiComponent extends React.Component<
   }
 
   _updateList = (processes: Array<ProcessInfo>): void => {
+    // On Linux, process names for which only a name is available
+    // are denoted as [name] in the commandWithArgs field. These
+    // names often do not play well with basename (in particular,
+    // some of the contain literal slashes) so handle them as a special
+    // case.
+    const noargsRegex = /^\[(.*)\]$/;
+    const commandName = (name, withArgs) => {
+      const match = withArgs.match(noargsRegex);
+      if (match != null) {
+        return match[1];
+      }
+      return nuclideUri.basename(name);
+    };
+
     const processList = processes.map(process => {
       return {
-        process: nuclideUri.basename(process.command),
+        process: commandName(process.command, process.commandWithArgs),
         pid: process.pid,
         command: process.commandWithArgs,
       };
