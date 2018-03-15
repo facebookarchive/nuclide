@@ -76,6 +76,9 @@ module.exports = function(params) {
       _: params.testPaths.map(testPath => fs.realpathSync(testPath)),
       cache: false,
       env: 'nuclide-jest/AtomJestEnvironment.js',
+      watch: params.headless ? process.env.JEST_WATCH != null : true,
+      watchAll: params.headless ? process.env.JEST_WATCH_ALL != null : true,
+      watchman: true,
       config: JSON.stringify(Object.assign(
         {},
         config,
