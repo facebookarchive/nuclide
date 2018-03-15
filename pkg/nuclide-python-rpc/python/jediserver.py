@@ -250,6 +250,6 @@ if __name__ == '__main__':
     # Let's use a temporary directory instead so it doesn't grow forever.
     jedi.settings.cache_directory = os.path.join(
         tempfile.gettempdir(),
-        'jedi-cache',
+        'jedi-cache-%s' % getpass.getuser(),
     )
     JediServer(args.paths).run()
