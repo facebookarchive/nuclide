@@ -19,9 +19,9 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
+  isAdbTunneled,
   startTunnelingAdb,
   stopTunnelingAdb,
-  isAdbTunneled,
 } from '../../../nuclide-adb-sdb-base/lib/Tunneling';
 import {AdbTunnelButton} from '../ui/AdbTunnelButton';
 import * as React from 'react';
@@ -48,7 +48,7 @@ export class AdbTunnelingProvider implements DeviceTypeComponentProvider {
             host,
             status: value ? 'active' : 'inactive',
             enable: () => startTunnelingAdb(host),
-            disable: () => stopTunnelingAdb(),
+            disable: () => stopTunnelingAdb(host),
           })),
           AdbTunnelButton,
         );
