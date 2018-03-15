@@ -177,6 +177,8 @@
     "flow-bin": "0.67.1",
     "fs-extra": "2.0.0",
     "jasmine-node": "1.14.5",
+    "jest-cli": "22.4.2",
+    "jest-environment-node": "22.4.1",
     "mock-spawn": "0.2.6",
     "nyc": "11.2.1",
     "prettier": "1.9.1",
