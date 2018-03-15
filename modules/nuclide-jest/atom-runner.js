@@ -19,15 +19,14 @@
 const {Console} = require('console');
 const electron = require('electron');
 const invariant = require('assert');
-const fs = require('fs');
 // eslint-disable-next-line rulesdir/no-unresolved
 const jestCLI = require('jest-cli');
+const fs = require('fs');
 const os = require('os');
-
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 const path = require('path');
 
 const config = require('./jest.config.js');
+const {getPackage, getPackageFile} = require('./AtomJestUtils');
 
 const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
@@ -84,30 +83,10 @@ module.exports = function(params) {
           reporters: params.headless ?
             ['default'] :
             [path.join(__dirname, 'atom-reporter.js')],
+          setupTestFrameworkScriptFile: path.resolve(__dirname, 'atomSetup.js'),
         }
       )),
     },
     [cwd]
   ).then(response => response.results.success ? 0 : 1);
 };
-
-function getPackage(start) {
-  return JSON.parse(fs.readFileSync(getPackageFile(start), 'utf8'));
-}
-
-function getPackageFile(start) {
-  let current = path.resolve(start);
-  while (true) {
-    const filename = path.join(current, 'package.json');
-    if (fs.existsSync(filename)) {
-      return filename;
-    } else {
-      const next = path.join(current, '..');
-      if (next === current) {
-        return null;
-      } else {
-        current = next;
-      }
-    }
-  }
-}

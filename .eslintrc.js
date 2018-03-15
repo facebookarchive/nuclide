@@ -36,6 +36,7 @@ module.exports = {
     atomtest: true,
     es6: true,
     jasmine: true,
+    jest: true,
     node: true,
   },
 

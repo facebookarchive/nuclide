@@ -22,6 +22,7 @@ const NodeEnvironment = require('jest-environment-node');
 module.exports = class AtomJestEnvironment extends NodeEnvironment {
   setup() {
     this.global.atom = global.atom;
+    this.global.__pkg = global.__pkg;
     return Promise.resolve();
   }
 };
