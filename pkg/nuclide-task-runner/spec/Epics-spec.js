@@ -28,6 +28,7 @@ import * as Immutable from 'immutable';
 
 function getRootEpic() {
   const epics = Object.keys(Epics)
+    .filter(k => k !== 'trackEpic') // Omit the tracking epic
     .map(k => Epics[k])
     .filter(epic => typeof epic === 'function');
   return combineEpics(...epics);

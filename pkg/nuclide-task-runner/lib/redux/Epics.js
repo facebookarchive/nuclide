@@ -21,8 +21,10 @@ import type {
 } from '../types';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
+import {compact} from 'nuclide-commons/observable';
 import {ProcessExitError} from 'nuclide-commons/process';
 import {observableFromTask} from '../../../commons-node/tasks';
+import {trackEvent} from '../../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import * as Actions from './Actions';
@@ -482,6 +484,80 @@ export function setToolbarVisibilityEpic(
       ),
     );
   });
+}
+
+export function trackEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<empty> {
+  const trackingEvents = actions
+    .map(action => {
+      switch (action.type) {
+        case Actions.TASK_STARTED:
+          return {
+            type: 'nuclide-task-runner:task-started',
+            data: getTaskTrackEventData(action, store.getState()),
+          };
+        case Actions.TASK_STOPPED:
+          return {
+            type: 'nuclide-task-runner:task-stopped',
+            data: getTaskTrackEventData(action, store.getState()),
+          };
+        case Actions.TASK_COMPLETED:
+          return {
+            type: 'nuclide-task-runner:task-completed',
+            data: getTaskTrackEventData(action, store.getState()),
+          };
+
+        case Actions.TASK_ERRORED:
+          return {
+            type: 'nuclide-task-runner:task-errored',
+            data: getTaskTrackEventData(action, store.getState()),
+          };
+        case Actions.SET_TOOLBAR_VISIBILITY:
+          const visible = action.payload.visible;
+          return visible
+            ? {type: 'nuclide-task-runner:show'}
+            : {type: 'nuclide-task-runner: hide'};
+        default:
+          return null;
+      }
+    })
+    .let(compact);
+
+  return trackingEvents.do(trackEvent).ignoreElements();
+}
+
+function getTaskTrackEventData(action: Action, state: AppState): Object {
+  invariant(
+    action.type === Actions.TASK_STARTED ||
+      action.type === Actions.TASK_STOPPED ||
+      action.type === Actions.TASK_COMPLETED ||
+      action.type === Actions.TASK_ERRORED,
+  );
+  const {activeTaskRunner, projectRoot} = state;
+  invariant(projectRoot != null);
+  invariant(activeTaskRunner);
+  const {taskStatus} = action.payload;
+  const {task} = taskStatus;
+  const taskTrackingData =
+    typeof task.getTrackingData === 'function' ? task.getTrackingData() : {};
+  const error =
+    action.type === Actions.TASK_ERRORED ? action.payload.error : null;
+  const duration =
+    action.type === Actions.TASK_STARTED
+      ? null
+      : new Date().getTime() -
+        parseInt(action.payload.taskStatus.startDate.getTime(), 10);
+  return {
+    ...taskTrackingData,
+    projectRoot,
+    taskRunnerId: activeTaskRunner.id,
+    taskType: taskStatus.metadata.type,
+    errorMessage: error != null ? error.message : null,
+    stackTrace: error != null ? String(error.stack) : null,
+    duration,
+  };
 }
 
 export function printTaskCanceledEpic(

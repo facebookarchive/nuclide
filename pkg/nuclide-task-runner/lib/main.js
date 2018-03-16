@@ -26,6 +26,7 @@ import type {ConsoleService} from 'atom-ide-ui';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
+import {track} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -39,7 +40,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
-import {trackingMiddleware} from './trackingMiddleware';
 import getToolbarProps from './ui/getToolbarProps';
 import Toolbar from './ui/Toolbar';
 import invariant from 'assert';
@@ -89,6 +89,15 @@ class Activation {
       'nuclide:nuclide-task-runner:working-root-preferences',
     );
 
+    const initialVisibility = getInitialVisibility(
+      serializedState,
+      preferencesForWorkingRoots,
+    );
+
+    track('nuclide-task-runner:initialized', {
+      visible: initialVisibility,
+    });
+
     const epics = Object.keys(Epics)
       .map(k => Epics[k])
       .filter(epic => typeof epic === 'function');
@@ -97,13 +106,8 @@ class Activation {
       combineEpics(...epics)(actions, store, epicOptions);
     this._store = createStore(
       combineReducers(Reducers),
-      {
-        visible: getInitialVisibility(
-          serializedState,
-          preferencesForWorkingRoots,
-        ),
-      },
-      applyMiddleware(createEpicMiddleware(rootEpic), trackingMiddleware),
+      {visible: initialVisibility},
+      applyMiddleware(createEpicMiddleware(rootEpic)),
     );
     const states: Observable<AppState> = Observable.from(this._store)
       .filter((state: AppState) => state.initialPackagesActivated)
