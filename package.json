@@ -115,6 +115,7 @@
     "resolve-from": "2.0.0",
     "rimraf": "2.6.2",
     "rxjs": "5.5.5",
+    "season": "6.0.2",
     "semver": "5.3.0",
     "shallowequal": "0.2.2",
     "simple-text-buffer": "9.2.11",
