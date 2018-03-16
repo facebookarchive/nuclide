@@ -150,7 +150,12 @@ async function _createLogFile(path: string): Promise<void> {
 }
 
 async function _rotateHHVMLogs(path: string): Promise<void> {
-  const fileStat = await fsPromise.stat(path);
+  let fileStat;
+  try {
+    fileStat = await fsPromise.stat(path);
+  } catch (_) {
+    return;
+  }
 
   // Cap the size of the log file so it can't grow forever.
   const MAX_LOG_FILE_SIZE_BYTES = 512 * 1024; // 0.5 MB
