@@ -11,6 +11,8 @@
  */
 
 import child_process from 'child_process';
+import type {LauncherScriptParams} from './launchServer';
+
 import {timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import fs from '../common/fs';
 import invariant from 'assert';
@@ -59,14 +61,6 @@ export async function generateCertificatesAndStartServer({
     }
   }
 
-  // HACK: kill existing servers on the given port.
-  try {
-    child_process.execFileSync('pkill', [
-      '-f',
-      `launchServer-entry.js.*"port":${port}`,
-    ]);
-  } catch (e) {}
-
   const paths = await generateCertificates(
     clientCommonName,
     serverCommonName,
@@ -81,7 +75,7 @@ export async function generateCertificatesAndStartServer({
     fs.readFileAsBuffer(paths.serverCert),
     fs.readFileAsBuffer(paths.caCert),
   ]);
-  const params = {
+  const params: LauncherScriptParams = {
     key: key.toString(),
     cert: cert.toString(),
     ca: ca.toString(),
@@ -105,7 +99,6 @@ export async function generateCertificatesAndStartServer({
       // In case anything slips through the exception handler.
       '--abort_on_uncaught_exception',
       launcherScript,
-      JSON.stringify(params),
     ],
     {
       detached: true,
@@ -113,6 +106,8 @@ export async function generateCertificatesAndStartServer({
     },
   );
   logger.info(`spawn called for ${launcherScript}`);
+  // Send launch parameters over IPC to avoid making them visible in `ps`.
+  child.send(params);
 
   const childPort = await timeoutPromise(
     new Promise((resolve, reject) => {

@@ -16,9 +16,37 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import {launchServer} from './NuclideServer';
 
-async function main() {
-  const params = JSON.parse(process.argv[2]);
-  // TODO(mbolin): Do basic runtime validation on params.
+export type LauncherScriptParams = {|
+  key: string,
+  cert: string,
+  ca: string,
+  port: number,
+  launcher: string,
+  serverParams: mixed,
+|};
+
+function main() {
+  // launchServer should only be spawned from ./main.js.
+  if (process.send == null) {
+    // eslint-disable-next-line no-console
+    console.error(
+      'Error: launchServer should only be spawned via parseArgsAndRunMain.',
+    );
+    process.exit(1);
+  }
+
+  process.on('message', params => {
+    handleLaunchParams(params).catch(error => {
+      log4js.getLogger().fatal('launchServer failed:', error);
+      log4js.shutdown(() => process.exit(1));
+    });
+  });
+}
+
+async function handleLaunchParams(params: LauncherScriptParams) {
+  if (params.exclusive != null) {
+    await enforceExclusive(params.exclusive);
+  }
 
   const port = await launchServer({
     port: params.port,
@@ -31,7 +59,7 @@ async function main() {
     serverParams: params.serverParams,
   });
 
-  // $FlowIgnore
+  invariant(process.send != null);
   process.send({port}, () => {
     invariant(process.disconnect);
     process.disconnect();
@@ -50,11 +78,6 @@ log4js.configure({
   ],
 });
 
-main().catch(error => {
-  log4js.getLogger().fatal('launchServer failed:', error);
-  log4js.shutdown(() => process.exit(1));
-});
-
 process.on('unhandledRejection', error => {
   log4js.getLogger().error('Unhandled rejection:', error);
 });
@@ -63,3 +86,5 @@ process.on('uncaughtException', error => {
   log4js.getLogger().fatal('Uncaught exception:', error);
   log4js.shutdown(() => process.exit(1));
 });
+
+main();
