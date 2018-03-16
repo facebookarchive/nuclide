@@ -92,7 +92,7 @@ class HHVMDebuggerWrapper {
 
         socket.on('disconnect', () => {
           process.stderr.write(
-            'The connection to the debug target has been closed.',
+            'The connection to the debug target has been closed.\n',
           );
           process.exit(0);
         });
@@ -116,8 +116,16 @@ class HHVMDebuggerWrapper {
       .on('error', error => {
         if (retries >= 5) {
           process.stderr.write(
-            'Error communicating with debugger target: ' + error.toString(),
+            'Error communicating with debugger target: ' +
+              error.toString() +
+              '\n',
           );
+
+          try {
+            // $FlowFB
+            const fbConfig = require('./fbConfig');
+            process.stderr.write(fbConfig.getRestartInstructions() + '\n');
+          } catch (_) {}
           process.exit(error.code);
         } else {
           // When reconnecting to a target we just disconnected from, especially
@@ -127,7 +135,7 @@ class HHVMDebuggerWrapper {
           // again to provide a better user experience.
           setTimeout(() => {
             this._attachTarget(attachMessage, retries + 1);
-          }, 1000);
+          }, 2000);
         }
       });
 
@@ -167,7 +175,9 @@ class HHVMDebuggerWrapper {
 
     // Exit with the same error code the target exits with.
     targetProcess.on('exit', code => process.exit(code));
-    targetProcess.on('error', error => process.stderr.write(error.toString()));
+    targetProcess.on('error', error =>
+      process.stderr.write(error.toString() + '\n'),
+    );
 
     // Wrap any stdout from the target into a VS Code stdout event.
     targetProcess.stdout.on('data', chunk => {
@@ -350,7 +360,7 @@ class HHVMDebuggerWrapper {
         this._writeOutputWithHeader(obj);
       } catch (e) {
         process.stderr.write(
-          `Error parsing message from target: ${e.toString()}: ${message}`,
+          `Error parsing message from target: ${e.toString()}: ${message}\n`,
         );
       }
 
