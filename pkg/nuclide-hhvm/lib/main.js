@@ -113,6 +113,17 @@ class Activation {
     }
 
     const host = nuclideUri.getHostname(pathString);
+
+    // Allow only valid hostname characters, per RFC 952:
+    // https://tools.ietf.org/html/rfc952
+    const invalidMatch = host.match(/[^A-Za-z0-9\-._]+/);
+    if (invalidMatch != null) {
+      atom.notifications.addError(
+        'The specified host name contained invalid characters.',
+      );
+      return;
+    }
+
     const cwd = nuclideUri.createRemoteUri(host, hackRootString);
     const notification = atom.notifications.addInfo(
       startDebugger
