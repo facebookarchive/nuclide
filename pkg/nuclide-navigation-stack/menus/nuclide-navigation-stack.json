@@ -4,6 +4,9 @@
       "label": "Go",
       "submenu": [
         {
+          "type": "separator"
+        },
+        {
           "label": "Back",
           "command": "nuclide-navigation-stack:navigate-backwards"
         },
