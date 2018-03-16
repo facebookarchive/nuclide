@@ -458,11 +458,12 @@ describe('HgService', () => {
       });
     });
 
-    it('reports no conflicts even when merge directory exists, but no conflicts found', () => {
+    // This is necessary especially when users need to run merge drivers to finish
+    it('reports in conflict state even if no files have merge conflicts', () => {
       mergeDirectoryExists = true;
       waitsForPromise(async () => {
         await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeFalsy();
+        expect(hgService._isInConflict).toBeTruthy();
       });
     });
 

@@ -747,19 +747,12 @@ export class HgService {
 
   async _checkConflictChange(): Promise<void> {
     const mergeDirectoryExists = await this._checkMergeDirectoryExists();
-    if (this._isInConflict) {
-      if (!mergeDirectoryExists) {
-        this._isInConflict = false;
-        this._hgConflictStateDidChangeObserver.next(false);
-      }
-      return;
-    } else if (mergeDirectoryExists) {
-      // Detect if the repository is in a conflict state.
-      const mergeConflicts = await this._fetchMergeConflicts();
-      if (mergeConflicts != null) {
-        this._isInConflict = true;
-        this._hgConflictStateDidChangeObserver.next(true);
-      }
+    if (mergeDirectoryExists) {
+      this._isInConflict = true;
+      this._hgConflictStateDidChangeObserver.next(true);
+    } else {
+      this._isInConflict = false;
+      this._hgConflictStateDidChangeObserver.next(false);
     }
   }
 
