@@ -10,16 +10,14 @@
  * @format
  */
 
-import child_process from 'child_process';
 import type {LauncherScriptParams} from './launchServer';
 
 import {timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import fs from '../common/fs';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+import child_process from 'child_process';
 import {getLogger} from 'log4js';
 import os from 'os';
-import {generateCertificates} from './certificates';
+import {generateCertificates, getCertificateDir} from './certificates';
 
 export type StartServerParams = {
   clientCommonName: string,
@@ -28,6 +26,7 @@ export type StartServerParams = {
   port: number,
   timeout: number,
   expirationDays: number,
+  exclusive: ?string,
   jsonOutputFile: string,
   absolutePathToServerMain: string,
   serverParams: mixed,
@@ -40,6 +39,7 @@ export async function generateCertificatesAndStartServer({
   port,
   timeout,
   expirationDays,
+  exclusive,
   jsonOutputFile,
   absolutePathToServerMain,
   serverParams,
@@ -47,12 +47,7 @@ export async function generateCertificatesAndStartServer({
   const logger = getLogger();
   logger.info('in generateCertificatesAndStartServer()');
 
-  // flowlint-next-line sketchy-null-string:off
-  const homeDir = process.env.HOME || process.env.USERPROFILE;
-  // flowlint-next-line sketchy-null-string:off
-  invariant(homeDir);
-
-  const sharedCertsDir = nuclideUri.join(homeDir, '.certs');
+  const sharedCertsDir = getCertificateDir();
   try {
     await fs.mkdir(sharedCertsDir);
   } catch (error) {
@@ -80,6 +75,8 @@ export async function generateCertificatesAndStartServer({
     cert: cert.toString(),
     ca: ca.toString(),
     port,
+    expirationDays,
+    exclusive,
     launcher: absolutePathToServerMain,
     serverParams,
   };

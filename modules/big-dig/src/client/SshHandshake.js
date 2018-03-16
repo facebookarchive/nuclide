@@ -65,6 +65,7 @@ export type SshConnectionConfiguration = {
   remoteServerCustomParams?: Object, // JSON-serializable params.
   authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
+  exclusive?: string, // Ensure that only one server with this "exclusive" tag is running.
 };
 
 export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
@@ -795,6 +796,7 @@ export class SshHandshake {
       expiration: '14d',
       serverParams: this._config.remoteServerCustomParams,
       port: this._config.remoteServerPort,
+      exclusive: this._config.exclusive,
     };
 
     try {

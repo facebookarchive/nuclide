@@ -38,6 +38,7 @@ export type BigDigCliParams = {|
   expiration: string,
   serverParams: mixed,
   port: ?number,
+  exclusive: ?string,
 |};
 
 /**
@@ -51,7 +52,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   const params: BigDigCliParams = JSON.parse(
     process.argv[process.argv.length - 1],
   );
-  const {cname, expiration, jsonOutputFile} = params;
+  const {cname, expiration, exclusive, jsonOutputFile} = params;
   let {port, timeout} = params;
   if (typeof cname !== 'string') {
     throw Error(`cname must be specified as string but was: '${cname}'`);
@@ -97,6 +98,13 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     throw Error(`expiration must be >0 but was ${expirationDays}`);
   }
 
+  if (
+    exclusive != null &&
+    (typeof exclusive !== 'string' || !exclusive.match(/^[\w\d][\w\d-]*$/))
+  ) {
+    throw Error(`exclusive must be a valid identifier: '${exclusive}'`);
+  }
+
   const clientCommonName = 'nuclide';
   const serverCommonName = cname || `${getUsername()}.nuclide.${os.hostname()}`;
   const openSSLConfigPath = require.resolve('./openssl.cnf');
@@ -108,6 +116,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     port,
     timeout,
     expirationDays,
+    exclusive,
     jsonOutputFile,
     absolutePathToServerMain,
     serverParams: params.serverParams,

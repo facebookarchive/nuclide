@@ -11,6 +11,7 @@
  */
 
 import net from 'net';
+import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {execFile} from '../common/child_process';
 import fs from '../common/fs';
@@ -189,4 +190,8 @@ function generateEnvironmentForOpenSSLCalls(serverCommonName: string): Object {
     ? `IP:${serverCommonName}`
     : `DNS.1:${serverCommonName}`;
   return env;
+}
+
+export function getCertificateDir(): string {
+  return nuclideUri.join(os.homedir(), '.certs');
 }
