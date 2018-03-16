@@ -38,6 +38,9 @@ export type Feature = {
 type FeatureLoaderParams = {
   path: string,
   features: Array<Feature>,
+  featureGroups?: {
+    [string]: Array<string>,
+  },
 };
 
 const ALWAYS_ENABLED = 'always';
@@ -52,16 +55,21 @@ export default class FeatureLoader {
 
   _config: Object;
   _features: Array<Feature>;
+  _featureGroups: {[string]: Array<string>};
   _featureGroupMap: MultiMap<string, Feature> = new MultiMap();
   _pkgName: string;
   _path: string;
   _currentPackageState: Set<Feature> = new Set();
 
-  constructor({features, path: _path}: FeatureLoaderParams) {
+  constructor({features, path: _path, featureGroups}: FeatureLoaderParams) {
     this._path = _path;
     this._features = features;
     this._loadDisposable = new UniversalDisposable();
     this._pkgName = packageNameFromPath(this._path);
+    this._featureGroups = featureGroups == null ? {} : featureGroups;
+
+    // Constructs the map from feature groups to features.
+    this.constructFeatureGroupMap();
     this._config = {
       use: {
         title: 'Enabled Features',
@@ -105,11 +113,6 @@ export default class FeatureLoader {
     this._features.forEach(feature => {
       const featurePkg = feature.pkg;
       const name = packageNameFromPath(feature.path);
-
-      // Add the feature to its feature group.
-      this.addToFeatureGroup(feature);
-
-      // Entry for enabling/disabling the feature
 
       // Migrate the current feature (from boolean on/off to enumerated states).
       this.migrateFeature(feature);
@@ -312,11 +315,25 @@ export default class FeatureLoader {
     );
   }
 
-  addToFeatureGroup(feature: Feature): void {
-    const featureGroups = feature.pkg.featureGroups;
-    if (featureGroups != null) {
-      for (const featureGroup of featureGroups) {
-        this._featureGroupMap.add(featureGroup, feature);
+  constructFeatureGroupMap() {
+    /*
+     * Construct a map from feature name to feature. The _featureGroupMap
+     * must contain the true feature objects, but featureGroups.cson only has
+     * the feature names.
+     */
+    const featureMap = new Map();
+    this._features.forEach(feature => {
+      featureMap.set(path.basename(feature.path), feature);
+    });
+
+    for (const key of Object.keys(this._featureGroups)) {
+      if (Array.isArray(this._featureGroups[key])) {
+        const featuresForKey = this._featureGroups[key]
+          .map(featureName => featureMap.get(featureName))
+          .filter(Boolean);
+        if (featuresForKey != null) {
+          this._featureGroupMap.set(key, featuresForKey);
+        }
       }
     }
   }
