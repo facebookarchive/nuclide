@@ -116,7 +116,7 @@ function dispatchCmdKRight() {
     atom.views.getView(activeEditor),
     'nuclide-move-item-to-available-pane:right',
   );
-  expect(wasDispatched).toBe(true);
+  expect(wasDispatched).toBeTruthy();
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -127,7 +127,7 @@ function dispatchCmdKLeft() {
     atom.views.getView(activeEditor),
     'nuclide-move-item-to-available-pane:left',
   );
-  expect(wasDispatched).toBe(true);
+  expect(wasDispatched).toBeTruthy();
 }
 
 function dispatchCmdKCmdLeft() {
@@ -143,7 +143,7 @@ function dispatchCmdKCmdLeft() {
     atom.views.getView(atom.workspace),
     'window:focus-pane-on-left',
   );
-  expect(wasDispatched).toBe(true);
+  expect(wasDispatched).toBeTruthy();
 
   const newIndex = Math.max(0, index - 1);
   panes[newIndex].activate();
