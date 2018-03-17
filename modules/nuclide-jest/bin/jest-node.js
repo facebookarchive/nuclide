@@ -21,13 +21,16 @@
 // eslint-disable-next-line rulesdir/no-unresolved
 const jestCLI = require('jest-cli');
 const config = require('../jest.config.js');
+const yargs = require('yargs');
+const {options} = require('jest-cli/build/cli/args');
 
-jestCLI.runCLI(
-  {
-    config: JSON.stringify(config),
-    watch: process.argv.includes('--watch'),
-    watchAll: process.argv.includes('--watchAll'),
-    watchman: true,
-  },
-  [process.cwd()]
-).then(response => process.exit(response.results.success ? 0 : 1));
+// We reach into the internals of Jest to get the options it uses for arg
+// parsing with yargs to ensure we parse the args consistently with Jest.
+const {argv} = yargs(process.argv.slice(2)).options(options);
+// Then we override some of the options with hardcoded values.
+argv.watchman = true;
+argv.config = JSON.stringify(config);
+
+jestCLI
+  .runCLI(argv, [process.cwd()])
+  .then(response => process.exit(response.results.success ? 0 : 1));
