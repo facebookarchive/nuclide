@@ -290,7 +290,7 @@ export default class FeatureLoader {
     //  * Add all packages in nuclide.use
     //  * Remove any feature not in an active featureGroup.
     let groupedPackages;
-    if (featureGroupState != null && featureGroupState.length > 0) {
+    if (featureGroupState != null) {
       groupedPackages = setUnion(
         ...featureGroupState.map(featureGroup =>
           this._featureGroupMap.get(featureGroup),
@@ -364,7 +364,7 @@ export default class FeatureLoader {
   }
 
   useKeyPathForFeatureGroup(): string {
-    return `${this._pkgName}.enabled-feature-groups`;
+    return `${this._pkgName}.enabledFeatureGroups`;
   }
 
   shouldEnable(feature: Feature): boolean {
