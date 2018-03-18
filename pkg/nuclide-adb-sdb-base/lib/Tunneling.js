@@ -17,6 +17,7 @@ import type {
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import {Cache} from '../../commons-node/cache';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
@@ -94,13 +95,22 @@ async function openTunnels(host: NuclideUri): Promise<Array<IDisposable>> {
       to: {host: 'localhost', port: 2829, family: 4},
     },
   ];
+
+  const rejectedErrors = [];
   return Promise.all(
-    tunnels.map(t =>
-      _requestTunnelFromService(t, tunnelService).catch(() => ({
-        dispose: () => {},
-      })),
-    ),
-  );
+    tunnels.map(tunnel => {
+      return _requestTunnelFromService(tunnel, tunnelService).catch(error => {
+        rejectedErrors.push(error);
+        return new UniversalDisposable();
+      });
+    }),
+  ).then(disposables => {
+    if (rejectedErrors.length > 0) {
+      disposables.forEach(disposable => disposable.dispose());
+      return Promise.reject(new Error(rejectedErrors));
+    }
+    return disposables;
+  });
 }
 
 async function _requestTunnelFromService(
