@@ -27,9 +27,9 @@ export function startTunnelingAdb(uri: NuclideUri): Promise<void> {
   const {onReady} = activeTunnels.getOrCreate(uri, (_, serviceUri) => {
     invariant(typeof serviceUri === 'string');
     const adbService = getAdbServiceByNuclideUri(serviceUri);
-    const tunnelsOpen = adbService
-      .killServer()
-      .then(() => openTunnels(serviceUri));
+    const tunnelsOpen = adbService.killServer().then(() => {
+      return openTunnels(serviceUri);
+    });
     return {
       onReady: tunnelsOpen.then(() => {}),
       dispose: () => {
@@ -39,7 +39,12 @@ export function startTunnelingAdb(uri: NuclideUri): Promise<void> {
   });
   changes.next();
 
-  return onReady;
+  return onReady.catch(error => {
+    // We don't want to keep a failed open tunnel in the cache, otherwise
+    // when there's an error we're not able to retry the operation.
+    activeTunnels.delete(uri);
+    throw error;
+  });
 }
 
 export function stopTunnelingAdb(uri: NuclideUri) {
