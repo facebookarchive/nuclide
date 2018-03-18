@@ -66,6 +66,7 @@ export function requestTunnelEpic(
 
       let subscription;
 
+      let isTunnelOpen = false;
       const open = () => {
         const events = fromService.createTunnel(
           tunnelDescriptor,
@@ -78,6 +79,7 @@ export function requestTunnelEpic(
                 text: `Opened tunnel: ${friendlyString}`,
                 level: 'info',
               });
+              isTunnelOpen = true;
               store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
               onOpen();
             } else if (event.type === 'client_connected') {
@@ -90,12 +92,20 @@ export function requestTunnelEpic(
               }
             }
           },
-          error: error => store.dispatch(Actions.closeTunnel(tunnel, error)),
+          error: error => {
+            if (!isTunnelOpen) {
+              onOpen(error);
+            }
+            store.dispatch(Actions.closeTunnel(tunnel, error));
+          },
         });
       };
 
       const close = error => {
         subscription.unsubscribe();
+        if (!isTunnelOpen) {
+          return;
+        }
         let message;
         if (error == null) {
           message = {

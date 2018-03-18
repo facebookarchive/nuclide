@@ -114,7 +114,7 @@ async function _requestTunnelFromService(
         if (error == null) {
           resolve(disposable);
         } else {
-          reject(error);
+          reject(new Error(error));
         }
       },
       () => {},
