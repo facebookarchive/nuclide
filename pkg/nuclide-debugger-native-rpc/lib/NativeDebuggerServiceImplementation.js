@@ -151,6 +151,16 @@ async function _getDefaultLLDBConfig(): Promise<{
   return {pythonPath: '/usr/bin/python', lldbModulePath: ''};
 }
 
+function getLocalPathIfRemote(path: any): string {
+  const maybeRemotePath = (path: string);
+  if (nuclideUri.isRemote(maybeRemotePath)) {
+    const {path: localPath} = nuclideUri.parseRemoteUri(maybeRemotePath);
+    return localPath;
+  } else {
+    return maybeRemotePath;
+  }
+}
+
 export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   _config: DebuggerConfig;
 
@@ -252,11 +262,17 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       // flowlint-next-line sketchy-null-string:off
       this._config.pythonBinaryPath ||
       (await _getDefaultLLDBConfig()).pythonPath;
-    const lldbPythonPath =
+    let lldbPythonPath =
       // flowlint-next-line sketchy-null-mixed:off
-      inferiorArguments.lldb_python_path ||
-      (await _getDefaultLLDBConfig()).lldbModulePath;
+      ((inferiorArguments.lldb_python_path ||
+        (await _getDefaultLLDBConfig()).lldbModulePath: any): string);
 
+    lldbPythonPath = getLocalPathIfRemote(lldbPythonPath);
+    if (inferiorArguments.basepath) {
+      inferiorArguments.basepath = getLocalPathIfRemote(
+        inferiorArguments.basepath,
+      );
+    }
     const lldbProcess = this._spawnPythonBackend(pythonBinaryPath);
     lldbProcess.on('exit', this._handleLLDBExit.bind(this));
     this._registerIpcChannel(lldbProcess);
