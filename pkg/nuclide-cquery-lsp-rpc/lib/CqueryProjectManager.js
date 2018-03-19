@@ -83,6 +83,12 @@ export class CqueryProjectManager {
     return Promise.resolve();
   }
 
+  getFilesInProject(projectKey: CqueryProjectKey): Array<string> {
+    return Array.from(this._fileToProjectKey.entries())
+      .filter(([_, key]) => projectKey === key)
+      .map(([file, _]) => file);
+  }
+
   getProjectForFile(file: string): ?CqueryProject {
     const key = this._fileToProjectKey.get(file);
     this._logger.debug('key for', file, ':', key);

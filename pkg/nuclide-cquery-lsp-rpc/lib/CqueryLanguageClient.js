@@ -13,15 +13,20 @@
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription, ConnectableObservable} from 'rxjs';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileDiagnosticMap} from '../../nuclide-language-service/lib/LanguageService';
+import type {FileCache} from '../../nuclide-open-files-rpc';
 import type {
   TextEdit,
   Command,
   SymbolInformation,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import type {RequestLocationsResult} from './types';
+import type {RequestLocationsResult, CqueryProjectKey} from './types';
 
+import fsPromise from 'nuclide-commons/fsPromise';
 import {Observable} from 'rxjs';
+import {track} from '../../nuclide-analytics';
+import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {
   lspUri_localPath,
   localPath_lspUri,
@@ -30,6 +35,7 @@ import {
   atomPoint_lspPosition,
 } from '../../nuclide-vscode-language-service-rpc/lib/convert';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
+import {CqueryProjectManager} from './CqueryProjectManager';
 import {parseOutlineTree} from './outline/CqueryOutlineParser';
 
 type CqueryProgressNotification = {
@@ -58,8 +64,10 @@ function shortenByOneCharacter({newText, range}: TextEdit): TextEdit {
 }
 
 export class CqueryLanguageClient extends LspLanguageService {
-  _checkProject: string => boolean = _ => false;
-  _progressInfo: ?ProgressInfo;
+  _projectKey: string;
+  _progressInfo: ProgressInfo;
+  _projectManager: CqueryProjectManager;
+  _logFile: string;
   _progressSubscription: ?Subscription;
 
   start(): Promise<void> {
@@ -67,12 +75,42 @@ export class CqueryLanguageClient extends LspLanguageService {
     return super.start().then(() => this.startCquery());
   }
 
-  setProjectChecker(check: string => boolean): void {
-    this._checkProject = check;
-  }
-
-  setProgressInfo(info: ProgressInfo): void {
-    this._progressInfo = info;
+  constructor(
+    logger: log4js$Logger,
+    fileCache: FileCache,
+    host: HostServices,
+    languageServerName: string,
+    command: string,
+    args: Array<string>,
+    spawnOptions: Object = {},
+    projectRoot: string,
+    fileExtensions: Array<string>,
+    initializationOptions: Object,
+    additionalLogFilesRetentionPeriod: number,
+    logFile: string,
+    progressInfo: ProgressInfo,
+    projectKey: CqueryProjectKey,
+    projectManager: CqueryProjectManager,
+    useOriginalEnvironment?: boolean = false,
+  ) {
+    super(
+      logger,
+      fileCache,
+      host,
+      languageServerName,
+      command,
+      args,
+      spawnOptions,
+      projectRoot,
+      fileExtensions,
+      initializationOptions,
+      additionalLogFilesRetentionPeriod,
+      useOriginalEnvironment,
+    );
+    this._logFile = logFile;
+    this._progressInfo = progressInfo;
+    this._projectKey = projectKey;
+    this._projectManager = projectManager;
   }
 
   async startCquery(): Promise<void> {
@@ -179,7 +217,15 @@ export class CqueryLanguageClient extends LspLanguageService {
   }
 
   _isFileInProject(file: string): boolean {
-    return super._isFileInProject(file) && this._checkProject(file);
+    const project = this._projectManager.getProjectForFile(file);
+    const checkProject =
+      project != null
+        ? CqueryProjectManager.getProjectKey(project) === this._projectKey
+        : // TODO pelmers: header files aren't in the map because they do not
+          // appear in compile_commands.json, but they should be cached!
+          isHeaderFile(file);
+
+    return checkProject && super._isFileInProject(file);
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
@@ -197,7 +243,48 @@ export class CqueryLanguageClient extends LspLanguageService {
       .publish();
   }
 
-  // TODO pelmers: override handleClose
+  _handleClose(): void {
+    track('lsp-handle-close', {
+      name: this._languageServerName,
+      projectKey: this._projectKey,
+      fileList: this._projectManager.getFilesInProject(this._projectKey),
+    });
+    this._logger.error('Lsp.Close - will auto-restart');
+    this._host.consoleNotification(
+      this._languageServerName,
+      'warning',
+      `Automatically restarting ${this._languageServerName} for ${
+        this._projectKey
+      } after a crash`,
+    );
+    fsPromise
+      .readFile(this._logFile)
+      .then(contents => {
+        const lines = contents.toString('utf8').split('\n');
+        // Find a line with 'stack trace' and take the rest (or up to 40 lines.)
+        let foundStackTrace = false;
+        const stackTraceLines = lines.filter(line => {
+          // the string 'Stack trace:' matches loguru.hpp:
+          // https://github.com/emilk/loguru/blob/master/loguru.hpp#L2424
+          foundStackTrace = foundStackTrace || line.startsWith('Stack trace:');
+          return foundStackTrace;
+        });
+        track('cquery-crash-trace', {
+          projectKey: this._projectKey,
+          trace: stackTraceLines.slice(0, 40).join('\n'),
+        });
+        // Restart now because otherwise the restart would overwrite the log file.
+        this._setState('Initial');
+        this.start();
+      })
+      .catch(err => {
+        this._host.consoleNotification(
+          this._languageServerName,
+          'error',
+          `Unable to restart ${this._languageServerName} because of ${err}`,
+        );
+      });
+  }
 
   async _notifyOnFail(success: boolean, falseMessage: string): Promise<void> {
     if (!success) {

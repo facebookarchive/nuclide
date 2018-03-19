@@ -22,7 +22,6 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getOriginalEnvironment} from 'nuclide-commons/process';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 import {
   MultiProjectLanguageService,
   forkHostServices,
@@ -142,39 +141,31 @@ export default class CqueryLanguageServer extends MultiProjectLanguageService<
     if (enableLibclangLogs) {
       spawnOptions.env.LIBCLANG_LOGGING = 1;
     }
+    const projectRoot = project.hasCompilationDb
+      ? nuclideUri.dirname(project.flagsFile)
+      : project.projectRoot;
+    const logFile = nuclideUri.join(
+      initalizationOptions.cacheDirectory,
+      '..',
+      'diagnostics',
+    );
     const lsp = new CqueryLanguageClient(
       this._logger,
       this._fileCache,
       host,
       this._languageId,
       this._command,
-      [
-        '--language-server',
-        '--log-file',
-        nuclideUri.join(
-          initalizationOptions.cacheDirectory,
-          '..',
-          'diagnostics',
-        ),
-      ],
+      ['--language-server', '--log-file', logFile],
       spawnOptions,
-      project.hasCompilationDb
-        ? nuclideUri.dirname(project.flagsFile)
-        : project.projectRoot,
+      projectRoot,
       ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'],
       initalizationOptions,
       5 * 60 * 1000, // 5 minutes
+      logFile,
+      {id: projectKey, label: projectRoot},
+      projectKey,
+      this._projectManager,
     );
-
-    lsp.setProjectChecker(file => {
-      const checkProject = this._projectManager.getProjectForFile(file);
-      return checkProject != null
-        ? CqueryProjectManager.getProjectKey(checkProject) === projectKey
-        : // TODO pelmers: header files aren't in the map because they do not
-          // appear in compile_commands.json, but they should be cached!
-          isHeaderFile(file);
-    });
-    lsp.setProgressInfo({id: projectKey, label: lsp._projectRoot});
     lsp.start(); // Kick off 'Initializing'...
     return lsp;
   }
