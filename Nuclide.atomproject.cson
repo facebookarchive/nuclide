@@ -5,9 +5,7 @@
 
 "config":
   "*":
-    "nuclide":
-      # For now, no featuregroups are specified. This means all
-      # featuregroups will by default be loaded into Nuclide.
-
-      # "enabledFeatureGroups": [
-      # ]
+    # For now, no featuregroups are specified. This means all
+    # featuregroups will by default be loaded into Nuclide.
+    "nuclide": {
+    }
