@@ -24,6 +24,9 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export function startTunnelingAdb(uri: NuclideUri): Promise<void> {
+  if (!nuclideUri.isRemote(uri)) {
+    return Promise.resolve();
+  }
   const {onReady} = activeTunnels.getOrCreate(uri, (_, serviceUri) => {
     invariant(typeof serviceUri === 'string');
     const adbService = getAdbServiceByNuclideUri(serviceUri);
