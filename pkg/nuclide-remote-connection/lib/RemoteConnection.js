@@ -105,6 +105,7 @@ export class RemoteConnection {
       } else {
         directories.push(dirname);
       }
+
       if (atom.project.replace != null) {
         projectContents.paths = directories;
         projectContents.originPath = cwd;
