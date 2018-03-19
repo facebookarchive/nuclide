@@ -26,6 +26,7 @@ import {
   SshHandshake as NuclideSshHandshake,
   RemoteConnection,
 } from '../../nuclide-remote-connection';
+import {BIG_DIG_VERSION} from '../../nuclide-remote-connection/lib/ServerConnection';
 
 /**
  * Adapts big-dig's SshHandshake to what Nuclide expects.
@@ -67,7 +68,7 @@ export default function connectBigDigSshHandshake(
         ...remoteConfig,
         cwd: connectionConfig.cwd,
         displayTitle: connectionConfig.displayTitle,
-        version: 2,
+        version: BIG_DIG_VERSION,
       }).then(
         connection => {
           delegate.onDidConnect(connection, connectionConfig);

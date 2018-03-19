@@ -11,7 +11,10 @@
 
 /* global localStorage */
 
-import type {ServerConnectionConfiguration} from './ServerConnection';
+import type {
+  ServerConnectionConfiguration,
+  ServerConnectionVersion,
+} from './ServerConnection';
 
 import crypto from 'crypto';
 import invariant from 'assert';
@@ -33,7 +36,7 @@ type SerializableServerConnectionConfiguration = {
   certificateAuthorityCertificate?: string,
   clientCertificate?: string,
   clientKey?: string,
-  version?: number,
+  version?: ServerConnectionVersion,
 };
 
 // Insecure configs are used for testing only.

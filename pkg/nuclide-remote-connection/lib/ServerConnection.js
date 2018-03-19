@@ -46,6 +46,9 @@ import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigRpcClient from './createBigDigRpcClient';
 
+export type ServerConnectionVersion = 1 | 2;
+export const BIG_DIG_VERSION: ServerConnectionVersion = 2;
+
 export type ServerConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
@@ -53,7 +56,7 @@ export type ServerConnectionConfiguration = {
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
-  version?: number,
+  version?: ServerConnectionVersion,
 };
 
 // ServerConnection represents the client side of a connection to a remote machine.
@@ -292,7 +295,7 @@ export class ServerConnection {
   }
 
   async _startRpc(): Promise<void> {
-    if (this._config.version === 2) {
+    if (this._config.version === BIG_DIG_VERSION) {
       this._client = await createBigDigRpcClient(this._config);
       return;
     }

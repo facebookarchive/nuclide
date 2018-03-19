@@ -10,6 +10,7 @@
  */
 
 import {stringifyError} from 'nuclide-commons/string';
+import {isGkEnabled} from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
 
 import type {
@@ -84,6 +85,8 @@ export default class ConnectionTracker {
       remoteServerCommand: this._config.remoteServerCommand,
       cwd: this._config.cwd,
       authMethod: this._config.authMethod,
+      // We already checked this GK to get here, so no need to await.
+      isBigDig: isGkEnabled('nuclide_big_dig'),
     });
 
     this._expired = true;

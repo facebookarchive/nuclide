@@ -17,6 +17,7 @@ import typeof * as FileSystemServiceType from '../../nuclide-server/lib/services
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
+import type {ServerConnectionVersion} from './ServerConnection';
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -42,7 +43,7 @@ export type RemoteConnectionConfiguration = {
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
   promptReconnectOnFailure?: boolean, // open a connection dialog prompt if the reconnect fails
-  version?: number,
+  version?: ServerConnectionVersion,
 };
 
 // A RemoteConnection represents a directory which has been opened in Nuclide on a remote machine.
