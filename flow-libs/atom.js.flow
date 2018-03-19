@@ -1639,7 +1639,11 @@ declare class atom$Project {
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): IDisposable,
   onDidAddBuffer(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
   observeBuffers(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
-
+  replace?: (newSettings: {|
+    originPath?: string,
+    paths?: Array<string>,
+    config?: {[string]: mixed}
+  |}) => void,
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>,
   repositoryForDirectory(directory: atom$Directory): Promise<?atom$Repository>,

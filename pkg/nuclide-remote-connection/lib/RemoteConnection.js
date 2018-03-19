@@ -20,6 +20,7 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import type {ServerConnectionVersion} from './ServerConnection';
 
 import invariant from 'assert';
+import season from 'season';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {ServerConnection} from './ServerConnection';
@@ -75,19 +76,55 @@ export class RemoteConnection {
     );
   }
 
-  static findOrCreateFromConnection(
+  static async findOrCreateFromConnection(
     serverConnection: ServerConnection,
     cwd: NuclideUri,
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<RemoteConnection> {
-    const connection = new RemoteConnection(
-      serverConnection,
-      cwd,
-      displayTitle,
-      promptReconnectOnFailure,
+    const fsService: FileSystemServiceType = serverConnection.getService(
+      FILE_SYSTEM_SERVICE,
     );
-    return connection._initialize();
+    // cwd may actually be a project file.
+    const contents = hasAtomProjectFormat(cwd)
+      ? await fsService.readFile(cwd).catch(() => null)
+      : null;
+
+    const directories = [];
+    if (contents == null) {
+      directories.push(cwd);
+    } else {
+      const projectContents = season.parse(contents.toString());
+      const dirname = nuclideUri.dirname(cwd);
+
+      const projectPaths = projectContents.paths;
+      if (projectPaths != null && Array.isArray(projectPaths)) {
+        directories.push(
+          ...projectPaths.map(path => nuclideUri.resolve(dirname, path)),
+        );
+      } else {
+        directories.push(dirname);
+      }
+      if (atom.project.replace != null) {
+        projectContents.paths = directories;
+        projectContents.originPath = cwd;
+        atom.project.replace(projectContents);
+      }
+    }
+    const connections = await Promise.all(
+      directories.map((dir, i) => {
+        const connection = new RemoteConnection(
+          serverConnection,
+          dir,
+          i === 0 ? displayTitle : '',
+          promptReconnectOnFailure,
+        );
+        return connection._initialize();
+      }),
+    );
+    // We need to return one connection from this function,
+    // even though many connections are being created to support projects.
+    return connections[0];
   }
 
   // Do NOT call this directly. Use findOrCreate instead.
@@ -177,9 +214,13 @@ export class RemoteConnection {
       displayTitle,
       promptReconnectOnFailure,
     });
-    const connection = RemoteConnection.getByHostnameAndPath(host, cwd);
-    if (connection != null) {
-      return connection;
+
+    if (!hasAtomProjectFormat(cwd)) {
+      const connection = RemoteConnection.getByHostnameAndPath(host, cwd);
+
+      if (connection != null) {
+        return connection;
+      }
     }
     return RemoteConnection._createConnectionBySavedConfig(
       host,
@@ -434,4 +475,9 @@ export class RemoteConnection {
   alwaysShutdownIfLast(): boolean {
     return this._alwaysShutdownIfLast;
   }
+}
+
+function hasAtomProjectFormat(filepath) {
+  const ext = nuclideUri.extname(filepath);
+  return ext === '.json' || ext === '.cson';
 }
