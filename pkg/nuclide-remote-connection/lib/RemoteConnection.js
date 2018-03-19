@@ -381,7 +381,10 @@ export class RemoteConnection {
   }
 
   async close(shutdownIfLast: boolean): Promise<void> {
-    logger.info('Received close command!', {shutdownIfLast});
+    logger.info('Received close command!', {
+      shutdownIfLast,
+      stack: Error('stack').stack,
+    });
     this._subscriptions.dispose();
     await this._connection.removeConnection(this, shutdownIfLast);
     RemoteConnection._emitter.emit('did-close', this);
