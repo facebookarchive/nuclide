@@ -20,9 +20,18 @@ import type {
   RemoteDebugCommandRequest,
 } from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
 import type {Adapter} from 'nuclide-debugger-vsps/main';
-import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
+import type {
+  ReactNativeAttachArgs,
+  ReactNativeLaunchArgs,
+  AutoGenConfig,
+  AutoGenProperty,
+} from './types';
 
+import invariant from 'assert';
+import {shellParse} from 'nuclide-commons/string';
+import nullthrows from 'nullthrows';
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
+import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from '../../commons-atom/debugger';
 import VspProcessInfo from './VspProcessInfo';
@@ -45,6 +54,9 @@ const DEFAULT_DEBUG_OPTIONS = new Set([
   'RedirectOutput',
 ]);
 
+export const NUCLIDE_PYTHON_DEBUGGER_DEX_URI =
+  'https://our.intern.facebook.com/intern/dex/python-and-fbcode/debugging/#nuclide';
+
 export const REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
 
 // Delay starting the remote debug server to avoid affecting Nuclide's startup.
@@ -62,6 +74,59 @@ export type VspNativeDebuggerAttachBuilderParms = {
   sourcePath: string,
 };
 
+// extension must be a string starting with a '.' like '.js' or '.py'
+export function getActiveScriptPath(extension: string): string {
+  const center = atom.workspace.getCenter
+    ? atom.workspace.getCenter()
+    : atom.workspace;
+  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
+  if (
+    activeEditor == null ||
+    !activeEditor.getPath() ||
+    !nullthrows(activeEditor.getPath()).endsWith(extension)
+  ) {
+    return '';
+  }
+  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
+}
+
+function generatePropertyArray(
+  launchOrAttachConfigProperties: Object,
+  required: string[],
+): AutoGenProperty[] {
+  const propertyArray = Object.entries(launchOrAttachConfigProperties)
+    .map(property => {
+      const name = property[0];
+      const propertyDetails: any = property[1];
+      const autoGenProperty: AutoGenProperty = {
+        name,
+        type: propertyDetails.type,
+        description: propertyDetails.description,
+        required: required.includes(name),
+      };
+      if (typeof propertyDetails.default !== 'undefined') {
+        autoGenProperty.defaultValue = propertyDetails.default;
+      }
+      if (
+        propertyDetails.items != null &&
+        typeof propertyDetails.items.type !== 'undefined'
+      ) {
+        autoGenProperty.itemType = propertyDetails.items.type;
+      }
+      return autoGenProperty;
+    })
+    .sort((p1, p2) => {
+      if (p1.required && !p2.required) {
+        return -1;
+      }
+      if (p2.required && !p1.required) {
+        return 1;
+      }
+      return 0;
+    });
+  return propertyArray;
+}
+
 export async function getPythonParLaunchProcessInfo(
   parPath: NuclideUri,
   args: Array<string>,
@@ -74,6 +139,95 @@ export async function getPythonParLaunchProcessInfo(
     getPythonParConfig(parPath, args),
     {threads: true},
   );
+}
+
+export function getPythonAutoGenConfig(): AutoGenConfig {
+  const pkgJson = require('../../../modules/nuclide-debugger-vsps/VendorLib/vs-py-debugger/package.json');
+  const configurationAttributes =
+    pkgJson.contributes.debuggers[0].configurationAttributes;
+  configurationAttributes.launch.properties.pythonPath.description =
+    'Path (fully qualified) to python executable.';
+  const launchProperties = {};
+  const launchRequired = ['pythonPath', 'program', 'cwd'];
+  const usedLaunchProperties = new Set([
+    'pythonPath',
+    'program',
+    'args',
+    'cwd',
+    'env',
+  ]);
+  Object.entries(configurationAttributes.launch.properties)
+    .filter(property => usedLaunchProperties.has(property[0]))
+    .forEach(property => {
+      const name = property[0];
+      const propertyDetails: any = property[1];
+      // TODO(goom): replace the indexOf '$' stuff with logic that accesses settings
+      if (
+        propertyDetails.default != null &&
+        typeof propertyDetails.default === 'string' &&
+        propertyDetails.default.indexOf('$') === 0
+      ) {
+        delete propertyDetails.default;
+      }
+      launchProperties[name] = propertyDetails;
+    });
+
+  return {
+    launch: {
+      launch: true,
+      properties: generatePropertyArray(launchProperties, launchRequired),
+      scriptPropertyName: 'program',
+      scriptExtension: '.py',
+      cwdPropertyName: 'cwd',
+      header: (
+        <p>
+          This is intended to debug python script files.
+          <br />
+          To debug buck targets, you should{' '}
+          <a href={NUCLIDE_PYTHON_DEBUGGER_DEX_URI}>
+            use the buck toolbar instead
+          </a>.
+        </p>
+      ),
+    },
+    attach: null,
+  };
+}
+
+export async function pythonHandleLaunchButtonClick(
+  targetUri: NuclideUri,
+  stringValues: Map<string, string>,
+  booleanValues: Map<string, boolean>,
+  enumValues: Map<string, string>,
+  numberValues: Map<string, number>,
+): Promise<void> {
+  track('fb-python-debugger-launch-from-dialog');
+  const pythonPath = nullthrows(stringValues.get('pythonPath')).trim();
+  const scriptPath = nullthrows(stringValues.get('program')).trim();
+  const args = shellParse(nullthrows(stringValues.get('args')));
+  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
+  const environmentVariables = {};
+  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
+    const [key, value] = variable.split('=');
+    environmentVariables[key] = value;
+  });
+
+  const {hostname} = nuclideUri.parse(targetUri);
+  const scriptUri =
+    hostname != null
+      ? nuclideUri.createRemoteUri(hostname, scriptPath)
+      : scriptPath;
+
+  const launchInfo = await getPythonScriptLaunchProcessInfo(
+    scriptUri,
+    pythonPath,
+    args,
+    workingDirectory,
+    environmentVariables,
+  );
+
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(launchInfo);
 }
 
 export async function getPythonScriptLaunchProcessInfo(
@@ -220,6 +374,144 @@ function getPrepackScriptConfig(
     prepackRuntime: prepackPath,
     prepackArguments: args,
   };
+}
+
+export function getNodeAutoGenConfig(): AutoGenConfig {
+  const pkgJson = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.json');
+  const pkgJsonDescriptions = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.nls.json');
+  const configurationAttributes =
+    pkgJson.contributes.debuggers[1].configurationAttributes;
+  Object.entries(configurationAttributes.launch.properties).forEach(
+    property => {
+      const name = property[0];
+      const descriptionSubstitution =
+        configurationAttributes.launch.properties[name].description;
+      if (
+        descriptionSubstitution != null &&
+        typeof descriptionSubstitution === 'string'
+      ) {
+        configurationAttributes.launch.properties[name].description =
+          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
+      }
+    },
+  );
+  configurationAttributes.launch.properties.nodePath = {
+    type: 'string',
+    description:
+      "Node executable path (e.g. /usr/local/bin/node). Will use Nuclide's node version if not provided.",
+    default: '',
+  };
+  Object.entries(configurationAttributes.attach.properties).forEach(
+    property => {
+      const name = property[0];
+      const descriptionSubstitution =
+        configurationAttributes.attach.properties[name].description;
+      if (
+        descriptionSubstitution != null &&
+        typeof descriptionSubstitution === 'string'
+      ) {
+        configurationAttributes.attach.properties[name].description =
+          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
+      }
+    },
+  );
+
+  const launchProperties = {};
+  const attachProperties = {};
+  const launchRequired = ['program', 'cwd'];
+  const attachRequired = ['port'];
+
+  const usedLaunchProperties = new Set(
+    launchRequired.concat(['nodePath', 'args', 'outFiles', 'env']),
+  );
+
+  Object.entries(configurationAttributes.launch.properties)
+    .filter(property => usedLaunchProperties.has(property[0]))
+    .forEach(property => {
+      const name = property[0];
+      const propertyDetails: any = property[1];
+      launchProperties[name] = propertyDetails;
+    });
+
+  const usedAttachProperties = new Set(['port']);
+
+  Object.entries(configurationAttributes.attach.properties)
+    .filter(property => usedAttachProperties.has(property[0]))
+    .forEach(property => {
+      const name = property[0];
+      const propertyDetails: any = property[1];
+      attachProperties[name] = propertyDetails;
+    });
+
+  return {
+    launch: {
+      launch: true,
+      properties: generatePropertyArray(launchProperties, launchRequired),
+      scriptPropertyName: 'program',
+      cwdPropertyName: 'cwd',
+      scriptExtension: '.js',
+      header: (
+        <p>This is intended to debug node.js files (for node version 6.3+).</p>
+      ),
+    },
+    attach: {
+      launch: false,
+      properties: generatePropertyArray(attachProperties, attachRequired),
+      header: <p>Attach to a running node.js process</p>,
+    },
+  };
+}
+
+export async function nodeHandleAttachButtonClick(
+  targetUri: NuclideUri,
+  stringValues: Map<string, string>,
+  booleanValues: Map<string, boolean>,
+  enumValues: Map<string, string>,
+  numberValues: Map<string, number>,
+): Promise<void> {
+  track('fb-node-debugger-attach-from-dialog');
+  const port = numberValues.get('port');
+  invariant(port != null);
+  const attachInfo = await getNodeAttachProcessInfo(targetUri, port);
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(attachInfo);
+}
+
+export async function nodeHandleLaunchButtonClick(
+  targetUri: NuclideUri,
+  stringValues: Map<string, string>,
+  booleanValues: Map<string, boolean>,
+  enumValues: Map<string, string>,
+  numberValues: Map<string, number>,
+): Promise<void> {
+  track('fb-node-debugger-launch-from-dialog');
+  const nodePath = nullthrows(stringValues.get('nodePath')).trim();
+  const scriptPath = nullthrows(stringValues.get('program')).trim();
+  const args = shellParse(nullthrows(stringValues.get('args')));
+  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
+  const outFiles = nullthrows(stringValues.get('outFiles')).trim();
+  const environmentVariables = {};
+  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
+    const [key, value] = variable.split('=');
+    environmentVariables[key] = value;
+  });
+
+  const {hostname} = nuclideUri.parse(targetUri);
+  const scriptUri =
+    hostname != null
+      ? nuclideUri.createRemoteUri(hostname, scriptPath)
+      : scriptPath;
+
+  const launchInfo = await getNodeLaunchProcessInfo(
+    scriptUri,
+    nodePath,
+    args,
+    workingDirectory,
+    environmentVariables,
+    outFiles,
+  );
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(launchInfo);
 }
 
 export async function getNodeLaunchProcessInfo(

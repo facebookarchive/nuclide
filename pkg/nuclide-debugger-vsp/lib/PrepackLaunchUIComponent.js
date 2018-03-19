@@ -11,7 +11,6 @@
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {shellParse} from 'nuclide-commons/string';
 import {
@@ -21,22 +20,9 @@ import {
 import {getDebuggerService} from '../../commons-atom/debugger';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getPrepackLaunchProcessInfo} from './utils';
+import {getPrepackLaunchProcessInfo, getActiveScriptPath} from './utils';
 
-function getActiveScriptPath(): string {
-  const center = atom.workspace.getCenter
-    ? atom.workspace.getCenter()
-    : atom.workspace;
-  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
-  if (
-    activeEditor == null ||
-    !activeEditor.getPath() ||
-    !nullthrows(activeEditor.getPath()).endsWith('.js')
-  ) {
-    return '';
-  }
-  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
-}
+const JS_EXTENSION = '.js';
 
 type Props = {|
   +configIsValidChanged: (valid: boolean) => void,
@@ -80,7 +66,8 @@ export default class PrepackScriptLaunchUiComponent extends React.Component<
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(),
       (transientSettings, savedSettings) => {
-        const scriptPath = savedSettings.scriptPath || getActiveScriptPath();
+        const scriptPath =
+          savedSettings.scriptPath || getActiveScriptPath(JS_EXTENSION);
         this.setState({
           scriptPath,
           prepackPath: savedSettings.prepackPath || '',

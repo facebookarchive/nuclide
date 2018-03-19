@@ -23,17 +23,17 @@ import Tabs from '../../../nuclide-ui/Tabs';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 
-type PropsType = {
-  dialogMode: DebuggerConfigAction,
-  connection: string,
-  connectionChanged: (newValue: ?string) => void,
+type Props = {|
+  +dialogMode: DebuggerConfigAction,
+  +connection: string,
+  +connectionChanged: (newValue: ?string) => void,
   // $FlowFixMe
-  connectionOptions: Array<{value: string, label: string}>,
-  providers: Map<string, Array<DebuggerLaunchAttachProvider>>,
-  dialogCloser: () => void,
-};
+  +connectionOptions: Array<{value: string, label: string}>,
+  +providers: Map<string, Array<DebuggerLaunchAttachProvider>>,
+  +dialogCloser: () => void,
+|};
 
-type StateType = {
+type State = {
   selectedProviderTab: ?string,
   configIsValid: boolean,
   enabledProviders: Array<{
@@ -61,14 +61,14 @@ function getLastUsedDebugger(
 }
 
 export default class DebuggerLaunchAttachUI extends React.Component<
-  PropsType,
-  StateType,
+  Props,
+  State,
 > {
-  props: PropsType;
-  state: StateType;
+  props: Props;
+  state: State;
   _disposables: UniversalDisposable;
 
-  constructor(props: PropsType) {
+  constructor(props: Props) {
     super(props);
 
     this._disposables = new UniversalDisposable();
@@ -125,7 +125,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
     });
   }
 
-  componentWillReceiveProps(nextProps: PropsType) {
+  componentWillReceiveProps(nextProps: Props) {
     const host = nuclideUri.isRemote(nextProps.connection)
       ? nuclideUri.getHostname(nextProps.connection)
       : 'local';

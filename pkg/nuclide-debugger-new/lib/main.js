@@ -677,7 +677,6 @@ class Activation {
     ReactDOM.render(
       <DebuggerLaunchAttachUI
         dialogMode={dialogMode}
-        model={this._uiModel}
         connectionChanged={(newValue: ?string) => {
           this._selectedDebugConnection = newValue;
           this._renderConfigDialog(panel, dialogMode, dialogCloser);

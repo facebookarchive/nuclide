@@ -14,15 +14,21 @@ import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import passesGK from '../../commons-node/passesGK';
 import {OcamlLaunchProvider} from './OCamlLaunchProvider';
-import PythonLaunchAttachProvider from './PythonLaunchAttachProvider';
-import NodeLaunchAttachProvider from './NodeLaunchAttachProvider';
+import AutoGenLaunchAttachProvider from './AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import PrepackLaunchAttachProvider from './PrepackLaunchAttachProvider';
 import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {listenToRemoteDebugCommands} from './utils';
+import {
+  listenToRemoteDebugCommands,
+  nodeHandleLaunchButtonClick,
+  nodeHandleAttachButtonClick,
+  pythonHandleLaunchButtonClick,
+  getPythonAutoGenConfig,
+  getNodeAutoGenConfig,
+} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -60,7 +66,13 @@ class Activation {
     this._registerDebugProvider({
       name: 'Python',
       getLaunchAttachProvider: connection => {
-        return new PythonLaunchAttachProvider(connection);
+        return new AutoGenLaunchAttachProvider(
+          'Python',
+          connection,
+          getPythonAutoGenConfig(),
+          pythonHandleLaunchButtonClick,
+          null /* Nuclide with vs-py-debugger does not support attach */,
+        );
       },
     });
   }
@@ -69,7 +81,13 @@ class Activation {
     this._registerDebugProvider({
       name: 'Node',
       getLaunchAttachProvider: connection => {
-        return new NodeLaunchAttachProvider(connection);
+        return new AutoGenLaunchAttachProvider(
+          'Node',
+          connection,
+          getNodeAutoGenConfig(),
+          nodeHandleLaunchButtonClick,
+          nodeHandleAttachButtonClick,
+        );
       },
     });
   }
