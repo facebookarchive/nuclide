@@ -60,6 +60,7 @@ export type RevisionStatusDisplay = {
   id: number,
   name: string,
   className: ?string,
+  latestDiff: number, // id of the latest diff within this revision
 };
 
 type HgRepositoryOptions = {
