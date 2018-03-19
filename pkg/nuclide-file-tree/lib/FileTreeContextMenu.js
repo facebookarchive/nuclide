@@ -212,15 +212,15 @@ export default class FileTreeContextMenu {
     this._addContextMenuItemGroup(
       [
         {
-          label: 'Add Project Folder',
+          label: 'Add Folder',
           command: 'application:add-project-folder',
         },
         {
-          label: 'Add Remote Project Folder',
+          label: 'Add Remote Folder',
           command: 'nuclide-remote-projects:connect',
         },
         {
-          label: 'Remove Project Folder',
+          label: 'Remove Folder',
           command: 'nuclide-file-tree:remove-project-folder-selection',
           shouldDisplay: () => {
             const node = this.getSingleSelectedNode();

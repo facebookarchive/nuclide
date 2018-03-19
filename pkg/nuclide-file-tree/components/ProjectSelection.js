@@ -81,12 +81,12 @@ export class ProjectSelection extends React.Component<Props, State> {
         <TruncatedButton
           onClick={() => this.runCommand('application:add-project-folder')}
           icon="device-desktop"
-          label="Add Project Folder"
+          label="Add Local Folder"
         />
         <TruncatedButton
           onClick={() => this.runCommand('nuclide-remote-projects:connect')}
           icon="cloud-upload"
-          label="Add Remote Project Folder"
+          label="Add Remote Folder"
         />
         {this.state.extraContent}
       </div>

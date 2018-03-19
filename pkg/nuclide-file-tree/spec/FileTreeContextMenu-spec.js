@@ -50,7 +50,7 @@ describe('FileTreeContextMenu', () => {
     const groups = itemGroups(fileTreeItems());
     const distinct = [
       getNonNull(groups, 'New'),
-      getNonNull(groups, 'Add Project Folder'),
+      getNonNull(groups, 'Add Folder'),
       getNonNull(groups, 'Rename'),
       getNonNull(groups, 'Split'),
       getNonNull(groups, 'Copy Full Path'),
