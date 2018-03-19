@@ -16,7 +16,7 @@ import log4js from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {psTree} from 'nuclide-commons/process';
 import os from 'os';
-import {getCertificateDir} from './certificates';
+import fsPromise from '../common/fs';
 import {launchServer} from './NuclideServer';
 
 export type LauncherScriptParams = {|
@@ -88,8 +88,15 @@ async function handleLaunchParams(params: LauncherScriptParams) {
 // We do this by storing a .bigdig.exclusive.pid file in sharedCertsDir:
 // if the file already exists, we'll try to kill the PID in that file.
 async function enforceExclusive(exclusive: string): Promise<void> {
-  const sharedCertsDir = getCertificateDir();
-  const pidFile = nuclideUri.join(sharedCertsDir, `.bigdig.${exclusive}.pid`);
+  const bigDigPath = nuclideUri.join(os.homedir(), '.big-dig');
+  try {
+    await fsPromise.mkdir(bigDigPath);
+  } catch (err) {
+    if (err.code !== 'EEXIST') {
+      throw err;
+    }
+  }
+  const pidFile = nuclideUri.join(bigDigPath, `.big-dig.${exclusive}.pid`);
 
   while (true) {
     try {

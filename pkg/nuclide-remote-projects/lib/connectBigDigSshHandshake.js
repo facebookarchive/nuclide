@@ -106,7 +106,7 @@ export default function connectBigDigSshHandshake(
   // Add the current Nuclide version, unless explicitly provided.
   let version = getNuclideVersion();
   // We'll only allow one Nuclide server per user - but you can override this.
-  let exclusive = 'nuclide';
+  let exclusive = 'atom';
   // big-dig doesn't parse extra arguments.
   // We'll try to adapt commonly used ones for now.
   if (remoteServerCommand.includes(' ')) {

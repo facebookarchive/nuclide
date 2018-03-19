@@ -198,7 +198,3 @@ function generateEnvironmentForOpenSSLCalls(serverCommonName: string): Object {
     : `DNS.1:${serverCommonName}`;
   return env;
 }
-
-export function getCertificateDir(): string {
-  return nuclideUri.join(os.homedir(), '.certs');
-}

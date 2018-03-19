@@ -17,7 +17,7 @@ import fs from '../common/fs';
 import child_process from 'child_process';
 import {getLogger} from 'log4js';
 import os from 'os';
-import {generateCertificates, getCertificateDir} from './certificates';
+import {generateCertificates} from './certificates';
 
 export type StartServerParams = {
   clientCommonName: string,
@@ -46,15 +46,6 @@ export async function generateCertificatesAndStartServer({
 }: StartServerParams): Promise<void> {
   const logger = getLogger();
   logger.info('in generateCertificatesAndStartServer()');
-
-  const sharedCertsDir = getCertificateDir();
-  try {
-    await fs.mkdir(sharedCertsDir);
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      throw error;
-    }
-  }
 
   const paths = await generateCertificates(
     clientCommonName,
