@@ -60,7 +60,6 @@ export async function generateCertificatesAndStartServer({
     clientCommonName,
     serverCommonName,
     openSSLConfigPath,
-    sharedCertsDir,
     expirationDays,
   );
   logger.info('generateCertificates() succeeded!');

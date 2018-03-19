@@ -36,39 +36,46 @@ export async function generateCertificates(
   clientCommonName: string,
   serverCommonName: string,
   openSSLConfigPath: string,
-  sharedCertsDir: string,
   expirationDays: number,
 ): Promise<CertificatePaths> {
-  const paths = await generateKeyPairPaths(sharedCertsDir);
-  const env = generateEnvironmentForOpenSSLCalls(serverCommonName);
-  await generateCA(paths.caKey, paths.caCert, expirationDays, env);
-  await Promise.all([
-    generateKeyAndCertificate(
-      paths.caKey,
-      paths.caCert,
-      expirationDays,
-      paths.serverKey,
-      paths.serverCsr,
-      paths.serverCert,
-      openSSLConfigPath,
-      serverCommonName,
-      1,
-      env,
-    ),
-    generateKeyAndCertificate(
-      paths.caKey,
-      paths.caCert,
-      expirationDays,
-      paths.clientKey,
-      paths.clientCsr,
-      paths.clientCert,
-      openSSLConfigPath,
-      clientCommonName,
-      2,
-      env,
-    ),
-  ]);
-  return paths;
+  // Set the process umask to 0077 to ensure that certificates have 0700 permissions.
+  // The spawned OpenSSL processes will inherit the umask.
+  const oldUmask = process.umask();
+  process.umask(0o77);
+  try {
+    const paths = await generateKeyPairPaths();
+    const env = generateEnvironmentForOpenSSLCalls(serverCommonName);
+    await generateCA(paths.caKey, paths.caCert, expirationDays, env);
+    await Promise.all([
+      generateKeyAndCertificate(
+        paths.caKey,
+        paths.caCert,
+        expirationDays,
+        paths.serverKey,
+        paths.serverCsr,
+        paths.serverCert,
+        openSSLConfigPath,
+        serverCommonName,
+        1,
+        env,
+      ),
+      generateKeyAndCertificate(
+        paths.caKey,
+        paths.caCert,
+        expirationDays,
+        paths.clientKey,
+        paths.clientCsr,
+        paths.clientCert,
+        openSSLConfigPath,
+        clientCommonName,
+        2,
+        env,
+      ),
+    ]);
+    return paths;
+  } finally {
+    process.umask(oldUmask);
+  }
 }
 
 async function generateCA(
@@ -156,14 +163,14 @@ async function generateKeyAndCertificate(
 }
 
 /**
- * Creates a new directory under `sharedCertsDir` where all of the certificate data for one instance
+ * Creates a new temporary directory where all of the certificate data for one instance
  * of the server should be written.
  */
-async function generateKeyPairPaths(
-  sharedCertsDir: string,
-): Promise<CertificatePaths> {
-  const certsDir = await fs.mkdtemp(sharedCertsDir);
-  const pathPrefix = nuclideUri.join(certsDir, 'nuclide');
+async function generateKeyPairPaths(): Promise<CertificatePaths> {
+  const certsDir = await fs.mkdtemp(
+    nuclideUri.join(os.tmpdir(), '.big-dig-certs'),
+  );
+  const pathPrefix = nuclideUri.join(certsDir, 'big-dig');
   return {
     certsDir,
     caKey: `${pathPrefix}.ca.key`,
