@@ -33,8 +33,8 @@ import * as React from 'react';
 import {Observable} from 'rxjs';
 
 export type OpenConnectionDialogOptions = {
-  initialServer: string,
-  initialCwd: string,
+  initialServer?: string,
+  initialCwd?: string,
   initialRemoteServerCommand?: string,
 };
 

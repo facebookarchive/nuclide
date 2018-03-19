@@ -25,7 +25,7 @@ const _toDispose: Set<Element> = new Set();
 let _timeoutHandle: ?TimeoutID;
 
 /**
- * Adds a self-disposing Atom's tooltip to a react element.
+ * Adds a self-disposing Atom tooltip to a react element.
  *
  * Typical usage:
  * <div ref={addTooltip({title: 'My awesome tooltip', delay: 100, placement: 'top'})} />

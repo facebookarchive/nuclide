@@ -422,8 +422,19 @@ export function activate(
   );
 
   subscriptions.add(
-    atom.commands.add('atom-workspace', 'nuclide-remote-projects:connect', () =>
-      openConnectionDialog(),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-remote-projects:connect',
+      event => {
+        let args;
+        if (event.detail != null) {
+          const {initialCwd} = event.detail;
+          if (initialCwd != null) {
+            args = {initialCwd};
+          }
+        }
+        openConnectionDialog(args);
+      },
     ),
   );
 
