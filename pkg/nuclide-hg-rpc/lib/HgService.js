@@ -822,10 +822,6 @@ export class HgService {
    */
 
   observeHgOperationProgressDidChange(): ConnectableObservable<any> {
-    // TODO(T26794506): We expect this to return OperationProgress,
-    // but in some exceptional circumstances the object will fail marshalling
-    // for an unknown reason. We don't care about the type on the server, so
-    // we are sending `any` and letting the client do the type checking.
     return this._hgOperationProgressDidChangeObserver
       .let(fastDebounce(50))
       .switchMap(() =>
