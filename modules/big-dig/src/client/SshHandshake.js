@@ -392,6 +392,12 @@ export class SshHandshake {
    * @returns the authentication error, or `null` if successful.
    */
   async _connectOrNeedsAuth(config: ConnectConfig): Promise<?SshAuthError> {
+    if (this._canceled) {
+      throw new SshHandshakeError(
+        'Connection has been cancelled by the user',
+        SshHandshake.ErrorType.USER_CANCELED,
+      );
+    }
     try {
       await this._connection.connect(config);
       return null;
@@ -403,6 +409,11 @@ export class SshHandshake {
         return new SshAuthError(error, {needsPrivateKeyPassword: true});
       } else if (error.level === 'client-authentication') {
         return new SshAuthError(error, {needsPrivateKeyPassword: false});
+      } else if (error.level !== undefined) {
+        const errorType =
+          (error.level && SshConnectionErrorLevelMap.get(error.level)) ||
+          SshHandshake.ErrorType.UNKNOWN;
+        throw new SshHandshakeError(error.message, errorType, error);
       } else {
         throw error;
       }
@@ -700,6 +711,9 @@ export class SshHandshake {
       // Update server info that is needed for setting up client.
       this._updateServerInfo(serverInfo);
     } catch (error) {
+      if (error instanceof SshHandshakeError) {
+        throw error;
+      }
       throw new SshHandshakeError(
         'Unknown error while acquiring server start information',
         SshHandshake.ErrorType.UNKNOWN,
