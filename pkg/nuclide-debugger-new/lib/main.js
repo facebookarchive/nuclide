@@ -83,9 +83,9 @@ class Activation {
     this._connectionProviders = new Map();
     this._layoutManager = new DebuggerLayoutManager(this._service, state);
     this._disposables = new UniversalDisposable(
+      this._layoutManager,
       this._service,
       this._uiModel,
-      this._layoutManager,
       this._breakpointManager,
       // Listen for removed connections and kill the debugger if it is using that connection.
       ServerConnection.onDidCloseServerConnection(connection => {
