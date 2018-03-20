@@ -95,6 +95,6 @@ export class BigDigClient {
   }
 
   dispose() {
-    // TODO(mbolin)
+    this.close();
   }
 }
