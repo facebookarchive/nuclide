@@ -23,7 +23,7 @@ export type LauncherScriptParams = {|
   key: string,
   cert: string,
   ca: string,
-  port: number,
+  ports: string,
   expirationDays: number,
   exclusive: ?string,
   launcher: string,
@@ -54,7 +54,7 @@ async function handleLaunchParams(params: LauncherScriptParams) {
   }
 
   const port = await launchServer({
-    port: params.port,
+    ports: params.ports,
     webServer: {
       key: params.key,
       cert: params.cert,

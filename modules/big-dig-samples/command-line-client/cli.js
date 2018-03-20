@@ -120,6 +120,7 @@ function parseArgsAndRunMain(): Promise<void> {
       pathToPrivateKey: privateKey,
       authMethod: 'PRIVATE_KEY',
       remoteServer: {command: remoteServerCommand},
+      remoteServerPorts: '0',
       remoteServerCustomParams: {},
       password: '', // Should probably be nullable because of the authMethod.
     });

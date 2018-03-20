@@ -15,6 +15,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import {getUsername} from '../common/username';
 import {generateCertificatesAndStartServer} from './main';
+import {parsePorts} from '../common/ports';
 
 log4js.configure({
   appenders: [
@@ -28,7 +29,7 @@ log4js.configure({
   ],
 });
 
-const DEFAULT_PORT = 0;
+const DEFAULT_PORTS = '0';
 const DEFAULT_TIMEOUT = 60000;
 
 export type BigDigCliParams = {|
@@ -37,7 +38,7 @@ export type BigDigCliParams = {|
   timeout: ?number,
   expiration: string,
   serverParams: mixed,
-  port: ?number,
+  ports: ?string,
   exclusive: ?string,
 |};
 
@@ -53,7 +54,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     process.argv[process.argv.length - 1],
   );
   const {cname, expiration, exclusive, jsonOutputFile} = params;
-  let {port, timeout} = params;
+  let {ports, timeout} = params;
   if (typeof cname !== 'string') {
     throw Error(`cname must be specified as string but was: '${cname}'`);
   }
@@ -62,19 +63,14 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   }
 
   // port arg validation
-  if (port == null) {
-    port = DEFAULT_PORT;
+  if (ports == null) {
+    ports = DEFAULT_PORTS;
   }
-  if (typeof port !== 'number') {
-    throw Error(`port must be specified as number but was: '${port}'`);
+  if (typeof ports !== 'string') {
+    throw Error(`ports must be specified as string but was: '${ports}'`);
   }
-  // eslint-disable-next-line no-bitwise
-  if ((port | 0) !== port) {
-    throw Error(`port must be an integer but was: '${port}'`);
-  }
-  if (port < 0) {
-    throw Error(`port must be >=0 but was ${port}`);
-  }
+  // This will throw an exception if the ports string is invalid.
+  parsePorts(ports);
 
   if (timeout == null) {
     timeout = DEFAULT_TIMEOUT;
@@ -113,7 +109,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     clientCommonName,
     serverCommonName,
     openSSLConfigPath,
-    port,
+    ports,
     timeout,
     expirationDays,
     exclusive,

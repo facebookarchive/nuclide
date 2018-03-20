@@ -61,7 +61,7 @@ export type SshConnectionConfiguration = {
   username: string, // username to authenticate as
   pathToPrivateKey: string, // The path to private key
   remoteServer: PackageParams, // Command to use to start server
-  remoteServerPort?: number, // Port remote server should run on (defaults to 0)
+  remoteServerPorts: string, // Range of ports remote server should run on
   remoteServerCustomParams?: Object, // JSON-serializable params.
   authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
@@ -809,8 +809,8 @@ export class SshHandshake {
       timeout: 60000,
       expiration: '14d',
       serverParams: this._config.remoteServerCustomParams,
-      port: this._config.remoteServerPort,
       exclusive: this._config.exclusive,
+      ports: this._config.remoteServerPorts,
     };
 
     try {

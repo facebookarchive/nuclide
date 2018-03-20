@@ -13,6 +13,7 @@
 import BigDigServer from './BigDigServer';
 import WS from 'ws';
 import https from 'https';
+import {parsePorts} from '../common/ports';
 
 export type LauncherParameters = {
   server: BigDigServer,
@@ -35,15 +36,11 @@ export type NuclideServerOptions = {
     // Optionally override the trusted CA certificates.
     ca?: string | Array<string> | Buffer | Array<Buffer>,
   },
-  port: number,
+  ports: string,
   absolutePathToServerMain: string,
   // Any sort of JSON-serializable object is fine.
   serverParams: mixed,
 };
-
-// When a port of 0 is specified, it still makes sense to prefer certain ports over others.
-// TODO(hansonw): Make this configurable.
-const PREFERRED_PORTS = [9093, 9092, 9091, 9090];
 
 /**
  * Launch a NuclideServer with the specified parameters.
@@ -61,14 +58,8 @@ export async function launchServer(
 ): Promise<number> {
   const webServer = https.createServer(options.webServer);
 
-  const ports = [];
-  if (options.port === 0) {
-    ports.push(...PREFERRED_PORTS);
-  }
-  ports.push(options.port);
-
   let found = false;
-  for (const port of ports) {
+  for (const port of parsePorts(options.ports)) {
     // eslint-disable-next-line no-await-in-loop
     if (await tryListen(webServer, port)) {
       found = true;
@@ -76,7 +67,7 @@ export async function launchServer(
     }
   }
   if (!found) {
-    throw Error(`Port ${options.port} is already in use`);
+    throw Error(`All ports in range "${options.ports}" are already in use`);
   }
 
   const webSocketServer = new WS.Server({
