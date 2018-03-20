@@ -32,10 +32,15 @@ const getGatekeeper = once(() => {
       }
 
       onceGkInitialized(callback: () => mixed): IDisposable {
+        let canceled = false;
         process.nextTick(() => {
-          callback();
+          if (!canceled) {
+            callback();
+          }
         });
-        return new UniversalDisposable();
+        return new UniversalDisposable(() => {
+          canceled = true;
+        });
       }
 
       getCacheEntries(): Iterable<[string, boolean]> {
