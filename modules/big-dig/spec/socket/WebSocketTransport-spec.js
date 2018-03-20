@@ -15,13 +15,14 @@ import type WS from 'ws';
 import EventEmitter from 'events';
 import {WebSocketTransport} from '../../src/socket/WebSocketTransport';
 import {compress, decompress} from '../../src/socket/compression';
+import {describe, expect, it, jest} from 'nuclide-jest/globals';
 
 function mockSocket(): WS {
   const result = (new EventEmitter(): any);
   result.close = () => {
     result.emit('close');
   };
-  spyOn(result, 'on').andCallThrough();
+  jest.spyOn(result, 'on');
   return result;
 }
 
@@ -36,9 +37,9 @@ describe('WebSocketTransport', () => {
 
   it('constructor', () => {
     expect(transport.isClosed()).toBe(false);
-    expect(socket.on).toHaveBeenCalledWith('message', jasmine.any(Function));
-    expect(socket.on).toHaveBeenCalledWith('error', jasmine.any(Function));
-    expect(socket.on).toHaveBeenCalledWith('close', jasmine.any(Function));
+    expect(socket.on).toHaveBeenCalledWith('message', expect.any(Function));
+    expect(socket.on).toHaveBeenCalledWith('error', expect.any(Function));
+    expect(socket.on).toHaveBeenCalledWith('close', expect.any(Function));
   });
 
   it('can receive a message', () => {
@@ -51,38 +52,30 @@ describe('WebSocketTransport', () => {
     expect(result).toEqual(payload);
   });
 
-  it('send - success', () => {
-    waitsForPromise(async () => {
-      const s: any = socket;
-      s.send = jasmine
-        .createSpy('send')
-        .andCallFake((data, _, callback) => callback(null));
-      const data = JSON.stringify({foo: 42});
-      const result = await transport.send(data);
-      expect(result).toBe(true);
-      expect(socket.send).toHaveBeenCalledWith(
-        data,
-        jasmine.any(Object),
-        jasmine.any(Function),
-      );
-    });
+  it('send - success', async () => {
+    const s: any = socket;
+    s.send = jest.fn((data, _, callback) => callback(null));
+    const data = JSON.stringify({foo: 42});
+    const result = await transport.send(data);
+    expect(result).toBe(true);
+    expect(socket.send).toBeCalledWith(
+      data,
+      expect.any(Object),
+      expect.any(Function),
+    );
   });
 
-  it('send - error', () => {
-    waitsForPromise(async () => {
-      const s: any = socket;
-      s.send = jasmine
-        .createSpy('send')
-        .andCallFake((data, _, callback) => callback(new Error()));
-      const data = JSON.stringify({foo: 42});
-      const result = await transport.send(data);
-      expect(result).toBe(false);
-      expect(socket.send).toHaveBeenCalledWith(
-        data,
-        jasmine.any(Object),
-        jasmine.any(Function),
-      );
-    });
+  it('send - error', async () => {
+    const s: any = socket;
+    s.send = jest.fn((data, _, callback) => callback(new Error()));
+    const data = JSON.stringify({foo: 42});
+    const result = await transport.send(data);
+    expect(result).toBe(false);
+    expect(socket.send).toBeCalledWith(
+      data,
+      expect.any(Object),
+      expect.any(Function),
+    );
   });
 
   it('close event', () => {
@@ -126,21 +119,17 @@ describe('WebSocketTransport', () => {
     expect(error).toBe(expected);
   });
 
-  it('can send compressed messages', () => {
-    waitsForPromise(async () => {
-      transport = new WebSocketTransport('42', socket, {syncCompression: true});
-      const s: any = socket;
-      s.send = jasmine
-        .createSpy('send')
-        .andCallFake((data, _, callback) => callback(null));
-      const data = 'a'.repeat(10000);
-      const result = await transport.send(data);
-      expect(result).toBe(true);
-      expect(s.send).toHaveBeenCalled();
-      const buffer = s.send.calls[0].args[0];
-      expect(buffer instanceof Buffer).toBe(true);
-      expect(decompress(buffer)).toBe(data);
-    });
+  it('can send compressed messages', async () => {
+    transport = new WebSocketTransport('42', socket, {syncCompression: true});
+    const s: any = socket;
+    s.send = jest.fn((data, _, callback) => callback(null));
+    const data = 'a'.repeat(10000);
+    const result = await transport.send(data);
+    expect(result).toBe(true);
+    expect(s.send).toBeCalled();
+    const buffer = s.send.mock.calls[0][0];
+    expect(buffer instanceof Buffer).toBe(true);
+    expect(decompress(buffer)).toBe(data);
   });
 
   it('can receive compressed messages', () => {
