@@ -105,14 +105,13 @@ class DOMObserverObservable<
     }
   }
 
-  lift<R, S>(
-    operator: rxjs$Operator<TNext, R>,
-  ): DOMObserverObservable<R, S, TObserveArgs> {
-    const obs = new DOMObserverObservable(
-      this._DOMObserverCtor,
-      ...this._observations[0],
-    );
-    obs._observations = this._observations.slice();
+  lift<R>(operator: rxjs$Operator<TNext, R>): this {
+    const Constructor = this.constructor;
+    const [firstObservation, ...restObservations] = this._observations;
+    const obs = new Constructor(this._DOMObserverCtor, ...firstObservation);
+    for (const observation of restObservations) {
+      obs.observe(...observation);
+    }
     obs.source = this;
     obs.operator = operator;
     return obs;
