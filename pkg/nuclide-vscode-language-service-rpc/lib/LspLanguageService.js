@@ -1984,13 +1984,12 @@ export class LspLanguageService {
         params,
         this._hoverCancellation.token,
       );
-      invariant(response != null, 'null textDocument/hover');
     } catch (e) {
       this._logLspException(e);
       return null;
     }
 
-    if (response.contents == null) {
+    if (response == null || response.contents == null) {
       return null;
     }
 
