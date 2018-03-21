@@ -22,7 +22,6 @@ import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedAckTransport} from './QueuedAckTransport';
 import {XhrConnectionHeartbeat} from '../client/XhrConnectionHeartbeat';
 import invariant from 'assert';
-import {attachEvent} from 'nuclide-commons/event';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-socket');
@@ -142,7 +141,12 @@ export class NuclideSocket {
   _reconnect() {
     invariant(this.isDisconnected());
 
-    const websocket = new WS(this._websocketUri, this._options);
+    const websocket = new WS(this._websocketUri, {
+      ...this._options,
+      headers: {
+        client_id: this.id,
+      },
+    });
 
     // Need to add this otherwise unhandled errors during startup will result
     // in uncaught exceptions. This is due to EventEmitter treating 'error'
@@ -163,64 +167,39 @@ export class NuclideSocket {
     websocket.on('error', onSocketError);
 
     const onSocketOpen = async () => {
-      logger.info(`sending the id: ${this.id}`);
-      const sendIdResult = await sendOneMessage(websocket, this.id);
-      switch (sendIdResult.kind) {
-        case 'close':
-          websocket.close();
-          logger.info('WebSocket closed before sending id handshake');
-          if (this.isDisconnected()) {
-            logger.info('WebSocket reconnecting after closed.');
-            this._scheduleReconnect();
-          }
-          break;
-        case 'error':
-          websocket.close();
-          logger.error(
-            'WebSocket Error before sending id handshake',
-            sendIdResult.message,
-          );
-          if (this.isDisconnected()) {
-            logger.info('WebSocket reconnecting after error.');
-            this._scheduleReconnect();
-          }
-          break;
-        case 'success':
-          if (this.isDisconnected()) {
-            const ws = new WebSocketTransport(this.id, websocket);
-            const pingId = uuid.v4();
-            ws.onClose(() => {
-              this._clearPingTimer();
-            });
-            ws.onError(error => {
-              ws.close();
-            });
-            ws.onPong(data => {
-              if (pingId === data) {
-                this._schedulePing(pingId, ws);
-              } else {
-                logger.error('pingId mismatch');
-              }
-            });
-            ws.onMessage().subscribe(() => {
-              this._schedulePing(pingId, ws);
-            });
+      if (this.isDisconnected()) {
+        const ws = new WebSocketTransport(this.id, websocket);
+        const pingId = uuid.v4();
+        ws.onClose(() => {
+          this._clearPingTimer();
+        });
+        ws.onError(error => {
+          ws.close();
+        });
+        ws.onPong(data => {
+          if (pingId === data) {
             this._schedulePing(pingId, ws);
-            invariant(this._transport != null);
-            this._transport.reconnect(ws);
-            websocket.removeListener('error', onSocketError);
-            this._emitter.emit('status', true);
-            if (this._previouslyConnected) {
-              logger.info('WebSocket reconnected');
-              this._emitter.emit('reconnect');
-            } else {
-              logger.info('WebSocket connected');
-              this._emitter.emit('connect');
-            }
-            this._previouslyConnected = true;
-            this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
+          } else {
+            logger.error('pingId mismatch');
           }
-          break;
+        });
+        ws.onMessage().subscribe(() => {
+          this._schedulePing(pingId, ws);
+        });
+        this._schedulePing(pingId, ws);
+        invariant(this._transport != null);
+        this._transport.reconnect(ws);
+        websocket.removeListener('error', onSocketError);
+        this._emitter.emit('status', true);
+        if (this._previouslyConnected) {
+          logger.info('WebSocket reconnected');
+          this._emitter.emit('reconnect');
+        } else {
+          logger.info('WebSocket connected');
+          this._emitter.emit('connect');
+        }
+        this._previouslyConnected = true;
+        this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       }
     };
     websocket.on('open', onSocketOpen);
@@ -348,30 +327,4 @@ export class NuclideSocket {
   onClose(callback: () => mixed): IDisposable {
     return this._emitter.on('close', callback);
   }
-}
-
-type SendResult =
-  | {kind: 'error', message: string}
-  | {kind: 'close'}
-  | {kind: 'success'};
-
-function sendOneMessage(socket: WS, message: string): Promise<SendResult> {
-  return new Promise((resolve, reject) => {
-    function finish(result) {
-      onError.dispose();
-      onClose.dispose();
-      resolve(result);
-    }
-    const onError = attachEvent(socket, 'event', err =>
-      finish({kind: 'error', message: err}),
-    );
-    const onClose = attachEvent(socket, 'close', () => finish({kind: 'close'}));
-    socket.send(message, error => {
-      if (error == null) {
-        finish({kind: 'success'});
-      } else {
-        finish({kind: 'error', message: error.toString()});
-      }
-    });
-  });
 }

@@ -465,6 +465,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
         }
         let sshHandshake;
         if (useBigDig) {
+          logger.info('using BigDig for the SshHandshake');
           sshHandshake = connectBigDigSshHandshake(
             connectionConfig,
             this._delegate,

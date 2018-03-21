@@ -89,42 +89,20 @@ export default class BigDigServer {
 
   _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
     const {pathname} = url.parse(req.url);
+    const clientId = req.headers.client_id;
     this._logger.info(`connection negotiation via path ${String(pathname)}`);
+    this._logger.info(`received client_id in header ${clientId}`);
 
     if (pathname !== '/v1') {
       this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
       return;
     }
 
-    // TODO: send clientId in the http headers on the websocket connection
-    const headerClientId = req.headers.client_id;
-
-    // TODO: after we start sending the clientId in headers, we can remove this check
-    if (headerClientId != null) {
-      this._logger.info(
-        `received clientId ${headerClientId} in header, not waiting for first clientId message`,
-      );
-      this._handleClientId(ws, headerClientId);
-    } else {
-      this._logger.info(
-        'did not receive clientId in header, will wait for first message',
-      );
-      // the first message after a connection should only include
-      // the clientId of the connecting client; the BigDig connection
-      // is not actually made until we get this connection
-      ws.once('message', (clientId: string) => {
-        this._handleClientId(ws, clientId);
-      });
-    }
-  }
-
-  _handleClientId(ws: WS, clientId: string) {
     const cachedTransport = this._clientIdToTransport.get(clientId);
     const wsTransport = new WebSocketTransport(clientId, ws);
 
     if (cachedTransport == null) {
-      // handle first message which should include the clientId
-      this._logger.info(`creating new transport with clientId ${clientId}`);
+      this._logger.info(`on connection the clientId is ${clientId}`);
 
       const qaTransport = new QueuedAckTransport(clientId, wsTransport);
       this._clientIdToTransport.set(clientId, qaTransport);

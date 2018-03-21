@@ -15,7 +15,6 @@ import invariant from 'assert';
 import os from 'os';
 import {getLogger} from 'log4js';
 import WS from 'ws';
-import {attachEvent} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
@@ -292,30 +291,9 @@ export default class NuclideServer {
   _onConnection(socket: WS, req: http$IncomingMessage): void {
     logger.debug('WebSocket connecting');
 
-    const headerClientId = req.headers.client_id;
+    const clientId = req.headers.client_id;
+    logger.info(`received client_id in header ${clientId}`);
 
-    // XXX: Once we ship the client that is sending the clientId in the header
-    // we can remove this check and just leave the else block
-    if (headerClientId != null) {
-      logger.info(
-        `received clientId in the initial ws header: ${headerClientId}`,
-      );
-      this._handleClientId(socket, headerClientId);
-    } else {
-      logger.info('did not receive the clientId in the initial ws header');
-      logger.info('will wait for the clientId in the first message...');
-      const errorSubscription = attachEvent(socket, 'error', e =>
-        logger.error('WebSocket error before first message', e),
-      );
-
-      socket.once('message', (clientId: string) => {
-        errorSubscription.dispose();
-        this._handleClientId(socket, clientId);
-      });
-    }
-  }
-
-  _handleClientId(socket: WS, clientId: string) {
     let client: ?RpcConnection<QueuedAckTransport> = null;
 
     client = this._clients.get(clientId);
