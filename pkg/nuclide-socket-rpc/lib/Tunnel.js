@@ -18,6 +18,7 @@ import type {Connection, ConnectionFactory} from './Connection';
 import type {SocketEvent, TunnelDescriptor, IRemoteSocket} from './types.js';
 
 const LOG_DELTA = 500000; // log for every half megabyte of transferred data
+const DEBUG_VERBOSE = false;
 
 export function createTunnel(
   td: TunnelDescriptor,
@@ -39,14 +40,18 @@ export function createTunnel(
     const listener: net.Server = net.createServer(async socket => {
       const clientPort = socket.remotePort;
 
-      trace('Tunnel: client connected on remote port ' + clientPort);
+      if (DEBUG_VERBOSE) {
+        trace('Tunnel: client connected on remote port ' + clientPort);
+      }
       observer.next({type: 'client_connected', clientPort});
 
       // create outgoing connection using connection factory
       const localSocket = new LocalSocket(socket);
       localSocket.onWrite(count => {
         bytesWritten += count;
-        logStatsIfNecessary(bytesWritten, bytesReceived);
+        if (DEBUG_VERBOSE) {
+          logStatsIfNecessary(bytesWritten, bytesReceived);
+        }
       });
       const remoteSocket = new RemoteSocket(localSocket);
       const connectionPromise = cf.createConnection(td.to, remoteSocket);
@@ -57,11 +62,15 @@ export function createTunnel(
         trace(`Tunnel: timeout (port: ${clientPort}, ${this.toString()})`);
       });
 
-      socket.on('end', () => {
-        trace(
-          `Tunnel: end (port: ${clientPort}, ${tunnelDescription(descriptor)})`,
-        );
-      });
+      if (DEBUG_VERBOSE) {
+        socket.on('end', () => {
+          trace(
+            `Tunnel: end (port: ${clientPort}, ${tunnelDescription(
+              descriptor,
+            )})`,
+          );
+        });
+      }
 
       socket.on('error', err => {
         trace(
@@ -85,11 +94,13 @@ export function createTunnel(
 
       socket.on('close', () => {
         // on client_disconnect remove and dispose the connection
-        trace(
-          `Tunnel: close (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
-        );
+        if (DEBUG_VERBOSE) {
+          trace(
+            `Tunnel: close (port: ${clientPort}, ${tunnelDescription(
+              descriptor,
+            )})`,
+          );
+        }
         connectionPromise.then(connection => {
           connection.dispose();
           connections.delete(clientPort);
@@ -108,7 +119,7 @@ export function createTunnel(
     });
 
     return () => {
-      trace('Tunnel: shutting down tunnel');
+      trace(`Tunnel: shutting down tunnel ${tunnelDescription(descriptor)}`);
       connections.forEach(connectionPromise =>
         connectionPromise.then(conn => {
           conn.dispose();
