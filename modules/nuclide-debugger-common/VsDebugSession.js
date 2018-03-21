@@ -34,7 +34,7 @@ function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
     seq: 0,
     type: 'event',
     event: 'adapter-exited',
-    body: {exitCode: 0},
+    body: {exitCode},
   };
 }
 

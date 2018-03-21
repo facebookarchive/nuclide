@@ -182,7 +182,11 @@ class Activation {
       }
 
       await debuggerService.startDebugging(
-        await getAttachProcessInfo(hackRootUri),
+        await getAttachProcessInfo(
+          hackRootUri,
+          null /* attachPort */,
+          true /* serverAttach */,
+        ),
       );
     }
 

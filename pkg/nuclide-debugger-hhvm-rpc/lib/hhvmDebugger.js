@@ -87,7 +87,11 @@ class HHVMDebuggerWrapper {
         });
 
         socket.on('close', () => {
-          process.exit(0);
+          this._writeOutputWithHeader({
+            seq: ++this._sequenceNumber,
+            type: 'event',
+            event: 'hhvmConnectionDied',
+          });
         });
 
         socket.on('disconnect', () => {

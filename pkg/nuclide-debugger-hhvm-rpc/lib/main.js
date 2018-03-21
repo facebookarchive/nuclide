@@ -183,6 +183,15 @@ async function _rotateHHVMLogs(path: string): Promise<void> {
   }
 }
 
+export async function getHhvmStackTraces(): Promise<Array<string>> {
+  try {
+    // $FlowFB
+    const fbConfig = require('./fbConfig');
+    return fbConfig.getHhvmStackTraces();
+  } catch (_) {}
+  return [];
+}
+
 export async function createLogFilePaste(): Promise<string> {
   try {
     // $FlowFB

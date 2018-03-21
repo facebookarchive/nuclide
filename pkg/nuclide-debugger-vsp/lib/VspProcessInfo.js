@@ -66,7 +66,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
   _rpcService: ?VSCodeDebuggerAdapterService;
   _vspInstance: ?IVspInstance;
   _preprocessors: ?MessagePreprocessors;
-  _customDisposable: ?IDisposable;
+  _disposables: UniversalDisposable;
   _customCapabilities: CustomDebuggerCapabilities;
   _customProperties: CustomDebuggerProperties;
 
@@ -89,7 +89,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     this._customProperties = customProperties || {};
     this._preprocessors = preprocessors;
     this._rpcService = null;
-    this._customDisposable = null;
+    this._disposables = new UniversalDisposable();
   }
 
   clone(): VspProcessInfo {
@@ -195,8 +195,8 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
     }
   }
 
-  setCustomDisposable(disposable: IDisposable): void {
-    this._customDisposable = disposable;
+  addCustomDisposable(disposable: IDisposable): void {
+    this._disposables.add(disposable);
   }
 
   dispose(): void {
@@ -204,10 +204,7 @@ export default class VspProcessInfo extends DebuggerProcessInfo {
       this._rpcService.dispose();
       this._rpcService = null;
     }
-    if (this._customDisposable != null) {
-      this._customDisposable.dispose();
-      this._customDisposable = null;
-    }
+    this._disposables.dispose();
     this._vspInstance = null;
   }
 

@@ -381,6 +381,7 @@ async function _getHHVMAttachConfig(
 export async function getAttachProcessInfo(
   targetUri: NuclideUri,
   attachPort: ?number,
+  serverAttach: boolean,
 ): Promise<VspProcessInfo> {
   const useNewDebugger = await _useNewDebugger();
   let adapterExecutable;
@@ -420,8 +421,19 @@ export async function getAttachProcessInfo(
     // $FlowFB
     const services = require('./fb-HhvmServices');
     services.startSlog();
-    processInfo.setCustomDisposable(
-      new UniversalDisposable(() => services.stopSlog()),
+
+    if (serverAttach) {
+      services.startCrashHandler(targetUri, processInfo, getAttachProcessInfo);
+    }
+
+    processInfo.addCustomDisposable(
+      new UniversalDisposable(() => {
+        services.stopSlog();
+
+        if (serverAttach) {
+          services.stopCrashHandler(processInfo);
+        }
+      }),
     );
   } catch (_) {}
   return processInfo;

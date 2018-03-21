@@ -53,7 +53,11 @@ export async function debug(
         '' /* cwdPath */,
       );
     } else {
-      processInfo = await getAttachProcessInfo(activeProjectRoot, null);
+      processInfo = await getAttachProcessInfo(
+        activeProjectRoot,
+        null /* attachPort */,
+        true /* serverAttach */,
+      );
     }
   }
 

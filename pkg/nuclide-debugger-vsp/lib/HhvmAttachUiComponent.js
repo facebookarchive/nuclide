@@ -38,6 +38,7 @@ type PropsType = {
   getAttachProcessInfo: (
     targetUri: NuclideUri,
     debugPort: ?number,
+    serverAttach: boolean,
   ) => Promise<VspProcessInfo>,
 };
 
@@ -333,10 +334,11 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
     const processInfo = await this.props.getAttachProcessInfo(
       nuclideUri.createRemoteUri(hostname, selectedPath),
       this.state.attachPort,
+      this.state.attachType === 'webserver',
     );
 
     const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(processInfo);
+    await debuggerService.startDebugging(processInfo);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedPath,
