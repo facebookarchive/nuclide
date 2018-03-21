@@ -262,7 +262,7 @@ class Activation {
               if (target.dataset.threadid) {
                 const threadId = parseInt(target.dataset.threadid, 10);
                 if (!Number.isNaN(threadId)) {
-                  return this._supportsTerminateThread();
+                  return this._supportsTerminateThreadsRequest();
                 }
               }
               return false;
@@ -366,14 +366,14 @@ class Activation {
     }
   }
 
-  _supportsTerminateThread(): boolean {
+  _supportsTerminateThreadsRequest(): boolean {
     // If currently debugging, return whether or not the current debugger supports this.
     const {focusedProcess} = this._service.viewModel;
     if (focusedProcess == null) {
       return false;
     } else {
       return Boolean(
-        focusedProcess.session.capabilities.supportsTerminateThread,
+        focusedProcess.session.capabilities.supportsTerminateThreadsRequest,
       );
     }
   }
@@ -607,8 +607,8 @@ class Activation {
     const target: HTMLElement = event.target;
     if (target.dataset.threadid) {
       const threadId = parseInt(target.dataset.threadid, 10);
-      if (!Number.isNaN(threadId) && this._supportsTerminateThread()) {
-        this._service.terminateThread(threadId);
+      if (!Number.isNaN(threadId) && this._supportsTerminateThreadsRequest()) {
+        this._service.terminateThreads([threadId]);
       }
     }
   }

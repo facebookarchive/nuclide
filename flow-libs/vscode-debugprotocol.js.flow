@@ -1087,7 +1087,7 @@ declare module 'vscode-debugprotocol' {
      *  an addition to the protocol but not added yet.
      *  Tracked by VS Code issue: https://github.com/Microsoft/vscode-debugadapter-node/issues/150
      */
-    supportsTerminateThread?: boolean,
+    supportsTerminateThreadsRequest?: boolean,
   };
 
   /** An ExceptionBreakpointsFilter is shown in the UI as an option for configuring how exceptions are dealt with. */

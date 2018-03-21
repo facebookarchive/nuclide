@@ -1048,7 +1048,7 @@ export default class DebugService implements IDebugService {
     return this._sendFunctionBreakpoints();
   }
 
-  async terminateThread(threadId: number): Promise<void> {
+  async terminateThreads(threadIds: Array<number>): Promise<void> {
     const {focusedProcess} = this.viewModel;
     if (focusedProcess == null) {
       return;
@@ -1056,9 +1056,9 @@ export default class DebugService implements IDebugService {
 
     const session = focusedProcess.session;
     track(AnalyticsEvents.DEBUGGER_TERMINATE_THREAD);
-    if (Boolean(session.capabilities.supportsTerminateThread)) {
-      await session.custom('terminateThread', {
-        threadId,
+    if (Boolean(session.capabilities.supportsTerminateThreadsRequest)) {
+      await session.custom('terminateThreads', {
+        threadIds,
       });
     }
   }

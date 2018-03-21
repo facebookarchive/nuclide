@@ -192,14 +192,16 @@ export default class DebuggerThreadsComponent extends React.Component<
       width: 0.05,
     };
 
-    let supportsTerminateThread = false;
+    let supportsTerminateThreadsRequest = false;
     const {focusedProcess} = this.props.service.viewModel;
     if (
       focusedProcess != null &&
       focusedProcess.session != null &&
-      Boolean(focusedProcess.session.capabilities.supportsTerminateThread)
+      Boolean(
+        focusedProcess.session.capabilities.supportsTerminateThreadsRequest,
+      )
     ) {
-      supportsTerminateThread = true;
+      supportsTerminateThreadsRequest = true;
     }
 
     const columns = [
@@ -217,7 +219,7 @@ export default class DebuggerThreadsComponent extends React.Component<
       {
         title: 'Address',
         key: 'address',
-        width: supportsTerminateThread ? 0.35 : 0.45,
+        width: supportsTerminateThreadsRequest ? 0.35 : 0.45,
       },
       {
         title: 'Stop Reason',
@@ -226,7 +228,7 @@ export default class DebuggerThreadsComponent extends React.Component<
       },
     ];
 
-    if (supportsTerminateThread) {
+    if (supportsTerminateThreadsRequest) {
       columns.push({
         title: 'Terminate',
         key: 'terminateThread',
