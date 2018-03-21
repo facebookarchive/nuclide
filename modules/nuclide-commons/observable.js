@@ -24,9 +24,14 @@
 //       .let(makeExciting())
 //       .subscribe(x => console.log(x));
 
+import type {AbortSignal} from './AbortController';
+
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
+// Note: DOMException is usable in Chrome but not in Node.
+import DOMException from 'domexception';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
+import AbortController from './AbortController';
 import {setDifference} from './collection';
 import debounce from './debounce';
 
@@ -420,6 +425,103 @@ export const nextAnimationFrame = Observable.create(observer => {
     cancelAnimationFrame(id);
   };
 });
+
+/**
+ * Creates an Observable around an abortable promise.
+ * Unsubscriptions are forwarded to the AbortController as an `abort()`.
+ * Example usage (with an abortable fetch):
+ *
+ *   fromPromise(signal => fetch(url, {...options, signal}))
+ *     .switchMap(....)
+ *
+ * Note that this can take a normal `() => Promise<T>` too
+ * (in which case this acts as just a plain `Observable.defer`).
+ */
+export function fromAbortablePromise<T>(
+  func: (signal: AbortSignal) => Promise<T>,
+): Observable<T> {
+  return Observable.create(observer => {
+    let completed = false;
+    const abortController = new AbortController();
+    func(abortController.signal).then(
+      value => {
+        completed = true;
+        observer.next(value);
+        observer.complete();
+      },
+      error => {
+        completed = true;
+        observer.error(error);
+      },
+    );
+    return () => {
+      if (!completed) {
+        abortController.abort();
+        // If the promise adheres to the spec, it should throw.
+        // The error will be captured above but go into the void.
+      }
+    };
+  });
+}
+
+/**
+ * Converts an observable + AbortSignal into a cancellable Promise,
+ * which rejects with an AbortError DOMException on abort.
+ * Useful when writing the internals of a cancellable promise.
+ *
+ * Usage:
+ *
+ *   function abortableFunction(arg1: blah, options?: {signal?: AbortSignal}): Promise {
+ *     return toPromise(
+ *       observableFunction(arg1, options),
+ *       options && options.signal,
+ *     );
+ *   }
+ *
+ * Could eventually be replaced by Observable.first if
+ * https://github.com/whatwg/dom/issues/544 goes through.
+ *
+ * It's currently unclear if this should be usable with let/pipe:
+ * https://github.com/ReactiveX/rxjs/issues/3445
+ */
+export function toAbortablePromise<T>(
+  observable: Observable<T>,
+  signal?: ?AbortSignal,
+): Promise<T> {
+  if (signal == null) {
+    return observable.toPromise();
+  }
+  if (signal.aborted) {
+    return Promise.reject(DOMException('Aborted', 'AbortError'));
+  }
+  return observable
+    .race(
+      Observable.fromEvent(signal, 'abort').map(() => {
+        throw new DOMException('Aborted', 'AbortError');
+      }),
+    )
+    .toPromise();
+}
+
+/**
+ * When using Observables with AbortSignals, be sure to use this -
+ * it's really easy to miss the case when the signal is already aborted!
+ * Recommended to use this with let/pipe:
+ *
+ *   myObservable
+ *     .let(obs => takeUntilAbort(obs, signal))
+ */
+export function takeUntilAbort<T>(
+  observable: Observable<T>,
+  signal: AbortSignal,
+): Observable<T> {
+  return Observable.defer(() => {
+    if (signal.aborted) {
+      return Observable.empty();
+    }
+    return observable.takeUntil(Observable.fromEvent(signal, 'abort'));
+  });
+}
 
 export type CancelablePromise<T> = {
   promise: Promise<T>,

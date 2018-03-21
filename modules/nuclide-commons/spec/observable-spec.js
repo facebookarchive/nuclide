@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {AbortSignal} from '../AbortController';
+
 import {
   bufferUntil,
   cacheWhileSubscribed,
@@ -17,6 +19,7 @@ import {
   concatLatest,
   diffSets,
   fastDebounce,
+  fromAbortablePromise,
   macrotask,
   microtask,
   nextAnimationFrame,
@@ -25,12 +28,15 @@ import {
   reconcileSetDiffs,
   SingletonExecutor,
   splitStream,
+  takeUntilAbort,
   takeWhileInclusive,
   throttle,
+  toAbortablePromise,
   toCancelablePromise,
   toggle,
 } from '../observable';
 import nullthrows from 'nullthrows';
+import AbortController from '../AbortController';
 import UniversalDisposable from '../UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 
@@ -610,6 +616,88 @@ describe('nuclide-commons/observable', () => {
       const sub = macrotask.subscribe(() => {});
       sub.unsubscribe();
       expect(clearImmediate).toHaveBeenCalled();
+    });
+  });
+
+  describe('fromAbortablePromise', () => {
+    it('is able to cancel a promise after unsubscription', () => {
+      const spy = jasmine.createSpy('onabort');
+      function f(signal: AbortSignal) {
+        expect(signal.aborted).toBe(false);
+        signal.onabort = spy;
+        return new Promise(resolve => {});
+      }
+      const subscription = fromAbortablePromise(f).subscribe();
+      subscription.unsubscribe();
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('does not trigger an abort after normal completion', () => {
+      waitsForPromise(async () => {
+        const spy = jasmine.createSpy('onabort');
+        function f(signal: AbortSignal) {
+          signal.onabort = spy;
+          return Promise.resolve(1);
+        }
+        const result = await fromAbortablePromise(f).toPromise();
+        expect(result).toBe(1);
+        expect(spy).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('toAbortablePromise', () => {
+    it('rejects with a DOMException on abort', () => {
+      waitsForPromise(async () => {
+        const controller = new AbortController();
+        const spy = jasmine.createSpy('error');
+        const promise = toAbortablePromise(
+          Observable.never(),
+          controller.signal,
+        ).catch(spy);
+        controller.abort();
+        await promise;
+
+        expect(spy).toHaveBeenCalled();
+        const exception: any = spy.calls[0].args[0];
+        expect(exception.constructor.name).toBe('DOMException');
+        expect(exception.name).toBe('AbortError');
+        expect(exception.message).toBe('Aborted');
+      });
+    });
+
+    describe('takeUntilAbort', () => {
+      it('completes on abort', () => {
+        const controller = new AbortController();
+
+        const spy = jasmine.createSpy('completed');
+        Observable.never()
+          .let(obs => takeUntilAbort(obs, controller.signal))
+          .subscribe({complete: spy});
+
+        expect(spy).not.toHaveBeenCalled();
+        controller.abort();
+        expect(spy).toHaveBeenCalled();
+      });
+
+      it('completes when already aborted', () => {
+        const controller = new AbortController();
+        controller.abort();
+
+        const spy = jasmine.createSpy('completed');
+        Observable.never()
+          .let(obs => takeUntilAbort(obs, controller.signal))
+          .subscribe({complete: spy});
+
+        expect(spy).toHaveBeenCalled();
+      });
+    });
+
+    it('works with no signal', () => {
+      waitsForPromise(async () => {
+        const promise = toAbortablePromise(Observable.of(1));
+        expect(await promise).toBe(1);
+      });
     });
   });
 

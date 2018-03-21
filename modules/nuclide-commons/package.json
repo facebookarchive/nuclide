@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
+    "domexception": "1.0.1",
     "event-kit": "2.2.0",
+    "event-target-shim": "3.0.1",
     "fs-plus": "2.9.3",
     "glob": "7.1.1",
     "idx": "1.2.0",

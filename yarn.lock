@@ -1656,7 +1656,7 @@ domelementtype@~1.1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-1.1.3.tgz#bd28773e2642881aec51544924299c5cd822185b"
 
-domexception@^1.0.0:
+domexception@1.0.1, domexception@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/domexception/-/domexception-1.0.1.tgz#937442644ca6a31261ef36e3ec677fe805582c90"
   dependencies:
@@ -1945,6 +1945,10 @@ event-stream@^3.3.1, event-stream@~3.3.4:
     split "0.3"
     stream-combiner "~0.0.4"
     through "~2.3.1"
+
+event-target-shim@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/event-target-shim/-/event-target-shim-3.0.1.tgz#a4a62f0795e5b65363e86c6780413224d1eea688"
 
 exec-sh@^0.2.0:
   version "0.2.1"
