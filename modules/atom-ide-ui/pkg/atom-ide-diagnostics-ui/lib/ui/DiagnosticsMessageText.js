@@ -13,6 +13,9 @@
 import invariant from 'assert';
 import * as React from 'react';
 import {shell} from 'electron';
+import createDOMPurify from 'dompurify';
+
+const domPurify = createDOMPurify();
 
 type DiagnosticsMessageTextProps = {
   preserveNewlines?: boolean, // defaults to true
@@ -110,7 +113,7 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
     return (
       <span
         title={message.text}
-        dangerouslySetInnerHTML={{__html: message.html}}
+        dangerouslySetInnerHTML={{__html: domPurify.sanitize(message.html)}}
       />
     );
   } else if (message.text != null) {

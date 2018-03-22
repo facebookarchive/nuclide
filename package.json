@@ -62,6 +62,7 @@
     "diff": "3.0.1",
     "diffparser": "1.1.0",
     "domexception": "1.0.1",
+    "dompurify": "1.0.3",
     "double-ended-queue": "2.1.0-0",
     "escape-string-regexp": "1.0.5",
     "event-kit": "2.2.0",

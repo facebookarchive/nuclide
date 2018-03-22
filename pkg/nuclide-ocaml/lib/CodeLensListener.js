@@ -21,6 +21,9 @@ import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {nextTick} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import createDOMPurify from 'dompurify';
+
+const domPurify = createDOMPurify();
 
 const RETRIES = 3;
 
@@ -106,7 +109,7 @@ function resolveVisible(): void {
       }
 
       if (lens != null && lens.command != null) {
-        lensInfo.element.innerHTML = lens.command.title;
+        lensInfo.element.innerHTML = domPurify.sanitize(lens.command.title);
       } else if (lensInfo.retries < RETRIES) {
         lensInfo.resolved = false;
         lensInfo.retries++;

@@ -14,6 +14,9 @@ import type {ConsoleLevel, ConsoleService} from 'atom-ide-ui';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import marked from 'marked';
 import createPackage from 'nuclide-commons-atom/createPackage';
+import createDOMPurify from 'dompurify';
+
+const domPurify = createDOMPurify();
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -60,20 +63,11 @@ function getLevel(atomNotificationType: string): ConsoleLevel {
   }
 }
 
-let formattingDiv;
 /**
- * Markdown and HTML can be used with Atom notifications, but not in the console. In order to strip
- * all of the formatting, we'll first compile the markdown, then use a DOM element to convert that
- * to raw text. This isn't the most performant way to strip the HTML, but it does handle `<br />`s
- * and stuff really easily and only happens once per notification so it's okay.
+ * Markdown and HTML can be used with Atom notifications, but not in the console.
  */
 function stripFormatting(raw: string): string {
-  const div =
-    formattingDiv == null
-      ? (formattingDiv = document.createElement('div'))
-      : formattingDiv;
-  div.innerHTML = marked(raw);
-  return div.innerText || '';
+  return domPurify.sanitize(marked(raw));
 }
 
 createPackage(module.exports, Activation);

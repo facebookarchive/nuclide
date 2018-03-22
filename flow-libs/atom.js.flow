@@ -1860,6 +1860,7 @@ declare class atom$NotificationManager {
   addWarning(message: string, options?: atom$NotificationOptions): atom$Notification,
   addError(message: string, options?: atom$NotificationOptions): atom$Notification,
   addFatalError(message: string, options?: atom$NotificationOptions): atom$Notification,
+  addNotification(notification: atom$Notification): atom$Notification,
 
   // Getting Notifications
   getNotifications(): Array<atom$Notification>,
