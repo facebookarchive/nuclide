@@ -67,7 +67,7 @@ export async function generateCertificatesAndStartServer({
     ports,
     expirationDays,
     exclusive,
-    launcher: absolutePathToServerMain,
+    absolutePathToServerMain,
     serverParams,
   };
 

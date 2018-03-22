@@ -26,7 +26,7 @@ export type LauncherScriptParams = {|
   ports: string,
   expirationDays: number,
   exclusive: ?string,
-  launcher: string,
+  absolutePathToServerMain: string,
   serverParams: mixed,
 |};
 
@@ -60,7 +60,7 @@ async function handleLaunchParams(params: LauncherScriptParams) {
       cert: params.cert,
       ca: params.ca,
     },
-    absolutePathToServerMain: params.launcher,
+    absolutePathToServerMain: params.absolutePathToServerMain,
     serverParams: params.serverParams,
   });
 
