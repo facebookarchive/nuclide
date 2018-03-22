@@ -1142,6 +1142,10 @@ export default class DebugService implements IDebugService {
     configuration: IProcessConfig,
     sessionId: string,
   ): Promise<?IProcess> {
+    track(AnalyticsEvents.DEBUGGER_START, {
+      serviceName: configuration.adapterType,
+      clientType: 'VSP',
+    });
     let process: ?IProcess;
     const session = this._createVsDebugSession(configuration, sessionId);
     try {
