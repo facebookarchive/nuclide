@@ -37,7 +37,6 @@ export default class TerminalDashProvider
     action: 'terminal-dash-provider:toggle-provider',
   };
 
-  name = 'TerminalProvider';
   prefix = '!';
   priority = 10;
 

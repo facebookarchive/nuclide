@@ -37,7 +37,6 @@ export default class NuclidePackageReloadDashProvider
   };
 
   includeAsFallback = true;
-  name = 'NuclideReloadPackageDashProvider';
   prefix = 'npr';
   priority = 10;
 
