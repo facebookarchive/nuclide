@@ -10,9 +10,11 @@
  * @format
  */
 
+import type {ConsoleIO} from './ConsoleIO';
+
 import readline from 'readline';
 import CommandDispatcher from './CommandDispatcher';
-import type {ConsoleIO} from './ConsoleIO';
+import {Observable, Subject} from 'rxjs';
 
 export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
@@ -20,6 +22,8 @@ export default class CommandLine implements ConsoleIO {
   _inputStopped = false;
   _shouldPrompt = false;
   _lastLine = '';
+
+  _onSIGINT: Subject<void> = new Subject();
 
   constructor(dispatcher: CommandDispatcher) {
     this._dispatcher = dispatcher;
@@ -29,6 +33,10 @@ export default class CommandLine implements ConsoleIO {
     });
 
     this._cli.setPrompt('fbdbg> ');
+  }
+
+  observerSIGINT(): Observable<void> {
+    return this._onSIGINT.asObservable();
   }
 
   // $TODO handle
@@ -63,6 +71,7 @@ export default class CommandLine implements ConsoleIO {
       }
       this._cli
         .on('line', this._executeCommand.bind(this))
+        .on('SIGINT', _ => this._onSIGINT.next())
         .on('close', resolve);
     });
   }

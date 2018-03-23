@@ -104,6 +104,10 @@ async function main(): Promise<void> {
 
     debuggerInstance.registerCommands(dispatcher);
 
+    cli.observerSIGINT().subscribe(_ => {
+      debuggerInstance.breakInto();
+    });
+
     await cli.run();
     await debuggerInstance.closeSession();
     cli.outputLine();

@@ -44,6 +44,12 @@ import RunCommand from './RunCommand';
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 
+type SessionState =
+  | 'INITIALIZING' // waiting for initialized event from adapter
+  | 'CONFIGURING' // waiting for user to issue 'run' command after setting initial breakpoints
+  | 'RUNNING' // program is running
+  | 'STOPPED'; // program has hit a breakpoint
+
 export default class Debugger implements DebuggerInterface {
   _capabilities: ?Capabilities;
   _console: ConsoleIO;
@@ -53,7 +59,7 @@ export default class Debugger implements DebuggerInterface {
   _threads: Map<number, Thread> = new Map();
   _sourceFiles: SourceFileCache;
   _terminated: boolean = false;
-  _launching: boolean;
+  _state: SessionState = 'INITIALIZING';
   _breakpoints: BreakpointCollection = new BreakpointCollection();
   _adapter: ?ParsedVSAdapter;
 
@@ -77,6 +83,102 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new RestartCommand(this));
     dispatcher.registerCommand(new PrintCommand(this._console, this));
     dispatcher.registerCommand(new RunCommand(this));
+  }
+
+  // launch is for launching a process from scratch when we need a new
+  // session
+  launch(adapter: ParsedVSAdapter): Promise<void> {
+    this._adapter = adapter;
+    this._breakpoints = new BreakpointCollection();
+    return this.relaunch();
+  }
+
+  // relaunch is for when we want to restart the current process
+  // without tearing down the session. some adapters can do this
+  // automatically
+  async relaunch(): Promise<void> {
+    const adapter = this._adapter;
+    if (adapter == null) {
+      throw new Error('There is nothing to relaunch.');
+    }
+
+    this._state = 'INITIALIZING';
+    await this.closeSession();
+    await this.createSession(adapter.adapterInfo);
+
+    switch (adapter.action) {
+      case 'attach':
+        const attachArgs = adapter.attachArgs;
+        invariant(attachArgs != null);
+        await this._ensureDebugSession(true).attach(attachArgs);
+        break;
+
+      case 'launch':
+        const launchArgs = adapter.launchArgs;
+        invariant(launchArgs != null);
+        await this._ensureDebugSession(true).launch(launchArgs);
+        break;
+    }
+  }
+
+  async _onInitialized(): Promise<void> {
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    this._state = 'CONFIGURING';
+
+    // if we are attaching, then the process is already running, so
+    // just proceed to configurationDone
+    if (adapter.action === 'attach') {
+      return this._configurationDone();
+    }
+
+    // for launching, we now open up the command prompt so the user can set
+    // breakpoints
+    this._console.startInput();
+  }
+
+  async _configurationDone(): Promise<void> {
+    const session = this._ensureDebugSession(true);
+    this._state = 'RUNNING';
+
+    await this._resetAllBreakpoints();
+
+    // this needs to be sent last for adapters that don't support configurationDone
+    await session.setExceptionBreakpoints({filters: []});
+
+    invariant(this._capabilities != null);
+    if (this._capabilities.supportsConfigurationDoneRequest) {
+      await session.configurationDone();
+    }
+
+    this._cacheThreads();
+    this._console.stopInput();
+  }
+
+  async run(): Promise<void> {
+    const adapter = this._adapter;
+
+    if (
+      this._state !== 'CONFIGURING' ||
+      adapter == null ||
+      adapter.action !== 'launch'
+    ) {
+      throw new Error(
+        'There is nothing to run, or already attached to a process.',
+      );
+    }
+
+    return this._configurationDone();
+  }
+
+  breakInto(): void {
+    const threadId = [...this._threads.keys()][0];
+    if (threadId == null) {
+      return;
+    }
+
+    this._ensureDebugSession().pause({threadId});
   }
 
   getThreads(): Map<number, Thread> {
@@ -198,13 +300,17 @@ export default class Debugger implements DebuggerInterface {
     const session = this._ensureDebugSession(true);
     const index = this._breakpoints.addSourceBreakpoint(path, line);
 
-    const breakpoint = await this._setSourceBreakpointsForPath(
-      session,
-      path,
-      index,
-    );
+    let message = 'Breakpoint pending until program starts.';
 
-    const message = breakpoint == null ? null : breakpoint.message;
+    if (this._state !== 'CONFIGURING') {
+      const breakpoint = await this._setSourceBreakpointsForPath(
+        session,
+        path,
+        index,
+      );
+      message = breakpoint == null ? null : breakpoint.message;
+    }
+
     return {index, message};
   }
 
@@ -346,62 +452,6 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  // launch is for launching a process from scratch when we need a new
-  // session
-  launch(adapter: ParsedVSAdapter): Promise<void> {
-    this._adapter = adapter;
-    this._breakpoints = new BreakpointCollection();
-    return this.relaunch();
-  }
-
-  // relaunch is for when we want to restart the current process
-  // without tearing down the session. some adapters can do this
-  // automatically
-  async relaunch(): Promise<void> {
-    const adapter = this._adapter;
-    if (adapter == null) {
-      throw new Error('There is nothing to relaunch.');
-    }
-
-    this._launching = true;
-    await this.closeSession();
-    await this.createSession(adapter.adapterInfo);
-
-    switch (adapter.action) {
-      case 'attach':
-        const attachArgs = adapter.attachArgs;
-        invariant(attachArgs != null);
-        await this._ensureDebugSession(true).attach(attachArgs);
-        await this._cacheThreads();
-        this._launching = false;
-        break;
-
-      case 'launch':
-        // If we are launching, that will happen after the user issues the 'run'
-        // command.
-        this._console.startInput();
-        break;
-    }
-  }
-
-  async run(): Promise<void> {
-    const adapter = this._adapter;
-
-    if (!this._launching || adapter == null || adapter.action !== 'launch') {
-      throw new Error(
-        'There is nothing to run, or already attached to a process.',
-      );
-    }
-
-    const launchArgs = adapter.launchArgs;
-    invariant(launchArgs != null);
-
-    await this._ensureDebugSession(true).launch(launchArgs);
-
-    await this._cacheThreads();
-    this._launching = false;
-  }
-
   async evaluateExpression(
     expression: string,
   ): Promise<DebugProtocol.EvaluateResponse> {
@@ -438,23 +488,6 @@ export default class Debugger implements DebuggerInterface {
     });
 
     this._capabilities = body;
-  }
-
-  async _finishInitialization(): Promise<void> {
-    const session = this._ensureDebugSession();
-
-    await session.setExceptionBreakpoints({filters: []});
-    await this._resetAllBreakpoints();
-
-    invariant(this._capabilities != null);
-    if (this._capabilities.supportsConfigurationDoneRequest) {
-      await session.configurationDone();
-    }
-
-    // On attach, we won't get a stop event, so start the console here.
-    if (this._adapter != null && this._adapter.action === 'attach') {
-      this._console.startInput();
-    }
   }
 
   async _resetAllBreakpoints(): Promise<void> {
@@ -500,7 +533,7 @@ export default class Debugger implements DebuggerInterface {
 
     session.observeInitializeEvents().subscribe(() => {
       try {
-        this._finishInitialization();
+        this._onInitialized();
       } catch (error) {
         this._console.outputLine('Failed to initialize debugging session.');
         this._console.outputLine(error.message);
@@ -598,17 +631,35 @@ export default class Debugger implements DebuggerInterface {
     this._console.outputLine(
       `Target exited with status ${event.body.exitCode}`,
     );
-    this.closeSession();
+
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    if (adapter.action === 'launch') {
+      this.relaunch();
+      return;
+    }
+
+    process.exit(0);
   }
 
   _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
     // Some adapters will send multiple terminated events.
-    if (this._terminated || this._launching) {
+    if (this._terminated || this._state !== 'RUNNING') {
       return;
     }
+
     this._console.outputLine('The target has exited.');
-    this.closeSession();
-    this._console.startInput();
+
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    if (adapter.action === 'launch') {
+      this.relaunch();
+      return;
+    }
+
+    process.exit(0);
   }
 
   async _cacheThreads(): Promise<void> {
@@ -698,10 +749,14 @@ export default class Debugger implements DebuggerInterface {
       throw new Error('There is no active debugging session.');
     }
 
-    if (this._launching && !allowBeforeLaunch) {
-      throw new Error(
+    if (
+      (this._state === 'INITIALIZING' || this._state === 'CONFIGURING') &&
+      !allowBeforeLaunch
+    ) {
+      const err = new Error(
         "The program is not yet running (use 'run' to start it).",
       );
+      throw err;
     }
 
     return this._debugSession;
