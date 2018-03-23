@@ -7,7 +7,7 @@
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-jest",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
     "async-to-generator": "1.1.0",
     "jest-cli": "22.4.2",
     "jest-mock": "22.2.0",
