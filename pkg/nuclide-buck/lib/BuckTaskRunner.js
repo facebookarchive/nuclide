@@ -83,6 +83,8 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
       return true;
     case 'run':
       return ruleType.endsWith('binary');
+    case 'debug':
+      return ruleType.endsWith('binary') || ruleType.endsWith('test');
     default:
       return false;
   }
@@ -333,7 +335,16 @@ export class BuckTaskRunner {
                 },
               });
           } else {
-            const subcommand = taskType === 'debug' ? 'build' : taskType;
+            let subcommand;
+            if (taskType === 'debug') {
+              if (buildRuleType.type.endsWith('test')) {
+                subcommand = 'test';
+              } else {
+                subcommand = 'build';
+              }
+            } else {
+              subcommand = taskType;
+            }
             return this._buildSystem
               .runSubcommand(
                 buckRoot,
