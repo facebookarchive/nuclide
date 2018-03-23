@@ -203,8 +203,8 @@
   "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
-    "file-icons:2.1.17",
-    "tool-bar:1.1.6",
+    "file-icons",
+    "tool-bar",
     "highlight-selected",
     "language-babel",
     "language-graphql",
@@ -216,8 +216,7 @@
     "language-swift",
     "language-thrift",
     "language-scala",
-    "MagicPython",
-    "nuclide-format-js:0.0.44",
+    "nuclide-format-js",
     "set-syntax",
     "sort-lines"
   ]
