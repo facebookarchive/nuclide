@@ -84,6 +84,14 @@ export default class DebuggerAdapterFactory {
         customArguments: new Map(),
       },
     ],
+    [
+      VsAdapterTypes.NATIVE_GDB,
+      {
+        key: 'native_gdb',
+        type: 'mi',
+        customArguments: new Map(),
+      },
+    ],
   ]);
 
   _targetTypeByFileExtension: Map<string, string> = new Map([

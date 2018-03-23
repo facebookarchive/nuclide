@@ -115,7 +115,7 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'fb-native-debugger-gdb-vsp/src'),
+      root: nuclideUri.join(__dirname, 'fb-native-debugger-gdb-vsp'),
     },
   ],
   [
