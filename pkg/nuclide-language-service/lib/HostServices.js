@@ -85,9 +85,7 @@ class RootHostServices {
     // (2) when user dismiss the dialog then we complete the stream
     // (3) if code unsubscribed before that, then we dismiss the dialog
     return Observable.create(observer => {
-      const notification = this._atomNotification(level, text, {
-        dismissable: true,
-      });
+      const notification = this._atomNotification(level, text);
       notification.onDidDismiss(() => observer.complete());
       return () => notification.dismiss();
     }).publish();
