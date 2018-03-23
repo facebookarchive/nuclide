@@ -171,8 +171,9 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
   }
 
   setState(newState: Object): void {
-    super.setState(newState);
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+    super.setState(newState, () =>
+      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
+    );
   }
 
   _debugButtonShouldEnable(): boolean {

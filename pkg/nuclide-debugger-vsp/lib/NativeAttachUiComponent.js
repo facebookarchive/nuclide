@@ -155,8 +155,9 @@ export default class NativeAttachUiComponent extends React.Component<
   }
 
   setState(newState: Object): void {
-    super.setState(newState);
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+    super.setState(newState, () =>
+      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
+    );
   }
 
   componentDidMount(): void {

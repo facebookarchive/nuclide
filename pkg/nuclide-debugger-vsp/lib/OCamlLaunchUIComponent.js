@@ -77,10 +77,7 @@ export class OCamlLaunchUIComponent extends React.Component<
   }
 
   setState(state: Object) {
-    super.setState(state);
-    // const canLaunch = this.state.launchExecutable.trim().length > 0;
-    // this.props.configIsValidChanged(canLaunch);
-    this.props.configIsValidChanged(true);
+    super.setState(state, () => this.props.configIsValidChanged(true));
   }
 
   componentDidMount(): void {

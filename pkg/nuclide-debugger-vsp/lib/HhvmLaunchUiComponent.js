@@ -109,8 +109,9 @@ export class LaunchUiComponent extends React.Component<Props, State> {
   }
 
   setState(newState: Object): void {
-    super.setState(newState);
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+    super.setState(newState, () =>
+      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
+    );
   }
 
   _debugButtonShouldEnable(): boolean {
