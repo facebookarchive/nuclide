@@ -1,130 +1,143 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import type {
-  AttachTargetInfo,
-  LaunchTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerProcessInfo} from 'nuclide-debugger-common';
-import {getDebuggerService} from '../../commons-atom/debugger';
-import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchAttachActions = undefined;
 
-import invariant from 'assert';
-import {AttachProcessInfo} from './AttachProcessInfo';
-import {LaunchProcessInfo} from './LaunchProcessInfo';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {ActionTypes} from './LaunchAttachDispatcher';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
+var _debugger;
 
-export class LaunchAttachActions {
-  _dispatcher: LaunchAttachDispatcher;
-  _targetUri: NuclideUri;
-  _refreshTimerId: ?IntervalID;
-  _parentUIVisible: boolean;
-  _attachUIVisible: boolean;
+function _load_debugger() {
+  return _debugger = require('../../commons-atom/debugger');
+}
 
-  constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
+var _AttachProcessInfo;
+
+function _load_AttachProcessInfo() {
+  return _AttachProcessInfo = require('./AttachProcessInfo');
+}
+
+var _LaunchProcessInfo;
+
+function _load_LaunchProcessInfo() {
+  return _LaunchProcessInfo = require('./LaunchProcessInfo');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = require('./LaunchAttachDispatcher');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000; /**
+                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                   * All rights reserved.
+                                                   *
+                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                   * the root directory of this source tree.
+                                                   *
+                                                   * 
+                                                   * @format
+                                                   */
+
+class LaunchAttachActions {
+
+  constructor(dispatcher, targetUri) {
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
     this._refreshTimerId = null;
     this._parentUIVisible = true; // Visible by default.
     this._attachUIVisible = false;
-    (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(
-      this,
-    );
-    (this: any).updateParentUIVisibility = this.updateParentUIVisibility.bind(
-      this,
-    );
-    (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
+    this.updateAttachUIVisibility = this.updateAttachUIVisibility.bind(this);
+    this.updateParentUIVisibility = this.updateParentUIVisibility.bind(this);
+    this.updateAttachTargetList = this.updateAttachTargetList.bind(this);
   }
 
-  attachDebugger(attachTarget: AttachTargetInfo): Promise<void> {
-    const attachInfo = new AttachProcessInfo(this.getTargetUri(), attachTarget);
+  attachDebugger(attachTarget) {
+    const attachInfo = new (_AttachProcessInfo || _load_AttachProcessInfo()).AttachProcessInfo(this.getTargetUri(), attachTarget);
     return this._startDebugging(attachInfo);
   }
 
-  launchDebugger(launchTarget: LaunchTargetInfo): Promise<void> {
-    const launchInfo = new LaunchProcessInfo(this.getTargetUri(), launchTarget);
+  launchDebugger(launchTarget) {
+    const launchInfo = new (_LaunchProcessInfo || _load_LaunchProcessInfo()).LaunchProcessInfo(this.getTargetUri(), launchTarget);
     return this._startDebugging(launchInfo);
   }
 
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await getDebuggerService();
-    await debuggerService.startDebugging(processInfo);
+  _startDebugging(processInfo) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+      yield debuggerService.startDebugging(processInfo);
+    })();
   }
 
   // Override.
-  async updateAttachTargetList(): Promise<void> {
-    const rpcService: ?NativeDebuggerService = getServiceByNuclideUri(
-      'NativeDebuggerService',
-      this.getTargetUri(),
-    );
-    invariant(rpcService);
-    const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
-      attachTargetInfos: attachTargetList,
-    });
+  updateAttachTargetList() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('NativeDebuggerService', _this.getTargetUri());
+
+      if (!rpcService) {
+        throw new Error('Invariant violation: "rpcService"');
+      }
+
+      const attachTargetList = yield rpcService.getAttachTargetInfoList();
+      _this._dispatcher.dispatch({
+        actionType: (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).ActionTypes.UPDATE_ATTACH_TARGET_LIST,
+        attachTargetInfos: attachTargetList
+      });
+    })();
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  updateParentUIVisibility(visible: boolean): void {
+  updateParentUIVisibility(visible) {
     this._parentUIVisible = visible;
     this._updateAutoRefresh();
   }
 
-  updateAttachUIVisibility(visible: boolean): void {
+  updateAttachUIVisibility(visible) {
     this._attachUIVisible = visible;
     this._updateAutoRefresh();
   }
 
-  _updateAutoRefresh(): void {
+  _updateAutoRefresh() {
     this._killAutoRefreshTimer();
     if (this._parentUIVisible && this._attachUIVisible) {
       this.updateAttachTargetList();
-      this._refreshTimerId = setInterval(
-        this.updateAttachTargetList,
-        ATTACH_TARGET_LIST_REFRESH_INTERVAL,
-      );
+      this._refreshTimerId = setInterval(this.updateAttachTargetList, ATTACH_TARGET_LIST_REFRESH_INTERVAL);
     }
   }
 
-  _killAutoRefreshTimer(): void {
+  _killAutoRefreshTimer() {
     if (this._refreshTimerId != null) {
       clearInterval(this._refreshTimerId);
       this._refreshTimerId = null;
     }
   }
 
-  toggleLaunchAttachDialog(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
+  toggleLaunchAttachDialog() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
   }
 
-  showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
+  showDebuggerPanel() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   }
 
-  dispose(): void {
+  dispose() {
     this._killAutoRefreshTimer();
   }
 }
+exports.LaunchAttachActions = LaunchAttachActions;

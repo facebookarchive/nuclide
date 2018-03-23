@@ -1,18 +1,21 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import logger from './utils';
-import type {PhpDebuggerSessionConfig} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getConfig = getConfig;
+exports.setConfig = setConfig;
+exports.clearConfig = clearConfig;
 
-const defaultConfig: PhpDebuggerSessionConfig = {
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const defaultConfig = {
   xdebugAttachPort: 9000,
   xdebugLaunchingPort: 10112,
   logLevel: 'INFO',
@@ -22,22 +25,29 @@ const defaultConfig: PhpDebuggerSessionConfig = {
   scriptArguments: [],
   dummyRequestFilePath: 'php_only_xdebug_request.php',
   stopOneStopAll: false,
-  deferLaunch: false,
-};
+  deferLaunch: false
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
-let config: PhpDebuggerSessionConfig = defaultConfig;
+let config = defaultConfig;
 
-export function getConfig(): PhpDebuggerSessionConfig {
+function getConfig() {
   return config;
 }
 
-export function setConfig(newConfig: PhpDebuggerSessionConfig): void {
-  config = {
-    ...newConfig,
-  };
-  logger.debug(`Config was set to ${JSON.stringify(config)}`);
+function setConfig(newConfig) {
+  config = Object.assign({}, newConfig);
+  (_utils || _load_utils()).default.debug(`Config was set to ${JSON.stringify(config)}`);
 }
 
-export function clearConfig(): void {
+function clearConfig() {
   config = defaultConfig;
 }

@@ -1,3 +1,413 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPhpXDebugAdapterInfo = exports.getHhvmAdapterInfo = exports.getReactNativeLaunchProcessInfo = exports.getReactNativeAttachProcessInfo = exports.getNodeAttachProcessInfo = exports.getNativeVSPAttachProcessInfo = exports.getNativeVSPLaunchProcessInfo = exports.getOCamlLaunchProcessInfo = exports.getNodeLaunchProcessInfo = exports.nodeHandleLaunchButtonClick = exports.nodeHandleAttachButtonClick = exports.getPrepackLaunchProcessInfo = exports.getPythonScriptLaunchProcessInfo = exports.pythonHandleLaunchButtonClick = exports.getPythonParLaunchProcessInfo = exports.REACT_NATIVE_PACKAGER_DEFAULT_PORT = exports.NUCLIDE_PYTHON_DEBUGGER_DEX_URI = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getPythonParLaunchProcessInfo = exports.getPythonParLaunchProcessInfo = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (parPath, args) {
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(parPath, 'launch', (_main || _load_main()).VsAdapterTypes.PYTHON, (yield getPythonAdapterInfo(parPath)), getPythonParConfig(parPath, args), { threads: true });
+  });
+
+  return function getPythonParLaunchProcessInfo(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let pythonHandleLaunchButtonClick = exports.pythonHandleLaunchButtonClick = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (targetUri, stringValues, booleanValues, enumValues, numberValues) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-python-debugger-launch-from-dialog');
+    const pythonPath = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('pythonPath')).trim();
+    const scriptPath = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('program')).trim();
+    const args = (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('args')));
+    const workingDirectory = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('cwd')).trim();
+    const environmentVariables = {};
+    (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('env'))).forEach(function (variable) {
+      const [key, value] = variable.split('=');
+      environmentVariables[key] = value;
+    });
+
+    const { hostname } = (_nuclideUri || _load_nuclideUri()).default.parse(targetUri);
+    const scriptUri = hostname != null ? (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, scriptPath) : scriptPath;
+
+    const launchInfo = yield getPythonScriptLaunchProcessInfo(scriptUri, pythonPath, args, workingDirectory, environmentVariables);
+
+    const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+    debuggerService.startDebugging(launchInfo);
+  });
+
+  return function pythonHandleLaunchButtonClick(_x3, _x4, _x5, _x6, _x7) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let getPythonScriptLaunchProcessInfo = exports.getPythonScriptLaunchProcessInfo = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (scriptPath, pythonPath, args, cwd, env) {
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(scriptPath, 'launch', (_main || _load_main()).VsAdapterTypes.PYTHON, (yield getPythonAdapterInfo(scriptPath)), getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env), { threads: true });
+  });
+
+  return function getPythonScriptLaunchProcessInfo(_x8, _x9, _x10, _x11, _x12) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let getAdapterExecutableWithProperNode = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (adapterType, path) {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getRemoteDebuggerCommandServiceByNuclideUri)(path);
+    const adapterInfo = yield service.getAdapterExecutableInfo(adapterType);
+
+    if (adapterInfo.command === 'node') {
+      adapterInfo.command = yield (0, (_nodeInfo || _load_nodeInfo()).getNodeBinaryPath)(path);
+    }
+
+    return adapterInfo;
+  });
+
+  return function getAdapterExecutableWithProperNode(_x13, _x14) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let getPythonAdapterInfo = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('python', path);
+  });
+
+  return function getPythonAdapterInfo(_x15) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+let getPythonAttachTargetProcessInfo = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (targetRootUri, target) {
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(targetRootUri, 'attach', (_main || _load_main()).VsAdapterTypes.PYTHON, (yield getPythonAdapterInfo(targetRootUri)), getPythonAttachTargetConfig(target), { threads: true });
+  });
+
+  return function getPythonAttachTargetProcessInfo(_x16, _x17) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+let getPrepackLaunchProcessInfo = exports.getPrepackLaunchProcessInfo = (() => {
+  var _ref7 = (0, _asyncToGenerator.default)(function* (scriptPath, prepackPath, args) {
+    const adapterInfo = yield getPrepackAdapterInfo(scriptPath);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(scriptPath, 'launch', (_main || _load_main()).VsAdapterTypes.PREPACK, adapterInfo, getPrepackScriptConfig(scriptPath, prepackPath, args), { threads: false });
+  });
+
+  return function getPrepackLaunchProcessInfo(_x18, _x19, _x20) {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+let getPrepackAdapterInfo = (() => {
+  var _ref8 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('prepack', path);
+  });
+
+  return function getPrepackAdapterInfo(_x21) {
+    return _ref8.apply(this, arguments);
+  };
+})();
+
+let nodeHandleAttachButtonClick = exports.nodeHandleAttachButtonClick = (() => {
+  var _ref9 = (0, _asyncToGenerator.default)(function* (targetUri, stringValues, booleanValues, enumValues, numberValues) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-node-debugger-attach-from-dialog');
+    const port = numberValues.get('port');
+
+    if (!(port != null)) {
+      throw new Error('Invariant violation: "port != null"');
+    }
+
+    const attachInfo = yield getNodeAttachProcessInfo(targetUri, port);
+    const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+    debuggerService.startDebugging(attachInfo);
+  });
+
+  return function nodeHandleAttachButtonClick(_x22, _x23, _x24, _x25, _x26) {
+    return _ref9.apply(this, arguments);
+  };
+})();
+
+let nodeHandleLaunchButtonClick = exports.nodeHandleLaunchButtonClick = (() => {
+  var _ref10 = (0, _asyncToGenerator.default)(function* (targetUri, stringValues, booleanValues, enumValues, numberValues) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-node-debugger-launch-from-dialog');
+    const nodePath = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('nodePath')).trim();
+    const scriptPath = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('program')).trim();
+    const args = (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('args')));
+    const workingDirectory = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('cwd')).trim();
+    const outFiles = (0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('outFiles')).trim();
+    const environmentVariables = {};
+    (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(stringValues.get('env'))).forEach(function (variable) {
+      const [key, value] = variable.split('=');
+      environmentVariables[key] = value;
+    });
+
+    const { hostname } = (_nuclideUri || _load_nuclideUri()).default.parse(targetUri);
+    const scriptUri = hostname != null ? (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, scriptPath) : scriptPath;
+
+    const launchInfo = yield getNodeLaunchProcessInfo(scriptUri, nodePath, args, workingDirectory, environmentVariables, outFiles);
+    const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+    debuggerService.startDebugging(launchInfo);
+  });
+
+  return function nodeHandleLaunchButtonClick(_x27, _x28, _x29, _x30, _x31) {
+    return _ref10.apply(this, arguments);
+  };
+})();
+
+let getNodeLaunchProcessInfo = exports.getNodeLaunchProcessInfo = (() => {
+  var _ref11 = (0, _asyncToGenerator.default)(function* (scriptPath, nodePath, args, cwd, env, outFiles) {
+    const adapterInfo = yield getNodeAdapterInfo(scriptPath);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(scriptPath, 'launch', (_main || _load_main()).VsAdapterTypes.NODE, adapterInfo, getNodeScriptConfig(scriptPath, nodePath.length > 0 ? nodePath : adapterInfo.command, cwd, args, env, outFiles), { threads: false });
+  });
+
+  return function getNodeLaunchProcessInfo(_x32, _x33, _x34, _x35, _x36, _x37) {
+    return _ref11.apply(this, arguments);
+  };
+})();
+
+let getOCamlLaunchProcessInfo = exports.getOCamlLaunchProcessInfo = (() => {
+  var _ref12 = (0, _asyncToGenerator.default)(function* (targetUri, launchTarget) {
+    const adapterInfo = yield getAdapterExecutableWithProperNode('ocaml', targetUri);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(targetUri, 'launch', (_main || _load_main()).VsAdapterTypes.OCAML, adapterInfo, { config: launchTarget }, { threads: false });
+  });
+
+  return function getOCamlLaunchProcessInfo(_x38, _x39) {
+    return _ref12.apply(this, arguments);
+  };
+})();
+
+let lldbVspAdapterWrapperPath = (() => {
+  var _ref13 = (0, _asyncToGenerator.default)(function* (program) {
+    try {
+      // $FlowFB
+      return require('./fb-LldbVspAdapterPath').getLldbVspAdapterPath(program);
+    } catch (ex) {
+      return 'lldb-vscode';
+    }
+  });
+
+  return function lldbVspAdapterWrapperPath(_x40) {
+    return _ref13.apply(this, arguments);
+  };
+})();
+
+let getNativeVSPAdapterExecutable = (() => {
+  var _ref14 = (0, _asyncToGenerator.default)(function* (adapter, program) {
+    if (adapter === 'native_gdb') {
+      return getAdapterExecutableWithProperNode(adapter, program);
+    }
+
+    const adapterInfo = {
+      command: yield lldbVspAdapterWrapperPath(program),
+      args: []
+    };
+
+    return adapterInfo;
+  });
+
+  return function getNativeVSPAdapterExecutable(_x41, _x42) {
+    return _ref14.apply(this, arguments);
+  };
+})();
+
+let getNativeVSPLaunchProcessInfo = exports.getNativeVSPLaunchProcessInfo = (() => {
+  var _ref15 = (0, _asyncToGenerator.default)(function* (adapter, program, args) {
+    const adapterInfo = yield getNativeVSPAdapterExecutable(adapter, program);
+
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(program, 'launch', adapter, adapterInfo, Object.assign({
+      program: (_nuclideUri || _load_nuclideUri()).default.getPath(program)
+    }, args), { threads: true });
+  });
+
+  return function getNativeVSPLaunchProcessInfo(_x43, _x44, _x45) {
+    return _ref15.apply(this, arguments);
+  };
+})();
+
+let getNativeVSPAttachProcessInfo = exports.getNativeVSPAttachProcessInfo = (() => {
+  var _ref16 = (0, _asyncToGenerator.default)(function* (adapter, targetUri, args) {
+    const adapterInfo = yield getNativeVSPAdapterExecutable(adapter, targetUri);
+
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(targetUri, 'attach', adapter, adapterInfo, args, {
+      threads: true
+    });
+  });
+
+  return function getNativeVSPAttachProcessInfo(_x46, _x47, _x48) {
+    return _ref16.apply(this, arguments);
+  };
+})();
+
+let getNodeAttachProcessInfo = exports.getNodeAttachProcessInfo = (() => {
+  var _ref17 = (0, _asyncToGenerator.default)(function* (targetUri, port) {
+    const adapterInfo = yield getNodeAdapterInfo(targetUri);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(targetUri, 'attach', (_main || _load_main()).VsAdapterTypes.NODE, adapterInfo, getAttachNodeConfig(port), { threads: false });
+  });
+
+  return function getNodeAttachProcessInfo(_x49, _x50) {
+    return _ref17.apply(this, arguments);
+  };
+})();
+
+let getNodeAdapterInfo = (() => {
+  var _ref18 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('node', path);
+  });
+
+  return function getNodeAdapterInfo(_x51) {
+    return _ref18.apply(this, arguments);
+  };
+})();
+
+let getReactNativeAttachProcessInfo = exports.getReactNativeAttachProcessInfo = (() => {
+  var _ref19 = (0, _asyncToGenerator.default)(function* (args) {
+    const adapterInfo = yield getReactNativeAdapterInfo(args.program);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(args.program, 'attach', (_main || _load_main()).VsAdapterTypes.REACT_NATIVE, adapterInfo, args, { threads: false });
+  });
+
+  return function getReactNativeAttachProcessInfo(_x52) {
+    return _ref19.apply(this, arguments);
+  };
+})();
+
+let getReactNativeLaunchProcessInfo = exports.getReactNativeLaunchProcessInfo = (() => {
+  var _ref20 = (0, _asyncToGenerator.default)(function* (args) {
+    const adapterInfo = yield getReactNativeAdapterInfo(args.program);
+    return new (_VspProcessInfo || _load_VspProcessInfo()).default(args.program, 'launch', (_main || _load_main()).VsAdapterTypes.REACT_NATIVE, adapterInfo, args, { threads: false });
+  });
+
+  return function getReactNativeLaunchProcessInfo(_x53) {
+    return _ref20.apply(this, arguments);
+  };
+})();
+
+let getReactNativeAdapterInfo = (() => {
+  var _ref21 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('react-native', path);
+  });
+
+  return function getReactNativeAdapterInfo(_x54) {
+    return _ref21.apply(this, arguments);
+  };
+})();
+
+let getHhvmAdapterInfo = exports.getHhvmAdapterInfo = (() => {
+  var _ref22 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('hhvm', path);
+  });
+
+  return function getHhvmAdapterInfo(_x55) {
+    return _ref22.apply(this, arguments);
+  };
+})();
+
+let getPhpXDebugAdapterInfo = exports.getPhpXDebugAdapterInfo = (() => {
+  var _ref23 = (0, _asyncToGenerator.default)(function* (path) {
+    return getAdapterExecutableWithProperNode('php-xdebug', path);
+  });
+
+  return function getPhpXDebugAdapterInfo(_x56) {
+    return _ref23.apply(this, arguments);
+  };
+})();
+
+exports.getActiveScriptPath = getActiveScriptPath;
+exports.getPythonAutoGenConfig = getPythonAutoGenConfig;
+exports.getNodeAutoGenConfig = getNodeAutoGenConfig;
+exports.listenToRemoteDebugCommands = listenToRemoteDebugCommands;
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('../../commons-atom/debugger');
+}
+
+var _VspProcessInfo;
+
+function _load_VspProcessInfo() {
+  return _VspProcessInfo = _interopRequireDefault(require('./VspProcessInfo'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _main;
+
+function _load_main() {
+  return _main = require('nuclide-debugger-common/main');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _systemInfo;
+
+function _load_systemInfo() {
+  return _systemInfo = require('../../commons-node/system-info');
+}
+
+var _nodeInfo;
+
+function _load_nodeInfo() {
+  return _nodeInfo = require('../../commons-node/node-info');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DEFAULT_DEBUG_OPTIONS = new Set(['WaitOnAbnormalExit', 'WaitOnNormalExit', 'RedirectOutput']);
+// eslint-disable-next-line rulesdir/no-unresolved
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,172 +415,72 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  VSAdapterExecutableInfo,
-  VsAdapterType,
-} from 'nuclide-debugger-common';
-import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
-import type {
-  PythonDebuggerAttachTarget,
-  RemoteDebugCommandRequest,
-} from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
-import type {Adapter} from 'nuclide-debugger-vsps/main';
-import type {
-  ReactNativeAttachArgs,
-  ReactNativeLaunchArgs,
-  AutoGenConfig,
-  AutoGenProperty,
-} from './types';
+const NUCLIDE_PYTHON_DEBUGGER_DEX_URI = exports.NUCLIDE_PYTHON_DEBUGGER_DEX_URI = 'https://our.intern.facebook.com/intern/dex/python-and-fbcode/debugging/#nuclide';
 
-import invariant from 'assert';
-import {shellParse} from 'nuclide-commons/string';
-import nullthrows from 'nullthrows';
-import {diffSets, fastDebounce} from 'nuclide-commons/observable';
-import * as React from 'react';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from '../../commons-atom/debugger';
-import VspProcessInfo from './VspProcessInfo';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-// eslint-disable-next-line rulesdir/no-unresolved
-import {VsAdapterTypes} from 'nuclide-debugger-common/main';
-import {
-  ServerConnection,
-  getRemoteDebuggerCommandServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
-import {getLogger} from 'log4js';
-import {Observable} from 'rxjs';
-import {track} from '../../nuclide-analytics';
-import {isRunningInTest} from '../../commons-node/system-info';
-import {getNodeBinaryPath} from '../../commons-node/node-info';
-
-const DEFAULT_DEBUG_OPTIONS = new Set([
-  'WaitOnAbnormalExit',
-  'WaitOnNormalExit',
-  'RedirectOutput',
-]);
-
-export const NUCLIDE_PYTHON_DEBUGGER_DEX_URI =
-  'https://our.intern.facebook.com/intern/dex/python-and-fbcode/debugging/#nuclide';
-
-export const REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
+const REACT_NATIVE_PACKAGER_DEFAULT_PORT = exports.REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
 
 // Delay starting the remote debug server to avoid affecting Nuclide's startup.
 const REMOTE_DEBUG_SERVICES_DELAYED_STARTUP_MS = 10 * 1000;
 
-export type VspNativeDebuggerLaunchBuilderParms = {
-  args: Array<string>,
-  cwd: string,
-  env: Array<string>,
-  sourcePath: string,
-};
-
-export type VspNativeDebuggerAttachBuilderParms = {
-  pid?: number,
-  sourcePath: string,
-};
-
 // extension must be a string starting with a '.' like '.js' or '.py'
-export function getActiveScriptPath(extension: string): string {
-  const center = atom.workspace.getCenter
-    ? atom.workspace.getCenter()
-    : atom.workspace;
-  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
-  if (
-    activeEditor == null ||
-    !activeEditor.getPath() ||
-    !nullthrows(activeEditor.getPath()).endsWith(extension)
-  ) {
+function getActiveScriptPath(extension) {
+  const center = atom.workspace.getCenter ? atom.workspace.getCenter() : atom.workspace;
+  const activeEditor = center.getActiveTextEditor();
+  if (activeEditor == null || !activeEditor.getPath() || !(0, (_nullthrows || _load_nullthrows()).default)(activeEditor.getPath()).endsWith(extension)) {
     return '';
   }
-  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
+  return (_nuclideUri || _load_nuclideUri()).default.getPath((0, (_nullthrows || _load_nullthrows()).default)(activeEditor.getPath()));
 }
 
-function generatePropertyArray(
-  launchOrAttachConfigProperties: Object,
-  required: string[],
-): AutoGenProperty[] {
-  const propertyArray = Object.entries(launchOrAttachConfigProperties)
-    .map(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      const autoGenProperty: AutoGenProperty = {
-        name,
-        type: propertyDetails.type,
-        description: propertyDetails.description,
-        required: required.includes(name),
-      };
-      if (typeof propertyDetails.default !== 'undefined') {
-        autoGenProperty.defaultValue = propertyDetails.default;
-      }
-      if (
-        propertyDetails.items != null &&
-        typeof propertyDetails.items.type !== 'undefined'
-      ) {
-        autoGenProperty.itemType = propertyDetails.items.type;
-      }
-      return autoGenProperty;
-    })
-    .sort((p1, p2) => {
-      if (p1.required && !p2.required) {
-        return -1;
-      }
-      if (p2.required && !p1.required) {
-        return 1;
-      }
-      return 0;
-    });
+function generatePropertyArray(launchOrAttachConfigProperties, required) {
+  const propertyArray = Object.entries(launchOrAttachConfigProperties).map(property => {
+    const name = property[0];
+    const propertyDetails = property[1];
+    const autoGenProperty = {
+      name,
+      type: propertyDetails.type,
+      description: propertyDetails.description,
+      required: required.includes(name)
+    };
+    if (typeof propertyDetails.default !== 'undefined') {
+      autoGenProperty.defaultValue = propertyDetails.default;
+    }
+    if (propertyDetails.items != null && typeof propertyDetails.items.type !== 'undefined') {
+      autoGenProperty.itemType = propertyDetails.items.type;
+    }
+    return autoGenProperty;
+  }).sort((p1, p2) => {
+    if (p1.required && !p2.required) {
+      return -1;
+    }
+    if (p2.required && !p1.required) {
+      return 1;
+    }
+    return 0;
+  });
   return propertyArray;
 }
 
-export async function getPythonParLaunchProcessInfo(
-  parPath: NuclideUri,
-  args: Array<string>,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    parPath,
-    'launch',
-    VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(parPath),
-    getPythonParConfig(parPath, args),
-    {threads: true},
-  );
-}
-
-export function getPythonAutoGenConfig(): AutoGenConfig {
+function getPythonAutoGenConfig() {
   const pkgJson = require('../../../modules/nuclide-debugger-vsps/VendorLib/vs-py-debugger/package.json');
-  const configurationAttributes =
-    pkgJson.contributes.debuggers[0].configurationAttributes;
-  configurationAttributes.launch.properties.pythonPath.description =
-    'Path (fully qualified) to python executable.';
+  const configurationAttributes = pkgJson.contributes.debuggers[0].configurationAttributes;
+  configurationAttributes.launch.properties.pythonPath.description = 'Path (fully qualified) to python executable.';
   const launchProperties = {};
   const launchRequired = ['pythonPath', 'program', 'cwd'];
-  const usedLaunchProperties = new Set([
-    'pythonPath',
-    'program',
-    'args',
-    'cwd',
-    'env',
-  ]);
-  Object.entries(configurationAttributes.launch.properties)
-    .filter(property => usedLaunchProperties.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      // TODO(goom): replace the indexOf '$' stuff with logic that accesses settings
-      if (
-        propertyDetails.default != null &&
-        typeof propertyDetails.default === 'string' &&
-        propertyDetails.default.indexOf('$') === 0
-      ) {
-        delete propertyDetails.default;
-      }
-      launchProperties[name] = propertyDetails;
-    });
+  const usedLaunchProperties = new Set(['pythonPath', 'program', 'args', 'cwd', 'env']);
+  Object.entries(configurationAttributes.launch.properties).filter(property => usedLaunchProperties.has(property[0])).forEach(property => {
+    const name = property[0];
+    const propertyDetails = property[1];
+    // TODO(goom): replace the indexOf '$' stuff with logic that accesses settings
+    if (propertyDetails.default != null && typeof propertyDetails.default === 'string' && propertyDetails.default.indexOf('$') === 0) {
+      delete propertyDetails.default;
+    }
+    launchProperties[name] = propertyDetails;
+  });
 
   return {
     launch: {
@@ -179,97 +489,28 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
       scriptPropertyName: 'program',
       scriptExtension: '.py',
       cwdPropertyName: 'cwd',
-      header: (
-        <p>
-          This is intended to debug python script files.
-          <br />
-          To debug buck targets, you should{' '}
-          <a href={NUCLIDE_PYTHON_DEBUGGER_DEX_URI}>
-            use the buck toolbar instead
-          </a>.
-        </p>
-      ),
+      header: _react.createElement(
+        'p',
+        null,
+        'This is intended to debug python script files.',
+        _react.createElement('br', null),
+        'To debug buck targets, you should',
+        ' ',
+        _react.createElement(
+          'a',
+          { href: NUCLIDE_PYTHON_DEBUGGER_DEX_URI },
+          'use the buck toolbar instead'
+        ),
+        '.'
+      )
     },
-    attach: null,
+    attach: null
   };
 }
 
-export async function pythonHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-python-debugger-launch-from-dialog');
-  const pythonPath = nullthrows(stringValues.get('pythonPath')).trim();
-  const scriptPath = nullthrows(stringValues.get('program')).trim();
-  const args = shellParse(nullthrows(stringValues.get('args')));
-  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
-  const environmentVariables = {};
-  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
-    const [key, value] = variable.split('=');
-    environmentVariables[key] = value;
-  });
-
-  const {hostname} = nuclideUri.parse(targetUri);
-  const scriptUri =
-    hostname != null
-      ? nuclideUri.createRemoteUri(hostname, scriptPath)
-      : scriptPath;
-
-  const launchInfo = await getPythonScriptLaunchProcessInfo(
-    scriptUri,
-    pythonPath,
-    args,
-    workingDirectory,
-    environmentVariables,
-  );
-
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(launchInfo);
-}
-
-export async function getPythonScriptLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  pythonPath: string,
-  args: Array<string>,
-  cwd: string,
-  env: Object,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(scriptPath),
-    getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env),
-    {threads: true},
-  );
-}
-
-async function getAdapterExecutableWithProperNode(
-  adapterType: Adapter,
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  const service = getRemoteDebuggerCommandServiceByNuclideUri(path);
-  const adapterInfo = await service.getAdapterExecutableInfo(adapterType);
-
-  if (adapterInfo.command === 'node') {
-    adapterInfo.command = await getNodeBinaryPath(path);
-  }
-
-  return adapterInfo;
-}
-
-async function getPythonAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('python', path);
-}
-
-function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
-  const localParPath = nuclideUri.getPath(parPath);
-  const cwd = nuclideUri.dirname(localParPath);
+function getPythonParConfig(parPath, args) {
+  const localParPath = (_nuclideUri || _load_nuclideUri()).default.getPath(parPath);
+  const cwd = (_nuclideUri || _load_nuclideUri()).default.dirname(localParPath);
   return {
     stopOnEntry: false,
     console: 'none',
@@ -278,46 +519,24 @@ function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
     args,
     debugOptions: Array.from(DEFAULT_DEBUG_OPTIONS),
     pythonPath: localParPath,
-    cwd,
+    cwd
   };
 }
 
-function getPythonScriptConfig(
-  scriptPath: NuclideUri,
-  pythonPath: string,
-  cwd: string,
-  args: Array<string>,
-  env: Object,
-): Object {
+function getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env) {
   return {
     stopOnEntry: false,
     console: 'none',
-    program: nuclideUri.getPath(scriptPath),
+    program: (_nuclideUri || _load_nuclideUri()).default.getPath(scriptPath),
     cwd,
     args,
     env,
     debugOptions: Array.from(DEFAULT_DEBUG_OPTIONS),
-    pythonPath,
+    pythonPath
   };
 }
 
-async function getPythonAttachTargetProcessInfo(
-  targetRootUri: NuclideUri,
-  target: PythonDebuggerAttachTarget,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    targetRootUri,
-    'attach',
-    VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(targetRootUri),
-    getPythonAttachTargetConfig(target),
-    {threads: true},
-  );
-}
-
-function getPythonAttachTargetConfig(
-  target: PythonDebuggerAttachTarget,
-): Object {
+function getPythonAttachTargetConfig(target) {
   const debugOptions = new Set(DEFAULT_DEBUG_OPTIONS);
   (target.debugOptions || []).forEach(opt => debugOptions.add(opt));
   return {
@@ -325,123 +544,73 @@ function getPythonAttachTargetConfig(
     remoteRoot: target.remoteRoot,
     // debugOptions: Array.from(debugOptions),
     port: target.port,
-    host: '127.0.0.1',
+    host: '127.0.0.1'
   };
 }
 
-function rootUriOfConnection(connection: ?ServerConnection): string {
+function rootUriOfConnection(connection) {
   return connection == null ? '' : connection.getUriOfRemotePath('/');
 }
 
-function notifyOpenDebugSession(): void {
-  atom.notifications.addInfo(
-    "Received a remote debug request, but there's an open debug session already!",
-    {
-      detail:
-        'To be able to remote debug, please terminate your existing session',
-    },
-  );
-}
-export async function getPrepackLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  prepackPath: string,
-  args: Array<string>,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getPrepackAdapterInfo(scriptPath);
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.PREPACK,
-    adapterInfo,
-    getPrepackScriptConfig(scriptPath, prepackPath, args),
-    {threads: false},
-  );
+function notifyOpenDebugSession() {
+  atom.notifications.addInfo("Received a remote debug request, but there's an open debug session already!", {
+    detail: 'To be able to remote debug, please terminate your existing session'
+  });
 }
 
-async function getPrepackAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('prepack', path);
-}
 
-function getPrepackScriptConfig(
-  scriptPath: NuclideUri,
-  prepackPath: string,
-  args: Array<string>,
-): Object {
+function getPrepackScriptConfig(scriptPath, prepackPath, args) {
   return {
-    sourceFile: nuclideUri.getPath(scriptPath),
+    sourceFile: (_nuclideUri || _load_nuclideUri()).default.getPath(scriptPath),
     prepackRuntime: prepackPath,
-    prepackArguments: args,
+    prepackArguments: args
   };
 }
 
-export function getNodeAutoGenConfig(): AutoGenConfig {
+function getNodeAutoGenConfig() {
   const pkgJson = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.json');
   const pkgJsonDescriptions = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.nls.json');
-  const configurationAttributes =
-    pkgJson.contributes.debuggers[1].configurationAttributes;
-  Object.entries(configurationAttributes.launch.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.launch.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.launch.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
+  const configurationAttributes = pkgJson.contributes.debuggers[1].configurationAttributes;
+  Object.entries(configurationAttributes.launch.properties).forEach(property => {
+    const name = property[0];
+    const descriptionSubstitution = configurationAttributes.launch.properties[name].description;
+    if (descriptionSubstitution != null && typeof descriptionSubstitution === 'string') {
+      configurationAttributes.launch.properties[name].description = pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
+    }
+  });
   configurationAttributes.launch.properties.nodePath = {
     type: 'string',
-    description:
-      "Node executable path (e.g. /usr/local/bin/node). Will use Nuclide's node version if not provided.",
-    default: '',
+    description: "Node executable path (e.g. /usr/local/bin/node). Will use Nuclide's node version if not provided.",
+    default: ''
   };
-  Object.entries(configurationAttributes.attach.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.attach.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.attach.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
+  Object.entries(configurationAttributes.attach.properties).forEach(property => {
+    const name = property[0];
+    const descriptionSubstitution = configurationAttributes.attach.properties[name].description;
+    if (descriptionSubstitution != null && typeof descriptionSubstitution === 'string') {
+      configurationAttributes.attach.properties[name].description = pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
+    }
+  });
 
   const launchProperties = {};
   const attachProperties = {};
   const launchRequired = ['program', 'cwd'];
   const attachRequired = ['port'];
 
-  const usedLaunchProperties = new Set(
-    launchRequired.concat(['nodePath', 'args', 'outFiles', 'env']),
-  );
+  const usedLaunchProperties = new Set(launchRequired.concat(['nodePath', 'args', 'outFiles', 'env']));
 
-  Object.entries(configurationAttributes.launch.properties)
-    .filter(property => usedLaunchProperties.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      launchProperties[name] = propertyDetails;
-    });
+  Object.entries(configurationAttributes.launch.properties).filter(property => usedLaunchProperties.has(property[0])).forEach(property => {
+    const name = property[0];
+    const propertyDetails = property[1];
+    launchProperties[name] = propertyDetails;
+  });
 
   const usedAttachProperties = new Set(['port']);
 
-  Object.entries(configurationAttributes.attach.properties)
-    .filter(property => usedAttachProperties.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      attachProperties[name] = propertyDetails;
-    });
+  Object.entries(configurationAttributes.attach.properties).filter(property => usedAttachProperties.has(property[0])).forEach(property => {
+    const name = property[0];
+    const propertyDetails = property[1];
+    attachProperties[name] = propertyDetails;
+  });
 
   return {
     launch: {
@@ -450,377 +619,116 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
       scriptPropertyName: 'program',
       cwdPropertyName: 'cwd',
       scriptExtension: '.js',
-      header: (
-        <p>This is intended to debug node.js files (for node version 6.3+).</p>
-      ),
+      header: _react.createElement(
+        'p',
+        null,
+        'This is intended to debug node.js files (for node version 6.3+).'
+      )
     },
     attach: {
       launch: false,
       properties: generatePropertyArray(attachProperties, attachRequired),
-      header: <p>Attach to a running node.js process</p>,
-    },
+      header: _react.createElement(
+        'p',
+        null,
+        'Attach to a running node.js process'
+      )
+    }
   };
 }
 
-export async function nodeHandleAttachButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-node-debugger-attach-from-dialog');
-  const port = numberValues.get('port');
-  invariant(port != null);
-  const attachInfo = await getNodeAttachProcessInfo(targetUri, port);
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(attachInfo);
-}
-
-export async function nodeHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-node-debugger-launch-from-dialog');
-  const nodePath = nullthrows(stringValues.get('nodePath')).trim();
-  const scriptPath = nullthrows(stringValues.get('program')).trim();
-  const args = shellParse(nullthrows(stringValues.get('args')));
-  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
-  const outFiles = nullthrows(stringValues.get('outFiles')).trim();
-  const environmentVariables = {};
-  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
-    const [key, value] = variable.split('=');
-    environmentVariables[key] = value;
-  });
-
-  const {hostname} = nuclideUri.parse(targetUri);
-  const scriptUri =
-    hostname != null
-      ? nuclideUri.createRemoteUri(hostname, scriptPath)
-      : scriptPath;
-
-  const launchInfo = await getNodeLaunchProcessInfo(
-    scriptUri,
-    nodePath,
-    args,
-    workingDirectory,
-    environmentVariables,
-    outFiles,
-  );
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(launchInfo);
-}
-
-export async function getNodeLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  nodePath: string,
-  args: Array<string>,
-  cwd: string,
-  env: Object,
-  outFiles: string,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNodeAdapterInfo(scriptPath);
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.NODE,
-    adapterInfo,
-    getNodeScriptConfig(
-      scriptPath,
-      nodePath.length > 0 ? nodePath : adapterInfo.command,
-      cwd,
-      args,
-      env,
-      outFiles,
-    ),
-    {threads: false},
-  );
-}
-
-export async function getOCamlLaunchProcessInfo(
-  targetUri: NuclideUri,
-  launchTarget: OCamlDebugStartInfo,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getAdapterExecutableWithProperNode(
-    'ocaml',
-    targetUri,
-  );
-  return new VspProcessInfo(
-    targetUri,
-    'launch',
-    VsAdapterTypes.OCAML,
-    adapterInfo,
-    {config: launchTarget},
-    {threads: false},
-  );
-}
-
-async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
-  try {
-    // $FlowFB
-    return require('./fb-LldbVspAdapterPath').getLldbVspAdapterPath(program);
-  } catch (ex) {
-    return 'lldb-vscode';
-  }
-}
-
-async function getNativeVSPAdapterExecutable(
-  adapter: VsAdapterType,
-  program: string,
-): Promise<VSAdapterExecutableInfo> {
-  if (adapter === 'native_gdb') {
-    return getAdapterExecutableWithProperNode(adapter, program);
-  }
-
-  const adapterInfo = {
-    command: await lldbVspAdapterWrapperPath(program),
-    args: [],
-  };
-
-  return adapterInfo;
-}
-
-export async function getNativeVSPLaunchProcessInfo(
-  adapter: VsAdapterType,
-  program: NuclideUri,
-  args: VspNativeDebuggerLaunchBuilderParms,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
-
-  return new VspProcessInfo(
-    program,
-    'launch',
-    adapter,
-    adapterInfo,
-    {
-      program: nuclideUri.getPath(program),
-      ...args,
-    },
-    {threads: true},
-  );
-}
-
-export async function getNativeVSPAttachProcessInfo(
-  adapter: VsAdapterType,
-  targetUri: NuclideUri,
-  args: VspNativeDebuggerAttachBuilderParms,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, targetUri);
-
-  return new VspProcessInfo(targetUri, 'attach', adapter, adapterInfo, args, {
-    threads: true,
-  });
-}
-
-export async function getNodeAttachProcessInfo(
-  targetUri: NuclideUri,
-  port: number,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNodeAdapterInfo(targetUri);
-  return new VspProcessInfo(
-    targetUri,
-    'attach',
-    VsAdapterTypes.NODE,
-    adapterInfo,
-    getAttachNodeConfig(port),
-    {threads: false},
-  );
-}
-
-async function getNodeAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('node', path);
-}
-
-function getNodeScriptConfig(
-  scriptPath: NuclideUri,
-  nodePath: string,
-  cwd: string,
-  args: Array<string>,
-  env: Object,
-  outFiles: string,
-): Object {
+function getNodeScriptConfig(scriptPath, nodePath, cwd, args, env, outFiles) {
   return {
     protocol: 'inspector',
     stopOnEntry: false,
-    program: nuclideUri.getPath(scriptPath),
+    program: (_nuclideUri || _load_nuclideUri()).default.getPath(scriptPath),
     runtimeExecutable: nodePath,
     cwd,
     args,
     env,
-    outFiles: outFiles.length > 0 ? [outFiles] : [],
+    outFiles: outFiles.length > 0 ? [outFiles] : []
   };
 }
 
-export async function getReactNativeAttachProcessInfo(
-  args: ReactNativeAttachArgs,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getReactNativeAdapterInfo(args.program);
-  return new VspProcessInfo(
-    args.program,
-    'attach',
-    VsAdapterTypes.REACT_NATIVE,
-    adapterInfo,
-    args,
-    {threads: false},
-  );
+function getAttachNodeConfig(port) {
+  return { port };
 }
 
-export async function getReactNativeLaunchProcessInfo(
-  args: ReactNativeLaunchArgs,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getReactNativeAdapterInfo(args.program);
-  return new VspProcessInfo(
-    args.program,
-    'launch',
-    VsAdapterTypes.REACT_NATIVE,
-    adapterInfo,
-    args,
-    {threads: false},
-  );
-}
-
-async function getReactNativeAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('react-native', path);
-}
-
-function getAttachNodeConfig(port: number): Object {
-  return {port};
-}
-
-export async function getHhvmAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('hhvm', path);
-}
-
-export async function getPhpXDebugAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('php-xdebug', path);
-}
-
-export function listenToRemoteDebugCommands(): IDisposable {
-  const connections = ServerConnection.observeRemoteConnections()
-    .map(conns => new Set(conns))
-    .let(diffSets())
-    .flatMap(diff => Observable.from(diff.added))
-    .startWith(null);
+function listenToRemoteDebugCommands() {
+  const connections = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.observeRemoteConnections().map(conns => new Set(conns)).let((0, (_observable || _load_observable()).diffSets)()).flatMap(diff => _rxjsBundlesRxMinJs.Observable.from(diff.added)).startWith(null);
 
   const remoteDebuggerServices = connections.map(conn => {
     const rootUri = rootUriOfConnection(conn);
-    const service = getRemoteDebuggerCommandServiceByNuclideUri(rootUri);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getRemoteDebuggerCommandServiceByNuclideUri)(rootUri);
 
-    return {service, rootUri};
+    return { service, rootUri };
   });
 
-  const delayStartupObservable = Observable.interval(
-    REMOTE_DEBUG_SERVICES_DELAYED_STARTUP_MS,
-  )
-    .first()
-    .ignoreElements();
+  const delayStartupObservable = _rxjsBundlesRxMinJs.Observable.interval(REMOTE_DEBUG_SERVICES_DELAYED_STARTUP_MS).first().ignoreElements();
 
-  return new UniversalDisposable(
-    delayStartupObservable
-      .switchMap(() => {
-        return remoteDebuggerServices.flatMap(({service, rootUri}) => {
-          return service
-            .observeAttachDebugTargets()
-            .refCount()
-            .map(targets => findDuplicateAttachTargetIds(targets));
-        });
-      })
-      .subscribe(duplicateTargetIds =>
-        notifyDuplicateDebugTargets(duplicateTargetIds),
-      ),
-    delayStartupObservable
-      .concat(remoteDebuggerServices)
-      .flatMap(({service, rootUri}) => {
-        return service
-          .observeRemoteDebugCommands()
-          .refCount()
-          .catch(error => {
-            if (!isRunningInTest()) {
-              getLogger().error(
-                'Failed to listen to remote debug commands - ' +
-                  'You could be running locally with two Atom windows. ' +
-                  `IsLocal: ${String(rootUri === '')}`,
-              );
-            }
-            return Observable.empty();
-          })
-          .map((command: RemoteDebugCommandRequest) => ({rootUri, command}));
-      })
-      .let(fastDebounce(500))
-      .subscribe(async ({rootUri, command}) => {
-        const attachProcessInfo = await getPythonAttachTargetProcessInfo(
-          rootUri,
-          command.target,
-        );
-        const debuggerService = await getDebuggerService();
-        const debuggerName = debuggerService.getCurrentDebuggerName();
-        if (debuggerName == null) {
-          track('fb-python-debugger-auto-attach');
-          debuggerService.startDebugging(attachProcessInfo);
-          return;
-        } else {
-          notifyOpenDebugSession();
-          return;
-        }
-        // Otherwise, we're already debugging that target.
-      }),
-  );
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(delayStartupObservable.switchMap(() => {
+    return remoteDebuggerServices.flatMap(({ service, rootUri }) => {
+      return service.observeAttachDebugTargets().refCount().map(targets => findDuplicateAttachTargetIds(targets));
+    });
+  }).subscribe(duplicateTargetIds => notifyDuplicateDebugTargets(duplicateTargetIds)), delayStartupObservable.concat(remoteDebuggerServices).flatMap(({ service, rootUri }) => {
+    return service.observeRemoteDebugCommands().refCount().catch(error => {
+      if (!(0, (_systemInfo || _load_systemInfo()).isRunningInTest)()) {
+        (0, (_log4js || _load_log4js()).getLogger)().error('Failed to listen to remote debug commands - ' + 'You could be running locally with two Atom windows. ' + `IsLocal: ${String(rootUri === '')}`);
+      }
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }).map(command => ({ rootUri, command }));
+  }).let((0, (_observable || _load_observable()).fastDebounce)(500)).subscribe((() => {
+    var _ref24 = (0, _asyncToGenerator.default)(function* ({ rootUri, command }) {
+      const attachProcessInfo = yield getPythonAttachTargetProcessInfo(rootUri, command.target);
+      const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+      const debuggerName = debuggerService.getCurrentDebuggerName();
+      if (debuggerName == null) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-python-debugger-auto-attach');
+        debuggerService.startDebugging(attachProcessInfo);
+        return;
+      } else {
+        notifyOpenDebugSession();
+        return;
+      }
+      // Otherwise, we're already debugging that target.
+    });
+
+    return function (_x57) {
+      return _ref24.apply(this, arguments);
+    };
+  })()));
 }
 
 let shouldNotifyDuplicateTargets = true;
 let duplicateTargetsNotification;
 
-function notifyDuplicateDebugTargets(duplicateTargetIds: Set<string>): void {
-  if (
-    duplicateTargetIds.size > 0 &&
-    shouldNotifyDuplicateTargets &&
-    duplicateTargetsNotification == null
-  ) {
+function notifyDuplicateDebugTargets(duplicateTargetIds) {
+  if (duplicateTargetIds.size > 0 && shouldNotifyDuplicateTargets && duplicateTargetsNotification == null) {
     const formattedIds = Array.from(duplicateTargetIds).join(', ');
-    duplicateTargetsNotification = atom.notifications.addInfo(
-      `Debugger: duplicate attach targets: \`${formattedIds}\``,
-      {
-        buttons: [
-          {
-            onDidClick: () => {
-              shouldNotifyDuplicateTargets = false;
-              if (duplicateTargetsNotification != null) {
-                duplicateTargetsNotification.dismiss();
-              }
-            },
-            text: 'Ignore',
-          },
-        ],
-        description:
-          `Nuclide debugger detected duplicate attach targets with ids (${formattedIds}) ` +
-          'That could be instagram running multiple processes - check out https://our.intern.facebook.com/intern/dex/instagram-server/debugging-with-nuclide/',
-        dismissable: true,
-      },
-    );
+    duplicateTargetsNotification = atom.notifications.addInfo(`Debugger: duplicate attach targets: \`${formattedIds}\``, {
+      buttons: [{
+        onDidClick: () => {
+          shouldNotifyDuplicateTargets = false;
+          if (duplicateTargetsNotification != null) {
+            duplicateTargetsNotification.dismiss();
+          }
+        },
+        text: 'Ignore'
+      }],
+      description: `Nuclide debugger detected duplicate attach targets with ids (${formattedIds}) ` + 'That could be instagram running multiple processes - check out https://our.intern.facebook.com/intern/dex/instagram-server/debugging-with-nuclide/',
+      dismissable: true
+    });
     duplicateTargetsNotification.onDidDismiss(() => {
       duplicateTargetsNotification = null;
     });
   }
 }
 
-function findDuplicateAttachTargetIds(
-  targets: Array<PythonDebuggerAttachTarget>,
-): Set<string> {
+function findDuplicateAttachTargetIds(targets) {
   const targetIds = new Set();
   const duplicateTargetIds = new Set();
   targets.forEach(target => {
-    const {id} = target;
+    const { id } = target;
     if (id == null) {
       return;
     }

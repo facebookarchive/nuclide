@@ -1,22 +1,33 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__TEST__ = undefined;
 
-/**
- * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
- * (May throw if prebuilt libs aren't available for the current platform!)
- */
-import * as keytar from 'nuclide-prebuilt-libs/keytar';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _keytar;
+
+function _load_keytar() {
+  return _keytar = _interopRequireWildcard(require('nuclide-prebuilt-libs/keytar'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
@@ -36,6 +47,23 @@ const getPasswordScriptAsync = `
 `;
 
 // KeyTar>=4.x APM>=1.18
+
+
+/**
+ * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
+ * (May throw if prebuilt libs aren't available for the current platform!)
+ */
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
 const replacePasswordScriptAsync = `
   var readline = require('readline');
   var keytar = require('keytar');
@@ -68,93 +96,77 @@ const deletePasswordScriptAsync = `
   });
 `;
 
-function getApmNodePath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, 'node'));
+function getApmNodePath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, 'node'));
 }
 
-function getApmNodeModulesPath(): string {
-  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
-  return nuclideUri.normalize(nuclideUri.join(apmDir, '..', 'node_modules'));
+function getApmNodeModulesPath() {
+  const apmDir = (_nuclideUri || _load_nuclideUri()).default.dirname(atom.packages.getApmPath());
+  return (_nuclideUri || _load_nuclideUri()).default.normalize((_nuclideUri || _load_nuclideUri()).default.join(apmDir, '..', 'node_modules'));
 }
 
-function runScriptInApmNode(
-  script: string,
-  service: string,
-  account: string,
-  password?: string,
-): Promise<string> {
+function runScriptInApmNode(script, service, account, password) {
   const args = ['-e', script];
   const options = {
     // The newline is important so we can use readline's line event.
-    input: JSON.stringify({service, account, password}) + '\n',
-    env: {
-      ...process.env,
-      NODE_PATH: getApmNodeModulesPath(),
-    },
+    input: JSON.stringify({ service, account, password }) + '\n',
+    env: Object.assign({}, process.env, {
+      NODE_PATH: getApmNodeModulesPath()
+    })
   };
-  return runCommand(getApmNodePath(), args, options)
-    .toPromise()
-    .catch(err => {
-      if (err instanceof ProcessExitError) {
-        // Unwrap underlying error from stderr (as it already has a stack!)
-        throw Error(err.stderr);
-      }
-      throw err;
-    });
+  return (0, (_process || _load_process()).runCommand)(getApmNodePath(), args, options).toPromise().catch(err => {
+    if (err instanceof (_process || _load_process()).ProcessExitError) {
+      // Unwrap underlying error from stderr (as it already has a stack!)
+      throw Error(err.stderr);
+    }
+    throw err;
+  });
 }
 
-export default {
+exports.default = {
   /**
    * Returns the password (or null if it doesn't exist).
    * Rejects on keychain access failure.
    */
-  async getPassword(service: string, account: string): Promise<?string> {
-    if (typeof atom === 'object') {
-      return JSON.parse(
-        await runScriptInApmNode(getPasswordScriptAsync, service, account),
-      );
-    }
-    return keytar.getPassword(service, account);
+  getPassword(service, account) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (typeof atom === 'object') {
+        return JSON.parse((yield runScriptInApmNode(getPasswordScriptAsync, service, account)));
+      }
+      return (_keytar || _load_keytar()).getPassword(service, account);
+    })();
   },
 
   /**
    * Returns nothing.
    * Rejects on keychain access failure.
    */
-  async replacePassword(
-    service: string,
-    account: string,
-    password: string,
-  ): Promise<void> {
-    if (typeof atom === 'object') {
-      await runScriptInApmNode(
-        replacePasswordScriptAsync,
-        service,
-        account,
-        password,
-      );
-      return;
-    }
-    return keytar.setPassword(service, account, password);
+  replacePassword(service, account, password) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (typeof atom === 'object') {
+        yield runScriptInApmNode(replacePasswordScriptAsync, service, account, password);
+        return;
+      }
+      return (_keytar || _load_keytar()).setPassword(service, account, password);
+    })();
   },
 
   /**
    * Returns true if a password was deleted, or false if it didn't exist.
    * Rejects on keychain access failure.
    */
-  async deletePassword(service: string, account: string): Promise<boolean> {
-    if (typeof atom === 'object') {
-      return JSON.parse(
-        await runScriptInApmNode(deletePasswordScriptAsync, service, account),
-      );
-    }
-    return keytar.deletePassword(service, account);
-  },
+  deletePassword(service, account) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (typeof atom === 'object') {
+        return JSON.parse((yield runScriptInApmNode(deletePasswordScriptAsync, service, account)));
+      }
+      return (_keytar || _load_keytar()).deletePassword(service, account);
+    })();
+  }
 };
-
-export const __TEST__ = {
+const __TEST__ = exports.__TEST__ = {
   getApmNodeModulesPath,
   getApmNodePath,
-  runScriptInApmNode,
+  runScriptInApmNode
 };

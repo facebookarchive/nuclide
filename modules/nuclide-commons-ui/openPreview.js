@@ -1,35 +1,43 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = openPreview;
 
-import type {GoToLocationOptions} from 'nuclide-commons-atom/go-to-location';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {isPending} from 'nuclide-commons-atom/pane-item';
-import {delayTime} from 'nuclide-commons/promise';
+var _goToLocation;
 
-type OpenablePreview = {|
-  cancel: () => void,
-  confirm: () => Promise<?atom$TextEditor>,
-  _promise: Promise<?atom$TextEditor>,
-|};
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
 
-let preview: ?atom$TextEditor;
-let marker: ?atom$Marker;
-let originalPoint: ?{
-  item: atom$PaneItem,
-  point: ?atom$Point,
-};
-let lastOpenablePreview: ?OpenablePreview;
+var _paneItem;
+
+function _load_paneItem() {
+  return _paneItem = require('nuclide-commons-atom/pane-item');
+}
+
+var _promise2;
+
+function _load_promise() {
+  return _promise2 = require('nuclide-commons/promise');
+}
+
+let preview; /**
+              * Copyright (c) 2017-present, Facebook, Inc.
+              * All rights reserved.
+              *
+              * This source code is licensed under the BSD-style license found in the
+              * LICENSE file in the root directory of this source tree. An additional grant
+              * of patent rights can be found in the PATENTS file in the same directory.
+              *
+              * 
+              * @format
+              */
+
+let marker;
+let originalPoint;
+let lastOpenablePreview;
 
 let activeOpenableId = 0;
 
@@ -42,13 +50,10 @@ let activeOpenableId = 0;
 // to the original destination when cancelled. This *could* be implemented using
 // a stack, but this simpler implementation just holds global references and restores
 // focus using the active item and position that was present when the first preview occurred.
-export default function openPreview(
-  uri: NuclideUri,
-  // $FlowIgnore
-  options?: GoToLocationOptions = {},
-  openDelay?: number = 0,
-): OpenablePreview {
-  const {line, column} = options;
+function openPreview(uri,
+// $FlowIgnore
+options = {}, openDelay = 0) {
+  const { line, column } = options;
   const thisOpenableId = ++activeOpenableId;
 
   if (lastOpenablePreview != null) {
@@ -66,46 +71,35 @@ export default function openPreview(
     // persist the current position so we can return to it later.
     originalPoint = {
       item: activeItem,
-      point:
-        activeItem === activeEditor && activeEditor != null
-          ? activeEditor.getCursorBufferPosition()
-          : null,
+      point: activeItem === activeEditor && activeEditor != null ? activeEditor.getCursorBufferPosition() : null
     };
   }
 
-  const isWithinSameFile = Boolean(
-    uri === (activeEditor && activeEditor.getURI()),
-  );
-  const arePendingPanesEnabled = Boolean(
-    atom.config.get('core.allowPendingPaneItems'),
-  );
+  const isWithinSameFile = Boolean(uri === (activeEditor && activeEditor.getURI()));
+  const arePendingPanesEnabled = Boolean(atom.config.get('core.allowPendingPaneItems'));
 
   let promise;
   if (isWithinSameFile || arePendingPanesEnabled) {
-    promise = delayTime(openDelay).then(() => {
+    promise = (0, (_promise2 || _load_promise()).delayTime)(openDelay).then(() => {
       // a common case is scrolling through many results, cancelling one after
       // the other. give things a chance to cancel before going throught the work
       // of rendering a preview
       if (canceled) {
         return Promise.resolve();
       } else {
-        return goToLocation(uri, {
+        return (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri, {
           line,
           column,
           center: true,
           activateItem: true,
           activatePane: false,
           pending: true,
-          moveCursor: false,
+          moveCursor: false
         }).then(newPreview => {
-          if (
-            canceled &&
-            isPending(newPreview) &&
-            // don't destroy the pane if it's not new (e.g. within the same file --
-            // like a symbol within the originating file)
-            originalPoint != null &&
-            newPreview !== originalPoint.item
-          ) {
+          if (canceled && (0, (_paneItem || _load_paneItem()).isPending)(newPreview) &&
+          // don't destroy the pane if it's not new (e.g. within the same file --
+          // like a symbol within the originating file)
+          originalPoint != null && newPreview !== originalPoint.item) {
             newPreview.destroy();
             return;
           }
@@ -113,7 +107,7 @@ export default function openPreview(
           // the pane may have been reused: e.g. previewing a line in the same file
           // so make sure it wasn't. Then destroy the old preview if it's not the
           // original pane.
-          if (preview != null && isPending(preview) && preview !== newPreview) {
+          if (preview != null && (0, (_paneItem || _load_paneItem()).isPending)(preview) && preview !== newPreview) {
             preview.destroy();
           }
 
@@ -129,11 +123,11 @@ export default function openPreview(
           if (line != null) {
             marker = preview.markBufferPosition({
               row: line,
-              column: column == null ? 0 : column,
+              column: column == null ? 0 : column
             });
             preview.decorateMarker(marker, {
               type: 'line',
-              class: 'nuclide-line-preview',
+              class: 'nuclide-line-preview'
             });
           }
 
@@ -155,15 +149,10 @@ export default function openPreview(
       }
 
       if (confirmed) {
-        throw new Error(
-          'A preview cannot be cancelled after it has been confirmed.',
-        );
+        throw new Error('A preview cannot be cancelled after it has been confirmed.');
       }
 
-      if (
-        preview != null &&
-        (originalPoint == null || preview !== originalPoint.item)
-      ) {
+      if (preview != null && (originalPoint == null || preview !== originalPoint.item)) {
         preview.destroy();
       }
       preview = null;
@@ -176,26 +165,18 @@ export default function openPreview(
     confirm() {
       if (activeOpenableId !== thisOpenableId) {
         // another preview is currently being shown
-        throw new Error(
-          'Another preview has become active after this one was shown. Cannot confirm.',
-        );
+        throw new Error('Another preview has become active after this one was shown. Cannot confirm.');
       }
 
       if (canceled) {
-        throw new Error(
-          'A preview cannot be confirmed after it has been cancelled',
-        );
+        throw new Error('A preview cannot be confirmed after it has been cancelled');
       }
 
       confirmed = true;
 
-      const goToLocationPromise = goToLocation(uri, options).then(newEditor => {
+      const goToLocationPromise = (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri, options).then(newEditor => {
         newEditor.terminatePendingState();
-        if (
-          preview != null &&
-          preview !== newEditor &&
-          (originalPoint == null || preview !== originalPoint.item)
-        ) {
+        if (preview != null && preview !== newEditor && (originalPoint == null || preview !== originalPoint.item)) {
           // This case seems very unlikely: if the editor opened on confirmation
           // is not the same editor that was used for the preview pane, destroy
           // the preview pane
@@ -212,7 +193,7 @@ export default function openPreview(
       return goToLocationPromise;
     },
     // exported for test
-    _promise: promise,
+    _promise: promise
   };
 
   lastOpenablePreview = openablePreview;

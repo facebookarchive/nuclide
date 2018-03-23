@@ -1,43 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nullthrows from 'nullthrows';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getBreakpointEventLocation = getBreakpointEventLocation;
+exports.getLineForEvent = getLineForEvent;
+exports.isLocalScopeName = isLocalScopeName;
 
-function getGutterLineNumber(target: HTMLElement): ?number {
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getGutterLineNumber(target) {
   const eventLine = parseInt(target.dataset.line, 10);
   if (eventLine != null && eventLine >= 0 && !isNaN(Number(eventLine))) {
     return eventLine;
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function getBreakpointEventLocation(
-  target: HTMLElement,
-): ?{path: string, line: number} {
-  if (
-    target != null &&
-    target.dataset != null &&
-    target.dataset.path != null &&
-    target.dataset.line != null
-  ) {
-    return {path: target.dataset.path, line: parseInt(target.dataset.line, 10)};
+function getBreakpointEventLocation(target) {
+  if (target != null && target.dataset != null && target.dataset.path != null && target.dataset.line != null) {
+    return { path: target.dataset.path, line: parseInt(target.dataset.line, 10) };
   }
   return null;
 }
 
 const SCREEN_ROW_ATTRIBUTE_NAME = 'data-screen-row';
 
-function getEditorLineNumber(
-  editor: atom$TextEditor,
-  target: HTMLElement,
-): ?number {
+function getEditorLineNumber(editor, target) {
   let node = target;
   while (node != null) {
     if (node.hasAttribute(SCREEN_ROW_ATTRIBUTE_NAME)) {
@@ -53,26 +56,23 @@ function getEditorLineNumber(
 }
 
 function firstNonNull(...args) {
-  return nullthrows(args.find(arg => arg != null));
+  return (0, (_nullthrows || _load_nullthrows()).default)(args.find(arg => arg != null));
 }
 
-export function getLineForEvent(editor: atom$TextEditor, event: any): number {
+function getLineForEvent(editor, event) {
   const cursorLine = editor.getLastCursor().getBufferRow();
-  const target = event ? (event.target: HTMLElement) : null;
+  const target = event ? event.target : null;
   if (target == null) {
     return cursorLine;
   }
   // toggleLine is the line the user clicked in the gutter next to, as opposed
   // to the line the editor's cursor happens to be in. If this command was invoked
   // from the menu, then the cursor position is the target line.
-  return firstNonNull(
-    getGutterLineNumber(target),
-    getEditorLineNumber(editor, target),
-    // fall back to the line the cursor is on.
-    cursorLine,
-  );
+  return firstNonNull(getGutterLineNumber(target), getEditorLineNumber(editor, target),
+  // fall back to the line the cursor is on.
+  cursorLine);
 }
 
-export function isLocalScopeName(scopeName: string): boolean {
+function isLocalScopeName(scopeName) {
   return ['Local', 'Locals'].indexOf(scopeName) !== -1;
 }

@@ -1,40 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AtomLanguageService} from '../../nuclide-language-service';
-import type {
-  LanguageService,
-  SymbolResult,
-} from '../../nuclide-language-service/lib/LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * This service allows other packages to search JS symbols using language service
  */
-export default class JSSymbolSearchProvider {
-  _languageService: AtomLanguageService<LanguageService>;
+class JSSymbolSearchProvider {
 
-  constructor(languageService: AtomLanguageService<LanguageService>) {
+  constructor(languageService) {
     this._languageService = languageService;
   }
 
-  async searchJSSymbol(
-    query: string,
-    directoryUri: NuclideUri,
-  ): Promise<?Array<SymbolResult>> {
-    const uriLanguageService = await this._languageService.getLanguageServiceForUri(
-      directoryUri,
-    );
-    return uriLanguageService
-      ? uriLanguageService.symbolSearch(query, [directoryUri])
-      : null;
+  searchJSSymbol(query, directoryUri) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const uriLanguageService = yield _this._languageService.getLanguageServiceForUri(directoryUri);
+      return uriLanguageService ? uriLanguageService.symbolSearch(query, [directoryUri]) : null;
+    })();
   }
 }
+exports.default = JSSymbolSearchProvider; /**
+                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                           * All rights reserved.
+                                           *
+                                           * This source code is licensed under the license found in the LICENSE file in
+                                           * the root directory of this source tree.
+                                           *
+                                           * 
+                                           * @format
+                                           */
