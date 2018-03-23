@@ -2,16 +2,15 @@
   "pkg/*/lib/*.js": {
     "alternate": "pkg/{}/spec/{}-spec.js"
   },
-  "pkg/*/spec/**-spec.js": {
-    "alternate": "pkg/{}/lib/{}.js",
+  "pkg/*/spec/*-spec.js": {
+    "alternate": [
+      "pkg/{}/lib/{}.js",
+      "pkg/{}/{}.js"
+    ],
     "type": "test"
   },
   "pkg/*/*.js": {
     "alternate": "pkg/{}/spec/{}-spec.js"
-  },
-  "pkg/*/spec/*-spec.js": {
-    "alternate": "pkg/{}/{}.js",
-    "type": "test"
   },
   "pkg/*/**/Epics.js": {
     "alternate": [
@@ -48,7 +47,7 @@
     "alternate": "modules/{}/{}.js",
     "type": "test"
   },
-  "modules/*/pkg/*/lib/**.js": {
+  "modules/*/pkg/*/lib/*.js": {
     "alternate": "modules/{}/pkg/{}/spec/{}-spec.js"
   },
   "modules/*/pkg/*/spec/*-spec.js": {
