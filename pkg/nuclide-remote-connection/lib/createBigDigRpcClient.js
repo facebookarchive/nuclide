@@ -9,8 +9,9 @@
  * @format
  */
 
+import type {BigDigClient} from 'big-dig/src/client';
 import type {ServerConnectionConfiguration} from './ServerConnection';
-import type {TransportWithHeartbeat} from '../../nuclide-rpc';
+import type {Transport} from '../../nuclide-rpc';
 
 import {createBigDigClient} from 'big-dig/src/client';
 import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
@@ -21,12 +22,15 @@ import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
 
 export default (async function createBigDigRpcClient(
   config: ServerConnectionConfiguration,
-): Promise<RpcConnection<TransportWithHeartbeat>> {
+): Promise<{
+  bigDigClient: BigDigClient,
+  rpcConnection: RpcConnection<Transport>,
+}> {
   const bigDigClient = await createBigDigClient({
     ...config,
     ignoreIntransientErrors: true,
   });
-  const bigDigTransport: TransportWithHeartbeat = {
+  const bigDigTransport: Transport = {
     send(message: string) {
       bigDigClient.sendMessage(NUCLIDE_RPC_TAG, message);
     },
@@ -39,15 +43,15 @@ export default (async function createBigDigRpcClient(
     isClosed() {
       return bigDigClient.isClosed();
     },
-    getHeartbeat() {
-      return bigDigClient.getHeartbeat();
-    },
   };
-  return RpcConnection.createRemote(
-    bigDigTransport,
-    getAtomSideMarshalers(config.host),
-    servicesConfig,
-    {trackSampleRate: 10},
-    SERVICE_FRAMEWORK3_PROTOCOL,
-  );
+  return {
+    bigDigClient,
+    rpcConnection: RpcConnection.createRemote(
+      bigDigTransport,
+      getAtomSideMarshalers(config.host),
+      servicesConfig,
+      {trackSampleRate: 10},
+      SERVICE_FRAMEWORK3_PROTOCOL,
+    ),
+  };
 });

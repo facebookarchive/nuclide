@@ -9,8 +9,9 @@
  * @format
  */
 
+import type {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TransportWithHeartbeat} from '../../nuclide-rpc';
+import type {Transport} from '../../nuclide-rpc';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
@@ -72,7 +73,8 @@ export class ServerConnection {
   _config: ServerConnectionConfiguration;
   _closed: boolean;
   _healthNotifier: ?ConnectionHealthNotifier;
-  _client: ?RpcConnection<TransportWithHeartbeat>;
+  _heartbeat: ?XhrConnectionHeartbeat;
+  _client: ?RpcConnection<Transport>;
   _connections: Array<RemoteConnection>;
   _fileWatches: SharedObservableCache<string, WatchResult>;
   _directoryWatches: SharedObservableCache<string, WatchResult>;
@@ -126,6 +128,7 @@ export class ServerConnection {
     this._closed = false;
     this._healthNotifier = null;
     this._client = null;
+    this._heartbeat = null;
     this._connections = [];
     this._fileWatches = new SharedObservableCache(path => {
       const fileWatcherService: FileWatcherService = this.getService(
@@ -166,9 +169,7 @@ export class ServerConnection {
     this._healthNotifier = new ConnectionHealthNotifier(
       this._config.host,
       this._config.port,
-      this.getClient()
-        .getTransport()
-        .getHeartbeat(),
+      this.getHeartbeat(),
     );
   }
 
@@ -226,7 +227,6 @@ export class ServerConnection {
 
   async initialize(): Promise<void> {
     await this._startRpc();
-    const client = this.getClient();
     const clientVersion = getVersion();
 
     function throwVersionMismatch(version) {
@@ -242,9 +242,7 @@ export class ServerConnection {
       // Test connection first. First time we get here we're checking to reestablish
       // connection using cached credentials. This will fail fast (faster than infoService)
       // when we don't have cached credentials yet.
-      const transport = client.getTransport();
-
-      const heartbeatVersion = await transport.getHeartbeat().sendHeartBeat();
+      const heartbeatVersion = await this.getHeartbeat().sendHeartBeat();
       if (clientVersion !== heartbeatVersion) {
         throwVersionMismatch(heartbeatVersion);
       }
@@ -278,6 +276,10 @@ export class ServerConnection {
     if (this._client != null) {
       this._client.dispose();
       this._client = null;
+      if (this._heartbeat) {
+        this._heartbeat.close();
+        this._heartbeat = null;
+      }
     }
 
     // Remove from _connections to not be considered in future connection queries.
@@ -286,7 +288,7 @@ export class ServerConnection {
     }
   }
 
-  getClient(): RpcConnection<TransportWithHeartbeat> {
+  getClient(): RpcConnection<Transport> {
     invariant(
       !this._closed && this._client != null,
       'Server connection has been closed.',
@@ -294,9 +296,21 @@ export class ServerConnection {
     return this._client;
   }
 
+  getHeartbeat(): XhrConnectionHeartbeat {
+    invariant(
+      !this._closed && this._client != null && this._heartbeat != null,
+      'Server connection has been closed.',
+    );
+    return this._heartbeat;
+  }
+
   async _startRpc(): Promise<void> {
     if (this._config.version === BIG_DIG_VERSION) {
-      this._client = await createBigDigRpcClient(this._config);
+      const {bigDigClient, rpcConnection} = await createBigDigRpcClient(
+        this._config,
+      );
+      this._client = rpcConnection;
+      this._heartbeat = bigDigClient.getHeartbeat();
       return;
     }
 
@@ -328,7 +342,7 @@ export class ServerConnection {
       protocolLogger,
     );
     const client = RpcConnection.createRemote(
-      (socket: TransportWithHeartbeat),
+      (socket: Transport),
       getAtomSideMarshalers(this.getRemoteHostname()),
       servicesConfig,
       // Track calls with a sampling rate of 1/10.
@@ -339,6 +353,7 @@ export class ServerConnection {
     );
 
     this._client = client;
+    this._heartbeat = socket.getHeartbeat();
   }
 
   _isSecure(): boolean {

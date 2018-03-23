@@ -24,14 +24,10 @@ import {getLogger} from 'log4js';
  */
 export class BigDigClient {
   _logger: log4js$Logger;
-  _heartbeat: XhrConnectionHeartbeat;
   _tagToSubject: Map<string, Subject<string>>;
   _transport: NuclideSocket;
 
-  constructor(
-    nuclideSocketTransport: NuclideSocket,
-    heartbeat: XhrConnectionHeartbeat,
-  ) {
+  constructor(nuclideSocketTransport: NuclideSocket) {
     this._logger = getLogger();
     this._transport = nuclideSocketTransport;
     this._tagToSubject = new Map();
@@ -57,8 +53,6 @@ export class BigDigClient {
         this._logger.error('ConnectionWrapper completed()?');
       },
     });
-
-    this._heartbeat = heartbeat;
   }
 
   isClosed(): boolean {
@@ -87,7 +81,7 @@ export class BigDigClient {
   }
 
   getHeartbeat(): XhrConnectionHeartbeat {
-    return this._heartbeat;
+    return this._transport.getHeartbeat();
   }
 
   getAddress(): string {

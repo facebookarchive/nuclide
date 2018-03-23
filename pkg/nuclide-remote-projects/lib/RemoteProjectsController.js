@@ -84,7 +84,7 @@ export default class RemoteProjectsController {
     const socket = connection.getClient().getTransport();
     updateStatus(!socket.isClosed());
 
-    const heartbeat = socket.getHeartbeat();
+    const heartbeat = connection.getHeartbeat();
     this._disposables.add(
       heartbeat.onHeartbeatError(() => updateStatus(false)),
       heartbeat.onHeartbeat(() => updateStatus(true)),

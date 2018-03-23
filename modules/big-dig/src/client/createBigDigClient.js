@@ -30,6 +30,19 @@ export type BigDigClientConfig = {
 export default (async function createBigDigClient(
   config: BigDigClientConfig,
 ): Promise<BigDigClient> {
+  const nuclideSocket = createNuclideSocket(config);
+  const client = new BigDigClient(nuclideSocket);
+  try {
+    // Make sure we're able to make the initial connection
+    await nuclideSocket.testConnection();
+    return client;
+  } catch (error) {
+    client.close();
+    throw error;
+  }
+});
+
+function createNuclideSocket(config: BigDigClientConfig): NuclideSocket {
   const options = {
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
@@ -49,13 +62,5 @@ export default (async function createBigDigClient(
     nuclideSocket.onIntransientError(error => nuclideSocket.close());
   }
 
-  const client = new BigDigClient(nuclideSocket, nuclideSocket.getHeartbeat());
-  try {
-    // Make sure we're able to make the initial connection
-    await nuclideSocket.testConnection();
-    return client;
-  } catch (error) {
-    client.close();
-    throw error;
-  }
-});
+  return nuclideSocket;
+}

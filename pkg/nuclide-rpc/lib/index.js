@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import type {Observable} from 'rxjs';
 import type {ObjectRegistry} from './ObjectRegistry';
 
@@ -53,8 +52,4 @@ export type Transport = {
   onMessage(): Observable<string>,
   close(): void,
   isClosed(): boolean,
-};
-
-export type TransportWithHeartbeat = Transport & {
-  getHeartbeat(): XhrConnectionHeartbeat,
 };
