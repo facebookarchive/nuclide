@@ -40,6 +40,7 @@ import ListCommand from './ListCommand';
 import RestartCommand from './RestartCommand';
 import PrintCommand from './PrintCommand';
 import RunCommand from './RunCommand';
+import ThreadCollection from './ThreadCollection';
 
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
@@ -48,7 +49,8 @@ type SessionState =
   | 'INITIALIZING' // waiting for initialized event from adapter
   | 'CONFIGURING' // waiting for user to issue 'run' command after setting initial breakpoints
   | 'RUNNING' // program is running
-  | 'STOPPED'; // program has hit a breakpoint
+  | 'STOPPED' // program has hit a breakpoint
+  | 'TERMINATED'; // program is gone and not coming back
 
 export default class Debugger implements DebuggerInterface {
   _capabilities: ?Capabilities;
@@ -56,9 +58,8 @@ export default class Debugger implements DebuggerInterface {
   _debugSession: ?VsDebugSession;
   _logger: log4js$Logger;
   _activeThread: ?number;
-  _threads: Map<number, Thread> = new Map();
+  _threads: ThreadCollection = new ThreadCollection();
   _sourceFiles: SourceFileCache;
-  _terminated: boolean = false;
   _state: SessionState = 'INITIALIZING';
   _breakpoints: BreakpointCollection = new BreakpointCollection();
   _adapter: ?ParsedVSAdapter;
@@ -173,22 +174,27 @@ export default class Debugger implements DebuggerInterface {
   }
 
   breakInto(): void {
-    const threadId = [...this._threads.keys()][0];
-    if (threadId == null) {
+    // if there is a focus thread from before, stop that one, else just
+    // pick the first.
+    const thread =
+      this._threads.focusThread != null
+        ? this._threads.focusThread
+        : this._threads.allThreads[0];
+    if (thread == null) {
       return;
     }
 
-    this._ensureDebugSession().pause({threadId});
+    this._ensureDebugSession().pause({threadId: thread.id()});
   }
 
-  getThreads(): Map<number, Thread> {
+  getThreads(): ThreadCollection {
     this._ensureDebugSession();
     return this._threads;
   }
 
   getActiveThread(): Thread {
     this._ensureDebugSession();
-    return nullthrows(this._threads.get(nullthrows(this._activeThread)));
+    return nullthrows(this._threads.focusThread);
   }
 
   async getStackTrace(
@@ -468,8 +474,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async createSession(adapterInfo: VSAdapterExecutableInfo): Promise<void> {
-    this._terminated = false;
     this._console.stopInput();
+
+    this._threads = new ThreadCollection();
 
     this._debugSession = new VsDebugSession(
       process.pid.toString(),
@@ -552,6 +559,8 @@ export default class Debugger implements DebuggerInterface {
 
     session.observeStopEvents().subscribe(this._onStopped.bind(this));
 
+    session.observeThreadEvents().subscribe(this._onThread.bind(this));
+
     session
       .observeExitedDebugeeEvents()
       .subscribe(this._onExitedDebugee.bind(this));
@@ -570,10 +579,8 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
 
-    this._terminated = true;
-
     await this._debugSession.disconnect();
-    this._threads = new Map();
+    this._threads = new ThreadCollection();
     this._debugSession = null;
     this._activeThread = null;
 
@@ -589,45 +596,88 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onContinued(event: DebugProtocol.ContinuedEvent) {
-    // if the thread we're actively debugging starts running,
-    // stop interactivity until the target stops again
-    if (event.body.threadId === this.getActiveThread().id()) {
+    const {body: {threadId, allThreadsContinued}} = event;
+
+    if (allThreadsContinued === true) {
+      this._threads.markAllThreadsRunning();
+    } else {
+      this._threads.markThreadRunning(threadId);
+    }
+
+    // only turn the console off if all threads have started up again
+    if (this._threads.allThreadsRunning()) {
       this._console.stopInput();
     }
   }
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
-    const {body: {description, threadId}} = event;
+    const {body: {description, threadId, allThreadsStopped}} = event;
 
     if (description != null) {
       this._console.outputLine(description);
     }
 
-    // $TODO handle allThreadsStopped
-    if (threadId != null) {
-      let thread = this._threads.get(threadId);
+    const firstStop = this._threads.allThreadsRunning();
 
-      if (thread == null) {
-        await this._cacheThreads();
-        thread = this._threads.get(threadId);
-      }
-
-      nullthrows(thread).clearSelectedStackFrame();
-
-      if (threadId === this.getActiveThread().id()) {
-        const topOfStack = await this._getTopOfStackSourceInfo(threadId);
-        if (topOfStack != null) {
-          this._console.outputLine(
-            `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
-          );
-        }
-      }
+    if (allThreadsStopped === true) {
+      this._threads.markAllThreadsStopped();
+      this._threads.allThreads.map(_ => _.clearSelectedStackFrame());
+    } else if (threadId != null) {
+      this._threads.markThreadStopped(threadId);
+      nullthrows(
+        this._threads.getThreadById(threadId),
+      ).clearSelectedStackFrame();
+    } else {
+      // the call didn't actually contain information about anything stopping.
+      this._console.outputLine(
+        'stop event with no thread information ignored.',
+      );
+      return;
     }
 
-    this._console.startInput();
+    // for now, set the focus thread to the first thread that stopped
+    if (firstStop) {
+      if (threadId != null) {
+        this._threads.setFocusThread(threadId);
+      } else {
+        const firstStopped = this._threads.firstStoppedThread();
+        invariant(firstStopped != null);
+        this._threads.setFocusThread(firstStopped);
+      }
+
+      const topOfStack = await this._getTopOfStackSourceInfo(
+        nullthrows(this._threads.focusThreadId),
+      );
+
+      if (topOfStack != null) {
+        this._console.outputLine(
+          `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
+        );
+      }
+
+      this._console.startInput();
+    }
+  }
+
+  _onThread(event: DebugProtocol.ThreadEvent) {
+    const {body: {reason, threadId}} = event;
+
+    if (reason === 'started') {
+      // to avoid a race, create a thread immediately. then call _cacheThreads,
+      // which will query gdb and update the description
+      this._threads.addThread(new Thread(threadId, `thread ${threadId}`));
+      this._cacheThreads();
+      return;
+    }
+
+    if (reason === 'exited') {
+      this._threads.removeThread(threadId);
+    }
   }
 
   _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
+    this._state = 'TERMINATED';
+
     this._console.outputLine(
       `Target exited with status ${event.body.exitCode}`,
     );
@@ -645,9 +695,11 @@ export default class Debugger implements DebuggerInterface {
 
   _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
     // Some adapters will send multiple terminated events.
-    if (this._terminated || this._state !== 'RUNNING') {
+    if (this._state !== 'RUNNING') {
       return;
     }
+
+    this._state = 'TERMINATED';
 
     this._console.outputLine('The target has exited.');
 
@@ -669,16 +721,11 @@ export default class Debugger implements DebuggerInterface {
     );
 
     const {body} = await this._debugSession.threads();
-    const threads = body.threads != null ? body.threads : [];
-
-    this._threads = new Map(
-      threads.map(thd => [thd.id, new Thread(thd.id, thd.name)]),
+    const threads = (body.threads != null ? body.threads : []).map(
+      _ => new Thread(_.id, _.name),
     );
 
-    this._activeThread = null;
-    if (threads.length > 0) {
-      this._activeThread = threads[0].id;
-    }
+    this._threads.updateThreads(threads);
   }
 
   _onBreakpointEvent(event: DebugProtocol.BreakpointEvent): void {

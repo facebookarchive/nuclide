@@ -14,10 +14,12 @@ export default class Thread {
   _id: number;
   _name: string;
   _selectedStackFrame: number;
+  _stopped: boolean;
 
   constructor(id: number, name: string) {
     this._id = id;
     this._name = name;
+    this._stopped = false;
     this.clearSelectedStackFrame();
   }
 
@@ -27,6 +29,14 @@ export default class Thread {
 
   name(): string {
     return this._name;
+  }
+
+  setName(name: string): void {
+    this._name = name;
+  }
+
+  get isStopped(): boolean {
+    return this._stopped;
   }
 
   clearSelectedStackFrame(): void {
@@ -39,5 +49,13 @@ export default class Thread {
 
   setSelectedStackFrame(frame: number): void {
     this._selectedStackFrame = frame;
+  }
+
+  setRunning(): void {
+    this._stopped = false;
+  }
+
+  setStopped(): void {
+    this._stopped = true;
   }
 }

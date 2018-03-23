@@ -28,14 +28,14 @@ export default class ThreadsCommand implements Command {
 
   async execute(): Promise<void> {
     const threads = this._debugger.getThreads();
-    const activeThread = this._debugger.getActiveThread();
+    const focusThread = threads.focusThreadId;
 
-    Array.from(threads)
-      .sort((left, right) => left[0] - right[0])
-      .forEach(([tid, thread]) => {
-        const activeMarker = tid === activeThread ? '*' : ' ';
+    threads.allThreads
+      .sort((left, right) => left.id() - right.id())
+      .forEach(thread => {
+        const activeMarker = thread.id() === focusThread ? '*' : ' ';
         this._console.outputLine(
-          `${activeMarker} ${tid} ${thread.name() || ''}`,
+          `${activeMarker} ${thread.id()} ${thread.name() || ''}`,
         );
       });
   }

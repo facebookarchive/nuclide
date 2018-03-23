@@ -14,6 +14,7 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 
 import Breakpoint from './Breakpoint';
 import Thread from './Thread';
+import ThreadCollection from './ThreadCollection';
 
 export type VariablesInScope = {
   expensive: boolean,
@@ -28,7 +29,7 @@ export type BreakpointSetResult = {
 
 export interface DebuggerInterface {
   run(): Promise<void>;
-  getThreads(): Map<number, Thread>;
+  getThreads(): ThreadCollection;
   getActiveThread(): Thread;
   stepIn(): Promise<void>;
   stepOver(): Promise<void>;
