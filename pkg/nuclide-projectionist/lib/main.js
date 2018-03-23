@@ -98,34 +98,42 @@ function isProjection(maybeProjection: Object): boolean {
   return Object.keys(maybeProjection).some(key => key.match(RULES_KEY_RE));
 }
 
+const keywordReplacements = {
+  '{}': match => match,
+  '{basename}': match => basenameWithoutExtension(match),
+  '{dirname}': match => match,
+};
+
 function replaceTargetsWithMatches(
   stringWithTargets: string,
   matches: null | Array<string>,
   projectRelativePath: string,
 ) {
   if (matches == null) {
-    const basenameWithoutExtension = path.basename(
-      projectRelativePath,
-      path.extname(projectRelativePath),
-    );
-
     return path.join(
       path.dirname(projectRelativePath),
       stringWithTargets.replace('{}', basenameWithoutExtension),
     );
   }
 
-  const targets = stringWithTargets.match(/{}/g);
+  const targets = stringWithTargets.match(/({.*?})/g);
   if (targets == null) {
     return stringWithTargets;
   }
 
   let replaced = stringWithTargets;
   for (let i = 0; i < targets.length; i++) {
+    const target = targets[i];
     if (i === targets.length - 1 && targets.length < matches.length) {
-      replaced = replaced.replace('{}', path.join(...matches.slice(i)));
+      replaced = replaced.replace(
+        target,
+        keywordReplacements[target](path.join(...matches.slice(i))),
+      );
     } else {
-      replaced = replaced.replace('{}', matches[i]);
+      replaced = replaced.replace(
+        target,
+        keywordReplacements[target](matches[i]),
+      );
     }
   }
   return replaced;
@@ -140,4 +148,8 @@ function normalizePattern(pattern: string) {
   return (
     pattern.slice(0, lastStarIndex) + '**/*' + pattern.slice(lastStarIndex + 1)
   );
+}
+
+function basenameWithoutExtension(pathString) {
+  return path.basename(pathString, path.extname(pathString));
 }

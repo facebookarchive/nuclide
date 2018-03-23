@@ -87,6 +87,38 @@ describe('Projectionist', () => {
         'bin/scripts/foo-test.js',
       ]);
     });
+
+    it('expands dirname and basename', () => {
+      const projectionist = new Projectionist({
+        '**/__tests__/*-test.js': {
+          alternate: '{dirname}/{basename}.js',
+          type: 'test',
+        },
+      });
+
+      expect(
+        projectionist.getAlternates('bin/scripts/__tests__/foo-test.js'),
+      ).toEqual(['bin/scripts/foo.js']);
+    });
+
+    it('expands many dirname and basename', () => {
+      const projectionist = new Projectionist({
+        '*.js': {
+          alternate: [
+            '{dirname}/{basename}.test.js',
+            '{dirname}/__tests__/{basename}-test.js',
+            '{dirname}/__tests__/{basename}-mocha.js',
+          ],
+          type: 'source',
+        },
+      });
+
+      expect(projectionist.getAlternates('bin/scripts/foo.js')).toEqual([
+        'bin/scripts/foo.test.js',
+        'bin/scripts/__tests__/foo-test.js',
+        'bin/scripts/__tests__/foo-mocha.js',
+      ]);
+    });
   });
 
   describe('getType', () => {
