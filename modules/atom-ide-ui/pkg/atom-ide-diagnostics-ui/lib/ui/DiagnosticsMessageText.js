@@ -113,7 +113,9 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
     return (
       <span
         title={message.text}
-        dangerouslySetInnerHTML={{__html: domPurify.sanitize(message.html)}}
+        dangerouslySetInnerHTML={{
+          __html: domPurify.sanitize(message.html),
+        }}
       />
     );
   } else if (message.text != null) {

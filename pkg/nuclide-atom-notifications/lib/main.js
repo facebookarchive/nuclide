@@ -67,7 +67,7 @@ function getLevel(atomNotificationType: string): ConsoleLevel {
  * Markdown and HTML can be used with Atom notifications, but not in the console.
  */
 function stripFormatting(raw: string): string {
-  return domPurify.sanitize(marked(raw));
+  return domPurify.sanitize(marked(raw), {ALLOWED_TAGS: []});
 }
 
 createPackage(module.exports, Activation);

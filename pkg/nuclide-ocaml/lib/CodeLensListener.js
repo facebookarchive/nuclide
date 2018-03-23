@@ -109,7 +109,9 @@ function resolveVisible(): void {
       }
 
       if (lens != null && lens.command != null) {
-        lensInfo.element.innerHTML = domPurify.sanitize(lens.command.title);
+        lensInfo.element.innerHTML = domPurify.sanitize(lens.command.title, {
+          ALLOWED_TAGS: [],
+        });
       } else if (lensInfo.retries < RETRIES) {
         lensInfo.resolved = false;
         lensInfo.retries++;
