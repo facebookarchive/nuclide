@@ -91,6 +91,7 @@ export default class ProjectionistFileFamilyProvider {
     const alternates = projectionist.getAlternates(
       nuclideUri.relative(cwd, path),
     );
+
     const files: FileMap = new Map([
       [path, {labels: new Set()}],
       ...alternates.map(alternate => {
@@ -113,7 +114,7 @@ export default class ProjectionistFileFamilyProvider {
       return {
         from: path,
         to: nuclideUri.resolve(cwd, alternate),
-        labels: type == null ? new Set() : new Set([type]),
+        labels,
         directed: true,
       };
     });

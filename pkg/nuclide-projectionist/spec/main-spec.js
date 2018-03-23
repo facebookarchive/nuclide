@@ -88,6 +88,23 @@ describe('Projectionist', () => {
       ]);
     });
 
+    it('returns all possible alternates', () => {
+      const projectionist = new Projectionist({
+        'pkg/*/spec/*-spec.js': {
+          alternate: 'pkg/{}/lib/{}.js',
+          type: 'test',
+        },
+        'pkg/*/*.js': {
+          alternate: 'pkg/{}/spec/{}-spec.js',
+        },
+      });
+
+      expect(projectionist.getAlternates('pkg/foo/spec/bar-spec.js')).toEqual([
+        'pkg/foo/lib/bar.js',
+        'pkg/foo/spec/spec/bar-spec-spec.js',
+      ]);
+    });
+
     it('expands dirname and basename', () => {
       const projectionist = new Projectionist({
         '**/__tests__/*-test.js': {
