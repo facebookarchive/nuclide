@@ -16,7 +16,7 @@
     "big-integer": "1.6.17",
     "nuclide-commons": "0.5.1-dev",
     "nuclide-debugger-common": "0.5.1-dev",
-    "nuclide-prebuilt-libs": "0.3.8",
+    "nuclide-prebuilt-libs": "0.4.0",
     "nullthrows": "1.0.0",
     "v8-compile-cache": "1.1.0",
     "vscode-debugadapter": "1.24.0",
