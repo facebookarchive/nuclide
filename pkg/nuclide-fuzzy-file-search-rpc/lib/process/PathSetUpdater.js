@@ -182,7 +182,13 @@ export default class PathSetUpdater {
     const filesMap = new Map();
     bufferedFiles.forEach(files => {
       files.forEach(file => {
-        filesMap.set(file.name, file);
+        const existing = filesMap.get(file.name);
+        // If a file gets created and then modified, we have to preserve the 'new' bit.
+        if (existing != null && file.exists && existing.new) {
+          filesMap.set(file.name, {...file, new: true});
+        } else {
+          filesMap.set(file.name, file);
+        }
       });
     });
     return Observable.of(Array.from(filesMap.values()));
