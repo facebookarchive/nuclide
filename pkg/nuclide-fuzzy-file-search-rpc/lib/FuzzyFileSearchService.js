@@ -50,6 +50,7 @@ export async function queryFuzzyFile(config: {|
   queryRoot?: NuclideUri,
   queryString: string,
   ignoredNames: Array<string>,
+  smartCase?: boolean,
 |}): Promise<Array<FileSearchResult>> {
   let metadataPromise = filesystemCache.get(config.rootDirectory);
   if (metadataPromise == null) {
@@ -62,7 +63,10 @@ export async function queryFuzzyFile(config: {|
       config.rootDirectory,
       config.ignoredNames,
     );
-    return search.query(config.queryString, config.queryRoot);
+    return search.query(config.queryString, {
+      queryRoot: config.queryRoot,
+      smartCase: config.smartCase,
+    });
   } else {
     // $FlowFB
     const {doSearch} = require('./fb-EdenFileSearch');

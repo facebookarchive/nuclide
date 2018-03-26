@@ -14,6 +14,7 @@ import type {
   DirectoryProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {isGkEnabled} from '../../commons-node/passesGK';
 import {
@@ -55,6 +56,9 @@ export default ({
       queryRoot: getQueryRoot(directoryPath),
       queryString: fileName,
       ignoredNames: getIgnoredNames(),
+      smartCase: Boolean(
+        featureConfig.get('nuclide-fuzzy-filename-provider.smartCase'),
+      ),
     });
 
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.

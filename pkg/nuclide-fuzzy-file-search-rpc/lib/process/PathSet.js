@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from '../rpc-types';
+import type {FileSearchOptions} from './FileSearch';
 
 import os from 'os';
 import {makeRe} from 'minimatch';
@@ -53,7 +53,7 @@ export class PathSet {
 
   query(
     query: string,
-    queryRoot: ?NuclideUri = undefined,
+    options?: FileSearchOptions = Object.freeze({}),
   ): Array<FileSearchResult> {
     // Attempt to relativize paths that people might e.g. copy + paste.
     let relQuery = query;
@@ -71,6 +71,7 @@ export class PathSet {
     }
 
     let relQueryRoot;
+    const {queryRoot, smartCase} = options;
     if (queryRoot != null && nuclideUri.contains(basePath, queryRoot)) {
       relQueryRoot = nuclideUri.relative(basePath, queryRoot);
     }
@@ -82,6 +83,7 @@ export class PathSet {
           numThreads: os.cpus().length,
           recordMatchIndexes: true,
           rootPath: relQueryRoot,
+          smartCase,
         })
         // Expand the search results to the full path.
         .map(result => {

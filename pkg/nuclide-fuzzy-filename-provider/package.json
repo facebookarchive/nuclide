@@ -7,7 +7,21 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Filename Search"
+      ]
+    },
+    "config": {
+      "smartCase": {
+        "title": "Smart Case",
+        "type": "boolean",
+        "default": false,
+        "description": "Enable case sensitive searches if the query contains a capital letter."
+      }
+    }
   },
   "consumedServices": {
     "atom-ide-busy-signal": {

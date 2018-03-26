@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from '../rpc-types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -18,6 +17,11 @@ import {getLogger} from 'log4js';
 import {PathSet} from './PathSet';
 import {getPaths} from './PathSetFactory';
 import PathSetUpdater from './PathSetUpdater';
+
+export type FileSearchOptions = {|
+  queryRoot?: string,
+  smartCase?: boolean,
+|};
 
 const logger = getLogger('nuclide-fuzzy-file-search-rpc');
 
@@ -76,8 +80,8 @@ export async function initFileSearchForDirectory(
 export async function doSearch(
   directory: string,
   query: string,
-  queryRoot: ?NuclideUri,
+  options?: FileSearchOptions = Object.freeze({}),
 ): Promise<Array<FileSearchResult>> {
   const pathSet = await fileSearchForDirectory(directory);
-  return pathSet.query(query, queryRoot);
+  return pathSet.query(query, options);
 }
