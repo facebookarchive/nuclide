@@ -58,6 +58,7 @@ export default class TextDocument {
   }
 
   dispose() {
+    this._emitter.emit('dispose');
     this.assertNotDisposed();
     this._disposables.dispose();
   }
@@ -81,6 +82,10 @@ export default class TextDocument {
     return this.buffer.characterIndexForPosition(
       lspPositionToAtomPoint(position),
     );
+  }
+
+  onDidDispose(handler: () => mixed): IDisposable {
+    return this._emitter.on('dispose', handler);
   }
 
   onDidStopChanging(handler: (document: TextDocument) => void): IDisposable {
