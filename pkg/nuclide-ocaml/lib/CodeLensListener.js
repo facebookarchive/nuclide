@@ -55,7 +55,11 @@ async function getCodeLens(
       fileVersion,
     );
     if (codeLens != null) {
-      return codeLens;
+      // sort code lenses based on their row numbers from top to bottom, so
+      // later their resolution can start in the same order.
+      return codeLens.sort((lens1, lens2) => {
+        return lens1.range.start.row - lens2.range.start.row;
+      });
     }
 
     // eslint-disable-next-line no-await-in-loop
