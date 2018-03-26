@@ -463,6 +463,7 @@ export class SshHandshake {
     // Keep asking the user for the correct password until they run out of attempts or the
     // connection fails for a reason other than the password being wrong.
     while (authError != null && attempts < PASSWORD_RETRIES) {
+      const retry = attempts > 0;
       const retryText = attempts > 0 ? ' again' : '';
       const prompt = `Authentication failed. Try entering your password${retryText}: `;
       ++attempts;
@@ -472,7 +473,7 @@ export class SshHandshake {
         kind: 'private-key',
         prompt,
         echo: false,
-        retry: true,
+        retry,
       });
       // eslint-disable-next-line no-await-in-loop
       authError = await this._connectOrNeedsAuth({
