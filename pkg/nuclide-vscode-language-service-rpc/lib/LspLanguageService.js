@@ -109,6 +109,8 @@ import {
 } from './protocol';
 import {arrayCompact} from 'nuclide-commons/collection';
 
+const WORD_REGEX = /\w+/gi;
+
 type State =
   | 'Initial'
   | 'Starting'
@@ -1598,7 +1600,6 @@ export class LspLanguageService {
     }
     // Failing that we'll try using a regexp on the buffer. (belt and braces!)
     if (referencedSymbolName == null && buffer != null) {
-      const WORD_REGEX = /\w+/gi;
       const match = wordAtPositionFromBuffer(buffer, position, WORD_REGEX);
       if (match != null && match.wordMatch.length > 0) {
         referencedSymbolName = match.wordMatch[0];
@@ -2015,6 +2016,16 @@ export class LspLanguageService {
     let range = new atom$Range(position, position);
     if (response.range) {
       range = convert.lspRange_atomRange(response.range);
+    } else {
+      const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
+        fileVersion,
+      );
+      if (buffer != null) {
+        const match = wordAtPositionFromBuffer(buffer, position, WORD_REGEX);
+        if (match != null && match.wordMatch.length > 0) {
+          range = match.range;
+        }
+      }
     }
 
     return {hint, range};
