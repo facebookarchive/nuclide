@@ -85,17 +85,32 @@ export class RemoteConnection {
     const fsService: FileSystemServiceType = serverConnection.getService(
       FILE_SYSTEM_SERVICE,
     );
-    // cwd may actually be a project file.
-    const contents = hasAtomProjectFormat(cwd)
-      ? await fsService.readFile(cwd).catch(() => null)
+
+    const realPath = await fsService.resolveRealPath(cwd);
+
+    // realPath may actually be a project file.
+    const contents = hasAtomProjectFormat(realPath)
+      ? await fsService.readFile(realPath).catch(() => null)
       : null;
 
     const directories = [];
+
+    // If the file is not a project file, initialize the connection.
     if (contents == null) {
-      directories.push(cwd);
+      // Now that we know the real path, it's possible this collides with an existing connection.
+      if (realPath !== cwd && nuclideUri.isRemote(cwd)) {
+        const existingConnection = this.getByHostnameAndPath(
+          nuclideUri.getHostname(cwd),
+          realPath,
+        );
+        if (existingConnection != null) {
+          return existingConnection;
+        }
+      }
+      directories.push(realPath);
     } else {
       const projectContents = season.parse(contents.toString());
-      const dirname = nuclideUri.dirname(cwd);
+      const dirname = nuclideUri.dirname(realPath);
 
       const projectPaths = projectContents.paths;
       if (projectPaths != null && Array.isArray(projectPaths)) {
@@ -108,7 +123,7 @@ export class RemoteConnection {
 
       if (atom.project.replace != null) {
         projectContents.paths = directories;
-        projectContents.originPath = cwd;
+        projectContents.originPath = realPath;
         atom.project.replace(projectContents);
       }
     }
@@ -279,27 +294,6 @@ export class RemoteConnection {
     // in a possible race.
     this._connection.addConnection(this);
     try {
-      const fileSystemService: FileSystemServiceType = this.getService(
-        FILE_SYSTEM_SERVICE,
-      );
-      const resolvedPath = await fileSystemService.resolveRealPath(this._cwd);
-
-      // Now that we know the real path, it's possible this collides with an existing connection.
-      // If so, we should just stop immediately.
-      if (resolvedPath !== this._cwd) {
-        const existingConnection = RemoteConnection.getByHostnameAndPath(
-          this.getRemoteHostname(),
-          resolvedPath,
-        );
-        invariant(this !== existingConnection);
-        if (existingConnection != null) {
-          this.close(attemptShutdown);
-          return existingConnection;
-        }
-
-        this._cwd = resolvedPath;
-      }
-
       // A workaround before Atom 2.0: see ::getHgRepoInfo.
       await this._setHgRepoInfo();
 
