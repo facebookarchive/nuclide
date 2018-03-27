@@ -26,6 +26,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
@@ -200,6 +201,11 @@ export interface LanguageService {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>>;
+
+  signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp>;
 
   getAdditionalLogFiles(
     deadline: DeadlineRequest,

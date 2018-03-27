@@ -28,6 +28,7 @@ import type {
   Outline,
   OutlineTree,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -2195,6 +2196,13 @@ export class LspLanguageService {
     }
 
     return convert.lspTextEdits_atomTextEdits(response);
+  }
+
+  signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
+    return Promise.resolve(null);
   }
 
   getEvaluationExpression(

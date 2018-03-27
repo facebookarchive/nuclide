@@ -37,6 +37,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 
@@ -255,6 +256,11 @@ export interface FlowLanguageServiceType {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>>;
+
+  signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp>;
 
   getEvaluationExpression(
     fileVersion: FileVersion,

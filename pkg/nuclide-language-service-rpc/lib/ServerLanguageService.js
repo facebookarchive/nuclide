@@ -20,6 +20,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -124,6 +125,12 @@ export type SingleFileLanguageService = {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>>,
+
+  signatureHelp(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?SignatureHelp>,
 
   getEvaluationExpression(
     filePath: NuclideUri,
@@ -342,6 +349,18 @@ export class ServerLanguageService<
       triggerCharacter,
       options,
     );
+  }
+
+  async signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+    return this._service.signatureHelp(filePath, buffer, position);
   }
 
   async getEvaluationExpression(

@@ -32,6 +32,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {
@@ -471,6 +472,14 @@ class HackSingleFileLanguageService {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
+    throw new Error('Not implemented');
+  }
+
+  signatureHelp(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
     throw new Error('Not implemented');
   }
 

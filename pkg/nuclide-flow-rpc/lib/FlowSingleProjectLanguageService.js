@@ -26,6 +26,7 @@ import type {
   Reference,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
@@ -598,6 +599,14 @@ export class FlowSingleProjectLanguageService {
     triggerCharacter: string,
   ): Promise<?Array<TextEdit>> {
     throw new Error('Not Yet Implemented');
+  }
+
+  signatureHelp(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
+    throw new Error('Not implemented');
   }
 
   findReferences(

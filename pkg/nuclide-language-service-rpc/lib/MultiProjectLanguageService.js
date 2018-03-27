@@ -22,6 +22,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -402,6 +403,15 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).formatAtPosition(fileVersion, position, triggerCharacter, options);
+  }
+
+  async signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).signatureHelp(fileVersion, position);
   }
 
   async getEvaluationExpression(

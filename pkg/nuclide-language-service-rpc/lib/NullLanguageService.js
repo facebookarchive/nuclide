@@ -21,6 +21,7 @@ import type {
   FindReferencesReturn,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
@@ -144,6 +145,13 @@ export class NullLanguageService {
     triggerCharacter: string,
     options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
+    return Promise.resolve(null);
+  }
+
+  signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
     return Promise.resolve(null);
   }
 
