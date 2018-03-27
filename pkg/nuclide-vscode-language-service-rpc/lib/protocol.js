@@ -563,8 +563,8 @@ export type SignatureHelp = {
 export type SignatureInformation = {
   // The label of this signature. Will be shown in the UI.
   label: string,
-  //  The human-readable doc-comment of this signature. Will be shown in the UI but can be omitted.
-  documentation?: string,
+  // The human-readable doc-comment of this signature. Will be shown in the UI but can be omitted.
+  documentation?: string | MarkupContent,
   // The parameters of this signature.
   parameters?: ParameterInformation[],
 };
@@ -577,7 +577,7 @@ export type ParameterInformation = {
   // The label of this parameter. Will be shown in the UI.
   label: string,
   // The human-readable doc-comment of this parameter. Will be shown in the UI but can be omitted.
-  documentation?: string,
+  documentation?: string | MarkupContent,
 };
 
 export type ReferenceParams = TextDocumentPositionParams & {

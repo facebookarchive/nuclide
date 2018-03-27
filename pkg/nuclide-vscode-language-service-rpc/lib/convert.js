@@ -18,6 +18,7 @@ import type {
   DiagnosticTrace,
   Reference,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {
   Diagnostic,
@@ -42,6 +43,7 @@ import type {
   TextDocumentPositionParams,
   SymbolInformation,
   Command,
+  SignatureHelp as LspSignatureHelpType,
 } from './protocol';
 import type {TextEdit as LspTextEditType} from './protocol';
 
@@ -629,5 +631,33 @@ export function lspCodeLens_codeLensData(codeLens: CodeLens): CodeLensData {
     ),
     command: codeLens.command,
     data: codeLens.data,
+  };
+}
+
+export function lspSignatureHelp_atomSignatureHelp(
+  signatureHelp: LspSignatureHelpType,
+): SignatureHelp {
+  // Mostly compatible, except for the MarkupContent strings.
+  // Currently, atom-ide-ui's signature help implementation always renders markdown anyway.
+  return {
+    signatures: signatureHelp.signatures.map(sig => ({
+      label: sig.label,
+      documentation:
+        sig.documentation != null && typeof sig.documentation === 'object'
+          ? sig.documentation.value
+          : sig.documentation,
+      parameters:
+        sig.parameters &&
+        sig.parameters.map(param => ({
+          label: param.label,
+          documentation:
+            param.documentation != null &&
+            typeof param.documentation === 'object'
+              ? param.documentation.value
+              : param.documentation,
+        })),
+    })),
+    activeSignature: signatureHelp.activeSignature,
+    activeParameter: signatureHelp.activeParameter,
   };
 }

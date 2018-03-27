@@ -131,7 +131,7 @@ export class LspConnection {
 
   signatureHelp(
     params: p.TextDocumentPositionParams,
-  ): Promise<p.SignatureHelp> {
+  ): Promise<?p.SignatureHelp> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/signatureHelp',
       params,

@@ -2198,11 +2198,34 @@ export class LspLanguageService {
     return convert.lspTextEdits_atomTextEdits(response);
   }
 
-  signatureHelp(
+  async signatureHelp(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?SignatureHelp> {
-    return Promise.resolve(null);
+    if (
+      this._state !== 'Running' ||
+      !this._serverCapabilities.signatureHelpProvider ||
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+    }
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      position: convert.atomPoint_lspPosition(position),
+    };
+
+    try {
+      const result = await this._lspConnection.signatureHelp(params);
+      if (result == null) {
+        return null;
+      }
+      return convert.lspSignatureHelp_atomSignatureHelp(result);
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
   }
 
   getEvaluationExpression(
