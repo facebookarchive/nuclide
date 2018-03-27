@@ -273,7 +273,7 @@ export class RpcConnection<TransportType: Transport> {
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry(predefinedTypes, services, protocol),
+      new ServiceRegistry(predefinedTypes, services, protocol, {lazy: true}),
       transport,
       options,
       connectionId,
