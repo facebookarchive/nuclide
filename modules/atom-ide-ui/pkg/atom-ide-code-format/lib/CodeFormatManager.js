@@ -1,66 +1,90 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {BusySignalService} from '../../atom-ide-busy-signal/lib/types';
-import type {
-  RangeCodeFormatProvider,
-  FileCodeFormatProvider,
-  OnTypeCodeFormatProvider,
-  OnSaveCodeFormatProvider,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Range} from 'atom';
-import {Observable, Subject} from 'rxjs';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {completingSwitchMap, microtask} from 'nuclide-commons/observable';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {
-  observeEditorDestroy,
-  observeTextEditors,
-} from 'nuclide-commons-atom/text-editor';
-import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
-import {getFormatOnSave, getFormatOnType} from './config';
-import {getLogger} from 'log4js';
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+var _textEdit;
+
+function _load_textEdit() {
+  return _textEdit = require('nuclide-commons-atom/text-edit');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Save events are critical, so don't allow providers to block them.
-const SAVE_TIMEOUT = 2500;
+const SAVE_TIMEOUT = 2500; /**
+                            * Copyright (c) 2017-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the BSD-style license found in the
+                            * LICENSE file in the root directory of this source tree. An additional grant
+                            * of patent rights can be found in the PATENTS file in the same directory.
+                            *
+                            * 
+                            * @format
+                            */
 
-type FormatEvent =
-  | {
-      type: 'command' | 'save' | 'new-save',
-      editor: atom$TextEditor,
-    }
-  | {
-      type: 'type',
-      editor: atom$TextEditor,
-      edit: atom$AggregatedTextEditEvent,
-    };
-
-export default class CodeFormatManager {
-  _subscriptions: UniversalDisposable;
-  _rangeProviders: ProviderRegistry<RangeCodeFormatProvider>;
-  _fileProviders: ProviderRegistry<FileCodeFormatProvider>;
-  _onTypeProviders: ProviderRegistry<OnTypeCodeFormatProvider>;
-  _onSaveProviders: ProviderRegistry<OnSaveCodeFormatProvider>;
-  _busySignalService: ?BusySignalService;
+class CodeFormatManager {
 
   constructor() {
-    this._subscriptions = new UniversalDisposable(this._subscribeToEvents());
-    this._rangeProviders = new ProviderRegistry();
-    this._fileProviders = new ProviderRegistry();
-    this._onTypeProviders = new ProviderRegistry();
-    this._onSaveProviders = new ProviderRegistry();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._subscribeToEvents());
+    this._rangeProviders = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._fileProviders = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._onTypeProviders = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._onSaveProviders = new (_ProviderRegistry || _load_ProviderRegistry()).default();
   }
 
   /**
@@ -69,69 +93,44 @@ export default class CodeFormatManager {
    * By handling all events in a central location, we ensure that no buffer
    * runs into race conditions with simultaneous formatters.
    */
-  _subscribeToEvents(): rxjs$Subscription {
+  _subscribeToEvents() {
     // Events from the explicit Atom command.
-    const commandEvents = observableFromSubscribeFunction(callback =>
-      atom.commands.add(
-        'atom-text-editor',
-        'code-format:format-code',
-        callback,
-      ),
-    ).switchMap(() => {
+    const commandEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => atom.commands.add('atom-text-editor', 'code-format:format-code', callback)).switchMap(() => {
       const editor = atom.workspace.getActiveTextEditor();
       if (!editor) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
-      return Observable.of({type: 'command', editor});
+      return _rxjsBundlesRxMinJs.Observable.of({ type: 'command', editor });
     });
 
     // Events from editor actions (saving, typing).
-    const editorEvents = observableFromSubscribeFunction(
-      observeTextEditors,
-    ).mergeMap(editor => this._getEditorEventStream(editor));
+    const editorEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)((_textEditor || _load_textEditor()).observeTextEditors).mergeMap(editor => this._getEditorEventStream(editor));
 
-    return (
-      Observable.merge(commandEvents, editorEvents)
-        // Group events by buffer to prevent simultaneous formatting operations.
-        .groupBy(
-          event => event.editor.getBuffer(),
-          event => event,
-          grouped =>
-            observableFromSubscribeFunction(callback =>
-              grouped.key.onDidDestroy(callback),
-            ),
-        )
-        .mergeMap(events =>
-          // Make sure we halt everything when the editor gets destroyed.
-          events.let(completingSwitchMap(event => this._handleEvent(event))),
-        )
-        .subscribe()
-    );
+    return _rxjsBundlesRxMinJs.Observable.merge(commandEvents, editorEvents)
+    // Group events by buffer to prevent simultaneous formatting operations.
+    .groupBy(event => event.editor.getBuffer(), event => event, grouped => (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => grouped.key.onDidDestroy(callback))).mergeMap(events =>
+    // Make sure we halt everything when the editor gets destroyed.
+    events.let((0, (_observable || _load_observable()).completingSwitchMap)(event => this._handleEvent(event)))).subscribe();
   }
 
   /**
    * Returns a stream of all typing and saving operations from the editor.
    */
-  _getEditorEventStream(editor: atom$TextEditor): Observable<FormatEvent> {
-    const changeEvents = observableFromSubscribeFunction(callback =>
-      editor.getBuffer().onDidChangeText(callback),
-    );
+  _getEditorEventStream(editor) {
+    const changeEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => editor.getBuffer().onDidChangeText(callback));
 
-    const saveEvents = Observable.create(observer => {
+    const saveEvents = _rxjsBundlesRxMinJs.Observable.create(observer => {
       const realSave = editor.save;
-      const newSaves = new Subject();
+      const newSaves = new _rxjsBundlesRxMinJs.Subject();
       // HACK: intercept the real TextEditor.save and handle it ourselves.
       // Atom has no way of injecting content into the buffer asynchronously
       // before a save operation.
       // If we try to format after the save, and then save again,
       // it's a poor user experience (and also races the text buffer's reload).
-      const editor_ = (editor: any);
+      const editor_ = editor;
       editor_.save = () => {
         newSaves.next('new-save');
-        return this._safeFormatCodeOnSave(editor)
-          .takeUntil(newSaves)
-          .toPromise()
-          .then(() => realSave.call(editor));
+        return this._safeFormatCodeOnSave(editor).takeUntil(newSaves).toPromise().then(() => realSave.call(editor));
       };
       const subscription = newSaves.subscribe(observer);
       return () => {
@@ -144,83 +143,59 @@ export default class CodeFormatManager {
     // We need to capture when editors are about to be destroyed in order to
     // interrupt any pending formatting operations. (Otherwise, we may end up
     // attempting to save a destroyed editor!)
-    const willDestroyEvents = observableFromSubscribeFunction(cb =>
-      atom.workspace.onWillDestroyPaneItem(cb),
-    ).filter(event => event.item === editor);
+    const willDestroyEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.workspace.onWillDestroyPaneItem(cb)).filter(event => event.item === editor);
 
-    return Observable.merge(
-      changeEvents.map(edit => ({type: 'type', editor, edit})),
-      saveEvents.map(type => ({type, editor})),
-    ).takeUntil(
-      Observable.merge(observeEditorDestroy(editor), willDestroyEvents),
-    );
+    return _rxjsBundlesRxMinJs.Observable.merge(changeEvents.map(edit => ({ type: 'type', editor, edit })), saveEvents.map(type => ({ type, editor }))).takeUntil(_rxjsBundlesRxMinJs.Observable.merge((0, (_textEditor || _load_textEditor()).observeEditorDestroy)(editor), willDestroyEvents));
   }
 
-  _handleEvent(event: FormatEvent): Observable<void> {
-    const {editor} = event;
+  _handleEvent(event) {
+    const { editor } = event;
     switch (event.type) {
       case 'command':
-        return this._formatCodeInTextEditor(editor)
-          .map(result => {
-            if (!result) {
-              throw new Error('No code formatting providers found!');
-            }
-          })
-          .catch(err => {
-            atom.notifications.addError(
-              `Failed to format code: ${err.message}`,
-              {
-                detail: err.detail,
-              },
-            );
-            return Observable.empty();
+        return this._formatCodeInTextEditor(editor).map(result => {
+          if (!result) {
+            throw new Error('No code formatting providers found!');
+          }
+        }).catch(err => {
+          atom.notifications.addError(`Failed to format code: ${err.message}`, {
+            detail: err.detail
           });
+          return _rxjsBundlesRxMinJs.Observable.empty();
+        });
       case 'type':
-        return this._formatCodeOnTypeInTextEditor(editor, event.edit).catch(
-          err => {
-            getLogger('code-format').warn(
-              'Failed to format code on type:',
-              err,
-            );
-            return Observable.empty();
-          },
-        );
+        return this._formatCodeOnTypeInTextEditor(editor, event.edit).catch(err => {
+          (0, (_log4js || _load_log4js()).getLogger)('code-format').warn('Failed to format code on type:', err);
+          return _rxjsBundlesRxMinJs.Observable.empty();
+        });
       case 'save':
-        return (
-          this._safeFormatCodeOnSave(editor)
-            // Fire-and-forget the original save function.
-            // This is actually async for remote files, but we don't use the result.
-            // NOTE: finally is important, as saves should still fire on unsubscribe.
-            .finally(() => editor.getBuffer().save())
-        );
+        return this._safeFormatCodeOnSave(editor)
+        // Fire-and-forget the original save function.
+        // This is actually async for remote files, but we don't use the result.
+        // NOTE: finally is important, as saves should still fire on unsubscribe.
+        .finally(() => editor.getBuffer().save());
       case 'new-save':
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       default:
-        return Observable.throw(`unknown event type ${event.type}`);
+        return _rxjsBundlesRxMinJs.Observable.throw(`unknown event type ${event.type}`);
     }
   }
 
   // Checks whether contents are same in the buffer post-format, throwing if
   // anything has changed.
-  _checkContentsAreSame(before: string, after: string): void {
+  _checkContentsAreSame(before, after) {
     if (before !== after) {
-      throw new Error(
-        'The file contents were changed before formatting was complete.',
-      );
+      throw new Error('The file contents were changed before formatting was complete.');
     }
   }
 
   // Formats code in the editor specified, returning whether or not a
   // code formatter completed successfully.
-  _formatCodeInTextEditor(
-    editor: atom$TextEditor,
-    range?: atom$Range,
-  ): Observable<boolean> {
-    return Observable.defer(() => {
+  _formatCodeInTextEditor(editor, range) {
+    return _rxjsBundlesRxMinJs.Observable.defer(() => {
       const buffer = editor.getBuffer();
       const selectionRange = range || editor.getSelectedBufferRange();
-      const {start: selectionStart, end: selectionEnd} = selectionRange;
-      let formatRange: atom$Range;
+      const { start: selectionStart, end: selectionEnd } = selectionRange;
+      let formatRange;
       if (selectionRange.isEmpty()) {
         // If no selection is done, then, the whole file is wanted to be formatted.
         formatRange = buffer.getRange();
@@ -232,47 +207,29 @@ export default class CodeFormatManager {
         // or (2) at the first column of the line AFTER their selection. In both cases
         // we snap the formatRange to end at the first column of the line after their
         // selection.)
-        formatRange = new Range(
-          [selectionStart.row, 0],
-          selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
-        );
+        formatRange = new _atom.Range([selectionStart.row, 0], selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0]);
       }
       const rangeProvider = this._rangeProviders.getProviderForEditor(editor);
       const fileProvider = this._fileProviders.getProviderForEditor(editor);
       const contents = editor.getText();
-      if (
-        rangeProvider != null &&
-        // When formatting the entire file, prefer file-based providers.
-        (!formatRange.isEqual(buffer.getRange()) || fileProvider == null)
-      ) {
-        return Observable.defer(() =>
-          this._reportBusy(
-            editor,
-            rangeProvider.formatCode(editor, formatRange),
-          ),
-        ).map(edits => {
+      if (rangeProvider != null && (
+      // When formatting the entire file, prefer file-based providers.
+      !formatRange.isEqual(buffer.getRange()) || fileProvider == null)) {
+        return _rxjsBundlesRxMinJs.Observable.defer(() => this._reportBusy(editor, rangeProvider.formatCode(editor, formatRange))).map(edits => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
-          if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+          if (!(0, (_textEdit || _load_textEdit()).applyTextEditsToBuffer)(editor.getBuffer(), edits)) {
             throw new Error('Could not apply edits to text buffer.');
           }
           return true;
         });
       } else if (fileProvider != null) {
-        return Observable.defer(() =>
-          this._reportBusy(
-            editor,
-            fileProvider.formatEntireFile(editor, formatRange),
-          ),
-        ).map(({newCursor, formatted}) => {
+        return _rxjsBundlesRxMinJs.Observable.defer(() => this._reportBusy(editor, fileProvider.formatEntireFile(editor, formatRange))).map(({ newCursor, formatted }) => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
           buffer.setTextViaDiff(formatted);
 
-          const newPosition =
-            newCursor != null
-              ? buffer.positionForCharacterIndex(newCursor)
-              : editor.getCursorBufferPosition();
+          const newPosition = newCursor != null ? buffer.positionForCharacterIndex(newCursor) : editor.getCursorBufferPosition();
 
           // We call setCursorBufferPosition even when there is no newCursor,
           // because it unselects the text selection.
@@ -280,24 +237,21 @@ export default class CodeFormatManager {
           return true;
         });
       } else {
-        return Observable.of(false);
+        return _rxjsBundlesRxMinJs.Observable.of(false);
       }
     });
   }
 
-  _formatCodeOnTypeInTextEditor(
-    editor: atom$TextEditor,
-    aggregatedEvent: atom$AggregatedTextEditEvent,
-  ): Observable<void> {
-    return Observable.defer(() => {
+  _formatCodeOnTypeInTextEditor(editor, aggregatedEvent) {
+    return _rxjsBundlesRxMinJs.Observable.defer(() => {
       // Don't try to format changes with multiple cursors.
       if (aggregatedEvent.changes.length !== 1) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
       const event = aggregatedEvent.changes[0];
       // This also ensures the non-emptiness of event.newText for below.
-      if (!shouldFormatOnType(event) || !getFormatOnType()) {
-        return Observable.empty();
+      if (!shouldFormatOnType(event) || !(0, (_config || _load_config()).getFormatOnType)()) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
       // In the case of bracket-matching, we use the last character because that's
       // the character that will usually cause a reformat (i.e. `}` instead of `{`).
@@ -305,7 +259,7 @@ export default class CodeFormatManager {
 
       const provider = this._onTypeProviders.getProviderForEditor(editor);
       if (provider == null) {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
 
       const contents = editor.getText();
@@ -322,94 +276,70 @@ export default class CodeFormatManager {
       // We want to wait until the cursor has actually moved before we issue a
       // format request, so that we format at the right position (and potentially
       // also let any other event handlers have their go).
-      return microtask
-        .switchMap(() =>
-          provider.formatAtPosition(
-            editor,
-            editor.getCursorBufferPosition().translate([0, -1]),
-            character,
-          ),
-        )
-        .map(edits => {
-          if (edits.length === 0) {
-            return;
-          }
-          this._checkContentsAreSame(contents, editor.getText());
-          // Note that this modification is not in a transaction, so it applies as a
-          // separate editing event than the character typing. This means that you
-          // can undo just the formatting by attempting to undo once, and then undo
-          // your actual code by undoing again.
-          if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
-            throw new Error('Could not apply edits to text buffer.');
-          }
-        });
+      return (_observable || _load_observable()).microtask.switchMap(() => provider.formatAtPosition(editor, editor.getCursorBufferPosition().translate([0, -1]), character)).map(edits => {
+        if (edits.length === 0) {
+          return;
+        }
+        this._checkContentsAreSame(contents, editor.getText());
+        // Note that this modification is not in a transaction, so it applies as a
+        // separate editing event than the character typing. This means that you
+        // can undo just the formatting by attempting to undo once, and then undo
+        // your actual code by undoing again.
+        if (!(0, (_textEdit || _load_textEdit()).applyTextEditsToBuffer)(editor.getBuffer(), edits)) {
+          throw new Error('Could not apply edits to text buffer.');
+        }
+      });
     });
   }
 
-  _safeFormatCodeOnSave(editor: atom$TextEditor): Observable<void> {
-    return this._formatCodeOnSaveInTextEditor(editor)
-      .timeout(SAVE_TIMEOUT)
-      .catch(err => {
-        getLogger('code-format').warn('Failed to format code on save:', err);
-        return Observable.empty();
-      });
+  _safeFormatCodeOnSave(editor) {
+    return this._formatCodeOnSaveInTextEditor(editor).timeout(SAVE_TIMEOUT).catch(err => {
+      (0, (_log4js || _load_log4js()).getLogger)('code-format').warn('Failed to format code on save:', err);
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    });
   }
 
-  _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
+  _formatCodeOnSaveInTextEditor(editor) {
     const saveProvider = this._onSaveProviders.getProviderForEditor(editor);
     if (saveProvider != null) {
-      return Observable.defer(() =>
-        this._reportBusy(editor, saveProvider.formatOnSave(editor), false),
-      ).map(edits => {
-        applyTextEditsToBuffer(editor.getBuffer(), edits);
+      return _rxjsBundlesRxMinJs.Observable.defer(() => this._reportBusy(editor, saveProvider.formatOnSave(editor), false)).map(edits => {
+        (0, (_textEdit || _load_textEdit()).applyTextEditsToBuffer)(editor.getBuffer(), edits);
       });
-    } else if (getFormatOnSave()) {
-      return this._formatCodeInTextEditor(
-        editor,
-        editor.getBuffer().getRange(),
-      ).ignoreElements();
+    } else if ((0, (_config || _load_config()).getFormatOnSave)()) {
+      return this._formatCodeInTextEditor(editor, editor.getBuffer().getRange()).ignoreElements();
     }
-    return Observable.empty();
+    return _rxjsBundlesRxMinJs.Observable.empty();
   }
 
-  _reportBusy<T>(
-    editor: atom$TextEditor,
-    promise: Promise<T>,
-    revealTooltip?: boolean = true,
-  ): Promise<T> {
+  _reportBusy(editor, promise, revealTooltip = true) {
     const busySignalService = this._busySignalService;
     if (busySignalService != null) {
       const path = editor.getPath();
-      const displayPath =
-        path != null ? nuclideUri.basename(path) : '<untitled>';
-      return busySignalService.reportBusyWhile(
-        `Formatting code in ${displayPath}`,
-        () => promise,
-        {revealTooltip},
-      );
+      const displayPath = path != null ? (_nuclideUri || _load_nuclideUri()).default.basename(path) : '<untitled>';
+      return busySignalService.reportBusyWhile(`Formatting code in ${displayPath}`, () => promise, { revealTooltip });
     }
     return promise;
   }
 
-  addRangeProvider(provider: RangeCodeFormatProvider): IDisposable {
+  addRangeProvider(provider) {
     return this._rangeProviders.addProvider(provider);
   }
 
-  addFileProvider(provider: FileCodeFormatProvider): IDisposable {
+  addFileProvider(provider) {
     return this._fileProviders.addProvider(provider);
   }
 
-  addOnTypeProvider(provider: OnTypeCodeFormatProvider): IDisposable {
+  addOnTypeProvider(provider) {
     return this._onTypeProviders.addProvider(provider);
   }
 
-  addOnSaveProvider(provider: OnSaveCodeFormatProvider): IDisposable {
+  addOnSaveProvider(provider) {
     return this._onSaveProviders.addProvider(provider);
   }
 
-  consumeBusySignal(busySignalService: BusySignalService): IDisposable {
+  consumeBusySignal(busySignalService) {
     this._busySignalService = busySignalService;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._busySignalService = null;
     });
   }
@@ -419,7 +349,8 @@ export default class CodeFormatManager {
   }
 }
 
-function shouldFormatOnType(event: atom$TextEditEvent): boolean {
+exports.default = CodeFormatManager;
+function shouldFormatOnType(event) {
   // There's not a direct way to figure out what caused this edit event. There
   // are three cases that we want to pay attention to:
   //
@@ -453,12 +384,10 @@ function shouldFormatOnType(event: atom$TextEditEvent): boolean {
  * inserting an extra bracket, so we just assume that any pair of brackets that
  * bracket-matcher recognizes was a pair matched by the package.
  */
-function isBracketPair(typedText: string): boolean {
+function isBracketPair(typedText) {
   if (atom.packages.getActivePackage('bracket-matcher') == null) {
     return false;
   }
-  const validBracketPairs: Array<string> = (atom.config.get(
-    'bracket-matcher.autocompleteCharacters',
-  ): any);
+  const validBracketPairs = atom.config.get('bracket-matcher.autocompleteCharacters');
   return validBracketPairs.indexOf(typedText) !== -1;
 }

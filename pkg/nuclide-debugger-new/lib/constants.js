@@ -1,24 +1,15 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DebuggerModeType} from './types';
-
-export const AnalyticsEvents = Object.freeze({
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const AnalyticsEvents = exports.AnalyticsEvents = Object.freeze({
   DEBUGGER_BREAKPOINT_ADD: 'debugger-breakpoint-add',
   DEBUGGER_BREAKPOINT_DELETE: 'debugger-breakpoint-delete',
   DEBUGGER_BREAKPOINT_DELETE_ALL: 'debugger-breakpoint-delete-all',
   DEBUGGER_BREAKPOINT_TOGGLE: 'debugger-breakpoint-toggle',
   DEBUGGER_BREAKPOINT_TOGGLE_ENABLED: 'debugger-breakpoint-toggle-enabled',
-  DEBUGGER_BREAKPOINT_CONFIG_UI_SHOW:
-    'nuclide-debugger-breakpoint-condition-shown',
+  DEBUGGER_BREAKPOINT_CONFIG_UI_SHOW: 'nuclide-debugger-breakpoint-condition-shown',
   DEBUGGER_BREAKPOINT_UPDATE_CONDITION: 'debugger-breakpoint-update-condition',
   DEBUGGER_EDIT_VARIABLE: 'debugger-edit-variable',
   DEBUGGER_START: 'debugger-start',
@@ -38,28 +29,37 @@ export const AnalyticsEvents = Object.freeze({
   DEBUGGER_WATCH_REMOVE_EXPRESSION: 'debugger-watch-remove-expression',
   DEBUGGER_WATCH_UPDATE_EXPRESSION: 'debugger-watch-update-expression',
   DEBUGGER_EDIT_BREAKPOINT_FROM_ICON: 'debugger-edit-breakpoint-from-icon',
-  DEBUGGER_DELETE_BREAKPOINT_FROM_ICON: 'debugger-delete-breakpoint-from-icon',
-});
+  DEBUGGER_DELETE_BREAKPOINT_FROM_ICON: 'debugger-delete-breakpoint-from-icon'
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */
 
-export const DebuggerMode = Object.freeze({
+const DebuggerMode = exports.DebuggerMode = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',
   PAUSED: 'paused',
   STOPPED: 'stopped',
-  STOPPING: 'stopping',
+  STOPPING: 'stopping'
 });
 
 // This is to work around flow's missing support of enums.
-(DebuggerMode: {[key: string]: DebuggerModeType});
+DebuggerMode;
 
-export const DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
-export const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
+const DEBUGGER_PANELS_DEFAULT_LOCATION = exports.DEBUGGER_PANELS_DEFAULT_LOCATION = 'right';
+const DEBUGGER_PANELS_DEFAULT_WIDTH_PX = exports.DEBUGGER_PANELS_DEFAULT_WIDTH_PX = 500;
 
-export const BreakpointEventReasons = Object.freeze({
+const BreakpointEventReasons = exports.BreakpointEventReasons = Object.freeze({
   NEW: 'new',
   CHANGED: 'changed',
-  REMOVED: 'removed',
+  REMOVED: 'removed'
 });
 
-export const UNKNOWN_SOURCE = 'Unknown';
-export const DEBUG_SOURCES_URI = 'atom://debug-sources';
+const UNKNOWN_SOURCE = exports.UNKNOWN_SOURCE = 'Unknown';
+const DEBUG_SOURCES_URI = exports.DEBUG_SOURCES_URI = 'atom://debug-sources';

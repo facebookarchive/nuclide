@@ -1,178 +1,213 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Source} from '../types';
-import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import * as React from 'react';
-import {ModalMultiSelect} from 'nuclide-commons-ui/ModalMultiSelect';
-import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
-import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
-import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
+var _LoadingSpinner;
 
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import invariant from 'assert';
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
 
-type Props = {
-  clear: () => void,
-  createPaste: ?() => Promise<void>,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  onFilterChange: (change: RegExpFilterChange) => void,
-  selectedSourceIds: Array<string>,
-  sources: Array<Source>,
-  onSelectedSourcesChange: (sourceIds: Array<string>) => void,
-  filterText: string,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-export default class ConsoleHeader extends React.Component<Props> {
-  _handleClearButtonClick = (event: SyntheticMouseEvent<>): void => {
-    this.props.clear();
-  };
+var _ModalMultiSelect;
 
-  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent<>): void => {
-    if (this.props.createPaste != null) {
-      this.props.createPaste();
-    }
-  };
+function _load_ModalMultiSelect() {
+  return _ModalMultiSelect = require('nuclide-commons-ui/ModalMultiSelect');
+}
 
-  _handleFilterChange = (value: RegExpFilterChange): void => {
-    this.props.onFilterChange(value);
-  };
+var _RegExpFilter;
 
-  _renderProcessControlButton(source: Source): ?React.Element<any> {
+function _load_RegExpFilter() {
+  return _RegExpFilter = _interopRequireDefault(require('nuclide-commons-ui/RegExpFilter'));
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('nuclide-commons-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('nuclide-commons-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('nuclide-commons-ui/ToolbarRight');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class ConsoleHeader extends _react.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._handleClearButtonClick = event => {
+      this.props.clear();
+    }, this._handleCreatePasteButtonClick = event => {
+      if (this.props.createPaste != null) {
+        this.props.createPaste();
+      }
+    }, this._handleFilterChange = value => {
+      this.props.onFilterChange(value);
+    }, this._renderOption = optionProps => {
+      const { option } = optionProps;
+      const source = this.props.sources.find(s => s.id === option.value);
+
+      if (!(source != null)) {
+        throw new Error('Invariant violation: "source != null"');
+      }
+
+      const startingSpinner = source.status !== 'starting' ? null : _react.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, {
+        className: 'inline-block console-process-starting-spinner',
+        size: 'EXTRA_SMALL'
+      });
+      return _react.createElement(
+        'span',
+        null,
+        option.label,
+        startingSpinner,
+        this._renderProcessControlButton(source)
+      );
+    }, _temp;
+  }
+
+  _renderProcessControlButton(source) {
     let action;
     let label;
     let icon;
     switch (source.status) {
       case 'starting':
-      case 'running': {
-        action = source.stop;
-        label = 'Stop Process';
-        icon = 'primitive-square';
-        break;
-      }
-      case 'stopped': {
-        action = source.start;
-        label = 'Start Process';
-        icon = 'triangle-right';
-        break;
-      }
+      case 'running':
+        {
+          action = source.stop;
+          label = 'Stop Process';
+          icon = 'primitive-square';
+          break;
+        }
+      case 'stopped':
+        {
+          action = source.start;
+          label = 'Start Process';
+          icon = 'triangle-right';
+          break;
+        }
     }
     if (action == null) {
       return;
     }
     const clickHandler = event => {
       event.stopPropagation();
-      invariant(action != null);
+
+      if (!(action != null)) {
+        throw new Error('Invariant violation: "action != null"');
+      }
+
       action();
     };
-    return (
-      <Button
-        className="pull-right console-process-control-button"
-        icon={icon}
-        onClick={clickHandler}>
-        {label}
-      </Button>
+    return _react.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: 'pull-right console-process-control-button',
+        icon: icon,
+        onClick: clickHandler },
+      label
     );
   }
 
-  _renderOption = (optionProps: {
-    option: {label: string, value: string},
-  }): React.Element<any> => {
-    const {option} = optionProps;
-    const source = this.props.sources.find(s => s.id === option.value);
-    invariant(source != null);
-    const startingSpinner =
-      source.status !== 'starting' ? null : (
-        <LoadingSpinner
-          className="inline-block console-process-starting-spinner"
-          size="EXTRA_SMALL"
-        />
-      );
-    return (
-      <span>
-        {option.label}
-        {startingSpinner}
-        {this._renderProcessControlButton(source)}
-      </span>
+  render() {
+    const options = this.props.sources.slice().sort((a, b) => sortAlpha(a.name, b.name)).map(source => ({
+      label: source.id,
+      value: source.name
+    }));
+
+    const sourceButton = options.length === 0 ? null : _react.createElement((_ModalMultiSelect || _load_ModalMultiSelect()).ModalMultiSelect, {
+      labelComponent: MultiSelectLabel,
+      optionComponent: this._renderOption,
+      size: (_Button || _load_Button()).ButtonSizes.SMALL,
+      options: options,
+      value: this.props.selectedSourceIds,
+      onChange: this.props.onSelectedSourcesChange,
+      className: 'inline-block'
+    });
+
+    const pasteButton = this.props.createPaste == null ? null : _react.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: 'inline-block',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        onClick: this._handleCreatePasteButtonClick,
+        ref: (0, (_addTooltip || _load_addTooltip()).default)({
+          title: 'Creates a Paste from the current contents of the console'
+        }) },
+      'Create Paste'
     );
-  };
 
-  render(): React.Node {
-    const options = this.props.sources
-      .slice()
-      .sort((a, b) => sortAlpha(a.name, b.name))
-      .map(source => ({
-        label: source.id,
-        value: source.name,
-      }));
-
-    const sourceButton =
-      options.length === 0 ? null : (
-        <ModalMultiSelect
-          labelComponent={MultiSelectLabel}
-          optionComponent={this._renderOption}
-          size={ButtonSizes.SMALL}
-          options={options}
-          value={this.props.selectedSourceIds}
-          onChange={this.props.onSelectedSourcesChange}
-          className="inline-block"
-        />
-      );
-
-    const pasteButton =
-      this.props.createPaste == null ? null : (
-        <Button
-          className="inline-block"
-          size={ButtonSizes.SMALL}
-          onClick={this._handleCreatePasteButtonClick}
-          ref={addTooltip({
-            title: 'Creates a Paste from the current contents of the console',
-          })}>
-          Create Paste
-        </Button>
-      );
-
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft>
-          {sourceButton}
-          <RegExpFilter
-            value={{
-              text: this.props.filterText,
-              isRegExp: this.props.enableRegExpFilter,
-              invalid: this.props.invalidFilterInput,
-            }}
-            onChange={this._handleFilterChange}
-          />
-        </ToolbarLeft>
-        <ToolbarRight>
-          {pasteButton}
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._handleClearButtonClick}>
-            Clear
-          </Button>
-        </ToolbarRight>
-      </Toolbar>
+    return _react.createElement(
+      (_Toolbar || _load_Toolbar()).Toolbar,
+      { location: 'top' },
+      _react.createElement(
+        (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+        null,
+        sourceButton,
+        _react.createElement((_RegExpFilter || _load_RegExpFilter()).default, {
+          value: {
+            text: this.props.filterText,
+            isRegExp: this.props.enableRegExpFilter,
+            invalid: this.props.invalidFilterInput
+          },
+          onChange: this._handleFilterChange
+        })
+      ),
+      _react.createElement(
+        (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+        null,
+        pasteButton,
+        _react.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._handleClearButtonClick },
+          'Clear'
+        )
+      )
     );
   }
 }
 
-function sortAlpha(a: string, b: string): number {
+exports.default = ConsoleHeader; /**
+                                  * Copyright (c) 2017-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the BSD-style license found in the
+                                  * LICENSE file in the root directory of this source tree. An additional grant
+                                  * of patent rights can be found in the PATENTS file in the same directory.
+                                  *
+                                  * 
+                                  * @format
+                                  */
+
+function sortAlpha(a, b) {
   const aLower = a.toLowerCase();
   const bLower = b.toLowerCase();
   if (aLower < bLower) {
@@ -183,15 +218,13 @@ function sortAlpha(a: string, b: string): number {
   return 0;
 }
 
-type LabelProps = {
-  selectedOptions: Array<{value: string, label: string}>,
-};
-
-function MultiSelectLabel(props: LabelProps): React.Element<any> {
-  const {selectedOptions} = props;
-  const label =
-    selectedOptions.length === 1
-      ? selectedOptions[0].label
-      : `${selectedOptions.length} Sources`;
-  return <span>Showing: {label}</span>;
+function MultiSelectLabel(props) {
+  const { selectedOptions } = props;
+  const label = selectedOptions.length === 1 ? selectedOptions[0].label : `${selectedOptions.length} Sources`;
+  return _react.createElement(
+    'span',
+    null,
+    'Showing: ',
+    label
+  );
 }

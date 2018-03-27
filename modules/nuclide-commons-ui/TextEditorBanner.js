@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Notice = exports.TextEditorBanner = undefined;
+
+var _Message;
+
+function _load_Message() {
+  return _Message = require('./Message');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,64 +33,47 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AtomTextEditor} from './AtomTextEditor';
-import type {MessageType} from './Message';
-import {Message} from './Message';
+class TextEditorBanner {
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import invariant from 'assert';
-
-export class TextEditorBanner {
-  _disposables: UniversalDisposable;
-  _editor: atom$TextEditor | AtomTextEditor;
-  _element: HTMLElement;
-  _editorElement: HTMLElement;
-  _marker: ?atom$Marker;
-
-  constructor(editor: atom$TextEditor | AtomTextEditor) {
+  constructor(editor) {
     this._editor = editor;
     const editorElement = editor.getElement().firstChild;
     this._element = document.createElement('div');
     this._element.className = 'nuclide-ui-text-editor-banner-container';
 
-    invariant(
-      editorElement instanceof HTMLElement && editorElement.parentNode != null,
-    );
+    if (!(editorElement instanceof HTMLElement && editorElement.parentNode != null)) {
+      throw new Error('Invariant violation: "editorElement instanceof HTMLElement && editorElement.parentNode != null"');
+    }
 
     editorElement.parentNode.insertBefore(this._element, editorElement);
     this._editorElement = editorElement;
 
-    this._disposables = new UniversalDisposable(
-      () => {
-        ReactDOM.unmountComponentAtNode(this._element);
-        this._element.replaceWith(editorElement);
-      },
-      atom.workspace.observeActiveTextEditor(activeEditor => {
-        if (activeEditor == null) {
-          return;
-        }
-        if (activeEditor.getElement().contains(editor.getElement())) {
-          // This is needed for situations where the editor was rendered while
-          // display: none so _updateTextEditorElement wasn't able to properly
-          // measure at that time.
-          editor.getElement().measureDimensions();
-        }
-      }),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+      _reactDom.default.unmountComponentAtNode(this._element);
+      this._element.replaceWith(editorElement);
+    }, atom.workspace.observeActiveTextEditor(activeEditor => {
+      if (activeEditor == null) {
+        return;
+      }
+      if (activeEditor.getElement().contains(editor.getElement())) {
+        // This is needed for situations where the editor was rendered while
+        // display: none so _updateTextEditorElement wasn't able to properly
+        // measure at that time.
+        editor.getElement().measureDimensions();
+      }
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  _updateTextEditorElement(editorContainerRef: ?React.ElementRef<'div'>) {
-    const editorContainerNode = ReactDOM.findDOMNode(editorContainerRef);
+  _updateTextEditorElement(editorContainerRef) {
+    const editorContainerNode = _reactDom.default.findDOMNode(editorContainerRef);
     if (editorContainerNode == null) {
       return;
     }
@@ -79,25 +89,23 @@ export class TextEditorBanner {
 
     // Fix for Hyperclicking a read-only file.
     // Restore the scroll position in the editor.
-    this._editor
-      .getElement()
-      .getModel()
-      .scrollToCursorPosition();
+    this._editor.getElement().getModel().scrollToCursorPosition();
   }
 
-  render(reactElement: React.Element<any>) {
-    ReactDOM.render(
-      <div className="nuclide-ui-text-editor-banner">
-        <div className="nuclide-ui-text-editor-banner-element">
-          {reactElement}
-        </div>
-        <div
-          ref={ref => this._updateTextEditorElement(ref)}
-          className="nuclide-ui-text-editor-banner-editor"
-        />
-      </div>,
-      this._element,
-    );
+  render(reactElement) {
+    _reactDom.default.render(_react.createElement(
+      'div',
+      { className: 'nuclide-ui-text-editor-banner' },
+      _react.createElement(
+        'div',
+        { className: 'nuclide-ui-text-editor-banner-element' },
+        reactElement
+      ),
+      _react.createElement('div', {
+        ref: ref => this._updateTextEditorElement(ref),
+        className: 'nuclide-ui-text-editor-banner-editor'
+      })
+    ), this._element);
   }
 
   hide() {
@@ -105,21 +113,22 @@ export class TextEditorBanner {
   }
 }
 
-type NoticeProps = {
-  messageType: MessageType,
-  children: React.Node,
-};
-
-export class Notice extends React.Component<NoticeProps> {
+exports.TextEditorBanner = TextEditorBanner;
+class Notice extends _react.Component {
   render() {
-    return (
-      <div className="nuclide-ui-text-editor-banner-notice">
-        <Message type={this.props.messageType}>
-          <div className="nuclide-ui-text-editor-banner-notice-content">
-            {this.props.children}
-          </div>
-        </Message>
-      </div>
+    return _react.createElement(
+      'div',
+      { className: 'nuclide-ui-text-editor-banner-notice' },
+      _react.createElement(
+        (_Message || _load_Message()).Message,
+        { type: this.props.messageType },
+        _react.createElement(
+          'div',
+          { className: 'nuclide-ui-text-editor-banner-notice-content' },
+          this.props.children
+        )
+      )
     );
   }
 }
+exports.Notice = Notice;

@@ -1,3 +1,29 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+var _BreakpointDisplayController;
+
+function _load_BreakpointDisplayController() {
+  return _BreakpointDisplayController = _interopRequireDefault(require('./BreakpointDisplayController'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +31,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IDebugService} from './types';
+class BreakpointManager {
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-import BreakpointDisplayController from './BreakpointDisplayController';
-
-export default class BreakpointManager {
-  _service: IDebugService;
-  _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
-  _disposables: UniversalDisposable;
-
-  constructor(service: IDebugService) {
+  constructor(service) {
     this._service = service;
     this._displayControllers = new Map();
-    this._disposables = new UniversalDisposable(
-      observeTextEditors(this._handleTextEditor.bind(this)),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default((0, (_textEditor || _load_textEditor()).observeTextEditors)(this._handleTextEditor.bind(this)));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._displayControllers.forEach(controller => controller.dispose());
     this._displayControllers.clear();
@@ -37,26 +52,23 @@ export default class BreakpointManager {
   /**
    * Used for testing.
    */
-  getDisplayControllers(): Map<atom$TextEditor, BreakpointDisplayController> {
+  getDisplayControllers() {
     return this._displayControllers;
   }
 
   /**
    * Delegate callback from BreakpointDisplayController.
    */
-  handleTextEditorDestroyed(controller: BreakpointDisplayController) {
+  handleTextEditorDestroyed(controller) {
     controller.dispose();
     this._displayControllers.delete(controller.getEditor());
   }
 
-  _handleTextEditor(editor: atom$TextEditor) {
+  _handleTextEditor(editor) {
     if (!this._displayControllers.has(editor)) {
-      const controller = new BreakpointDisplayController(
-        this,
-        this._service,
-        editor,
-      );
+      const controller = new (_BreakpointDisplayController || _load_BreakpointDisplayController()).default(this, this._service, editor);
       this._displayControllers.set(editor, controller);
     }
   }
 }
+exports.default = BreakpointManager;

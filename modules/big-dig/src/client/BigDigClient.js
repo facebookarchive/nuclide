@@ -1,34 +1,27 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {NuclideSocket} from '../socket/NuclideSocket';
-import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BigDigClient = undefined;
 
-import {Subject} from 'rxjs';
-import {getLogger} from 'log4js';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
  * client to launch a remote process and communication with its stdin, stdout,
  * and stderr.
  */
-export class BigDigClient {
-  _logger: log4js$Logger;
-  _tagToSubject: Map<string, Subject<string>>;
-  _transport: NuclideSocket;
+class BigDigClient {
 
-  constructor(nuclideSocketTransport: NuclideSocket) {
-    this._logger = getLogger();
+  constructor(nuclideSocketTransport) {
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)();
     this._transport = nuclideSocketTransport;
     this._tagToSubject = new Map();
 
@@ -51,40 +44,40 @@ export class BigDigClient {
       },
       complete() {
         this._logger.error('ConnectionWrapper completed()?');
-      },
+      }
     });
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._transport.isClosed();
   }
 
-  onClose(callback: () => mixed): IDisposable {
+  onClose(callback) {
     return this._transport.onClose(callback);
   }
 
-  close(): void {
+  close() {
     this._transport.close();
   }
 
-  sendMessage(tag: string, body: string) {
+  sendMessage(tag, body) {
     this._transport.send(`${tag}\0${body}`);
   }
 
-  onMessage(tag: string): Observable<string> {
+  onMessage(tag) {
     let subject = this._tagToSubject.get(tag);
     if (subject == null) {
-      subject = new Subject();
+      subject = new _rxjsBundlesRxMinJs.Subject();
       this._tagToSubject.set(tag, subject);
     }
     return subject.asObservable();
   }
 
-  getHeartbeat(): XhrConnectionHeartbeat {
+  getHeartbeat() {
     return this._transport.getHeartbeat();
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._transport.getAddress();
   }
 
@@ -92,3 +85,14 @@ export class BigDigClient {
     this.close();
   }
 }
+exports.BigDigClient = BigDigClient; /**
+                                      * Copyright (c) 2017-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the BSD-style license found in the
+                                      * LICENSE file in the root directory of this source tree. An additional grant
+                                      * of patent rights can be found in the PATENTS file in the same directory.
+                                      *
+                                      * 
+                                      * @format
+                                      */

@@ -1,45 +1,52 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerActionUIProvider = undefined;
 
-import * as React from 'react';
-import {LaunchAttachActions} from '../LaunchAttachActions';
-import {LaunchAttachStore} from '../LaunchAttachStore';
+var _react = _interopRequireWildcard(require('react'));
 
-export class DebuggerActionUIProvider {
-  _targetUri: NuclideUri;
-  _name: string;
+var _LaunchAttachActions;
 
-  constructor(name: string, targetUri: NuclideUri) {
+function _load_LaunchAttachActions() {
+  return _LaunchAttachActions = require('../LaunchAttachActions');
+}
+
+var _LaunchAttachStore;
+
+function _load_LaunchAttachStore() {
+  return _LaunchAttachStore = require('../LaunchAttachStore');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class DebuggerActionUIProvider {
+
+  constructor(name, targetUri) {
     this._name = name;
     this._targetUri = targetUri;
   }
 
-  getComponent(
-    store: LaunchAttachStore,
-    actions: LaunchAttachActions,
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): React.Element<any> {
+  getComponent(store, actions, debuggerTypeName, action, configIsValidChanged) {
     throw new Error('Abstract method.');
   }
 
-  getName(): string {
+  getName() {
     return this._name;
   }
 
-  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+  isEnabled(action) {
     throw new Error('Abstract method.');
   }
 }
+exports.DebuggerActionUIProvider = DebuggerActionUIProvider; /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              * 
+                                                              * @format
+                                                              */
