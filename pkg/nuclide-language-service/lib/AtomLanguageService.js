@@ -26,6 +26,7 @@ import type {
   OnDidInsertSuggestionCallback,
 } from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
+import type {SignatureHelpConfig} from './SignatureHelpProvider';
 import type {SyntacticSelectionConfig} from './SyntacticSelectionProvider';
 import type {BusySignalService} from 'atom-ide-ui';
 
@@ -44,6 +45,7 @@ import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
 import {CodeActionProvider} from './CodeActionProvider';
+import {SignatureHelpProvider} from './SignatureHelpProvider';
 import {SyntacticSelectionProvider} from './SyntacticSelectionProvider';
 import {getLogger} from 'log4js';
 
@@ -65,6 +67,7 @@ export type AtomLanguageServiceConfig = {|
   autocomplete?: AutocompleteConfig,
   diagnostics?: DiagnosticsConfig,
   codeAction?: CodeActionConfig,
+  signatureHelp?: SignatureHelpConfig,
   syntacticSelection?: SyntacticSelectionConfig,
 |};
 
@@ -254,6 +257,17 @@ export class AtomLanguageService<T: LanguageService> {
           this._config.name,
           this._config.grammars,
           codeActionConfig,
+          this._connectionToLanguageService,
+        ),
+      );
+    }
+
+    const {signatureHelp} = this._config;
+    if (signatureHelp != null) {
+      this._subscriptions.add(
+        SignatureHelpProvider.register(
+          this._config.grammars,
+          signatureHelp,
           this._connectionToLanguageService,
         ),
       );

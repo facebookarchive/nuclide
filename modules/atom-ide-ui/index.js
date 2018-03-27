@@ -88,6 +88,7 @@ export type {
   Signature,
   SignatureHelp,
   SignatureHelpProvider,
+  SignatureHelpRegistry,
   SignatureParameter,
 } from './pkg/atom-ide-signature-help/lib/types';
 
