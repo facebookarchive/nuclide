@@ -164,17 +164,19 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           booleanValues,
           enumValues,
         );
-        this.setState(
-          {
-            stringValues,
-            booleanValues,
-            enumValues,
-          },
-          () => props.configIsValidChanged(this._debugButtonShouldEnable()),
-        );
+        this.setState({
+          stringValues,
+          booleanValues,
+          enumValues,
+        });
       },
     );
-    props.configIsValidChanged(this._debugButtonShouldEnable());
+  }
+
+  setState(newState: Object): void {
+    super.setState(newState, () =>
+      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
+    );
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -211,6 +213,9 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     } else if (type === 'number') {
       const value = this.state.stringValues.get(name);
       return value != null && !isNaN(value);
+    } else if (type === 'boolean') {
+      const value = this.state.booleanValues.get(name);
+      return value != null;
     }
     return false;
   }

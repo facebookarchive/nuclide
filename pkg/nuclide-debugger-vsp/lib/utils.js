@@ -33,6 +33,7 @@ import nullthrows from 'nullthrows';
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Logger} from 'vscode-debugadapter';
 import {getDebuggerService} from '../../commons-atom/debugger';
 import VspProcessInfo from './VspProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -538,6 +539,133 @@ export async function getNodeLaunchProcessInfo(
     ),
     {threads: false},
   );
+}
+
+export function getOCamlAutoGenConfig(): AutoGenConfig {
+  const debugExecutable = {
+    name: 'ocamldebug executable',
+    type: 'string',
+    description: 'Path to ocamldebug or launch script',
+    required: true,
+  };
+  const executable = {
+    name: 'executable',
+    type: 'string',
+    description:
+      'Input the executable path you want to launch (leave blank if using an ocamldebug launch script)',
+    required: false,
+  };
+  const argumentsProperty = {
+    name: 'arguments',
+    type: 'array',
+    itemType: 'string',
+    description: 'Arguments to the executable',
+    required: false,
+    defaultValue: '',
+  };
+  const environmentVariables = {
+    name: 'environment variables',
+    type: 'array',
+    itemType: 'string',
+    description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
+    required: false,
+    defaultValue: '',
+  };
+  const workingDirectory = {
+    name: 'working directory',
+    type: 'string',
+    description: 'Working directory for the launched executable',
+    required: true,
+  };
+  const additionalIncludeDirectories = {
+    name: 'additional include directories',
+    type: 'array',
+    itemType: 'string',
+    description:
+      'Additional include directories that debugger will use to search for source code',
+    required: false,
+    defaultValue: '',
+  };
+  const breakAfterStart = {
+    name: 'break after start',
+    type: 'boolean',
+    description: '',
+    required: false,
+    defaultValue: true,
+  };
+  const autoGenLaunchConfig = {
+    launch: true,
+    properties: [
+      debugExecutable,
+      executable,
+      argumentsProperty,
+      environmentVariables,
+      workingDirectory,
+      additionalIncludeDirectories,
+      breakAfterStart,
+    ],
+    scriptPropertyName: 'executable',
+    scriptExtension: '.ml',
+    cwdPropertyName: 'working directory',
+    header: null,
+  };
+  return {
+    launch: autoGenLaunchConfig,
+    attach: null,
+  };
+}
+
+export async function ocamlHandleLaunchButtonClick(
+  targetUri: NuclideUri,
+  stringValues: Map<string, string>,
+  booleanValues: Map<string, boolean>,
+  enumValues: Map<string, string>,
+  numberValues: Map<string, number>,
+): Promise<void> {
+  track('fb-ocaml-debugger-launch-from-dialog');
+  const _expandIfLocal = (path: NuclideUri) => {
+    if (nuclideUri.isRemote(targetUri)) {
+      // TODO: support expansion for remote paths.
+      return path;
+    }
+    return nuclideUri.expandHomeDir(path);
+  };
+  // TODO: perform some validation for the input.
+  const launchExecutable = _expandIfLocal(
+    (stringValues.get('executable') || '').trim(),
+  );
+  const ocamldebugExecutable = _expandIfLocal(
+    nullthrows(stringValues.get('ocamldebug executable')).trim(),
+  );
+  const launchArguments = shellParse(nullthrows(stringValues.get('arguments')));
+  const launchEnvironmentVariables = shellParse(
+    nullthrows(stringValues.get('environment variables')),
+  );
+  const launchWorkingDirectory = _expandIfLocal(
+    nullthrows(stringValues.get('working directory')).trim(),
+  );
+  const additionalIncludeDirectories = shellParse(
+    nullthrows(stringValues.get('additional include directories')),
+  );
+  const breakAfterStart = nullthrows(booleanValues.get('break after start'));
+  const launchTarget = {
+    ocamldebugExecutable,
+    executablePath: launchExecutable,
+    arguments: launchArguments,
+    environmentVariables: launchEnvironmentVariables,
+    workingDirectory: launchWorkingDirectory,
+    includeDirectories: additionalIncludeDirectories,
+    breakAfterStart,
+    targetUri,
+    logLevel: Logger.LogLevel.Verbose, // TODO: read from configuration
+  };
+
+  const debuggerService = await getDebuggerService();
+  const launchProcessInfo = await getOCamlLaunchProcessInfo(
+    targetUri,
+    launchTarget,
+  );
+  debuggerService.startDebugging(launchProcessInfo);
 }
 
 export async function getOCamlLaunchProcessInfo(

@@ -13,7 +13,6 @@ import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import passesGK from '../../commons-node/passesGK';
-import {OcamlLaunchProvider} from './OCamlLaunchProvider';
 import AutoGenLaunchAttachProvider from './AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
@@ -28,6 +27,8 @@ import {
   pythonHandleLaunchButtonClick,
   getPythonAutoGenConfig,
   getNodeAutoGenConfig,
+  getOCamlAutoGenConfig,
+  ocamlHandleLaunchButtonClick,
 } from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
@@ -131,7 +132,13 @@ class Activation {
       this._registerDebugProvider({
         name: 'OCaml',
         getLaunchAttachProvider: connection => {
-          return new OcamlLaunchProvider(connection);
+          return new AutoGenLaunchAttachProvider(
+            'OCaml',
+            connection,
+            getOCamlAutoGenConfig(),
+            ocamlHandleLaunchButtonClick,
+            null /* Nuclide with vs-py-debugger does not support attach */,
+          );
         },
       });
     }
