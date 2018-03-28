@@ -144,12 +144,6 @@ export class ServerConnection {
     });
   }
 
-  dispose(): void {
-    if (this._healthNotifier != null) {
-      this._healthNotifier.dispose();
-    }
-  }
-
   static async _createInsecureConnectionForTesting(
     cwd: string,
     port: number,
@@ -285,6 +279,10 @@ export class ServerConnection {
     // Remove from _connections to not be considered in future connection queries.
     if (ServerConnection._connections.delete(this.getRemoteHostname())) {
       ServerConnection._emitter.emit('did-close', this);
+    }
+
+    if (this._healthNotifier != null) {
+      this._healthNotifier.dispose();
     }
   }
 

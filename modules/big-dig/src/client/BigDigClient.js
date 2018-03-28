@@ -87,8 +87,4 @@ export class BigDigClient {
   getAddress(): string {
     return this._transport.getAddress();
   }
-
-  dispose() {
-    this.close();
-  }
 }
