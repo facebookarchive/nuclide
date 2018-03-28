@@ -76,7 +76,7 @@ export async function _getBuckCommandAndOptions(
       global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) ||
     'buck';
   if (pathToBuck === 'buck' && os.platform() === 'win32') {
-    pathToBuck = 'buck.bat';
+    pathToBuck = 'buck.exe';
   }
   let env = await getOriginalEnvironment();
   try {
