@@ -15,7 +15,7 @@ import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';
 
 import invariant from 'assert';
-import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
+import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
 import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 const HEARTBEAT_CHANNEL = 'test-heartbeat';
@@ -31,7 +31,7 @@ describe('Nuclide Server test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
-      socket = new NuclideSocket(
+      socket = new ReliableSocket(
         'http://localhost:8176',
         HEARTBEAT_CHANNEL,
         null,
@@ -62,17 +62,17 @@ describe('Nuclide Server test suite', () => {
   xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
-      const nuclideSocket = socket;
+      const reliableSocket = socket;
       const messageHandler: Function = (jasmine.createSpy(): any);
       const reconnectHandler: Function = (jasmine.createSpy(): any);
-      nuclideSocket.onReconnect(reconnectHandler);
-      nuclideSocket.onMessage().subscribe(messageHandler);
+      reliableSocket.onReconnect(reconnectHandler);
+      reliableSocket.onMessage().subscribe(messageHandler);
       // The maximum reconnect time is 5 seconds - advance clock to sip the reconnect time.
-      nuclideSocket.onDisconnect(() =>
+      reliableSocket.onDisconnect(() =>
         process.nextTick(() => advanceClock(6000)),
       );
 
-      waitsForPromise(() => nuclideSocket.waitForConnect());
+      waitsForPromise(() => reliableSocket.waitForConnect());
 
       const message1 = JSON.stringify({foo1: 'bar1'});
       const message2 = JSON.stringify({foo2: 'bar2'});

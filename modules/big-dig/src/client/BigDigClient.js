@@ -11,7 +11,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {NuclideSocket} from '../socket/NuclideSocket';
+import type {ReliableSocket} from '../socket/ReliableSocket';
 import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 
 import {Subject} from 'rxjs';
@@ -25,14 +25,14 @@ import {getLogger} from 'log4js';
 export class BigDigClient {
   _logger: log4js$Logger;
   _tagToSubject: Map<string, Subject<string>>;
-  _transport: NuclideSocket;
+  _transport: ReliableSocket;
 
-  constructor(nuclideSocketTransport: NuclideSocket) {
+  constructor(reliableSocketTransport: ReliableSocket) {
     this._logger = getLogger();
-    this._transport = nuclideSocketTransport;
+    this._transport = reliableSocketTransport;
     this._tagToSubject = new Map();
 
-    const observable = nuclideSocketTransport.onMessage();
+    const observable = reliableSocketTransport.onMessage();
     observable.subscribe({
       // Must use arrow function so that `this` is bound correctly.
       next: message => {

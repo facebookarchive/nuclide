@@ -15,7 +15,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';
-import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
+import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
 import {WebSocketTransport} from 'big-dig/src/socket/WebSocketTransport';
 import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {getVersion} from '../../nuclide-version';
@@ -62,7 +62,7 @@ describe('Nuclide Secure Server test suite', () => {
 
       await server.connect();
 
-      socket = new NuclideSocket('https://localhost:8176', HEARTBEAT_CHANNEL, {
+      socket = new ReliableSocket('https://localhost:8176', HEARTBEAT_CHANNEL, {
         ca: fs.readFileSync(ca_cert_path),
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),

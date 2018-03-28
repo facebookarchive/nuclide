@@ -30,7 +30,7 @@ type HeartbeatNotification = {
 // Returning true short-circuits the default error handling in onHeartbeatError()
 export type OnHeartbeatErrorCallback = (errorCode: string) => boolean;
 
-// Provides feedback to the user of the health of a NuclideSocket.
+// Provides feedback to the user of the health of a ReliableSocket.
 export class ConnectionHealthNotifier {
   _heartbeatNetworkAwayCount: number;
   _lastHeartbeatNotification: ?HeartbeatNotification;

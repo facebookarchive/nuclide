@@ -39,7 +39,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutPromise} from 'nuclide-commons/promise';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
-import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
+import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
 import {HEARTBEAT_CHANNEL} from '../../nuclide-server/lib/NuclideServer';
 import {protocolLogger} from '../../nuclide-server/lib/utils';
 import {getLogger} from 'log4js';
@@ -333,7 +333,7 @@ export class ServerConnection {
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 
-    const socket = new NuclideSocket(
+    const socket = new ReliableSocket(
       uri,
       HEARTBEAT_CHANNEL,
       options,

@@ -12,7 +12,7 @@
 import type {ConfigEntry} from '../../../nuclide-rpc';
 
 import NuclideServer from '../../lib/NuclideServer';
-import {NuclideSocket} from 'big-dig/src/socket/NuclideSocket';
+import {ReliableSocket} from 'big-dig/src/socket/ReliableSocket';
 import {RpcConnection} from '../../../nuclide-rpc';
 import {getRemoteNuclideUriMarshalers} from '../../../nuclide-marshalers-common';
 
@@ -22,7 +22,7 @@ const HEARTBEAT_CHANNEL = 'test-heartbeat';
 
 export default class ServiceTestHelper {
   _server: NuclideServer;
-  _client: RpcConnection<NuclideSocket>;
+  _client: RpcConnection<ReliableSocket>;
 
   async start(customServices: Services): Promise<void> {
     this._server = new NuclideServer({port: 0}, customServices);
@@ -30,7 +30,7 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = RpcConnection.createRemote(
-      new NuclideSocket(`http://localhost:${port}`, HEARTBEAT_CHANNEL, null),
+      new ReliableSocket(`http://localhost:${port}`, HEARTBEAT_CHANNEL, null),
       [getRemoteNuclideUriMarshalers('localhost')],
       customServices,
     );

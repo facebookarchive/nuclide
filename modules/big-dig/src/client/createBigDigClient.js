@@ -12,7 +12,7 @@
 
 import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
 import {BigDigClient} from './BigDigClient';
-import {NuclideSocket} from '../socket/NuclideSocket';
+import {ReliableSocket} from '../socket/ReliableSocket';
 
 export type BigDigClientConfig = {
   +host: string,
@@ -30,11 +30,11 @@ export type BigDigClientConfig = {
 export default (async function createBigDigClient(
   config: BigDigClientConfig,
 ): Promise<BigDigClient> {
-  const nuclideSocket = createNuclideSocket(config);
-  const client = new BigDigClient(nuclideSocket);
+  const reliableSocket = createReliableSocket(config);
+  const client = new BigDigClient(reliableSocket);
   try {
     // Make sure we're able to make the initial connection
-    await nuclideSocket.testConnection();
+    await reliableSocket.testConnection();
     return client;
   } catch (error) {
     client.close();
@@ -42,7 +42,7 @@ export default (async function createBigDigClient(
   }
 });
 
-function createNuclideSocket(config: BigDigClientConfig): NuclideSocket {
+function createReliableSocket(config: BigDigClientConfig): ReliableSocket {
   const options = {
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
@@ -52,15 +52,15 @@ function createNuclideSocket(config: BigDigClientConfig): NuclideSocket {
 
   const serverUri = `https://${config.host}:${config.port}/v1`;
 
-  const nuclideSocket = new NuclideSocket(
+  const reliableSocket = new ReliableSocket(
     serverUri,
     HEARTBEAT_CHANNEL,
     options,
   );
 
   if (!config.ignoreIntransientErrors) {
-    nuclideSocket.onIntransientError(error => nuclideSocket.close());
+    reliableSocket.onIntransientError(error => reliableSocket.close());
   }
 
-  return nuclideSocket;
+  return reliableSocket;
 }

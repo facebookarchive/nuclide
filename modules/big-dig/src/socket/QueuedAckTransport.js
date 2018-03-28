@@ -323,7 +323,7 @@ export class QueuedAckTransport {
 
   // If we have a pending send or receive and wait a while without
   // an ack or processing a message, disconnect.  This should trigger
-  // NuclideSocket on the client to attempt to reconnect.
+  // ReliableSocket on the client to attempt to reconnect.
   _maybeStartPendingMessageTimer(): void {
     if (this._pendingMessageTimer == null && this._wantsPendingMessageTimer()) {
       this._pendingMessageTimer = setTimeout(

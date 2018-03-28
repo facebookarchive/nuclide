@@ -50,7 +50,7 @@ const MAX_RECONNECT_TIME_MS = 5000;
 //   - message(message: Object): on receipt fo JSON message
 //   - heartbeat: On receipt of successful heartbeat
 //   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
-export class NuclideSocket {
+export class ReliableSocket {
   id: string;
 
   _serverUri: string;
