@@ -6657,24 +6657,30 @@ vscode-jsonrpc@3.3.0, vscode-jsonrpc@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-3.3.0.tgz#03bdab0b10f04727ec3b8d403cd511a8a365b13d"
 
-vscode-jsonrpc@^3.2.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-3.5.0.tgz#87239d9e166b2d7352245b8a813597804c1d63aa"
+vscode-jsonrpc@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-3.6.0.tgz#848d56995d5168950d84feb5d9c237ae5c6a02d4"
 
-vscode-languageclient@3.2.2:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/vscode-languageclient/-/vscode-languageclient-3.2.2.tgz#7843839614aa099f172b4e5f8967d42b58d77f0d"
+vscode-languageclient@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/vscode-languageclient/-/vscode-languageclient-4.0.1.tgz#70a3d98afa62b12bf932a5c987c8a73cee195017"
   dependencies:
-    vscode-jsonrpc "^3.2.0"
-    vscode-languageserver-types "^3.2.0"
+    vscode-languageserver-protocol "^3.6.0"
 
-vscode-languageserver-types@^3.2.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.5.0.tgz#e48d79962f0b8e02de955e3f524908e2b19c0374"
+vscode-languageserver-protocol@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.6.0.tgz#579642cdcccf74b0cd771c33daa3239acb40d040"
+  dependencies:
+    vscode-jsonrpc "^3.6.0"
+    vscode-languageserver-types "^3.6.0"
 
 vscode-languageserver-types@^3.3.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.4.0.tgz#5043ae47ee4ac16af07bb3d0ca561235e0c0d2fa"
+
+vscode-languageserver-types@^3.6.0:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.6.1.tgz#4bc06a48dff653495f12f94b8b1e228988a1748d"
 
 vscode-languageserver@3.3.0, vscode-languageserver@^3.3.0:
   version "3.3.0"
