@@ -241,8 +241,17 @@ declare class atom$DisplayMarkerLayer {
   clear(): void,
   isDestroyed(): boolean,
   markBufferPosition(position: atom$PointLike, options?: MarkerOptions): atom$Marker,
-  markBufferRange(range: atom$Range | atom$RangeLike, options: MarkerOptions): atom$Marker,
+  markBufferRange(range: atom$Range | atom$RangeLike, options?: MarkerOptions): atom$Marker,
+  findMarkers(options: MarkerOptions): Array<atom$Marker>,
   getMarkers(): Array<atom$Marker>,
+}
+
+declare class atom$LayerDecoration {
+  destroy(): void,
+  isDestroyed(): boolean,
+  getProperties(): Object,
+  setProperties(properties: mixed): void,
+  setPropertiesForMarker(marker: atom$Marker, properties: mixed): void,
 }
 
 declare class atom$Disposable {
@@ -824,7 +833,7 @@ declare class atom$TextEditor extends atom$Model {
   // Mutating Text
   setText(text: string, options?: InsertTextOptions): void,
   setTextInBufferRange(
-    range: atom$Range | Array<atom$Point>,
+    range: atom$RangeLike,
     text: string,
     options?: {
       normalizeLineEndings?: boolean,
@@ -869,6 +878,10 @@ declare class atom$TextEditor extends atom$Model {
 
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration,
+  decorateMarkerLayer(
+    markerLayer: atom$DisplayMarkerLayer,
+    decorationParams: DecorateMarkerParams,
+  ): atom$LayerDecoration,
   decorationsForScreenRowRange(
     startScreenRow: number,
     endScreenRow: number,
