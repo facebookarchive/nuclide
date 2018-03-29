@@ -461,7 +461,7 @@ type electron$globalShortcut = {
  * https://github.com/electron/electron/blob/master/docs/api/ipc-main.md
  */
 
-declare class electron$IpcMain {}
+declare class electron$IpcMain extends events$EventEmitter {}
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/menu.md
