@@ -50,7 +50,7 @@ export type Diagnostic = {
   // The diagnostic's message.
   message: string,
   // Any related locations.
-  relatedLocations?: RelatedLocation[],
+  relatedLocations?: Array<RelatedLocation>,
 };
 
 export type RelatedLocation = {
@@ -75,7 +75,7 @@ export type Command = {
   // The identifier of the actual command handler.
   command: string,
   // Arguments that the command handler should be invoked with.
-  arguments?: any[],
+  arguments?: Array<any>,
 };
 
 export type TextEdit = {
@@ -88,13 +88,13 @@ export type TextEdit = {
 
 export type WorkspaceEdit = {
   // Holds changes to existing resources.
-  changes?: {[uri: string]: TextEdit[]},
+  changes?: {[uri: string]: Array<TextEdit>},
 
   // An array of `TextDocumentEdit`s to express changes to n different text documents
   // where each text document edit addresses a specific version of a text document.
   // Whether a client supports versioned document edits is expressed via
   // `WorkspaceClientCapabilities.workspaceEdit.documentChanges`.
-  documentChanges?: TextDocumentEdit[],
+  documentChanges?: Array<TextDocumentEdit>,
 };
 
 export type TextDocumentIdentifier = {
@@ -326,13 +326,13 @@ export type CompletionOptions = {
   // The server provides support to resolve additional information for a completion item.
   resolveProvider?: boolean,
   // The characters that trigger completion automatically.
-  triggerCharacters?: string[],
+  triggerCharacters?: Array<string>,
 };
 
 // Signature help options.
 export type SignatureHelpOptions = {
   // The characters that trigger signature help automatically.
-  triggerCharacters?: string[],
+  triggerCharacters?: Array<string>,
 };
 
 // Code Lens options.
@@ -346,7 +346,7 @@ export type DocumentOnTypeFormattingOptions = {
   // A character on which formatting should be triggered, like `};`.
   firstTriggerCharacter: string,
   // More trigger characters.
-  moreTriggerCharacter?: string[],
+  moreTriggerCharacter?: Array<string>,
 };
 
 // Save options.
@@ -418,7 +418,7 @@ export type PublishDiagnosticsParams = {
   // The URI for which diagnostic information is reported.
   uri: string,
   // An array of diagnostic information items.
-  diagnostics: Diagnostic[],
+  diagnostics: Array<Diagnostic>,
 };
 
 // Represents a collection of [completion items](#CompletionItem) to be presented in the editor.
@@ -426,7 +426,7 @@ export type CompletionList = {
   // This list it not complete. Further typing should result in recomputing this list.
   isIncomplete: boolean,
   // The completion items.
-  items: CompletionItem[],
+  items: Array<CompletionItem>,
 };
 
 // Defines whether the insert text in a completion item should be interpreted as plain text or a snippet.
@@ -488,7 +488,7 @@ export type CompletionItem = {
   //  An optional array of additional text edits that are applied when
   //  selecting this completion. Edits must not overlap with the main edit
   //  nor with themselves.
-  additionalTextEdits?: TextEdit[],
+  additionalTextEdits?: Array<TextEdit>,
   //  An optional command that is executed *after* inserting this completion. *Note* that
   //  additional modifications to the current document should be described with the
   //  additionalTextEdits-property.
@@ -523,7 +523,7 @@ export const CompletionItemKind = {
 // The result of a hover request.
 export type Hover = {
   // The hover's content
-  contents: MarkedString | MarkedString[],
+  contents: MarkedString | Array<MarkedString>,
   // An optional range is a range inside a text document
   // that is used to visualize a hover, e.g. by changing the background color.
   range?: Range,
@@ -548,7 +548,7 @@ export type MarkedString = string | {language: string, value: string};
  */
 export type SignatureHelp = {
   // One or more signatures.
-  signatures: SignatureInformation[],
+  signatures: Array<SignatureInformation>,
   // The active signature.
   activeSignature?: number,
   // The active parameter of the active signature.
@@ -566,7 +566,7 @@ export type SignatureInformation = {
   // The human-readable doc-comment of this signature. Will be shown in the UI but can be omitted.
   documentation?: string | MarkupContent,
   // The parameters of this signature.
-  parameters?: ParameterInformation[],
+  parameters?: Array<ParameterInformation>,
 };
 
 /**
@@ -671,7 +671,7 @@ export type CodeActionParams = {
 // Contains additional diagnostic information about the context in which a code action is run.
 export type CodeActionContext = {
   // An array of diagnostics.
-  diagnostics: Diagnostic[],
+  diagnostics: Array<Diagnostic>,
 };
 
 export type CodeLensParams = {
@@ -770,7 +770,7 @@ export type TypeCoverageParams = {
 
 export type TypeCoverageResult = {
   coveredPercent: number, // what percent of the file is covered?
-  uncoveredRanges: UncoveredRange[],
+  uncoveredRanges: Array<UncoveredRange>,
 };
 
 export type UncoveredRange = {
@@ -804,7 +804,7 @@ export type ShowMessageRequestParams = {
   // The actual message
   message: string,
   // The message action items to present.
-  actions?: MessageActionItem[],
+  actions?: Array<MessageActionItem>,
 };
 
 export type MessageActionItem = {
@@ -851,7 +851,7 @@ export type DidChangeTextDocumentParams = {
   // been applied.
   textDocument: VersionedTextDocumentIdentifier,
   // The actual content changes.
-  contentChanges: TextDocumentContentChangeEvent[],
+  contentChanges: Array<TextDocumentContentChangeEvent>,
 };
 
 // An event describing a change to a text document. If range and rangeLength are omitted
@@ -880,7 +880,7 @@ export type DidSaveTextDocumentParams = {
 
 export type DidChangeWatchedFilesParams = {
   // The actual file events.
-  changes: FileEvent[],
+  changes: Array<FileEvent>,
 };
 
 // The file event type.
@@ -905,7 +905,7 @@ export type ExecuteCommandParams = {
   // The identifier of the actual command handler.
   command: string,
   // Arguments that the command should be invoked with.
-  arguments?: any[],
+  arguments?: Array<any>,
 };
 
 export type ApplyWorkspaceEditParams = {
@@ -922,5 +922,5 @@ export type TextDocumentEdit = {
   // The text document to change.
   textDocument: VersionedTextDocumentIdentifier,
   // The edits to be applied.
-  edits: TextEdit[],
+  edits: Array<TextEdit>,
 };
