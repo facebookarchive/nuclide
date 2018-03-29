@@ -13,8 +13,9 @@
 import * as React from 'react';
 import {capitalize} from 'nuclide-commons/string';
 import classnames from 'classnames';
+import {invert} from 'lodash';
 
-const TYPE_TO_CLASSNAME_SUFFIX = {
+const TYPE_TO_ICON_NAME = {
   array: 'type-array',
   boolean: 'type-boolean',
   class: 'type-class',
@@ -35,16 +36,21 @@ const TYPE_TO_CLASSNAME_SUFFIX = {
   variable: 'type-variable',
 };
 
-type AtomiconName = $Keys<typeof TYPE_TO_CLASSNAME_SUFFIX>;
+const ICON_NAME_TO_TYPE = invert(TYPE_TO_ICON_NAME);
 
-export default function Atomicon({type}: {type: AtomiconName}) {
+type AtomiconType = $Keys<typeof TYPE_TO_ICON_NAME>;
+
+export default function Atomicon({type}: {type: AtomiconType}) {
   const displayName = capitalize(type);
   return (
     <span
-      aria-label={displayName}
-      className={classnames('icon', 'icon-' + TYPE_TO_CLASSNAME_SUFFIX[type])}
+      className={classnames('icon', 'icon-' + TYPE_TO_ICON_NAME[type])}
       role="presentation"
       title={displayName}
     />
   );
+}
+
+export function getTypeFromIconName(iconName: string): ?AtomiconType {
+  return ICON_NAME_TO_TYPE[iconName];
 }

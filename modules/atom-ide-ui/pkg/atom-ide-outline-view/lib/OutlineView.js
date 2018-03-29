@@ -14,13 +14,14 @@ import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
 import type {TreeNode, NodePath} from 'nuclide-commons-ui/SelectableTree';
 
-import Atomicon from 'nuclide-commons-ui/Atomicon';
+import Atomicon, {getTypeFromIconName} from 'nuclide-commons-ui/Atomicon';
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import {arrayEqual} from 'nuclide-commons/collection';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as React from 'react';
+import classnames from 'classnames';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 
@@ -380,9 +381,23 @@ function renderItem(
 ): React.Element<string> | string {
   const r = [];
 
-  if (outline.kind != null) {
+  const iconName = outline.icon;
+  if (iconName != null) {
+    const correspondingAtomicon = getTypeFromIconName(iconName);
+    if (correspondingAtomicon == null) {
+      r.push(
+        <span
+          key="type-icon"
+          className={classnames('icon', `icon-${iconName}`)}
+        />,
+      );
+    } else {
+      // If we're passed an icon name rather than a type, and it maps directly
+      // to an atomicon, use that.
+      r.push(<Atomicon key="type-icon" type={correspondingAtomicon} />);
+    }
+  } else if (outline.kind != null) {
     r.push(<Atomicon key="type-icon" type={outline.kind} />);
-    // Note: icons here are fixed-width, so the text lines up.
   }
 
   if (outline.tokenizedText != null) {
