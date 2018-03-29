@@ -61,6 +61,8 @@ export type RevisionStatusDisplay = {
   name: string,
   className: ?string,
   latestDiff: number, // id of the latest diff within this revision
+  seriesLandBlocker?: string,
+  seriesLandBlockerMessage?: string,
 };
 
 type HgRepositoryOptions = {
