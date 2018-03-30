@@ -11,7 +11,7 @@
 
 /* global localStorage */
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type VspProcessInfo from './VspProcessInfo';
+import type {VspProcessInfo} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';

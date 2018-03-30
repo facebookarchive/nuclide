@@ -25,6 +25,7 @@ import {shellParse} from 'nuclide-commons/string';
 import {
   DebuggerLaunchAttachProvider,
   VsAdapterTypes,
+  VspProcessInfo,
 } from 'nuclide-debugger-common';
 import * as React from 'react';
 import {getDebuggerService} from '../../commons-atom/debugger';
@@ -33,7 +34,6 @@ import {LaunchUiComponent} from './HhvmLaunchUiComponent';
 import {AttachUiComponent} from './HhvmAttachUiComponent';
 import invariant from 'assert';
 import {getHhvmAdapterInfo} from './utils';
-import VspProcessInfo from './VspProcessInfo';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type PhpDebuggerSessionConfig = {

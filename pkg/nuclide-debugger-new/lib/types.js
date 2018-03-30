@@ -51,14 +51,6 @@ import type {
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
 
-export interface IVspInstance {
-  customRequest(
-    request: string,
-    args: any,
-  ): Promise<DebugProtocol.CustomResponse>;
-  observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
-}
-
 export interface ITreeElement {
   getId(): string;
 }

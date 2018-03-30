@@ -11,10 +11,19 @@
  */
 
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
-import type {ConnectableObservable} from 'rxjs';
+import type {Observable, ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {ProcessMessage} from 'nuclide-commons/process';
+import * as DebugProtocol from 'vscode-debugprotocol';
+
+export interface IVspInstance {
+  customRequest(
+    request: string,
+    args: any,
+  ): Promise<DebugProtocol.CustomResponse>;
+  observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
+}
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 

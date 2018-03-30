@@ -35,10 +35,8 @@ import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Logger} from 'vscode-debugadapter';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import VspProcessInfo from './VspProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-// eslint-disable-next-line rulesdir/no-unresolved
-import {VsAdapterTypes} from 'nuclide-debugger-common/main';
+import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,

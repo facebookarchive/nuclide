@@ -15,8 +15,12 @@ import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
-import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
-import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
+import type {
+  ConsoleService,
+  DatatipProvider,
+  DatatipService,
+  RegisterExecutorFunction,
+} from 'atom-ide-ui';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';

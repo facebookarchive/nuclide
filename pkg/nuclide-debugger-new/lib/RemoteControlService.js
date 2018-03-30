@@ -11,8 +11,8 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
-import type {IDebugService, IProcessConfig, IVspInstance} from './types';
-import type VspProcessInfo from '../../nuclide-debugger-vsp/lib/VspProcessInfo';
+import type {IDebugService, IProcessConfig} from './types';
+import type {IVspInstance, VspProcessInfo} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';

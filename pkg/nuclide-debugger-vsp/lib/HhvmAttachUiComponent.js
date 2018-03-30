@@ -9,6 +9,11 @@
  * @format
  */
 
+import type {Column} from 'nuclide-commons-ui/Table';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Expected} from '../../commons-node/expected';
+import type {VspProcessInfo} from 'nuclide-debugger-common';
+
 import * as React from 'react';
 import {getDebuggerService} from '../../commons-atom/debugger';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
@@ -23,11 +28,6 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {Observable, Subscription} from 'rxjs';
 import {getHhvmDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Expect} from '../../commons-node/expected';
-
-import type {Column} from 'nuclide-commons-ui/Table';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from '../../commons-node/expected';
-import type VspProcessInfo from './VspProcessInfo';
 
 type AttachType = 'webserver' | 'script';
 

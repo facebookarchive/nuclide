@@ -111,7 +111,6 @@ import stripAnsi from 'strip-ansi';
 import url from 'url';
 import idx from 'idx';
 
-// This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
 const CUSTOM_DEBUG_EVENT = 'CUSTOM_DEBUG_EVENT';

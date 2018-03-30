@@ -16,6 +16,7 @@ export type {
   DebuggerCapabilities,
   DebuggerConfigAction,
   DebuggerProperties,
+  IVspInstance,
   MessageProcessor,
   NuclideDebuggerProvider,
   NuclideEvaluationExpression,
@@ -29,6 +30,8 @@ export {
 } from './DebuggerLaunchAttachProvider';
 
 export {default as VsDebugSession} from './VsDebugSession';
+
+export {default as VspProcessInfo} from './VspProcessInfo';
 
 export {VsAdapterTypes} from './constants';
 
