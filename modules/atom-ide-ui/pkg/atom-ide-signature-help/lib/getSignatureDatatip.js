@@ -11,9 +11,10 @@
  */
 
 import type {Datatip} from '../../atom-ide-datatip/lib/types';
-import type {SignatureHelp} from './types';
+import type {SignatureHelp, SignatureParameter} from './types';
 
 import {Range} from 'atom';
+import {escapeMarkdown} from 'nuclide-commons/string';
 
 /**
  * WIP: This is just what VSCode displays. We can likely make this more Atom-y.
@@ -28,12 +29,12 @@ export default function getSignatureDatatip(
   const markedStrings = [
     {
       type: 'markdown',
-      value: activeSignature.label,
+      value: escapeMarkdown(activeSignature.label),
     },
   ];
   if (activeSignature.parameters != null) {
-    const activeParameter =
-      activeSignature.parameters[signatureHelp.activeParameter || 0];
+    const activeParameterIndex = signatureHelp.activeParameter || 0;
+    const activeParameter = activeSignature.parameters[activeParameterIndex];
     if (activeParameter != null) {
       if (
         activeParameter.documentation != null &&
@@ -46,14 +47,20 @@ export default function getSignatureDatatip(
       }
       // Find the label inside the signature label, and bolden it.
       if (activeParameter.label !== '') {
-        const idx = activeSignature.label.indexOf(activeParameter.label);
+        const idx = findIndex(
+          activeSignature.label,
+          activeSignature.parameters,
+          activeParameterIndex,
+        );
         if (idx !== -1) {
           markedStrings[0].value =
-            activeSignature.label.substr(0, idx) +
+            escapeMarkdown(activeSignature.label.substr(0, idx)) +
             '**' +
-            activeParameter.label +
+            escapeMarkdown(activeParameter.label) +
             '**' +
-            activeSignature.label.substr(idx + activeParameter.label.length);
+            escapeMarkdown(
+              activeSignature.label.substr(idx + activeParameter.label.length),
+            );
         }
       }
     }
@@ -71,4 +78,36 @@ export default function getSignatureDatatip(
     markedStrings,
     range: new Range(point, point),
   };
+}
+
+/**
+ * Find the index in the label corresponding to the active parameter's label.
+ * This isn't as straightforward as it seems, because parameters could have names
+ * that appear multiple times in label.
+ *
+ * Searching backwards starting with the last parameter is the most reliable method.
+ *
+ * @returns -1 on failure.
+ */
+function findIndex(
+  label: string,
+  parameters: Array<SignatureParameter>,
+  activeParameterIndex: number,
+): number {
+  let lastIndex = undefined;
+  for (let i = parameters.length - 1; i >= activeParameterIndex; i--) {
+    if (lastIndex != null) {
+      // Parameter labels need to be disjoint, so leave some room.
+      lastIndex -= parameters[i].label.length;
+      if (lastIndex < 0) {
+        return -1;
+      }
+    }
+    const nextIndex = label.lastIndexOf(parameters[i].label, lastIndex);
+    if (nextIndex === -1) {
+      return -1;
+    }
+    lastIndex = nextIndex;
+  }
+  return lastIndex != null ? lastIndex : -1;
 }

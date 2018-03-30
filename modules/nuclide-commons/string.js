@@ -250,6 +250,13 @@ export function getMatchRanges(
   return ranges;
 }
 
+export function escapeMarkdown(markdown: string): string {
+  // _ * # () [] need to be slash escaped.
+  const slashEscaped = markdown.replace(/[_*#/()[\]]/g, '\\$&');
+  // And HTML tags need to be &lt; &gt; escaped.
+  return slashEscaped.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // Originally copied from:
 // http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
 // But adopted to match `www.` urls as well as `https?` urls
