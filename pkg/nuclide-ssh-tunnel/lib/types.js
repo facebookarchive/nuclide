@@ -13,7 +13,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {Directory} from '../../nuclide-remote-connection';
 
 import * as Immutable from 'immutable';
 
@@ -37,7 +36,7 @@ export type Store = {
 
 export type AppState = {
   openTunnels: Immutable.Map<Tunnel, OpenTunnel>,
-  currentWorkingDirectory: ?Directory,
+  currentWorkingDirectory: ?string,
   consoleOutput: Subject<ConsoleMessage>,
 };
 
@@ -96,7 +95,7 @@ export type RequestTunnelAction = {
 export type SetCurrentWorkingDirectoryAction = {
   type: 'SET_CURRENT_WORKING_DIRECTORY',
   payload: {
-    directory: ?Directory,
+    directory: ?string,
   },
 };
 

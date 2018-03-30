@@ -357,9 +357,8 @@ export default class FileTreeController {
     } else {
       invariant(this._cwdApiSubscription == null);
       this._cwdApiSubscription = cwdApi.observeCwd(directory => {
-        const path = directory == null ? null : directory.getPath();
         // flowlint-next-line sketchy-null-string:off
-        const rootKey = path && FileTreeHelpers.dirPathToKey(path);
+        const rootKey = directory && FileTreeHelpers.dirPathToKey(directory);
         this._actions.setCwd(rootKey);
       });
     }

@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   CloseTunnelAction,
   OpenTunnelAction,
@@ -64,7 +63,7 @@ export function setTunnelState(
   };
 }
 
-export function setCurrentWorkingDirectory(directory: ?Directory) {
+export function setCurrentWorkingDirectory(directory: ?string) {
   return {
     type: SET_CURRENT_WORKING_DIRECTORY,
     payload: {directory},

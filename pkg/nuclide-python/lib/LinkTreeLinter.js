@@ -64,7 +64,7 @@ export default class LinkTreeLinter {
         }
         // If the CWD doesn't contain the file, Buck isn't going to work.
         const cwd = this._cwdApi == null ? null : this._cwdApi.getCwd();
-        if (cwd != null && !nuclideUri.contains(cwd.getPath(), path)) {
+        if (cwd != null && !nuclideUri.contains(cwd, path)) {
           return Observable.of([]);
         }
         const pythonService = getPythonServiceByNuclideUri(path);

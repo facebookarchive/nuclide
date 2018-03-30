@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Store} from '../types';
+import type {AppState, Store} from '../types';
 import type {Props} from './TunnelsPanelContents';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -51,14 +51,14 @@ export class TunnelsPanel {
 
   getElement(): HTMLElement {
     // $FlowFixMe: We need to teach Flow about Symbol.observable
-    const states = Observable.from(this._store);
+    const states: Observable<AppState> = Observable.from(this._store);
 
     const props: Observable<Props> = states.map(state => {
       let workingDirectoryHost;
       if (state.currentWorkingDirectory == null) {
         workingDirectoryHost = null;
       } else {
-        const path = state.currentWorkingDirectory.getPath();
+        const path = state.currentWorkingDirectory;
         if (nuclideUri.isLocal(path)) {
           workingDirectoryHost = 'localhost';
         } else {

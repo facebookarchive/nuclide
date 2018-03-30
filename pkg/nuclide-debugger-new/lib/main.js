@@ -796,8 +796,7 @@ class Activation {
 
   consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
     const updateSelectedConnection = directory => {
-      this._selectedDebugConnection =
-        directory != null ? directory.getPath() : null;
+      this._selectedDebugConnection = directory;
       if (this._selectedDebugConnection != null) {
         const conn = this._selectedDebugConnection;
         if (nuclideUri.isRemote(conn)) {

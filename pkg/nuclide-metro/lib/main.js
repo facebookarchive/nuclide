@@ -52,7 +52,7 @@ class Activation {
   consumeCwdApi(api: CwdApi): void {
     this._disposables.add(
       api.observeCwd(dir => {
-        this._projectRootPath.next(dir == null ? null : dir.getPath());
+        this._projectRootPath.next(dir);
       }),
     );
   }

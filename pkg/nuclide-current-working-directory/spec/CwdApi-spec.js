@@ -29,7 +29,7 @@ describe('current-working-directory', () => {
         const api = activation.provideApi();
         const cwd = api.getCwd();
         invariant(cwd != null);
-        expect(cwd.getPath()).toBe('/a/b/c');
+        expect(cwd).toBe('/a/b/c');
       });
     });
   });
@@ -39,11 +39,11 @@ describe('current-working-directory', () => {
       const api = new CwdApi('/a/b/c');
       let cwd = api.getCwd();
       invariant(cwd != null);
-      expect(cwd.getPath()).toBe('/a/b/c');
+      expect(cwd).toBe('/a/b/c');
       api.setCwd('/d/e/f');
       cwd = api.getCwd();
       invariant(cwd != null);
-      expect(cwd.getPath()).toBe('/d/e/f');
+      expect(cwd).toBe('/d/e/f');
     });
 
     it('errors if you set an invalid cwd', () => {
@@ -59,7 +59,7 @@ describe('current-working-directory', () => {
       api.setCwd('/a/b/c/d');
       const cwd = api.getCwd();
       invariant(cwd != null);
-      expect(cwd.getPath()).toBe('/a/b/c/d');
+      expect(cwd).toBe('/a/b/c/d');
     });
   });
 });
@@ -72,14 +72,14 @@ describe('CwdApi event handling', () => {
     const api = new CwdApi('/d/e/f');
     let cwd = api.getCwd();
     invariant(cwd != null);
-    expect(cwd.getPath()).toBe('/d/e/f');
+    expect(cwd).toBe('/d/e/f');
 
     // Simulate the removing of a directory from the project list.
     projects = [new Directory('/a/b/c')];
 
     cwd = api.getCwd();
     invariant(cwd != null);
-    expect(cwd.getPath()).toBe('/a/b/c');
+    expect(cwd).toBe('/a/b/c');
   });
 
   it('uses the initial directory once it becomes valid', () => {
@@ -109,6 +109,6 @@ describe('CwdApi event handling', () => {
     expect(spy.callCount).toBe(2);
     const arg = spy.calls[1].args[0];
     expect(arg).not.toBeNull();
-    expect((arg: any).getPath()).toBe('/a/b/c');
+    expect((arg: any)).toBe('/a/b/c');
   });
 });

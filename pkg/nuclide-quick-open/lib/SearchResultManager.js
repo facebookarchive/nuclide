@@ -11,7 +11,6 @@
 
 /* global performance */
 
-import type {Directory} from '../../nuclide-remote-connection';
 import type {
   ProviderResult,
   Provider,
@@ -90,7 +89,7 @@ export default class SearchResultManager {
   _providerSubscriptions: Map<Provider<ProviderResult>, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
-  _currentWorkingRoot: ?Directory;
+  _currentWorkingRoot: ?string;
   _debouncedUpdateDirectories: {(): Promise<void> | void} & IDisposable;
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
@@ -282,7 +281,7 @@ export default class SearchResultManager {
     }
   }
 
-  setCurrentWorkingRoot(newRoot: ?Directory): void {
+  setCurrentWorkingRoot(newRoot: ?string): void {
     this._currentWorkingRoot = newRoot;
   }
 
@@ -299,7 +298,7 @@ export default class SearchResultManager {
       // no sorting takes place. It would be nice to the project root that contains the current
       // working root on top. But Directory::contains includes code that synchronously queries the
       // filesystem so I want to avoid it for now.
-      if (dir.getPath() === currentWorkingRoot.getPath()) {
+      if (dir.getPath() === currentWorkingRoot) {
         // This *not* currentWorkingRoot. It's the directory from this._directories. That's because
         // currentWorkingRoot uses the Directory type (which explicitly includes remote directory
         // objects), whereas this module uses atom$Directory. That should probably be addressed.

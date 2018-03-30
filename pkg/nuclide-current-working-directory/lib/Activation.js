@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {Directory} from '../../nuclide-remote-connection';
-
 import {CwdApi} from './CwdApi';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getAtomProjectRootPath} from 'nuclide-commons-atom/projects';
@@ -20,7 +18,7 @@ export class Activation {
   _cwdApi: CwdApi;
   _disposables: UniversalDisposable;
   _lastWorkingRootPath: ?string;
-  _currentWorkingRootDirectory: ?Directory;
+  _currentWorkingRootDirectory: ?string;
 
   constructor(rawState: ?Object) {
     const state = rawState || {};
@@ -41,7 +39,7 @@ export class Activation {
       ),
       this._cwdApi.observeCwd(newCwd => {
         if (this._currentWorkingRootDirectory != null) {
-          const oldCwd = this._currentWorkingRootDirectory.getPath();
+          const oldCwd = this._currentWorkingRootDirectory;
           if (newCwd === oldCwd) {
             return;
           }
@@ -63,7 +61,7 @@ export class Activation {
   serialize(): Object {
     const cwd = this._cwdApi.getCwd();
     return {
-      initialCwdPath: cwd == null ? null : cwd.getPath(),
+      initialCwdPath: cwd,
     };
   }
 

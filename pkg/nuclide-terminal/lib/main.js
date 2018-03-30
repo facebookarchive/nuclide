@@ -206,10 +206,7 @@ class Activation {
     }
 
     if (this._cwd != null) {
-      const cwd = this._cwd.getCwd();
-      if (cwd != null) {
-        return cwd.getPath();
-      }
+      return this._cwd.getCwd();
     }
 
     return null;

@@ -20,7 +20,7 @@ import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {BehaviorSubject} from 'rxjs';
 
 export class CwdApi {
-  _cwd$: Observable<?Directory>;
+  _cwd$: Observable<?string>;
   _cwdPath$: BehaviorSubject<?string>;
   _disposables: UniversalDisposable;
 
@@ -35,7 +35,7 @@ export class CwdApi {
         ).mapTo(null),
       )
       .map(() => this.getCwd())
-      .map(directory => (isValidDirectory(directory) ? directory : null))
+      .map(path => (isValidDirectoryPath(path) ? path : null))
       .distinctUntilChanged();
 
     this._disposables = new UniversalDisposable();
@@ -48,7 +48,7 @@ export class CwdApi {
     this._cwdPath$.next(path);
   }
 
-  observeCwd(callback: (directory: ?Directory) => void): IDisposable {
+  observeCwd(callback: (directory: ?string) => void): IDisposable {
     const disposable = new UniversalDisposable(
       this._cwd$.subscribe(directory => {
         callback(directory);
@@ -71,11 +71,13 @@ export class CwdApi {
     return null;
   }
 
-  getCwd(): ?Directory {
-    return (
-      getDirectory(this._cwdPath$.getValue()) ||
-      getDirectory(this._getDefaultCwdPath())
-    );
+  getCwd(): ?string {
+    if (isValidDirectoryPath(this._cwdPath$.getValue())) {
+      return this._cwdPath$.getValue();
+    } else if (isValidDirectoryPath(this._getDefaultCwdPath())) {
+      return this._getDefaultCwdPath();
+    }
+    return null;
   }
 }
 
@@ -93,6 +95,10 @@ function getDirectory(path: ?string): ?Directory {
       return directory.getSubdirectory(relative);
     }
   }
+}
+
+function isValidDirectoryPath(path: ?string): boolean {
+  return getDirectory(path) != null;
 }
 
 function isValidDirectory(directory: ?Directory): boolean {

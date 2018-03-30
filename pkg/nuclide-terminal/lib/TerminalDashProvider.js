@@ -52,7 +52,7 @@ export default class TerminalDashProvider
     let results;
     const cwdApi = this._getCwdApi();
     const cwd = cwdApi ? cwdApi.getCwd() : null;
-    const cwdPath = cwd ? cwd.getPath() : nuclideUri.expandHomeDir('~');
+    const cwdPath = cwd != null ? cwd : nuclideUri.expandHomeDir('~');
     if (query === '') {
       results = [
         {

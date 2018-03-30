@@ -43,8 +43,7 @@ export default class ProjectionistFileFamilyProvider {
             return Observable.of([null, null]);
           }
 
-          const path = cwd.getPath();
-          return Promise.all([getFileSystemServiceByNuclideUri(path), path]);
+          return Promise.all([getFileSystemServiceByNuclideUri(cwd), cwd]);
         })
         .switchMap(([fsService, cwd]) => {
           if (fsService == null || cwd == null) {
