@@ -21,7 +21,6 @@ import type {
   DatatipService,
   RegisterExecutorFunction,
 } from 'atom-ide-ui';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 import type {SerializedState, IBreakpoint} from './types';
@@ -794,7 +793,7 @@ class Activation {
     }
   }
 
-  consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
+  consumeCurrentWorkingDirectory(cwdApi: nuclide$CwdApi): IDisposable {
     const updateSelectedConnection = directory => {
       this._selectedDebugConnection = directory;
       if (this._selectedDebugConnection != null) {

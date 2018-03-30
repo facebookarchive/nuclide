@@ -19,7 +19,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {BehaviorSubject} from 'rxjs';
 
-export class CwdApi {
+export class CwdApi implements nuclide$CwdApi {
   _cwd$: Observable<?string>;
   _cwdPath$: BehaviorSubject<?string>;
   _disposables: UniversalDisposable;
