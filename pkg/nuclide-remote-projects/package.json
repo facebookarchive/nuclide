@@ -51,6 +51,11 @@
       "versions": {
         "0.0.0": "provideRemoteProjectsService"
       }
+    },
+    "nuclide-rpc-services": {
+      "versions": {
+        "0.0.0": "provideRpcServices"
+      }
     }
   },
   "consumedServices": {

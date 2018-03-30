@@ -18,7 +18,7 @@ import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/v
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
-} from '../../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService';
+} from 'nuclide-debugger-vsps/RemoteDebuggerCommandService';
 import type {Adapter} from 'nuclide-debugger-vsps/main';
 import type {
   ReactNativeAttachArgs,
@@ -40,6 +40,7 @@ import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,
+  getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
@@ -250,7 +251,7 @@ async function getAdapterExecutableWithProperNode(
   adapterType: Adapter,
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
-  const service = getRemoteDebuggerCommandServiceByNuclideUri(path);
+  const service = getVSCodeDebuggerAdapterServiceByNuclideUri(path);
   const adapterInfo = await service.getAdapterExecutableInfo(adapterType);
 
   if (adapterInfo.command === 'node') {

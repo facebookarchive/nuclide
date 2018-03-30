@@ -76,12 +76,12 @@ import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
 import ReadOnlyNotice from 'nuclide-commons-ui/ReadOnlyNotice';
 import {track, startTracking} from 'nuclide-commons/analytics';
 import nullthrows from 'nullthrows';
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {
   getConsoleRegisterExecutor,
   getConsoleService,
   getNotificationService,
   getDatatipService,
+  getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from '../AtomServiceContainer';
 import {
   expressionAsEvaluationResultStream,

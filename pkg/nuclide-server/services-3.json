@@ -120,11 +120,11 @@
     "name": "CqueryLSPService"
   },
   {
-    "implementation": "../nuclide-debugger-vsp-rpc/lib/RemoteDebuggerCommandService.js",
+    "implementation": "../../modules/nuclide-debugger-vsps/RemoteDebuggerCommandService.js",
     "name": "RemoteDebuggerCommandService"
   },
   {
-    "implementation": "../nuclide-debugger-vsp-rpc/lib/VSCodeDebuggerAdapterService.js",
+    "implementation": "../../modules/nuclide-debugger-vsps/VSCodeDebuggerAdapterService.js",
     "name": "VSCodeDebuggerAdapterService"
   }
 ]

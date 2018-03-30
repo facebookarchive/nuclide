@@ -51,6 +51,7 @@ import {
   setConsoleRegisterExecutor,
   setDatatipService,
   setTerminalService,
+  setRpcService,
 } from './AtomServiceContainer';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import DebuggerLayoutManager from './ui/DebuggerLayoutManager';
@@ -841,6 +842,10 @@ class Activation {
 
   consumeTerminal(terminalApi: nuclide$TerminalApi): IDisposable {
     return setTerminalService(terminalApi);
+  }
+
+  consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
+    return setRpcService(rpcService);
   }
 
   consumeRegisterExecutor(

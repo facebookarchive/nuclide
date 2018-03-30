@@ -19,7 +19,11 @@ import {
   enforceReadOnlyEditor,
   observeTextEditors,
 } from 'nuclide-commons-atom/text-editor';
-import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
+import {
+  loadBufferForUri,
+  bufferForUri,
+  getServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {logger} from './constants';
 import {
   RemoteTextEditorPlaceholder,
@@ -591,6 +595,13 @@ export function getHomeFragments(): HomeFragments {
 export function provideRemoteProjectsService(): RemoteProjectsService {
   invariant(remoteProjectsService != null);
   return remoteProjectsService;
+}
+
+export function provideRpcServices(): nuclide$RpcService {
+  return Object.freeze({
+    getServiceByNuclideUri: (serviceName: string, uri: ?string) =>
+      getServiceByNuclideUri(serviceName, uri),
+  });
 }
 
 export function consumeNotifications(

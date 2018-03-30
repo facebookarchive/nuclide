@@ -11,7 +11,11 @@
 
 import type {DatatipService} from 'atom-ide-ui';
 import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
+
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import * as VSCodeDebuggerAdapterServiceLocal from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 
 type raiseNativeNotificationFunc = ?(
   title: string,
@@ -25,6 +29,7 @@ let _registerExecutor: ?RegisterExecutorFunction = null;
 let _datatipService: ?DatatipService = null;
 let _createConsole: ?ConsoleService = null;
 let _terminalService: ?nuclide$TerminalApi = null;
+let _rpcService: ?nuclide$RpcService = null;
 
 export function setConsoleService(createConsole: ConsoleService): IDisposable {
   _createConsole = createConsole;
@@ -82,4 +87,24 @@ export function setTerminalService(
 
 export function getTerminalService(): ?nuclide$TerminalApi {
   return _terminalService;
+}
+
+export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
+  _rpcService = rpcService;
+  return new UniversalDisposable(() => {
+    _rpcService = null;
+  });
+}
+
+export function getVSCodeDebuggerAdapterServiceByNuclideUri(
+  uri: NuclideUri,
+): VSCodeDebuggerAdapterService {
+  if (_rpcService != null) {
+    return _rpcService.getServiceByNuclideUri(
+      'VSCodeDebuggerAdapterService',
+      uri,
+    );
+  } else {
+    return VSCodeDebuggerAdapterServiceLocal;
+  }
 }

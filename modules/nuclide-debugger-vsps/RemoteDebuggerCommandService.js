@@ -1,24 +1,22 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
 import type {ConnectableObservable} from 'rxjs';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
-import type {Adapter} from 'nuclide-debugger-vsps';
 
 import http from 'http';
 import net from 'net';
 import {Observable, Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 import {sleep} from 'nuclide-commons/promise';
-import {getAdapterExecutable} from 'nuclide-debugger-vsps';
 
 let isServerSetup = false;
 
@@ -162,10 +160,4 @@ function handleJsonRequest(body, res) {
     }
   }
   res.end(JSON.stringify({success}));
-}
-
-export async function getAdapterExecutableInfo(
-  adapterType: Adapter,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutable(adapterType);
 }

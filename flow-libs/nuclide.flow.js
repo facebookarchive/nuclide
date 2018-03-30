@@ -52,3 +52,7 @@ declare interface nuclide$TerminalApi {
     uriFromTrustedSource?: boolean,
   ): nuclide$TerminalInfo;
 }
+
+declare interface nuclide$RpcService {
+  getServiceByNuclideUri(serviceName: string, uri: ?string): any;
+}
