@@ -111,5 +111,12 @@
         "0.0.0": "consumePasteProvider"
       }
     }
+  },
+  "providedServices": {
+    "nuclide-terminal": {
+      "versions": {
+        "0.0.0": "provideTerminal"
+      }
+    }
   }
 }

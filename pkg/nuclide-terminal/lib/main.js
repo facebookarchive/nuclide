@@ -22,7 +22,12 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import TerminalDashProvider from './TerminalDashProvider';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {uriFromCwd, URI_PREFIX} from '../../commons-node/nuclide-terminal-uri';
+import {
+  infoFromUri,
+  uriFromInfo,
+  uriFromCwd,
+  URI_PREFIX,
+} from '../../commons-node/nuclide-terminal-uri';
 
 // $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
@@ -76,6 +81,14 @@ class Activation {
       () => this._styleSheet.dispose(),
     );
     this._syncAtomStyle();
+  }
+
+  provideTerminal(): nuclide$TerminalApi {
+    return Object.freeze({
+      infoFromUri,
+      uriFromInfo,
+      uriFromCwd,
+    });
   }
 
   dispose() {

@@ -47,7 +47,6 @@ import type {
 } from '../../nuclide-pty-rpc/rpc-types';
 
 import type {Sink} from './sink';
-import type {TerminalInfo} from '../../commons-node/nuclide-terminal-uri';
 
 const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
@@ -87,7 +86,7 @@ export class TerminalView implements PtyClient {
   _bytesOut: number;
   _focusStart: ?number;
   _focusDuration: number;
-  _terminalInfo: TerminalInfo;
+  _terminalInfo: nuclide$TerminalInfo;
   _processExitCallback: ProcessExitCallback;
   _isFirstOutput: boolean;
   _initialInput: string;
@@ -624,7 +623,7 @@ export class TerminalView implements PtyClient {
   }
 
   getIconName(): IconName {
-    return this._terminalInfo.icon;
+    return (this._terminalInfo.icon: any);
   }
 
   getURI(): string {
