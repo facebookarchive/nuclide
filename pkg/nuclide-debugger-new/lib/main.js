@@ -26,6 +26,9 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
 import type {SerializedState, IBreakpoint} from './types';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {diffSets} from 'nuclide-commons/observable';
+import {Observable} from 'rxjs';
 import BreakpointManager from './BreakpointManager';
 import {AnalyticsEvents, DebuggerMode} from './constants';
 import BreakpointConfigComponent from './ui/BreakpointConfigComponent';
@@ -43,7 +46,6 @@ import ReactDOM from 'react-dom';
 import DebuggerLaunchAttachUI from './ui/DebuggerLaunchAttachUI';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ServerConnection} from '../../nuclide-remote-connection';
 import {
   setNotificationService,
   setConsoleService,
@@ -86,13 +88,25 @@ class Activation {
     this._lauchAttachDialogCloser = null;
     this._connectionProviders = new Map();
     this._layoutManager = new DebuggerLayoutManager(this._service, state);
+
+    const removedHostnames = observableFromSubscribeFunction(
+      atom.project.onDidChangePaths.bind(atom.project),
+    )
+      .map(
+        paths =>
+          new Set(
+            paths.filter(nuclideUri.isRemote).map(nuclideUri.getHostname),
+          ),
+      )
+      .let(diffSets())
+      .flatMap(diff => Observable.from(diff.removed));
+
     this._disposables = new UniversalDisposable(
       this._layoutManager,
       this._service,
       this._uiModel,
       this._breakpointManager,
-      // Listen for removed connections and kill the debugger if it is using that connection.
-      ServerConnection.onDidCloseServerConnection(connection => {
+      removedHostnames.subscribe(hostname => {
         const debuggerProcess = this._service.viewModel.focusedProcess;
         if (debuggerProcess == null) {
           return; // Nothing to do if we're not debugging.
@@ -101,10 +115,7 @@ class Activation {
         if (nuclideUri.isLocal(debuggeeTargetUri)) {
           return; // Nothing to do if our debug session is local.
         }
-        if (
-          nuclideUri.getHostname(debuggeeTargetUri) ===
-          connection.getRemoteHostname()
-        ) {
+        if (nuclideUri.getHostname(debuggeeTargetUri) === hostname) {
           this._service.stopProcess();
         }
       }),
