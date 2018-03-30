@@ -15,7 +15,7 @@ import * as React from 'react';
 import SettingsCategory from './SettingsCategory';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Section} from '../../nuclide-ui/Section';
+import {Section} from 'nuclide-commons-ui/Section';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/settings';
 

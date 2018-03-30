@@ -19,7 +19,7 @@ import {Range, TextBuffer} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {Section} from './Section';
+import {Section} from 'nuclide-commons-ui/Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import classnames from 'classnames';
 

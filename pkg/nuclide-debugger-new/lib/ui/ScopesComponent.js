@@ -18,7 +18,7 @@ import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueCompon
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import {Section} from '../../../nuclide-ui/Section';
+import {Section} from 'nuclide-commons-ui/Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
