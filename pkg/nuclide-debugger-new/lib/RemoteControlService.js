@@ -18,7 +18,7 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as terminalUri from '../../commons-node/nuclide-terminal-uri';
+import {getTerminalService} from './AtomServiceContainer';
 
 import {DebuggerMode} from './constants';
 import invariant from 'assert';
@@ -112,7 +112,7 @@ export default class RemoteControlService {
   }
 
   canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {
-    return true;
+    return getTerminalService() != null;
   }
 
   async launchDebugTargetInTerminal(
@@ -122,6 +122,10 @@ export default class RemoteControlService {
     cwd: NuclideUri,
     environmentVariables: Map<string, string>,
   ): Promise<void> {
+    const terminalApi = getTerminalService();
+    if (terminalApi == null) {
+      throw new Error('Cannot launch terminal without the terminal service');
+    }
     const key = `targetUri=${targetUri}&command=${command}`;
     const info = {
       cwd,
@@ -145,7 +149,7 @@ export default class RemoteControlService {
       ],
     };
 
-    const infoUri = terminalUri.uriFromInfo(info);
+    const infoUri = terminalApi.uriFromInfo(info);
 
     // Ensure any previous instances of this same target are closed before
     // opening a new terminal tab. We don't want them to pile up if the
@@ -158,7 +162,7 @@ export default class RemoteControlService {
       const uri = nullthrows(item.getURI());
       try {
         // Only close terminal tabs with the same title and target binary.
-        const otherInfo = terminalUri.infoFromUri(uri);
+        const otherInfo = terminalApi.infoFromUri(uri);
         return otherInfo.key === key;
       } catch (e) {}
       return false;

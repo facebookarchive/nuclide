@@ -10,17 +10,15 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common/main';
-import type {Adapter} from 'nuclide-debugger-vsps/main';
-
-export type {VSAdapterExecutableInfo};
+import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
+import type {Adapter} from 'nuclide-debugger-vsps';
 
 import http from 'http';
 import net from 'net';
 import {Observable, Subject} from 'rxjs';
 import {getLogger} from 'log4js';
 import {sleep} from 'nuclide-commons/promise';
-import {getAdapterExecutable} from 'nuclide-debugger-vsps/main';
+import {getAdapterExecutable} from 'nuclide-debugger-vsps';
 
 let isServerSetup = false;
 

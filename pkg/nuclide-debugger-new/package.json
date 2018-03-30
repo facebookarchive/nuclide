@@ -72,6 +72,11 @@
         "0.0.0": "consumeCurrentWorkingDirectory"
       }
     },
+    "nuclide-terminal": {
+      "versions": {
+        "0.0.0": "consumeTerminal"
+      }
+    },
     "console": {
       "versions": {
         "0.1.0": "consumeConsole"

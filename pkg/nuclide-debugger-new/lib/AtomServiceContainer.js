@@ -24,6 +24,7 @@ let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
 let _registerExecutor: ?RegisterExecutorFunction = null;
 let _datatipService: ?DatatipService = null;
 let _createConsole: ?ConsoleService = null;
+let _terminalService: ?nuclide$TerminalApi = null;
 
 export function setConsoleService(createConsole: ConsoleService): IDisposable {
   _createConsole = createConsole;
@@ -68,4 +69,17 @@ export function setNotificationService(
 
 export function getNotificationService(): ?raiseNativeNotificationFunc {
   return _raiseNativeNotification;
+}
+
+export function setTerminalService(
+  terminalService: nuclide$TerminalApi,
+): IDisposable {
+  _terminalService = terminalService;
+  return new UniversalDisposable(() => {
+    _terminalService = null;
+  });
+}
+
+export function getTerminalService(): ?nuclide$TerminalApi {
+  return _terminalService;
 }
