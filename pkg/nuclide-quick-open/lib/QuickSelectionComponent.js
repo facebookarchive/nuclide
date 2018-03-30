@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Tab} from '../../nuclide-ui/Tabs';
+import type {Tab} from 'nuclide-commons-ui/Tabs';
 import type QuickSelectionActions from './QuickSelectionActions';
 
 import type {FileResult, ProviderResult} from './types';
@@ -44,7 +44,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button} from 'nuclide-commons-ui/Button';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
-import Tabs from '../../nuclide-ui/Tabs';
+import Tabs from 'nuclide-commons-ui/Tabs';
 import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

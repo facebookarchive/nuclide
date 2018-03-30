@@ -20,7 +20,7 @@ import {ModalExamples} from 'nuclide-commons-ui/showModal.example';
 import {DropdownExamples} from 'nuclide-commons-ui/Dropdown.example';
 import {FullWidthProgressBarExamples} from '../../nuclide-ui/FullWidthProgressBar.example';
 import {TabbableContainerExamples} from 'nuclide-commons-ui/TabbableContainer.example';
-import {TabExamples} from '../../nuclide-ui/Tabs.example';
+import {TabExamples} from 'nuclide-commons-ui/Tabs.example';
 import {RadioGroupExamples} from 'nuclide-commons-ui/RadioGroup.example';
 import {TextInputExamples} from 'nuclide-commons-ui/TextInputs.example';
 import {ToolbarExamples} from 'nuclide-commons-ui/Toolbar.example';

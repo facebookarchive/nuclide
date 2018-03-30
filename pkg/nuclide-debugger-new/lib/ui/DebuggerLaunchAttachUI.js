@@ -19,7 +19,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-import Tabs from '../../../nuclide-ui/Tabs';
+import Tabs from 'nuclide-commons-ui/Tabs';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 
