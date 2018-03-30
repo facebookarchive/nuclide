@@ -9,10 +9,10 @@
  * @format
  */
 
-import type RemoteControlService from '../nuclide-debugger-new/lib/RemoteControlService';
+import type {DebuggerService} from 'atom-ide-ui';
 
 import consumeFirstProvider from './consumeFirstProvider';
 
-export function getDebuggerService(): Promise<RemoteControlService> {
+export function getDebuggerService(): Promise<DebuggerService> {
   return consumeFirstProvider('nuclide-debugger.remote');
 }

@@ -47,9 +47,7 @@ describe('LinkTreeLinter', () => {
         onDidCompleteTask = cb;
         return new UniversalDisposable();
       });
-    mockCwdApi.getCwd = jasmine.createSpy('getCwd').andReturn({
-      getPath: () => __dirname,
-    });
+    mockCwdApi.getCwd = jasmine.createSpy('getCwd').andReturn(__dirname);
 
     linkTreeLinter.consumeBuckTaskRunner(mockBuckTaskRunner);
     linkTreeLinter.consumeCwdApi(mockCwdApi);

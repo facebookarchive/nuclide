@@ -1,6 +1,6 @@
 # atom-ide-ui
 
-A collection of Atom UIs to support language services (namely the LSP).
+A collection of Atom UIs to support language services (namely the LSP) and Debuggers.
 
 ## Usage
 
@@ -29,6 +29,10 @@ Highlights all occurrences of a symbol at the current cursor.
 ### atom-ide-datatip
 
 Provides mouse-activated overlays inside text editors.
+
+### atom-ide-debugger
+
+Provides debugging client for various debugger backends (using DAP).
 
 ### atom-ide-diagnostics
 

@@ -351,8 +351,7 @@ describe('SearchResultManager', () => {
       beforeEach(() => {
         // mocking the directory -- if this becomes a problem it shouldn't be too hard to get the
         // actual Directory object from Atom
-        const fakeDir: any = {getPath: () => PROJECT_ROOT3};
-        searchResultManager.setCurrentWorkingRoot(fakeDir);
+        searchResultManager.setCurrentWorkingRoot(PROJECT_ROOT3);
       });
       it('should put that root first, without disturbing the relative order of other roots', () => {
         const sortedPaths = searchResultManager

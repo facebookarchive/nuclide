@@ -111,3 +111,7 @@ export type {
   OutputService,
   RegisterExecutorFunction,
 } from './pkg/atom-ide-console/lib/types';
+
+export {
+  default as DebuggerService,
+} from './pkg/atom-ide-debugger/lib/RemoteControlService';

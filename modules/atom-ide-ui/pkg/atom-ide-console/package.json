@@ -16,51 +16,49 @@
         "IDE",
         "Console"
       ]
+    }
+  },
+  "atomConfig": {
+    "maximumMessageCount": {
+      "title": "Maximum Message Count",
+      "description": "The number of messages to retain in the console",
+      "type": "number",
+      "default": 10000,
+      "minimum": 1
     },
-    "config": {
-      "maximumMessageCount": {
-        "title": "Maximum Message Count",
-        "description": "The number of messages to retain in the console",
-        "type": "number",
-        "default": 10000,
-        "minimum": 1
-      },
-      "maximumSerializedMessages": {
-        "title": "Maximum Serialized Messages",
-        "description": "The number of messages to save across Nuclide sessions",
-        "type": "number",
-        "default": 10,
-        "minimum": 1
-      },
-      "maximumSerializedHistory": {
-        "title": "Maximum Serialized History",
-        "description": "The number of input history lines to save across sessions",
-        "type": "number",
-        "default": 20,
-        "minimum": 1
-      },
-      "diffUrlPattern": {
-        "title": "Diff URL Pattern",
-        "description": "The URL to link D1234567 text to. (%s will be replaced with the match.)",
-        "type": "string",
-        "default": ""
-      },
-      "taskUrlPattern": {
-        "title": "Task URL Pattern",
-        "description": "The URL to link T1234567 text to. (%s will be replaced with the match.)",
-        "type": "string",
-        "default": ""
-      },
-      "consoleFontScale": {
-        "title": "Font Scale",
-        "description": "The scale of the font used in the console relative to the editor font size.",
-        "type": "number",
-        "default": 0.9,
-        "minimum": 0.1
-      }
+    "maximumSerializedMessages": {
+      "title": "Maximum Serialized Messages",
+      "description": "The number of messages to save across Nuclide sessions",
+      "type": "number",
+      "default": 10,
+      "minimum": 1
     },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    "maximumSerializedHistory": {
+      "title": "Maximum Serialized History",
+      "description": "The number of input history lines to save across sessions",
+      "type": "number",
+      "default": 20,
+      "minimum": 1
+    },
+    "diffUrlPattern": {
+      "title": "Diff URL Pattern",
+      "description": "The URL to link D1234567 text to. (%s will be replaced with the match.)",
+      "type": "string",
+      "default": ""
+    },
+    "taskUrlPattern": {
+      "title": "Task URL Pattern",
+      "description": "The URL to link T1234567 text to. (%s will be replaced with the match.)",
+      "type": "string",
+      "default": ""
+    },
+    "consoleFontScale": {
+      "title": "Font Scale",
+      "description": "The scale of the font used in the console relative to the editor font size.",
+      "type": "number",
+      "default": 0.9,
+      "minimum": 0.1
+    }
   },
   "activationCommands": {},
   "consumedServices": {
