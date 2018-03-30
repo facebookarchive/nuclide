@@ -1,19 +1,20 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
 import * as React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
+import {Block} from './Block';
 import {ListView, ListViewItem} from './ListView';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {MultiSelectList} from 'nuclide-commons-ui/MultiSelectList';
+import {Checkbox} from './Checkbox';
+import {MultiSelectList} from './MultiSelectList';
 
 const NOOP = () => {};
 

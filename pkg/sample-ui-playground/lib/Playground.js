@@ -28,7 +28,7 @@ import {BadgeExamples} from '../../nuclide-ui/Badge.example';
 import {HighlightExamples} from 'nuclide-commons-ui/Highlight.example';
 import {IconExamples} from 'nuclide-commons-ui/Icon.example';
 import {TreeExamples} from 'nuclide-commons-ui/Tree.example';
-import {ListviewExamples} from '../../nuclide-ui/ListView.example';
+import {ListviewExamples} from 'nuclide-commons-ui/ListView.example';
 import {TableExamples} from 'nuclide-commons-ui/Table.example';
 import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
