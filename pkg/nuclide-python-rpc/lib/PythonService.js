@@ -375,12 +375,19 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  signatureHelp(
+  async signatureHelp(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?SignatureHelp> {
-    throw new Error('Not Yet Implemented');
+    const service = await serverManager.getJediService();
+    return service.get_signature_help(
+      filePath,
+      buffer.getText(),
+      serverManager.getSysPath(filePath),
+      position.row,
+      position.column,
+    );
   }
 
   getEvaluationExpression(

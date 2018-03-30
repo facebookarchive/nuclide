@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {SignatureHelp} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 // This file contains RPC definitions for jediserver.py.
@@ -122,5 +123,15 @@ export function get_outline(
   src: NuclideUri,
   contents: string,
 ): Promise<?Array<JediOutlineItem>> {
+  throw new Error('RPC Stub');
+}
+
+export function get_signature_help(
+  src: NuclideUri,
+  contents: string,
+  sysPath: Array<string>,
+  line: number,
+  column: number,
+): Promise<?SignatureHelp> {
   throw new Error('RPC Stub');
 }

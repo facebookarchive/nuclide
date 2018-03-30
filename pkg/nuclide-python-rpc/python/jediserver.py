@@ -100,13 +100,16 @@ class JediServer:
                 res['result'] = outline.get_outline(data['src'], data['contents'])
             elif method == 'get_hover':
                 res['result'] = self.get_hover(self.make_script(data), data['word'])
+            elif method == 'get_signature_help':
+                res['result'] = self.get_signature_help(self.make_script(data))
             else:
                 res['type'] = 'error-response'
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
         # Catch and ignore KeyErrors from jedi
         # See https://github.com/davidhalter/jedi/issues/590
-        except KeyError:
-            res['result'] = []
+        except KeyError as e:
+            self.logger.warn('Got KeyError exception %s', e)
+            res['result'] = None
         except Exception:
             res['type'] = 'error-response'
             res['error'] = traceback.format_exc()
@@ -219,6 +222,42 @@ class JediServer:
         docstring = docstring.replace('\t', ' ' * 4)
         docstring = docstring.replace('*', '\\*')
         return docstring
+
+    def get_signature_help(self, script):
+        # Loosely adapted from:
+        # https://github.com/palantir/python-language-server/blob/develop/pyls/plugins/signature.py
+        signatures = script.call_signatures()
+        if not signatures:
+            return None
+
+        # Python shouldn't ever have multiple signatures
+        s = signatures[0]
+        docstring = s.docstring()
+        raw_docstring = s.docstring(raw=True)
+        # In most cases Jedi prepends the function signature to the non-raw docstring.
+        # But this isn't always the case for some builtins, like isinstance.
+        if docstring != raw_docstring:
+            label = docstring[:len(docstring)-len(raw_docstring)].rstrip()
+        else:
+            params = ', '.join(map(lambda x: x.name, s.params))
+            label = s.name + '(' + params + ')'
+        sig = {
+            # Jedi always prepends the signature to the docstring
+            'label': label,
+            'documentation': raw_docstring,
+        }
+
+        # If there are params, add those
+        if s.params:
+            sig['parameters'] = [{
+                'label': p.name,
+                'documentation': p.docstring(),
+            } for p in s.params]
+
+        sig_info = {'signatures': [sig], 'activeSignature': 0}
+        if s.index is not None and s.params:
+            sig_info['activeParameter'] = s.index
+        return sig_info
 
     def serialize_definition(self, definition):
         return {
