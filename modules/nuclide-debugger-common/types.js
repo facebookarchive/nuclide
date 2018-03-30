@@ -14,14 +14,9 @@ import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IconName} from 'nuclide-commons-ui/Icon';
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {ProcessMessage} from 'nuclide-commons/process';
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';
-export type AtomNotification = {
-  type: AtomNotificationType,
-  message: string,
-};
 
 export type DebuggerConfigAction = 'launch' | 'attach';
 
@@ -41,19 +36,6 @@ export type VsAdapterType =
   | 'mobilejs'
   | 'native_lldb'
   | 'native_gdb';
-
-export type UserOutputLevel =
-  | 'debug'
-  | 'info'
-  | 'warning'
-  | 'log'
-  | 'error'
-  | 'success';
-
-export type UserOutput = {
-  level: UserOutputLevel,
-  text: string,
-};
 
 export type NuclideEvaluationExpression = {
   range: atom$Range,
@@ -103,14 +85,6 @@ export type DebuggerProperties = {
   +targetDescription: () => ?string,
   +threadsComponentTitle: string,
 };
-
-export interface DebuggerInstanceInterface {
-  +onSessionEnd: ?(callback: () => void) => IDisposable;
-  getDebuggerProcessInfo(): DebuggerProcessInfo;
-  getProviderName(): string;
-  getTargetUri(): NuclideUri;
-  dispose(): void;
-}
 
 export interface IVsAdapterSpawner {
   spawnAdapter(

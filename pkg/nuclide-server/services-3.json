@@ -76,11 +76,6 @@
     "name": "MetroService"
   },
   {
-    "definition": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface.js",
-    "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceImplementation.js",
-    "name": "NativeDebuggerService"
-  },
-  {
     "implementation": "../nuclide-open-files-rpc/lib/OpenFilesService.js",
     "name": "OpenFilesService"
   },

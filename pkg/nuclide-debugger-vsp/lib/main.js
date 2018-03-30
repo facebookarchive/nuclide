@@ -43,16 +43,6 @@ class Activation {
 
     fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
       const isOpenSource = !exists;
-
-      // TODO(most): Remove when fully migrated to VSP (`nuclide-debugger-new`).
-      if (isOpenSource) {
-        // Enable `nuclide-debugger` for OSS while `nuclide-debugger-new`
-        // is being iterated on to replace `nuclide-debugger`.
-        atom.packages.triggerActivationHook(
-          '!nuclide_vsp_debugger_core:gk:nuclide',
-        );
-      }
-
       this._registerPythonDebugProvider();
       this._registerNodeDebugProvider();
       this._registerReactNativeDebugProvider(isOpenSource);
@@ -145,14 +135,12 @@ class Activation {
   }
 
   async _registerNativeVspProvider(): Promise<void> {
-    if (await passesGK('nuclide_debugger_native_vsp')) {
-      this._registerDebugProvider({
-        name: 'Native (VSP)',
-        getLaunchAttachProvider: connection => {
-          return new NativeLaunchAttachProvider(connection);
-        },
-      });
-    }
+    this._registerDebugProvider({
+      name: 'Native (C/C++)',
+      getLaunchAttachProvider: connection => {
+        return new NativeLaunchAttachProvider(connection);
+      },
+    });
   }
 
   async _registerHHVMDebugProvider(): Promise<void> {

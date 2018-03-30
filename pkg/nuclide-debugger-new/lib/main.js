@@ -342,12 +342,6 @@ class Activation {
         ],
       }),
       this._registerCommandsContextMenuAndOpener(),
-      // TODO remove after rollout, as we'd want to test against the new VSP debugger.
-      atom.packages.onDidActivateInitialPackages(() => {
-        if (atom.inSpecMode()) {
-          atom.packages.deactivatePackage('nuclide-debugger-new');
-        }
-      }),
     );
   }
 

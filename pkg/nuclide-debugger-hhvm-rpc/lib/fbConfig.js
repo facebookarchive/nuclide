@@ -14,6 +14,8 @@ import type {HHVMLaunchConfig} from './types';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
+export const DEVSERVER_HHVM_PATH = '/usr/local/hphpi/bin/hhvm';
+
 export function getHHVMRuntimeArgs(
   launchConfig: HHVMLaunchConfig,
 ): Array<string> {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type RemoteControlService from '../nuclide-debugger/lib/RemoteControlService';
+import type RemoteControlService from '../nuclide-debugger-new/lib/RemoteControlService';
 
 import consumeFirstProvider from './consumeFirstProvider';
 

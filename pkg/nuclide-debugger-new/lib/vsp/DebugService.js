@@ -1468,6 +1468,7 @@ export default class DebugService implements IDebugService {
               this._viewModel.focusedStackFrame,
               this._viewModel.focusedThread,
               null,
+              true,
             );
 
             if (result == null || !expression.available) {

@@ -17,8 +17,6 @@ import sys
 from package_manager import NUCLIDE_PATH
 
 IGNORES = [
-    # Empty files are ignored by default.
-    '*/nuclide-debugger-native-rpc/scripts/ws4py/*.py',
     # Test fixtures don't need the header.
     '*/spec/fixtures/*',
 ]

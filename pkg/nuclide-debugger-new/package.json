@@ -77,8 +77,5 @@
         "0.1.0": "consumeConsole"
       }
     }
-  },
-  "activationHooks": [
-    "nuclide_vsp_debugger_core:gk:nuclide"
-  ]
+  }
 }

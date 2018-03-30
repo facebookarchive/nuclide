@@ -271,7 +271,7 @@ async function _getHhvmPath(config: HHVMLaunchConfig): Promise<string> {
   // Otherwise try to fall back to a default path.
   try {
     // $FlowFB
-    return require('nuclide-debugger-common/fb-constants').DEVSERVER_HHVM_PATH;
+    return require('./fbConfig').DEVSERVER_HHVM_PATH;
   } catch (error) {
     return DEFAULT_HHVM_PATH;
   }
