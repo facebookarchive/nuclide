@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Expected} from '../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
@@ -19,7 +19,7 @@ import shallowEqual from 'shallowequal';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
-import {Expect} from '../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';

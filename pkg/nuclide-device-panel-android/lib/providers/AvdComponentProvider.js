@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {
   DeviceTypeComponent,
   DeviceTypeComponentProvider,
@@ -18,7 +18,7 @@ import type {
 
 import {WatchmanClient} from 'nuclide-watchman-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Expect} from '../../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 import invariant from 'assert';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';

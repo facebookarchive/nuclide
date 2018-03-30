@@ -10,11 +10,11 @@
  */
 
 import type {Action, AppState, Device} from '../types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 
 import * as Actions from './Actions';
 import * as Immutable from 'immutable';
-import {Expect} from '../../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 
 export function app(state: AppState, action: Action): AppState {
   switch (action.type) {

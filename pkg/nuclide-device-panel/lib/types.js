@@ -11,7 +11,7 @@
 
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from '../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {Device as DeviceIdType} from '../../nuclide-device-panel/lib/types';
 
 import * as Immutable from 'immutable';

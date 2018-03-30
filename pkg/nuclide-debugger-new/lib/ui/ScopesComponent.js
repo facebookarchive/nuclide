@@ -10,7 +10,7 @@
  */
 
 import type {IDebugService, IScope, IVariable} from '../types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as React from 'react';
@@ -25,7 +25,7 @@ import {
   fetchChildrenForLazyComponent,
   expressionAsEvaluationResult,
 } from '../utils';
-import {Expect} from '../../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {|

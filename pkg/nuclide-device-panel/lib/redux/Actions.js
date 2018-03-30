@@ -33,7 +33,7 @@ import type {
   DeviceTypeComponent,
   ComponentPosition,
 } from '../types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 
 import * as Immutable from 'immutable';
 import {DeviceTask} from '../DeviceTask';

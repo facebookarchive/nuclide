@@ -11,7 +11,7 @@
 
 import type {AppState} from '../types';
 
-import {Expect} from '../../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 import * as Immutable from 'immutable';
 
 export function createEmptyAppState(): AppState {

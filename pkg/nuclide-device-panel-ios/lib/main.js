@@ -18,7 +18,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Expect} from '../../commons-node/expected';
+import {Expect} from 'nuclide-commons/expected';
 import {getDevices} from '../../nuclide-fbsimctl';
 
 class Activation {

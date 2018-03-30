@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {Avd} from '../providers/AvdComponentProvider';
 
 import classnames from 'classnames';

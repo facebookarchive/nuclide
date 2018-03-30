@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {Process, ProcessTask, AppInfoRow} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
 import type {TaskEvent} from 'nuclide-commons/process';

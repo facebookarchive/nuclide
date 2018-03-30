@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as AdbService from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {Store} from '../types';
 import type {DebugBridgeFullConfig} from '../../../nuclide-adb-sdb-rpc/lib/types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 import type {DeviceTypeAndroid} from '../types';
 

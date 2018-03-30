@@ -10,7 +10,7 @@
  */
 
 import type {Device, DeviceAction, DeviceActionProvider} from '../types';
-import type {Expected} from '../../../commons-node/expected';
+import type {Expected} from 'nuclide-commons/expected';
 
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
