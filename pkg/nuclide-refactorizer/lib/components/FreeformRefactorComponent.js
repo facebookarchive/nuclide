@@ -17,7 +17,7 @@ import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 
 import * as Actions from '../refactorActions';
 

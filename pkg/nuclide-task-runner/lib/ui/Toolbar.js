@@ -10,12 +10,12 @@
  */
 
 import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
-import type {Option} from '../../../nuclide-ui/Dropdown';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
 
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {TaskRunnerButton} from './TaskRunnerButton';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import FullWidthProgressBar from '../../../nuclide-ui/FullWidthProgressBar';
 import classnames from 'classnames';
 import * as React from 'react';

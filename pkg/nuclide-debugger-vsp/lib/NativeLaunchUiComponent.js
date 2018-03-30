@@ -10,12 +10,12 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Option} from '../../nuclide-ui/Dropdown';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
 import type {VsAdapterType} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
 import {shellParse} from 'nuclide-commons/string';

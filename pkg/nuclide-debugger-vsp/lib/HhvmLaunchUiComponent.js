@@ -18,7 +18,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {getDebuggerService} from '../../commons-atom/debugger';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import nullthrows from 'nullthrows';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {

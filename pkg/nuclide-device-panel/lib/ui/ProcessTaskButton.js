@@ -12,7 +12,7 @@
 import type {Process, ProcessTask, ProcessTaskType} from '../types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 

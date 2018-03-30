@@ -14,7 +14,7 @@ import type {BoundActionCreators, Parameter} from './types';
 import * as React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {ParameterInput} from './ParameterInput';

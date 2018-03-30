@@ -16,7 +16,7 @@ import type {VspProcessInfo} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import {getDebuggerService} from '../../commons-atom/debugger';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

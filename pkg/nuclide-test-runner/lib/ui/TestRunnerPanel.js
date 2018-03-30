@@ -14,7 +14,7 @@ import type {TestRunner} from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import Console from './Console';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';

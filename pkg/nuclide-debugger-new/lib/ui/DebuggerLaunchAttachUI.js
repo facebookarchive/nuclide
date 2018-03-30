@@ -18,7 +18,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import Tabs from '../../../nuclide-ui/Tabs';
 import {Observable} from 'rxjs';
 import invariant from 'assert';

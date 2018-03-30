@@ -15,7 +15,7 @@ import {shell} from 'electron';
 
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import nullthrows from 'nullthrows';

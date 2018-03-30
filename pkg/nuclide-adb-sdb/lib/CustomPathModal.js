@@ -10,7 +10,7 @@
  */
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import * as React from 'react';

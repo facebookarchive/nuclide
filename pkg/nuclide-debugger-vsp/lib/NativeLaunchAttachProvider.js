@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-import type {Option} from '../../nuclide-ui/Dropdown';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
 import type {VsAdapterType} from 'nuclide-debugger-common';
 
 import {VsAdapterTypes} from 'nuclide-debugger-common';

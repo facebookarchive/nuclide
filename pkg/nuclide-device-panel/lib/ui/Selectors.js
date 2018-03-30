@@ -10,13 +10,13 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Option} from '../../../nuclide-ui/Dropdown';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
 import type {DeviceTypeComponent} from '../types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import * as Immutable from 'immutable';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
 

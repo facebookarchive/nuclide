@@ -17,7 +17,7 @@ import type {
   PlatformGroup,
   TaskSettings,
 } from './types';
-import type {Option} from '../../nuclide-ui/Dropdown';
+import type {Option} from 'nuclide-commons-ui/Dropdown';
 
 import * as React from 'react';
 import shallowequal from 'shallowequal';
@@ -26,7 +26,7 @@ import {formatDeploymentTarget} from './DeploymentTarget';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import invariant from 'assert';
