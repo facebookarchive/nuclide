@@ -15,7 +15,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
 import debounce from 'nuclide-commons/debounce';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import type {OutlineTreeForUi} from './createOutlines';

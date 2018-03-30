@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DistractionFreeMode} from './DistractionFreeMode';

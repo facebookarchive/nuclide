@@ -19,7 +19,7 @@ import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

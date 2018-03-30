@@ -26,7 +26,7 @@ import {asyncFind} from 'nuclide-commons/promise';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import debounce from 'nuclide-commons/debounce';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import idx from 'idx';

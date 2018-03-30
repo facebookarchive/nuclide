@@ -10,7 +10,7 @@
  */
 
 export {HistogramTracker} from './HistogramTracker';
-export type {TrackingEvent} from 'nuclide-commons-atom/analytics';
+export type {TrackingEvent} from 'nuclide-commons/analytics';
 
 export {
   startTracking,
@@ -22,4 +22,4 @@ export {
   trackSampled,
   trackTiming,
   isTrackSupported,
-} from 'nuclide-commons-atom/analytics';
+} from 'nuclide-commons/analytics';

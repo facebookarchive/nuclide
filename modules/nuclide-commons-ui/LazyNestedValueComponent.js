@@ -19,7 +19,7 @@ import {Icon} from './Icon';
 import * as React from 'react';
 import invariant from 'assert';
 import {bindObservableAsProps} from './bindObservableAsProps';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {highlightOnUpdate} from './highlightOnUpdate';
 import {STRING_REGEX} from './SimpleValueComponent';
 import {ValueComponentClassNames} from './ValueComponentClassNames';

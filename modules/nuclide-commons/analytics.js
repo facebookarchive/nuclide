@@ -12,9 +12,9 @@
 
 import type {Observable} from 'rxjs';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {isPromise} from 'nuclide-commons/promise';
-import performanceNow from 'nuclide-commons/performanceNow';
+import UniversalDisposable from './UniversalDisposable';
+import {isPromise} from './promise';
+import performanceNow from './performanceNow';
 
 export type RawAnalyticsService = {
   track(

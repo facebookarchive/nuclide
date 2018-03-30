@@ -16,7 +16,7 @@ import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import * as React from 'react';
 import classnames from 'classnames';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {mapUnion} from 'nuclide-commons/collection';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 import DiagnosticsCodeActions from './DiagnosticsCodeActions';

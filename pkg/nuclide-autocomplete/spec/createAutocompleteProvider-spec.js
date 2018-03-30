@@ -40,7 +40,7 @@ describe('getSuggestions', () => {
   let trackSpy;
   beforeEach(() => {
     jasmine.useRealClock();
-    trackSpy = spyOn(require('../../nuclide-analytics'), 'track');
+    trackSpy = spyOn(require('nuclide-commons/analytics'), 'track');
   });
 
   it('returns null when it throws an exception', () => {

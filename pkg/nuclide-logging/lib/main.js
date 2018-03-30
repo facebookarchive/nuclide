@@ -19,7 +19,7 @@
 
 import log4js from 'log4js';
 
-import {setRawAnalyticsService} from 'nuclide-commons-atom/analytics';
+import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import * as rawAnalyticsService from '../../nuclide-analytics/lib/track';
 
 import once from '../../commons-node/once';

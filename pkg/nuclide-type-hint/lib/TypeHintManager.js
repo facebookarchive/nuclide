@@ -12,7 +12,7 @@
 import type {TypeHintProvider} from './types';
 import type {Datatip, MarkedString} from 'atom-ide-ui';
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import getFragmentGrammar from 'nuclide-commons-atom/getFragmentGrammar';
 import {arrayRemove} from 'nuclide-commons/collection';
 import {getLogger} from 'log4js';

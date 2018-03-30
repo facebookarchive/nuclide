@@ -15,7 +15,7 @@ import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 

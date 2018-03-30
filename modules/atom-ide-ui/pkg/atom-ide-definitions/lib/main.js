@@ -35,7 +35,7 @@ import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {Range} from 'atom';
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import FeatureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';

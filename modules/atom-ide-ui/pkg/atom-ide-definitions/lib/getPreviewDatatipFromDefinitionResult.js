@@ -10,7 +10,7 @@
  * @format
  */
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {getDefinitionPreview as getLocalFileDefinitionPreview} from 'nuclide-commons/symbol-definition-preview';
 
 import React from 'react';

@@ -26,7 +26,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {completingSwitchMap} from 'nuclide-commons/observable';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable} from 'rxjs';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';

@@ -23,7 +23,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 

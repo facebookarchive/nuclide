@@ -25,7 +25,7 @@ import type {GlobalViewState} from './types';
 
 import invariant from 'assert';
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 import idx from 'idx';
 import {areSetsEqual} from 'nuclide-commons/collection';

@@ -19,7 +19,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nullthrows from 'nullthrows';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';

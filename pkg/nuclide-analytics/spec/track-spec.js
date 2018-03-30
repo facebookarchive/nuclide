@@ -9,7 +9,7 @@
  * @format
  */
 
-import {setRawAnalyticsService} from 'nuclide-commons-atom/analytics';
+import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import {startTracking, trackImmediate} from '..';
 import * as track from '../lib/track';
 import invariant from 'assert';

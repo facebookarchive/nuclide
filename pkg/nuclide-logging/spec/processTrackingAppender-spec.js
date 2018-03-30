@@ -16,7 +16,7 @@ describe('processTrackingAppender', () => {
   it('captures process exits', () => {
     waitsForPromise(async () => {
       const trackSpy = spyOn(
-        require('../../nuclide-analytics'),
+        require('nuclide-commons/analytics'),
         'trackSampled',
       );
       log4js.configure({

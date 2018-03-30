@@ -18,7 +18,7 @@ import * as Actions from './Actions';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 
 /**
  * Register a record provider for every executor.

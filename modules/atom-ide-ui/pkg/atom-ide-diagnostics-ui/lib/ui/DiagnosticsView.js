@@ -21,7 +21,7 @@ import type {
   RegExpFilterValue,
 } from 'nuclide-commons-ui/RegExpFilter';
 
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import DiagnosticsTable from './DiagnosticsTable';
 import showModal from 'nuclide-commons-ui/showModal';
 import {Toggle} from 'nuclide-commons-ui/Toggle';

@@ -25,7 +25,7 @@ import {arrayEqual, areSetsEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import Model from 'nuclide-commons/Model';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';

@@ -26,7 +26,7 @@ import invariant from 'assert';
 import nullthrows from 'nullthrows';
 
 import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {
   goToLocation,
   goToLocationInEditor,

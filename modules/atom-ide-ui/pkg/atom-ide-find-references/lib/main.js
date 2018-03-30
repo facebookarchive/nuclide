@@ -27,7 +27,7 @@ import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
+import analytics from 'nuclide-commons/analytics';
 import {FindReferencesViewModel} from './FindReferencesViewModel';
 import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
