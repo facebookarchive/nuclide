@@ -18,7 +18,7 @@ import DebuggerPaneViewModel from './DebuggerPaneViewModel';
 import DebuggerPaneContainerViewModel from './DebuggerPaneContainerViewModel';
 import {DebuggerMode, DEBUGGER_PANELS_DEFAULT_LOCATION} from '../constants';
 import invariant from 'assert';
-import createPaneContainer from '../../../commons-atom/create-pane-container';
+import createPaneContainer from 'nuclide-commons-atom/create-pane-container';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import nullthrows from 'nullthrows';
 

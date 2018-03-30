@@ -11,7 +11,7 @@
 
 import {arrayCompact, arrayEqual} from 'nuclide-commons/collection';
 import classnames from 'classnames';
-import createPaneContainer from '../commons-atom/create-pane-container';
+import createPaneContainer from 'nuclide-commons-atom/create-pane-container';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';

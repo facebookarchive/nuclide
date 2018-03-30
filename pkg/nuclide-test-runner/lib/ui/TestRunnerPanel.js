@@ -21,7 +21,7 @@ import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Button, ButtonSizes, ButtonTypes} from 'nuclide-commons-ui/Button';
 import nullthrows from 'nullthrows';
-import createPaneContainer from '../../../commons-atom/create-pane-container';
+import createPaneContainer from 'nuclide-commons-atom/create-pane-container';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestClassTree from './TestClassTree';
