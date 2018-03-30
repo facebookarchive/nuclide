@@ -16,7 +16,7 @@ import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-positio
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {showMenuForEvent} from '../../commons-atom/context-menu';
+import {showMenuForEvent} from 'nuclide-commons-atom/ContextMenu';
 import classnames from 'classnames';
 import {DebuggerMode} from './constants';
 

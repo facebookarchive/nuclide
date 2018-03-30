@@ -58,7 +58,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
-import {showMenuForEvent} from '../../commons-atom/context-menu';
+import {showMenuForEvent} from 'nuclide-commons-atom/ContextMenu';
 import Immutable from 'immutable';
 import {createSelector} from 'reselect';
 
