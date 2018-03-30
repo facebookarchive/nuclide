@@ -36,7 +36,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {getLineForEvent} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerUiModel from './DebuggerUiModel';
 import DebugService from './vsp/DebugService';

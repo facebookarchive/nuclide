@@ -16,7 +16,7 @@ import invariant from 'assert';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import {ListView, ListViewItem} from 'nuclide-commons-ui/ListView';
 import classnames from 'classnames';
 import {Icon} from 'nuclide-commons-ui/Icon';

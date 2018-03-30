@@ -55,7 +55,7 @@ import type {
 } from '../types';
 import type {MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
-import type {TimingTracker} from '../../../nuclide-analytics';
+import type {TimingTracker} from 'nuclide-commons/analytics';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
@@ -74,7 +74,7 @@ import {Observable, Subject, TimeoutError} from 'rxjs';
 import capitalize from 'lodash/capitalize';
 import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
 import ReadOnlyNotice from 'nuclide-commons-ui/ReadOnlyNotice';
-import {track, startTracking} from '../../../nuclide-analytics';
+import {track, startTracking} from 'nuclide-commons/analytics';
 import nullthrows from 'nullthrows';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {

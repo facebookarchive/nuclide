@@ -21,7 +21,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Modal} from 'nuclide-commons-ui/Modal';
 import {Observable} from 'rxjs';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import {AnalyticsEvents} from '../constants';
 
 type PropsType = {

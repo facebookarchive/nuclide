@@ -73,7 +73,7 @@ import nullthrows from 'nullthrows';
 import invariant from 'assert';
 import {Emitter, Range} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import {AnalyticsEvents, UNKNOWN_SOURCE, DEBUG_SOURCES_URI} from '../constants';
 import {openSourceLocation, onUnexpectedError} from '../utils';
 import {distinct} from 'nuclide-commons/collection';
