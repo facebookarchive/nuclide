@@ -22,7 +22,6 @@ import {
 import {Table} from 'nuclide-commons-ui/Table';
 import {Observable, Subscription} from 'rxjs';
 import {getHhvmDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import passesGK from '../../commons-node/passesGK';
 import {Expect} from '../../commons-node/expected';
 
 import type {Column} from 'nuclide-commons-ui/Table';
@@ -48,7 +47,6 @@ type StateType = {
   attachType: AttachType,
   attachPort: ?number,
   attachTargets: Expected<Array<{pid: number, command: string}>>,
-  useHHVMDebugger: boolean,
 };
 
 function getColumns(): Array<Column<*>> {
@@ -98,7 +96,6 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       attachPort: null,
       attachType: 'webserver',
       attachTargets: Expect.pendingValue([]),
-      useHHVMDebugger: false,
     };
   }
 
@@ -149,12 +146,6 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         await this._refreshTargetList();
       })
       .subscribe();
-
-    this._gkSub = Observable.fromPromise(
-      passesGK('nuclide_hhvm_debugger_vscode'),
-    ).subscribe(passes => {
-      this.setState({useHHVMDebugger: passes});
-    });
   }
 
   componentWillUnmount() {
@@ -249,50 +240,48 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
               disabled={this.state.attachType !== 'webserver'}
             />
           </div>
-          {this.state.useHHVMDebugger ? (
-            <div>
-              <input
-                className="input-radio"
-                type="radio"
-                checked={this.state.attachType === 'script'}
-                name="radiogroup-attachtype"
-                onChange={() =>
-                  this.setState({
-                    attachType: 'script',
-                    attachPort:
-                      selectedIndex >= 0 && selectedIndex < rows.length
-                        ? this._getPortFromHHVMArgs(
-                            rows[selectedIndex].data.command,
-                          )
-                        : null,
-                  })
-                }
-              />
-              <label className="input-label nuclide-ui-radiogroup-label">
-                <b>Attach to an already-running PHP/Hack script</b>
-              </label>
-              <div className="nuclide-debugger-php-launch-attach-ui-select-script">
-                {this.state.attachType === 'script' ? (
-                  <Table
-                    emptyComponent={emptyComponent}
-                    columns={getColumns()}
-                    fixedHeader={true}
-                    maxBodyHeight="30em"
-                    rows={rows}
-                    sortable={false}
-                    selectable={true}
-                    selectedIndex={selectedIndex}
-                    onSelect={(item: {command: string}) => {
-                      this.setState({
-                        attachPort: this._getPortFromHHVMArgs(item.command),
-                      });
-                    }}
-                    collapsable={true}
-                  />
-                ) : null}
-              </div>
+          <div>
+            <input
+              className="input-radio"
+              type="radio"
+              checked={this.state.attachType === 'script'}
+              name="radiogroup-attachtype"
+              onChange={() =>
+                this.setState({
+                  attachType: 'script',
+                  attachPort:
+                    selectedIndex >= 0 && selectedIndex < rows.length
+                      ? this._getPortFromHHVMArgs(
+                          rows[selectedIndex].data.command,
+                        )
+                      : null,
+                })
+              }
+            />
+            <label className="input-label nuclide-ui-radiogroup-label">
+              <b>Attach to an already-running PHP/Hack script</b>
+            </label>
+            <div className="nuclide-debugger-php-launch-attach-ui-select-script">
+              {this.state.attachType === 'script' ? (
+                <Table
+                  emptyComponent={emptyComponent}
+                  columns={getColumns()}
+                  fixedHeader={true}
+                  maxBodyHeight="30em"
+                  rows={rows}
+                  sortable={false}
+                  selectable={true}
+                  selectedIndex={selectedIndex}
+                  onSelect={(item: {command: string}) => {
+                    this.setState({
+                      attachPort: this._getPortFromHHVMArgs(item.command),
+                    });
+                  }}
+                  collapsable={true}
+                />
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     );

@@ -13,42 +13,6 @@
       ]
     },
     "config": {
-      "attachScriptRegex": {
-        "title": "Script Path Filter Regexp",
-        "type": "string",
-        "default": "^(?!/var.*)",
-        "description": "Regular expression to filter connection script path.  Only applies to connections when in attach mode."
-      },
-      "idekeyRegex": {
-        "title": "Connection IDE Key Regexp",
-        "type": "string",
-        "default": "",
-        "description": "Regular expression to filter connection idekey. Usually your OS user id.  Only applies to connections when in attach mode."
-      },
-      "xdebugAttachPort": {
-        "title": "DBGP Attach Port",
-        "type": "number",
-        "default": 9000,
-        "description": "Port for DBGP connection to HHVM running in server mode."
-      },
-      "xdebugLaunchingPort": {
-        "title": "DBGP Launch Port",
-        "type": "number",
-        "default": 10112,
-        "description": "Port for DBGP connection to HHVM used for launching scripts."
-      },
-      "phpRuntimePath": {
-        "title": "Path to your PHP runtime",
-        "type": "string",
-        "default": "/usr/local/bin/php",
-        "description": "Path to the PHP runtime on your server."
-      },
-      "phpRuntimeArgs": {
-        "title": "Arguments for your PHP runtime",
-        "type": "string",
-        "default": "",
-        "description": "Arguments to call the PHP runtime with, e.g. to pass a config file."
-      },
       "hhvmRuntimeArgs": {
         "title": "Arguments for your HHVM runtime",
         "type": "string",
@@ -60,34 +24,6 @@
         "type": "string",
         "default": "/usr/local/bin/hhvm",
         "description": "Path to the HHVM runtime on your server."
-      },
-      "logLevel": {
-        "title": "Log Level",
-        "type": "string",
-        "default": "INFO",
-        "description": "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
-        "enum": [
-          "ALL",
-          "TRACE",
-          "DEBUG",
-          "INFO",
-          "WARN",
-          "ERROR",
-          "FATAL",
-          "OFF"
-        ]
-      },
-     "stopOneStopAll": {
-       "title": "Stop one, stop all",
-       "type": "boolean",
-       "default": true,
-       "description": "Specifies whether we stop all requests once we hit a breakpoint"
-     },
-     "useXDebug": {
-       "title": "Use legacy XDebug debugger for PHP",
-       "type": "boolean",
-       "default": false,
-       "description": "If checked, Nuclide will use the legacy XDebug PHP debugger, even if the new HHVM debugger is available."
       }
     },
     "packageType": "Atom",

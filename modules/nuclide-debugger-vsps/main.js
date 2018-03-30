@@ -21,7 +21,6 @@ export type Adapter =
   | 'react-native'
   | 'ocaml'
   | 'hhvm'
-  | 'php-xdebug'
   | 'native_gdb'
   | 'native_lldb';
 
@@ -131,21 +130,6 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(__dirname, '../../pkg/nuclide-debugger-hhvm-rpc'),
-    },
-  ],
-  [
-    'php-xdebug',
-    {
-      executable: {
-        command: 'node',
-        args: [
-          nuclideUri.join(
-            __dirname,
-            '../../pkg/nuclide-debugger-php-rpc/lib/vscode/vscode-debugger-entry.js',
-          ),
-        ],
-      },
-      root: nuclideUri.join(__dirname, '../../pkg/nuclide-debugger-php-rpc'),
     },
   ],
 ]);

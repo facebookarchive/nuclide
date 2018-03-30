@@ -828,12 +828,6 @@ export async function getHhvmAdapterInfo(
   return getAdapterExecutableWithProperNode('hhvm', path);
 }
 
-export async function getPhpXDebugAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('php-xdebug', path);
-}
-
 export function listenToRemoteDebugCommands(): IDisposable {
   const connections = ServerConnection.observeRemoteConnections()
     .map(conns => new Set(conns))
