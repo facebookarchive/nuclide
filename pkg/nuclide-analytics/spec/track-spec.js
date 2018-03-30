@@ -9,6 +9,7 @@
  * @format
  */
 
+import {setRawAnalyticsService} from 'nuclide-commons-atom/analytics';
 import {startTracking, trackImmediate} from '..';
 import * as track from '../lib/track';
 import invariant from 'assert';
@@ -19,6 +20,7 @@ describe('startTracking', () => {
   let startTime;
 
   beforeEach(() => {
+    setRawAnalyticsService(track);
     spyOn(process, 'hrtime').andCallFake(() => {
       if (startTime == null) {
         startTime = Date.now();

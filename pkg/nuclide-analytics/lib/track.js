@@ -11,11 +11,6 @@
 
 /* eslint-disable rulesdir/no-commonjs */
 
-export type TrackEvent = {
-  key: string,
-  values: {[key: string]: mixed},
-};
-
 // This extra module enables adding spies during testing.
 try {
   // $FlowFB

@@ -16,6 +16,7 @@ import {
   initializeLogging,
 } from '../../nuclide-logging';
 import {startTracking} from '../../nuclide-analytics';
+
 import NuclideServer from './NuclideServer';
 import servicesConfig from './servicesConfig';
 
@@ -44,11 +45,12 @@ async function getServerCredentials(args) {
 }
 
 async function main(args) {
-  const serverStartTimer = startTracking('nuclide-server:start');
-  process.on('SIGHUP', () => {});
-
+  let serverStartTimer;
   try {
+    process.on('SIGHUP', () => {});
     initializeLogging();
+    serverStartTimer = startTracking('nuclide-server:start');
+
     const {port, expirationDays} = args;
     if (expirationDays) {
       setTimeout(() => {
@@ -73,7 +75,9 @@ async function main(args) {
     logger.info(`Using node ${process.version}.`);
     logger.info(`Server ready time: ${process.uptime() * 1000}ms`);
   } catch (e) {
-    serverStartTimer.onError(e);
+    if (serverStartTimer != null) {
+      serverStartTimer.onError(e);
+    }
     logger.fatal(e);
     flushLogsAndAbort();
   }

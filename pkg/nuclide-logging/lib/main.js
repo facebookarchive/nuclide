@@ -19,6 +19,9 @@
 
 import log4js from 'log4js';
 
+import {setRawAnalyticsService} from 'nuclide-commons-atom/analytics';
+import * as rawAnalyticsService from '../../nuclide-analytics/lib/track';
+
 import once from '../../commons-node/once';
 import {getDefaultConfig, getPathToLogFile} from './config';
 
@@ -37,5 +40,10 @@ export function flushLogsAndAbort(): void {
  * Execute only once.
  */
 export const initializeLogging = once(() => {
+  setupLoggingService();
   log4js.configure(getDefaultConfig());
 });
+
+export function setupLoggingService(): void {
+  setRawAnalyticsService(rawAnalyticsService);
+}

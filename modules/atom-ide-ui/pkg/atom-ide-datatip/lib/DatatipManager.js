@@ -112,7 +112,7 @@ async function getDatatipResults<TProvider: AnyDatatipProvider>(
   const promises = filteredDatatipProviders.map(
     async (provider: TProvider): Promise<?DatatipResult> => {
       const name = getProviderName(provider);
-      const timingTracker = new analytics.TimingTracker(name + '.datatip');
+      const timingTracker = new analytics.TimingTracker(name + '.datatip', {});
       try {
         const datatip: ?Datatip = await invoke(provider);
         if (!datatip) {
