@@ -53,8 +53,7 @@ export function runTest(context: TestContext) {
       const expectedGutterText = dedent(`
         Flow
         Cannot call \`new Foo().baz\` because property \`baz\` is missing in \`Foo\` [1].
-        [1]
-        : main.js:4
+        [1]: main.js:4
       `);
       expectGutterDiagnosticToContain(expectedGutterText);
     });

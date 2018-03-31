@@ -78,6 +78,7 @@ const NBSP = '\xa0';
 function renderRowWithLinks(
   message: string,
   rowIndex: number,
+  rows: Array<string>,
 ): React.Element<any> {
   const messageWithWhitespace = message.replace(
     LEADING_WHITESPACE_RE,
@@ -102,7 +103,7 @@ function renderRowWithLinks(
     // We need to use a span here instead of a div so that `text-overflow: ellipsis` works.
     <span key={rowIndex}>
       {parts}
-      <br />
+      {rowIndex !== rows.length - 1 && <br />}
     </span>
   );
 }
