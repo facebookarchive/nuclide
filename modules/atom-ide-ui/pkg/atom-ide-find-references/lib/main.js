@@ -260,7 +260,10 @@ class Activation {
       supported.map(provider =>
         provider.findReferences(editor, point).catch(err => {
           getLogger('find-references').error('Error finding references', err);
-          return null;
+          return {
+            type: 'error',
+            message: String(err),
+          };
         }),
       ),
       x => x,
