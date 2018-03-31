@@ -24,7 +24,6 @@ import {
   microtask,
   nextAnimationFrame,
   poll,
-  PromiseCanceledError,
   reconcileSetDiffs,
   SingletonExecutor,
   splitStream,
@@ -32,7 +31,6 @@ import {
   takeWhileInclusive,
   throttle,
   toAbortablePromise,
-  toCancelablePromise,
   toggle,
 } from '../observable';
 import nullthrows from 'nullthrows';
@@ -701,83 +699,6 @@ describe('nuclide-commons/observable', () => {
     });
   });
 
-  describe('toCancellablePromise', () => {
-    it('completes successfully', () => {
-      waitsForPromise(async () => {
-        const source = new Subject();
-        const cancelable = toCancelablePromise(source);
-        source.next(42);
-        source.complete();
-        const result = await cancelable.promise;
-        expect(result).toBe(42);
-      });
-    });
-
-    it('error throws from promise', () => {
-      waitsForPromise(async () => {
-        const source = new Subject();
-        const cancelable = toCancelablePromise(source);
-        source.error(42);
-        let thrown = false;
-        try {
-          await cancelable.promise;
-        } catch (e) {
-          expect(e).toBe(42);
-          thrown = true;
-        }
-        expect(thrown).toBe(true);
-      });
-    });
-
-    it('cancel causes promise to throw', () => {
-      waitsForPromise(async () => {
-        const source = new Subject();
-        const cancelable = toCancelablePromise(source);
-        cancelable.cancel();
-        let thrown = false;
-        try {
-          await cancelable.promise;
-        } catch (e) {
-          thrown = true;
-          expect(e instanceof PromiseCanceledError).toBe(true);
-        }
-        expect(thrown).toBe(true);
-      });
-    });
-
-    it('cancel after complete is a noop', () => {
-      waitsForPromise(async () => {
-        const source = new Subject();
-        const cancelable = toCancelablePromise(source);
-        source.next(42);
-        source.complete();
-        cancelable.cancel();
-        const result = await cancelable.promise;
-        expect(result).toBe(42);
-      });
-    });
-
-    it('cancel after error is a noop', () => {
-      waitsForPromise(async () => {
-        const source = new Subject();
-        const cancelable = toCancelablePromise(source);
-        source.error(42);
-        let thrown = false;
-
-        // This should not throw, nor should it override the result
-        cancelable.cancel();
-
-        try {
-          await cancelable.promise;
-        } catch (e) {
-          expect(e).toBe(42);
-          thrown = true;
-        }
-        expect(thrown).toBe(true);
-      });
-    });
-  });
-
   describe('SingletonExecutor', () => {
     it('isExecuting()', () => {
       const executor = new SingletonExecutor();
@@ -844,7 +765,7 @@ describe('nuclide-commons/observable', () => {
         try {
           await result1;
         } catch (e) {
-          expect(e instanceof PromiseCanceledError).toBe(true);
+          expect(e.name).toBe('AbortError');
           thrown = true;
         }
         expect(executor.isExecuting()).toBe(true);

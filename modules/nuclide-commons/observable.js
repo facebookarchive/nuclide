@@ -523,66 +523,11 @@ export function takeUntilAbort<T>(
   });
 }
 
-export type CancelablePromise<T> = {
-  promise: Promise<T>,
-  cancel: () => void,
-};
-
-/**
- * Thrown when a CancelablePromise is canceled().
- */
-export class PromiseCanceledError extends Error {
-  constructor() {
-    super();
-    this.name = 'PromiseCanceledError';
-  }
-}
-
-// Given an observable, convert to a Promise (thereby subscribing to the Observable)
-// and return back a cancellation function as well.
-// If the cancellation function is called before the returned promise resolves,
-// then unsubscribe from the underlying Promise and have the returned Promise throw.
-// If the cancellation function is called after the returned promise resolves,
-// then it does nothing.
-export function toCancelablePromise<T>(
-  observable: Observable<T>,
-): CancelablePromise<T> {
-  // Assign a dummy value to keep flow happy
-  let cancel: () => void = () => {};
-
-  const promise: Promise<T> = new Promise((resolve, reject) => {
-    // Stolen from Rx.js toPromise.js
-    let value;
-    const subscription = observable.subscribe(
-      v => {
-        value = v;
-      },
-      reject,
-      () => {
-        resolve(value);
-      },
-    );
-
-    // Attempt cancellation of both the subscription and the promise.
-    // Do not let one failure prevent the other from succeeding.
-    cancel = () => {
-      try {
-        subscription.unsubscribe();
-      } catch (e) {}
-      try {
-        reject(new PromiseCanceledError());
-      } catch (e) {}
-    };
-  });
-
-  return {promise, cancel};
-}
-
 // Executes tasks. Ensures that at most one task is running at a time.
 // This class is handy for expensive tasks like processes, provided
 // you never want the result of a previous task after a new task has started.
 export class SingletonExecutor<T> {
-  _currentTask: ?CancelablePromise<T> = null;
+  _abortController: ?AbortController = null;
 
   // Executes(subscribes to) the task.
   // Will terminate(unsubscribe) to any previously executing task.
@@ -593,29 +538,29 @@ export class SingletonExecutor<T> {
     this.cancel();
 
     // Start a new process
-    const task = toCancelablePromise(createTask);
-    this._currentTask = task;
+    const controller = new AbortController();
+    this._abortController = controller;
 
     // Wait for the process to complete or be canceled ...
     try {
-      return await task.promise;
+      return await toAbortablePromise(createTask, controller.signal);
     } finally {
       // ... and always clean up if we haven't been canceled already.
-      if (task === this._currentTask) {
-        this._currentTask = null;
+      if (controller === this._abortController) {
+        this._abortController = null;
       }
     }
   }
 
   isExecuting(): boolean {
-    return this._currentTask != null;
+    return this._abortController != null;
   }
 
   // Cancels any currently executing tasks.
   cancel(): void {
-    if (this._currentTask != null) {
-      this._currentTask.cancel();
-      this._currentTask = null;
+    if (this._abortController != null) {
+      this._abortController.abort();
+      this._abortController = null;
     }
   }
 }
