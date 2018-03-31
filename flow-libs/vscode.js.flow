@@ -5468,6 +5468,8 @@ declare module 'vscode' {
     /* BEGIN PROPOSED *******************************************************************************/
     registerFileSystemProvider(scheme: string, provider: FileSystemProvider): Disposable;
 
+    registerSearchProvider(scheme: string, provider: SearchProvider): Disposable;
+
     /**
      * This method replaces `deleteCount` [workspace folders](#workspace.workspaceFolders) starting at index `start`
      * by an optional set of `workspaceFoldersToAdd` on the `vscode.workspace.workspaceFolders` array. This "splice"
@@ -6469,7 +6471,7 @@ declare module 'vscode' {
 
   declare export interface TextSearchQuery {
     pattern: string;
-    isRegex?: boolean;
+    isRegExp?: boolean;
     isCaseSensitive?: boolean;
     isWordMatch?: boolean;
   }
@@ -6485,15 +6487,17 @@ declare module 'vscode' {
     preview: { leading: string, matching: string, trailing: string };
   }
 
+  declare export interface SearchProvider {
+    +provideFileSearchResults?: (query: string, progress: Progress<Uri>, token: CancellationToken) => Thenable<void>;
+    +provideTextSearchResults?: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => Thenable<void>;
+  }
+
   // todo@joh discover files etc
   // todo@joh CancellationToken everywhere
   // todo@joh add open/close calls?
   declare export interface FileSystemProvider {
 
     +onDidChange?: Event<FileChange[]>;
-
-    // todo@joh - remove this
-    +root?: Uri;
 
     // more...
     //
@@ -6528,13 +6532,6 @@ declare module 'vscode' {
     // ? recursive del
     rmdir(resource: Uri): Thenable<void>;
     unlink(resource: Uri): Thenable<void>;
-
-    // todo@remote
-    // create(resource: Uri): Thenable<FileStat>;
-    // find files by names
-    // todo@joh, move into its own provider
-    +findFiles?: (query: string, progress: Progress<Uri>, token: CancellationToken) => Thenable<void>;
-    +provideTextSearchResults?: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => Thenable<void>;
   }
 
   /**
