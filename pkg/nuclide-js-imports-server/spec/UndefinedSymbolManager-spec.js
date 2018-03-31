@@ -61,6 +61,16 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].id).toBe('Component');
     expect(undefinedSymbols[0].type).toBe('value');
   });
+  it('Should have special treatment for the fbt tag', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const x = <fbt />;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('fbt');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
   it('Should not declare all globals as undefined', () => {
     const manager = new UndefinedSymbolManager([]);
     const program = 'var x = 10; function myFunc(){ return x; };';

@@ -20,6 +20,7 @@ traverse.Scope.prototype.warnOnFlowBinding = x => x;
 import type {UndefinedSymbol} from './types';
 
 const BUILT_INS = ['Iterator', '__DEV__'];
+const FBT_TAG = 'fbt';
 const REACT_MODULE_NAME = 'React';
 const JSX_CSX_PRAGMA_REGEX = /\*?\s*@csx/;
 
@@ -106,7 +107,11 @@ function traverseTreeForUndefined(
     },
     JSXIdentifier(path) {
       if (!csx) {
-        findUndefinedReact(path, undefinedSymbols, globals);
+        if (path.node.name === FBT_TAG) {
+          findUndefinedValues(path, undefinedSymbols, globals);
+        } else {
+          findUndefinedReact(path, undefinedSymbols, globals);
+        }
       }
     },
     LabeledStatement(path) {
