@@ -66,7 +66,7 @@ describe('AutocompleteProvider', () => {
         ): Promise<?Completion> {
           calledResolve = true;
           expect(completion).toBe(suggestion1);
-          return Promise.resolve({
+          const result = {
             ...suggestion1,
             textEdits: [
               {
@@ -78,7 +78,13 @@ describe('AutocompleteProvider', () => {
                 newText: '',
               },
             ],
-          });
+          };
+
+          // Delete the provider to simulate this being an RPC call (since we
+          // can't move that across RPC), and text edits aren't applied if there
+          // isn't a provider (autocomplete-plus internals, but it's bitten us).
+          delete result.provider;
+          return Promise.resolve(result);
         },
       }: any);
     });

@@ -221,7 +221,16 @@ export class AutocompleteProvider<T: LanguageService> {
       return null;
     }
 
-    return (await languageService).resolveAutocompleteSuggestion(suggestion);
+    const resolved = await (await languageService).resolveAutocompleteSuggestion(
+      suggestion,
+    );
+    if (resolved != null) {
+      // A few members of the suggestion aren't RPC-able (such as the provider),
+      // so merge the objects together.
+      return {...suggestion, ...resolved};
+    }
+
+    return null;
   }
 }
 
