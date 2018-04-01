@@ -15,7 +15,7 @@ import type {
   QueryContext,
   // $FlowFB
 } from '../../fb-dash/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Command} from '../../nuclide-pty-rpc/rpc-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

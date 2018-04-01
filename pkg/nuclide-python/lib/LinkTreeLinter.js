@@ -11,7 +11,7 @@
 
 import type {LinterMessageV2} from 'atom-ide-ui';
 import type {BuckTaskRunnerService} from '../../nuclide-buck/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {getLogger} from 'log4js';
 import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';

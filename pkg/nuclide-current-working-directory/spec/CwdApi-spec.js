@@ -9,8 +9,8 @@
  * @format
  */
 
-import {Activation} from '../lib/Activation';
-import {CwdApi} from '../lib/CwdApi';
+import Activation from '../lib/Activation';
+import CwdApi from '../lib/CwdApi';
 import invariant from 'assert';
 import {Directory} from 'atom';
 

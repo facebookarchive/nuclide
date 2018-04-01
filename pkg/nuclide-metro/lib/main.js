@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from 'atom-ide-ui';
 import type {MetroAtomService} from './types';
 

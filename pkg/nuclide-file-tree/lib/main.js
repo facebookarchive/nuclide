@@ -12,7 +12,7 @@
 import type {FileTreeProjectSelectionManager} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';

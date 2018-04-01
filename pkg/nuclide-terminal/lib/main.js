@@ -31,7 +31,7 @@ import {
 
 // $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 

@@ -10,7 +10,7 @@
  */
 
 import type {OutputService} from 'atom-ide-ui';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   AppState,
   OpenTunnel,

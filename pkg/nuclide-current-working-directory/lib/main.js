@@ -9,30 +9,7 @@
  * @format
  */
 
-import type {CwdApi} from './CwdApi';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import Activation from './Activation';
 
-import {Activation} from './Activation';
-import invariant from 'assert';
-
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  activation = new Activation(state);
-}
-
-export function deactivate(): void {
-  invariant(activation != null);
-  activation.dispose();
-  activation = null;
-}
-
-export function provideApi(): CwdApi {
-  invariant(activation != null);
-  return activation.provideApi();
-}
-
-export function serialize(): Object {
-  invariant(activation != null);
-  return activation.serialize();
-}
+createPackage(module.exports, Activation);

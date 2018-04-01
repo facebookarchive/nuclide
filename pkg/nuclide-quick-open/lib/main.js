@@ -11,7 +11,7 @@
 
 import type {ProviderResult, Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   DeepLinkService,
   DeepLinkParams,

@@ -12,7 +12,7 @@
 import type {LinterProvider, RegisterIndieLinter} from 'atom-ide-ui';
 import type {BuckTaskRunnerService} from '../../nuclide-buck/lib/types';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 

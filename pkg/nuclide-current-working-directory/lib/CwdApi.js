@@ -10,59 +10,61 @@
  */
 
 import type {Directory} from '../../nuclide-remote-connection';
-import type {Observable} from 'rxjs';
 
+import {memoize} from 'lodash';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable, ReplaySubject} from 'rxjs';
 
-export class CwdApi implements nuclide$CwdApi {
-  _cwd$: Observable<?string>;
-  _cwdPath$: BehaviorSubject<?string>;
-  _disposables: UniversalDisposable;
+export default class CwdApi implements nuclide$CwdApi {
+  _explicitlySetPaths: BehaviorSubject<?string>;
+  _disposed: ReplaySubject<void> = new ReplaySubject(1);
 
-  constructor(initialCwdPath: ?string) {
-    this._cwdPath$ = new BehaviorSubject(initialCwdPath);
-    this._cwd$ = this._cwdPath$
-      // Re-check the CWD every time the project paths change.
-      // Adding/removing projects can affect the validity of cwdPath.
-      .merge(
-        observableFromSubscribeFunction(cb =>
-          atom.project.onDidChangePaths(cb),
-        ).mapTo(null),
-      )
-      .map(() => this.getCwd())
-      .map(path => (isValidDirectoryPath(path) ? path : null))
-      .distinctUntilChanged();
-
-    this._disposables = new UniversalDisposable();
+  constructor(initialPath: ?string) {
+    this._explicitlySetPaths = new BehaviorSubject(initialPath);
   }
 
   setCwd(path: string): void {
     if (getDirectory(path) == null) {
       throw new Error(`Path does not belong to a project root: ${path}`);
     }
-    this._cwdPath$.next(path);
+    this._explicitlySetPaths.next(path);
   }
 
-  observeCwd(callback: (directory: ?string) => void): IDisposable {
-    const disposable = new UniversalDisposable(
-      this._cwd$.subscribe(directory => {
-        callback(directory);
+  observeCwd(callback: (path: ?string) => void): IDisposable {
+    return new UniversalDisposable(
+      this._getPaths().subscribe(path => {
+        callback(path);
       }),
     );
-    this._disposables.add(disposable);
-    return disposable;
   }
 
   dispose(): void {
-    this._disposables.dispose();
+    this._disposed.next();
   }
 
-  _getDefaultCwdPath(): ?string {
+  /**
+   * Create an observable that represents the CWD path changes.
+   */
+  _getPaths = memoize(() => {
+    // Since adding and removing projects can affect the validity of cwdPath, we need to re-query
+    // every time it happens.
+    const projectPathChanges = observableFromSubscribeFunction(cb =>
+      atom.project.onDidChangePaths(cb),
+    )
+      .mapTo(null)
+      .share();
+
+    return Observable.merge(this._explicitlySetPaths, projectPathChanges)
+      .map(() => this.getCwd())
+      .distinctUntilChanged()
+      .takeUntil(this._disposed);
+  });
+
+  _getDefaultPath(): ?string {
     for (const directory of atom.project.getDirectories()) {
       if (isValidDirectory(directory)) {
         return directory.getPath();
@@ -72,10 +74,10 @@ export class CwdApi implements nuclide$CwdApi {
   }
 
   getCwd(): ?string {
-    if (isValidDirectoryPath(this._cwdPath$.getValue())) {
-      return this._cwdPath$.getValue();
-    } else if (isValidDirectoryPath(this._getDefaultCwdPath())) {
-      return this._getDefaultCwdPath();
+    if (isValidDirectoryPath(this._explicitlySetPaths.getValue())) {
+      return this._explicitlySetPaths.getValue();
+    } else if (isValidDirectoryPath(this._getDefaultPath())) {
+      return this._getDefaultPath();
     }
     return null;
   }

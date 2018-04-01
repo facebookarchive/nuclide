@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {FileFamilyProvider} from '../../nuclide-file-family/lib/types';
 
 import nullthrows from 'nullthrows';

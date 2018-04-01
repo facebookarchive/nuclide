@@ -19,7 +19,7 @@ import type {
   TaskRunner,
   ToolbarStatePreference,
 } from './types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {ConsoleService} from 'atom-ide-ui';
 
