@@ -13,7 +13,9 @@
 /* global localStorage */
 
 import invariant from 'assert';
+import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullthrows from 'nullthrows';
 import featureConfig from './feature-config';
 import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 import {MultiMap, setUnion} from 'nuclide-commons/collection';
@@ -210,6 +212,26 @@ export default class FeatureLoader {
     localStorage.removeItem(
       rootPackage.getCanDeferMainModuleRequireStorageKey(),
     );
+
+    // Hack time!! Atom's repository APIs are synchronous. Any package that tries to use them before
+    // we've had a chance to provide our implementation are going to get wrong answers. The correct
+    // thing to do would be to always go through an async API that awaits until
+    // `atom.packages.onDidActivateInitialPackages()` completes. However, we have some legacy sync
+    // codepaths that make that difficult. As a temporary (I hope) workaround, we prioritize
+    // activation of the features that provide this service.
+    const originalOrder = new Map(
+      this._features.map((feature, i) => [feature, i]),
+    );
+    this._features.sort((a, b) => {
+      const aIsRepoProvider = packageIsRepositoryProvider(a.pkg);
+      const bIsRepoProvider = packageIsRepositoryProvider(b.pkg);
+      if (aIsRepoProvider !== bIsRepoProvider) {
+        return aIsRepoProvider ? -1 : 1;
+      }
+      const aIndex = nullthrows(originalOrder.get(a));
+      const bIndex = nullthrows(originalOrder.get(b));
+      return aIndex - bIndex;
+    });
 
     this._features.forEach(feature => {
       // Since the migration from bool to enum occurs before the config defaults
@@ -460,4 +482,8 @@ function safeSerialize(feature: Feature) {
 // explicit, and unifies it in the case this ever needs to change.
 function packageNameFromPath(pkgPath: string): string {
   return path.basename(pkgPath);
+}
+
+function packageIsRepositoryProvider(pkg: FeaturePkg): boolean {
+  return Boolean(idx(pkg, _ => _.providedServices['atom.repository-provider']));
 }
