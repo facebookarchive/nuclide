@@ -14,6 +14,7 @@ import type {
   DefinitionQueryResult,
   Outline,
   CodeAction,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -94,6 +95,11 @@ export interface CqueryLanguageService extends LanguageService {
   ): Promise<Array<CodeAction>>;
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>;
+
+  signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp>;
 
   highlight(
     fileVersion: FileVersion,

@@ -15,6 +15,7 @@ import type {
   Outline,
   CodeAction,
   CodeFormatProvider,
+  SignatureHelp,
 } from 'atom-ide-ui';
 import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -309,6 +310,16 @@ class CqueryLSPClient extends NullLanguageService {
       : this._service.typeHint(fileVersion, position);
   }
 
+  async signatureHelp(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?SignatureHelp> {
+    const project = await this.ensureProject(fileVersion.filePath);
+    return project == null
+      ? null
+      : this._service.signatureHelp(fileVersion, position);
+  }
+
   async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
     // TODO pelmers: wrap with ensure server
     return this._service.supportsSymbolSearch(directories);
@@ -481,6 +492,12 @@ class Activation {
       findReferences: {
         version: '0.1.0',
         analyticsEventName: 'cquery.findReferences',
+      },
+      signatureHelp: {
+        version: '0.1.0',
+        priority: 1,
+        triggerCharacters: new Set(['(', ',']),
+        analyticsEventName: 'cquery.signatureHelp',
       },
     };
 
