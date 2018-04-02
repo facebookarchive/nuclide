@@ -32,6 +32,7 @@ export class TypeCoverageProvider<T: LanguageService> {
   icon: IconName | void;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
+  _onToggleValue: boolean;
 
   constructor(
     name: string,
@@ -47,6 +48,13 @@ export class TypeCoverageProvider<T: LanguageService> {
     this.icon = icon;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
+    this._onToggleValue = false;
+    this._connectionToLanguageService
+      .observeValues()
+      .subscribe(async languageService => {
+        const ls = await languageService;
+        ls.onToggleCoverage(this._onToggleValue);
+      });
   }
 
   static register(
@@ -81,6 +89,7 @@ export class TypeCoverageProvider<T: LanguageService> {
   }
 
   async onToggle(on: boolean): Promise<void> {
+    this._onToggleValue = on;
     await Promise.all(
       Array.from(this._connectionToLanguageService.values()).map(
         async languageService => {
@@ -89,9 +98,5 @@ export class TypeCoverageProvider<T: LanguageService> {
         },
       ),
     );
-    // NOTE: New language services that get registered may need to receive a toggle event.
-    // To implement this, we could store the last toggled state here and have a
-    // shared subscription to this._connectionToLanguageService.observeValues() that
-    // called onToggle for new language services with the stored value.
   }
 }
