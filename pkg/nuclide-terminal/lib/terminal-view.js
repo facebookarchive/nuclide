@@ -48,6 +48,26 @@ import type {
 
 import type {Sink} from './sink';
 
+export const COLOR_CONFIGS = Object.freeze({
+  // dark
+  black: 'nuclide-terminal.black',
+  red: 'nuclide-terminal.red',
+  green: 'nuclide-terminal.green',
+  blue: 'nuclide-terminal.blue',
+  yellow: 'nuclide-terminal.yellow',
+  cyan: 'nuclide-terminal.cyan',
+  magenta: 'nuclide-terminal.magenta',
+  white: 'nuclide-terminal.white',
+  // bright
+  brightBlack: 'nuclide-terminal.brightBlack',
+  brightRed: 'nuclide-terminal.brightRed',
+  brightGreen: 'nuclide-terminal.brightGreen',
+  brightBlue: 'nuclide-terminal.brightBlue',
+  brightYellow: 'nuclide-terminal.brightYellow',
+  brightCyan: 'nuclide-terminal.brightCyan',
+  brightMagenta: 'nuclide-terminal.brightMagenta',
+  brightWhite: 'nuclide-terminal.brightWhite',
+});
 const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
@@ -135,6 +155,17 @@ export class TerminalView implements PtyClient {
         }),
       atom.config.onDidChange('core.themes', this._syncAtomTheme.bind(this)),
       atom.themes.onDidChangeActiveThemes(this._syncAtomTheme.bind(this)),
+    );
+
+    subscriptions.add(
+      // Skip the first value because the observe callback triggers once when
+      // we begin observing, duplicating work in the constructor.
+      ...Object.keys(COLOR_CONFIGS).map(color =>
+        featureConfig
+          .observeAsStream(COLOR_CONFIGS[color])
+          .skip(1)
+          .subscribe(this._syncAtomTheme.bind(this)),
+      ),
     );
 
     const div = (this._div = document.createElement('div'));
@@ -754,16 +785,38 @@ export function getSafeInitialInput(initialInput: string): string {
   return initialInput;
 }
 
+function getTerminalColors(): {[$Keys<typeof COLOR_CONFIGS>]: string} {
+  const colorsMap = {};
+  for (const color of Object.keys(COLOR_CONFIGS)) {
+    const configValue: ?(string | atom$Color) = (featureConfig.get(
+      COLOR_CONFIGS[color],
+    ): any);
+    // config value may be string when Atom deserializes the terminal package
+    // on startup, and it may be undefined if this is the first time the package
+    // is being deserialized after the config was added.
+    if (configValue != null) {
+      if (typeof configValue === 'string') {
+        colorsMap[color] = configValue;
+      } else {
+        colorsMap[color] = configValue.toHexString();
+      }
+    }
+  }
+  return colorsMap;
+}
+
 function getTerminalTheme(div: HTMLDivElement): any {
   const style = window.getComputedStyle(div);
   const foreground = convertRgbToHash(style.getPropertyValue('color'));
   const background = convertRgbToHash(
     style.getPropertyValue('background-color'),
   );
+  // return type: https://git.io/vxooH
   return {
     foreground,
     background,
     cursor: foreground,
+    ...getTerminalColors(),
   };
 }
 

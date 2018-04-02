@@ -83,6 +83,102 @@
           "window:focus-pane-on-left",
           "window:focus-pane-on-right"
         ]
+      },
+      "black": {
+        "title": "Black",
+        "type": "color",
+        "order": 1,
+        "default": "#2e3436"
+      },
+      "red": {
+        "title": "Red",
+        "type": "color",
+        "order": 2,
+        "default": "#cc0000"
+      },
+      "green": {
+        "title": "Green",
+        "type": "color",
+        "order": 3,
+        "default": "#4e9a06"
+      },
+      "yellow": {
+        "title": "Yellow",
+        "type": "color",
+        "order": 4,
+        "default": "#c4a000"
+      },
+      "blue": {
+        "title": "Blue",
+        "type": "color",
+        "order": 5,
+        "default": "#3465a4"
+      },
+      "magenta": {
+        "title": "Magenta",
+        "type": "color",
+        "order": 6,
+        "default": "#75507b"
+      },
+      "cyan": {
+        "title": "Cyan",
+        "type": "color",
+        "order": 7,
+        "default": "#06989a"
+      },
+      "white": {
+        "title": "White",
+        "type": "color",
+        "order": 8,
+        "default": "#d3d7cf"
+      },
+      "brightBlack": {
+        "title": "Bright Black",
+        "type": "color",
+        "order": 9,
+        "default": "#555753"
+      },
+      "brightRed": {
+        "title": "Bright Red",
+        "type": "color",
+        "order": 10,
+        "default": "#ef2929"
+      },
+      "brightGreen": {
+        "title": "Bright Green",
+        "type": "color",
+        "order": 11,
+        "default": "#8ae234"
+      },
+      "brightYellow": {
+        "title": "Bright Yellow",
+        "type": "color",
+        "order": 12,
+        "default": "#fce94f"
+      },
+      "brightBlue": {
+        "title": "Bright Blue",
+        "type": "color",
+        "order": 13,
+        "default": "#729fcf"
+      },
+      "brightMagenta": {
+        "title": "Bright Magenta",
+        "type": "color",
+        "order": 14,
+        "default": "#ad7fa8"
+      },
+      "brightCyan": {
+        "title": "Bright Cyan",
+        "type": "color",
+        "order": 15,
+        "default": "#34e2e2"
+      },
+      "brightWhite": {
+        "title": "Bright White",
+        "type": "color",
+        "order": 16,
+        "default": "#eeeeec"
       }
     }
   },
