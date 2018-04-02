@@ -82,7 +82,7 @@ export function getIcon(group: DiagnosticGroup): IconName {
     case 'review':
       return 'nuclicon-comment-discussion';
     case 'action':
-      return 'light-bulb';
+      return 'nuclicon-lightbulb-filled';
     default:
       (group: empty);
       throw new Error(`Invalid filter type: ${group}`);

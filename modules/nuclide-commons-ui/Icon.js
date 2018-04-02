@@ -53,7 +53,8 @@ export type Nuclicon =
   | 'nuclicon-time-start'
   | 'nuclicon-time-end'
   | 'nuclicon-metro-disabled'
-  | 'nuclicon-metro-waiting';
+  | 'nuclicon-metro-waiting'
+  | 'nuclicon-lightbulb-filled';
 
 export type IconName = Nuclicon | atom$Octicon;
 

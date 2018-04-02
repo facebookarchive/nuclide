@@ -145,3 +145,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-metro-waiting::before {
   content: "\f127";
 }
+.icon-nuclicon-lightbulb-filled::before {
+  content: "\f128";
+}
