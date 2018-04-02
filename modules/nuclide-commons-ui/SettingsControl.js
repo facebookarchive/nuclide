@@ -13,6 +13,7 @@
 import SettingsCheckbox from './SettingsCheckbox';
 import SettingsInput from './SettingsInput';
 import SettingsSelect from './SettingsSelect';
+import SettingsColorInput from './SettingsColorInput';
 import invariant from 'assert';
 import * as React from 'react';
 
@@ -40,7 +41,16 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
         />
       );
     } else if (schema.type === 'color') {
-      invariant(false); // Not implemented.
+      return (
+        // $FlowFixMe(>=0.53.0) Flow suppress
+        <SettingsColorInput
+          description={description}
+          keyPath={keyPath}
+          onChange={onChange}
+          title={title}
+          value={value}
+        />
+      );
     } else if (isBoolean(value) || schema.type === 'boolean') {
       return (
         // $FlowFixMe(>=0.53.0) Flow suppress
