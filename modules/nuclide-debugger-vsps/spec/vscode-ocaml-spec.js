@@ -134,6 +134,10 @@ async function checkLine(
 }
 
 describe('vscode-ocaml', () => {
+  if (process.env.SANDCASTLE == null) {
+    return;
+  }
+
   let hasDoneSetup = false;
   beforeEach(() => {
     waitsForPromise(async () => {
