@@ -12,6 +12,7 @@
 
 import type {DebuggerModeType, IDebugService} from '../types';
 
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
@@ -26,11 +27,14 @@ type Props = {
   service: IDebugService,
 };
 
+type State = {
+  mode: DebuggerModeType,
+  hasDevicePanelService: boolean,
+};
+
 export default class DebuggerControlsView extends React.PureComponent<
   Props,
-  {
-    mode: DebuggerModeType,
-  },
+  State,
 > {
   _disposables: UniversalDisposable;
 
@@ -40,17 +44,21 @@ export default class DebuggerControlsView extends React.PureComponent<
     this._disposables = new UniversalDisposable();
     this.state = {
       mode: props.service.getDebuggerMode(),
+      hasDevicePanelService: false,
     };
   }
 
   componentDidMount(): void {
     const {service} = this.props;
     this._disposables.add(
-      service.onDidChangeMode(() => {
+      observableFromSubscribeFunction(
+        service.onDidChangeMode.bind(service),
+      ).subscribe(mode => this.setState({mode})),
+      atom.packages.serviceHub.consume('nuclide.devices', '0.0.0', provider =>
         this.setState({
-          mode: service.getDebuggerMode(),
-        });
-      }),
+          hasDevicePanelService: true,
+        }),
+      ),
     );
   }
 
@@ -91,11 +99,13 @@ export default class DebuggerControlsView extends React.PureComponent<
                 icon="nuclicon-debugger"
                 label="Launch debugger..."
               />
-              <TruncatedButton
-                onClick={() => goToLocation(DEVICE_PANEL_URL)}
-                icon="device-mobile"
-                label="Manage devices..."
-              />
+              {this.state.hasDevicePanelService ? (
+                <TruncatedButton
+                  onClick={() => goToLocation(DEVICE_PANEL_URL)}
+                  icon="device-mobile"
+                  label="Manage devices..."
+                />
+              ) : null}
             </div>
           </div>
         </div>
