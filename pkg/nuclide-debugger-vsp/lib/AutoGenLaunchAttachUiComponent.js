@@ -143,11 +143,15 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           if (scriptPath !== '') {
             stringValues.set(config.scriptPropertyName, scriptPath);
           }
-          const cwd =
-            stringValues.get(config.cwdPropertyName) ||
-            (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
-          if (cwd !== '') {
-            stringValues.set(config.cwdPropertyName, cwd);
+          // current working directory
+          const {cwdPropertyName} = config;
+          if (cwdPropertyName != null) {
+            const cwd =
+              stringValues.get(cwdPropertyName) ||
+              (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
+            if (cwd !== '') {
+              stringValues.set(cwdPropertyName, cwd);
+            }
           }
         }
         const numberValues = new Map(savedSettings.numberValues || []);

@@ -342,6 +342,7 @@ function notifyOpenDebugSession(): void {
     },
   );
 }
+
 export async function getPrepackLaunchProcessInfo(
   scriptPath: NuclideUri,
   prepackPath: string,
@@ -373,6 +374,64 @@ function getPrepackScriptConfig(
     sourceFile: nuclideUri.getPath(scriptPath),
     prepackRuntime: prepackPath,
     prepackArguments: args,
+  };
+}
+
+export async function prepackHandleLaunchButtonClick(
+  targetUri: NuclideUri,
+  stringValues: Map<string, string>,
+  booleanValues: Map<string, boolean>,
+  enumValues: Map<string, string>,
+  numberValues: Map<string, number>,
+): Promise<void> {
+  track('nuclide-prepack-debugger-launch-from-dialog');
+  const prepackPath = (stringValues.get('prepackRuntimePath') || '').trim();
+  const scriptPath = nullthrows(stringValues.get('fileToPrepack')).trim();
+  const args = shellParse(nullthrows(stringValues.get('arguments')));
+
+  const launchInfo = await getPrepackLaunchProcessInfo(
+    scriptPath,
+    prepackPath,
+    args,
+  );
+
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(launchInfo);
+}
+
+export function getPrepackAutoGenConfig(): AutoGenConfig {
+  const fileToPrepack = {
+    name: 'File To Prepack',
+    type: 'string',
+    description: 'Input the file you want to Prepack',
+    required: true,
+  };
+  const prepackRuntimePath = {
+    name: 'Prepack Runtime Path',
+    type: 'string',
+    description:
+      'Prepack executable path (e.g. lib/prepack-cli.js). Will use default prepack command if not provided',
+    required: false,
+  };
+  const argumentsProperty = {
+    name: 'arguments',
+    type: 'array',
+    itemType: 'string',
+    description: 'Arguments to start Prepack',
+    required: false,
+    defaultValue: '',
+  };
+  const autoGenLaunchConfig = {
+    launch: true,
+    properties: [fileToPrepack, prepackRuntimePath, argumentsProperty],
+    scriptPropertyName: 'fileToPrepack',
+    scriptExtension: '.js',
+    cwdPropertyName: null,
+    header: null,
+  };
+  return {
+    launch: autoGenLaunchConfig,
+    attach: null,
   };
 }
 

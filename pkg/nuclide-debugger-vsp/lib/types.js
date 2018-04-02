@@ -49,7 +49,7 @@ export type AutoGenLaunchConfig = {|
   header?: React.Node,
   // Launch Specific Properties
   scriptPropertyName: string,
-  cwdPropertyName: string,
+  cwdPropertyName: ?string,
   scriptExtension: string,
 |};
 

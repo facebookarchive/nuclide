@@ -16,7 +16,6 @@ import passesGK from '../../commons-node/passesGK';
 import AutoGenLaunchAttachProvider from './AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
-import PrepackLaunchAttachProvider from './PrepackLaunchAttachProvider';
 import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -29,6 +28,8 @@ import {
   getNodeAutoGenConfig,
   getOCamlAutoGenConfig,
   ocamlHandleLaunchButtonClick,
+  getPrepackAutoGenConfig,
+  prepackHandleLaunchButtonClick,
 } from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
@@ -107,7 +108,13 @@ class Activation {
       this._registerDebugProvider({
         name: 'Prepack',
         getLaunchAttachProvider: connection => {
-          return new PrepackLaunchAttachProvider(connection);
+          return new AutoGenLaunchAttachProvider(
+            'Prepack',
+            connection,
+            getPrepackAutoGenConfig(),
+            prepackHandleLaunchButtonClick,
+            null /* Nuclide with vscode-prepack debugger does not support attach */,
+          );
         },
       });
     }
