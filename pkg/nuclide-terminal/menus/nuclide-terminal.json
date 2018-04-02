@@ -13,6 +13,10 @@
             {
               "label": "New Local Terminal Window",
               "command": "nuclide-terminal:new-local-terminal"
+            },
+            {
+              "label": "Toggle Terminal Focus",
+              "command": "nuclide-terminal:toggle-terminal-focus"
             }
           ]
         }

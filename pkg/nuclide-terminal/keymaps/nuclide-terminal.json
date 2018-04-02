@@ -1,6 +1,7 @@
 {
   ".platform-darwin atom-workspace": {
-    "ctrl-shift-t": "nuclide-terminal:new-terminal"
+    "ctrl-shift-t": "nuclide-terminal:new-terminal",
+    "ctrl-!": "nuclide-terminal:toggle-terminal-focus"
   },
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
     "alt-shift-t": "nuclide-terminal:new-terminal"

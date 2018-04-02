@@ -28,6 +28,7 @@ import {
   uriFromCwd,
   URI_PREFIX,
 } from '../../commons-node/nuclide-terminal-uri';
+import {FocusManager} from './FocusManager';
 
 // $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
@@ -43,7 +44,9 @@ class Activation {
   _cwd: ?CwdApi;
 
   constructor() {
+    const focusManager = new FocusManager();
     this._subscriptions = new UniversalDisposable(
+      focusManager,
       atom.workspace.addOpener(uri => {
         if (uri.startsWith(URI_PREFIX)) {
           return new TerminalView(uri);
@@ -77,6 +80,11 @@ class Activation {
       atom.config.onDidChange(
         'editor.lineHeight',
         this._syncAtomStyle.bind(this),
+      ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-terminal:toggle-terminal-focus',
+        () => focusManager.toggleFocus(),
       ),
       () => this._styleSheet.dispose(),
     );

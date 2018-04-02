@@ -263,6 +263,7 @@ declare class atom$LayerDecoration {
 
 declare class atom$Disposable {
   constructor(disposalAction?: (...args: Array<any>) => any): void,
+  disposed: boolean,
   dispose(): void,
 }
 
