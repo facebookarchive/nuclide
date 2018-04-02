@@ -51,6 +51,27 @@ export function fetchFileContentAtRevision(
   return hgRunCommand(args, execOptions).publish();
 }
 
+export function batchFetchFileContentsAtRevision(
+  filePaths: Array<NuclideUri>,
+  revision: string,
+  workingDirectory: string,
+): ConnectableObservable<Map<NuclideUri, string>> {
+  const args = ['cat', '--rev', revision, ...filePaths, '-Tjson'];
+  const execOptions = {
+    cwd: workingDirectory,
+  };
+  return hgRunCommand(args, execOptions)
+    .map(fileData => {
+      return new Map(
+        JSON.parse(fileData).map(({abspath, data}) => [
+          nuclideUri.join(workingDirectory, abspath),
+          data,
+        ]),
+      );
+    })
+    .publish();
+}
+
 /**
  * @param revision A string representation of the revision desired. See
  * Mercurial documentation for ways to specify a revision.

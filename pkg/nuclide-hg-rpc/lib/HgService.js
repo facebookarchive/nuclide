@@ -40,6 +40,7 @@ import {
   fetchSmartlogRevisions,
 } from './hg-revision-expression-helpers';
 import {
+  batchFetchFileContentsAtRevision,
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
@@ -969,6 +970,17 @@ export class HgService {
   ): ConnectableObservable<string> {
     return fetchFileContentAtRevision(
       filePath,
+      revision,
+      this._workingDirectory,
+    );
+  }
+
+  batchFetchFileContentsAtRevision(
+    filePaths: Array<NuclideUri>,
+    revision: string,
+  ): ConnectableObservable<Map<NuclideUri, string>> {
+    return batchFetchFileContentsAtRevision(
+      filePaths,
       revision,
       this._workingDirectory,
     );
