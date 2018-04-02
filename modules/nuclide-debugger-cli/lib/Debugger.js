@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
 import type {Capabilities} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
 import type {ParsedVSAdapter} from './DebuggerAdapterFactory';
@@ -105,7 +104,7 @@ export default class Debugger implements DebuggerInterface {
 
     this._state = 'INITIALIZING';
     await this.closeSession();
-    await this.createSession(adapter.adapterInfo);
+    await this.createSession(adapter);
 
     switch (adapter.action) {
       case 'attach':
@@ -473,7 +472,7 @@ export default class Debugger implements DebuggerInterface {
     return session.evaluate(args);
   }
 
-  async createSession(adapterInfo: VSAdapterExecutableInfo): Promise<void> {
+  async createSession(adapter: ParsedVSAdapter): Promise<void> {
     this._console.stopInput();
 
     this._threads = new ThreadCollection();
@@ -481,7 +480,8 @@ export default class Debugger implements DebuggerInterface {
     this._debugSession = new VsDebugSession(
       process.pid.toString(),
       this._logger,
-      adapterInfo,
+      adapter.adapterInfo,
+      {host: 'cli', adapter: adapter.type, isRemote: false},
     );
 
     this._initializeObservers();

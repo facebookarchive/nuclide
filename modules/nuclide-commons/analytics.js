@@ -154,7 +154,7 @@ export class TimingTracker {
 
 export function startTracking(
   eventName: string,
-  values?: {[key: string]: mixed} = {},
+  values?: {[key: string]: any} = {},
 ): TimingTracker {
   return new TimingTracker(eventName, values);
 }
@@ -171,7 +171,7 @@ export function startTracking(
 export function trackTiming<T>(
   eventName: string,
   operation: () => T,
-  values?: {[key: string]: mixed} = {},
+  values?: {[key: string]: any} = {},
 ): T {
   const tracker = startTracking(eventName, values);
 

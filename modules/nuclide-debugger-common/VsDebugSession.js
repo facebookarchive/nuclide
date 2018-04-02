@@ -23,11 +23,18 @@ import V8Protocol from './V8Protocol';
 import {Observable, Subject} from 'rxjs';
 import idx from 'idx';
 import invariant from 'assert';
+import {trackTiming} from 'nuclide-commons/analytics';
 
 export interface AdapterExitedEvent extends DebugProtocol.DebugEvent {
   event: 'adapter-exited';
   body: {exitCode: number};
 }
+
+export type AdapterAnalyticsExtras = {
+  adapter: string,
+  host: string,
+  isRemote: boolean,
+};
 
 function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
   return {
@@ -53,6 +60,7 @@ export default class VsDebugSession extends V8Protocol {
   _adapterExecutable: VSAdapterExecutableInfo;
   _logger: log4js$Logger;
   _spawner: IVsAdapterSpawner;
+  _adapterAnalyticsExtras: AdapterAnalyticsExtras;
 
   _onDidInitialize: Subject<DebugProtocol.InitializedEvent>;
   _onDidStop: Subject<DebugProtocol.StoppedEvent>;
@@ -72,6 +80,7 @@ export default class VsDebugSession extends V8Protocol {
     id: string,
     logger: log4js$Logger,
     adapterExecutable: VSAdapterExecutableInfo,
+    adapterAnalyticsExtras: ?AdapterAnalyticsExtras,
     spawner?: IVsAdapterSpawner,
     sendPreprocessors?: MessageProcessor[] = [],
     receivePreprocessors?: MessageProcessor[] = [],
@@ -81,6 +90,7 @@ export default class VsDebugSession extends V8Protocol {
     this._logger = logger;
     this._readyForBreakpoints = false;
     this._spawner = spawner == null ? new VsAdapterSpawner() : spawner;
+    this._adapterAnalyticsExtras = {...adapterAnalyticsExtras};
 
     this._onDidInitialize = new Subject();
     this._onDidStop = new Subject();
@@ -166,28 +176,37 @@ export default class VsDebugSession extends V8Protocol {
   send(command: string, args: any): Promise<any> {
     this._logger.info('Send request:', command, args);
     this._initServer();
-    // Babel Bug: `super` isn't working with `async`.
-    return super.send(command, args).then(
-      response => {
-        this._logger.info('Received response:', response);
-        return response;
-      },
-      (errorResponse: DebugProtocol.ErrorResponse) => {
-        let formattedError =
-          idx(errorResponse, _ => _.body.error.format) ||
-          idx(errorResponse, _ => _.message);
-        if (formattedError === '{_stack}') {
-          formattedError = JSON.stringify(errorResponse.body.error);
-        } else if (formattedError == null) {
-          formattedError = [
-            `command: ${command}`,
-            `args: ${JSON.stringify(args)}`,
-            `response: ${JSON.stringify(errorResponse)}`,
-            `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
-          ].join(', ');
-        }
-        throw new Error(formattedError);
-      },
+
+    const operation = (): Promise<any> => {
+      // Babel Bug: `super` isn't working with `async`
+      return super.send(command, args).then(
+        response => {
+          this._logger.info('Received response:', response);
+          return response;
+        },
+        (errorResponse: DebugProtocol.ErrorResponse) => {
+          let formattedError =
+            idx(errorResponse, _ => _.body.error.format) ||
+            idx(errorResponse, _ => _.message);
+          if (formattedError === '{_stack}') {
+            formattedError = JSON.stringify(errorResponse.body.error);
+          } else if (formattedError == null) {
+            formattedError = [
+              `command: ${command}`,
+              `args: ${JSON.stringify(args)}`,
+              `response: ${JSON.stringify(errorResponse)}`,
+              `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
+            ].join(', ');
+          }
+          throw new Error(formattedError);
+        },
+      );
+    };
+
+    return trackTiming(
+      `vs-debug-session:${command}`,
+      operation,
+      this._adapterAnalyticsExtras,
     );
   }
 

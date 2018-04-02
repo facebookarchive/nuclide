@@ -31,6 +31,7 @@ import VSPOptionsParser from './VSPOptionsParser';
 
 export type ParsedVSAdapter = {
   action: StartAction,
+  type: Adapter,
   adapterInfo: VSAdapterExecutableInfo,
   launchArgs?: LaunchRequestArguments,
   attachArgs?: AttachRequestArguments,
@@ -189,6 +190,7 @@ export default class DebuggerAdapterFactory {
 
     return {
       action: 'attach',
+      type: adapter.key,
       adapterInfo: getAdapterExecutable(adapter.key),
       attachArgs: objectFromMap(commandLineArgs),
     };
@@ -246,6 +248,7 @@ export default class DebuggerAdapterFactory {
 
     return {
       action: 'launch',
+      type: adapter.key,
       adapterInfo: getAdapterExecutable(adapter.key),
       launchArgs: objectFromMap(commandLineArgs),
     };

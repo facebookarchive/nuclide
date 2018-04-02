@@ -1222,7 +1222,8 @@ export default class DebugService implements IDebugService {
     if (configuration.adapterPreprocessor != null) {
       adapterPreprocessors.push(configuration.adapterPreprocessor);
     }
-    if (nuclideUri.isRemote(configuration.targetUri)) {
+    const isRemote = nuclideUri.isRemote(configuration.targetUri);
+    if (isRemote) {
       clientPreprocessors.push(remoteToLocalProcessor());
       adapterPreprocessors.push(
         localToRemoteProcessor(configuration.targetUri),
@@ -1232,6 +1233,7 @@ export default class DebugService implements IDebugService {
       sessionId,
       logger,
       configuration.adapterExecutable,
+      {adapter: configuration.adapterType, host: 'debugService', isRemote},
       spawner,
       clientPreprocessors,
       adapterPreprocessors,
