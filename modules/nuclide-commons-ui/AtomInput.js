@@ -46,6 +46,7 @@ type Props = {
   onFocus: () => mixed,
   onClick: (event: SyntheticMouseEvent<>) => mixed,
   onDidChange: (text: string) => mixed,
+  onDidChangeSelectionRange?: (event: atom$ChangeSelectionRangeEvent) => mixed,
   onConfirm?: (event?: atom$CustomEvent) => mixed,
   onCancel?: (event?: atom$CustomEvent) => mixed,
   onBlur: (blurEvent: Event) => mixed,
@@ -183,6 +184,13 @@ export class AtomInput extends React.Component<Props, State> {
         this.props.onDidChange.call(null, textEditor.getText());
       }),
     );
+    if (this.props.onDidChangeSelectionRange != null) {
+      disposables.add(
+        textEditor.onDidChangeSelectionRange(
+          this.props.onDidChangeSelectionRange,
+        ),
+      );
+    }
 
     this._updateWidth();
   }
