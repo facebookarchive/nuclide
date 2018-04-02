@@ -778,6 +778,10 @@ export type UncoveredRange = {
   message: string, // human-readable explanation, maybe with suggested fix
 };
 
+export type ToggleTypeCoverageParams = {
+  toggle: boolean,
+};
+
 // Window
 
 export type ShowMessageParams = {

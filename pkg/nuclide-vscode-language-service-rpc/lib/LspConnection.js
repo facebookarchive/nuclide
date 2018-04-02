@@ -187,6 +187,10 @@ export class LspConnection {
     );
   }
 
+  toggleTypeCoverage(params: p.ToggleTypeCoverageParams): void {
+    this._jsonRpcConnection.sendRequest('workspace/toggleTypeCoverage', params);
+  }
+
   workspaceSymbol(
     params: p.WorkspaceSymbolParams,
   ): Promise<Array<p.SymbolInformation>> {
