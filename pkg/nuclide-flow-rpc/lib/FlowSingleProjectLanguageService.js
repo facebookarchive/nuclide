@@ -29,7 +29,6 @@ import type {
   SignatureHelp,
 } from 'atom-ide-ui';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
@@ -618,14 +617,6 @@ export class FlowSingleProjectLanguageService {
     return Observable.fromPromise(
       this._findRefs(filePath, buffer, position, true),
     );
-  }
-
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    throw new Error('Not implemented');
   }
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {

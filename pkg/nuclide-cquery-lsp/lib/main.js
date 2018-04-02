@@ -24,7 +24,6 @@ import type {ConnectableObservable} from 'rxjs';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {
   LanguageService,
@@ -274,16 +273,6 @@ class CqueryLSPClient extends NullLanguageService {
     return project == null
       ? null
       : this._service.highlight(fileVersion, position);
-  }
-
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getEvaluationExpression(fileVersion, position);
   }
 
   async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {

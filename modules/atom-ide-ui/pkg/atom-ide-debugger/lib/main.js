@@ -14,7 +14,6 @@ import type {
   DebuggerConfigAction,
   DebuggerLaunchAttachProvider,
   NuclideDebuggerProvider,
-  NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {
   ConsoleService,
@@ -849,15 +848,6 @@ class Activation {
     });
   }
 
-  consumeEvaluationExpressionProvider(
-    provider: NuclideEvaluationExpressionProvider,
-  ): IDisposable {
-    this._uiModel.addEvaluationExpressionProvider(provider);
-    return new UniversalDisposable(() => {
-      this._uiModel.removeEvaluationExpressionProvider(provider);
-    });
-  }
-
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('debugger');
     toolBar.addButton(
@@ -906,12 +896,7 @@ class Activation {
       providerName: DATATIP_PACKAGE_NAME,
       priority: 1,
       datatip: (editor: TextEditor, position: atom$Point) => {
-        return debuggerDatatip(
-          this._uiModel.getEvaluationExpressionProviders(),
-          this._service,
-          editor,
-          position,
-        );
+        return debuggerDatatip(this._service, editor, position);
       },
     };
   }

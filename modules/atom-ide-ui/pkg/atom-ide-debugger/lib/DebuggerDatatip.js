@@ -10,40 +10,16 @@
  * @format
  */
 
-import type {
-  NuclideEvaluationExpression,
-  NuclideEvaluationExpressionProvider,
-} from 'nuclide-debugger-common';
 import type {Datatip} from 'atom-ide-ui';
 import type {IDebugService} from './types';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getDefaultEvaluationExpression} from 'nuclide-debugger-common';
+import {getDefaultEvaluationExpression} from './evaluationExpression';
 import {DebuggerMode} from './constants';
 import DebuggerDatatipComponent from './ui/DebuggerDatatipComponent';
 import {expressionAsEvaluationResultStream} from './utils';
 
-function getEvaluationExpression(
-  providers: Set<NuclideEvaluationExpressionProvider>,
-  editor: TextEditor,
-  position: atom$Point,
-): Promise<?NuclideEvaluationExpression> {
-  const {scopeName} = editor.getGrammar();
-  let matchingProvider = null;
-  for (const provider of providers) {
-    const providerGrammars = provider.selector.split(/, ?/);
-    if (providerGrammars.indexOf(scopeName) !== -1) {
-      matchingProvider = provider;
-      break;
-    }
-  }
-  return matchingProvider == null
-    ? Promise.resolve(getDefaultEvaluationExpression(editor, position))
-    : matchingProvider.getEvaluationExpression(editor, position);
-}
-
 export async function debuggerDatatip(
-  providers: Set<NuclideEvaluationExpressionProvider>,
   service: IDebugService,
   editor: TextEditor,
   position: atom$Point,
@@ -55,11 +31,7 @@ export async function debuggerDatatip(
   if (activeEditor == null) {
     return null;
   }
-  const evaluationExpression = await getEvaluationExpression(
-    providers,
-    editor,
-    position,
-  );
+  const evaluationExpression = getDefaultEvaluationExpression(editor, position);
   if (evaluationExpression == null) {
     return null;
   }

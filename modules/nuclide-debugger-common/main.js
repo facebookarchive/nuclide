@@ -19,8 +19,6 @@ export type {
   IVspInstance,
   MessageProcessor,
   NuclideDebuggerProvider,
-  NuclideEvaluationExpression,
-  NuclideEvaluationExpressionProvider,
   VSAdapterExecutableInfo,
   VsAdapterType,
 } from './types';
@@ -34,8 +32,6 @@ export {default as VsDebugSession} from './VsDebugSession';
 export {default as VspProcessInfo} from './VspProcessInfo';
 
 export {VsAdapterTypes} from './constants';
-
-export {getDefaultEvaluationExpression} from './evaluationExpression';
 
 export {
   deserializeDebuggerConfig,

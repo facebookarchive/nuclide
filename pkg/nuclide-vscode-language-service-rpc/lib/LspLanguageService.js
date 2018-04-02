@@ -44,7 +44,6 @@ import type {
   HostServices,
   Progress,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   InitializeParams,
@@ -2227,14 +2226,6 @@ export class LspLanguageService {
       this._logLspException(e);
       return null;
     }
-  }
-
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    this._logger.error('NYI: getEvaluationExpression');
-    return Promise.resolve(null);
   }
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {

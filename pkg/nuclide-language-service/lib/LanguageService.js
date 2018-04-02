@@ -29,7 +29,6 @@ import type {
   SignatureHelp,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
 
 export type {SymbolResult} from '../../nuclide-quick-open/lib/types';
@@ -210,11 +209,6 @@ export interface LanguageService {
   getAdditionalLogFiles(
     deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>>;
-
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>;
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
 

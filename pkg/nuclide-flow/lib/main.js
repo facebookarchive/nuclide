@@ -277,11 +277,6 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
           analyticsEventName: 'nuclide-flow.typeHint',
         }
       : undefined,
-    evaluationExpression: {
-      version: '0.0.0',
-      analyticsEventName: 'flow.evaluationExpression',
-      matcher: {kind: 'default'},
-    },
     findReferences: enableFindRefs
       ? {
           version: '0.1.0',

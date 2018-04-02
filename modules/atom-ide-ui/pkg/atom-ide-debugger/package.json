@@ -46,11 +46,6 @@
         "0.1.0": "consumeDatatipService"
       }
     },
-    "nuclide-evaluation-expression.provider": {
-      "versions": {
-        "0.0.0": "consumeEvaluationExpressionProvider"
-      }
-    },
     "tool-bar": {
       "versions": {
         "^1.0.0": "consumeToolBar"

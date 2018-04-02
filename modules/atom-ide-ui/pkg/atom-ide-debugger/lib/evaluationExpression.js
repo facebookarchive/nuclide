@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {Range} from 'simple-text-buffer';
+import {Range} from 'atom';
 
 export function getDefaultEvaluationExpression(
   editor: atom$TextEditor,
@@ -61,7 +61,7 @@ export function getDefaultEvaluationExpression(
     const start = result.index + 1;
     const end = start + result[0].length;
 
-    if (start <= position.column && end >= position.column) {
+    if (start <= position.column + 1 && end >= position.column + 1) {
       matchingExpression = result[0];
       startOffset = start;
       break;
@@ -79,7 +79,7 @@ export function getDefaultEvaluationExpression(
         1 +
         startOffset +
         subExpressionResult[0].length;
-      if (subEnd >= position.column) {
+      if (subEnd >= position.column + 1) {
         break;
       }
     }

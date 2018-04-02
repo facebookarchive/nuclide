@@ -13,7 +13,6 @@
 import type {
   DebuggerLaunchAttachProvider,
   NuclideDebuggerProvider,
-  NuclideEvaluationExpressionProvider,
 } from 'nuclide-debugger-common';
 import type {IDebugService} from './types';
 
@@ -33,7 +32,6 @@ export default class DebuggerModel {
   _disposables: UniversalDisposable;
   _service: IDebugService;
   _emitter: Emitter;
-  _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
 
   // Debugger providers
   _debuggerProviders: Set<NuclideDebuggerProvider>;
@@ -44,7 +42,6 @@ export default class DebuggerModel {
 
     this._emitter = new Emitter();
     this._debuggerProviders = new Set();
-    this._evaluationExpressionProviders = new Set();
     // There is always a local connection.
     this._connections = ['local'];
 
@@ -90,22 +87,6 @@ export default class DebuggerModel {
 
   dispose() {
     this._disposables.dispose();
-  }
-
-  getEvaluationExpressionProviders(): Set<NuclideEvaluationExpressionProvider> {
-    return this._evaluationExpressionProviders;
-  }
-
-  addEvaluationExpressionProvider(
-    provider: NuclideEvaluationExpressionProvider,
-  ): void {
-    this._evaluationExpressionProviders.add(provider);
-  }
-
-  removeEvaluationExpressionProvider(
-    provider: NuclideEvaluationExpressionProvider,
-  ): void {
-    this._evaluationExpressionProviders.delete(provider);
   }
 
   addDebuggerProvider(provider: NuclideDebuggerProvider): void {

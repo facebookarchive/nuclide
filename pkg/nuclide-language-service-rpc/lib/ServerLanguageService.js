@@ -35,7 +35,6 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 
 import invariant from 'assert';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
@@ -131,12 +130,6 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?SignatureHelp>,
-
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
 
@@ -361,18 +354,6 @@ export class ServerLanguageService<
       return null;
     }
     return this._service.signatureHelp(filePath, buffer, position);
-  }
-
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    if (buffer == null) {
-      return null;
-    }
-    return this._service.getEvaluationExpression(filePath, buffer, position);
   }
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {

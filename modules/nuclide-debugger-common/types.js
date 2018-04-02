@@ -46,26 +46,11 @@ export type VsAdapterType =
   | 'native_lldb'
   | 'native_gdb';
 
-export type NuclideEvaluationExpression = {
-  range: atom$Range,
-  expression: string,
-};
-
 export type NuclideDebuggerProvider = {
   name: string,
   getLaunchAttachProvider(
     connection: NuclideUri,
   ): ?DebuggerLaunchAttachProvider,
-};
-
-export type NuclideEvaluationExpressionProvider = {
-  name: string,
-  // A comma-separated list of Atom grammars understood by the provider, e.g. 'source.js.jsx'
-  selector: string,
-  getEvaluationExpression(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>,
 };
 
 export type ControlButtonSpecification = {

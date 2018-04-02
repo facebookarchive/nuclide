@@ -42,7 +42,6 @@ import type {
   FileDiagnosticMessage,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
@@ -480,14 +479,6 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?SignatureHelp> {
-    throw new Error('Not implemented');
-  }
-
-  async getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
     throw new Error('Not implemented');
   }
 

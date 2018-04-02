@@ -24,7 +24,6 @@ import type {
   SignatureHelp,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {
   AutocompleteRequest,
   AutocompleteResult,
@@ -152,13 +151,6 @@ export class NullLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?SignatureHelp> {
-    return Promise.resolve(null);
-  }
-
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
     return Promise.resolve(null);
   }
 

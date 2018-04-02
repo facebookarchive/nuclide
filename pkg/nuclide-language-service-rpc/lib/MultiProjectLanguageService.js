@@ -36,7 +36,6 @@ import type {
   CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
@@ -412,15 +411,6 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).signatureHelp(fileVersion, position);
-  }
-
-  async getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getEvaluationExpression(fileVersion, position);
   }
 
   async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {

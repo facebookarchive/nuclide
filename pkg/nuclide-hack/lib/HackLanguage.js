@@ -44,7 +44,6 @@ import {
 } from '../../nuclide-hack-common/lib/autocomplete';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
-import {getEvaluationExpression} from './evaluationExpression';
 
 const HACK_SERVICE_NAME = 'HackService';
 
@@ -136,11 +135,6 @@ async function createLanguageService(): Promise<
     findReferences: {
       version: '0.1.0',
       analyticsEventName: 'hack:findReferences',
-    },
-    evaluationExpression: {
-      version: '0.0.0',
-      analyticsEventName: 'hack.evaluationExpression',
-      matcher: {kind: 'custom', matcher: getEvaluationExpression},
     },
     autocomplete: {
       inclusionPriority: 1,

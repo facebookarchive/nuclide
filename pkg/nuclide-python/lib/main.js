@@ -92,11 +92,6 @@ const atomConfig: AtomLanguageServiceConfig = {
     priority: 20,
     definitionEventName: 'python.get-definition',
   },
-  evaluationExpression: {
-    version: '0.0.0',
-    analyticsEventName: 'python.evaluationExpression',
-    matcher: {kind: 'default'},
-  },
   typeHint: {
     version: '0.0.0',
     priority: 1,

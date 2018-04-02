@@ -31,7 +31,6 @@ import type {
   FileDiagnosticMap,
   FileDiagnosticMessage,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
@@ -388,14 +387,6 @@ class PythonSingleFileLanguageService {
       position.row,
       position.column,
     );
-  }
-
-  getEvaluationExpression(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression> {
-    throw new Error('Not Yet Implemented');
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

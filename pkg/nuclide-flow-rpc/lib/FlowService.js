@@ -39,7 +39,6 @@ import type {
   CodeAction,
   SignatureHelp,
 } from 'atom-ide-ui';
-import type {NuclideEvaluationExpression} from 'nuclide-debugger-common';
 
 import invariant from 'assert';
 
@@ -261,11 +260,6 @@ export interface FlowLanguageServiceType {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?SignatureHelp>;
-
-  getEvaluationExpression(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>;
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
 
