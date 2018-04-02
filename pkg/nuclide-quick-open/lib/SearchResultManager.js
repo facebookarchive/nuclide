@@ -406,27 +406,23 @@ export default class SearchResultManager {
   }
 
   _executeGlobalQuery(provider: GlobalProviderType<*>, query: string): void {
-    for (const globalProvider of this._globalEligibleProviders) {
-      const startTime = performance.now();
-      const loadingFn = () => {
-        this._setLoading(query, GLOBAL_KEY, globalProvider);
-        this._emitter.emit('results-changed');
-      };
-      triggerAfterWait(
-        globalProvider.executeQuery(query, this._directories),
-        LOADING_EVENT_DELAY,
-        loadingFn,
-      ).then(result => {
-        trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
-          'quickopen-source-provider': globalProvider.name,
-          'quickopen-query-duration': (
-            performance.now() - startTime
-          ).toString(),
-          'quickopen-result-count': result.length.toString(),
-        });
-        this._processResult(query, result, GLOBAL_KEY, globalProvider);
+    const startTime = performance.now();
+    const loadingFn = () => {
+      this._setLoading(query, GLOBAL_KEY, provider);
+      this._emitter.emit('results-changed');
+    };
+    triggerAfterWait(
+      provider.executeQuery(query, this._directories),
+      LOADING_EVENT_DELAY,
+      loadingFn,
+    ).then(result => {
+      trackSampled('quickopen-query-source-provider', TRACK_SOURCE_RATE, {
+        'quickopen-source-provider': provider.name,
+        'quickopen-query-duration': (performance.now() - startTime).toString(),
+        'quickopen-result-count': result.length.toString(),
       });
-    }
+      this._processResult(query, result, GLOBAL_KEY, provider);
+    });
   }
 
   _executeDirectoryQuery(
