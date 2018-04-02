@@ -268,6 +268,8 @@ export class PinnedDatatip {
         type: 'overlay',
         position: 'head',
         item: this._hostElement,
+        // above-range datatips currently assume that the overlay is below.
+        avoidOverflow: this._position !== 'above-range',
       });
       if (this._showRangeHighlight) {
         this._rangeDecoration = _editor.decorateMarker(marker, {
