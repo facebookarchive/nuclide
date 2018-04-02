@@ -1736,8 +1736,9 @@ export class LspLanguageService {
         this._logger.error(
           `Outline textDocument/documentSymbol ${
             symbol.name
-          } is missing container ${parentName}`,
+          } is missing container ${parentName}, setting container to root`,
         );
+        root.children.push(node);
       } else {
         invariant(parentCandidates.length > 0);
         // Find the first candidate that's lexically *after* our symbol.
