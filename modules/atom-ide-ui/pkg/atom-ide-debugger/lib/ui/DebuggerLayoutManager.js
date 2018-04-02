@@ -26,7 +26,7 @@ import nullthrows from 'nullthrows';
 // Debugger views
 import DebuggerControlsView from './DebuggerControlsView';
 import ThreadsView from './ThreadsView';
-import CallstackView from './CallstackView';
+import DebuggerCallstackComponent from './DebuggerCallstackComponent';
 import BreakpointsView from './BreakpointsView';
 import ScopesView from './ScopesView';
 import WatchView from './WatchView';
@@ -207,7 +207,9 @@ export default class DebuggerLayoutManager {
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () => 'Call Stack',
         isEnabled: () => true,
-        createView: () => <CallstackView service={this._service} />,
+        createView: () => (
+          <DebuggerCallstackComponent service={this._service} />
+        ),
         debuggerModeFilter: (mode: DebuggerModeType) =>
           mode !== DebuggerMode.STOPPED,
       },

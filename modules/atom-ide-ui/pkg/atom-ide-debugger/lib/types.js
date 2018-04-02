@@ -190,6 +190,11 @@ export interface IThread extends ITreeElement {
   clearCallStack(): void;
 
   /**
+   * Fetches more callstack items on user demand
+   */
+  fetchCallStack(levels?: number): Promise<void>;
+
+  /**
    * Indicates whether this thread is stopped. The callstack for stopped
    * threads can be retrieved from the debug adapter.
    */

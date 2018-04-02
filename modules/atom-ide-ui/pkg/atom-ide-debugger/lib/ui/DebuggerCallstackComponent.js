@@ -10,25 +10,37 @@
  * @format
  */
 
-import type {IDebugService, IStackFrame} from '../types';
+import type {DebuggerModeType, IDebugService, IStackFrame} from '../types';
 import * as React from 'react';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {UNKNOWN_SOURCE} from '../constants';
+import {UNKNOWN_SOURCE, DebuggerMode} from '../constants';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Observable} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
+import nullthrows from 'nullthrows';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import * as path from 'path';
+import classnames from 'classnames';
+import idx from 'idx';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {
   service: IDebugService,
 };
 
 type State = {
+  mode: DebuggerModeType,
   callstack: Array<IStackFrame>,
   selectedCallFrameId: number,
+  callStackLevels: number,
+  isFechingStackFrames: boolean,
 };
 
 export default class DebuggerCallstackComponent extends React.Component<
@@ -44,11 +56,15 @@ export default class DebuggerCallstackComponent extends React.Component<
   }
 
   _getState(): State {
-    const {focusedStackFrame, focusedThread} = this.props.service.viewModel;
+    const {service} = this.props;
+    const {focusedStackFrame, focusedThread} = service.viewModel;
     return {
+      callStackLevels: this.state == null ? 20 : this.state.callStackLevels,
+      mode: service.getDebuggerMode(),
       callstack: focusedThread == null ? [] : focusedThread.getCallStack(),
       selectedCallFrameId:
         focusedStackFrame == null ? -1 : focusedStackFrame.frameId,
+      isFechingStackFrames: false,
     };
   }
 
@@ -82,6 +98,7 @@ export default class DebuggerCallstackComponent extends React.Component<
         observableFromSubscribeFunction(
           viewModel.onDidFocusStackFrame.bind(viewModel),
         ),
+        observableFromSubscribeFunction(service.onDidChangeMode.bind(service)),
       )
         .let(fastDebounce(15))
         .subscribe(() => this.setState(this._getState())),
@@ -100,7 +117,7 @@ export default class DebuggerCallstackComponent extends React.Component<
   };
 
   render(): React.Node {
-    const {callstack} = this.state;
+    const {callstack, mode} = this.state;
     const rows =
       callstack == null
         ? []
@@ -146,16 +163,64 @@ export default class DebuggerCallstackComponent extends React.Component<
     );
 
     return (
-      <Table
-        className="debugger-callstack-table"
-        columns={columns}
-        emptyComponent={emptyComponent}
-        rows={rows}
-        selectable={cellData => cellData.frame.source.available}
-        resizable={true}
-        onSelect={this._handleStackFrameClick}
-        sortable={false}
-      />
+      <div
+        className={classnames('debugger-container-new', {
+          'debugger-container-new-disabled': mode === DebuggerMode.RUNNING,
+        })}>
+        <div className="debugger-pane-content">
+          <Table
+            className="debugger-callstack-table"
+            columns={columns}
+            emptyComponent={emptyComponent}
+            rows={rows}
+            selectable={cellData => cellData.frame.source.available}
+            resizable={true}
+            onSelect={this._handleStackFrameClick}
+            sortable={false}
+          />
+          {this._renderLoadMoreStackFrames()}
+        </div>
+      </div>
+    );
+  }
+
+  _renderLoadMoreStackFrames(): ?React.Element<any> {
+    const {viewModel} = this.props.service;
+    const {callstack, isFechingStackFrames} = this.state;
+    const totalFrames =
+      idx(viewModel, _ => _.focusedThread.stoppedDetails.totalFrames) || 0;
+    if (totalFrames <= callstack.length || callstack.length <= 1) {
+      return null;
+    }
+    return (
+      <div style={{display: 'flex'}}>
+        <Button
+          size={ButtonSizes.EXTRA_SMALL}
+          disabled={isFechingStackFrames}
+          onClick={() => {
+            this.setState({isFechingStackFrames: true});
+            nullthrows(viewModel.focusedThread)
+              .fetchCallStack(this.state.callStackLevels)
+              .then(() => this.setState(this._getState()));
+          }}>
+          More Stack Frames
+        </Button>
+        <AtomInput
+          style={{'flex-grow': '1'}}
+          placeholderText="Number of stack frames"
+          initialValue={String(this.state.callStackLevels)}
+          size="xs"
+          onDidChange={value => {
+            if (!isNaN(value)) {
+              this.setState({callStackLevels: parseInt(value, 10)});
+            }
+          }}
+        />
+        <AtomInput />
+        {isFechingStackFrames ? (
+          <LoadingSpinner size={LoadingSpinnerSizes.EXTRA_SMALL} />
+        ) : null}
+      </div>
     );
   }
 }
