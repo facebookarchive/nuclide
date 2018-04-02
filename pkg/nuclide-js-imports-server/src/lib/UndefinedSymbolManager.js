@@ -139,7 +139,8 @@ function findUndefinedValues(
     isTypeIdentifier(path.parent.type) ||
     // Other weird cases where we want to ignore identifiers
     path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
-    path.parent.type === 'QualifiedTypeIdentifier' || // SomeModule.SomeType
+    (path.parent.type === 'QualifiedTypeIdentifier' &&
+      path.parentKey !== 'qualification') || // SomeModule.SomeType
     globals.has(node.name) ||
     scope.hasBinding(node.name)
   ) {
@@ -187,7 +188,6 @@ function findUndefinedTypes(
   if (
     globals.has(node.id.name) ||
     path.parent.type === 'TypeAlias' ||
-    path.parent.type === 'TypeofTypeAnnotation' ||
     scope.hasBinding(node.id.name)
   ) {
     return;
@@ -196,7 +196,8 @@ function findUndefinedTypes(
   if (node.id && node.id.name) {
     undefinedSymbols.push({
       id: node.id.name,
-      type: 'type',
+      // "typeof" must refer to a value.
+      type: path.parent.type === 'TypeofTypeAnnotation' ? 'value' : 'type',
       location: {
         start: {line: node.loc.start.line, col: node.loc.start.column},
         end: {line: node.loc.end.line, col: node.loc.end.column},

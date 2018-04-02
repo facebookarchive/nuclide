@@ -253,6 +253,24 @@ describe('UndefinedSymbolManager', () => {
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
+  it('Works correctly with typeof', () => {
+    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const program = 'type X = typeof Y;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('Y');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
+  it('Works correctly with type members', () => {
+    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const program = 'type X = Immutable.Map.XYZ;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('Immutable');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
   it('No false positives with generics', () => {
     const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
     const program =
