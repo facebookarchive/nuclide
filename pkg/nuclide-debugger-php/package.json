@@ -24,6 +24,12 @@
         "type": "string",
         "default": "/usr/local/bin/hhvm",
         "description": "Path to the HHVM runtime on your server."
+      },
+      "hhvmServerAttachPort": {
+        "title": "Webserver debugger port",
+        "type": "number",
+        "default": "8999",
+        "description": "Port to use when attaching to webserver"
       }
     },
     "packageType": "Atom",

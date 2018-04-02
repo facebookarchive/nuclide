@@ -39,6 +39,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 type PhpDebuggerSessionConfig = {
   hhvmRuntimeArgs: string,
   hhvmRuntimePath: string,
+  hhvmServerAttachPort: number,
 };
 
 const CUSTOM_CPABILITIES = {
@@ -259,7 +260,17 @@ async function _getHHVMAttachConfig(
     action: 'attach',
   };
 
-  if (attachPort != null) {
+  // If attach port is not specified by the caller, see if one is specified
+  // in Nuclide configuration.
+  if (attachPort == null) {
+    const userConfig = getConfig();
+    if (userConfig.hhvmServerAttachPort !== '') {
+      const userPort = parseInt(userConfig.hhvmServerAttachPort, 10);
+      if (!Number.isNaN(userPort)) {
+        config.debugPort = userPort;
+      }
+    }
+  } else {
     config.debugPort = attachPort;
   }
 
