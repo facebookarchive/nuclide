@@ -206,6 +206,8 @@ export interface LanguageService {
     position: atom$Point,
   ): Promise<?SignatureHelp>;
 
+  onToggleCoverage(on: boolean): Promise<void>;
+
   getAdditionalLogFiles(
     deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>>;

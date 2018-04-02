@@ -211,6 +211,8 @@ export interface FlowLanguageServiceType {
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>;
 
+  onToggleCoverage(set: boolean): Promise<void>;
+
   getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>>;
   resolveCodeLens(
     filePath: NuclideUri,

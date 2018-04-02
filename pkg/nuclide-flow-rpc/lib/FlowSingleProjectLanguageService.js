@@ -471,6 +471,10 @@ export class FlowSingleProjectLanguageService {
     };
   }
 
+  async onToggleCoverage(set: boolean): Promise<void> {
+    return;
+  }
+
   async _forceRecheck(file: string): Promise<boolean> {
     try {
       await this._process.execFlow(

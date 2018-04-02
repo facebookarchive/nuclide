@@ -68,6 +68,10 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
+  onToggleCoverage(set: boolean): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,

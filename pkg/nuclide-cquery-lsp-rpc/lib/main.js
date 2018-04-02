@@ -85,6 +85,8 @@ export interface CqueryLanguageService extends LanguageService {
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
+  onToggleCoverage(set: boolean): Promise<void>;
+
   getOutline(fileVersion: FileVersion): Promise<?Outline>;
 
   getCodeActions(

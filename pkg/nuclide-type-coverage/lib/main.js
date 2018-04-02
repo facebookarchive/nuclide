@@ -67,6 +67,11 @@ class Activation {
         'nuclide-type-coverage:toggle-inline-display',
         () => this._toggleEvents.next(),
       ),
+      this._shouldRenderDiagnostics.subscribe(shouldRender =>
+        this._activeEditorRegistry._providerRegistry._providers.forEach(
+          provider => provider.onToggle && provider.onToggle(shouldRender),
+        ),
+      ),
     );
 
     this._disposables.add(

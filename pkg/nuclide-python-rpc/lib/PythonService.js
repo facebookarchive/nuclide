@@ -312,6 +312,10 @@ class PythonSingleFileLanguageService {
     };
   }
 
+  async onToggleCoverage(set: boolean): Promise<void> {
+    return;
+  }
+
   highlight(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,

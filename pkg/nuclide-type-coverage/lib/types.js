@@ -20,4 +20,5 @@ export interface CoverageProvider {
   grammarScopes: Array<string>;
   displayName: string;
   icon?: IconName;
+  onToggle?: (clicked: boolean) => mixed;
 }

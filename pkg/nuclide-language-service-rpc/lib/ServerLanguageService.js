@@ -82,6 +82,8 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline>,
 
+  onToggleCoverage(set: boolean): Promise<void>,
+
   getCodeActions(
     filePath: NuclideUri,
     range: atom$Range,
@@ -235,6 +237,10 @@ export class ServerLanguageService<
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     return this._service.getCoverage(filePath);
+  }
+
+  onToggleCoverage(set: boolean): Promise<void> {
+    return this._service.onToggleCoverage(set);
   }
 
   async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {

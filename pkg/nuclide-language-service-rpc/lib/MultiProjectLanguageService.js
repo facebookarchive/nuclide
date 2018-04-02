@@ -292,6 +292,15 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     );
   }
 
+  async onToggleCoverage(set: boolean): Promise<void> {
+    await Promise.all(
+      (await this.getAllLanguageServices()).map(async languageService => {
+        const ls = await languageService;
+        ls.onToggleCoverage(set);
+      }),
+    );
+  }
+
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,

@@ -1648,6 +1648,10 @@ export class LspLanguageService {
     };
   }
 
+  async onToggleCoverage(set: boolean): Promise<void> {
+    return;
+  }
+
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
     if (
       this._state !== 'Running' ||

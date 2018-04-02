@@ -351,6 +351,10 @@ class HackSingleFileLanguageService {
     return convertCoverage(filePath, result);
   }
 
+  async onToggleCoverage(set: boolean): Promise<void> {
+    return;
+  }
+
   async getOutline(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
