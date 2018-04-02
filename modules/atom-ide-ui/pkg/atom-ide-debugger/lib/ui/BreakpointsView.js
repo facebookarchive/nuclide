@@ -27,10 +27,10 @@ export default class BreakpointsView extends React.PureComponent<Props> {
     return (
       <div
         className={classnames(
-          'nuclide-debugger-container-new',
-          'nuclide-debugger-breakpoint-list',
+          'debugger-container-new',
+          'debugger-breakpoint-list',
         )}>
-        <div className="nuclide-debugger-pane-content ">
+        <div className="debugger-pane-content ">
           <BreakpointListComponent service={service} />
         </div>
       </div>

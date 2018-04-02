@@ -141,12 +141,12 @@ export default class RemoteControlService {
       defaultLocation: 'bottom',
       environmentVariables,
       preservedCommands: [
-        'nuclide-debugger:continue-debugging',
-        'nuclide-debugger:stop-debugging',
-        'nuclide-debugger:restart-debugging',
-        'nuclide-debugger:step-over',
-        'nuclide-debugger:step-into',
-        'nuclide-debugger:step-out',
+        'debugger:continue-debugging',
+        'debugger:stop-debugging',
+        'debugger:restart-debugging',
+        'debugger:step-over',
+        'debugger:step-into',
+        'debugger:step-out',
       ],
     };
 

@@ -176,13 +176,9 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
 
   render(): React.Node {
     const emptyComponent = this.state.attachTargets.isPending
-      ? () => (
-          <div className="nuclide-debugger-php-attach-list-empty">
-            Loading...
-          </div>
-        )
+      ? () => <div className="debugger-php-attach-list-empty">Loading...</div>
       : () => (
-          <div className="nuclide-debugger-php-attach-list-empty">
+          <div className="debugger-php-attach-list-empty">
             To enable attaching this debugger, pass the arguments:<br />
             <b>--mode vsdebug --vsDebugPort &lt;port&gt;</b>
             <br />
@@ -229,11 +225,11 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
           <label className="input-label nuclide-ui-radiogroup-label">
             <b>Attach to webserver</b>
           </label>
-          <div className="nuclide-debugger-php-launch-attach-ui-select-project">
+          <div className="debugger-php-launch-attach-ui-select-project">
             <label>Selected Project Directory: </label>
             {/* $FlowFixMe(>=0.53.0) Flow suppress */}
             <Dropdown
-              className="inline-block nuclide-debugger-connection-box"
+              className="inline-block debugger-connection-box"
               options={this.state.pathMenuItems}
               onChange={this._handlePathsDropdownChange}
               value={this.state.selectedPathIndex}
@@ -261,7 +257,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
             <label className="input-label nuclide-ui-radiogroup-label">
               <b>Attach to an already-running PHP/Hack script</b>
             </label>
-            <div className="nuclide-debugger-php-launch-attach-ui-select-script">
+            <div className="debugger-php-launch-attach-ui-select-script">
               {this.state.attachType === 'script' ? (
                 <Table
                   emptyComponent={emptyComponent}

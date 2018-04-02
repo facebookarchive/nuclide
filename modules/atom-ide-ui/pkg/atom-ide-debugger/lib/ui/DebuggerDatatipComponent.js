@@ -31,7 +31,7 @@ export default class DebuggerDatatipComponent extends React.Component<Props> {
       datatipElement = <LoadingSpinner delay={100} size="EXTRA_SMALL" />;
     } else {
       datatipElement = (
-        <span className="nuclide-debugger-datatip-value">
+        <span className="debugger-datatip-value">
           <LazyNestedValueComponent
             evaluationResult={evaluationResult}
             expression={expression}
@@ -42,6 +42,6 @@ export default class DebuggerDatatipComponent extends React.Component<Props> {
         </span>
       );
     }
-    return <div className="nuclide-debugger-datatip">{datatipElement}</div>;
+    return <div className="debugger-datatip">{datatipElement}</div>;
   }
 }

@@ -161,7 +161,7 @@ export default class DebuggerPaneContainerViewModel {
           process.nextTick(() => {
             atom.commands.dispatch(
               atom.views.getView(atom.workspace),
-              'nuclide-debugger:show',
+              'debugger:show',
             );
           });
         } else {

@@ -2,45 +2,45 @@
 @import "octicon-mixins.less";
 @import "octicon-utf-codes.less";
 
-.nuclide-debugger-breakpoint-icon,
-.nuclide-debugger-shadow-breakpoint-icon {
+.debugger-breakpoint-icon,
+.debugger-shadow-breakpoint-icon {
   // Needs to match .diagnostics-gutter-ui-gutter-error
   .octicon(primitive-dot, @size: 130%);
 }
 
-.nuclide-debugger-breakpoint-icon,
-.nuclide-debugger-breakpoint-icon-disabled,
-.nuclide-debugger-breakpoint-icon-unresolved,
-.nuclide-debugger-breakpoint-icon-conditional,
-.nuclide-debugger-shadow-breakpoint-icon {
+.debugger-breakpoint-icon,
+.debugger-breakpoint-icon-disabled,
+.debugger-breakpoint-icon-unresolved,
+.debugger-breakpoint-icon-conditional,
+.debugger-shadow-breakpoint-icon {
   text-align: center;
   display: block;
   width: 0.8em;
   cursor: pointer;
 }
 
-.nuclide-debugger-breakpoint-icon-nonconditional {
+.debugger-breakpoint-icon-nonconditional {
   color: @text-color-info;
 }
 
-.nuclide-debugger-breakpoint-icon-conditional {
+.debugger-breakpoint-icon-conditional {
   color: @text-color-warning;
 }
 
-.nuclide-debugger-breakpoint-icon-disabled {
+.debugger-breakpoint-icon-disabled {
   .octicon(circle-slash, @size: 78%);
   position: relative;
   top: -4px;
   left: 2px;
 }
 
-.nuclide-debugger-breakpoint-icon-unresolved {
+.debugger-breakpoint-icon-unresolved {
   .octicon(unverified, @size: 80%);
   position: relative;
   top: -2px;
 }
 
-.nuclide-debugger-shadow-breakpoint-icon {
+.debugger-shadow-breakpoint-icon {
   color: fade(@text-color-info, 40%);
 }
 
@@ -49,7 +49,7 @@
 // Use a gradient to simulate a pseudo-border.
 @backgroundColor: fade(@background-color-info, 30%);
 @pseudoBorderColor: fade(@background-color-info, 80%);
-.nuclide-current-line-highlight {
+.debugger-current-line-highlight {
   background: linear-gradient(
     to bottom,
     @pseudoBorderColor 0%,

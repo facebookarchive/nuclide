@@ -127,7 +127,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
         <label>Recently launched commands: </label>
         {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Dropdown
-          className="inline-block nuclide-debugger-recently-launched"
+          className="inline-block debugger-recently-launched"
           options={[
             {label: '', value: null},
             ...this.state.recentlyLaunchedScripts,
@@ -178,12 +178,12 @@ export class LaunchUiComponent extends React.Component<Props, State> {
 
   _getRecentlyLaunchedKey() {
     const hostname = nuclideUri.getHostname(this.props.targetUri);
-    return 'nuclide-debugger-php.recentlyLaunchedScripts:' + hostname;
+    return 'debugger-php.recentlyLaunchedScripts:' + hostname;
   }
 
   _getCwdKey() {
     const hostname = nuclideUri.getHostname(this.props.targetUri);
-    return 'nuclide-debugger-php.Cwd:' + hostname;
+    return 'debugger-php.Cwd:' + hostname;
   }
 
   _getLastCwd(): ?string {

@@ -64,8 +64,8 @@ export default class WatchView extends React.PureComponent<Props> {
       ._watchExpressionComponentWrapped;
 
     return (
-      <div className={classnames('nuclide-debugger-container-new')}>
-        <div className="nuclide-debugger-pane-content">
+      <div className={classnames('debugger-container-new')}>
+        <div className="debugger-pane-content">
           <WatchExpressionComponentWrapped
             onAddWatchExpression={service.addWatchExpression.bind(service)}
             onRemoveWatchExpression={service.removeWatchExpressions.bind(

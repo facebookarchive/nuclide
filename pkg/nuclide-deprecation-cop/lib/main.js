@@ -25,6 +25,17 @@ const DEPRECATED_COMMANDS = {
   'nuclide-console:toggle': 'console:toggle',
   'nuclide-console:clear': 'console:clear',
   'nuclide-console:copy-message': 'console:copy-message',
+  'nuclide-debugger:toggle': 'debugger:toggle',
+  'nuclide-debugger:show': 'debugger:show',
+  'nuclide-debugger:hide': 'debugger:hide',
+  'nuclide-debugger:restart-debugging': 'debugger:restart-debugging',
+  'nuclide-debugger:continue-debugging': 'debugger:continue-debugging',
+  'nuclide-debugger:stop-debugging': 'debugger:stop-debugging',
+  'nuclide-debugger:step-over': 'debugger:step-over',
+  'nuclide-debugger:step-into': 'debugger:step-into',
+  'nuclide-debugger:step-out': 'debugger:step-out',
+  'nuclide-debugger:run-to-location': 'debugger:run-to-location',
+  'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint',
 };
 
 class Activation {

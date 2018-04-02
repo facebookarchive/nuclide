@@ -123,8 +123,8 @@ export default class BreakpointConfigComponent extends React.Component<
   render(): React.Node {
     return (
       <Modal onDismiss={this.props.onDismiss}>
-        <div className="padded nuclide-debugger-bp-dialog">
-          <h1 className="nuclide-debugger-bp-config-header">Edit breakpoint</h1>
+        <div className="padded debugger-bp-dialog">
+          <h1 className="debugger-bp-config-header">Edit breakpoint</h1>
           <div className="block">
             <label>
               Breakpoint at {nuclideUri.basename(this.props.breakpoint.uri)}
@@ -165,7 +165,7 @@ export default class BreakpointConfigComponent extends React.Component<
             is hit, but the debugger will only break execution if the expression
             evaluates to true.
           </label>
-          <div className="nuclide-debugger-bp-config-actions">
+          <div className="debugger-bp-config-actions">
             <ButtonGroup>
               <Button onClick={this.props.onDismiss}>Cancel</Button>
               <Button

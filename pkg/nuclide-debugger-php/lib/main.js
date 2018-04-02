@@ -27,7 +27,7 @@ export function getHomeFragments(): HomeFragments {
       icon: 'nuclicon-debugger',
       description:
         'Connect to an HHVM server process and debug Hack/PHP code from within Nuclide.',
-      command: 'nuclide-debugger:show-attach-dialog',
+      command: 'debugger:show-attach-dialog',
     },
     priority: 6,
   };

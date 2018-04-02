@@ -118,7 +118,7 @@ export default class DebuggerCallstackComponent extends React.Component<
 
             if (isSelected) {
               // $FlowIssue className is an optional property of a table row
-              cellData.className = 'nuclide-debugger-callstack-item-selected';
+              cellData.className = 'debugger-callstack-item-selected';
             }
 
             return cellData;
@@ -142,14 +142,12 @@ export default class DebuggerCallstackComponent extends React.Component<
     ];
 
     const emptyComponent = () => (
-      <div className="nuclide-debugger-callstack-list-empty">
-        callstack unavailable
-      </div>
+      <div className="debugger-callstack-list-empty">callstack unavailable</div>
     );
 
     return (
       <Table
-        className="nuclide-debugger-callstack-table"
+        className="debugger-callstack-table"
         columns={columns}
         emptyComponent={emptyComponent}
         rows={rows}

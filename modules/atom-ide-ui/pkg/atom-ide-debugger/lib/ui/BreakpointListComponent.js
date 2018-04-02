@@ -131,7 +131,7 @@ export default class BreakpointListComponent extends React.Component<
         const conditionElement =
           supportsConditionalBreakpoints && breakpoint.condition != null ? (
             <div
-              className="nuclide-debugger-breakpoint-condition"
+              className="debugger-breakpoint-condition"
               title={`Breakpoint condition: ${breakpoint.condition}`}
               data-path={path}
               data-line={line}
@@ -139,7 +139,7 @@ export default class BreakpointListComponent extends React.Component<
               onClick={event => {
                 atom.commands.dispatch(
                   event.target,
-                  'nuclide-debugger:edit-breakpoint',
+                  'debugger:edit-breakpoint',
                 );
               }}>
               Condition: {breakpoint.condition}
@@ -150,8 +150,8 @@ export default class BreakpointListComponent extends React.Component<
           <div className="inline-block">
             <div
               className={classnames({
-                'nuclide-debugger-breakpoint-disabled': !enabled,
-                'nuclide-debugger-breakpoint-with-condition': Boolean(
+                'debugger-breakpoint-disabled': !enabled,
+                'debugger-breakpoint-with-condition': Boolean(
                   breakpoint.condition,
                 ),
               })}
@@ -165,8 +165,8 @@ export default class BreakpointListComponent extends React.Component<
                 onClick={(event: SyntheticEvent<>) => event.stopPropagation()}
                 title={title}
                 className={classnames(
-                  verified ? '' : 'nuclide-debugger-breakpoint-unresolved',
-                  'nuclide-debugger-breakpoint-checkbox',
+                  verified ? '' : 'debugger-breakpoint-unresolved',
+                  'debugger-breakpoint-checkbox',
                 )}
               />
               <span
@@ -174,10 +174,10 @@ export default class BreakpointListComponent extends React.Component<
                 data-path={path}
                 data-bpid={bpId}
                 data-line={line}>
-                <div className="nuclide-debugger-breakpoint-condition-controls">
+                <div className="debugger-breakpoint-condition-controls">
                   <Icon
                     icon="pencil"
-                    className="nuclide-debugger-breakpoint-condition-control"
+                    className="debugger-breakpoint-condition-control"
                     data-path={path}
                     data-bpid={bpId}
                     data-line={line}
@@ -185,13 +185,13 @@ export default class BreakpointListComponent extends React.Component<
                       track(AnalyticsEvents.DEBUGGER_EDIT_BREAKPOINT_FROM_ICON);
                       atom.commands.dispatch(
                         event.target,
-                        'nuclide-debugger:edit-breakpoint',
+                        'debugger:edit-breakpoint',
                       );
                     }}
                   />
                   <Icon
                     icon="x"
-                    className="nuclide-debugger-breakpoint-condition-control"
+                    className="debugger-breakpoint-condition-control"
                     data-path={path}
                     data-bpid={bpId}
                     data-line={line}
@@ -201,7 +201,7 @@ export default class BreakpointListComponent extends React.Component<
                       );
                       atom.commands.dispatch(
                         event.target,
-                        'nuclide-debugger:remove-breakpoint',
+                        'debugger:remove-breakpoint',
                       );
                       event.stopPropagation();
                     }}
@@ -222,26 +222,26 @@ export default class BreakpointListComponent extends React.Component<
             data-bpid={bpId}
             data-line={line}
             title={title}
-            className="nuclide-debugger-breakpoint">
+            className="debugger-breakpoint">
             {content}
           </ListViewItem>
         );
       });
     const separator =
       breakpoints.length !== 0 ? (
-        <hr className="nuclide-ui-hr nuclide-debugger-breakpoint-separator" />
+        <hr className="nuclide-ui-hr debugger-breakpoint-separator" />
       ) : null;
     return (
       <div>
         {exceptionBreakpoints.map(exceptionBreakpoint => {
           return (
             <div
-              className="nuclide-debugger-breakpoint"
+              className="debugger-breakpoint"
               key={exceptionBreakpoint.getId()}>
               <Checkbox
                 className={classnames(
-                  'nuclide-debugger-breakpoint-checkbox',
-                  'nuclide-debugger-exception-checkbox',
+                  'debugger-breakpoint-checkbox',
+                  'debugger-exception-checkbox',
                 )}
                 onChange={enabled =>
                   service.enableOrDisableBreakpoints(

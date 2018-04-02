@@ -111,9 +111,7 @@ export default class DebuggerLayoutManager {
   registerContextMenus(): void {
     // Add context menus to let the user restore hidden panes.
     this._debuggerPanes.forEach(pane => {
-      const command = `nuclide-debugger:show-window-${pane
-        .title()
-        .replace(/ /g, '-')}`;
+      const command = `debugger:show-window-${pane.title().replace(/ /g, '-')}`;
       this._disposables.add(
         atom.commands.add('atom-workspace', {
           [String(command)]: () => this.showHiddenDebuggerPane(pane.uri),
@@ -122,7 +120,7 @@ export default class DebuggerLayoutManager {
 
       this._disposables.add(
         atom.contextMenu.add({
-          '.nuclide-debugger-container': [
+          '.debugger-container': [
             {
               label: 'Debugger Views',
               submenu: [
@@ -479,7 +477,7 @@ export default class DebuggerLayoutManager {
   }
 
   _getPaneStorageKey(uri: string): string {
-    return 'nuclide-debugger-pane-location-' + uri;
+    return 'debugger-pane-location-' + uri;
   }
 
   _deserializeSavedLocation(savedItem: string): ?DebuggerPaneLocation {

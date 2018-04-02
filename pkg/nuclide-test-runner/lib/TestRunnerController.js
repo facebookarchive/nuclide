@@ -188,7 +188,7 @@ export class TestRunnerController {
     // Resume the debugger if needed.
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:continue-debugging',
+      'debugger:continue-debugging',
     );
     this._stopListening();
     // Respond in the UI immediately and assume the process is properly killed.

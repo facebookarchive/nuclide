@@ -286,7 +286,7 @@ class ValueComponent extends React.Component<
     return (
       <div className="nuclide-ui-lazy-nested-value-container">
         <AtomInput
-          className="nuclide-debugger-watch-expression-input"
+          className="debugger-watch-expression-input"
           size="sm"
           autofocus={true}
           startSelected={true}
@@ -307,10 +307,10 @@ class ValueComponent extends React.Component<
   _renderEditableScopeView(): ?React.Element<any> {
     const {isRoot, setVariable} = this.props;
     return isRoot && setVariable && !this.state.isBeingEdited ? (
-      <div className="nuclide-debugger-scopes-view-controls">
+      <div className="debugger-scopes-view-controls">
         <Icon
           icon="pencil"
-          className="nuclide-debugger-scopes-view-edit-control"
+          className="debugger-scopes-view-edit-control"
           onClick={_ => {
             track(EDIT_VALUE_FROM_ICON);
             this._showSetVariableDisplay();

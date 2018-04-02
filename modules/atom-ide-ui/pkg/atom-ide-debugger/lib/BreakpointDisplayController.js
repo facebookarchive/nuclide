@@ -76,7 +76,7 @@ export default class BreakpointDisplayController {
 
     // Configure the gutter.
     const gutter = editor.addGutter({
-      name: 'nuclide-breakpoint',
+      name: 'debugger-breakpoint',
       visible: false,
       // Priority is -200 by default and 0 is the line number
       priority: -1100,
@@ -118,7 +118,10 @@ export default class BreakpointDisplayController {
 
   _registerGutterMouseHandlers(gutter: atom$Gutter): void {
     const gutterView = atom.views.getView(gutter);
-    if (gutter.name !== 'line-number' && gutter.name !== 'nuclide-breakpoint') {
+    if (
+      gutter.name !== 'line-number' &&
+      gutter.name !== 'debugger-breakpoint'
+    ) {
       return;
     }
     const boundClickHandler = this._handleGutterClick.bind(this);
@@ -348,13 +351,11 @@ export default class BreakpointDisplayController {
     // Don't toggle a breakpoint if the user clicked on something in the gutter that is not
     // the debugger, such as clicking on a line number to select the line.
     if (
-      !target.classList.contains('nuclide-debugger-shadow-breakpoint-icon') &&
-      !target.classList.contains('nuclide-debugger-breakpoint-icon') &&
-      !target.classList.contains('nuclide-debugger-breakpoint-icon-disabled') &&
-      !target.classList.contains(
-        'nuclide-debugger-breakpoint-icon-unresolved',
-      ) &&
-      !target.classList.contains('nuclide-debugger-breakpoint-icon-conditional')
+      !target.classList.contains('debugger-shadow-breakpoint-icon') &&
+      !target.classList.contains('debugger-breakpoint-icon') &&
+      !target.classList.contains('debugger-breakpoint-icon-disabled') &&
+      !target.classList.contains('debugger-breakpoint-icon-unresolved') &&
+      !target.classList.contains('debugger-breakpoint-icon-conditional')
     ) {
       return;
     }
@@ -371,7 +372,7 @@ export default class BreakpointDisplayController {
         if (featureConfig.get('atom-ide-debugger.showDebuggerOnBpSet')) {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
-            'nuclide-debugger:show',
+            'debugger:show',
             {
               showOnlyIfHidden: true,
             },
@@ -490,13 +491,12 @@ export default class BreakpointDisplayController {
     }
 
     elem.className = classnames({
-      'nuclide-debugger-breakpoint-icon': !isShadow && enabled && !unresolved,
-      'nuclide-debugger-breakpoint-icon-conditional': conditional,
-      'nuclide-debugger-breakpoint-icon-nonconditional': !conditional,
-      'nuclide-debugger-shadow-breakpoint-icon': isShadow,
-      'nuclide-debugger-breakpoint-icon-disabled': !isShadow && !enabled,
-      'nuclide-debugger-breakpoint-icon-unresolved':
-        !isShadow && enabled && unresolved,
+      'debugger-breakpoint-icon': !isShadow && enabled && !unresolved,
+      'debugger-breakpoint-icon-conditional': conditional,
+      'debugger-breakpoint-icon-nonconditional': !conditional,
+      'debugger-shadow-breakpoint-icon': isShadow,
+      'debugger-breakpoint-icon-disabled': !isShadow && !enabled,
+      'debugger-breakpoint-icon-unresolved': !isShadow && enabled && unresolved,
     });
 
     if (!isShadow) {

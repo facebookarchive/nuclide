@@ -80,7 +80,7 @@ function SVGButton(props: {
 }): React.Element<any> {
   return (
     <Button
-      className="nuclide-debugger-stepping-svg-button"
+      className="debugger-stepping-svg-button"
       onClick={props.onClick}
       disabled={props.disabled}
       tooltip={props.tooltip}>
@@ -196,7 +196,7 @@ export default class DebuggerSteppingComponent extends React.Component<
 
     const loadingIndicator = !isPausing ? null : (
       <LoadingSpinner
-        className="nuclide-debugger-stepping-playpause-button-loading"
+        className="debugger-stepping-playpause-button-loading"
         size={LoadingSpinnerSizes.EXTRA_SMALL}
       />
     );
@@ -205,13 +205,13 @@ export default class DebuggerSteppingComponent extends React.Component<
       debuggerMode !== DebuggerMode.STOPPED ? (
         <Button
           icon="sync"
-          className="nuclide-debugger-stepping-button-separated"
+          className="debugger-stepping-button-separated"
           disabled={isStopped}
           tooltip={{
             ...defaultTooltipOptions,
             title:
               'Restart the debugger using the same settings as the current debug session',
-            keyBindingCommand: 'nuclide-debugger:restart-debugging',
+            keyBindingCommand: 'debugger:restart-debugging',
           }}
           onClick={() => service.restartProcess()}
         />
@@ -251,8 +251,8 @@ export default class DebuggerSteppingComponent extends React.Component<
     }
 
     return (
-      <div className="nuclide-debugger-stepping-component">
-        <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
+      <div className="debugger-stepping-component">
+        <ButtonGroup className="debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
             disabled={isPausing || isReadonlyTarget || pausableThread == null}
@@ -260,11 +260,11 @@ export default class DebuggerSteppingComponent extends React.Component<
               ...defaultTooltipOptions,
               title: playPauseTitle,
               keyBindingCommand: isPaused
-                ? 'nuclide-debugger:continue-debugging'
+                ? 'debugger:continue-debugging'
                 : undefined,
             }}
             onClick={this._togglePauseState.bind(this)}>
-            <div className="nuclide-debugger-stepping-playpause-button">
+            <div className="debugger-stepping-playpause-button">
               {playPauseIcon}
               {loadingIndicator}
             </div>
@@ -273,21 +273,21 @@ export default class DebuggerSteppingComponent extends React.Component<
             icon={STEP_OVER_ICON}
             disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step over"
-            keyBindingCommand="nuclide-debugger:step-over"
+            keyBindingCommand="debugger:step-over"
             onClick={() => nullthrows(focusedThread).next()}
           />
           <DebuggerStepButton
             icon={STEP_INTO_ICON}
             disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step into"
-            keyBindingCommand="nuclide-debugger:step-into"
+            keyBindingCommand="debugger:step-into"
             onClick={() => nullthrows(focusedThread).stepIn()}
           />
           <DebuggerStepButton
             icon={STEP_OUT_ICON}
             disabled={!isPaused || isReadonlyTarget || focusedThread == null}
             title="Step out"
-            keyBindingCommand="nuclide-debugger:step-out"
+            keyBindingCommand="debugger:step-out"
             onClick={() => nullthrows(focusedThread).stepOut()}
           />
           <Button
@@ -296,12 +296,12 @@ export default class DebuggerSteppingComponent extends React.Component<
             tooltip={{
               ...defaultTooltipOptions,
               title: 'Detach debugger',
-              keyBindingCommand: 'nuclide-debugger:stop-debugging',
+              keyBindingCommand: 'debugger:stop-debugging',
             }}
             onClick={() => service.stopProcess()}
           />
         </ButtonGroup>
-        <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
+        <ButtonGroup className="debugger-stepping-buttongroup">
           {customControlButtons.map((specification, i) => {
             const buttonProps = {
               ...specification,

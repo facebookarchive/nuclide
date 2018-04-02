@@ -14,7 +14,6 @@
 <PROJECT_ROOT>/modules/nuclide-node-transpiler/spec/fixtures/.*
 ; large dirs that are not imported
 <PROJECT_ROOT>/docs/.*
-<PROJECT_ROOT>/pkg/nuclide-debugger/VendorLib/devtools/.*
 
 [libs]
 flow-libs/

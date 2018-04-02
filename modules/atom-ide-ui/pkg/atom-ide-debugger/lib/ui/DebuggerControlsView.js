@@ -75,15 +75,15 @@ export default class DebuggerControlsView extends React.PureComponent<
     const {mode} = this.state;
     const debuggerStoppedNotice =
       mode !== DebuggerMode.STOPPED ? null : (
-        <div className="nuclide-debugger-pane-content">
-          <div className="nuclide-debugger-state-notice">
+        <div className="debugger-pane-content">
+          <div className="debugger-state-notice">
             <span>The debugger is not attached.</span>
             <div className="padded">
               <TruncatedButton
                 onClick={() =>
                   atom.commands.dispatch(
                     atom.views.getView(atom.workspace),
-                    'nuclide-debugger:show-attach-dialog',
+                    'debugger:show-attach-dialog',
                   )
                 }
                 icon="nuclicon-debugger"
@@ -93,7 +93,7 @@ export default class DebuggerControlsView extends React.PureComponent<
                 onClick={() =>
                   atom.commands.dispatch(
                     atom.views.getView(atom.workspace),
-                    'nuclide-debugger:show-launch-dialog',
+                    'debugger:show-launch-dialog',
                   )
                 }
                 icon="nuclicon-debugger"
@@ -119,12 +119,12 @@ export default class DebuggerControlsView extends React.PureComponent<
 
     const debugeeRunningNotice =
       mode !== DebuggerMode.RUNNING ? null : (
-        <div className="nuclide-debugger-pane-content">
-          <div className="nuclide-debugger-state-notice">
+        <div className="debugger-pane-content">
+          <div className="debugger-state-notice">
             The debug target is currently running.
           </div>
           {targetDescription == null ? null : (
-            <div className="nuclide-debugger-target-description">
+            <div className="debugger-target-description">
               {targetDescription}
             </div>
           )}
@@ -132,11 +132,11 @@ export default class DebuggerControlsView extends React.PureComponent<
       );
 
     return (
-      <div className="nuclide-debugger-container-new">
-        <div className="nuclide-debugger-section-header">
+      <div className="debugger-container-new">
+        <div className="debugger-section-header">
           <DebuggerControllerView service={service} />
         </div>
-        <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
+        <div className="debugger-section-header debugger-controls-section">
           <DebuggerSteppingComponent service={service} />
         </div>
         {debugeeRunningNotice}

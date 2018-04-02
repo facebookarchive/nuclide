@@ -108,7 +108,7 @@ export class DefinitionPreviewView extends React.Component<
     const marker = editor.markBufferPosition(definition.position);
     editor.decorateMarker(marker, {
       type: 'line',
-      class: 'nuclide-current-line-highlight',
+      class: 'debugger-current-line-highlight',
     });
   }
 

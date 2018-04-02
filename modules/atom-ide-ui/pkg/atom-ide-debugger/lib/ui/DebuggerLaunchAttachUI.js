@@ -49,7 +49,7 @@ function setLastUsedDebugger(
   action: DebuggerConfigAction,
   debuggerDisplayName: string,
 ): void {
-  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
+  const key = 'DEBUGGER_LAST_USED_' + host + '_' + action;
   localStorage.setItem(key, debuggerDisplayName);
 }
 
@@ -57,7 +57,7 @@ function getLastUsedDebugger(
   host: string,
   action: DebuggerConfigAction,
 ): ?string {
-  const key = 'NUCLIDE_DEBUGGER_LAST_USED_' + host + '_' + action;
+  const key = 'DEBUGGER_LAST_USED_' + host + '_' + action;
   return localStorage.getItem(key);
 }
 
@@ -220,7 +220,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       providerContent = (
         <div>
           <Tabs
-            className="nuclide-debugger-launch-attach-tabs"
+            className="debugger-launch-attach-tabs"
             tabs={tabs}
             activeTabName={this.state.selectedProviderTab}
             triggeringEvent="onClick"
@@ -229,7 +229,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
               this.setState({selectedProviderTab: newTab.name});
             }}
           />
-          <div className="nuclide-debugger-launch-attach-tabcontent">
+          <div className="debugger-launch-attach-tabcontent">
             {debuggerConfigPage}
           </div>
         </div>
@@ -242,15 +242,15 @@ export default class DebuggerLaunchAttachUI extends React.Component<
     } else {
       // No debugging providers available.
       providerContent = (
-        <div className="nuclide-debugger-launch-attach-tabcontent">
+        <div className="debugger-launch-attach-tabcontent">
           There are no debuggers available.
         </div>
       );
     }
 
     return (
-      <div className="padded nuclide-debugger-launch-attach-container">
-        <h1 className="nuclide-debugger-launch-attach-header">
+      <div className="padded debugger-launch-attach-container">
+        <h1 className="debugger-launch-attach-header">
           <span className="padded">
             {this.props.dialogMode === 'attach'
               ? 'Attach debugger to '
@@ -265,7 +265,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
           />
         </h1>
         {providerContent}
-        <div className="nuclide-debugger-launch-attach-actions">
+        <div className="debugger-launch-attach-actions">
           <ButtonGroup>
             <Button
               onClick={() =>

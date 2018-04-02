@@ -62,7 +62,7 @@ import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
-const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
+const DATATIP_PACKAGE_NAME = 'debugger-datatip';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -152,112 +152,104 @@ class Activation {
       }),
       // Commands.
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show-attach-dialog': () => {
+        'debugger:show-attach-dialog': () => {
           const boundFn = this._showLaunchAttachDialog.bind(this);
           boundFn('attach');
         },
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show-launch-dialog': () => {
+        'debugger:show-launch-dialog': () => {
           const boundFn = this._showLaunchAttachDialog.bind(this);
           boundFn('launch');
         },
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:continue-debugging': this._continue.bind(this),
+        'debugger:continue-debugging': this._continue.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:stop-debugging': this._stop.bind(this),
+        'debugger:stop-debugging': this._stop.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:restart-debugging': this._restart.bind(this),
+        'debugger:restart-debugging': this._restart.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:step-over': this._stepOver.bind(this),
+        'debugger:step-over': this._stepOver.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:step-into': this._stepInto.bind(this),
+        'debugger:step-into': this._stepInto.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:step-out': this._stepOut.bind(this),
+        'debugger:step-out': this._stepOut.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
+        'debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(
+        'debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(
           this,
         ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:edit-breakpoint': this._configureBreakpoint.bind(
-          this,
-        ),
+        'debugger:edit-breakpoint': this._configureBreakpoint.bind(this),
       }),
-      atom.commands.add('.nuclide-debugger-thread-list-item', {
-        'nuclide-debugger:terminate-thread': this._terminateThread.bind(this),
+      atom.commands.add('.debugger-thread-list-item', {
+        'debugger:terminate-thread': this._terminateThread.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(
-          this,
-        ),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:enable-all-breakpoints': this._enableAllBreakpoints.bind(
+        'debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(
           this,
         ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:disable-all-breakpoints': this._disableAllBreakpoints.bind(
+        'debugger:enable-all-breakpoints': this._enableAllBreakpoints.bind(
           this,
         ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:run-to-location': this._runToLocation.bind(this),
-      }),
-      atom.commands.add('.nuclide-debugger-expression-value-list', {
-        'nuclide-debugger:copy-debugger-expression-value': this._copyDebuggerExpressionValue.bind(
+        'debugger:disable-all-breakpoints': this._disableAllBreakpoints.bind(
           this,
         ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:copy-debugger-callstack': this._copyDebuggerCallstack.bind(
+        'debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'debugger:add-to-watch': this._addToWatch.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'debugger:run-to-location': this._runToLocation.bind(this),
+      }),
+      atom.commands.add('.debugger-expression-value-list', {
+        'debugger:copy-debugger-expression-value': this._copyDebuggerExpressionValue.bind(
+          this,
+        ),
+      }),
+      atom.commands.add('atom-workspace', {
+        'debugger:copy-debugger-callstack': this._copyDebuggerCallstack.bind(
           this,
         ),
       }),
       // Context Menu Items.
       atom.contextMenu.add({
-        '.nuclide-debugger-disassembly-view': [
-          {
-            label: 'Copy disassembly',
-            command: 'nuclide-debugger:copy-debugger-disassembly',
-          },
-        ],
-        '.nuclide-debugger-breakpoint-list': [
+        '.debugger-breakpoint-list': [
           {
             label: 'Enable All Breakpoints',
-            command: 'nuclide-debugger:enable-all-breakpoints',
+            command: 'debugger:enable-all-breakpoints',
           },
           {
             label: 'Disable All Breakpoints',
-            command: 'nuclide-debugger:disable-all-breakpoints',
+            command: 'debugger:disable-all-breakpoints',
           },
           {
             label: 'Remove All Breakpoints',
-            command: 'nuclide-debugger:remove-all-breakpoints',
+            command: 'debugger:remove-all-breakpoints',
           },
           {type: 'separator'},
         ],
-        '.nuclide-debugger-breakpoint': [
+        '.debugger-breakpoint': [
           {
             label: 'Edit breakpoint...',
-            command: 'nuclide-debugger:edit-breakpoint',
+            command: 'debugger:edit-breakpoint',
             shouldDisplay: event => {
               const bp = this._getBreakpointFromEvent(event);
               return bp != null && this._supportsConditionalBreakpoints();
@@ -265,14 +257,14 @@ class Activation {
           },
           {
             label: 'Remove Breakpoint',
-            command: 'nuclide-debugger:remove-breakpoint',
+            command: 'debugger:remove-breakpoint',
           },
           {type: 'separator'},
         ],
-        '.nuclide-debugger-thread-list-item': [
+        '.debugger-thread-list-item': [
           {
             label: 'Terminate thread',
-            command: 'nuclide-debugger:terminate-thread',
+            command: 'debugger:terminate-thread',
             shouldDisplay: event => {
               const target: HTMLElement = event.target;
               if (target.dataset.threadid) {
@@ -285,16 +277,16 @@ class Activation {
             },
           },
         ],
-        '.nuclide-debugger-callstack-table': [
+        '.debugger-callstack-table': [
           {
             label: 'Copy Callstack',
-            command: 'nuclide-debugger:copy-debugger-callstack',
+            command: 'debugger:copy-debugger-callstack',
           },
         ],
-        '.nuclide-debugger-expression-value-list': [
+        '.debugger-expression-value-list': [
           {
             label: 'Copy',
-            command: 'nuclide-debugger:copy-debugger-expression-value',
+            command: 'debugger:copy-debugger-expression-value',
           },
         ],
         'atom-text-editor': [
@@ -304,11 +296,11 @@ class Activation {
             submenu: [
               {
                 label: 'Toggle Breakpoint',
-                command: 'nuclide-debugger:toggle-breakpoint',
+                command: 'debugger:toggle-breakpoint',
               },
               {
                 label: 'Toggle Breakpoint enabled/disabled',
-                command: 'nuclide-debugger:toggle-breakpoint-enabled',
+                command: 'debugger:toggle-breakpoint-enabled',
                 shouldDisplay: event =>
                   this._executeWithEditorPath(
                     event,
@@ -320,7 +312,7 @@ class Activation {
               },
               {
                 label: 'Edit Breakpoint...',
-                command: 'nuclide-debugger:edit-breakpoint',
+                command: 'debugger:edit-breakpoint',
                 shouldDisplay: event =>
                   this._executeWithEditorPath(event, (filePath, line) => {
                     const bp = this._service
@@ -331,7 +323,7 @@ class Activation {
               },
               {
                 label: 'Add to Watch',
-                command: 'nuclide-debugger:add-to-watch',
+                command: 'debugger:add-to-watch',
                 shouldDisplay: event => {
                   const textEditor = atom.workspace.getActiveTextEditor();
                   if (
@@ -348,7 +340,7 @@ class Activation {
               },
               {
                 label: 'Run to Location',
-                command: 'nuclide-debugger:run-to-location',
+                command: 'debugger:run-to-location',
                 shouldDisplay: event =>
                   this._service.getDebuggerMode() === DebuggerMode.PAUSED,
               },
@@ -455,7 +447,7 @@ class Activation {
         this._layoutManager.hideDebuggerViews(false);
       },
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show': event => {
+        'debugger:show': event => {
           const detail = event.detail;
           const show =
             detail == null ||
@@ -467,21 +459,21 @@ class Activation {
         },
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:hide': () => {
+        'debugger:hide': () => {
           this._layoutManager.hideDebuggerViews(false);
           this._service.stopProcess();
         },
       }),
-      atom.commands.add('atom-workspace', 'nuclide-debugger:toggle', () => {
+      atom.commands.add('atom-workspace', 'debugger:toggle', () => {
         if (this._layoutManager.isDebuggerVisible() === true) {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
-            'nuclide-debugger:hide',
+            'debugger:hide',
           );
         } else {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
-            'nuclide-debugger:show',
+            'debugger:show',
           );
         }
       }),
@@ -489,18 +481,18 @@ class Activation {
         this._layoutManager.debuggerModeChanged(),
       ),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:reset-layout': () => {
+        'debugger:reset-layout': () => {
           this._layoutManager.resetLayout();
         },
       }),
       atom.contextMenu.add({
-        '.nuclide-debugger-container': [
+        '.debugger-container': [
           {
             label: 'Debugger Views',
             submenu: [
               {
                 label: 'Reset Layout',
-                command: 'nuclide-debugger:reset-layout',
+                command: 'debugger:reset-layout',
               },
             ],
           },
@@ -867,12 +859,12 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
-    const toolBar = getToolBar('nuclide-debugger');
+    const toolBar = getToolBar('debugger');
     toolBar.addButton(
       makeToolbarButtonSpec({
         iconset: 'icon-nuclicon',
         icon: 'debugger',
-        callback: 'nuclide-debugger:show-attach-dialog',
+        callback: 'debugger:show-attach-dialog',
         tooltip: 'Attach Debugger',
         priority: 500,
       }),
@@ -936,7 +928,7 @@ function createDebuggerView(model: mixed): ?HTMLElement {
 
   if (view != null) {
     const elem = renderReactRoot(view);
-    elem.className = 'nuclide-debugger-container';
+    elem.className = 'debugger-container';
     return elem;
   }
 

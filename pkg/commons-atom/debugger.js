@@ -14,5 +14,5 @@ import type {DebuggerService} from 'atom-ide-ui';
 import consumeFirstProvider from './consumeFirstProvider';
 
 export function getDebuggerService(): Promise<DebuggerService> {
-  return consumeFirstProvider('nuclide-debugger.remote');
+  return consumeFirstProvider('debugger.remote');
 }

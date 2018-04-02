@@ -61,7 +61,7 @@ type ColumnName =
   | 'terminateThread';
 
 const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
-  <div className="nuclide-debugger-thread-list-item-current-indicator">
+  <div className="debugger-thread-list-item-current-indicator">
     {props.cellData ? (
       <Icon icon="arrow-right" title="Selected Thread" />
     ) : null}
@@ -119,9 +119,7 @@ export default class DebuggerThreadsComponent extends React.Component<
     if (listNode) {
       const selectedRows =
         // $FlowFixMe
-        listNode.getElementsByClassName(
-          'nuclide-debugger-thread-list-item-selected',
-        );
+        listNode.getElementsByClassName('debugger-thread-list-item-selected');
 
       if (selectedRows && selectedRows.length > 0) {
         scrollIntoViewIfNeeded(selectedRows[0], false);
@@ -241,7 +239,7 @@ export default class DebuggerThreadsComponent extends React.Component<
             onClick={event => {
               atom.commands.dispatch(
                 event.target.parentElement,
-                'nuclide-debugger:terminate-thread',
+                'debugger:terminate-thread',
               );
               event.stopPropagation();
             }}
@@ -251,7 +249,7 @@ export default class DebuggerThreadsComponent extends React.Component<
     }
 
     const emptyComponent = () => (
-      <div className="nuclide-debugger-thread-list-empty">
+      <div className="debugger-thread-list-empty">
         {threadList == null ? '(threads unavailable)' : 'no threads to display'}
       </div>
     );
@@ -279,9 +277,9 @@ export default class DebuggerThreadsComponent extends React.Component<
             };
             if (thread.threadId === selectedThreadId) {
               cellData.className =
-                'nuclide-debugger-thread-list-item nuclide-debugger-thread-list-item-selected';
+                'debugger-thread-list-item debugger-thread-list-item-selected';
             } else {
-              cellData.className = 'nuclide-debugger-thread-list-item';
+              cellData.className = 'debugger-thread-list-item';
             }
 
             // Decorate the cells with the thread ID they correspond to
@@ -295,9 +293,7 @@ export default class DebuggerThreadsComponent extends React.Component<
 
     if (this.state.threadsLoading) {
       return (
-        <div
-          className="nuclide-debugger-thread-loading"
-          title="Loading threads...">
+        <div className="debugger-thread-loading" title="Loading threads...">
           <LoadingSpinner size={LoadingSpinnerSizes.MEDIUM} />
         </div>
       );

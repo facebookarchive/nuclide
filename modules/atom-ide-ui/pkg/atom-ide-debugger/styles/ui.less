@@ -1,10 +1,10 @@
 @import "ui-variables";
 
-.nuclide-debugger-container {
+.debugger-container {
   display: flex;
 }
 
-.nuclide-debugger-root {
+.debugger-root {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -12,29 +12,29 @@
   padding: @component-padding;
 }
 
-.nuclide-debugger-root select.form-control {
+.debugger-root select.form-control {
   color: @text-color;
   background-color: @button-background-color;
   border-color: @button-border-color;
 }
 
-.nuclide-debugger-root .control-bar {
+.debugger-root .control-bar {
   display: flex;
   flex-direction: row-reverse;
 }
 
-.nuclide-debugger-root .inspector {
+.debugger-root .inspector {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.nuclide-debugger-container-old-enabled {
+.debugger-container-old-enabled {
   display: flex;
   flex-grow: 1;
 }
 
-.nuclide-debugger-container-new {
+.debugger-container-new {
   flex-grow: 1;
   flex-basis: 0;
   overflow: auto;
@@ -47,11 +47,11 @@
   }
 }
 
-.nuclide-debugger-container-new-disabled {
+.debugger-container-new-disabled {
   opacity: 0.5;
 }
 
-.nuclide-debugger-state-notice {
+.debugger-state-notice {
   color: @text-color-highlight;
   font-weight: bold;
   padding-top: 1.0em;
@@ -59,25 +59,25 @@
   text-align: center;
 }
 
-.nuclide-debugger-target-description {
+.debugger-target-description {
   color: @text-color-highlight;
    padding-bottom: 0.5em;
   text-align: center;
   font-size: 8pt;
 }
 
-.nuclide-debugger-section-header {
+.debugger-section-header {
   padding: 0px 5px;
 }
 
-.nuclide-debugger-controls-section {
+.debugger-controls-section {
   border: 1px @base-border-color solid;
   padding-top: 5px;
   padding-bottom: 5px;
 }
 
 /* General debugger UI */
-.nuclide-debugger-starting-message {
+.debugger-starting-message {
   align-items: baseline;
   display: flex;
   justify-content: space-between;
@@ -85,14 +85,14 @@
   padding: 5px;
 }
 
-.nuclide-debugger-section-content {
+.debugger-section-content {
   max-height: 20em;
   overflow-y: visible;
   overflow-x: visible;
   margin-bottom: 5px;
 }
 
-.nuclide-debugger-pane-content {
+.debugger-pane-content {
   max-height: 20em;
   overflow-y: visible;
   overflow-x: visible;
@@ -100,7 +100,7 @@
   padding: 10px;
 }
 
-.nuclide-debugger-breakpoint {
+.debugger-breakpoint {
   padding-left: 0.25em;
   position: relative;
   span {
@@ -108,7 +108,7 @@
   }
 }
 
-.nuclide-debugger-breakpoint-condition {
+.debugger-breakpoint-condition {
   font-size: 8pt;
   padding: 3px 0px 3px 25px;
   color: @text-color-warning;
@@ -117,29 +117,29 @@
   }
 }
 
-.nuclide-debugger-breakpoint-hitcount {
+.debugger-breakpoint-hitcount {
   font-size: 8pt;
   padding: 3px 0px 3px 25px;
   color: @text-color-success;
 }
 
-.nuclide-debugger-breakpoint-unresolved {
+.debugger-breakpoint-unresolved {
   text-decoration: line-through;
 }
 
-.nuclide-debugger-breakpoint-checkbox {
+.debugger-breakpoint-checkbox {
   padding: 3px;
 }
 
-.nuclide-debugger-breakpoint-disabled {
+.debugger-breakpoint-disabled {
   text-decoration: line-through;
 }
 
-.nuclide-debugger-breakpoint-with-condition {
+.debugger-breakpoint-with-condition {
   color: @text-color-warning;
 }
 
-.nuclide-debugger-breakpoint-condition {
+.debugger-breakpoint-condition {
   font-size: 8pt;
   padding: 3px 0px 3px 25px;
   color: @text-color-warning;
@@ -148,11 +148,11 @@
 /* Watch Expressions */
 @leftMargin: 0.5em;
 
-.nuclide-debugger-expression-value-list {
+.debugger-expression-value-list {
   margin: 0 @leftMargin;
 }
 
-.nuclide-debugger-expression-value-row {
+.debugger-expression-value-row {
   display: flex;
   flex-direction: row;
   font-family: Menlo, Monaco, Consolas, monospace;
@@ -162,19 +162,19 @@
   position: relative;
 }
 
-.nuclide-debugger-expression-value-content {
+.debugger-expression-value-content {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
   overflow-x: visible;
 }
 
-.nuclide-debugger-watch-expression-value-content {
+.debugger-watch-expression-value-content {
   width: 100%;
   overflow: visible;
 }
 
-.nuclide-debugger-scopes-view-controls {
+.debugger-scopes-view-controls {
   opacity: 0;
   position: absolute;
   right: 0;
@@ -184,30 +184,30 @@
   padding-right: 4px;
 }
 
-.nuclide-debugger-scopes-view-edit-control {
+.debugger-scopes-view-edit-control {
   cursor: pointer;
   color: @text-color-highlight;
 }
 
-.nuclide-debugger-scopes-view-edit-control::before {
+.debugger-scopes-view-edit-control::before {
   margin-right: 0px;
   text-align: center;
 }
 
-.nuclide-debugger-scopes-view-edit-control:hover {
+.debugger-scopes-view-edit-control:hover {
   opacity: 1;
   color: @text-color-highlight;
 }
 
-.nuclide-debugger-scope:hover {
+.debugger-scope:hover {
   background-color: @background-color-highlight;
-  .nuclide-debugger-scopes-view-controls {
+  .debugger-scopes-view-controls {
     opacity: 1;
     color: fade(@text-color-highlight, 50%);
   }
 }
 
-.nuclide-debugger-watch-expression-controls {
+.debugger-watch-expression-controls {
   opacity: 0;
   position: absolute;
   right: 0;
@@ -217,17 +217,17 @@
   padding-right: 4px;
 }
 
-.nuclide-debugger-watch-expression-control {
+.debugger-watch-expression-control {
   cursor: pointer;
   color: @text-color-highlight;
 }
 
-.nuclide-debugger-watch-expression-control.icon::before {
+.debugger-watch-expression-control.icon::before {
   margin-right: 0px;
   text-align: center;
 }
 
-.nuclide-debugger-breakpoint-condition-controls {
+.debugger-breakpoint-condition-controls {
   opacity: 0;
   position: absolute;
   right: 0;
@@ -240,56 +240,56 @@
   padding-right: 4px;
 }
 
-.nuclide-debugger-breakpoint-condition-control {
+.debugger-breakpoint-condition-control {
   cursor: pointer;
   color: @text-color-highlight;
   padding-left: 4px;
 }
 
-.nuclide-debugger-breakpoint-condition-control.icon::before {
+.debugger-breakpoint-condition-control.icon::before {
   margin-right: 0px;
   text-align: center;
 }
 
-.nuclide-debugger-breakpoint-condition-control.nuclide-debugger-breakpoint-condition-control:hover {
+.debugger-breakpoint-condition-control.debugger-breakpoint-condition-control:hover {
   opacity: 1;
   color: @text-color-highlight;
 }
 
-.nuclide-debugger-breakpoint:hover {
+.debugger-breakpoint:hover {
   background-color: @background-color-highlight;
 
-  .nuclide-debugger-breakpoint-condition-controls {
+  .debugger-breakpoint-condition-controls {
     opacity: 1;
     color: fade(@text-color-highlight, 50%);
   }
 }
 
-.nuclide-debugger-watch-expression-row:hover {
+.debugger-watch-expression-row:hover {
   background-color: @background-color-highlight;
 
-  .nuclide-debugger-watch-expression-controls {
+  .debugger-watch-expression-controls {
     opacity: 1;
     color: fade(@text-color-highlight, 50%);
   }
 }
 
-.nuclide-debugger-watch-expression-controls.nuclide-debugger-watch-expression-controls:hover {
+.debugger-watch-expression-controls.debugger-watch-expression-controls:hover {
   opacity: 1;
   color: @text-color-highlight;
 }
 
-.nuclide-debugger-watch-expression-input {
+.debugger-watch-expression-input {
   // Vertically align listed watch expressions with input.
   margin-left: -@leftMargin;
 }
 
-.nuclide-debugger-watch-expression-add-new-input {
+.debugger-watch-expression-add-new-input {
   margin-top: 0.5em;
 }
 
 /* Call stack */
-.nuclide-debugger-callstack-item {
+.debugger-callstack-item {
   display: flex;
   justify-content: space-between;
   cursor: pointer;
@@ -298,33 +298,33 @@
   }
 }
 
-.nuclide-debugger-callstack-item-selected {
+.debugger-callstack-item-selected {
   color: @text-color-highlight;
   font-weight: bold;
 }
 
-.nuclide-debugger-callstack-list-empty {
+.debugger-callstack-list-empty {
   font-style: italic;
   padding: 1em;
   text-align: center;
 }
 
-.nuclide-debugger-callstack-name {
+.debugger-callstack-name {
   font-family: Menlo, Monaco, Consolas, monospace;
 }
 
 /* Stepping controls */
-.nuclide-debugger-stepping-button-separated {
+.debugger-stepping-button-separated {
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.nuclide-debugger-stepping-component {
+.debugger-stepping-component {
   display: flex;
   flex-wrap: wrap;
 }
 
-.nuclide-debugger-stepping-svg-button {
+.debugger-stepping-svg-button {
   div {
     width: 10px;
   }
@@ -342,57 +342,57 @@
   }
 }
 
-.nuclide-debugger-stepping-playpause-button {
+.debugger-stepping-playpause-button {
   width: 10px;
   text-align: left;
 }
 
-.nuclide-debugger-stepping-playpause-button-loading {
+.debugger-stepping-playpause-button-loading {
   position: relative;
   left: -2px;
 }
 
-.nuclide-debugger-stepping-buttongroup {
+.debugger-stepping-buttongroup {
   margin-right: 1em;
 }
 
-.nuclide-debugger-exception-checkbox {
+.debugger-exception-checkbox {
   cursor: pointer;
 }
 
-.nuclide-debugger-set-source-path-button {
+.debugger-set-source-path-button {
   position: relative;
   left: 10px;
 }
 
-.nuclide-debugger-exception-fragment {
+.debugger-exception-fragment {
   margin: 5px 0 0 0.5em;
 }
 
 /* Thread list */
-.nuclide-debugger-thread-list-item-selected {
+.debugger-thread-list-item-selected {
   color: @text-color-highlight;
   font-weight: bold;
 }
 
-.nuclide-debugger-thread-list-empty {
+.debugger-thread-list-empty {
   font-style: italic;
   padding: 1em;
   text-align: center;
 }
 
-.nuclide-debugger-thread-list-item-current-indicator {
+.debugger-thread-list-item-current-indicator {
   text-align: center;
 }
 
 /* Thread switch datatip */
-.nuclide-debugger-thread-switch-alert {
+.debugger-thread-switch-alert {
     padding: 1px 4px;
     font-weight: bold;
     color: @text-color-warning;
 }
 
-.nuclide-debugger-thread-loading {
+.debugger-thread-loading {
   text-align: center;
   width: 100%;
   height: 100%;
@@ -401,14 +401,14 @@
 }
 
 /* Breakpoint config dialog */
-.nuclide-debugger-bp-config-header {
+.debugger-bp-config-header {
   align-items: baseline;
   margin-bottom: 1em;
   text-overflow: ellipsis;
   width: 100%;
 }
 
-.nuclide-debugger-bp-config-actions {
+.debugger-bp-config-actions {
   display: flex;
   flex: 1;
   justify-content: flex-end;
@@ -418,11 +418,11 @@
   bottom: 8px;
 }
 
-.nuclide-debugger-bp-dialog {
+.debugger-bp-dialog {
   font-family: @font-family;
   font-size: 12pt;
 }
 
-.nuclide-debugger-breakpoint-separator {
+.debugger-breakpoint-separator {
   margin: 4px 0px 1px 0px;
 }

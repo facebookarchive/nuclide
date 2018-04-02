@@ -74,7 +74,7 @@ async function _getDebuggerCallback(
   buckRoot: NuclideUri,
 ): Promise<?(Observable<LegacyProcessMessage>) => Observable<BuckEvent>> {
   const nativeDebuggerService = await consumeFirstProvider(
-    'nuclide-debugger.native-debugger-service',
+    'debugger.native-debugger-service',
   );
 
   if (nativeDebuggerService == null) {

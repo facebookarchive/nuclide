@@ -85,11 +85,7 @@ class Activation {
 
   _registerDebugProvider(provider: NuclideDebuggerProvider): void {
     this._subscriptions.add(
-      atom.packages.serviceHub.provide(
-        'nuclide-debugger.provider',
-        '0.0.0',
-        provider,
-      ),
+      atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider),
     );
   }
 

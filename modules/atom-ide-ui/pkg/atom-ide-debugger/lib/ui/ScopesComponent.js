@@ -34,16 +34,14 @@ type Props = {|
 |};
 
 const NO_VARIABLES = (
-  <div className="nuclide-debugger-expression-value-row">
-    <span className="nuclide-debugger-expression-value-content">
-      (no variables)
-    </span>
+  <div className="debugger-expression-value-row">
+    <span className="debugger-expression-value-content">(no variables)</span>
   </div>
 );
 
 const LOADING = (
-  <div className="nuclide-debugger-expression-value-row">
-    <span className="nuclide-debugger-expression-value-content">
+  <div className="debugger-expression-value-row">
+    <span className="debugger-expression-value-content">
       <LoadingSpinner size="MEDIUM" />
     </span>
   </div>
@@ -190,9 +188,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
       this._renderScopeSection(scope),
     );
     return (
-      <div className="nuclide-debugger-expression-value-list">
-        {scopeSections}
-      </div>
+      <div className="debugger-expression-value-list">{scopeSections}</div>
     );
   }
 }
@@ -240,9 +236,9 @@ class ScopeComponent extends React.Component<ScopeProps> {
   _renderVariable(expression: IVariable): ?React.Element<any> {
     return (
       <div
-        className="nuclide-debugger-expression-value-row nuclide-debugger-scope"
+        className="debugger-expression-value-row debugger-scope"
         key={expression.getId()}>
-        <div className="nuclide-debugger-expression-value-content">
+        <div className="debugger-expression-value-content">
           <LazyNestedValueComponent
             expression={expression.name}
             evaluationResult={expressionAsEvaluationResult(expression)}

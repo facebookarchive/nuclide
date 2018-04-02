@@ -46,7 +46,7 @@ export default class DebuggerControllerView extends React.Component<Props> {
   render(): React.Node {
     if (this.props.service.getDebuggerMode() === DebuggerMode.STARTING) {
       return (
-        <div className="nuclide-debugger-starting-message">
+        <div className="debugger-starting-message">
           <div>
             <span className="inline-block">Starting Debugger...</span>
             <LoadingSpinner className="inline-block" size="EXTRA_SMALL" />

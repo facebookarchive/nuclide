@@ -118,7 +118,7 @@ export default class WatchExpressionComponent extends React.Component<
     if (id === this.state.rowBeingEdited) {
       return (
         <AtomInput
-          className="nuclide-debugger-watch-expression-input"
+          className="debugger-watch-expression-input"
           autofocus={true}
           startSelected={true}
           key={id}
@@ -149,14 +149,14 @@ export default class WatchExpressionComponent extends React.Component<
     return (
       <div
         className={classnames(
-          'nuclide-debugger-expression-value-row',
-          'nuclide-debugger-watch-expression-row',
+          'debugger-expression-value-row',
+          'debugger-watch-expression-row',
         )}
         key={id}>
         <div
           className={classnames(
-            'nuclide-debugger-expression-value-content',
-            'nuclide-debugger-watch-expression-value-content',
+            'debugger-expression-value-content',
+            'debugger-watch-expression-value-content',
           )}
           onDoubleClick={this._setRowBeingEdited.bind(this, id)}>
           <ValueComponent
@@ -168,15 +168,15 @@ export default class WatchExpressionComponent extends React.Component<
             )}
           />
         </div>
-        <div className="nuclide-debugger-watch-expression-controls">
+        <div className="debugger-watch-expression-controls">
           <Icon
             icon="pencil"
-            className="nuclide-debugger-watch-expression-control"
+            className="debugger-watch-expression-control"
             onClick={this._setRowBeingEdited.bind(this, id)}
           />
           <Icon
             icon="x"
-            className="nuclide-debugger-watch-expression-control"
+            className="debugger-watch-expression-control"
             onClick={this.removeExpression.bind(this, id)}
           />
         </div>
@@ -189,8 +189,8 @@ export default class WatchExpressionComponent extends React.Component<
     const addNewExpressionInput = (
       <AtomInput
         className={classnames(
-          'nuclide-debugger-watch-expression-input',
-          'nuclide-debugger-watch-expression-add-new-input',
+          'debugger-watch-expression-input',
+          'debugger-watch-expression-add-new-input',
         )}
         onConfirm={this._onConfirmNewExpression}
         ref={input => {
@@ -201,7 +201,7 @@ export default class WatchExpressionComponent extends React.Component<
       />
     );
     return (
-      <div className="nuclide-debugger-expression-value-list">
+      <div className="debugger-expression-value-list">
         {expressions}
         {addNewExpressionInput}
       </div>

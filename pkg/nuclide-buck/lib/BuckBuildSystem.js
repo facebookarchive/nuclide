@@ -280,7 +280,7 @@ function runBuckCommand(
     // app that's being overwritten is being debugged.
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:stop-debugging',
+      'debugger:stop-debugging',
     );
   }
 

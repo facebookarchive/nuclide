@@ -60,14 +60,11 @@ export default class ThreadsView extends React.PureComponent<
     const {service} = this.props;
     const {mode} = this.state;
     const disabledClass =
-      mode !== DebuggerMode.RUNNING
-        ? ''
-        : ' nuclide-debugger-container-new-disabled';
+      mode !== DebuggerMode.RUNNING ? '' : ' debugger-container-new-disabled';
 
     return (
-      <div
-        className={classnames('nuclide-debugger-container-new', disabledClass)}>
-        <div className="nuclide-debugger-pane-content">
+      <div className={classnames('debugger-container-new', disabledClass)}>
+        <div className="debugger-pane-content">
           <DebuggerThreadsComponent service={service} />
         </div>
       </div>
