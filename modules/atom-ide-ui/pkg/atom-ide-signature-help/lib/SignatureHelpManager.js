@@ -106,24 +106,29 @@ export default class SignatureHelpManager {
             return false;
           }
           const change = edit.changes[0];
+          // Use the start of the current selection as the cursor position.
+          // (Autocomplete often inserts a placeholder and puts the cursor at the end.)
+          const cursorPosition = editor.getSelectedBufferRange().start;
           if (
-            // Only handle single/double-character insertions.
-            // (e.g. bracket-matcher inserts two characters on open parenthesis)
             change.newText.length === 0 ||
-            change.newText.length > 2 ||
+            // Don't allow multi-line changes.
+            change.newRange.start.row !== change.newRange.end.row ||
             // The change should cover the current cursor position.
-            !change.newRange.containsPoint(editor.getCursorBufferPosition())
+            !change.newRange.containsPoint(cursorPosition)
           ) {
             return false;
           }
+          // Use the character before the cursor as the 'trigger character'.
+          const index = Math.max(
+            0,
+            cursorPosition.column - change.newRange.start.column - 1,
+          );
           for (const provider of this._providerRegistry.getAllProvidersForEditor(
             editor,
           )) {
             if (provider.triggerCharacters != null) {
-              for (let i = 0; i < change.newText.length; i++) {
-                if (provider.triggerCharacters.has(change.newText[i])) {
-                  return true;
-                }
+              if (provider.triggerCharacters.has(change.newText[index])) {
+                return true;
               }
             }
           }

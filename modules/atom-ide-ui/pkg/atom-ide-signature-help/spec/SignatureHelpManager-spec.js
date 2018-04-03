@@ -147,9 +147,17 @@ describe('SignatureHelpManager', () => {
       Object.defineProperty(escape, 'keyCode', {value: 27});
       editor.getElement().dispatchEvent(escape);
 
-      editor.insertText('x');
+      // Contains a trigger character, but has the wrong cursor.
+      editor.insertText('x(y');
       advanceClock(500); // debounce
       expect(signatureSpy.callCount).toBe(1);
+
+      // Test the autocomplete-plus scenario: insertion + selection
+      const startCol = editor.getCursorBufferPosition().column;
+      editor.insertText('abc(arg1, arg2)');
+      editor.setSelectedBufferRange([[0, startCol + 4], [0, startCol + 7]]);
+      advanceClock(1); // debounce
+      expect(signatureSpy.callCount).toBe(2);
     });
   });
 
