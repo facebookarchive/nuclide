@@ -446,6 +446,9 @@ export class TerminalView implements PtyClient {
       this._pty.resize(this._terminal.cols, this._terminal.rows);
     }
     this._syncAtomTheme();
+    // documented workaround for https://github.com/xtermjs/xterm.js/issues/291
+    // see https://github.com/Microsoft/vscode/commit/134cbec22f81d5558909040491286d72b547bee6
+    this._terminal.emit('scroll', this._terminal.buffer.ydisp);
   }
 
   _syncAtomTheme(): void {
