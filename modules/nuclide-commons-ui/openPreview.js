@@ -73,19 +73,23 @@ export default function openPreview(
     };
   }
 
-  const isWithinSameFile = Boolean(
-    uri === (activeEditor && activeEditor.getURI()),
-  );
+  const isWithinSameFile = uri === (activeEditor && activeEditor.getURI());
   const arePendingPanesEnabled = Boolean(
     atom.config.get('core.allowPendingPaneItems'),
   );
 
   let promise;
   if (isWithinSameFile || arePendingPanesEnabled) {
+    // a common case is scrolling through many results, cancelling one after
+    // the other. give things a chance to cancel before going throught the work
+    // of rendering a preview
     promise = delayTime(openDelay).then(() => {
-      // a common case is scrolling through many results, cancelling one after
-      // the other. give things a chance to cancel before going throught the work
-      // of rendering a preview
+      if (preview != null && isPending(preview) && preview.isModified()) {
+        // To avoid leaving behind a "Save changes before close?" dialog, forcefully
+        // destroy any pane that is both pending *and* modified
+        preview.destroy();
+      }
+
       if (canceled) {
         return Promise.resolve();
       } else {
