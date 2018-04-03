@@ -12,8 +12,12 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
-import type {IDebugService, IProcessConfig} from './types';
-import type {IVspInstance, VspProcessInfo} from 'nuclide-debugger-common';
+import type {IDebugService} from './types';
+import type {
+  IProcessConfig,
+  IVspInstance,
+  VspProcessInfo,
+} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
@@ -33,17 +37,7 @@ export default class RemoteControlService {
   }
 
   async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = this._startVspDebugging({
-      targetUri: processInfo.getTargetUri(),
-      debugMode: processInfo.getDebugMode(),
-      adapterType: processInfo.getAdapterType(),
-      adapterExecutable: processInfo._adapterExecutable,
-      capabilities: processInfo.getDebuggerCapabilities(),
-      properties: processInfo.getDebuggerProps(),
-      config: processInfo.getConfig(),
-      clientPreprocessor: processInfo.getVspClientPreprocessor(),
-      adapterPreprocessor: processInfo.getVspAdapterPreprocessor(),
-    });
+    const instance = this._startVspDebugging(processInfo.getProcessConfig());
 
     processInfo.setVspDebuggerInstance(instance);
 

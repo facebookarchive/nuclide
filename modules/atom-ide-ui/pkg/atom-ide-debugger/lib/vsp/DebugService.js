@@ -51,10 +51,9 @@ import type {
   IEvaluatableExpression,
   IRawBreakpoint,
   IStackFrame,
-  IProcessConfig,
   SerializedState,
 } from '../types';
-import type {MessageProcessor} from 'nuclide-debugger-common';
+import type {IProcessConfig, MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from 'nuclide-commons/analytics';
 import * as DebugProtocol from 'vscode-debugprotocol';

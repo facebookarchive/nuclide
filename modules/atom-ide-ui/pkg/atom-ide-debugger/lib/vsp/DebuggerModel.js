@@ -62,10 +62,10 @@ import type {
   IExceptionBreakpoint,
   IFunctionBreakpoint,
   ITreeElement,
-  IProcessConfig,
   IVariable,
   SourcePresentationHint,
 } from '../types';
+import type {IProcessConfig} from 'nuclide-debugger-common';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {Observable} from 'rxjs';

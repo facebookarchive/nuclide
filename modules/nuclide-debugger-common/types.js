@@ -61,24 +61,29 @@ export type ControlButtonSpecification = {
 
 // Indicates which of various optional features that this debugger supports.
 export type DebuggerCapabilities = {
-  +conditionalBreakpoints: boolean,
-  +continueToLocation: boolean,
-  +customSourcePaths: boolean,
-  +disassembly: boolean,
-  +readOnlyTarget: boolean,
-  +registers: boolean,
-  +setVariable: boolean,
   +threads: boolean,
-  +completionsRequest: boolean,
 };
 
 // Describes how to configure various properties that individual debuggers
 // are allowed to override.
 export type DebuggerProperties = {
   +customControlButtons: Array<ControlButtonSpecification>,
-  +targetDescription: () => ?string,
   +threadsComponentTitle: string,
 };
+
+export type IProcessConfig = {|
+  +targetUri: NuclideUri,
+  +debugMode: DebuggerConfigAction,
+  +adapterType: VsAdapterType,
+  +adapterExecutable: VSAdapterExecutableInfo,
+  // TODO(most): deprecate
+  +capabilities: DebuggerCapabilities,
+  // TODO(most): deprecate
+  +properties: DebuggerProperties,
+  +config: Object,
+  +clientPreprocessor?: ?MessageProcessor,
+  +adapterPreprocessor?: ?MessageProcessor,
+|};
 
 export interface IVsAdapterSpawner {
   spawnAdapter(

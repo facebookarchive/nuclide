@@ -502,16 +502,9 @@ class Activation {
     return disposable;
   }
 
-  _isReadonlyTarget(): boolean {
-    const {focusedProcess} = this._service.viewModel;
-    return focusedProcess == null
-      ? false
-      : focusedProcess.configuration.capabilities.readOnlyTarget;
-  }
-
   _continue() {
     const {focusedThread} = this._service.viewModel;
-    if (!this._isReadonlyTarget() && focusedThread != null) {
+    if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
       focusedThread.continue();
     }
@@ -527,7 +520,7 @@ class Activation {
 
   _stepOver() {
     const {focusedThread} = this._service.viewModel;
-    if (!this._isReadonlyTarget() && focusedThread != null) {
+    if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_OVER);
       focusedThread.next();
     }
@@ -535,7 +528,7 @@ class Activation {
 
   _stepInto() {
     const {focusedThread} = this._service.viewModel;
-    if (!this._isReadonlyTarget() && focusedThread != null) {
+    if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_INTO);
       focusedThread.stepIn();
     }
@@ -543,7 +536,7 @@ class Activation {
 
   _stepOut() {
     const {focusedThread} = this._service.viewModel;
-    if (!this._isReadonlyTarget() && focusedThread != null) {
+    if (focusedThread != null) {
       track(AnalyticsEvents.DEBUGGER_STEP_OUT);
       focusedThread.stepOut();
     }

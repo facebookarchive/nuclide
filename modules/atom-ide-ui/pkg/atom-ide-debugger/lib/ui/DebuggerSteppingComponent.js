@@ -180,11 +180,7 @@ export default class DebuggerSteppingComponent extends React.Component<
   render(): React.Node {
     const {debuggerMode, waitingForPause, customControlButtons} = this.state;
     const {service} = this.props;
-    const {focusedThread, focusedProcess} = service.viewModel;
-    const isReadonlyTarget =
-      focusedProcess == null
-        ? false
-        : focusedProcess.configuration.capabilities.readOnlyTarget;
+    const {focusedThread} = service.viewModel;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
@@ -255,7 +251,7 @@ export default class DebuggerSteppingComponent extends React.Component<
         <ButtonGroup className="debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
-            disabled={isPausing || isReadonlyTarget || pausableThread == null}
+            disabled={isPausing || pausableThread == null}
             tooltip={{
               ...defaultTooltipOptions,
               title: playPauseTitle,
@@ -271,21 +267,21 @@ export default class DebuggerSteppingComponent extends React.Component<
           </Button>
           <DebuggerStepButton
             icon={STEP_OVER_ICON}
-            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
+            disabled={!isPaused || focusedThread == null}
             title="Step over"
             keyBindingCommand="debugger:step-over"
             onClick={() => nullthrows(focusedThread).next()}
           />
           <DebuggerStepButton
             icon={STEP_INTO_ICON}
-            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
+            disabled={!isPaused || focusedThread == null}
             title="Step into"
             keyBindingCommand="debugger:step-into"
             onClick={() => nullthrows(focusedThread).stepIn()}
           />
           <DebuggerStepButton
             icon={STEP_OUT_ICON}
-            disabled={!isPaused || isReadonlyTarget || focusedThread == null}
+            disabled={!isPaused || focusedThread == null}
             title="Step out"
             keyBindingCommand="debugger:step-out"
             onClick={() => nullthrows(focusedThread).stepOut()}

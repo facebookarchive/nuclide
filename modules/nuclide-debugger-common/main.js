@@ -16,6 +16,7 @@ export type {
   DebuggerCapabilities,
   DebuggerConfigAction,
   DebuggerProperties,
+  IProcessConfig,
   IVspInstance,
   MessageProcessor,
   NuclideDebuggerProvider,

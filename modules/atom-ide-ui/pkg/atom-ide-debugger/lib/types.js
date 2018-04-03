@@ -41,16 +41,8 @@ SOFTWARE.
 */
 
 import type {Observable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import * as DebugProtocol from 'vscode-debugprotocol';
-import type {
-  DebuggerConfigAction,
-  DebuggerCapabilities,
-  DebuggerProperties,
-  MessageProcessor,
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
+import type {IProcessConfig} from 'nuclide-debugger-common';
 
 export interface ITreeElement {
   getId(): string;
@@ -214,20 +206,6 @@ export interface IScope extends IExpressionContainer {
   +expensive: boolean;
   +range: ?atom$Range;
 }
-
-export type IProcessConfig = {|
-  +targetUri: NuclideUri,
-  +debugMode: DebuggerConfigAction,
-  +adapterType: VsAdapterType,
-  +adapterExecutable: VSAdapterExecutableInfo,
-  // TODO(most): deprecate
-  +capabilities: DebuggerCapabilities,
-  // TODO(most): deprecate
-  +properties: DebuggerProperties,
-  +config: Object,
-  +clientPreprocessor?: ?MessageProcessor,
-  +adapterPreprocessor?: ?MessageProcessor,
-|};
 
 export interface IProcess extends ITreeElement {
   +configuration: IProcessConfig;

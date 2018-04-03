@@ -99,8 +99,6 @@ export default class BreakpointListComponent extends React.Component<
       supportsConditionalBreakpoints,
     } = this.state;
     const {service} = this.props;
-    const isReadonlyTarget = false;
-
     const items = breakpoints
       .sort((breakpointA, breakpointB) => {
         const fileA = nuclideUri.basename(breakpointA.uri);
@@ -250,7 +248,6 @@ export default class BreakpointListComponent extends React.Component<
                   )
                 }
                 checked={exceptionBreakpoint.enabled}
-                disabled={isReadonlyTarget}
               />
               {exceptionBreakpoint.label ||
                 `${exceptionBreakpoint.filter} exceptions`}

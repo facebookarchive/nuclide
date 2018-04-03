@@ -16,6 +16,7 @@ import type {
   DebuggerCapabilities,
   DebuggerConfigAction,
   DebuggerProperties,
+  IProcessConfig,
   IVspInstance,
   MessageProcessor,
   VsAdapterType,
@@ -31,18 +32,12 @@ type MessagePreprocessors = {
   vspClientPreprocessor: MessageProcessor,
 };
 
-export type CustomDebuggerCapabilities = {
-  conditionalBreakpoints?: boolean,
-  continueToLocation?: boolean,
-  readOnlyTarget?: boolean,
-  setVariable?: boolean,
+type CustomDebuggerCapabilities = {
   threads?: boolean,
-  completionsRequest?: boolean,
 };
 
-export type CustomDebuggerProperties = {
+type CustomDebuggerProperties = {
   customControlButtons?: Array<ControlButtonSpecification>,
-  targetDescription?: () => ?string,
   threadsComponentTitle?: string,
 };
 
@@ -87,53 +82,19 @@ export default class VspProcessInfo {
     this._vspInstance = vspInstance;
   }
 
-  getDebuggerCapabilities(): DebuggerCapabilities {
-    const defaultCapabilities = {
-      conditionalBreakpoints: false,
-      continueToLocation: false,
-      customSourcePaths: false,
-      disassembly: false,
-      readOnlyTarget: false,
-      registers: false,
-      setVariable: false,
-      threads: false,
-      completionsRequest: false,
-    };
+  _getDebuggerCapabilities(): DebuggerCapabilities {
     return {
-      ...defaultCapabilities,
-      conditionalBreakpoints: true,
-      setVariable: true,
-      completionsRequest: true,
+      threads: false,
       ...this._customCapabilities,
     };
   }
 
-  getDebuggerProps(): DebuggerProperties {
-    const defaultProps = {
-      customControlButtons: [],
-      targetDescription: () => null,
-      threadsComponentTitle: 'Threads',
-    };
+  _getDebuggerProps(): DebuggerProperties {
     return {
-      ...defaultProps,
+      customControlButtons: [],
+      threadsComponentTitle: 'Threads',
       ...this._customProperties,
     };
-  }
-
-  getVspAdapterPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspAdapterPreprocessor;
-  }
-
-  getVspClientPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspClientPreprocessor;
-  }
-
-  async debug(): Promise<void> {
-    throw new Error('Old chrome-based debugger is no longer supported!');
   }
 
   async customRequest(
@@ -166,12 +127,24 @@ export default class VspProcessInfo {
     this._vspInstance = null;
   }
 
-  getAdapterType(): VsAdapterType {
-    return this._adapterType;
-  }
-
-  getDebugMode(): DebuggerConfigAction {
-    return this._debugMode;
+  getProcessConfig(): IProcessConfig {
+    return {
+      targetUri: this._targetUri,
+      debugMode: this._debugMode,
+      adapterType: this._adapterType,
+      adapterExecutable: this._adapterExecutable,
+      capabilities: this._getDebuggerCapabilities(),
+      properties: this._getDebuggerProps(),
+      config: this._config,
+      clientPreprocessor:
+        this._preprocessors == null
+          ? null
+          : this._preprocessors.vspClientPreprocessor,
+      adapterPreprocessor:
+        this._preprocessors == null
+          ? null
+          : this._preprocessors.vspAdapterPreprocessor,
+    };
   }
 
   getConfig(): Object {
