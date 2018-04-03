@@ -333,16 +333,6 @@ function rootUriOfConnection(connection: ?ServerConnection): string {
   return connection == null ? '' : connection.getUriOfRemotePath('/');
 }
 
-function notifyOpenDebugSession(): void {
-  atom.notifications.addInfo(
-    "Received a remote debug request, but there's an open debug session already!",
-    {
-      detail:
-        'To be able to remote debug, please terminate your existing session',
-    },
-  );
-}
-
 export async function getPrepackLaunchProcessInfo(
   scriptPath: NuclideUri,
   prepackPath: string,
@@ -944,15 +934,8 @@ export function listenToRemoteDebugCommands(): IDisposable {
           command.target,
         );
         const debuggerService = await getDebuggerService();
-        const debuggerName = debuggerService.getCurrentDebuggerName();
-        if (debuggerName == null) {
-          track('fb-python-debugger-auto-attach');
-          debuggerService.startDebugging(attachProcessInfo);
-          return;
-        } else {
-          notifyOpenDebugSession();
-          return;
-        }
+        track('fb-python-debugger-auto-attach');
+        debuggerService.startDebugging(attachProcessInfo);
         // Otherwise, we're already debugging that target.
       }),
   );

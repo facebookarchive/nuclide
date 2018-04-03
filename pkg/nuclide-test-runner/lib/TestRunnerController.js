@@ -14,7 +14,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
-import {getDebuggerService} from '../../commons-atom/debugger';
 import Ansi from './Ansi';
 import {TextBuffer} from 'atom';
 import * as React from 'react';
@@ -139,12 +138,7 @@ export class TestRunnerController {
       this._isSelectedTestRunnerDebuggable() &&
       this._attachDebuggerBeforeRunning
     ) {
-      const isAttached = await this._isDebuggerAttached(
-        selectedTestRunner.debuggerProviderName,
-      );
-      if (!isAttached) {
-        await selectedTestRunner.attachDebugger(testPath);
-      }
+      await selectedTestRunner.attachDebugger(testPath);
     }
 
     // If the user has cancelled the test run while control was yielded, we should not run the test.
@@ -177,11 +171,6 @@ export class TestRunnerController {
     return (
       selectedTestRunner != null && selectedTestRunner.attachDebugger != null
     );
-  }
-
-  async _isDebuggerAttached(debuggerProviderName: string): Promise<boolean> {
-    const debuggerService = await getDebuggerService();
-    return debuggerService.getCurrentDebuggerName() === debuggerProviderName;
   }
 
   stopTests = (): void => {

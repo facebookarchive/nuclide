@@ -162,3 +162,12 @@ export function onUnexpectedError(error: any) {
 export function capitalize(str: string): string {
   return str[0].toUpperCase() + str.slice(1);
 }
+
+export function notifyOpenDebugSession(): void {
+  atom.notifications.addInfo(
+    "Received a debug request, but there's an open debug session already!",
+    {
+      detail: 'Please terminate your existing debug session',
+    },
+  );
+}

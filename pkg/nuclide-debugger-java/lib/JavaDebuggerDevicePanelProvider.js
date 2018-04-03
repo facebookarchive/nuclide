@@ -65,8 +65,6 @@ export class JavaDebuggerDevicePanelProvider
       device,
       pid: proc.pid,
     });
-
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'debugger:show');
     debuggerService.startDebugging(processInfo);
   }
 }

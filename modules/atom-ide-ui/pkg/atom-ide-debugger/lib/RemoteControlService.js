@@ -56,15 +56,6 @@ export default class RemoteControlService {
     });
   }
 
-  getCurrentDebuggerName(): ?string {
-    const {focusedProcess} = this._service.viewModel;
-    if (focusedProcess == null) {
-      return null;
-    } else {
-      return focusedProcess.configuration.adapterType;
-    }
-  }
-
   _startVspDebugging(config: IProcessConfig): IVspInstance {
     this._service.startDebugging(config);
 
