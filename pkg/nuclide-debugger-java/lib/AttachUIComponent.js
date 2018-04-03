@@ -20,7 +20,7 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
-import {setupJavaDebuggerService} from './JavaDebuggerServiceHelpers';
+import {debugJavaDebuggerService} from './JavaDebuggerServiceHelpers';
 
 type Props = {|
   targetUri: NuclideUri,
@@ -118,7 +118,8 @@ export class AttachUIComponent extends React.Component<Props, State> {
       10,
     );
 
-    await setupJavaDebuggerService(this.props.targetUri, 'attach', {
+    await debugJavaDebuggerService(this.props.targetUri, {
+      debugMode: 'attach',
       machineName: 'localhost',
       port: javaPort,
     });

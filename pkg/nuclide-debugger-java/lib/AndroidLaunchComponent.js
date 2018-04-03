@@ -14,14 +14,13 @@ import invariant from 'assert';
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {Expected} from 'nuclide-commons/expected';
 
-import {track} from '../../nuclide-analytics';
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {AdbDeviceSelector} from './AdbDeviceSelector';
 import {
   getAdbService,
-  setupAndroidDebuggerService,
+  debugAndroidDebuggerService,
 } from './JavaDebuggerServiceHelpers';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -262,11 +261,7 @@ export class AndroidLaunchComponent extends React.Component<Props, State> {
     const device = this.state.selectedDevice;
     invariant(device != null, 'No device selected.');
 
-    const {
-      attach,
-      pid,
-      attachPortTargetInfo,
-    } = await setupAndroidDebuggerService(
+    await debugAndroidDebuggerService(
       null /* pid */,
       adbService,
       service,
@@ -277,17 +272,6 @@ export class AndroidLaunchComponent extends React.Component<Props, State> {
       this.props.targetUri /* adbServiceUri */,
       this.props.targetUri,
     );
-
-    track('fb-java-debugger-start', {
-      startType: attach ? 'android-attach' : 'android-launch',
-      target: packageName,
-      targetType: 'android',
-      port: attachPortTargetInfo.port,
-      deviceName: device.name,
-      activity,
-      action,
-      pid,
-    });
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedDeviceName: device.name,

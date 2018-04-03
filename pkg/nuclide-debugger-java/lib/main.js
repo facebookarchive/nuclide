@@ -86,7 +86,6 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
       const clickEvents = new Subject();
       const processInfo = await createJavaVspProcessInfo(
         targetUri,
-        'attach',
         attachPortTargetInfo,
         clickEvents,
       );
@@ -105,8 +104,8 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
       const clickEvents = new Subject();
       const processInfo = await createJavaVspProcessInfo(
         targetUri,
-        'attach',
         {
+          debugMode: 'attach',
           machineName: nuclideUri.isRemote(targetUri)
             ? nuclideUri.getHostname(targetUri)
             : 'localhost',
@@ -129,8 +128,8 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
       const clickEvents = new Subject();
       const processInfo = await createJavaVspProcessInfo(
         targetUri,
-        'attach',
         {
+          debugMode: 'attach',
           machineName: nuclideUri.isRemote(targetUri)
             ? nuclideUri.getHostname(targetUri)
             : 'localhost',
@@ -155,8 +154,8 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
       const clickEvents = new Subject();
       const processInfo = await createJavaVspProcessInfo(
         targetUri,
-        'launch',
         {
+          debugMode: 'launch',
           commandLine: mainClass,
           classPath,
           runArgs,

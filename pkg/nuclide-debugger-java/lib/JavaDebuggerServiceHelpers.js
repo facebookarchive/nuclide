@@ -12,13 +12,10 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ControlButtonSpecification,
-  DebuggerConfigAction,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
-import type {
-  JavaLaunchTargetInfo,
-  JavaAttachPortTargetInfo,
-} from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
+import type {JavaTargetInfo} from '../../nuclide-debugger-java-rpc';
+import type {JavaAttachPortTargetInfo} from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
 
@@ -193,6 +190,7 @@ export async function getAdbAttachPortTargetInfo(
     );
   });
   return {
+    debugMode: 'attach',
     machineName: 'localhost',
     port: attachPort,
   };
@@ -245,8 +243,7 @@ export function getDialogValues(
 
 export async function createJavaVspProcessInfo(
   targetUri: NuclideUri,
-  debugMode: DebuggerConfigAction,
-  info: JavaLaunchTargetInfo | JavaAttachPortTargetInfo,
+  info: JavaTargetInfo,
   clickEvents: rxjs$Subject<void>,
 ): Promise<VspProcessInfo> {
   const adapterExecutable = await getJavaVSAdapterExecutableInfo(targetUri);
@@ -266,7 +263,7 @@ export async function createJavaVspProcessInfo(
   }
   return new VspProcessInfo(
     targetUri,
-    debugMode,
+    info.debugMode,
     VsAdapterTypes.JAVA,
     adapterExecutable,
     infoToArgs(info),
@@ -282,7 +279,7 @@ export type AndroidDebugInfo = {|
   attachPortTargetInfo: JavaAttachPortTargetInfo,
 |};
 
-export async function setupAndroidDebuggerService(
+export async function debugAndroidDebuggerService(
   providedPid: ?number,
   adbService: AdbService,
   service: ?string,
@@ -292,7 +289,7 @@ export async function setupAndroidDebuggerService(
   packageName: string,
   adbServiceUri: NuclideUri,
   targetUri: NuclideUri,
-): Promise<AndroidDebugInfo> {
+): Promise<void> {
   const subscriptions = new UniversalDisposable();
   const {pid, attach} = await launchAndroidServiceOrActivityAndGetPid(
     providedPid,
@@ -313,31 +310,34 @@ export async function setupAndroidDebuggerService(
     subscriptions,
   );
 
-  await setupJavaDebuggerService(
+  await debugJavaDebuggerService(
     targetUri,
-    'attach',
     attachPortTargetInfo,
     subscriptions,
+    false /* do not track because we will */,
   );
 
-  return {
-    attach,
-    subscriptions,
+  track('fb-java-debugger-start', {
+    startType: attach ? 'android-attach' : 'android-launch',
+    target: packageName,
+    targetType: 'android',
+    port: attachPortTargetInfo.port,
+    deviceName: device.name,
+    activity,
+    action,
     pid,
-    attachPortTargetInfo,
-  };
+  });
 }
 
-export async function setupJavaDebuggerService(
+export async function debugJavaDebuggerService(
   targetUri: NuclideUri,
-  debugMode: DebuggerConfigAction,
-  info: JavaLaunchTargetInfo | JavaAttachPortTargetInfo,
+  info: JavaTargetInfo,
   subscriptions: UniversalDisposable = new UniversalDisposable(),
+  trackDebug: boolean = true,
 ): Promise<void> {
   const clickEvents = new Subject();
   const processInfo = await createJavaVspProcessInfo(
     targetUri,
-    debugMode,
     info,
     clickEvents,
   );
@@ -363,6 +363,26 @@ export async function setupJavaDebuggerService(
     clickEvents,
   );
   processInfo.addCustomDisposable(subscriptions);
+
+  if (trackDebug) {
+    if (info.debugMode === 'attach') {
+      // if attach
+      track('fb-java-debugger-start', {
+        startType: 'java-attach',
+        machineName: info.machineName,
+        info: info.port,
+        targetUri,
+      });
+    } else if (info.debugMode === 'launch') {
+      // else launch
+      track('fb-java-debugger-start', {
+        startType: 'java-launch',
+        commandLine: info.commandLine,
+        classPath: info.classPath,
+        targetUri,
+      });
+    }
+  }
 }
 
 export function persistSourcePathsToConfig(
@@ -416,9 +436,7 @@ export function getDefaultSourceSearchPaths(
   return searchPaths;
 }
 
-export function infoToArgs(
-  info: JavaLaunchTargetInfo | JavaAttachPortTargetInfo,
-) {
+export function infoToArgs(info: JavaTargetInfo) {
   return {
     config: {
       info,

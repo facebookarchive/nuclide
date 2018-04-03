@@ -15,14 +15,13 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from 'nuclide-commons/expected';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
-import {track} from '../../nuclide-analytics';
 import * as React from 'react';
 import {AdbDeviceSelector} from './AdbDeviceSelector';
 import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {
   getAdbService,
-  setupAndroidDebuggerService,
+  debugAndroidDebuggerService,
 } from './JavaDebuggerServiceHelpers';
 import {Subscription} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -395,11 +394,7 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
 
     const packageName = selectedProcess.name;
 
-    const {
-      attach,
-      pid,
-      attachPortTargetInfo,
-    } = await setupAndroidDebuggerService(
+    await debugAndroidDebuggerService(
       parseInt(selectedProcess.pid, 10),
       adbService,
       null /* service */,
@@ -410,17 +405,6 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       this.props.targetUri /* adbServiceUri */,
       this.props.targetUri,
     );
-
-    track('fb-java-debugger-start', {
-      startType: attach ? 'android-attach' : 'android-launch',
-      target: packageName,
-      targetType: 'android',
-      port: attachPortTargetInfo.port,
-      deviceName: device.name,
-      activity,
-      action,
-      pid,
-    });
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedDeviceName:

@@ -19,7 +19,7 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
-import {setupJavaDebuggerService} from './JavaDebuggerServiceHelpers';
+import {debugJavaDebuggerService} from './JavaDebuggerServiceHelpers';
 
 type Props = {|
   targetUri: NuclideUri,
@@ -118,7 +118,8 @@ export class LaunchUIComponent extends React.Component<Props, State> {
     const commandLine = this.state.launchCommandLine.trim();
     const classPath = this.state.classPath.trim();
 
-    await setupJavaDebuggerService(this.props.targetUri, 'launch', {
+    await debugJavaDebuggerService(this.props.targetUri, {
+      debugMode: 'launch',
       commandLine,
       classPath,
     });

@@ -21,15 +21,19 @@ import {Observable} from 'rxjs';
 import {getAvailableServerPort} from '../../commons-node/serverPort';
 
 export type JavaLaunchTargetInfo = {|
+  +debugMode: 'launch',
   +commandLine: string,
   +classPath: string,
   +runArgs?: ?Array<string>,
 |};
 
 export type JavaAttachPortTargetInfo = {|
+  +debugMode: 'attach',
   +machineName: string,
   +port: number,
 |};
+
+export type JavaTargetInfo = JavaLaunchTargetInfo | JavaAttachPortTargetInfo;
 
 export type TerminalLaunchInfo = {|
   +launchCommand: string,
