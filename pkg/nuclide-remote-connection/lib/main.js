@@ -75,13 +75,11 @@ import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as JavaDebuggerHelpersService from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
-import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService';
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
 import typeof * as PtyService from '../../nuclide-pty-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
-import typeof * as ReasonService from '../../nuclide-ocaml-rpc/lib/ReasonService';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
@@ -175,10 +173,6 @@ export function getJavaDebuggerHelpersServiceByNuclideUri(
   return nullthrows(getServiceByNuclideUri('JavaDebuggerHelpersService', uri));
 }
 
-export function getMerlinServiceByNuclideUri(uri: NuclideUri): MerlinService {
-  return nullthrows(getServiceByNuclideUri('MerlinService', uri));
-}
-
 export function getMetroServiceByNuclideUri(uri: NuclideUri): MetroService {
   return nullthrows(getServiceByNuclideUri('MetroService', uri));
 }
@@ -201,10 +195,6 @@ export function getPythonServiceByConnection(
   connection: ?ServerConnection,
 ): PythonService {
   return getServiceByConnection('PythonService', connection);
-}
-
-export function getReasonServiceByNuclideUri(uri: NuclideUri): ReasonService {
-  return nullthrows(getServiceByNuclideUri('ReasonService', uri));
 }
 
 export function getRemoteCommandServiceByNuclideUri(

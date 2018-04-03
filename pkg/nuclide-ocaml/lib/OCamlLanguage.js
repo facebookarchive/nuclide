@@ -51,32 +51,12 @@ async function createOCamlLanguageService(
       useOriginalEnvironment: true,
       fileExtensions: ['.ml', '.mli', '.re', '.rei'],
       additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+
+      // ocaml-language-server will use defaults for any settings that aren't
+      // given, so we only need to list non-defaults here.
       initializationOptions: {
-        codelens: {
-          enabled: true,
-          unicode: false,
-        },
-        debounce: {
-          linter: 10 * 1000, // 10s
-        },
         format: {
           width: 80,
-        },
-        diagnostics: {
-          merlinPerfLogging: true,
-          tools: ['merlin'],
-        },
-        path: {
-          ocamlfind: 'ocamlfind',
-          ocamlmerlin: 'ocamlmerlin',
-          opam: 'opam',
-          rebuild: 'rebuild',
-          refmt: 'refmt',
-          refmterr: 'refmterr',
-          rtop: 'rtop',
-        },
-        server: {
-          languages: ['ocaml', 'reason'],
         },
       },
     },

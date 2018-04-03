@@ -29,12 +29,6 @@
         "type": "string",
         "default": ""
       },
-      "enableDiagnostics": {
-        "title": "Enable diagnostic messages (e.g. compiler errors) from Merlin",
-        "description": "In some cases, Merlin cannot resolve all symbols, so many of its errors are just noise.",
-        "type": "boolean",
-        "default": true
-      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",

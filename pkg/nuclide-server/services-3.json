@@ -72,10 +72,6 @@
     "name": "JSAutoImportsService"
   },
   {
-    "implementation": "../nuclide-ocaml-rpc/lib/MerlinService.js",
-    "name": "MerlinService"
-  },
-  {
     "implementation": "../nuclide-metro-rpc/lib/MetroService.js",
     "name": "MetroService"
   },
@@ -94,10 +90,6 @@
   {
     "implementation": "../nuclide-python-rpc/lib/PythonService.js",
     "name": "PythonService"
-  },
-  {
-    "implementation": "../nuclide-ocaml-rpc/lib/ReasonService.js",
-    "name": "ReasonService"
   },
   {
     "implementation": "../nuclide-remote-atom-rpc/lib/RemoteCommandService.js",
