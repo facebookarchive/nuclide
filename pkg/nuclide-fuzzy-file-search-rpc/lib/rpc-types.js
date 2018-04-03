@@ -16,3 +16,15 @@ export type FileSearchResult = {
   score: number,
   matchIndexes: Array<number>,
 };
+
+export type DirectorySearchConfig =
+  | {
+      useCustomSearch: false,
+    }
+  | {
+      useCustomSearch: true,
+      search(
+        queryString: string,
+        rootDirectory: NuclideUri,
+      ): Promise<Array<FileSearchResult>>,
+    };

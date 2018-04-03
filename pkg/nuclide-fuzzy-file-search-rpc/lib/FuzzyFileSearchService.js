@@ -11,7 +11,7 @@
 
 import type {LRUCache} from 'lru-cache';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileSearchResult} from './rpc-types';
+import type {DirectorySearchConfig, FileSearchResult} from './rpc-types';
 
 import LRU from 'lru-cache';
 import {
@@ -21,26 +21,37 @@ import {
 } from './FileSearchProcess';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
-type FileSystemMetadata = {
-  isEden: boolean,
-  edenFsRoot?: string,
-};
-
-const filesystemCache: LRUCache<NuclideUri, Promise<FileSystemMetadata>> = LRU({
+const searchConfigCache: LRUCache<
+  NuclideUri,
+  Promise<DirectorySearchConfig>,
+> = LRU({
   // In practice, we expect this cache to have one entry for each item in
   // `atom.project.getPaths()`. We do not expect this number to be particularly
   // large, so we add a bit of a buffer and log an error if we actually fill the
   // cache.
   max: 25,
-  dispose(key: NuclideUri, value: Promise<FileSystemMetadata>) {
+  dispose(key: NuclideUri, value: Promise<DirectorySearchConfig>) {
     getLogger('FuzzyFileSearchService').error(
-      `Unexpected eviction of ${key} from the filesystemCache.`,
+      `Unexpected eviction of ${key} from the searchConfigCache.`,
     );
   },
 });
+
+const getSearchConfig = (function() {
+  try {
+    // $FlowFB
+    return require('./fb-custom-file-search').getSearchConfig;
+  } catch (e) {
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      throw e;
+    }
+
+    return function(directory: NuclideUri): Promise<DirectorySearchConfig> {
+      return Promise.resolve({useCustomSearch: false});
+    };
+  }
+})();
 
 /**
  * Performs a fuzzy file search in the specified directory.
@@ -52,13 +63,15 @@ export async function queryFuzzyFile(config: {|
   ignoredNames: Array<string>,
   smartCase?: boolean,
 |}): Promise<Array<FileSearchResult>> {
-  let metadataPromise = filesystemCache.get(config.rootDirectory);
-  if (metadataPromise == null) {
-    metadataPromise = getFileSystemMetadata(config.rootDirectory);
-    filesystemCache.set(config.rootDirectory, metadataPromise);
+  let searchConfigPromise = searchConfigCache.get(config.rootDirectory);
+  if (searchConfigPromise == null) {
+    searchConfigPromise = getSearchConfig(config.rootDirectory);
+    searchConfigCache.set(config.rootDirectory, searchConfigPromise);
   }
-  const metadata = await metadataPromise;
-  if (!metadata.isEden) {
+  const searchConfig = await searchConfigPromise;
+  if (searchConfig.useCustomSearch) {
+    return searchConfig.search(config.queryString, config.rootDirectory);
+  } else {
     const search = await fileSearchForDirectory(
       config.rootDirectory,
       config.ignoredNames,
@@ -67,30 +80,6 @@ export async function queryFuzzyFile(config: {|
       queryRoot: config.queryRoot,
       smartCase: config.smartCase,
     });
-  } else {
-    // $FlowFB
-    const {doSearch} = require('./fb-EdenFileSearch');
-    const {edenFsRoot} = metadata;
-    invariant(edenFsRoot != null);
-    return doSearch(config.queryString, edenFsRoot, config.rootDirectory);
-  }
-}
-
-async function getFileSystemMetadata(
-  rootDirectory: NuclideUri,
-): Promise<FileSystemMetadata> {
-  // Note that Eden makes a "magical" .eden directory entry stat'able but not
-  // readdir'able in every directory under EdenFS to make it cheap to check
-  // whether a directory is in EdenFS.
-  const pathToDotEden = nuclideUri.join(rootDirectory, '.eden');
-  const isEden = await fsPromise.isNonNfsDirectory(pathToDotEden);
-  if (isEden) {
-    const edenFsRoot = await fsPromise.readlink(
-      nuclideUri.join(pathToDotEden, 'root'),
-    );
-    return {isEden, edenFsRoot};
-  } else {
-    return {isEden};
   }
 }
 
