@@ -17,7 +17,6 @@ import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import {GRAMMARS, GRAMMAR_SET} from './constants';
-import {getLintOnFly} from './config';
 import LinkTreeLinter from './LinkTreeLinter';
 import LintHelpers from './LintHelpers';
 import {
@@ -138,7 +137,6 @@ class Activation {
     return {
       grammarScopes: Array.from(GRAMMAR_SET),
       scope: 'file',
-      lintOnFly: getLintOnFly(),
       name: 'flake8',
       lint: editor => LintHelpers.lint(editor),
     };

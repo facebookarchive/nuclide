@@ -12,7 +12,7 @@
 import type {DiagnosticMessageType} from 'atom-ide-ui';
 
 function classifyCode(code: string): DiagnosticMessageType {
-  if (/^(B9|C|E[35]|T400|T49)/.test(code)) {
+  if (/^(B9|C|E[235]|F40[135]|T400|T49)/.test(code)) {
     return 'Info';
   } else if (/^(F|B|T484|E999)/.test(code)) {
     return 'Error';

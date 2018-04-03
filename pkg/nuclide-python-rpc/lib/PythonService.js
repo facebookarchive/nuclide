@@ -456,7 +456,6 @@ let shouldRunFlake8 = true;
 
 export async function getDiagnostics(
   src: NuclideUri,
-  contents: string,
 ): Promise<Array<PythonDiagnostic>> {
   if (!shouldRunFlake8) {
     return [];
@@ -464,7 +463,7 @@ export async function getDiagnostics(
 
   let result;
   try {
-    result = await runLinterCommand(src, contents);
+    result = await runLinterCommand(src);
   } catch (err) {
     // A non-successful exit code can result in some cases that we want to ignore,
     // for example when an incorrect python version is specified for a source file.
@@ -482,14 +481,8 @@ export async function getDiagnostics(
   return parseFlake8Output(src, result);
 }
 
-async function runLinterCommand(
-  src: NuclideUri,
-  contents: string,
-): Promise<string> {
+async function runLinterCommand(src: NuclideUri): Promise<string> {
   const dirName = nuclideUri.dirname(src);
-  const configDir = await fsPromise.findNearestFile('.flake8', dirName);
-  // flowlint-next-line sketchy-null-string:off
-  const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
 
   let result;
   let runFlake8;
@@ -501,7 +494,7 @@ async function runLinterCommand(
   }
 
   if (runFlake8 != null) {
-    result = await runFlake8(src, contents, configPath);
+    result = await runFlake8(src);
     if (result != null) {
       return result;
     }
@@ -510,20 +503,10 @@ async function runLinterCommand(
   const command =
     (global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8')) ||
     'flake8';
-  const args = [];
 
-  // flowlint-next-line sketchy-null-string:off
-  if (configPath) {
-    args.push('--config');
-    args.push(configPath);
-  }
-
-  // Read contents from stdin.
-  args.push('-');
   invariant(typeof command === 'string');
-  return runCommand(command, args, {
+  return runCommand(command, [src], {
     cwd: dirName,
-    input: contents,
     // 1 indicates unclean lint result (i.e. has errors/warnings).
     isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
   }).toPromise();

@@ -34,7 +34,3 @@ export function getEnableLinting(): boolean {
 export function getLintExtensionBlacklist(): Array<string> {
   return (featureConfig.get('nuclide-python.lintExtensionBlacklist'): any);
 }
-
-export function getLintOnFly(): boolean {
-  return (featureConfig.get('nuclide-python.lintOnFly'): any);
-}

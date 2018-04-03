@@ -30,7 +30,7 @@ export default class LintHelpers {
 
     return trackTiming('nuclide-python.lint', async () => {
       const service = getPythonServiceByNuclideUri(src);
-      const diagnostics = await service.getDiagnostics(src, editor.getText());
+      const diagnostics = await service.getDiagnostics(src);
       if (editor.isDestroyed()) {
         return [];
       }
