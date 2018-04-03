@@ -16,9 +16,14 @@
   rulesdir/no-commonjs: 0,
   */
 
+const path = require('path');
+
 module.exports = {
   testMatch: ['**/spec/**/*-spec.js'],
   transform: {
     '\\.js$': 'nuclide-jest/jestTransformer.js',
+  },
+  moduleNameMapper: {
+    oniguruma: path.resolve(__dirname, 'emptyObject'),
   },
 };
