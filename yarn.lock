@@ -2951,6 +2951,10 @@ idb-keyval@2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/idb-keyval/-/idb-keyval-2.3.0.tgz#4d444b80c3f86fcbcd51321b4dcbc9247c5948c0"
 
+idb@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/idb/-/idb-2.1.1.tgz#f21374e058fddf9f3771b7e7d32f981c55fcf1d3"
+
 idx@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/idx/-/idx-1.2.0.tgz#be4f41fb82bed571f65362e79add27e0ae74f691"

@@ -79,6 +79,7 @@
     "graphql-language-service": "1.0.15",
     "graphql-language-service-utils": "1.0.15",
     "heap": "0.2.6",
+    "idb": "2.1.1",
     "idb-keyval": "2.3.0",
     "idx": "1.2.0",
     "immutable": "4.0.0-rc.9",
