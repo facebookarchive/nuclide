@@ -74,6 +74,7 @@ import typeof * as GrepService from '../../nuclide-grep-rpc';
 import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
+import typeof * as JavaDebuggerHelpersService from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
 import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService';
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
@@ -158,8 +159,20 @@ export function getHgServiceByNuclideUri(uri: NuclideUri): HgService {
   return nullthrows(getServiceByNuclideUri('HgService', uri));
 }
 
+export function getHhvmDebuggerServiceByNuclideUri(
+  uri: NuclideUri,
+): HhvmDebuggerService {
+  return nullthrows(getServiceByNuclideUri('HhvmDebuggerService', uri));
+}
+
 export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
   return nullthrows(getServiceByNuclideUri('InfoService', uri));
+}
+
+export function getJavaDebuggerHelpersServiceByNuclideUri(
+  uri: NuclideUri,
+): JavaDebuggerHelpersService {
+  return nullthrows(getServiceByNuclideUri('JavaDebuggerHelpersService', uri));
 }
 
 export function getMerlinServiceByNuclideUri(uri: NuclideUri): MerlinService {
@@ -174,12 +187,6 @@ export function getOpenFilesServiceByNuclideUri(
   uri: NuclideUri,
 ): OpenFilesService {
   return nullthrows(getServiceByNuclideUri('OpenFilesService', uri));
-}
-
-export function getHhvmDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): HhvmDebuggerService {
-  return nullthrows(getServiceByNuclideUri('HhvmDebuggerService', uri));
 }
 
 export function getPtyServiceByNuclideUri(uri: NuclideUri): PtyService {

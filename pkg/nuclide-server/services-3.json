@@ -64,6 +64,10 @@
     "name": "InfoService"
   },
   {
+    "implementation": "../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService.js",
+    "name": "JavaDebuggerHelpersService"
+  },
+  {
     "implementation": "../nuclide-js-imports-client-rpc/lib/JsImportsService.js",
     "name": "JSAutoImportsService"
   },
