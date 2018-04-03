@@ -59,10 +59,16 @@ export function watchWithNode(
     const watcher = fs.watch(
       watchedPath,
       {persistent: false},
-      (eventType, fileName) => {
-        const path = isDirectory
-          ? nuclideUri.join(watchedPath, fileName)
-          : watchedPath;
+      // Note: Flow doesn't know this, but `fs.watch` may emit null filenames.
+      (eventType, fileName: ?string) => {
+        let path = watchedPath;
+        if (isDirectory) {
+          // Be defensive if we don't know what changed.
+          if (fileName == null) {
+            return;
+          }
+          path = nuclideUri.join(watchedPath, fileName);
+        }
         if (eventType === 'rename') {
           observer.next({path, type: 'delete'});
         } else {
