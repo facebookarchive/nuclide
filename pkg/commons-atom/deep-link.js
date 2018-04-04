@@ -13,10 +13,13 @@ import invariant from 'assert';
 import electron from 'electron';
 import {Observable} from 'rxjs';
 
-const {ipcRenderer} = electron;
+const {ipcRenderer, remote} = electron;
 invariant(ipcRenderer != null, 'must be in renderer process');
+invariant(remote != null);
 
 const CHANNEL = 'nuclide-url-open';
+
+let hasSentDeepLink = false;
 
 export type DeepLinkMessage = {
   message: string,
@@ -34,6 +37,14 @@ export function sendDeepLink(
   path: string,
   params: Object,
 ): void {
+  if (browserWindow === remote.getCurrentWindow()) {
+    hasSentDeepLink = true;
+  }
+
   browserWindow.webContents.send(CHANNEL, {message: path, params});
   browserWindow.focus();
+}
+
+export function getHasSentDeepLink(): boolean {
+  return hasSentDeepLink;
 }
