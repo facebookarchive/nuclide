@@ -23,7 +23,7 @@ const ruleTester = new RuleTester({
   parser: 'babel-eslint',
 });
 
-ruleTester.run('atom-commands', rule, {
+ruleTester.run('api-spelling', rule, {
   valid: [
     {code: 'value.isInitialized'},
     {code: 'value.initialize()'},
