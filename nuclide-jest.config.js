@@ -15,10 +15,8 @@
   rulesdir/no-commonjs: 0,
   */
 
+const path = require('path');
+
 module.exports = {
-  rootDir: __dirname,
-  testMatch: ['**/__tests__/**/*.js?(x)'],
-  transform: {
-    '\\.js$': '<rootDir>/modules/nuclide-jest/jestTransformer.js',
-  },
+  jestConfig: path.resolve(__dirname, 'jest.config.js'),
 };
