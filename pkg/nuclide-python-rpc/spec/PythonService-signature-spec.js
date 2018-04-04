@@ -91,6 +91,11 @@ describe('PythonService', () => {
         activeParameter: 1,
       });
 
+      // Don't return anything if we're inside the string.
+      expect(
+        await jediService.get_signature_help(FIXTURE, contents, [], 12, 13),
+      ).toEqual(null);
+
       // len()
       expect(
         await jediService.get_signature_help(FIXTURE, contents, [], 11, 4),
