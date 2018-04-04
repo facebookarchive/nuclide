@@ -230,6 +230,11 @@ class JediServer:
         if not signatures:
             return None
 
+        leaf = script._get_module_node().get_leaf_for_position(script._pos)
+        # Don't return signatures inside string literals.
+        if leaf and leaf.type == 'string':
+            return None
+
         # Python shouldn't ever have multiple signatures
         s = signatures[0]
         docstring = s.docstring()
