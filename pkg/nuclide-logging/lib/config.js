@@ -59,6 +59,16 @@ export function getDefaultConfig(): log4js$Config {
         type: require.resolve('./nuclideConsoleAppender'),
       },
     });
+  } else {
+    // Make sure FATAL errors make it to stderr.
+    appenders.push({
+      type: 'logLevelFilter',
+      level: 'FATAL',
+      appender: {
+        type: require.resolve('./consoleAppender'),
+        stderr: true,
+      },
+    });
   }
   if (!isRunningInTest()) {
     appenders.push({

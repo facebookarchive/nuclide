@@ -51,6 +51,8 @@ CERTS_EXPIRATION_DAYS = 14
 CORE_DUMP_PATH = '/var/tmp/cores'
 MAX_CORE_DUMPS = 3
 
+# Number of log lines to display in case of an error.
+LOG_PREVIEW_LINES = 20
 
 # This class manages Nuclide servers.
 
@@ -440,6 +442,17 @@ if __name__ == '__main__':
         else:
             print(json.dumps(result))
         print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)
+        if ret != 0:
+            try:
+                with open(LOG_FILE) as f:
+                    print('\nPreview:', file=sys.stderr)
+                    for _i in range(LOG_PREVIEW_LINES):
+                        line = f.readline()
+                        if line == '':
+                            break
+                        print(line, end='', file=sys.stderr)
+            except IOError:
+                print('Warning: log file could not be read.', file=sys.stderr)
     elif options.command == 'list' or options.command == 'listall':
         if options.command == 'listall':
             # List processes for all users.

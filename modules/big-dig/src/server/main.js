@@ -89,7 +89,7 @@ export async function generateCertificatesAndStartServer({
     ],
     {
       detached: true,
-      stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
     },
   );
   logger.info(`spawn called for ${launcherScript}`);
@@ -98,6 +98,10 @@ export async function generateCertificatesAndStartServer({
 
   const childPort = await timeoutPromise(
     new Promise((resolve, reject) => {
+      let stderr = '';
+      child.stderr.on('data', data => {
+        stderr += data.toString();
+      });
       const onMessage = ({port: result}) => {
         resolve(result);
         child.removeAllListeners();
@@ -105,8 +109,9 @@ export async function generateCertificatesAndStartServer({
       child.on('message', onMessage);
       child.on('error', reject);
       child.on('exit', code => {
-        logger.info(`${launcherScript} exited with code ${code}`);
-        reject(Error(`child exited early with code ${code}`));
+        reject(
+          Error(`Child exited early with code ${code}.\nstderr: ${stderr}`),
+        );
       });
     }),
     timeout,

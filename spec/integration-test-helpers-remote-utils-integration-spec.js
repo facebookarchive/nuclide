@@ -38,7 +38,7 @@ describe('remote connection for testing', () => {
 
       const pathToProject = await generateHgRepo1Fixture();
 
-      startNuclideServer();
+      await startNuclideServer();
       const connection = await addRemoteProject(pathToProject);
       invariant(connection != null);
 

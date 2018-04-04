@@ -13,7 +13,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import {getLogger} from 'log4js';
 import {Deferred} from 'nuclide-commons/promise';
-import {getOutputStream} from 'nuclide-commons/process';
+import {getOutputStream, ProcessExitError} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {StreamTransport} from '../../nuclide-rpc';
 
@@ -90,10 +90,26 @@ export class IpcClientTransport {
         },
       });
     }
+    let detail;
+    if (err instanceof ProcessExitError) {
+      let {stderr} = err;
+      if (stderr != null) {
+        const lines = stderr.split('\n');
+        const startIndex = lines.findIndex(line =>
+          line.includes('chrome-devtools://'),
+        );
+        if (startIndex !== -1) {
+          stderr = lines.slice(startIndex + 1).join('\n');
+        }
+      }
+      detail = `Exit code: ${String(err.exitCode)}\nstderr: ${stderr}`;
+    } else {
+      detail = String(err);
+    }
     atom.notifications.addError('Local RPC process crashed!', {
       description:
         'The local Nuclide RPC process crashed. Please reload Atom to continue.',
-      detail: String(err),
+      detail,
       dismissable: true,
       buttons,
     });

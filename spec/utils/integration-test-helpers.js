@@ -12,9 +12,9 @@
 import typeof * as FlowService from '../../pkg/nuclide-flow-rpc';
 
 import invariant from 'assert';
-import child_process from 'child_process';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {runCommand} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {jasmineAttachWorkspace} from 'nuclide-commons-atom/test-helpers';
 import {
@@ -128,11 +128,17 @@ export async function deactivateAllPackages(): Promise<void> {
  * Starts a local version of the nuclide server in insecure mode on the
  * specified port. The server is started in a separate process than the caller's.
  */
-export function startNuclideServer(): void {
-  child_process.spawnSync(
+export async function startNuclideServer(): Promise<void> {
+  await runCommand(
     require.resolve('../../pkg/nuclide-server/nuclide-start-server'),
     ['-k', `--port=${SERVER_PORT}`],
-  );
+  )
+    .toPromise()
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.error('Error starting test server:', String(err));
+      process.exit(1);
+    });
 }
 
 /**

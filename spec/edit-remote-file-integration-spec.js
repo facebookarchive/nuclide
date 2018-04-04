@@ -33,7 +33,7 @@ describe('Edit remote file Integration Test', () => {
       await activateAllPackages();
 
       const repoPath = await generateHgRepo1Fixture();
-      startNuclideServer();
+      await startNuclideServer();
       const connection = await addRemoteProject(repoPath);
       invariant(connection, 'Failed to make connection to a remote server');
 
