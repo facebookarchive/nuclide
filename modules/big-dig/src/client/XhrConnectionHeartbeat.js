@@ -14,10 +14,15 @@ import type {RequestOptions} from './utils/asyncRequest';
 import type {AgentOptions} from '../common/types';
 import asyncRequest from './utils/asyncRequest';
 import {Emitter} from 'event-kit';
+import {getLogger} from 'log4js';
+import {sleep} from 'nuclide-commons/promise';
 
 const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
+
+const CERT_NOT_YET_VALID_DELAY = 3000;
+const CERT_NOT_YET_VALID_RETRIES = 3;
 
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
@@ -59,8 +64,26 @@ export class XhrConnectionHeartbeat {
 
   // Returns version
   async sendHeartBeat(): Promise<string> {
-    const {body} = await asyncRequest(this._options);
-    return body;
+    let retries = CERT_NOT_YET_VALID_RETRIES;
+    while (true) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const {body} = await asyncRequest(this._options);
+        return body;
+      } catch (err) {
+        if (retries-- > 0 && err.code === 'CERT_NOT_YET_VALID') {
+          getLogger('XhrConnectionHeartbeat').warn(
+            `Certificate not yet valid, retrying after ${CERT_NOT_YET_VALID_DELAY}ms...`,
+          );
+          // eslint-disable-next-line no-await-in-loop
+          await sleep(CERT_NOT_YET_VALID_DELAY);
+        } else {
+          throw err;
+        }
+      }
+    }
+    // eslint-disable-next-line no-unreachable
+    throw Error('unreachable');
   }
 
   async _heartbeat(): Promise<void> {
