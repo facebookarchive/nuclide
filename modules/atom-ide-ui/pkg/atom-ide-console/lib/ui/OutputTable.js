@@ -18,12 +18,15 @@ import type {
   RecordHeightChangeHandler,
 } from '../types';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nullThrows from 'nullthrows';
+import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import Hasher from 'nuclide-commons/Hasher';
 import * as React from 'react';
 import List from 'react-virtualized/dist/commonjs/List';
+import {Subject} from 'rxjs';
 import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
-import {ResizeSensitiveContainer} from 'nuclide-commons-ui/ResizeSensitiveContainer';
 
 type Props = {
   displayableRecords: Array<DisplayableRecord>,
@@ -68,6 +71,7 @@ type OnScrollParams = {
 const OVERSCAN_COUNT = 5;
 
 export default class OutputTable extends React.Component<Props, State> {
+  _disposable: UniversalDisposable;
   _hasher: Hasher<Record>;
   // This is a <List> from react-virtualized (untyped library)
   _list: ?React.Element<any>;
@@ -77,9 +81,11 @@ export default class OutputTable extends React.Component<Props, State> {
   // The currently rendered range.
   _startIndex: number;
   _stopIndex: number;
+  _refs: Subject<?HTMLElement>;
 
   constructor(props: Props) {
     super(props);
+    this._disposable = new UniversalDisposable();
     this._hasher = new Hasher();
     this._renderedRecords = new Map();
     this.state = {
@@ -88,6 +94,16 @@ export default class OutputTable extends React.Component<Props, State> {
     };
     this._startIndex = 0;
     this._stopIndex = 0;
+    this._refs = new Subject();
+    this._disposable.add(
+      this._refs
+        .filter(Boolean)
+        .switchMap(node => new ResizeObservable(nullThrows(node)).mapTo(node))
+        .subscribe(node => {
+          const {offsetHeight, offsetWidth} = nullThrows(node);
+          this._handleResize(offsetHeight, offsetWidth);
+        }),
+    );
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
@@ -108,12 +124,19 @@ export default class OutputTable extends React.Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    this._disposable.dispose();
+  }
+
+  _handleRef = (node: ?HTMLElement) => {
+    this._refs.next(node);
+  };
+
   render(): React.Node {
     return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
-      <ResizeSensitiveContainer
+      <div
         className="console-table-wrapper native-key-bindings"
-        onResize={this._handleResize}
+        ref={this._handleRef}
         tabIndex="1">
         {this._containerRendered() ? (
           <List
@@ -129,7 +152,7 @@ export default class OutputTable extends React.Component<Props, State> {
             onRowsRendered={this._handleListRender}
           />
         ) : null}
-      </ResizeSensitiveContainer>
+      </div>
     );
   }
 
@@ -197,6 +220,9 @@ export default class OutputTable extends React.Component<Props, State> {
   };
 
   _handleResize = (height: number, width: number): void => {
+    if (height === this.state.height && width === this.state.width) {
+      return;
+    }
     this.setState({
       width,
       height,
