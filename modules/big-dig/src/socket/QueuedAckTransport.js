@@ -318,6 +318,16 @@ export class QueuedAckTransport {
     this._cancelAckTimer();
     if (this._lastProcessedId > 0) {
       this._transportSend(frameAck(this._lastProcessedId));
+      // It seems that a bug in Electron's Node integration can cause ACKs
+      // to become stuck in the Node event loop indefinitely
+      // (as they are scheduled using Chromium's setTimeout).
+      // See T27348369 for more details.
+      if (
+        process.platform === 'win32' &&
+        typeof process.activateUvLoop === 'function'
+      ) {
+        process.activateUvLoop();
+      }
     }
   }
 
