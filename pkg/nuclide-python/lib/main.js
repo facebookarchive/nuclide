@@ -93,7 +93,7 @@ const atomConfig: AtomLanguageServiceConfig = {
   },
   typeHint: {
     version: '0.0.0',
-    priority: 1,
+    priority: 5,
     analyticsEventName: 'python.hover',
   },
   signatureHelp: {
