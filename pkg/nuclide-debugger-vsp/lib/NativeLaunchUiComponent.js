@@ -1,3 +1,77 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('nuclide-commons-ui/Dropdown');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('../../commons-atom/debugger');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,231 +79,193 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Option} from 'nuclide-commons-ui/Dropdown';
-import type {VsAdapterType} from 'nuclide-debugger-common';
+class NativeLaunchUiComponent extends _react.Component {
 
-import * as React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Dropdown} from 'nuclide-commons-ui/Dropdown';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
-import {shellParse} from 'nuclide-commons/string';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from 'nuclide-debugger-common';
-import {track} from '../../nuclide-analytics';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from '../../commons-atom/debugger';
-import {getNativeVSPLaunchProcessInfo} from './utils';
+  constructor(props) {
+    var _this;
 
-type Props = {|
-  +targetUri: NuclideUri,
-  +configIsValidChanged: (valid: boolean) => void,
-  +debuggerBackends: Array<Option>,
-  +defaultDebuggerBackend: VsAdapterType,
-|};
+    _this = super(props);
 
-type State = {
-  program: string,
-  args: string,
-  workingDirectory: string,
-  environmentVariables: string,
-  sourcePath: string,
-  debuggerBackend: VsAdapterType,
-};
+    this._onDebuggerBackendChange = debuggerBackend => {
+      this.setState({ debuggerBackend });
+    };
 
-export default class NativeLaunchUiComponent extends React.Component<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
+    this._handleLaunchButtonClick = (0, _asyncToGenerator.default)(function* () {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('fb-gdb-debugger-launch-from-dialog');
+      const program = (0, (_nullthrows || _load_nullthrows()).default)(_this._program).getText().trim();
+      const args = (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(_this._args).getText());
+      const cwd = (0, (_nullthrows || _load_nullthrows()).default)(_this._workingDirectory).getText().trim();
 
-  _program: ?AtomInput;
-  _args: ?AtomInput;
-  _workingDirectory: ?AtomInput;
-  _environmentVariables: ?AtomInput;
+      const env = (0, (_string || _load_string()).shellParse)((0, (_nullthrows || _load_nullthrows()).default)(_this._environmentVariables).getText());
 
-  constructor(props: Props) {
-    super(props);
-    this._disposables = new UniversalDisposable();
+      const { hostname } = (_nuclideUri || _load_nuclideUri()).default.parse(_this.props.targetUri);
+      const programUri = hostname != null ? (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, program) : program;
+
+      const launchInfo = yield (0, (_utils || _load_utils()).getNativeVSPLaunchProcessInfo)(_this.state.debuggerBackend, programUri, {
+        args,
+        cwd,
+        env,
+        sourcePath: _this.state.sourcePath
+      });
+
+      const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+      debuggerService.startDebugging(launchInfo);
+
+      (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).serializeDebuggerConfig)(..._this._getSerializationArgs(), {
+        program: _this.state.program,
+        args: _this.state.args,
+        workingDirectory: _this.state.workingDirectory,
+        environmentVariables: _this.state.environmentVariables,
+        sourcePath: _this.state.sourcePath
+      });
+    });
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       program: '',
       args: '',
       workingDirectory: '',
       environmentVariables: '',
       sourcePath: '',
-      debuggerBackend: props.defaultDebuggerBackend,
+      debuggerBackend: props.defaultDebuggerBackend
     };
   }
 
   _getSerializationArgs() {
-    return [
-      nuclideUri.isRemote(this.props.targetUri)
-        ? nuclideUri.getHostname(this.props.targetUri)
-        : 'local',
-      'launch',
-      'gdb',
-    ];
+    return [(_nuclideUri || _load_nuclideUri()).default.isRemote(this.props.targetUri) ? (_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri) : 'local', 'launch', 'gdb'];
   }
 
-  setState(newState: Object): void {
-    super.setState(newState, () =>
-      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
-    );
+  setState(newState) {
+    super.setState(newState, () => this.props.configIsValidChanged(this._debugButtonShouldEnable()));
   }
 
-  componentDidMount(): void {
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        const program = savedSettings.program || '';
-        const workingDirectory =
-          savedSettings.workingDirectory ||
-          (program.length > 0 ? nuclideUri.dirname(program) : '');
-        const environmentVariables = savedSettings.environmentVariables || '';
-        const sourcePath = savedSettings.sourcePath || '';
-        this.setState({
-          program,
-          args: savedSettings.args || '',
-          workingDirectory,
-          environmentVariables,
-          sourcePath,
-        });
-      },
-    );
+  componentDidMount() {
+    (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).deserializeDebuggerConfig)(...this._getSerializationArgs(), (transientSettings, savedSettings) => {
+      const program = savedSettings.program || '';
+      const workingDirectory = savedSettings.workingDirectory || (program.length > 0 ? (_nuclideUri || _load_nuclideUri()).default.dirname(program) : '');
+      const environmentVariables = savedSettings.environmentVariables || '';
+      const sourcePath = savedSettings.sourcePath || '';
+      this.setState({
+        program,
+        args: savedSettings.args || '',
+        workingDirectory,
+        environmentVariables,
+        sourcePath
+      });
+    });
 
     if (this._program != null) {
       this._program.focus();
     }
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleLaunchButtonClick();
-          }
-        },
-      }),
-    );
+    this._disposables.add(atom.commands.add('atom-workspace', {
+      'core:confirm': () => {
+        if (this._debugButtonShouldEnable()) {
+          this._handleLaunchButtonClick();
+        }
+      }
+    }));
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _debugButtonShouldEnable(): boolean {
+  _debugButtonShouldEnable() {
     return true;
   }
 
-  _onDebuggerBackendChange = (debuggerBackend: ?VsAdapterType): void => {
-    this.setState({debuggerBackend});
-  };
-
-  render(): React.Node {
-    return (
-      <div className="block">
-        <p>This is intended to debug native programs with gdb.</p>
-        <label>Executable: </label>
-        <AtomInput
-          ref={input => {
-            this._program = input;
-          }}
-          tabIndex="1"
-          placeholderText="Input the program you want to launch"
-          value={this.state.program}
-          onDidChange={value => this.setState({program: value})}
-        />
-        <label>Arguments: </label>
-        <AtomInput
-          ref={input => {
-            this._args = input;
-          }}
-          tabIndex="3"
-          placeholderText="Arguments to the program (optional)"
-          value={this.state.args}
-          onDidChange={value => this.setState({args: value})}
-        />
-        <label>Environment Variables: </label>
-        <AtomInput
-          ref={input => {
-            this._environmentVariables = input;
-          }}
-          tabIndex="3"
-          placeholderText="Environment variables (.e.g, SHELL=/bin/bash PATH=/bin) (optional)"
-          value={this.state.environmentVariables}
-          onDidChange={value => this.setState({environmentVariables: value})}
-        />
-        <label>Working directory: </label>
-        <AtomInput
-          ref={input => {
-            this._workingDirectory = input;
-          }}
-          tabIndex="5"
-          placeholderText="Working directory for the launched program (optional)"
-          value={this.state.workingDirectory}
-          onDidChange={value => this.setState({workingDirectory: value})}
-        />
-        <label>Source path: </label>
-        <AtomInput
-          placeholderText="Optional base path for sources"
-          value={this.state.sourcePath}
-          onDidChange={value => this.setState({sourcePath: value})}
-        />
-        <label>Debugger backend: </label>
-        <Dropdown
-          options={this.props.debuggerBackends}
-          onChange={this._onDebuggerBackendChange}
-          value={this.state.debuggerBackend}
-        />
-      </div>
+  render() {
+    return _react.createElement(
+      'div',
+      { className: 'block' },
+      _react.createElement(
+        'p',
+        null,
+        'This is intended to debug native programs with gdb.'
+      ),
+      _react.createElement(
+        'label',
+        null,
+        'Executable: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: input => {
+          this._program = input;
+        },
+        tabIndex: '1',
+        placeholderText: 'Input the program you want to launch',
+        value: this.state.program,
+        onDidChange: value => this.setState({ program: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Arguments: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: input => {
+          this._args = input;
+        },
+        tabIndex: '3',
+        placeholderText: 'Arguments to the program (optional)',
+        value: this.state.args,
+        onDidChange: value => this.setState({ args: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Environment Variables: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: input => {
+          this._environmentVariables = input;
+        },
+        tabIndex: '3',
+        placeholderText: 'Environment variables (.e.g, SHELL=/bin/bash PATH=/bin) (optional)',
+        value: this.state.environmentVariables,
+        onDidChange: value => this.setState({ environmentVariables: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Working directory: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: input => {
+          this._workingDirectory = input;
+        },
+        tabIndex: '5',
+        placeholderText: 'Working directory for the launched program (optional)',
+        value: this.state.workingDirectory,
+        onDidChange: value => this.setState({ workingDirectory: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Source path: '
+      ),
+      _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        placeholderText: 'Optional base path for sources',
+        value: this.state.sourcePath,
+        onDidChange: value => this.setState({ sourcePath: value })
+      }),
+      _react.createElement(
+        'label',
+        null,
+        'Debugger backend: '
+      ),
+      _react.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+        options: this.props.debuggerBackends,
+        onChange: this._onDebuggerBackendChange,
+        value: this.state.debuggerBackend
+      })
     );
   }
 
-  _handleLaunchButtonClick = async (): Promise<void> => {
-    track('fb-gdb-debugger-launch-from-dialog');
-    const program = nullthrows(this._program)
-      .getText()
-      .trim();
-    const args = shellParse(nullthrows(this._args).getText());
-    const cwd = nullthrows(this._workingDirectory)
-      .getText()
-      .trim();
-
-    const env = shellParse(nullthrows(this._environmentVariables).getText());
-
-    const {hostname} = nuclideUri.parse(this.props.targetUri);
-    const programUri =
-      hostname != null
-        ? nuclideUri.createRemoteUri(hostname, program)
-        : program;
-
-    const launchInfo = await getNativeVSPLaunchProcessInfo(
-      this.state.debuggerBackend,
-      programUri,
-      {
-        args,
-        cwd,
-        env,
-        sourcePath: this.state.sourcePath,
-      },
-    );
-
-    const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(launchInfo);
-
-    serializeDebuggerConfig(...this._getSerializationArgs(), {
-      program: this.state.program,
-      args: this.state.args,
-      workingDirectory: this.state.workingDirectory,
-      environmentVariables: this.state.environmentVariables,
-      sourcePath: this.state.sourcePath,
-    });
-  };
 }
+exports.default = NativeLaunchUiComponent;

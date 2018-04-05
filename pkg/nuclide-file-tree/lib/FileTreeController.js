@@ -1,95 +1,161 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {RemoteProjectsService} from '../../nuclide-remote-projects';
-import type {ExportStoreData} from './FileTreeStore';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _FileTreeConstants;
+
+function _load_FileTreeConstants() {
+  return _FileTreeConstants = require('./FileTreeConstants');
+}
+
+var _FileSystemActions;
+
+function _load_FileSystemActions() {
+  return _FileSystemActions = _interopRequireDefault(require('./FileSystemActions'));
+}
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('./FileTreeActions'));
+}
+
+var _FileTreeContextMenu;
+
+function _load_FileTreeContextMenu() {
+  return _FileTreeContextMenu = _interopRequireDefault(require('./FileTreeContextMenu'));
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('./FileTreeHelpers'));
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('./FileTreeStore');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireWildcard(require('immutable'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _getElementFilePath;
+
+function _load_getElementFilePath() {
+  return _getElementFilePath = _interopRequireDefault(require('../../commons-atom/getElementFilePath'));
+}
+
+var _removeProjectPath;
+
+function _load_removeProjectPath() {
+  return _removeProjectPath = _interopRequireDefault(require('../../commons-atom/removeProjectPath'));
+}
+
+var _systemInfo;
+
+function _load_systemInfo() {
+  return _systemInfo = require('../../commons-node/system-info');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _Constants;
+
+function _load_Constants() {
+  return _Constants = require('./Constants');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _electron = require('electron');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // $FlowFixMe(>=0.53.0) Flow suppress
-import type React from 'react';
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-file-tree'); /**
+                                                                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                 * All rights reserved.
+                                                                                 *
+                                                                                 * This source code is licensed under the license found in the LICENSE file in
+                                                                                 * the root directory of this source tree.
+                                                                                 *
+                                                                                 * 
+                                                                                 * @format
+                                                                                 */
 
-import {COMMANDS_SELECTOR} from './FileTreeConstants';
-import FileSystemActions from './FileSystemActions';
-import FileTreeActions from './FileTreeActions';
-import FileTreeContextMenu from './FileTreeContextMenu';
-import FileTreeHelpers from './FileTreeHelpers';
-import {FileTreeStore} from './FileTreeStore';
-import * as Immutable from 'immutable';
-import {track} from '../../nuclide-analytics';
-import nullthrows from 'nullthrows';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
-import removeProjectPath from '../../commons-atom/removeProjectPath';
-import {isRunningInWindows} from '../../commons-node/system-info';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {WORKSPACE_VIEW_URI} from './Constants';
-import {getLogger} from 'log4js';
-
-const logger = getLogger('nuclide-file-tree');
-
-import os from 'os';
-import {shell} from 'electron';
-
-import invariant from 'assert';
-
-import type {WorkingSet} from '../../nuclide-working-sets-common';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {FileTreeNode} from './FileTreeNode';
-
-const VALID_FILTER_CHARS =
-  '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-  '_abcdefghijklmnopqrstuvwxyz~';
+const VALID_FILTER_CHARS = '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' + '_abcdefghijklmnopqrstuvwxyz~';
 
 class ProjectSelectionManager {
-  _actions: FileTreeActions;
-  _store: FileTreeStore;
 
   constructor() {
-    this._actions = FileTreeActions.getInstance();
-    this._store = FileTreeStore.getInstance();
+    this._actions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance();
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
   }
 
-  addExtraContent(content: React.Element<any>): IDisposable {
+  addExtraContent(content) {
     this._actions.addExtraProjectSelectionContent(content);
-    return new UniversalDisposable(() =>
-      this._actions.removeExtraProjectSelectionContent(content),
-    );
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => this._actions.removeExtraProjectSelectionContent(content));
   }
 
-  getExtraContent(): Immutable.List<React.Element<any>> {
+  getExtraContent() {
     return this._store.getExtraProjectSelectionContent();
   }
 }
 
-export type FileTreeProjectSelectionManager = ProjectSelectionManager;
+class FileTreeController {
 
-export default class FileTreeController {
-  _actions: FileTreeActions;
-  _contextMenu: FileTreeContextMenu;
-  _projectSelectionManager: ProjectSelectionManager;
-  _cwdApi: ?CwdApi;
-  _remoteProjectsService: ?RemoteProjectsService;
-  _cwdApiSubscription: ?IDisposable;
-  _repositories: Immutable.Set<atom$Repository>;
-  _store: FileTreeStore;
-  _disposables: UniversalDisposable;
-  _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
-
-  constructor(state: ?ExportStoreData) {
-    this._actions = FileTreeActions.getInstance();
-    this._store = FileTreeStore.getInstance();
+  constructor(state) {
+    this._actions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance();
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
     this._projectSelectionManager = new ProjectSelectionManager();
-    this._repositories = Immutable.Set();
-    this._disposableForRepository = Immutable.Map();
-    this._disposables = new UniversalDisposable(() => {
+    this._repositories = (_immutable || _load_immutable()).Set();
+    this._disposableForRepository = (_immutable || _load_immutable()).Map();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       if (this._cwdApiSubscription != null) {
         this._cwdApiSubscription.dispose();
       }
@@ -97,160 +163,105 @@ export default class FileTreeController {
     // Initial root directories
     this._updateRootDirectories();
     // Subsequent root directories updated on change
-    this._disposables.add(
-      atom.project.onDidChangePaths(() => this._updateRootDirectories()),
-      atom.commands.add('atom-workspace', {
-        'nuclide-file-tree:reveal-active-file': this._revealFile.bind(this),
-        'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(
-          this,
-        ),
-        'nuclide-file-tree:add-file-relative': () => {
-          FileSystemActions.openAddFileDialogRelative(
-            this._openAndRevealFilePath.bind(this),
-          );
-        },
-      }),
-    );
+    this._disposables.add(atom.project.onDidChangePaths(() => this._updateRootDirectories()), atom.commands.add('atom-workspace', {
+      'nuclide-file-tree:reveal-active-file': this._revealFile.bind(this),
+      'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
+      'nuclide-file-tree:add-file-relative': () => {
+        (_FileSystemActions || _load_FileSystemActions()).default.openAddFileDialogRelative(this._openAndRevealFilePath.bind(this));
+      }
+    }));
     const letterKeyBindings = {
-      'nuclide-file-tree:remove-letter': this._handleRemoveLetterKeypress.bind(
-        this,
-      ),
-      'nuclide-file-tree:clear-filter': this._handleClearFilter.bind(this),
+      'nuclide-file-tree:remove-letter': this._handleRemoveLetterKeypress.bind(this),
+      'nuclide-file-tree:clear-filter': this._handleClearFilter.bind(this)
     };
-    for (
-      let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
-      i < VALID_FILTER_CHARS.length;
-      i++, c = VALID_FILTER_CHARS.charCodeAt(i)
-    ) {
+    for (let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0); i < VALID_FILTER_CHARS.length; i++, c = VALID_FILTER_CHARS.charCodeAt(i)) {
       const char = String.fromCharCode(c);
-      letterKeyBindings[
-        `nuclide-file-tree:go-to-letter-${char}`
-      ] = this._handlePrefixKeypress.bind(this, char);
+      letterKeyBindings[`nuclide-file-tree:go-to-letter-${char}`] = this._handlePrefixKeypress.bind(this, char);
     }
-    this._disposables.add(
-      atom.commands.add(COMMANDS_SELECTOR, {
-        'core:move-down': this._moveDown.bind(this),
-        'core:move-up': this._moveUp.bind(this),
-        'core:move-to-top': this._moveToTop.bind(this),
-        'core:move-to-bottom': this._moveToBottom.bind(this),
-        'core:select-up': this._rangeSelectUp.bind(this),
-        'core:select-down': this._rangeSelectDown.bind(this),
-        'nuclide-file-tree:add-file': () => {
-          FileSystemActions.openAddFileDialog(
-            this._openAndRevealFilePath.bind(this),
-          );
-        },
-        'nuclide-file-tree:add-folder': () => {
-          FileSystemActions.openAddFolderDialog(
-            this._openAndRevealDirectoryPath.bind(this),
-          );
-        },
-        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(
-          this,
-          /* deep */ false,
-        ),
-        'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(
-          this,
-          true,
-        ),
-        'nuclide-file-tree:expand-directory': this._expandSelection.bind(
-          this,
-          /* deep */ false,
-        ),
-        'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(
-          this,
-          true,
-        ),
-        'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(
-          this,
-        ),
-        'nuclide-file-tree:open-selected-entry-up': this._openSelectedEntrySplitUp.bind(
-          this,
-        ),
-        'nuclide-file-tree:open-selected-entry-down': this._openSelectedEntrySplitDown.bind(
-          this,
-        ),
-        'nuclide-file-tree:open-selected-entry-left': this._openSelectedEntrySplitLeft.bind(
-          this,
-        ),
-        'nuclide-file-tree:open-selected-entry-right': this._openSelectedEntrySplitRight.bind(
-          this,
-        ),
-        'nuclide-file-tree:remove': this._deleteSelection.bind(this),
-        'core:delete': this._deleteSelection.bind(this),
-        'nuclide-file-tree:remove-project-folder-selection': this._removeRootFolderSelection.bind(
-          this,
-        ),
-        'nuclide-file-tree:rename-selection': () =>
-          FileSystemActions.openRenameDialog(),
-        'nuclide-file-tree:duplicate-selection': () => {
-          FileSystemActions.openDuplicateDialog(
-            this._openAndRevealFilePaths.bind(this),
-          );
-        },
-        'nuclide-file-tree:copy-selection': this._copyFilenamesWithDir.bind(
-          this,
-        ),
-        'nuclide-file-tree:paste-selection': () =>
-          FileSystemActions.openPasteDialog(),
-        'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(
-          this,
-        ),
-        'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(
-          this,
-        ),
-        ...letterKeyBindings,
-      }),
-      atom.commands.add('atom-workspace', {
-        // eslint-disable-next-line rulesdir/atom-apis
-        'file:copy-full-path': this._copyFullPath.bind(this),
-        // eslint-disable-next-line rulesdir/atom-apis
-        'file:show-in-file-manager': this._showInFileManager.bind(this),
-      }),
-    );
+    this._disposables.add(atom.commands.add((_FileTreeConstants || _load_FileTreeConstants()).COMMANDS_SELECTOR, Object.assign({
+      'core:move-down': this._moveDown.bind(this),
+      'core:move-up': this._moveUp.bind(this),
+      'core:move-to-top': this._moveToTop.bind(this),
+      'core:move-to-bottom': this._moveToBottom.bind(this),
+      'core:select-up': this._rangeSelectUp.bind(this),
+      'core:select-down': this._rangeSelectDown.bind(this),
+      'nuclide-file-tree:add-file': () => {
+        (_FileSystemActions || _load_FileSystemActions()).default.openAddFileDialog(this._openAndRevealFilePath.bind(this));
+      },
+      'nuclide-file-tree:add-folder': () => {
+        (_FileSystemActions || _load_FileSystemActions()).default.openAddFolderDialog(this._openAndRevealDirectoryPath.bind(this));
+      },
+      'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this,
+      /* deep */false),
+      'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(this, true),
+      'nuclide-file-tree:expand-directory': this._expandSelection.bind(this,
+      /* deep */false),
+      'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(this, true),
+      'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
+      'nuclide-file-tree:open-selected-entry-up': this._openSelectedEntrySplitUp.bind(this),
+      'nuclide-file-tree:open-selected-entry-down': this._openSelectedEntrySplitDown.bind(this),
+      'nuclide-file-tree:open-selected-entry-left': this._openSelectedEntrySplitLeft.bind(this),
+      'nuclide-file-tree:open-selected-entry-right': this._openSelectedEntrySplitRight.bind(this),
+      'nuclide-file-tree:remove': this._deleteSelection.bind(this),
+      'core:delete': this._deleteSelection.bind(this),
+      'nuclide-file-tree:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
+      'nuclide-file-tree:rename-selection': () => (_FileSystemActions || _load_FileSystemActions()).default.openRenameDialog(),
+      'nuclide-file-tree:duplicate-selection': () => {
+        (_FileSystemActions || _load_FileSystemActions()).default.openDuplicateDialog(this._openAndRevealFilePaths.bind(this));
+      },
+      'nuclide-file-tree:copy-selection': this._copyFilenamesWithDir.bind(this),
+      'nuclide-file-tree:paste-selection': () => (_FileSystemActions || _load_FileSystemActions()).default.openPasteDialog(),
+      'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
+      'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this)
+    }, letterKeyBindings)), atom.commands.add('atom-workspace', {
+      // eslint-disable-next-line rulesdir/atom-apis
+      'file:copy-full-path': this._copyFullPath.bind(this),
+      // eslint-disable-next-line rulesdir/atom-apis
+      'file:show-in-file-manager': this._showInFileManager.bind(this)
+    }));
     if (state != null) {
       this._store.loadData(state);
     }
-    this._contextMenu = new FileTreeContextMenu();
+    this._contextMenu = new (_FileTreeContextMenu || _load_FileTreeContextMenu()).default();
   }
 
-  _moveUp(): void {
+  _moveUp() {
     this._actions.moveSelectionUp();
   }
 
-  _moveDown(): void {
+  _moveDown() {
     this._actions.moveSelectionDown();
   }
 
-  _moveToTop(): void {
+  _moveToTop() {
     this._actions.moveSelectionToTop();
   }
 
-  _moveToBottom(): void {
+  _moveToBottom() {
     this._actions.moveSelectionToBottom();
   }
 
-  _rangeSelectUp(): void {
+  _rangeSelectUp() {
     this._actions.rangeSelectUp();
   }
 
-  _rangeSelectDown(): void {
+  _rangeSelectDown() {
     this._actions.rangeSelectDown();
   }
 
-  getContextMenu(): FileTreeContextMenu {
+  getContextMenu() {
     return this._contextMenu;
   }
 
-  getProjectSelectionManager(): ProjectSelectionManager {
+  getProjectSelectionManager() {
     return this._projectSelectionManager;
   }
 
-  _handleClearFilter(): void {
+  _handleClearFilter() {
     this._store.clearFilter();
   }
 
-  _handlePrefixKeypress(letter: string): void {
+  _handlePrefixKeypress(letter) {
     if (!this._store.usePrefixNav()) {
       return;
     }
@@ -258,50 +269,46 @@ export default class FileTreeController {
     this._store.addFilterLetter(letter);
   }
 
-  _handleRemoveLetterKeypress(): void {
+  _handleRemoveLetterKeypress() {
     if (!this._store.usePrefixNav()) {
       return;
     }
     this._store.removeFilterLetter();
   }
 
-  _openAndRevealFilePath(filePath: ?string): void {
+  _openAndRevealFilePath(filePath) {
     if (filePath != null) {
-      goToLocation(filePath);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(filePath);
       this.revealNodeKey(filePath);
     }
   }
 
-  _openAndRevealFilePaths(filePaths: Array<string>): void {
+  _openAndRevealFilePaths(filePaths) {
     for (let i = 0; i < filePaths.length; i++) {
-      goToLocation(filePaths[i]);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(filePaths[i]);
     }
     if (filePaths.length !== 0) {
       this.revealNodeKey(filePaths[filePaths.length - 1]);
     }
   }
 
-  _openAndRevealDirectoryPath(path: ?string): void {
+  _openAndRevealDirectoryPath(path) {
     if (path != null) {
-      this.revealNodeKey(FileTreeHelpers.dirPathToKey(path));
+      this.revealNodeKey((_FileTreeHelpers || _load_FileTreeHelpers()).default.dirPathToKey(path));
     }
   }
 
-  _updateRootDirectories(): void {
+  _updateRootDirectories() {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
-    const rootDirectories = atom.project
-      .getDirectories()
-      .filter(directory => FileTreeHelpers.isValidDirectory(directory));
-    const rootKeys = rootDirectories.map(directory =>
-      FileTreeHelpers.dirPathToKey(directory.getPath()),
-    );
+    const rootDirectories = atom.project.getDirectories().filter(directory => (_FileTreeHelpers || _load_FileTreeHelpers()).default.isValidDirectory(directory));
+    const rootKeys = rootDirectories.map(directory => (_FileTreeHelpers || _load_FileTreeHelpers()).default.dirPathToKey(directory.getPath()));
     this._actions.setRootKeys(rootKeys);
     this._actions.updateRepositories(rootDirectories);
   }
 
-  _revealFile(event: Event): void {
-    let path = getElementFilePath(((event.target: any): HTMLElement));
+  _revealFile(event) {
+    let path = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target);
 
     if (path == null) {
       const editor = atom.workspace.getActiveTextEditor();
@@ -314,12 +321,12 @@ export default class FileTreeController {
     this.revealFilePath(path);
   }
 
-  revealFilePath(filePath: ?string, showIfHidden?: boolean = true): void {
+  revealFilePath(filePath, showIfHidden = true) {
     if (showIfHidden) {
       // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
       // active pane is not an ordinary editor, we still at least want to show the tree.
       // eslint-disable-next-line rulesdir/atom-apis
-      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+      atom.workspace.open((_Constants || _load_Constants()).WORKSPACE_VIEW_URI, { searchAllPanes: true });
       this._actions.setFoldersExpanded(true);
     }
 
@@ -331,7 +338,7 @@ export default class FileTreeController {
     this.revealNodeKey(filePath);
   }
 
-  revealNodeKey(nodeKey: ?string): void {
+  revealNodeKey(nodeKey) {
     if (nodeKey == null) {
       return;
     }
@@ -339,26 +346,29 @@ export default class FileTreeController {
     this._actions.ensureChildNode(nodeKey);
   }
 
-  _setCwdToSelection(): void {
+  _setCwdToSelection() {
     const node = this._store.getSingleSelectedNode();
     if (node == null) {
       return;
     }
-    const path = FileTreeHelpers.keyToPath(node.uri);
+    const path = (_FileTreeHelpers || _load_FileTreeHelpers()).default.keyToPath(node.uri);
     if (this._cwdApi != null) {
       this._cwdApi.setCwd(path);
     }
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
+  setCwdApi(cwdApi) {
     if (cwdApi == null) {
       this._actions.setCwd(null);
       this._cwdApiSubscription = null;
     } else {
-      invariant(this._cwdApiSubscription == null);
+      if (!(this._cwdApiSubscription == null)) {
+        throw new Error('Invariant violation: "this._cwdApiSubscription == null"');
+      }
+
       this._cwdApiSubscription = cwdApi.observeCwd(directory => {
         // flowlint-next-line sketchy-null-string:off
-        const rootKey = directory && FileTreeHelpers.dirPathToKey(directory);
+        const rootKey = directory && (_FileTreeHelpers || _load_FileTreeHelpers()).default.dirPathToKey(directory);
         this._actions.setCwd(rootKey);
       });
     }
@@ -366,7 +376,7 @@ export default class FileTreeController {
     this._cwdApi = cwdApi;
   }
 
-  setRemoteProjectsService(service: ?RemoteProjectsService): void {
+  setRemoteProjectsService(service) {
     if (service != null) {
       // This is to workaround the initialization order problem between the
       // nuclide-remote-projects and nuclide-file-tree packages.
@@ -379,60 +389,56 @@ export default class FileTreeController {
       // The problem happens when the connection fails, or is canceled.
       // The fake root just stays in the file tree.
       // After remote projects have been reloaded, force a refresh to clear out the fake roots.
-      this._disposables.add(
-        service.waitForRemoteProjectReload(
-          this._updateRootDirectories.bind(this),
-        ),
-      );
+      this._disposables.add(service.waitForRemoteProjectReload(this._updateRootDirectories.bind(this)));
     }
     this._remoteProjectsService = service;
   }
 
-  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
     this._actions.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
   }
 
-  setHideVcsIgnoredPaths(hideVcsIgnoredPaths: boolean): void {
+  setHideVcsIgnoredPaths(hideVcsIgnoredPaths) {
     this._actions.setHideVcsIgnoredPaths(hideVcsIgnoredPaths);
   }
 
-  setHideIgnoredNames(hideIgnoredNames: boolean): void {
+  setHideIgnoredNames(hideIgnoredNames) {
     this._actions.setHideIgnoredNames(hideIgnoredNames);
   }
 
-  setIgnoredNames(ignoredNames: Array<string>): void {
+  setIgnoredNames(ignoredNames) {
     this._actions.setIgnoredNames(ignoredNames);
   }
 
-  setUsePreviewTabs(usePreviewTabs: boolean): void {
+  setUsePreviewTabs(usePreviewTabs) {
     this._actions.setUsePreviewTabs(usePreviewTabs);
   }
 
-  setUsePrefixNav(usePrefixNav: boolean): void {
+  setUsePrefixNav(usePrefixNav) {
     this._actions.setUsePrefixNav(usePrefixNav);
   }
 
-  setAutoExpandSingleChild(autoExpandSingleChild: boolean): void {
+  setAutoExpandSingleChild(autoExpandSingleChild) {
     this._store._setAutoExpandSingleChild(autoExpandSingleChild);
   }
 
-  setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
+  setFocusEditorOnFileSelection(focusEditorOnFileSelection) {
     this._actions.setFocusEditorOnFileSelection(focusEditorOnFileSelection);
   }
 
-  updateWorkingSet(workingSet: WorkingSet): void {
+  updateWorkingSet(workingSet) {
     this._actions.updateWorkingSet(workingSet);
   }
 
-  updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+  updateWorkingSetsStore(workingSetsStore) {
     this._actions.updateWorkingSetsStore(workingSetsStore);
   }
 
-  updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+  updateOpenFilesWorkingSet(openFilesWorkingSet) {
     this._actions.updateOpenFilesWorkingSet(openFilesWorkingSet);
   }
 
-  collectDebugState(): Object {
+  collectDebugState() {
     return this._store.collectDebugState();
   }
 
@@ -440,14 +446,10 @@ export default class FileTreeController {
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.
    */
-  _collapseSelection(deep: boolean = false): void {
+  _collapseSelection(deep = false) {
     const selectedNodes = this._store.getSelectedNodes();
-    const firstSelectedNode = nullthrows(selectedNodes.first());
-    if (
-      selectedNodes.size === 1 &&
-      !firstSelectedNode.isRoot &&
-      !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)
-    ) {
+    const firstSelectedNode = (0, (_nullthrows || _load_nullthrows()).default)(selectedNodes.first());
+    if (selectedNodes.size === 1 && !firstSelectedNode.isRoot && !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)) {
       /*
        * Select the parent of the selection if the following criteria are met:
        *   * Only 1 node is selected
@@ -455,7 +457,7 @@ export default class FileTreeController {
        *   * The node is not an expanded directory
       */
 
-      const parent = nullthrows(firstSelectedNode.parent);
+      const parent = (0, (_nullthrows || _load_nullthrows()).default)(firstSelectedNode.parent);
       this._selectAndTrackNode(parent);
     } else {
       selectedNodes.forEach(node => {
@@ -473,16 +475,16 @@ export default class FileTreeController {
     }
   }
 
-  _selectAndTrackNode(node: FileTreeNode): void {
+  _selectAndTrackNode(node) {
     this._actions.setSelectedNode(node.rootUri, node.uri);
   }
 
-  _collapseAll(): void {
+  _collapseAll() {
     const roots = this._store.roots;
     roots.forEach(root => this._actions.collapseNodeDeep(root.uri, root.uri));
   }
 
-  _deleteSelection(): void {
+  _deleteSelection() {
     const nodes = this._store.getTargetNodes();
     if (nodes.size === 0) {
       return;
@@ -491,45 +493,35 @@ export default class FileTreeController {
     const rootPaths = nodes.filter(node => node.isRoot);
     if (rootPaths.size === 0) {
       const selectedPaths = nodes.map(node => {
-        const nodePath = FileTreeHelpers.keyToPath(node.uri);
-        const parentOfRoot = nuclideUri.dirname(node.rootUri);
+        const nodePath = (_FileTreeHelpers || _load_FileTreeHelpers()).default.keyToPath(node.uri);
+        const parentOfRoot = (_nuclideUri || _load_nuclideUri()).default.dirname(node.rootUri);
 
         // Fix Windows paths to avoid end of filename truncation
-        return isRunningInWindows()
-          ? nuclideUri.relative(parentOfRoot, nodePath).replace(/\//g, '\\')
-          : nuclideUri.relative(parentOfRoot, nodePath);
+        return (0, (_systemInfo || _load_systemInfo()).isRunningInWindows)() ? (_nuclideUri || _load_nuclideUri()).default.relative(parentOfRoot, nodePath).replace(/\//g, '\\') : (_nuclideUri || _load_nuclideUri()).default.relative(parentOfRoot, nodePath);
       });
-      const message =
-        'Are you sure you want to delete the following ' +
-        (nodes.size > 1 ? 'items?' : 'item?');
+      const message = 'Are you sure you want to delete the following ' + (nodes.size > 1 ? 'items?' : 'item?');
       atom.confirm({
         buttons: {
           Delete: () => {
             this._actions.deleteSelectedNodes();
           },
-          Cancel: () => {},
+          Cancel: () => {}
         },
-        detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(
-          os.EOL,
-        )}`,
-        message,
+        detailedMessage: `You are deleting:${_os.default.EOL}${selectedPaths.join(_os.default.EOL)}`,
+        message
       });
     } else {
       let message;
       if (rootPaths.size === 1) {
-        message = `The root directory '${
-          nullthrows(rootPaths.first()).name
-        }' can't be removed.`;
+        message = `The root directory '${(0, (_nullthrows || _load_nullthrows()).default)(rootPaths.first()).name}' can't be removed.`;
       } else {
-        const rootPathNames = rootPaths
-          .map(node => `'${node.name}'`)
-          .join(', ');
+        const rootPathNames = rootPaths.map(node => `'${node.name}'`).join(', ');
         message = `The root directories ${rootPathNames} can't be removed.`;
       }
 
       atom.confirm({
         buttons: ['OK'],
-        message,
+        message
       });
     }
   }
@@ -537,7 +529,7 @@ export default class FileTreeController {
   /**
    * Expands all selected directory nodes.
    */
-  _expandSelection(deep: boolean): void {
+  _expandSelection(deep) {
     this._handleClearFilter();
 
     this._store.getSelectedNodes().forEach(node => {
@@ -568,64 +560,58 @@ export default class FileTreeController {
     });
   }
 
-  _openSelectedEntry(): void {
+  _openSelectedEntry() {
     this._handleClearFilter();
     const singleSelectedNode = this._store.getSingleSelectedNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null) {
-      this._actions.confirmNode(
-        singleSelectedNode.rootUri,
-        singleSelectedNode.uri,
-      );
+      this._actions.confirmNode(singleSelectedNode.rootUri, singleSelectedNode.uri);
     }
   }
 
-  _openSelectedEntrySplit(
-    orientation: atom$PaneSplitOrientation,
-    side: atom$PaneSplitSide,
-  ): void {
+  _openSelectedEntrySplit(orientation, side) {
     const singleSelectedNode = this._store.getSingleTargetNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
       // for: is this feature used enough to justify uncollapsing?
-      track('filetree-split-file', {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('filetree-split-file', {
         orientation,
-        side,
+        side
       });
-      this._actions.openSelectedEntrySplit(
-        singleSelectedNode.uri,
-        orientation,
-        side,
-      );
+      this._actions.openSelectedEntrySplit(singleSelectedNode.uri, orientation, side);
     }
   }
 
-  _openSelectedEntrySplitUp(): void {
+  _openSelectedEntrySplitUp() {
     this._openSelectedEntrySplit('vertical', 'before');
   }
 
-  _openSelectedEntrySplitDown(): void {
+  _openSelectedEntrySplitDown() {
     this._openSelectedEntrySplit('vertical', 'after');
   }
 
-  _openSelectedEntrySplitLeft(): void {
+  _openSelectedEntrySplitLeft() {
     this._openSelectedEntrySplit('horizontal', 'before');
   }
 
-  _openSelectedEntrySplitRight(): void {
+  _openSelectedEntrySplitRight() {
     this._openSelectedEntrySplit('horizontal', 'after');
   }
 
-  async _removeRootFolderSelection(): Promise<void> {
-    const rootNode = this._store.getSingleSelectedNode();
-    if (rootNode != null && rootNode.isRoot) {
-      logger.info('Removing project path via file tree', rootNode);
-      await removeProjectPath(rootNode.uri);
-    }
+  _removeRootFolderSelection() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rootNode = _this._store.getSingleSelectedNode();
+      if (rootNode != null && rootNode.isRoot) {
+        logger.info('Removing project path via file tree', rootNode);
+        yield (0, (_removeProjectPath || _load_removeProjectPath()).default)(rootNode.uri);
+      }
+    })();
   }
 
-  _searchInDirectory(event: Event): void {
-    const targetElement = ((event.target: any): HTMLElement);
+  _searchInDirectory(event) {
+    const targetElement = event.target;
     // If the event was sent to the entire tree, rather then a single element - attempt to derive
     // the path to work on from the current selection.
     if (targetElement.classList.contains('nuclide-file-tree')) {
@@ -636,7 +622,10 @@ export default class FileTreeController {
 
       let path = node.uri;
       if (!node.isContainer) {
-        invariant(node.parent);
+        if (!node.parent) {
+          throw new Error('Invariant violation: "node.parent"');
+        }
+
         path = node.parent.uri;
       }
 
@@ -657,39 +646,33 @@ export default class FileTreeController {
       const workspaceView = atom.views.getView(atom.workspace);
       workspaceView.appendChild(temporaryElement);
 
-      atom.commands.dispatch(
-        temporaryElement,
-        'project-find:show-in-current-directory',
-      );
+      atom.commands.dispatch(temporaryElement, 'project-find:show-in-current-directory');
 
       // Cleaning for the workspace-view
       workspaceView.removeChild(temporaryElement);
     } else {
-      atom.commands.dispatch(
-        targetElement,
-        'project-find:show-in-current-directory',
-      );
+      atom.commands.dispatch(targetElement, 'project-find:show-in-current-directory');
     }
   }
 
-  _showInFileManager(event: Event): void {
-    const path = getElementFilePath(((event.target: any): HTMLElement), true);
-    if (path == null || nuclideUri.isRemote(path)) {
+  _showInFileManager(event) {
+    const path = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target, true);
+    if (path == null || (_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
       return;
     }
-    shell.showItemInFolder(path);
+    _electron.shell.showItemInFolder(path);
   }
 
-  _copyFilenamesWithDir(event: Event): void {
+  _copyFilenamesWithDir(event) {
     const nodes = this._store.getSelectedNodes();
     const dirs = [];
     const files = [];
     for (const node of nodes) {
-      const file = FileTreeHelpers.getFileByKey(node.uri);
+      const file = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getFileByKey(node.uri);
       if (file != null) {
         files.push(file);
       }
-      const dir = FileTreeHelpers.getDirectoryByKey(node.uri);
+      const dir = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDirectoryByKey(node.uri);
       if (dir != null) {
         dirs.push(dir);
       }
@@ -706,27 +689,25 @@ export default class FileTreeController {
     }
 
     // copy this text in case user pastes into a text area
-    const copyNames = entries
-      .map(e => encodeURIComponent(e.getBaseName()))
-      .join();
+    const copyNames = entries.map(e => encodeURIComponent(e.getBaseName())).join();
 
     atom.clipboard.write(copyNames, {
-      directory: FileTreeHelpers.dirPathToKey(dirPath),
+      directory: (_FileTreeHelpers || _load_FileTreeHelpers()).default.dirPathToKey(dirPath),
       filenames: files.map(f => f.getBaseName()),
-      dirnames: dirs.map(f => f.getBaseName()),
+      dirnames: dirs.map(f => f.getBaseName())
     });
   }
 
-  _copyFullPath(event: Event): void {
-    const path = getElementFilePath(((event.target: any): HTMLElement), true);
+  _copyFullPath(event) {
+    const path = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target, true);
     if (path == null) {
       return;
     }
-    const parsed = nuclideUri.parse(path);
+    const parsed = (_nuclideUri || _load_nuclideUri()).default.parse(path);
     atom.clipboard.write(parsed.path);
   }
 
-  destroy(): void {
+  destroy() {
     this._disposables.dispose();
     for (const disposable of this._disposableForRepository.values()) {
       disposable.dispose();
@@ -735,7 +716,8 @@ export default class FileTreeController {
     this._contextMenu.dispose();
   }
 
-  serialize(): ExportStoreData {
+  serialize() {
     return this._store.exportData();
   }
 }
+exports.default = FileTreeController;

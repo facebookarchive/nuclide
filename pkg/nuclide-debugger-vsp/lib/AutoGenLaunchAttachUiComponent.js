@@ -1,3 +1,71 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _RadioGroup;
+
+function _load_RadioGroup() {
+  return _RadioGroup = _interopRequireDefault(require('nuclide-commons-ui/RadioGroup'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,208 +73,151 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  HandleDebugButtonClick,
-  AutoGenProperty,
-  AutoGenLaunchOrAttachConfig,
-} from './types';
+class AutoGenLaunchAttachUiComponent extends _react.Component {
 
-import idx from 'idx';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import RadioGroup from 'nuclide-commons-ui/RadioGroup';
-import * as React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {capitalize} from 'nuclide-commons/string';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from 'nuclide-debugger-common';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getActiveScriptPath} from './utils';
+  constructor(props) {
+    var _this;
 
-type Props = {|
-  +targetUri: NuclideUri,
-  +configIsValidChanged: (valid: boolean) => void,
-  +config: AutoGenLaunchOrAttachConfig,
-  +handleDebugButtonClick: HandleDebugButtonClick,
-  +debuggerTypeName: string,
-|};
+    _this = super(props);
+    this._handleDebugButtonClick = (0, _asyncToGenerator.default)(function* () {
+      const numberValues = new Map();
+      _this._getConfigurationProperties().filter(function (property) {
+        return property.type === 'number';
+      }).forEach(function (property) {
+        const { name } = property;
+        numberValues.set(name, Number(_this.state.stringValues.get(name)));
+        _this.state.stringValues.delete(name);
+      });
+      yield _this.props.handleDebugButtonClick(_this.props.targetUri, _this.state.stringValues, _this.state.booleanValues, _this.state.enumValues, numberValues);
 
-type State = {
-  enumValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  stringValues: Map<string, string>,
-};
-
-export default class AutoGenLaunchAttachUiComponent extends React.Component<
-  Props,
-  State,
-> {
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
-    super(props);
-    this._disposables = new UniversalDisposable();
+      (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).serializeDebuggerConfig)(..._this._getSerializationArgs(_this.props), {
+        stringValues: Array.from(_this.state.stringValues.entries()),
+        booleanValues: Array.from(_this.state.booleanValues.entries()),
+        enumValues: Array.from(_this.state.enumValues.entries()),
+        numberValues: Array.from(numberValues)
+      });
+    });
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       stringValues: new Map(),
       booleanValues: new Map(),
-      enumValues: new Map(),
+      enumValues: new Map()
     };
   }
 
-  _getConfigurationProperties(): AutoGenProperty[] {
-    const {config} = this.props;
+  _getConfigurationProperties() {
+    const { config } = this.props;
     return config.properties;
   }
 
-  _populateDefaultValues(
-    config: AutoGenLaunchOrAttachConfig,
-    stringValues: Map<string, string>,
-    booleanValues: Map<string, boolean>,
-    enumValues: Map<string, string>,
-  ): void {
+  _populateDefaultValues(config, stringValues, booleanValues, enumValues) {
     config.properties.map(property => {
-      const {name, type} = property;
-      const itemType = idx(property, _ => _.itemType);
-      if (
-        type === 'string' ||
-        (type === 'array' && itemType === 'string') ||
-        type === 'object' ||
-        type === 'number'
-      ) {
+      var _ref;
+
+      const { name, type } = property;
+      const itemType = (_ref = property) != null ? _ref.itemType : _ref;
+      if (type === 'string' || type === 'array' && itemType === 'string' || type === 'object' || type === 'number') {
         const existingValue = stringValues.get(name);
-        if (
-          existingValue == null &&
-          typeof property.defaultValue !== 'undefined'
-        ) {
+        if (existingValue == null && typeof property.defaultValue !== 'undefined') {
           // String(propertyDescription.default) deals with both strings and numbers
-          const defaultValue =
-            type === 'string' || type === 'number'
-              ? String(property.defaultValue)
-              : '';
+          const defaultValue = type === 'string' || type === 'number' ? String(property.defaultValue) : '';
           stringValues.set(name, defaultValue);
         }
       } else if (type === 'boolean') {
         const existingValue = booleanValues.get(name);
-        if (
-          existingValue == null &&
-          typeof property.defaultValue !== 'undefined' &&
-          property.defaultValue != null &&
-          typeof property.defaultValue === 'boolean'
-        ) {
+        if (existingValue == null && typeof property.defaultValue !== 'undefined' && property.defaultValue != null && typeof property.defaultValue === 'boolean') {
           booleanValues.set(name, property.defaultValue);
         } else {
           booleanValues.set(name, false);
         }
       } else if (type === 'enum' && property.enums != null) {
         const existingValue = enumValues.get(name);
-        if (
-          existingValue == null &&
-          typeof property.defaultValue !== 'undefined' &&
-          property.defaultValue != null &&
-          typeof property.defaultValue === 'string'
-        ) {
+        if (existingValue == null && typeof property.defaultValue !== 'undefined' && property.defaultValue != null && typeof property.defaultValue === 'string') {
           enumValues.set(name, property.defaultValue);
         }
       }
     });
   }
 
-  _getSerializationArgs(props: Props) {
-    const {targetUri, config, debuggerTypeName} = props;
-    const args = [
-      nuclideUri.isRemote(targetUri)
-        ? nuclideUri.getHostname(targetUri)
-        : 'local',
-      config.launch ? 'launch' : 'attach',
-      debuggerTypeName,
-    ];
+  _getSerializationArgs(props) {
+    const { targetUri, config, debuggerTypeName } = props;
+    const args = [(_nuclideUri || _load_nuclideUri()).default.isRemote(targetUri) ? (_nuclideUri || _load_nuclideUri()).default.getHostname(targetUri) : 'local', config.launch ? 'launch' : 'attach', debuggerTypeName];
     return args;
   }
 
-  _deserializeDebuggerConfig(props: Props): void {
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(props),
-      (transientSettings, savedSettings) => {
-        const stringValues = new Map(savedSettings.stringValues || []);
-        const {config} = props;
-        if (config.launch) {
-          const scriptPath =
-            stringValues.get(config.scriptPropertyName) ||
-            getActiveScriptPath(config.scriptExtension);
-          if (scriptPath !== '') {
-            stringValues.set(config.scriptPropertyName, scriptPath);
-          }
-          const cwd =
-            stringValues.get(config.cwdPropertyName) ||
-            (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
-          if (cwd !== '') {
-            stringValues.set(config.cwdPropertyName, cwd);
-          }
+  _deserializeDebuggerConfig(props) {
+    (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).deserializeDebuggerConfig)(...this._getSerializationArgs(props), (transientSettings, savedSettings) => {
+      const stringValues = new Map(savedSettings.stringValues || []);
+      const { config } = props;
+      if (config.launch) {
+        const scriptPath = stringValues.get(config.scriptPropertyName) || (0, (_utils || _load_utils()).getActiveScriptPath)(config.scriptExtension);
+        if (scriptPath !== '') {
+          stringValues.set(config.scriptPropertyName, scriptPath);
         }
-        const numberValues = new Map(savedSettings.numberValues || []);
-        numberValues.forEach((value, key) => {
-          if (value != null) {
-            stringValues.set(key, String(value));
-          }
-        });
-        const booleanValues = new Map(savedSettings.booleanValues || []);
-        const enumValues = new Map(savedSettings.enumValues || []);
-        this._populateDefaultValues(
-          config,
-          stringValues,
-          booleanValues,
-          enumValues,
-        );
-        this.setState({
-          stringValues,
-          booleanValues,
-          enumValues,
-        });
-      },
-    );
+        const cwd = stringValues.get(config.cwdPropertyName) || (scriptPath.length > 0 ? (_nuclideUri || _load_nuclideUri()).default.dirname(scriptPath) : '');
+        if (cwd !== '') {
+          stringValues.set(config.cwdPropertyName, cwd);
+        }
+      }
+      const numberValues = new Map(savedSettings.numberValues || []);
+      numberValues.forEach((value, key) => {
+        if (value != null) {
+          stringValues.set(key, String(value));
+        }
+      });
+      const booleanValues = new Map(savedSettings.booleanValues || []);
+      const enumValues = new Map(savedSettings.enumValues || []);
+      this._populateDefaultValues(config, stringValues, booleanValues, enumValues);
+      this.setState({
+        stringValues,
+        booleanValues,
+        enumValues
+      });
+    });
   }
 
-  setState(newState: Object): void {
-    super.setState(newState, () =>
-      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
-    );
+  setState(newState) {
+    super.setState(newState, () => this.props.configIsValidChanged(this._debugButtonShouldEnable()));
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.debuggerTypeName !== this.props.debuggerTypeName) {
       this._deserializeDebuggerConfig(nextProps);
     }
   }
 
-  componentWillMount(): void {
+  componentWillMount() {
     this._deserializeDebuggerConfig(this.props);
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': async () => {
-          if (this._debugButtonShouldEnable()) {
-            await this._handleDebugButtonClick();
+  componentDidMount() {
+    var _this2 = this;
+
+    this._disposables.add(atom.commands.add('atom-workspace', {
+      'core:confirm': (() => {
+        var _ref4 = (0, _asyncToGenerator.default)(function* () {
+          if (_this2._debugButtonShouldEnable()) {
+            yield _this2._handleDebugButtonClick();
           }
-        },
-      }),
-    );
+        });
+
+        return function coreConfirm() {
+          return _ref4.apply(this, arguments);
+        };
+      })()
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _valueExists(property: AutoGenProperty): boolean {
-    const {name, type} = property;
+  _valueExists(property) {
+    const { name, type } = property;
     if (type === 'string') {
       const value = this.state.stringValues.get(name);
       return value != null && value !== '';
@@ -220,120 +231,104 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     return false;
   }
 
-  _debugButtonShouldEnable(): boolean {
-    return this._getConfigurationProperties()
-      .filter(p => p.required)
-      .every(p => this._valueExists(p));
+  _debugButtonShouldEnable() {
+    return this._getConfigurationProperties().filter(p => p.required).every(p => this._valueExists(p));
   }
 
-  _getComponentForProperty(property: AutoGenProperty): React.Node {
-    const {name, type, description, required} = property;
-    const formattedName =
-      capitalize(name).replace(/([a-z])([A-Z])/, '$1 $2') +
-      (required ? ' (Required)' : '');
-    const nameLabel = <label>{formattedName}:</label>;
-    const itemType = idx(property, _ => _.itemType);
-    if (
-      type === 'string' ||
-      (type === 'array' && itemType === 'string') ||
-      type === 'object' ||
-      type === 'number'
-    ) {
+  _getComponentForProperty(property) {
+    var _ref2;
+
+    const { name, type, description, required } = property;
+    const formattedName = (0, (_string || _load_string()).capitalize)(name).replace(/([a-z])([A-Z])/, '$1 $2') + (required ? ' (Required)' : '');
+    const nameLabel = _react.createElement(
+      'label',
+      null,
+      formattedName,
+      ':'
+    );
+    const itemType = (_ref2 = property) != null ? _ref2.itemType : _ref2;
+    if (type === 'string' || type === 'array' && itemType === 'string' || type === 'object' || type === 'number') {
       const value = this.state.stringValues.get(name) || '';
-      return (
-        <div>
-          {nameLabel}
-          <AtomInput
-            key={this.props.debuggerTypeName + ':' + name}
-            placeholderText={description}
-            value={value}
-            onDidChange={newValue => {
-              this.state.stringValues.set(name, newValue);
-              this.props.configIsValidChanged(this._debugButtonShouldEnable());
-            }}
-          />
-        </div>
+      return _react.createElement(
+        'div',
+        null,
+        nameLabel,
+        _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          key: this.props.debuggerTypeName + ':' + name,
+          placeholderText: description,
+          value: value,
+          onDidChange: newValue => {
+            this.state.stringValues.set(name, newValue);
+            this.props.configIsValidChanged(this._debugButtonShouldEnable());
+          }
+        })
       );
     } else if (type === 'boolean') {
       const checked = this.state.booleanValues.get(name) || false;
-      return (
-        <div>
-          <div>{nameLabel}</div>
-          <Checkbox
-            checked={checked}
-            label={description}
-            onChange={newValue => {
-              this.state.booleanValues.set(name, newValue);
-              this.props.configIsValidChanged(this._debugButtonShouldEnable());
-            }}
-          />
-        </div>
+      return _react.createElement(
+        'div',
+        null,
+        _react.createElement(
+          'div',
+          null,
+          nameLabel
+        ),
+        _react.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: checked,
+          label: description,
+          onChange: newValue => {
+            this.state.booleanValues.set(name, newValue);
+            this.props.configIsValidChanged(this._debugButtonShouldEnable());
+          }
+        })
       );
     } else if (type === 'enum' && property.enums != null) {
       const enums = property.enums;
       const selectedValue = this.state.enumValues.get(name) || '';
-      return (
-        <div>
-          {nameLabel}
-          <RadioGroup
-            selectedIndex={enums.indexOf(selectedValue)}
-            optionLabels={enums.map((enumValue, i) => (
-              <label key={i}>{enumValue}</label>
-            ))}
-            onSelectedChange={index => {
-              this.state.enumValues.set(name, enums[index]);
-              this.props.configIsValidChanged(this._debugButtonShouldEnable());
-            }}
-          />
-        </div>
+      return _react.createElement(
+        'div',
+        null,
+        nameLabel,
+        _react.createElement((_RadioGroup || _load_RadioGroup()).default, {
+          selectedIndex: enums.indexOf(selectedValue),
+          optionLabels: enums.map((enumValue, i) => _react.createElement(
+            'label',
+            { key: i },
+            enumValue
+          )),
+          onSelectedChange: index => {
+            this.state.enumValues.set(name, enums[index]);
+            this.props.configIsValidChanged(this._debugButtonShouldEnable());
+          }
+        })
       );
     }
-    return (
-      <div>
-        <label>NO TRANSLATION YET FOR: {capitalize(name)}</label>
-        <hr />
-      </div>
+    return _react.createElement(
+      'div',
+      null,
+      _react.createElement(
+        'label',
+        null,
+        'NO TRANSLATION YET FOR: ',
+        (0, (_string || _load_string()).capitalize)(name)
+      ),
+      _react.createElement('hr', null)
     );
   }
 
-  _renderHeader(): ?React.Node {
-    const {config} = this.props;
+  _renderHeader() {
+    const { config } = this.props;
     return config.header != null ? config.header : null;
   }
 
-  render(): React.Node {
-    return (
-      <div className="block">
-        {this._renderHeader()}
-        {this._getConfigurationProperties().map(property =>
-          this._getComponentForProperty(property),
-        )}
-      </div>
+  render() {
+    return _react.createElement(
+      'div',
+      { className: 'block' },
+      this._renderHeader(),
+      this._getConfigurationProperties().map(property => this._getComponentForProperty(property))
     );
   }
 
-  _handleDebugButtonClick = async (): Promise<void> => {
-    const numberValues = new Map();
-    this._getConfigurationProperties()
-      .filter(property => property.type === 'number')
-      .forEach(property => {
-        const {name} = property;
-        numberValues.set(name, Number(this.state.stringValues.get(name)));
-        this.state.stringValues.delete(name);
-      });
-    await this.props.handleDebugButtonClick(
-      this.props.targetUri,
-      this.state.stringValues,
-      this.state.booleanValues,
-      this.state.enumValues,
-      numberValues,
-    );
-
-    serializeDebuggerConfig(...this._getSerializationArgs(this.props), {
-      stringValues: Array.from(this.state.stringValues.entries()),
-      booleanValues: Array.from(this.state.booleanValues.entries()),
-      enumValues: Array.from(this.state.enumValues.entries()),
-      numberValues: Array.from(numberValues),
-    });
-  };
 }
+exports.default = AutoGenLaunchAttachUiComponent;

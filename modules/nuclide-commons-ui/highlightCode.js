@@ -1,35 +1,29 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.highlightCode = highlightCode;
+exports.highlightCodeHTML = highlightCodeHTML;
+exports.HighlightCode = HighlightCode;
 
-export type HighlightedToken =
-  | {|
-      type: 'start',
-      className: string,
-    |}
-  | {|
-      type: 'end',
-    |}
-  | {|
-      type: 'value',
-      value: string,
-    |};
+var _react = _interopRequireWildcard(require('react'));
 
-export type HighlightedTokens = Array<Array<HighlightedToken>>;
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-const scopeToClassNameCache = new Map();
+const scopeToClassNameCache = new Map(); /**
+                                          * Copyright (c) 2017-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the BSD-style license found in the
+                                          * LICENSE file in the root directory of this source tree. An additional grant
+                                          * of patent rights can be found in the PATENTS file in the same directory.
+                                          *
+                                          * 
+                                          * @format
+                                          */
 
-function scopeToClassName(scope: string): string {
+function scopeToClassName(scope) {
   let className = scopeToClassNameCache.get(scope);
   if (className == null) {
     className = 'syntax--' + scope.replace(/\./g, ' syntax--');
@@ -42,20 +36,15 @@ function scopeToClassName(scope: string): string {
  * Re-uses an Atom grammar's tokenization functions to produce syntax-higlighted text
  * without the overhead of creating a new TextEditor / TextBuffer.
  */
-export function highlightCode(
-  grammar: atom$Grammar,
-  code: string,
-): HighlightedTokens {
+function highlightCode(grammar, code) {
   const scopeStack = [];
   return grammar.tokenizeLines(code).map(line => {
     const resultLine = [];
     for (const token of line) {
-      const diffIndex = scopeStack.findIndex(
-        (stackEntry, i) => token.scopes[i] !== stackEntry,
-      );
+      const diffIndex = scopeStack.findIndex((stackEntry, i) => token.scopes[i] !== stackEntry);
       if (diffIndex !== -1) {
         while (diffIndex < scopeStack.length) {
-          resultLine.push({type: 'end'});
+          resultLine.push({ type: 'end' });
           scopeStack.pop();
         }
       }
@@ -63,14 +52,14 @@ export function highlightCode(
         const scope = token.scopes[scopeStack.length];
         resultLine.push({
           type: 'start',
-          className: scopeToClassName(scope),
+          className: scopeToClassName(scope)
         });
         scopeStack.push(scope);
       }
-      resultLine.push({type: 'value', value: token.value});
+      resultLine.push({ type: 'value', value: token.value });
     }
     while (scopeStack.length) {
-      resultLine.push({type: 'end'});
+      resultLine.push({ type: 'end' });
       scopeStack.pop();
     }
     return resultLine;
@@ -80,7 +69,7 @@ export function highlightCode(
 /**
  * Converts the grammar/code directly to HTML (using highlightCode above).
  */
-export function highlightCodeHTML(grammar: atom$Grammar, code: string): string {
+function highlightCodeHTML(grammar, code) {
   const tokens = highlightCode(grammar, code);
   let html = '';
   for (const line of tokens) {
@@ -102,18 +91,15 @@ export function highlightCodeHTML(grammar: atom$Grammar, code: string): string {
   return html;
 }
 
-export function HighlightCode({
+function HighlightCode({
   grammar,
-  code,
-}: {
-  grammar: atom$Grammar,
-  code: string,
-}): React.Node {
-  return (
-    <pre>
-      <code
-        dangerouslySetInnerHTML={{__html: highlightCodeHTML(grammar, code)}}
-      />
-    </pre>
+  code
+}) {
+  return _react.createElement(
+    'pre',
+    null,
+    _react.createElement('code', {
+      dangerouslySetInnerHTML: { __html: highlightCodeHTML(grammar, code) }
+    })
   );
 }

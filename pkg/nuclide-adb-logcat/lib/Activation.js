@@ -1,91 +1,98 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {OutputService} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
-import {createProcessStream} from './createProcessStream';
-import createMessageStream from './createMessageStream';
-import {LogTailer} from '../../nuclide-console-base/lib/LogTailer';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _formatEnoentNotification;
 
-export default class Activation {
-  _disposables: UniversalDisposable;
-  _logTailer: LogTailer;
+function _load_formatEnoentNotification() {
+  return _formatEnoentNotification = _interopRequireDefault(require('../../commons-atom/format-enoent-notification'));
+}
 
-  constructor(state: ?Object) {
-    const message$ = Observable.defer(() =>
-      createMessageStream(
-        createProcessStream()
-          // Retry 3 times (unless we get a ENOENT)
-          .retryWhen(errors =>
-            errors.scan((errCount, err) => {
-              if (isNoEntError(err) || errCount >= 2) {
-                throw err;
-              }
-              return errCount + 1;
-            }, 0),
-          ),
-      ),
-    );
+var _createProcessStream;
 
-    this._logTailer = new LogTailer({
+function _load_createProcessStream() {
+  return _createProcessStream = require('./createProcessStream');
+}
+
+var _createMessageStream;
+
+function _load_createMessageStream() {
+  return _createMessageStream = _interopRequireDefault(require('./createMessageStream'));
+}
+
+var _LogTailer;
+
+function _load_LogTailer() {
+  return _LogTailer = require('../../nuclide-console-base/lib/LogTailer');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Activation {
+
+  constructor(state) {
+    const message$ = _rxjsBundlesRxMinJs.Observable.defer(() => (0, (_createMessageStream || _load_createMessageStream()).default)((0, (_createProcessStream || _load_createProcessStream()).createProcessStream)()
+    // Retry 3 times (unless we get a ENOENT)
+    .retryWhen(errors => errors.scan((errCount, err) => {
+      if (isNoEntError(err) || errCount >= 2) {
+        throw err;
+      }
+      return errCount + 1;
+    }, 0))));
+
+    this._logTailer = new (_LogTailer || _load_LogTailer()).LogTailer({
       name: 'adb Logcat',
       messages: message$,
       trackingEvents: {
         start: 'adb-logcat:start',
         stop: 'adb-logcat:stop',
-        restart: 'adb-logcat:restart',
+        restart: 'adb-logcat:restart'
       },
       handleError(err) {
         if (isNoEntError(err)) {
-          const {message, meta} = formatEnoentNotification({
+          const { message, meta } = (0, (_formatEnoentNotification || _load_formatEnoentNotification()).default)({
             feature: 'Tailing Android (adb) logs',
             toolName: 'adb',
-            pathSetting: 'nuclide-adb-logcat.pathToAdb',
+            pathSetting: 'nuclide-adb-logcat.pathToAdb'
           });
           atom.notifications.addError(message, meta);
           return;
         }
         throw err;
-      },
+      }
     });
 
-    this._disposables = new UniversalDisposable(
-      () => {
-        this._logTailer.stop();
-      },
-      atom.commands.add('atom-workspace', {
-        'nuclide-adb-logcat:start': () => this._logTailer.start(),
-        'nuclide-adb-logcat:stop': () => this._logTailer.stop(),
-        'nuclide-adb-logcat:restart': () => this._logTailer.restart(),
-      }),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+      this._logTailer.stop();
+    }, atom.commands.add('atom-workspace', {
+      'nuclide-adb-logcat:start': () => this._logTailer.start(),
+      'nuclide-adb-logcat:stop': () => this._logTailer.stop(),
+      'nuclide-adb-logcat:restart': () => this._logTailer.restart()
+    }));
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'adb logcat',
-        messages: this._logTailer.getMessages(),
-        observeStatus: cb => this._logTailer.observeStatus(cb),
-        start: () => {
-          this._logTailer.start();
-        },
-        stop: () => {
-          this._logTailer.stop();
-        },
-      }),
-    );
+  consumeOutputService(api) {
+    this._disposables.add(api.registerOutputProvider({
+      id: 'adb logcat',
+      messages: this._logTailer.getMessages(),
+      observeStatus: cb => this._logTailer.observeStatus(cb),
+      start: () => {
+        this._logTailer.start();
+      },
+      stop: () => {
+        this._logTailer.stop();
+      }
+    }));
   }
 
   dispose() {
@@ -93,4 +100,15 @@ export default class Activation {
   }
 }
 
-const isNoEntError = err => (err: any).code === 'ENOENT';
+exports.default = Activation; /**
+                               * Copyright (c) 2015-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the license found in the LICENSE file in
+                               * the root directory of this source tree.
+                               *
+                               * 
+                               * @format
+                               */
+
+const isNoEntError = err => err.code === 'ENOENT';

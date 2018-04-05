@@ -1,73 +1,32 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  ControlButtonSpecification,
-  DebuggerCapabilities,
-  DebuggerConfigAction,
-  DebuggerProperties,
-  IVspInstance,
-  MessageProcessor,
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type MessagePreprocessors = {
-  vspAdapterPreprocessor: MessageProcessor,
-  vspClientPreprocessor: MessageProcessor,
-};
+var _vscodeDebugprotocol;
 
-export type CustomDebuggerCapabilities = {
-  conditionalBreakpoints?: boolean,
-  continueToLocation?: boolean,
-  readOnlyTarget?: boolean,
-  setVariable?: boolean,
-  threads?: boolean,
-  completionsRequest?: boolean,
-};
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
 
-export type CustomDebuggerProperties = {
-  customControlButtons?: Array<ControlButtonSpecification>,
-  targetDescription?: () => ?string,
-  threadsComponentTitle?: string,
-};
+var _UniversalDisposable;
 
-export default class VspProcessInfo {
-  _targetUri: NuclideUri;
-  _adapterType: VsAdapterType;
-  _adapterExecutable: VSAdapterExecutableInfo;
-  _debugMode: DebuggerConfigAction;
-  _config: Object;
-  _vspInstance: ?IVspInstance;
-  _preprocessors: ?MessagePreprocessors;
-  _disposables: UniversalDisposable;
-  _customCapabilities: CustomDebuggerCapabilities;
-  _customProperties: CustomDebuggerProperties;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-  constructor(
-    targetUri: NuclideUri,
-    debugMode: DebuggerConfigAction,
-    adapterType: VsAdapterType,
-    adapterExecutable: VSAdapterExecutableInfo,
-    config: Object,
-    customCapabilities?: ?CustomDebuggerCapabilities,
-    customProperties?: ?CustomDebuggerProperties,
-    preprocessors?: ?MessagePreprocessors,
-  ) {
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class VspProcessInfo {
+
+  constructor(targetUri, debugMode, adapterType, adapterExecutable, config, customCapabilities, customProperties, preprocessors) {
     this._targetUri = targetUri;
     this._debugMode = debugMode;
     this._adapterType = adapterType;
@@ -76,18 +35,18 @@ export default class VspProcessInfo {
     this._customCapabilities = customCapabilities || {};
     this._customProperties = customProperties || {};
     this._preprocessors = preprocessors;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  setVspDebuggerInstance(vspInstance: IVspInstance): void {
+  setVspDebuggerInstance(vspInstance) {
     this._vspInstance = vspInstance;
   }
 
-  getDebuggerCapabilities(): DebuggerCapabilities {
+  getDebuggerCapabilities() {
     const defaultCapabilities = {
       conditionalBreakpoints: false,
       continueToLocation: false,
@@ -97,84 +56,87 @@ export default class VspProcessInfo {
       registers: false,
       setVariable: false,
       threads: false,
-      completionsRequest: false,
+      completionsRequest: false
     };
-    return {
-      ...defaultCapabilities,
+    return Object.assign({}, defaultCapabilities, {
       conditionalBreakpoints: true,
       setVariable: true,
-      completionsRequest: true,
-      ...this._customCapabilities,
-    };
+      completionsRequest: true
+    }, this._customCapabilities);
   }
 
-  getDebuggerProps(): DebuggerProperties {
+  getDebuggerProps() {
     const defaultProps = {
       customControlButtons: [],
       targetDescription: () => null,
-      threadsComponentTitle: 'Threads',
+      threadsComponentTitle: 'Threads'
     };
-    return {
-      ...defaultProps,
-      ...this._customProperties,
-    };
+    return Object.assign({}, defaultProps, this._customProperties);
   }
 
-  getVspAdapterPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspAdapterPreprocessor;
+  getVspAdapterPreprocessor() {
+    return this._preprocessors == null ? null : this._preprocessors.vspAdapterPreprocessor;
   }
 
-  getVspClientPreprocessor(): ?MessageProcessor {
-    return this._preprocessors == null
-      ? null
-      : this._preprocessors.vspClientPreprocessor;
+  getVspClientPreprocessor() {
+    return this._preprocessors == null ? null : this._preprocessors.vspClientPreprocessor;
   }
 
-  async debug(): Promise<void> {
-    throw new Error('Old chrome-based debugger is no longer supported!');
+  debug() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('Old chrome-based debugger is no longer supported!');
+    })();
   }
 
-  async customRequest(
-    request: string,
-    args: any,
-  ): Promise<DebugProtocol.CustomResponse> {
-    if (this._vspInstance != null) {
-      return this._vspInstance.customRequest(request, args);
-    } else {
-      throw new Error('Cannot send custom requests to inactive debug sessions');
-    }
+  customRequest(request, args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._vspInstance != null) {
+        return _this._vspInstance.customRequest(request, args);
+      } else {
+        throw new Error('Cannot send custom requests to inactive debug sessions');
+      }
+    })();
   }
 
-  observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
+  observeCustomEvents() {
     if (this._vspInstance != null) {
       return this._vspInstance.observeCustomEvents();
     } else {
-      return Observable.throw(
-        new Error('Cannot send custom requests to inactive debug sessions'),
-      );
+      return _rxjsBundlesRxMinJs.Observable.throw(new Error('Cannot send custom requests to inactive debug sessions'));
     }
   }
 
-  addCustomDisposable(disposable: IDisposable): void {
+  addCustomDisposable(disposable) {
     this._disposables.add(disposable);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._vspInstance = null;
   }
 
-  getAdapterType(): VsAdapterType {
+  getAdapterType() {
     return this._adapterType;
   }
 
-  getDebugMode(): DebuggerConfigAction {
+  getDebugMode() {
     return this._debugMode;
   }
 
-  getConfig(): Object {
+  getConfig() {
     return this._config;
   }
 }
+exports.default = VspProcessInfo; /**
+                                   * Copyright (c) 2017-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the BSD-style license found in the
+                                   * LICENSE file in the root directory of this source tree. An additional grant
+                                   * of patent rights can be found in the PATENTS file in the same directory.
+                                   *
+                                   * 
+                                   * @format
+                                   */

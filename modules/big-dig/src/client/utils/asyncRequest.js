@@ -1,28 +1,17 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AgentOptions} from '../../common/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = asyncRequest;
 
-import request from 'request';
+var _request;
 
-export type RequestOptions = {
-  uri: string,
-  agentOptions?: AgentOptions,
-  useQuerystring?: boolean,
-  timeout?: number,
-};
+function _load_request() {
+  return _request = _interopRequireDefault(require('request'));
+}
 
-export type ResponseBody = {body: string, response: HttpResponse};
-type HttpResponse = {statusCode: number};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Promisified version of the request function:
@@ -32,16 +21,26 @@ type HttpResponse = {statusCode: number};
  * the option:
  * {useQuerystring: false}
  */
-export default function asyncRequest(
-  options: RequestOptions,
-): Promise<ResponseBody> {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+function asyncRequest(options) {
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
     }
     // TODO(t8118670): This can cause an uncaught exception.
     // Likely requires a fix to 'request'.
-    request(options, (error, response, body) => {
+    (0, (_request || _load_request()).default)(options, (error, response, body) => {
       if (error) {
         reject(error);
       } else if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -51,16 +50,16 @@ export default function asyncRequest(
             errorJson = JSON.parse(body);
           } catch (e) {
             // 404 responses aren't currently JSON.
-            errorJson = {message: body};
+            errorJson = { message: body };
           }
         }
         // Cast to Object for use of code field below...
-        const err: Object = new Error(errorJson.message);
+        const err = new Error(errorJson.message);
         // Success http status codes range from 200 to 299.
         err.code = errorJson.code || response.statusCode;
         reject(err);
       } else {
-        resolve({body, response});
+        resolve({ body, response });
       }
     });
   });
