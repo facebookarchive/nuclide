@@ -1617,6 +1617,7 @@ declare class atom$KeymapManager {
 
   // Adding and Removing Bindings
   add(source: string, bindings: Object): IDisposable,
+  removeBindingsFromSource(source: string): void,
 
   // Accessing Bindings
   getKeyBindings(): Array<atom$KeyBinding>,
