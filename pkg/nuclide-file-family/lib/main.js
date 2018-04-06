@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type {FileFamilyProvider} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -16,10 +17,13 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
 import FileFamilyAggregator from './FileFamilyAggregator';
+import FileFamilyDashProvider from './FileFamilyDashProvider';
+import {getAlternatesFromGraph} from './FileFamilyUtils';
 
 class Activation {
   _disposables: UniversalDisposable;
   _aggregator: ?FileFamilyAggregator;
+  _aggregators: BehaviorSubject<?FileFamilyAggregator> = new BehaviorSubject();
   _providers: BehaviorSubject<Set<FileFamilyProvider>> = new BehaviorSubject(
     new Set(),
   );
@@ -43,6 +47,7 @@ class Activation {
 
     const aggregator = new FileFamilyAggregator(this._providers.asObservable());
     this._aggregator = aggregator;
+    this._aggregators.next(aggregator);
     this._disposables.add(aggregator);
     return aggregator;
   }
@@ -57,6 +62,13 @@ class Activation {
       withoutProvider.delete(provider);
       this._providers.next(withoutProvider);
     });
+  }
+
+  consumeDash(registerProvider: RegisterProvider): ?IDisposable {
+    const registerDisposable = registerProvider(
+      new FileFamilyDashProvider(this._aggregators),
+    );
+    this._disposables.add(registerDisposable);
   }
 
   _toggleAlternate = async () => {
@@ -76,13 +88,18 @@ class Activation {
     }
 
     const graph = await provider.getRelatedFiles(activeUri);
-    const testRelation = graph.relations.find(
-      r =>
-        r.from === activeUri &&
-        (r.labels.has('test') || r.labels.has('alternate')),
-    );
-    if (testRelation != null) {
-      await goToLocation(testRelation.to);
+    const alternates = getAlternatesFromGraph(graph, activeUri);
+    if (alternates.length === 0) {
+      atom.notifications.addError(
+        'Unable to locate any alternates for this file',
+      );
+    } else if (alternates.length === 1) {
+      await goToLocation(alternates[0]);
+    } else {
+      atom.commands.dispatch(
+        atom.workspace.getElement(),
+        'file-family-dash-provider:toggle-provider',
+      );
     }
   };
 }

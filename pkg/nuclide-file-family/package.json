@@ -21,6 +21,11 @@
       "versions": {
         "0.0.0": "consumeFileFamilyProvider"
       }
+    },
+    "nuclide-dash-register-provider": {
+      "versions": {
+        "0.0.0": "consumeDash"
+      }
     }
   }
 }
