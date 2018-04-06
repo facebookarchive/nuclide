@@ -17,6 +17,7 @@ import type {
   OpenableResult,
   // $FlowFB
 } from '../../fb-dash/lib/types';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileFamilyAggregator from './FileFamilyAggregator';
 import fuzzAldrinPlus from 'fuzzaldrin-plus';
 
@@ -40,9 +41,14 @@ export default class FileFamilyDashProvider
   prefix = 'alt';
   priority = 10;
   _aggregators: BehaviorSubject<?FileFamilyAggregator>;
+  _cwds: BehaviorSubject<?CwdApi>;
 
-  constructor(aggregators: BehaviorSubject<?FileFamilyAggregator>) {
+  constructor(
+    aggregators: BehaviorSubject<?FileFamilyAggregator>,
+    cwds: BehaviorSubject<?CwdApi>,
+  ) {
     this._aggregators = aggregators;
+    this._cwds = cwds;
   }
 
   executeQuery(
@@ -77,6 +83,8 @@ export default class FileFamilyDashProvider
     const results = Observable.defer(() =>
       aggregator.getRelatedFiles(activeUri),
     ).map(graph => {
+      const cwd = this._cwds.getValue();
+      const projectUri = cwd && cwd.getCwd();
       return getAlternatesFromGraph(graph, activeUri)
         .filter(uri => query === '' || fuzzAldrinPlus.score(uri, query) > 0)
         .sort(
@@ -89,6 +97,10 @@ export default class FileFamilyDashProvider
           uriMatchRanges: matchIndexesToRanges(
             fuzzAldrinPlus.match(alternateUri, query),
           ),
+          projectUri:
+            projectUri != null && alternateUri.includes(projectUri)
+              ? projectUri
+              : null,
           openOptions: {},
           relevance: 1,
         }));

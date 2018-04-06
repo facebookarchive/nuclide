@@ -10,6 +10,7 @@
  */
 
 import type {RegisterProvider} from '../../fb-dash/lib/types';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {FileFamilyProvider} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -24,6 +25,7 @@ class Activation {
   _disposables: UniversalDisposable;
   _aggregator: ?FileFamilyAggregator;
   _aggregators: BehaviorSubject<?FileFamilyAggregator> = new BehaviorSubject();
+  _cwds: BehaviorSubject<?CwdApi> = new BehaviorSubject();
   _providers: BehaviorSubject<Set<FileFamilyProvider>> = new BehaviorSubject(
     new Set(),
   );
@@ -64,9 +66,13 @@ class Activation {
     });
   }
 
+  consumeCwd(service: CwdApi) {
+    this._cwds.next(service);
+  }
+
   consumeDash(registerProvider: RegisterProvider): ?IDisposable {
     const registerDisposable = registerProvider(
-      new FileFamilyDashProvider(this._aggregators),
+      new FileFamilyDashProvider(this._aggregators, this._cwds),
     );
     this._disposables.add(registerDisposable);
   }
