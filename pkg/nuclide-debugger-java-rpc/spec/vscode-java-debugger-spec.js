@@ -195,7 +195,7 @@ describe('vscode-java-debugger', () => {
     // The java debugger, when it launches a script, uses a port. We need to
     //   wait between each test case to give the system a moment to realize
     //   that the port has been free'd up.
-    waits(1000);
+    waits(2000);
   });
 
   it('launches and outputs console messages', () => {
