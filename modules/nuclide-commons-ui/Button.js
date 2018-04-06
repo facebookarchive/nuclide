@@ -108,6 +108,7 @@ export class Button extends React.Component<Props> {
       // $FlowFixMe(>=0.53.0) Flow suppress
       <Wrapper
         className={newClassName}
+        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
         ref={ref}
         {...remainingProps}
         title={titleToolTip}>

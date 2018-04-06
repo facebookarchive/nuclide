@@ -353,6 +353,7 @@ All the changes across your entire stacked diff.
       );
 
       uncommittedChangesHeadline = (
+        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
         <span ref={addTooltip({title: dropdownTooltip})}>
           <span className="nuclide-dropdown-label-text-wrapper">
             {this.state.showUncommittedChangesKind.toUpperCase()}

@@ -411,6 +411,7 @@ export class Combobox extends React.Component<Props, State> {
               }}
               onClick={this._handleItemClick.bind(this, option)}
               onMouseOver={this._setSelectedIndex.bind(this, i)}
+              // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
               ref={isSelected ? this._handleSelectedOption : null}>
               {beforeMatch}
               <strong className="text-highlight">{highlightedMatch}</strong>

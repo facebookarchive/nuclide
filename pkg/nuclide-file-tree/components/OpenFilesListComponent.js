@@ -168,6 +168,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     onMouseDown={this._onMouseDown.bind(this, e)}
                     path={e.uri}
                     name={e.name}
+                    // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
                     ref={e.isSelected ? this._handleSelectedRow : null}>
                     <span
                       className={classnames('icon', {

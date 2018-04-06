@@ -345,6 +345,7 @@ class GutterElement extends React.Component<Props> {
       return (
         <div
           className="nuclide-blame-row nuclide-blame-content"
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
           ref={addTooltip(tooltip)}>
           {!isLastLine ? (
             <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />

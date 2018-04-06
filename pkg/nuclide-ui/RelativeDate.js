@@ -64,6 +64,7 @@ export default class RelativeDate extends React.Component<Props> {
     return (
       <span
         {...remainingProps}
+        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
         ref={
           withToolip
             ? addTooltip({

@@ -365,6 +365,7 @@ module.exports = {
     'rulesdir/dom-apis': 1,
     'rulesdir/flow-fb-oss': 1,
     'rulesdir/import-type-style': 1,
+    'rulesdir/jsx-simple-callback-refs': 1,
     'rulesdir/license-header': 1,
     'rulesdir/modules-dependencies': 1,
     'rulesdir/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],

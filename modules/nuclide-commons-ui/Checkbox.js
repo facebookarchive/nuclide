@@ -107,6 +107,7 @@ export class Checkbox extends React.PureComponent<Props> {
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
+        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
         ref={ref}
         onClick={onClick && ignoreTextSelectionEvents(onClick)}
         title={title}>

@@ -329,6 +329,7 @@ export class TreeRootComponent extends React.Component<Props, State> {
             onMouseDown={this._onMouseDown}
             path={node.getKey()}
             key={node.getKey()}
+            // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
             ref={ref}
           />
         );

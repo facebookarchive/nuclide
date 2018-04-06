@@ -71,6 +71,7 @@ export class StatusBarTileComponent extends React.Component<Props> {
         <UnstyledButton
           onClick={this.props.onClick}
           className={classes}
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
           ref={addTooltip({
             title: tooltipString,
             delay: 0,

@@ -85,7 +85,9 @@ export default class BuckToolbar extends React.Component<Props, State> {
         ? 'Loading target build rule...'
         : 'Loading available platforms...';
       status = (
-        <div ref={addTooltip({title, delay: 0})}>
+        <div
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
             className="inline-block buck-spinner"
             size="EXTRA_SMALL"
@@ -96,6 +98,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
       status = (
         <span
           className="icon icon-alert"
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
           ref={addTooltip({
             title:
               `'${buildTarget}' could not be found in ${buckRoot}.<br />` +

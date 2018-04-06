@@ -83,6 +83,12 @@ export class LoadingSpinner extends React.Component<
         : LoadingSpinnerSizes.MEDIUM;
     const sizeClassname = LoadingSpinnerClassnames[safeSize];
     const newClassName = classnames(className, 'loading', sizeClassname);
-    return <div className={newClassName} ref={ref} />;
+    return (
+      <div
+        className={newClassName}
+        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+        ref={ref}
+      />
+    );
   }
 }

@@ -186,6 +186,7 @@ export default class OutputTable extends React.Component<Props, State> {
         className="console-table-row-wrapper"
         style={style}>
         <RecordView
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
           ref={(view: ?RecordView) => {
             if (view != null) {
               this._renderedRecords.set(record, view);

@@ -92,6 +92,7 @@ export class TextEditorBanner {
           {reactElement}
         </div>
         <div
+          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
           ref={ref => this._updateTextEditorElement(ref)}
           className="nuclide-ui-text-editor-banner-editor"
         />

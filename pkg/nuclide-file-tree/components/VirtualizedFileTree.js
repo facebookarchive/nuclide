@@ -384,6 +384,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       return (
         <div key={key} style={style}>
           <FileTreeEntryComponent
+            // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
             ref={node.isRoot ? this._setRootRef : this._setNodeRef}
             node={node}
             selectedNodes={this.state.selectedNodes}
