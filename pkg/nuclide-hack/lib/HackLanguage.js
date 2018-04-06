@@ -160,6 +160,12 @@ async function createLanguageService(): Promise<
       version: '0.2.0',
       analyticsEventName: 'hack.observe-diagnostics',
     },
+    signatureHelp: {
+      version: '0.1.0',
+      priority: 1,
+      triggerCharacters: new Set(['(', ',']),
+      analyticsEventName: 'hack.signatureHelp',
+    },
   };
 
   return new AtomLanguageService(
