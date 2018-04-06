@@ -9,20 +9,12 @@
  * @format
  */
 
-import type {NavigationStackController} from '../lib/NavigationStackController';
-import typeof * as ModuleType from '../lib/NavigationStackController';
-
-import {uncachedRequire, clearRequireCache} from 'nuclide-commons/test-helpers';
+import {NavigationStackController} from '../lib/NavigationStackController';
 
 describe('NavigationStackController test suite', () => {
-  let setPositionAndScroll: any;
-  let controller: NavigationStackController = (null: any);
+  let controller: NavigationStackController;
 
   beforeEach(() => {
-    setPositionAndScroll = spyOn(
-      require('nuclide-commons-atom/text-editor'),
-      'setPositionAndScroll',
-    );
     spyOn(require('../lib/Location'), 'getPathOfLocation').andCallFake(
       location => location.editor.getPath(),
     );
@@ -33,15 +25,11 @@ describe('NavigationStackController test suite', () => {
       location => location.editor,
     );
 
-    const moduleToTest: ModuleType = (uncachedRequire(
-      require,
-      '../lib/NavigationStackController',
-    ): any);
-    controller = new moduleToTest.NavigationStackController();
+    controller = new NavigationStackController();
   });
 
   it('startup activation', () => {
-    const editor = toEditor('filename', 10, 100);
+    const editor = toEditor('filename', 10);
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
 
@@ -51,11 +39,11 @@ describe('NavigationStackController test suite', () => {
 
   it('switch tabs and nav back/forwards', () => {
     waitsForPromise(async () => {
-      const editor1 = toEditor('filename', 10, 100);
+      const editor1 = toEditor('filename', 10);
       const location1 = editor1.location;
       controller.onActivate(editor1);
       controller.onActiveStopChanging(editor1);
-      const editor2 = toEditor('filename2', 20, 200);
+      const editor2 = toEditor('filename2', 20);
       const location2 = editor2.location;
       controller.onActivate(editor2);
       controller.onActiveStopChanging(editor2);
@@ -67,15 +55,13 @@ describe('NavigationStackController test suite', () => {
       await controller.navigateForwards();
       expect(controller.getIndex()).toEqual(1);
       expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(setPositionAndScroll).not.toHaveBeenCalled();
+      expect(editor1.setCursorBufferPosition).not.toHaveBeenCalled();
 
       await controller.navigateBackwards();
       expect(controller.getIndex()).toEqual(0);
       expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(setPositionAndScroll).toHaveBeenCalledWith(
-        location1.editor,
+      expect(editor1.setCursorBufferPosition).toHaveBeenCalledWith(
         location1.bufferPosition,
-        location1.scrollTop,
       );
 
       // noop nav backwards
@@ -86,16 +72,14 @@ describe('NavigationStackController test suite', () => {
       await controller.navigateForwards();
       expect(controller.getIndex()).toEqual(1);
       expect(controller.getLocations()).toEqual([location1, location2]);
-      expect(setPositionAndScroll).toHaveBeenCalledWith(
-        location2.editor,
+      expect(editor2.setCursorBufferPosition).toHaveBeenCalledWith(
         location2.bufferPosition,
-        location2.scrollTop,
       );
     });
   });
 
-  it('update position/scroll', () => {
-    const editor = toEditor('filename', 10, 100);
+  it('update position', () => {
+    const editor = toEditor('filename', 10);
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
 
@@ -109,21 +93,17 @@ describe('NavigationStackController test suite', () => {
     expect(controller.getIndex()).toEqual(0);
     expect(controller.getLocations()).toEqual([editor.location]);
 
-    setScroll(editor, 110);
-    expect(getScroll(editor)).toEqual(110);
-    controller.updateScroll(editor, 110);
-
     expect(controller.getIndex()).toEqual(0);
     expect(controller.getLocations()).toEqual([editor.location]);
   });
 
   it('update position of non-top', () => {
     waitsForPromise(async () => {
-      const editor1 = toEditor('filename', 10, 100);
+      const editor1 = toEditor('filename', 10);
       const location1 = editor1.location;
       controller.onActivate(editor1);
       controller.onActiveStopChanging(editor1);
-      const editor2 = toEditor('filename2', 20, 200);
+      const editor2 = toEditor('filename2', 20);
       const location2 = editor2.location;
       controller.onActivate(editor2);
       controller.onActiveStopChanging(editor2);
@@ -138,14 +118,13 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('open of closed file', () => {
-    const editor1 = toEditor('filename', 10, 100);
+    const editor1 = toEditor('filename', 10);
     const location1 = editor1.location;
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('filename2', 21, 200);
+    const editor2 = toEditor('filename2', 21);
     const location2 = editor2.location;
     controller.onCreate(editor2);
-    controller.updateScroll(editor2, 200);
     controller.onActivate(editor2);
     controller.onOpen(editor2);
     controller.updatePosition(editor2, toPoint(21));
@@ -155,12 +134,12 @@ describe('NavigationStackController test suite', () => {
     expect(controller.getLocations()).toEqual([location1, location2]);
   });
 
-  it('open of open file no scroll', () => {
-    const editor1 = toEditor('filename', 10, 100);
+  it('open of open file', () => {
+    const editor1 = toEditor('filename', 10);
     const location1 = editor1.location;
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('filename2', 21, 200);
+    const editor2 = toEditor('filename2', 21);
     const location2 = editor2.location;
     controller.onActivate(editor2);
     controller.onOpen(editor2);
@@ -171,16 +150,15 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('open of open file with move', () => {
-    const editor1 = toEditor('filename', 10, 100);
+    const editor1 = toEditor('filename', 10);
     const location1 = editor1.location;
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('filename2', 21, 200);
+    const editor2 = toEditor('filename2', 21);
     const location2 = editor2.location;
     controller.onActivate(editor2);
     controller.updatePosition(editor2, toPoint(21));
     controller.onOpen(editor2);
-    controller.updateScroll(editor2, 200);
     controller.onActiveStopChanging(editor2);
 
     expect(controller.getIndex()).toEqual(1);
@@ -188,7 +166,7 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('open of current file', () => {
-    const editor = toEditor('filename', 10, 100);
+    const editor = toEditor('filename', 10);
     const startLocation = {...editor.location};
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
@@ -196,15 +174,13 @@ describe('NavigationStackController test suite', () => {
     setPosition(editor, 11);
     controller.updatePosition(editor, toPoint(11));
     controller.onOpen(editor);
-    setScroll(editor, 110);
-    controller.updateScroll(editor, 110);
 
     expect(controller.getIndex()).toEqual(1);
     expect(controller.getLocations()).toEqual([startLocation, editor.location]);
   });
 
   it('opt-in navigation', () => {
-    const editor = toEditor('filename', 10, 100);
+    const editor = toEditor('filename', 10);
     const startLocation = {...editor.location};
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
@@ -212,19 +188,17 @@ describe('NavigationStackController test suite', () => {
     setPosition(editor, 11);
     controller.updatePosition(editor, toPoint(11));
     controller.onOptInNavigation(editor);
-    setScroll(editor, 110);
-    controller.updateScroll(editor, 110);
 
     expect(controller.getIndex()).toEqual(1);
     expect(controller.getLocations()).toEqual([startLocation, editor.location]);
   });
 
   it('removePath', () => {
-    const editor1 = toEditor('/a/f1', 10, 100);
+    const editor1 = toEditor('/a/f1', 10);
     const location1 = editor1.location;
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('/b/f2', 20, 200);
+    const editor2 = toEditor('/b/f2', 20);
     controller.onActivate(editor2);
     controller.onActiveStopChanging(editor2);
 
@@ -235,11 +209,11 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('close/open file', () => {
-    const editor1 = toEditor('/a/f1', 10, 100);
+    const editor1 = toEditor('/a/f1', 10);
     const location1 = editor1.location;
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('/b/f2', 20, 200);
+    const editor2 = toEditor('/b/f2', 20);
     const location2 = editor2.location;
     controller.onActivate(editor2);
     controller.onActiveStopChanging(editor2);
@@ -252,13 +226,11 @@ describe('NavigationStackController test suite', () => {
         type: 'uri',
         uri: '/a/f1',
         bufferPosition: toPoint(10),
-        scrollTop: 100,
       },
       location2,
     ]);
 
     setPosition(editor1, 11);
-    setScroll(editor1, 110);
     const location3 = editor1.location;
     controller.onCreate(editor1);
     expect(controller.getLocations()).toEqual([
@@ -269,10 +241,10 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('close unsaved file', () => {
-    const editor1 = toEditor(null, 10, 100);
+    const editor1 = toEditor(null, 10);
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
-    const editor2 = toEditor('/b/f2', 20, 200);
+    const editor2 = toEditor('/b/f2', 20);
     const location2 = editor2.location;
     controller.onActivate(editor2);
     controller.onActiveStopChanging(editor2);
@@ -284,7 +256,7 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('close only unsaved file', () => {
-    const editor1 = toEditor(null, 10, 100);
+    const editor1 = toEditor(null, 10);
     controller.onActivate(editor1);
     controller.onActiveStopChanging(editor1);
 
@@ -295,7 +267,7 @@ describe('NavigationStackController test suite', () => {
   });
 
   it('max stack depth', () => {
-    const editor = toEditor('filename', 10, 100);
+    const editor = toEditor('filename', 10);
     controller.onActivate(editor);
     controller.onActiveStopChanging(editor);
 
@@ -309,10 +281,6 @@ describe('NavigationStackController test suite', () => {
 
     expect(controller.getLocations().length).toEqual(100);
   });
-
-  afterEach(() => {
-    clearRequireCache(require, '../lib/NavigationStackController');
-  });
 });
 
 function toPoint(line: number): any {
@@ -322,7 +290,7 @@ function toPoint(line: number): any {
   };
 }
 
-function toEditor(filePath: ?string, line: number, scrollTop: number) {
+function toEditor(filePath: ?string, line: number) {
   const editor: any = {
     getPath() {
       return filePath;
@@ -330,8 +298,8 @@ function toEditor(filePath: ?string, line: number, scrollTop: number) {
     location: {
       type: 'editor',
       bufferPosition: toPoint(line),
-      scrollTop,
     },
+    setCursorBufferPosition: jasmine.createSpy('setCursorBufferPosition'),
   };
   editor.location.editor = editor;
   return editor;
@@ -342,17 +310,6 @@ function setPosition(editor, line) {
     ...editor.location,
     bufferPosition: toPoint(line),
   };
-}
-
-function setScroll(editor, scrollTop) {
-  editor.location = {
-    ...editor.location,
-    scrollTop,
-  };
-}
-
-function getScroll(editor) {
-  return editor.location.scrollTop;
 }
 
 function getRow(editor) {
