@@ -27,35 +27,4 @@ html .terminal {
   .xterm-viewport {
     background-color: transparent;
   }
-
-  // Colors
-
-  // red
-  .xterm-color-1 { color: @text-color-error; }
-  // green
-  .xterm-color-2 { color: @text-color-success; }
-  // yellow
-  .xterm-color-3 { color: @text-color-warning; }
-  // blue
-  .xterm-color-4 { color: @text-color-info; }
-
-  // Cursor
-  &.focus:not(.xterm-cursor-style-underline):not(.xterm-cursor-style-bar) .terminal-cursor {
-    background-color: @text-color;
-  }
-  &.terminal:not(.focus) .terminal-cursor {
-    outline: 1px solid @text-color;
-  }
-  &.xterm-cursor-style-bar .terminal-cursor::before,
-  &.xterm-cursor-style-underline .terminal-cursor::before {
-    background-color: @text-color;
-  }
-  &.xterm-cursor-style-bar.focus.xterm-cursor-blink .terminal-cursor::before,
-  &.xterm-cursor-style-underline.focus.xterm-cursor-blink .terminal-cursor::before {
-    background-color: @text-color;
-  }
-}
-
-.xterm-rows span {
-    display: inline-block;
 }

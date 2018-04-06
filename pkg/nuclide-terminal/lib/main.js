@@ -12,7 +12,6 @@
 // for homedir
 import os from 'os';
 import invariant from 'assert';
-import dedent from 'dedent';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
@@ -40,7 +39,6 @@ const TERMINAL_CONTEXT_MENU_PRIORITY = 100;
 
 class Activation {
   _subscriptions: UniversalDisposable;
-  _styleSheet: IDisposable;
   _cwd: ?CwdApi;
 
   constructor() {
@@ -69,26 +67,12 @@ class Activation {
           goToLocation(uri);
         },
       ),
-      atom.config.onDidChange(
-        'editor.fontSize',
-        this._syncAtomStyle.bind(this),
-      ),
-      atom.config.onDidChange(
-        'editor.fontFamily',
-        this._syncAtomStyle.bind(this),
-      ),
-      atom.config.onDidChange(
-        'editor.lineHeight',
-        this._syncAtomStyle.bind(this),
-      ),
       atom.commands.add(
         'atom-workspace',
         'nuclide-terminal:toggle-terminal-focus',
         () => focusManager.toggleFocus(),
       ),
-      () => this._styleSheet.dispose(),
     );
-    this._syncAtomStyle();
   }
 
   provideTerminal(): nuclide$TerminalApi {
@@ -101,25 +85,6 @@ class Activation {
 
   dispose() {
     this._subscriptions.dispose();
-  }
-
-  _syncAtomStyle() {
-    if (this._styleSheet != null) {
-      this._styleSheet.dispose();
-    }
-    // Based on workspace-element in Atom
-    this._styleSheet = atom.styles.addStyleSheet(
-      dedent`
-      .terminal {
-        font-size: ${(atom.config.get('editor.fontSize'): any)}px !important;
-        font-family: ${(atom.config.get('editor.fontFamily'): any)} !important;
-        line-height: ${(atom.config.get('editor.lineHeight'): any)} !important;
-      }`,
-      {
-        sourcePath: 'nuclide-terminal-sync-with-atom',
-        priority: -1,
-      },
-    );
   }
 
   consumePasteProvider(provider: any): IDisposable {

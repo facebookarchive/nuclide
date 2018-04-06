@@ -27,7 +27,6 @@ import {
 } from '../../commons-node/nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
   RemoteConnection,
   ServerConnection,
@@ -185,7 +184,6 @@ export class TerminalView implements PtyClient {
     (div: any).terminal = terminal;
     terminal.open(this._div);
     terminal.setHypertextLinkHandler(openLink);
-    this._syncAtomStyle();
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
@@ -350,18 +348,6 @@ export class TerminalView implements PtyClient {
           this._setPath(title);
         }
       }),
-      Observable.interval(10 * 1000)
-        .startWith(0)
-        .map(() => atom.workspace.paneForItem(this))
-        .filter(pane => pane != null)
-        .first()
-        .switchMap(pane => {
-          invariant(pane != null);
-          return observableFromSubscribeFunction(
-            pane.onDidChangeFlexScale.bind(pane),
-          );
-        })
-        .subscribe(this._syncAtomStyle.bind(this)),
       Observable.interval(60 * 60 * 1000).subscribe(() =>
         track('nuclide-terminal.hourly', this._statistics()),
       ),
@@ -418,24 +404,6 @@ export class TerminalView implements PtyClient {
       startDelay: Math.round(performanceNow() - this._startTime),
       error: String(error),
     });
-  }
-
-  // Our Activation updates the global style sheet in response to the same config
-  // changes we are listening to.  We need to ensure the style sheet is in place
-  // before we measure and resize, so we setTimeout to run on the tick after config
-  // notifications go out.
-  _syncAtomStyle(): void {
-    for (const attr of ['fontFamily', 'fontSize', 'lineHeight']) {
-      this._syncAtomStyleItem(attr);
-    }
-    this._fitAndResize();
-  }
-
-  _syncAtomStyleItem(name: string): void {
-    const item = atom.config.get(`nuclide-terminal.${name}`);
-    if (item != null && item !== '') {
-      this._terminal.setOption(name, item);
-    }
   }
 
   _fitAndResize(): void {
