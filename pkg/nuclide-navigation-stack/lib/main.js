@@ -37,36 +37,26 @@ class Activation {
     this._disposables = new UniversalDisposable();
 
     const subscribeEditor = (editor: atom$TextEditor) => {
-      const destroySubscription = editor.onDidDestroy(() => {
-        controller.onDestroy(editor);
-        this._disposables.remove(destroySubscription);
-      });
-      this._disposables.add(destroySubscription);
+      const subscription = new UniversalDisposable(
+        editor.onDidDestroy(() => {
+          controller.onDestroy(editor);
+          subscription.dispose();
+          this._disposables.remove(subscription);
+        }),
+        editor.onDidChangeCursorPosition(event => {
+          controller.updatePosition(editor, event.newBufferPosition);
+        }),
+      );
+      this._disposables.add(subscription);
     };
-
-    let lastActiveEditor: ?atom$TextEditor;
 
     const addEditor = (addEvent: AddTextEditorEvent) => {
       const editor = addEvent.textEditor;
       if (isValidTextEditor(editor)) {
         subscribeEditor(editor);
-        updateLastEditor(editor);
         controller.onCreate(editor);
       }
     };
-
-    function updateLastEditor(editor: atom$TextEditor) {
-      if (editor === lastActiveEditor) {
-        return;
-      }
-      if (lastActiveEditor != null && !lastActiveEditor.isDestroyed()) {
-        controller.updatePosition(
-          lastActiveEditor,
-          lastActiveEditor.getCursorBufferPosition(),
-        );
-      }
-      lastActiveEditor = editor;
-    }
 
     atom.workspace.getTextEditors().forEach(subscribeEditor);
     this._disposables.add(
@@ -74,7 +64,6 @@ class Activation {
         if (!isValidTextEditor(item)) {
           return;
         }
-        updateLastEditor((item: any));
         controller.onActivate((item: any));
       }),
       atom.workspace.onDidAddTextEditor(addEditor),

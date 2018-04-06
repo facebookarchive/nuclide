@@ -84,7 +84,10 @@ export class NavigationStackController {
     this._lastLocation = null;
   }
 
-  _updateStackLocation(editor: atom$TextEditor): void {
+  _updateStackLocation(
+    editor: atom$TextEditor,
+    location?: EditorLocation,
+  ): void {
     if (this._isNavigating) {
       return;
     }
@@ -96,7 +99,9 @@ export class NavigationStackController {
       invariant(previousLocation != null && previousLocation.type === 'editor');
       this._lastLocation = {...previousLocation};
     }
-    this._navigationStack.attemptUpdate(getLocationOfEditor(editor));
+    this._navigationStack.attemptUpdate(
+      location || getLocationOfEditor(editor),
+    );
   }
 
   updatePosition(editor: atom$TextEditor, newBufferPosition: atom$Point): void {
@@ -105,7 +110,11 @@ export class NavigationStackController {
         `${newBufferPosition.column} ${maybeToString(editor.getPath())}`,
     );
 
-    this._updateStackLocation(editor);
+    this._updateStackLocation(editor, {
+      type: 'editor',
+      editor,
+      bufferPosition: newBufferPosition,
+    });
   }
 
   onCreate(editor: atom$TextEditor): void {
