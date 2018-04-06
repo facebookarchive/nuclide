@@ -48,6 +48,7 @@ export type Completion = {
   className?: ?string,
   iconHTML?: ?string,
   description?: ?string,
+  descriptionMarkdown?: ?string,
   descriptionMoreURL?: ?string,
   // These fields are extra:
   filterText?: string, // used by updateAutocompleteResults

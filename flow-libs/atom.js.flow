@@ -2063,6 +2063,7 @@ type atom$AutocompleteSuggestion = {
   className?: ?string,
   iconHTML?: ?string,
   description?: ?string,
+  descriptionMarkdown?: ?string,
   descriptionMoreURL?: ?string,
 };
 
