@@ -17,6 +17,7 @@ import fs from '../common/fs';
 import child_process from 'child_process';
 import {getLogger} from 'log4js';
 import os from 'os';
+import temp from 'temp';
 import {generateCertificates} from './certificates';
 
 export type StartServerParams = {
@@ -71,6 +72,11 @@ export async function generateCertificatesAndStartServer({
     serverParams,
   };
 
+  // Redirect child stderr to a file so that we can read it.
+  // (If we just pipe it, there's no safe way of disconnecting it after.)
+  temp.track();
+  const stderrLog = temp.openSync('big-dig-stderr');
+
   const launcherScript = require.resolve('./launchServer-entry.js');
   logger.info(`About to spawn ${launcherScript} to launch Big Dig server.`);
   const child = child_process.spawn(
@@ -89,7 +95,7 @@ export async function generateCertificatesAndStartServer({
     ],
     {
       detached: true,
-      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+      stdio: ['ignore', 'ignore', stderrLog.fd, 'ipc'],
     },
   );
   logger.info(`spawn called for ${launcherScript}`);
@@ -98,17 +104,16 @@ export async function generateCertificatesAndStartServer({
 
   const childPort = await timeoutPromise(
     new Promise((resolve, reject) => {
-      let stderr = '';
-      child.stderr.on('data', data => {
-        stderr += data.toString();
-      });
       const onMessage = ({port: result}) => {
         resolve(result);
         child.removeAllListeners();
       };
       child.on('message', onMessage);
       child.on('error', reject);
-      child.on('exit', code => {
+      child.on('exit', async code => {
+        const stderr = await fs
+          .readFileAsString(stderrLog.path)
+          .catch(() => '');
         reject(
           Error(`Child exited early with code ${code}.\nstderr: ${stderr}`),
         );
