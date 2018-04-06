@@ -67,9 +67,13 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof DevicePanelWorkspaceView),
-      atom.commands.add('atom-workspace', 'nuclide-device-panel:toggle', () => {
-        atom.workspace.toggle(WORKSPACE_VIEW_URI);
-      }),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-devices-panel:toggle',
+        () => {
+          atom.workspace.toggle(WORKSPACE_VIEW_URI);
+        },
+      ),
     );
   }
 
