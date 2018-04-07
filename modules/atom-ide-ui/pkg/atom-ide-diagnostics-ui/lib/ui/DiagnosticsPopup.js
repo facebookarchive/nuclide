@@ -97,7 +97,10 @@ function getCodeActions(
 // TODO move LESS styles to nuclide-ui
 export class DiagnosticsPopup extends React.Component<DiagnosticsPopupProps> {
   componentDidMount() {
-    analytics.track('diagnostics-show-popup');
+    analytics.track('diagnostics-show-popup', {
+      // Note: there could be multiple providers here (but it's less common).
+      providerName: this.props.messages[0].providerName,
+    });
   }
 
   render() {
