@@ -17,6 +17,7 @@ import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
 import {track, trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {shell} from 'electron';
+import escapeHTML from 'escape-html';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
 import * as React from 'react';
@@ -31,13 +32,6 @@ try {
   Avatar = require('../../nuclide-ui/fb-Avatar').default;
 } catch (err) {
   Avatar = null;
-}
-
-function escapeHTML(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
 }
 
 function getHash(revision: ?RevisionInfo): ?string {

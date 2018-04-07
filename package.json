@@ -64,6 +64,7 @@
     "domexception": "1.0.1",
     "dompurify": "1.0.3",
     "double-ended-queue": "2.1.0-0",
+    "escape-html": "1.0.3",
     "escape-string-regexp": "1.0.5",
     "event-kit": "2.2.0",
     "event-target-shim": "3.0.1",
