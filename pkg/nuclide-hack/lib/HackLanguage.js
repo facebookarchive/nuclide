@@ -55,6 +55,10 @@ async function getUseEnhancedHover(): Promise<boolean> {
   return passesGK('nuclide_hack_use_enhanced_hover');
 }
 
+async function getUseTextEditAutocomplete(): Promise<boolean> {
+  return passesGK('nuclide_hack_use_textedit_autocomplete');
+}
+
 async function connectionToHackService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
@@ -87,6 +91,9 @@ async function connectionToHackService(
       config.logLevel,
       fileNotifier,
       host,
+      {
+        useTextEditAutocomplete: await getUseTextEditAutocomplete(),
+      },
     );
     return lspService || new NullLanguageService();
   }

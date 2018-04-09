@@ -103,6 +103,7 @@ export async function initializeLsp(
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
   host: HostServices,
+  initializationOptions: Object,
 ): Promise<?LanguageService> {
   const cmd = command === '' ? await getHackCommand() : command;
   if (cmd === '') {
@@ -114,6 +115,7 @@ export async function initializeLsp(
     logLevel,
     fileNotifier,
     host,
+    initializationOptions,
     projectFileNames,
     fileExtensions,
     additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
