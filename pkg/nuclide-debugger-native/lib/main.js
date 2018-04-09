@@ -27,6 +27,11 @@ import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {Observable} from 'rxjs';
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {
+  isDebugTask,
+  getBuckSubcommandForTaskType,
+} from '../../nuclide-buck/lib/BuckTaskRunner';
 import logger from './utils';
 import {getConfig} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -112,7 +117,7 @@ class Activation {
           },
           runTask: (builder, taskType, target, settings, device) => {
             const subcommand = taskType === 'debug' ? 'build' : taskType;
-            if (taskType === 'debug') {
+            if (isDebugTask(taskType)) {
               return this._runDebugTask(
                 builder,
                 taskType,
@@ -125,7 +130,7 @@ class Activation {
             } else {
               return builder.runSubcommand(
                 buckRoot,
-                subcommand,
+                getBuckSubcommandForTaskType(subcommand),
                 target,
                 settings,
                 false,

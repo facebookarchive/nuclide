@@ -22,6 +22,11 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 import type {IosDeployable} from './types';
 
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+import {
+  isDebugTask,
+  getBuckSubcommandForTaskType,
+} from '../../nuclide-buck/lib/BuckTaskRunner';
 import {RUNNABLE_RULE_TYPES} from './types';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
@@ -118,17 +123,18 @@ export function runTask(
 }
 
 function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
-  if (taskType !== 'run' && taskType !== 'debug') {
-    return taskType;
+  if (taskType === 'run' || isDebugTask(taskType)) {
+    switch (ruleType) {
+      case 'apple_bundle':
+        return 'install';
+      case 'apple_test':
+        return 'test';
+      default:
+        throw new Error('Unsupported rule type');
+    }
   }
-  switch (ruleType) {
-    case 'apple_bundle':
-      return 'install';
-    case 'apple_test':
-      return 'test';
-    default:
-      throw new Error('Unsupported rule type');
-  }
+
+  return getBuckSubcommandForTaskType(taskType);
 }
 
 function startLogger(iosDeployable: IosDeployable): Observable<TaskEvent> {

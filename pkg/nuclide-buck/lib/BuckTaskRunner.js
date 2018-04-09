@@ -19,6 +19,7 @@ import type {
   TaskType,
   CompilationDatabaseParams,
   TaskInfo,
+  BuckSubcommand,
 } from './types';
 import {formatDeploymentTarget} from './DeploymentTarget';
 import {PlatformService} from './PlatformService';
@@ -71,6 +72,12 @@ const TASKS = [
     description: 'Debug the specfied Buck target',
     icon: 'nuclicon-debugger',
   },
+  {
+    type: 'debug-attach',
+    label: 'Attach & Debug',
+    description: 'Attach and debug the specfied Buck target',
+    icon: 'nuclicon-debugger',
+  },
 ];
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
@@ -84,10 +91,22 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
     case 'run':
       return ruleType.endsWith('binary');
     case 'debug':
+    case 'debug-attach':
       return ruleType.endsWith('binary') || ruleType.endsWith('test');
     default:
       return false;
   }
+}
+
+export function isDebugTask(taskType: TaskType | string) {
+  return taskType.startsWith('debug');
+}
+
+export function getBuckSubcommandForTaskType(
+  taskType: TaskType | string,
+): BuckSubcommand {
+  invariant(taskType === 'build' || taskType === 'run' || taskType === 'test');
+  return taskType;
 }
 
 export class BuckTaskRunner {
@@ -280,14 +299,6 @@ export class BuckTaskRunner {
   }
 
   runTask(taskType: string): Task {
-    invariant(
-      taskType === 'build' ||
-        taskType === 'test' ||
-        taskType === 'run' ||
-        taskType === 'debug',
-      'Invalid task type',
-    );
-
     // eslint-disable-next-line rulesdir/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
@@ -321,7 +332,7 @@ export class BuckTaskRunner {
             return platform
               .runTask(
                 this._buildSystem,
-                taskType,
+                ((taskType: any): TaskType),
                 buildRuleType.buildTarget,
                 taskSettings,
                 device,
@@ -336,14 +347,14 @@ export class BuckTaskRunner {
               });
           } else {
             let subcommand;
-            if (taskType === 'debug') {
+            if (isDebugTask(taskType)) {
               if (buildRuleType.type.endsWith('test')) {
                 subcommand = 'test';
               } else {
                 subcommand = 'build';
               }
             } else {
-              subcommand = taskType;
+              subcommand = getBuckSubcommandForTaskType(taskType);
             }
             return this._buildSystem
               .runSubcommand(
@@ -351,7 +362,7 @@ export class BuckTaskRunner {
                 subcommand,
                 buildRuleType.buildTarget,
                 taskSettings,
-                taskType === 'debug',
+                isDebugTask(taskType),
                 null,
               )
               .do({
