@@ -363,7 +363,7 @@ export default class CodeFormatManager {
       ).map(edits => {
         applyTextEditsToBuffer(editor.getBuffer(), edits);
       });
-    } else if (getFormatOnSave()) {
+    } else if (getFormatOnSave(editor)) {
       return this._formatCodeInTextEditor(
         editor,
         editor.getBuffer().getRange(),

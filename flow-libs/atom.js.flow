@@ -1000,6 +1000,7 @@ declare class atom$TextEditor extends atom$Model {
   copySelectedText: () => void,
 
   // Managing Syntax Scopes
+  getRootScopeDescriptor(): atom$ScopeDescriptor,
   scopeDescriptorForBufferPosition(
     bufferPosition: atom$PointLike,
   ): atom$ScopeDescriptor,
