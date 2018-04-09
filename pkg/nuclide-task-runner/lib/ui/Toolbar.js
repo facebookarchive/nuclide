@@ -127,23 +127,57 @@ export default class Toolbar extends React.Component<Props> {
       return [];
     }
     invariant(state);
-    return state.tasks.filter(task => task.hidden !== true).map(task => {
-      return (
-        <Button
-          className="nuclide-task-button"
-          key={task.type}
-          size={ButtonSizes.SMALL}
-          icon={task.icon}
-          tooltip={tooltip(task.label)}
-          disabled={
-            task.disabled || this.props.runningTaskIsCancelable === false
+    let debugAndAttachTask;
+    return state.tasks
+      .filter(task => {
+        if (task.type === 'debug-attach') {
+          debugAndAttachTask = task;
+          return false;
+        }
+        return task.hidden !== true;
+      })
+      .map(task => {
+        const taskTooltip = tooltip(task.label);
+        if (
+          task.type === 'debug' &&
+          debugAndAttachTask != null &&
+          !debugAndAttachTask.disabled
+        ) {
+          if (taskTooltip.title == null) {
+            taskTooltip.title = '';
           }
-          onClick={() =>
-            this.props.runTask({...task, taskRunner: activeTaskRunner})
-          }
-        />
-      );
-    });
+          taskTooltip.title +=
+            '<br><br><strong>\u21E7 + Click</strong>: ' +
+            debugAndAttachTask.label;
+        }
+        return (
+          <Button
+            className="nuclide-task-button"
+            key={task.type}
+            size={ButtonSizes.SMALL}
+            icon={task.icon}
+            tooltip={taskTooltip}
+            disabled={
+              task.disabled || this.props.runningTaskIsCancelable === false
+            }
+            onClick={event => {
+              let effectiveTask = task;
+              if (
+                task.type === 'debug' &&
+                Boolean(event.shiftKey) &&
+                debugAndAttachTask &&
+                !debugAndAttachTask.disabled
+              ) {
+                effectiveTask = debugAndAttachTask;
+              }
+              this.props.runTask({
+                ...effectiveTask,
+                taskRunner: activeTaskRunner,
+              });
+            }}
+          />
+        );
+      });
   }
 }
 
