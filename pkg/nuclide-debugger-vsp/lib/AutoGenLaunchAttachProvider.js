@@ -9,13 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-import type {
-  HandleDebugButtonClick,
-  LaunchAttachProviderIsEnabled,
-  AutoGenConfig,
-} from './types';
+import type {LaunchAttachProviderIsEnabled, AutoGenConfig} from './types';
 
 import invariant from 'assert';
 import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
@@ -29,36 +24,18 @@ const LaunchAttachProviderDefaultIsEnabled = (
   return Promise.resolve(config[action] != null);
 };
 
-const ActionNotSupportedButtonClick = (
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-) => {
-  throw new Error('This method should never be called');
-};
-
 export default class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _config: AutoGenConfig;
-  _handleLaunchButtonClick: HandleDebugButtonClick;
-  _handleAttachButtonClick: HandleDebugButtonClick;
   _isEnabled: LaunchAttachProviderIsEnabled;
 
   constructor(
     debuggingTypeName: string,
     targetUri: string,
     config: AutoGenConfig,
-    handleLaunchButtonClick: ?HandleDebugButtonClick,
-    handleAttachButtonClick: ?HandleDebugButtonClick,
     isEnabled?: LaunchAttachProviderIsEnabled = LaunchAttachProviderDefaultIsEnabled,
   ) {
     super(debuggingTypeName, targetUri);
     this._config = config;
-    this._handleLaunchButtonClick =
-      handleLaunchButtonClick || ActionNotSupportedButtonClick;
-    this._handleAttachButtonClick =
-      handleAttachButtonClick || ActionNotSupportedButtonClick;
     this._isEnabled = isEnabled;
   }
 
@@ -90,11 +67,6 @@ export default class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachPro
           <AutoGenLaunchAttachUiComponent
             targetUri={this.getTargetUri()}
             configIsValidChanged={configIsValidChanged}
-            handleDebugButtonClick={
-              action === 'launch'
-                ? this._handleLaunchButtonClick
-                : this._handleAttachButtonClick
-            }
             config={launchOrAttachConfig}
             debuggerTypeName={debuggerTypeName}
           />

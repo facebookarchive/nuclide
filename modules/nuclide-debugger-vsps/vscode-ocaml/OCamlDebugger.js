@@ -36,10 +36,8 @@ export type OCamlDebugStartInfo = {
   logLevel: number,
 };
 
-export interface LaunchRequestArguments
-  extends DebugProtocol.LaunchRequestArguments {
-  config: OCamlDebugStartInfo;
-}
+export type LaunchRequestArguments = DebugProtocol.LaunchRequestArguments &
+  OCamlDebugStartInfo;
 
 class OCamlDebugSession extends LoggingDebugSession {
   _session: Session;
@@ -108,15 +106,19 @@ class OCamlDebugSession extends LoggingDebugSession {
     args: LaunchRequestArguments,
   ): void {
     this._catchAsyncRequestError(response, async () => {
+      const config = {
+        ...args,
+      };
+
       // make sure to 'Stop' the buffered logging if 'trace' is not set
-      logger.setup(args.config.logLevel, false);
+      logger.setup(config.logLevel, false);
 
       this._session = await Session.start(
-        args.config,
+        config,
         breakPointId => this._handleBreakpointHitEvent(breakPointId),
         error => this._handleProgramExitedEvent(error),
       );
-      this._breakAfterStart = args.config.breakAfterStart;
+      this._breakAfterStart = config.breakAfterStart;
 
       // Now send the initialized event as we're ready to process breakpoint requests
       this.sendEvent(new InitializedEvent());

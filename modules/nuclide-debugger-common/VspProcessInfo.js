@@ -43,15 +43,15 @@ type CustomDebuggerProperties = {
 
 export default class VspProcessInfo {
   _targetUri: NuclideUri;
+  _debugMode: DebuggerConfigAction;
   _adapterType: VsAdapterType;
   _adapterExecutable: VSAdapterExecutableInfo;
-  _debugMode: DebuggerConfigAction;
   _config: Object;
-  _vspInstance: ?IVspInstance;
-  _preprocessors: ?MessagePreprocessors;
-  _disposables: UniversalDisposable;
   _customCapabilities: CustomDebuggerCapabilities;
   _customProperties: CustomDebuggerProperties;
+  _preprocessors: ?MessagePreprocessors;
+  _vspInstance: ?IVspInstance;
+  _disposables: UniversalDisposable;
 
   constructor(
     targetUri: NuclideUri,

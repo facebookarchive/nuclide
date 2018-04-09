@@ -10,11 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  HandleDebugButtonClick,
-  AutoGenProperty,
-  AutoGenLaunchOrAttachConfig,
-} from './types';
+import type {AutoGenProperty, AutoGenLaunchOrAttachConfig} from './types';
 
 import idx from 'idx';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
@@ -22,26 +18,27 @@ import RadioGroup from 'nuclide-commons-ui/RadioGroup';
 import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {capitalize} from 'nuclide-commons/string';
+import {capitalize, shellParse} from 'nuclide-commons/string';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
+  VspProcessInfo,
 } from 'nuclide-debugger-common';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getActiveScriptPath} from './utils';
+import {getDebuggerService} from '../../commons-atom/debugger';
+import {getActiveScriptPath, getAdapterExecutableWithProperNode} from './utils';
 
 type Props = {|
   +targetUri: NuclideUri,
   +configIsValidChanged: (valid: boolean) => void,
   +config: AutoGenLaunchOrAttachConfig,
-  +handleDebugButtonClick: HandleDebugButtonClick,
   +debuggerTypeName: string,
 |};
 
 type State = {
   enumValues: Map<string, string>,
   booleanValues: Map<string, boolean>,
-  stringValues: Map<string, string>,
+  atomInputValues: Map<string, string>,
 };
 
 export default class AutoGenLaunchAttachUiComponent extends React.Component<
@@ -54,7 +51,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     super(props);
     this._disposables = new UniversalDisposable();
     this.state = {
-      stringValues: new Map(),
+      atomInputValues: new Map(),
       booleanValues: new Map(),
       enumValues: new Map(),
     };
@@ -67,11 +64,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
 
   _populateDefaultValues(
     config: AutoGenLaunchOrAttachConfig,
-    stringValues: Map<string, string>,
+    atomInputValues: Map<string, string>,
     booleanValues: Map<string, boolean>,
     enumValues: Map<string, string>,
   ): void {
-    config.properties.map(property => {
+    config.properties.filter(property => property.visible).map(property => {
       const {name, type} = property;
       const itemType = idx(property, _ => _.itemType);
       if (
@@ -80,7 +77,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         type === 'object' ||
         type === 'number'
       ) {
-        const existingValue = stringValues.get(name);
+        const existingValue = atomInputValues.get(name);
         if (
           existingValue == null &&
           typeof property.defaultValue !== 'undefined'
@@ -90,7 +87,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             type === 'string' || type === 'number'
               ? String(property.defaultValue)
               : '';
-          stringValues.set(name, defaultValue);
+          atomInputValues.set(name, defaultValue);
         }
       } else if (type === 'boolean') {
         const existingValue = booleanValues.get(name);
@@ -134,42 +131,36 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(props),
       (transientSettings, savedSettings) => {
-        const stringValues = new Map(savedSettings.stringValues || []);
+        const atomInputValues = new Map(savedSettings.atomInputValues || []);
         const {config} = props;
         if (config.launch) {
           const scriptPath =
-            stringValues.get(config.scriptPropertyName) ||
+            atomInputValues.get(config.scriptPropertyName) ||
             getActiveScriptPath(config.scriptExtension);
           if (scriptPath !== '') {
-            stringValues.set(config.scriptPropertyName, scriptPath);
+            atomInputValues.set(config.scriptPropertyName, scriptPath);
           }
           // current working directory
           const {cwdPropertyName} = config;
           if (cwdPropertyName != null) {
             const cwd =
-              stringValues.get(cwdPropertyName) ||
+              atomInputValues.get(cwdPropertyName) ||
               (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
             if (cwd !== '') {
-              stringValues.set(cwdPropertyName, cwd);
+              atomInputValues.set(cwdPropertyName, cwd);
             }
           }
         }
-        const numberValues = new Map(savedSettings.numberValues || []);
-        numberValues.forEach((value, key) => {
-          if (value != null) {
-            stringValues.set(key, String(value));
-          }
-        });
         const booleanValues = new Map(savedSettings.booleanValues || []);
         const enumValues = new Map(savedSettings.enumValues || []);
         this._populateDefaultValues(
           config,
-          stringValues,
+          atomInputValues,
           booleanValues,
           enumValues,
         );
         this.setState({
-          stringValues,
+          atomInputValues,
           booleanValues,
           enumValues,
         });
@@ -212,10 +203,10 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
   _valueExists(property: AutoGenProperty): boolean {
     const {name, type} = property;
     if (type === 'string') {
-      const value = this.state.stringValues.get(name);
+      const value = this.state.atomInputValues.get(name);
       return value != null && value !== '';
     } else if (type === 'number') {
-      const value = this.state.stringValues.get(name);
+      const value = this.state.atomInputValues.get(name);
       return value != null && !isNaN(value);
     } else if (type === 'boolean') {
       const value = this.state.booleanValues.get(name);
@@ -243,7 +234,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       type === 'object' ||
       type === 'number'
     ) {
-      const value = this.state.stringValues.get(name) || '';
+      const value = this.state.atomInputValues.get(name) || '';
       return (
         <div>
           {nameLabel}
@@ -252,7 +243,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
             placeholderText={description}
             value={value}
             onDidChange={newValue => {
-              this.state.stringValues.set(name, newValue);
+              this.state.atomInputValues.set(name, newValue);
               this.props.configIsValidChanged(this._debugButtonShouldEnable());
             }}
           />
@@ -306,38 +297,92 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
   }
 
   render(): React.Node {
+    const {debuggerTypeName} = this.props;
     return (
       <div className="block">
         {this._renderHeader()}
-        {this._getConfigurationProperties().map(property =>
-          this._getComponentForProperty(property),
-        )}
+        {this._getConfigurationProperties()
+          .filter(property => property.visible)
+          .map(property => (
+            <div key={debuggerTypeName + ':' + property.name}>
+              {this._getComponentForProperty(property)}
+            </div>
+          ))}
       </div>
     );
   }
 
   _handleDebugButtonClick = async (): Promise<void> => {
+    const {targetUri, config} = this.props;
+    const {atomInputValues, booleanValues, enumValues} = this.state;
+
+    const stringValues = new Map();
+    const stringArrayValues = new Map();
+    const objectValues = new Map();
     const numberValues = new Map();
     this._getConfigurationProperties()
-      .filter(property => property.type === 'number')
+      .filter(
+        property => property.visible && atomInputValues.has(property.name),
+      )
+      .forEach(property => {
+        const {name, type} = property;
+        const itemType = idx(property, _ => _.itemType);
+        const value = atomInputValues.get(name) || '';
+        if (type === 'string') {
+          stringValues.set(name, value);
+        } else if (type === 'array' && itemType === 'string') {
+          stringArrayValues.set(name, shellParse(value));
+        } else if (type === 'object') {
+          const objectValue = {};
+          shellParse(value).forEach(variable => {
+            const [lhs, rhs] = variable.split('=');
+            objectValue[lhs] = rhs;
+          });
+          objectValues.set(name, objectValue);
+        } else if (type === 'number') {
+          numberValues.set(name, Number(value));
+        }
+      });
+
+    const values = {};
+    [
+      booleanValues,
+      enumValues,
+      stringValues,
+      stringArrayValues,
+      objectValues,
+      numberValues,
+    ].forEach(map => {
+      map.forEach((value, key) => {
+        values[key] = value;
+      });
+    });
+
+    this._getConfigurationProperties()
+      .filter(
+        property => !property.visible && !atomInputValues.has(property.name),
+      )
       .forEach(property => {
         const {name} = property;
-        numberValues.set(name, Number(this.state.stringValues.get(name)));
-        this.state.stringValues.delete(name);
+        values[name] = idx(property, _ => _.defaultValue);
       });
-    await this.props.handleDebugButtonClick(
-      this.props.targetUri,
-      this.state.stringValues,
-      this.state.booleanValues,
-      this.state.enumValues,
-      numberValues,
+
+    const vspProcessInfo = new VspProcessInfo(
+      targetUri,
+      config.launch ? 'launch' : 'attach',
+      config.vsAdapterType,
+      await getAdapterExecutableWithProperNode(config.adapterType, targetUri),
+      values,
+      {threads: config.threads},
     );
 
+    const debuggerService = await getDebuggerService();
+    debuggerService.startDebugging(vspProcessInfo);
+
     serializeDebuggerConfig(...this._getSerializationArgs(this.props), {
-      stringValues: Array.from(this.state.stringValues.entries()),
-      booleanValues: Array.from(this.state.booleanValues.entries()),
-      enumValues: Array.from(this.state.enumValues.entries()),
-      numberValues: Array.from(numberValues),
+      atomInputValues: Array.from(atomInputValues),
+      booleanValues: Array.from(booleanValues),
+      enumValues: Array.from(enumValues),
     });
   };
 }

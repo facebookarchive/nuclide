@@ -72,21 +72,19 @@ async function withSession(
     );
     await checkResponse(
       session.launch({
-        config: {
-          ocamldebugExecutable: 'ocamldebug',
-          executablePath: nuclideUri.join(
-            __dirname,
-            'fixtures',
-            'ocaml',
-            executableName,
-          ),
-          arguments: [],
-          environmentVariables: [],
-          workingDirectory: OCAML_FIXTURES,
-          includeDirectories: [],
-          breakAfterStart: false,
-          logLevel: Logger.Verbose,
-        },
+        ocamldebugExecutable: 'ocamldebug',
+        executablePath: nuclideUri.join(
+          __dirname,
+          'fixtures',
+          'ocaml',
+          executableName,
+        ),
+        arguments: [],
+        environmentVariables: [],
+        workingDirectory: OCAML_FIXTURES,
+        includeDirectories: [],
+        breakAfterStart: false,
+        logLevel: Logger.Verbose,
       }),
     );
 

@@ -14,7 +14,6 @@ import type {
   VSAdapterExecutableInfo,
   VsAdapterType,
 } from 'nuclide-debugger-common';
-import type {OCamlDebugStartInfo} from '../../../modules/nuclide-debugger-vsps/vscode-ocaml/OCamlDebugger';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
@@ -27,8 +26,6 @@ import type {
   AutoGenProperty,
 } from './types';
 
-import invariant from 'assert';
-import {shellParse} from 'nuclide-commons/string';
 import nullthrows from 'nullthrows';
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
@@ -93,6 +90,7 @@ export function getActiveScriptPath(extension: string): string {
 function generatePropertyArray(
   launchOrAttachConfigProperties: Object,
   required: string[],
+  visible: string[],
 ): AutoGenProperty[] {
   const propertyArray = Object.entries(launchOrAttachConfigProperties)
     .map(property => {
@@ -103,6 +101,7 @@ function generatePropertyArray(
         type: propertyDetails.type,
         description: propertyDetails.description,
         required: required.includes(name),
+        visible: visible.includes(name),
       };
       if (typeof propertyDetails.default !== 'undefined') {
         autoGenProperty.defaultValue = propertyDetails.default;
@@ -116,6 +115,7 @@ function generatePropertyArray(
       return autoGenProperty;
     })
     .sort((p1, p2) => {
+      // TODO (goom): sort all configs, not just ones generated from the json
       if (p1.required && !p2.required) {
         return -1;
       }
@@ -149,15 +149,13 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     'Path (fully qualified) to python executable.';
   const launchProperties = {};
   const launchRequired = ['pythonPath', 'program', 'cwd'];
-  const usedLaunchProperties = new Set([
-    'pythonPath',
-    'program',
-    'args',
-    'cwd',
-    'env',
-  ]);
+  const launchVisible = launchRequired.concat(['args', 'env', 'stopOnEntry']);
+  const launchWhitelisted = new Set(
+    launchVisible.concat(['console', 'debugOptions']),
+  );
+
   Object.entries(configurationAttributes.launch.properties)
-    .filter(property => usedLaunchProperties.has(property[0]))
+    .filter(property => launchWhitelisted.has(property[0]))
     .forEach(property => {
       const name = property[0];
       const propertyDetails: any = property[1];
@@ -175,7 +173,14 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
   return {
     launch: {
       launch: true,
-      properties: generatePropertyArray(launchProperties, launchRequired),
+      vsAdapterType: VsAdapterTypes.PYTHON,
+      adapterType: VsAdapterTypes.PYTHON,
+      threads: true,
+      properties: generatePropertyArray(
+        launchProperties,
+        launchRequired,
+        launchVisible,
+      ),
       scriptPropertyName: 'program',
       scriptExtension: '.py',
       cwdPropertyName: 'cwd',
@@ -194,60 +199,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
   };
 }
 
-export async function pythonHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-python-debugger-launch-from-dialog');
-  const pythonPath = nullthrows(stringValues.get('pythonPath')).trim();
-  const scriptPath = nullthrows(stringValues.get('program')).trim();
-  const args = shellParse(nullthrows(stringValues.get('args')));
-  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
-  const environmentVariables = {};
-  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
-    const [key, value] = variable.split('=');
-    environmentVariables[key] = value;
-  });
-
-  const {hostname} = nuclideUri.parse(targetUri);
-  const scriptUri =
-    hostname != null
-      ? nuclideUri.createRemoteUri(hostname, scriptPath)
-      : scriptPath;
-
-  const launchInfo = await getPythonScriptLaunchProcessInfo(
-    scriptUri,
-    pythonPath,
-    args,
-    workingDirectory,
-    environmentVariables,
-  );
-
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(launchInfo);
-}
-
-export async function getPythonScriptLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  pythonPath: string,
-  args: Array<string>,
-  cwd: string,
-  env: Object,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(scriptPath),
-    getPythonScriptConfig(scriptPath, pythonPath, cwd, args, env),
-    {threads: true},
-  );
-}
-
-async function getAdapterExecutableWithProperNode(
+export async function getAdapterExecutableWithProperNode(
   adapterType: Adapter,
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
@@ -279,25 +231,6 @@ function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
     debugOptions: Array.from(DEFAULT_DEBUG_OPTIONS),
     pythonPath: localParPath,
     cwd,
-  };
-}
-
-function getPythonScriptConfig(
-  scriptPath: NuclideUri,
-  pythonPath: string,
-  cwd: string,
-  args: Array<string>,
-  env: Object,
-): Object {
-  return {
-    stopOnEntry: false,
-    console: 'none',
-    program: nuclideUri.getPath(scriptPath),
-    cwd,
-    args,
-    env,
-    debugOptions: Array.from(DEFAULT_DEBUG_OPTIONS),
-    pythonPath,
   };
 }
 
@@ -333,86 +266,37 @@ function rootUriOfConnection(connection: ?ServerConnection): string {
   return connection == null ? '' : connection.getUriOfRemotePath('/');
 }
 
-export async function getPrepackLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  prepackPath: string,
-  args: Array<string>,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getPrepackAdapterInfo(scriptPath);
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.PREPACK,
-    adapterInfo,
-    getPrepackScriptConfig(scriptPath, prepackPath, args),
-    {threads: false},
-  );
-}
-
-async function getPrepackAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('prepack', path);
-}
-
-function getPrepackScriptConfig(
-  scriptPath: NuclideUri,
-  prepackPath: string,
-  args: Array<string>,
-): Object {
-  return {
-    sourceFile: nuclideUri.getPath(scriptPath),
-    prepackRuntime: prepackPath,
-    prepackArguments: args,
-  };
-}
-
-export async function prepackHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('nuclide-prepack-debugger-launch-from-dialog');
-  const prepackPath = (stringValues.get('prepackRuntimePath') || '').trim();
-  const scriptPath = nullthrows(stringValues.get('fileToPrepack')).trim();
-  const args = shellParse(nullthrows(stringValues.get('arguments')));
-
-  const launchInfo = await getPrepackLaunchProcessInfo(
-    scriptPath,
-    prepackPath,
-    args,
-  );
-
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(launchInfo);
-}
-
 export function getPrepackAutoGenConfig(): AutoGenConfig {
   const fileToPrepack = {
-    name: 'File To Prepack',
+    name: 'sourceFile',
     type: 'string',
     description: 'Input the file you want to Prepack',
     required: true,
+    visible: true,
   };
   const prepackRuntimePath = {
-    name: 'Prepack Runtime Path',
+    name: 'prepackRuntime',
     type: 'string',
     description:
       'Prepack executable path (e.g. lib/prepack-cli.js). Will use default prepack command if not provided',
     required: false,
+    visible: true,
   };
   const argumentsProperty = {
-    name: 'arguments',
+    name: 'prepackArguments',
     type: 'array',
     itemType: 'string',
     description: 'Arguments to start Prepack',
     required: false,
     defaultValue: '',
+    visible: true,
   };
+
   const autoGenLaunchConfig = {
     launch: true,
+    vsAdapterType: VsAdapterTypes.PREPACK,
+    adapterType: VsAdapterTypes.PREPACK,
+    threads: false,
     properties: [fileToPrepack, prepackRuntimePath, argumentsProperty],
     scriptPropertyName: 'fileToPrepack',
     scriptExtension: '.js',
@@ -444,11 +328,16 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
       }
     },
   );
-  configurationAttributes.launch.properties.nodePath = {
+  configurationAttributes.launch.properties.runtimeExecutable = {
     type: 'string',
     description:
-      "Node executable path (e.g. /usr/local/bin/node). Will use Nuclide's node version if not provided.",
+      "Runtime to use. Either an absolute path or the name of a runtime available on the PATH. If ommitted 'node' is assumed.",
     default: '',
+  };
+  configurationAttributes.launch.properties.protocol = {
+    type: 'string',
+    description: '',
+    default: 'inspector',
   };
   Object.entries(configurationAttributes.attach.properties).forEach(
     property => {
@@ -466,36 +355,48 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
   );
 
   const launchProperties = {};
-  const attachProperties = {};
   const launchRequired = ['program', 'cwd'];
-  const attachRequired = ['port'];
-
-  const usedLaunchProperties = new Set(
-    launchRequired.concat(['nodePath', 'args', 'outFiles', 'env']),
+  const launchVisible = launchRequired.concat([
+    'runtimeExecutable',
+    'args',
+    'outFiles',
+    'env',
+    'stopOnEntry',
+  ]);
+  const launchWhitelisted = new Set(
+    launchVisible.concat(['protocol', 'outFiles']),
   );
 
   Object.entries(configurationAttributes.launch.properties)
-    .filter(property => usedLaunchProperties.has(property[0]))
+    .filter(property => launchWhitelisted.has(property[0]))
     .forEach(property => {
       const name = property[0];
       const propertyDetails: any = property[1];
       launchProperties[name] = propertyDetails;
     });
 
-  const usedAttachProperties = new Set(['port']);
+  const attachProperties = {};
+  const attachRequired = ['port'];
 
-  Object.entries(configurationAttributes.attach.properties)
-    .filter(property => usedAttachProperties.has(property[0]))
-    .forEach(property => {
+  Object.entries(configurationAttributes.attach.properties).forEach(
+    property => {
       const name = property[0];
       const propertyDetails: any = property[1];
       attachProperties[name] = propertyDetails;
-    });
+    },
+  );
 
   return {
     launch: {
       launch: true,
-      properties: generatePropertyArray(launchProperties, launchRequired),
+      vsAdapterType: VsAdapterTypes.NODE,
+      adapterType: VsAdapterTypes.NODE,
+      threads: false,
+      properties: generatePropertyArray(
+        launchProperties,
+        launchRequired,
+        launchVisible,
+      ),
       scriptPropertyName: 'program',
       cwdPropertyName: 'cwd',
       scriptExtension: '.js',
@@ -505,103 +406,34 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
     },
     attach: {
       launch: false,
-      properties: generatePropertyArray(attachProperties, attachRequired),
+      vsAdapterType: VsAdapterTypes.NODE,
+      adapterType: VsAdapterTypes.NODE,
+      threads: false,
+      properties: generatePropertyArray(
+        attachProperties,
+        attachRequired,
+        attachRequired,
+      ),
       header: <p>Attach to a running node.js process</p>,
     },
   };
 }
 
-export async function nodeHandleAttachButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-node-debugger-attach-from-dialog');
-  const port = numberValues.get('port');
-  invariant(port != null);
-  const attachInfo = await getNodeAttachProcessInfo(targetUri, port);
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(attachInfo);
-}
-
-export async function nodeHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-node-debugger-launch-from-dialog');
-  const nodePath = nullthrows(stringValues.get('nodePath')).trim();
-  const scriptPath = nullthrows(stringValues.get('program')).trim();
-  const args = shellParse(nullthrows(stringValues.get('args')));
-  const workingDirectory = nullthrows(stringValues.get('cwd')).trim();
-  const outFiles = nullthrows(stringValues.get('outFiles')).trim();
-  const environmentVariables = {};
-  shellParse(nullthrows(stringValues.get('env'))).forEach(variable => {
-    const [key, value] = variable.split('=');
-    environmentVariables[key] = value;
-  });
-
-  const {hostname} = nuclideUri.parse(targetUri);
-  const scriptUri =
-    hostname != null
-      ? nuclideUri.createRemoteUri(hostname, scriptPath)
-      : scriptPath;
-
-  const launchInfo = await getNodeLaunchProcessInfo(
-    scriptUri,
-    nodePath,
-    args,
-    workingDirectory,
-    environmentVariables,
-    outFiles,
-  );
-  const debuggerService = await getDebuggerService();
-  debuggerService.startDebugging(launchInfo);
-}
-
-export async function getNodeLaunchProcessInfo(
-  scriptPath: NuclideUri,
-  nodePath: string,
-  args: Array<string>,
-  cwd: string,
-  env: Object,
-  outFiles: string,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNodeAdapterInfo(scriptPath);
-  return new VspProcessInfo(
-    scriptPath,
-    'launch',
-    VsAdapterTypes.NODE,
-    adapterInfo,
-    getNodeScriptConfig(
-      scriptPath,
-      nodePath.length > 0 ? nodePath : adapterInfo.command,
-      cwd,
-      args,
-      env,
-      outFiles,
-    ),
-    {threads: false},
-  );
-}
-
 export function getOCamlAutoGenConfig(): AutoGenConfig {
   const debugExecutable = {
-    name: 'ocamldebug executable',
+    name: 'ocamldebugExecutable',
     type: 'string',
     description: 'Path to ocamldebug or launch script',
     required: true,
+    visible: true,
   };
-  const executable = {
-    name: 'executable',
+  const executablePath = {
+    name: 'executablePath',
     type: 'string',
     description:
       'Input the executable path you want to launch (leave blank if using an ocamldebug launch script)',
     required: false,
+    visible: true,
   };
   const argumentsProperty = {
     name: 'arguments',
@@ -610,47 +442,65 @@ export function getOCamlAutoGenConfig(): AutoGenConfig {
     description: 'Arguments to the executable',
     required: false,
     defaultValue: '',
+    visible: true,
   };
   const environmentVariables = {
-    name: 'environment variables',
+    name: 'environmentVariables',
     type: 'array',
     itemType: 'string',
     description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
     required: false,
     defaultValue: '',
+    visible: true,
   };
   const workingDirectory = {
-    name: 'working directory',
+    name: 'workingDirectory',
     type: 'string',
     description: 'Working directory for the launched executable',
     required: true,
+    visible: true,
   };
   const additionalIncludeDirectories = {
-    name: 'additional include directories',
+    name: 'includeDirectories',
     type: 'array',
     itemType: 'string',
     description:
       'Additional include directories that debugger will use to search for source code',
     required: false,
     defaultValue: '',
+    visible: true,
   };
   const breakAfterStart = {
-    name: 'break after start',
+    name: 'breakAfterStart',
     type: 'boolean',
     description: '',
     required: false,
     defaultValue: true,
+    visible: true,
   };
+  const logLevel = {
+    name: 'logLevel',
+    type: 'string',
+    description: '',
+    required: false,
+    defaultValue: Logger.LogLevel.Verbose,
+    visible: false,
+  };
+
   const autoGenLaunchConfig = {
     launch: true,
+    vsAdapterType: VsAdapterTypes.OCAML,
+    adapterType: VsAdapterTypes.OCAML,
+    threads: false,
     properties: [
       debugExecutable,
-      executable,
+      executablePath,
       argumentsProperty,
       environmentVariables,
       workingDirectory,
       additionalIncludeDirectories,
       breakAfterStart,
+      logLevel,
     ],
     scriptPropertyName: 'executable',
     scriptExtension: '.ml',
@@ -661,77 +511,6 @@ export function getOCamlAutoGenConfig(): AutoGenConfig {
     launch: autoGenLaunchConfig,
     attach: null,
   };
-}
-
-export async function ocamlHandleLaunchButtonClick(
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-): Promise<void> {
-  track('fb-ocaml-debugger-launch-from-dialog');
-  const _expandIfLocal = (path: NuclideUri) => {
-    if (nuclideUri.isRemote(targetUri)) {
-      // TODO: support expansion for remote paths.
-      return path;
-    }
-    return nuclideUri.expandHomeDir(path);
-  };
-  // TODO: perform some validation for the input.
-  const launchExecutable = _expandIfLocal(
-    (stringValues.get('executable') || '').trim(),
-  );
-  const ocamldebugExecutable = _expandIfLocal(
-    nullthrows(stringValues.get('ocamldebug executable')).trim(),
-  );
-  const launchArguments = shellParse(nullthrows(stringValues.get('arguments')));
-  const launchEnvironmentVariables = shellParse(
-    nullthrows(stringValues.get('environment variables')),
-  );
-  const launchWorkingDirectory = _expandIfLocal(
-    nullthrows(stringValues.get('working directory')).trim(),
-  );
-  const additionalIncludeDirectories = shellParse(
-    nullthrows(stringValues.get('additional include directories')),
-  );
-  const breakAfterStart = nullthrows(booleanValues.get('break after start'));
-  const launchTarget = {
-    ocamldebugExecutable,
-    executablePath: launchExecutable,
-    arguments: launchArguments,
-    environmentVariables: launchEnvironmentVariables,
-    workingDirectory: launchWorkingDirectory,
-    includeDirectories: additionalIncludeDirectories,
-    breakAfterStart,
-    targetUri,
-    logLevel: Logger.LogLevel.Verbose, // TODO: read from configuration
-  };
-
-  const debuggerService = await getDebuggerService();
-  const launchProcessInfo = await getOCamlLaunchProcessInfo(
-    targetUri,
-    launchTarget,
-  );
-  debuggerService.startDebugging(launchProcessInfo);
-}
-
-export async function getOCamlLaunchProcessInfo(
-  targetUri: NuclideUri,
-  launchTarget: OCamlDebugStartInfo,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getAdapterExecutableWithProperNode(
-    'ocaml',
-    targetUri,
-  );
-  return new VspProcessInfo(
-    targetUri,
-    'launch',
-    VsAdapterTypes.OCAML,
-    adapterInfo,
-    {config: launchTarget},
-    {threads: false},
-  );
 }
 
 async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
@@ -791,47 +570,6 @@ export async function getNativeVSPAttachProcessInfo(
   });
 }
 
-export async function getNodeAttachProcessInfo(
-  targetUri: NuclideUri,
-  port: number,
-): Promise<VspProcessInfo> {
-  const adapterInfo = await getNodeAdapterInfo(targetUri);
-  return new VspProcessInfo(
-    targetUri,
-    'attach',
-    VsAdapterTypes.NODE,
-    adapterInfo,
-    getAttachNodeConfig(port),
-    {threads: false},
-  );
-}
-
-async function getNodeAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('node', path);
-}
-
-function getNodeScriptConfig(
-  scriptPath: NuclideUri,
-  nodePath: string,
-  cwd: string,
-  args: Array<string>,
-  env: Object,
-  outFiles: string,
-): Object {
-  return {
-    protocol: 'inspector',
-    stopOnEntry: false,
-    program: nuclideUri.getPath(scriptPath),
-    runtimeExecutable: nodePath,
-    cwd,
-    args,
-    env,
-    outFiles: outFiles.length > 0 ? [outFiles] : [],
-  };
-}
-
 export async function getReactNativeAttachProcessInfo(
   args: ReactNativeAttachArgs,
 ): Promise<VspProcessInfo> {
@@ -864,10 +602,6 @@ async function getReactNativeAdapterInfo(
   path: NuclideUri,
 ): Promise<VSAdapterExecutableInfo> {
   return getAdapterExecutableWithProperNode('react-native', path);
-}
-
-function getAttachNodeConfig(port: number): Object {
-  return {port};
 }
 
 export async function getHhvmAdapterInfo(

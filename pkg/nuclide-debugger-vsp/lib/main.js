@@ -21,15 +21,10 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {
   listenToRemoteDebugCommands,
-  nodeHandleLaunchButtonClick,
-  nodeHandleAttachButtonClick,
-  pythonHandleLaunchButtonClick,
   getPythonAutoGenConfig,
   getNodeAutoGenConfig,
   getOCamlAutoGenConfig,
-  ocamlHandleLaunchButtonClick,
   getPrepackAutoGenConfig,
-  prepackHandleLaunchButtonClick,
 } from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
@@ -62,8 +57,6 @@ class Activation {
           'Python',
           connection,
           getPythonAutoGenConfig(),
-          pythonHandleLaunchButtonClick,
-          null /* Nuclide with vs-py-debugger does not support attach */,
         );
       },
     });
@@ -77,8 +70,6 @@ class Activation {
           'Node',
           connection,
           getNodeAutoGenConfig(),
-          nodeHandleLaunchButtonClick,
-          nodeHandleAttachButtonClick,
         );
       },
     });
@@ -112,8 +103,6 @@ class Activation {
             'Prepack',
             connection,
             getPrepackAutoGenConfig(),
-            prepackHandleLaunchButtonClick,
-            null /* Nuclide with vscode-prepack debugger does not support attach */,
           );
         },
       });
@@ -129,8 +118,6 @@ class Activation {
             'OCaml',
             connection,
             getOCamlAutoGenConfig(),
-            ocamlHandleLaunchButtonClick,
-            null /* Nuclide with vs-py-debugger does not support attach */,
           );
         },
       });

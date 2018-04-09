@@ -9,18 +9,13 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+import type {
+  DebuggerConfigAction,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
+import type {Adapter} from 'nuclide-debugger-vsps';
 
 import * as React from 'react';
-
-export type HandleDebugButtonClick = (
-  targetUri: NuclideUri,
-  stringValues: Map<string, string>,
-  booleanValues: Map<string, boolean>,
-  enumValues: Map<string, string>,
-  numberValues: Map<string, number>,
-) => Promise<void>;
 
 export type AutoGenPropertyPrimitiveType = 'string' | 'number' | 'boolean';
 
@@ -37,6 +32,7 @@ export type AutoGenProperty = {
   description: string,
   defaultValue?: string | number | boolean,
   required: boolean,
+  visible: boolean,
   enums?: string[],
   enumsDefaultValue?: string,
 };
@@ -47,6 +43,9 @@ export type AutoGenLaunchConfig = {|
   // General Properties
   properties: AutoGenProperty[],
   header?: React.Node,
+  threads: boolean,
+  vsAdapterType: VsAdapterType,
+  adapterType: Adapter,
   // Launch Specific Properties
   scriptPropertyName: string,
   cwdPropertyName: ?string,
@@ -59,6 +58,9 @@ export type AutoGenAttachConfig = {|
   // General Properties
   properties: AutoGenProperty[],
   header?: React.Node,
+  threads: boolean,
+  vsAdapterType: VsAdapterType,
+  adapterType: Adapter,
   // Attach Specific Properties
 |};
 
