@@ -169,7 +169,7 @@ process.on('unhandledRejection', error => {
 
 process.on('uncaughtException', error => {
   log4js.getLogger().fatal('Uncaught exception:', error);
-  log4js.shutdown(() => process.exit(1));
+  log4js.shutdown(() => process.abort());
 });
 
 main();

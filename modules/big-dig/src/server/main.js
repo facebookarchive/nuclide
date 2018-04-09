@@ -89,8 +89,6 @@ export async function generateCertificatesAndStartServer({
       ...(os.totalmem() > 8 * 1024 * 1024 * 1024
         ? ['--max-old-space-size=4096']
         : []),
-      // In case anything slips through the exception handler.
-      '--abort_on_uncaught_exception',
       launcherScript,
     ],
     {
