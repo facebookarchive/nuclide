@@ -41,16 +41,20 @@ const logger = getLogger();
 // Whether files that have disabled eslint with a comment should be ignored.
 const IGNORE_ESLINT_DISABLED_FILES = true;
 
+const MAX_CRASHES = 3;
+
 export class AutoImportsManager {
   suggestedImports: Map<NuclideUri, Array<ImportSuggestion>>;
   exportsManager: ExportManager;
   undefinedSymbolsManager: UndefinedSymbolManager;
-  worker: child_process$ChildProcess;
+  crashes: number;
+  worker: ?child_process$ChildProcess;
 
   constructor(envs: Array<string>) {
     this.suggestedImports = new Map();
     this.exportsManager = new ExportManager();
     this.undefinedSymbolsManager = new UndefinedSymbolManager(envs);
+    this.crashes = 0;
   }
 
   // Only indexes the file (used for testing purposes)
@@ -74,7 +78,15 @@ export class AutoImportsManager {
     });
 
     worker.on('exit', code => {
-      logger.debug('AutoImportWorker exited with code', code);
+      logger.error(
+        `AutoImportsWorker exited with code ${code} (retry: ${this.crashes})`,
+      );
+      this.crashes += 1;
+      if (this.crashes < MAX_CRASHES) {
+        this.indexAndWatchDirectory(root);
+      } else {
+        this.worker = null;
+      }
     });
 
     this.worker = worker;
@@ -84,7 +96,7 @@ export class AutoImportsManager {
   // called first on a directory that is a parent of fileUri.
   workerIndexFile(fileUri: NuclideUri, fileContents: string) {
     if (this.worker == null) {
-      logger.warn(`Worker is not running when asked to index ${fileUri}`);
+      logger.debug(`Worker is not running when asked to index ${fileUri}`);
       return;
     }
     this.worker.send({fileUri, fileContents});

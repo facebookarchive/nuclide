@@ -21,7 +21,6 @@ import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
 import {initializeLoggerForWorker} from '../../logging/initializeLogging';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getConfigFromFlow} from '../Config';
 import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
@@ -45,8 +44,6 @@ const BATCH_SIZE = 500;
 
 const MAX_WORKERS = Math.round(os.cpus().length / 2);
 const MIN_FILES_PER_WORKER = 100;
-
-const disposables = new UniversalDisposable();
 
 export type ExportUpdateForFile = {
   updateType: 'setExports' | 'deleteExports',
@@ -79,36 +76,45 @@ async function main() {
   const index = await getFileIndex(root, configFromFlow);
   const newCache = new ExportCache({root, configFromFlow});
 
-  disposables.add(
-    Observable.merge(
-      indexDirectory(index, hasteSettings),
-      indexNodeModules(index),
-    ).subscribe(
-      message => {
-        sendUpdatesBatched(message);
-        message.forEach(update => {
-          if (update.sha1 != null) {
-            newCache.set(
-              {filePath: update.file, sha1: update.sha1},
-              update.exports,
-            );
-          }
-        });
-      },
-      error => {
-        logger.error('Received error while indexing files', error);
-      },
-      () => {
-        newCache.save().then(success => {
-          if (success) {
-            logger.info(`Saved cache of size ${newCache.getByteSize()}`);
-          } else {
-            logger.warn(`Failed to save cache to ${newCache.getPath()}`);
-          }
-        });
-      },
-    ),
+  Observable.merge(
+    indexDirectory(index, hasteSettings),
+    indexNodeModules(index),
+  ).subscribe(
+    message => {
+      sendUpdatesBatched(message);
+      message.forEach(update => {
+        if (update.sha1 != null) {
+          newCache.set(
+            {filePath: update.file, sha1: update.sha1},
+            update.exports,
+          );
+        }
+      });
+    },
+    error => {
+      logger.error('Received error while indexing files', error);
+    },
+    () => {
+      newCache.save().then(success => {
+        if (success) {
+          logger.info(`Saved cache of size ${newCache.getByteSize()}`);
+        } else {
+          logger.warn(`Failed to save cache to ${newCache.getPath()}`);
+        }
+        disposeForGC(index, newCache);
+      });
+    },
   );
+}
+
+// It appears that the index/cache objects are retained by RxJS.
+// To enable garbage collection after indexing, manually clear out the objects.
+function disposeForGC(index: FileIndex, cache: ExportCache) {
+  index.jsFiles.length = 0;
+  index.nodeModulesPackageJsonFiles.length = 0;
+  index.mainFiles.clear();
+  index.exportCache._cache = (null: any);
+  cache._cache = (null: any);
 }
 
 // Watches a directory for changes and reindexes files as needed.
@@ -116,20 +122,18 @@ function watchDirectoryRecursively(
   root: NuclideUri,
   hasteSettings: HasteSettings,
 ) {
-  disposables.add(
-    watchDirectory(root)
-      .mergeMap(
-        (fileChange: FileChange) =>
-          handleFileChange(root, fileChange, hasteSettings),
-        CONCURRENCY,
-      )
-      .subscribe(
-        () => {},
-        error => {
-          logger.error(`Failed to watch ${root}`, error);
-        },
-      ),
-  );
+  watchDirectory(root)
+    .mergeMap(
+      (fileChange: FileChange) =>
+        handleFileChange(root, fileChange, hasteSettings),
+      CONCURRENCY,
+    )
+    .subscribe(
+      () => {},
+      error => {
+        logger.error(`Failed to watch ${root}`, error);
+      },
+    );
 }
 
 async function handleFileChange(
@@ -353,7 +357,7 @@ async function getExportsForFile(
 function setupDisconnectedParentHandler(): void {
   process.on('disconnect', () => {
     logger.debug('Parent process disconnected. AutoImportsWorker terminating.');
-    exitCleanly();
+    process.exit(0);
   });
 }
 
@@ -536,7 +540,7 @@ function runChild() {
       .let(compact)
       .bufferCount(BATCH_SIZE)
       .mergeMap(send, SEND_CONCURRENCY)
-      .subscribe({complete: exitCleanly});
+      .subscribe({complete: () => process.exit(0)});
   });
 }
 
@@ -547,11 +551,6 @@ function shuffle(array) {
     array[i - 1] = array[j];
     array[j] = temp;
   }
-}
-
-function exitCleanly() {
-  disposables.dispose();
-  process.exit(0);
 }
 
 main();
