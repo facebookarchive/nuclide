@@ -9,6 +9,7 @@
  * @format
  */
 
+// $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {FileFamilyProvider} from './types';
