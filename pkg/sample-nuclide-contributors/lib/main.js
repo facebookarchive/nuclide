@@ -32,16 +32,19 @@ class Activation {
       atom.commands.add(
         'atom-workspace',
         'nuclide-contributors:run-current-spec',
-        () => {
-          const activePaneItem = atom.workspace.getActivePaneItem();
-          if (activePaneItem == null) {
-            atom.notifications.addError('No active editor!');
-            return;
-          }
-          const activePath = activePaneItem.getPath();
-          const ipcRenderer = require('electron').ipcRenderer; // Atom 1.7+
-          invariant(ipcRenderer != null);
-          ipcRenderer.send('run-package-specs', activePath);
+        {
+          tags: ['test'],
+          didDispatch: () => {
+            const activePaneItem = atom.workspace.getActivePaneItem();
+            if (activePaneItem == null) {
+              atom.notifications.addError('No active editor!');
+              return;
+            }
+            const activePath = activePaneItem.getPath();
+            const ipcRenderer = require('electron').ipcRenderer; // Atom 1.7+
+            invariant(ipcRenderer != null);
+            ipcRenderer.send('run-package-specs', activePath);
+          },
         },
       ),
       /**
