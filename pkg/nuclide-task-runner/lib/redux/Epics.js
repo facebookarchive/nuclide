@@ -820,7 +820,7 @@ function getTaskRunnerState(
       // We don't want to start with all runners disabled because it causes UI jumps
       // when a preferred runner gets enabled after a non-preferred one.
       .race(
-        Observable.timer(5000).switchMap(() =>
+        Observable.timer(10000).switchMap(() =>
           Observable.throw('Enabling timed out'),
         ),
       )
