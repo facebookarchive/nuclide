@@ -95,10 +95,12 @@ describe('EchoServer', () => {
     });
   });
   it('Echoes a Regex.', () => {
-    const expected = /nuclide/gi;
+    // eslint-disable-next-line no-control-regex
+    const expected = new RegExp('nuclide\nnewline', 'gi');
     waitsForPromise(async () => {
       const results = await service.echoRegExp(expected);
       expect(results.source).toBe(expected.source);
+      expect(results.flags).toBe(expected.flags);
     });
   });
   it('Echoes a Buffer.', () => {

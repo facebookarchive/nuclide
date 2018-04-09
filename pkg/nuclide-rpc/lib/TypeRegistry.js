@@ -11,7 +11,6 @@
 
 import assert from 'assert';
 import invariant from 'assert';
-import vm from 'vm';
 import fs from 'fs';
 
 import type {
@@ -575,15 +574,14 @@ export class TypeRegistry {
           regexp instanceof RegExp,
           'Expected a RegExp object as an argument',
         );
-        return regexp.toString();
+        return [regexp.source, regexp.flags];
       },
-      regStr_ => {
-        let regStr = regStr_;
-        // Unbox argument.
-        regStr = regStr instanceof String ? regStr.valueOf() : regStr;
-
-        assert(typeof regStr === 'string', 'Expected a string argument.');
-        return vm.runInThisContext(regStr);
+      regexpParts => {
+        assert(
+          Array.isArray(regexpParts) && regexpParts.length === 2,
+          'Expected a tuple of [source, flags]',
+        );
+        return new RegExp(regexpParts[0], regexpParts[1]);
       },
     );
 
