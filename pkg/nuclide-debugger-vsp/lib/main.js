@@ -22,7 +22,6 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {
   listenToRemoteDebugCommands,
   getPythonAutoGenConfig,
-  getNodeAutoGenConfig,
   getOCamlAutoGenConfig,
   getPrepackAutoGenConfig,
 } from './utils';
@@ -40,7 +39,6 @@ class Activation {
     fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
       const isOpenSource = !exists;
       this._registerPythonDebugProvider();
-      this._registerNodeDebugProvider();
       this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerOcamlDebugProvider();
@@ -57,19 +55,6 @@ class Activation {
           'Python',
           connection,
           getPythonAutoGenConfig(),
-        );
-      },
-    });
-  }
-
-  _registerNodeDebugProvider(): void {
-    this._registerDebugProvider({
-      name: 'Node',
-      getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          'Node',
-          connection,
-          getNodeAutoGenConfig(),
         );
       },
     });

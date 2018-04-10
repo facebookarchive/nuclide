@@ -14,10 +14,7 @@ import type {
   VSAdapterExecutableInfo,
   VsAdapterType,
 } from 'nuclide-debugger-common';
-import type {
-  AutoGenConfig,
-  AutoGenProperty,
-} from 'nuclide-debugger-common/types';
+import type {AutoGenConfig} from 'nuclide-debugger-common/types';
 import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
@@ -31,6 +28,7 @@ import {Logger} from 'vscode-debugadapter';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
+import {generatePropertyArray} from 'nuclide-debugger-common/autogen-utils';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,
@@ -65,46 +63,6 @@ export type VspNativeDebuggerAttachBuilderParms = {
   pid?: number,
   sourcePath: string,
 };
-
-function generatePropertyArray(
-  launchOrAttachConfigProperties: Object,
-  required: string[],
-  visible: string[],
-): AutoGenProperty[] {
-  const propertyArray = Object.entries(launchOrAttachConfigProperties)
-    .map(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      const autoGenProperty: AutoGenProperty = {
-        name,
-        type: propertyDetails.type,
-        description: propertyDetails.description,
-        required: required.includes(name),
-        visible: visible.includes(name),
-      };
-      if (typeof propertyDetails.default !== 'undefined') {
-        autoGenProperty.defaultValue = propertyDetails.default;
-      }
-      if (
-        propertyDetails.items != null &&
-        typeof propertyDetails.items.type !== 'undefined'
-      ) {
-        autoGenProperty.itemType = propertyDetails.items.type;
-      }
-      return autoGenProperty;
-    })
-    .sort((p1, p2) => {
-      // TODO (goom): sort all configs, not just ones generated from the json
-      if (p1.required && !p2.required) {
-        return -1;
-      }
-      if (p2.required && !p1.required) {
-        return 1;
-      }
-      return 0;
-    });
-  return propertyArray;
-}
 
 export async function getPythonParLaunchProcessInfo(
   parPath: NuclideUri,
@@ -263,114 +221,6 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
   return {
     launch: autoGenLaunchConfig,
     attach: null,
-  };
-}
-
-export function getNodeAutoGenConfig(): AutoGenConfig {
-  const pkgJson = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.json');
-  const pkgJsonDescriptions = require('../../../modules/nuclide-debugger-vsps/VendorLib/vscode-node-debug2/package.nls.json');
-  const configurationAttributes =
-    pkgJson.contributes.debuggers[1].configurationAttributes;
-  Object.entries(configurationAttributes.launch.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.launch.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.launch.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
-  configurationAttributes.launch.properties.runtimeExecutable = {
-    type: 'string',
-    description:
-      "Runtime to use. Either an absolute path or the name of a runtime available on the PATH. If ommitted 'node' is assumed.",
-    default: '',
-  };
-  configurationAttributes.launch.properties.protocol = {
-    type: 'string',
-    description: '',
-    default: 'inspector',
-  };
-  Object.entries(configurationAttributes.attach.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.attach.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.attach.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
-
-  const launchProperties = {};
-  const launchRequired = ['program', 'cwd'];
-  const launchVisible = launchRequired.concat([
-    'runtimeExecutable',
-    'args',
-    'outFiles',
-    'env',
-    'stopOnEntry',
-  ]);
-  const launchWhitelisted = new Set(
-    launchVisible.concat(['protocol', 'outFiles']),
-  );
-
-  Object.entries(configurationAttributes.launch.properties)
-    .filter(property => launchWhitelisted.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      launchProperties[name] = propertyDetails;
-    });
-
-  const attachProperties = {};
-  const attachRequired = ['port'];
-
-  Object.entries(configurationAttributes.attach.properties).forEach(
-    property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      attachProperties[name] = propertyDetails;
-    },
-  );
-
-  return {
-    launch: {
-      launch: true,
-      vsAdapterType: VsAdapterTypes.NODE,
-      threads: false,
-      properties: generatePropertyArray(
-        launchProperties,
-        launchRequired,
-        launchVisible,
-      ),
-      scriptPropertyName: 'program',
-      cwdPropertyName: 'cwd',
-      scriptExtension: '.js',
-      header: (
-        <p>This is intended to debug node.js files (for node version 6.3+).</p>
-      ),
-    },
-    attach: {
-      launch: false,
-      vsAdapterType: VsAdapterTypes.NODE,
-      threads: false,
-      properties: generatePropertyArray(
-        attachProperties,
-        attachRequired,
-        attachRequired,
-      ),
-      header: <p>Attach to a running node.js process</p>,
-    },
   };
 }
 

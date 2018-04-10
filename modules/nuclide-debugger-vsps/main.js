@@ -31,11 +31,14 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            'VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+            '../atom-ide-debugger-node/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'VendorLib/vscode-node-debug2'),
+      root: nuclideUri.join(
+        __dirname,
+        '../atom-ide-debugger-node/VendorLib/vscode-node-debug2',
+      ),
     },
   ],
   [
