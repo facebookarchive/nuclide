@@ -19,7 +19,6 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import TerminalDashProvider from './TerminalDashProvider';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {
   infoFromUri,
@@ -29,8 +28,6 @@ import {
 } from '../../commons-node/nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
-// $FlowFB
-import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
@@ -167,16 +164,6 @@ class Activation {
     return new UniversalDisposable(() => {
       this._cwd = null;
     });
-  }
-
-  consumeDash(registerProvider: RegisterProvider): IDisposable {
-    const subscription = registerProvider(
-      new TerminalDashProvider({
-        getCwdApi: () => this._cwd,
-      }),
-    );
-    this._subscriptions.add(subscription);
-    return subscription;
   }
 
   _getPathOrCwd(event: Event): ?string {
