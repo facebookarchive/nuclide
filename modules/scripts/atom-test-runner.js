@@ -60,7 +60,7 @@ module.exports = function(params) {
             resolve(statusCode);
             if (err && err.message !== 'not tracking') {
               // eslint-disable-next-line no-console
-              console.log(`temp.cleanup() failed. ${err}`);
+              console.log('temp.cleanup() failed.', err);
             }
           });
         } else {

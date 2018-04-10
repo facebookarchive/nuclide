@@ -119,7 +119,7 @@ export class NuxManager {
           const error = `NuxView #${index} for "${
             nuxTourModel.id
           }" failed to instantiate.`;
-          logger.error(`ERROR: ${error}`);
+          logger.error(`ERROR: ${error}`, err);
           this._track(
             nuxTourModel.id,
             nuxTourModel.name,

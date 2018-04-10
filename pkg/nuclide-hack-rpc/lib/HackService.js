@@ -245,7 +245,7 @@ class HackSingleFileLanguageService {
             .notifyDiagnostics()
             .refCount()
             .catch(error => {
-              logger.error(`Error: notifyDiagnostics ${error}`);
+              logger.error('Error: notifyDiagnostics', error);
               return Observable.empty();
             })
             .filter((hackDiagnostics: HackDiagnosticsMessage) => {

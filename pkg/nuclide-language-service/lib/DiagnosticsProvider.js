@@ -329,7 +329,8 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
         return Observable.fromPromise(languageService)
           .catch(error => {
             this._logger.error(
-              `Error: languageService, ${this._analyticsEventName} ${error}`,
+              `Error: languageService, ${this._analyticsEventName}`,
+              error,
             );
             return Observable.empty();
           })

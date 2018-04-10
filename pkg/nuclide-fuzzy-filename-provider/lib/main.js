@@ -67,7 +67,8 @@ class Activation {
                   );
                 } else {
                   logger.error(
-                    `Error starting fuzzy filename search for ${projectPath}: ${err}`,
+                    `Error starting fuzzy filename search for ${projectPath}:`,
+                    err,
                   );
                   this._disposeSearch(projectPath);
                 }

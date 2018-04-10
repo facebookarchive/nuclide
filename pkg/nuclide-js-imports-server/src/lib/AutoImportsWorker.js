@@ -219,7 +219,7 @@ export function indexDirectory(
       const updateStream = Observable.fromEvent(worker, 'message')
         .takeUntil(
           Observable.fromEvent(worker, 'error').do(error => {
-            logger.warn(`Worker ${workerId} had received ${error}`);
+            logger.warn(`Worker ${workerId} had received`, error);
           }),
         )
         .takeUntil(

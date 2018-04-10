@@ -37,7 +37,7 @@ process.once('exit', code => {
       temp.cleanupSync();
     } catch (err) {
       if (err && err.message !== 'not tracking') {
-        console.log(`temp.cleanup() failed. ${err}`);
+        console.log('temp.cleanup() failed.', err);
       }
     }
   } else {
