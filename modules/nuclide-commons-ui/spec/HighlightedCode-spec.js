@@ -16,9 +16,9 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {
   highlightCode,
-  highlightCodeHTML,
-  HighlightCode,
-} from '../highlightCode';
+  highlightCodeHtml,
+  HighlightedCode,
+} from '../HighlightedCode';
 
 describe('highlightCode', () => {
   let grammar: atom$Grammar;
@@ -79,7 +79,7 @@ describe('highlightCode', () => {
     ]);
   });
 
-  it('becomes HTML using highlightCodeHTML', () => {
+  it('becomes HTML using highlightCodeHtml', () => {
     const EXPECTED = `
       <span class="syntax--source syntax--gfm">
         <span class="syntax--markup syntax--heading syntax--heading-1 syntax--gfm">
@@ -91,13 +91,26 @@ describe('highlightCode', () => {
       </span>
     `.replace(/\s+/g, '');
 
-    const html = highlightCodeHTML(grammar, '#Heading');
+    const html = highlightCodeHtml(grammar, '#Heading');
     expect(html.replace(/\s+/g, '')).toBe(EXPECTED);
 
     const node = document.createElement('div');
-    ReactDOM.render(<HighlightCode grammar={grammar} code="#Heading" />, node);
-    expect(node.innerHTML.replace(/\s+/g, '')).toBe(
-      `<pre><code>${EXPECTED}</code></pre>`,
+    ReactDOM.render(
+      <HighlightedCode grammar={grammar} code="#Heading" />,
+      node,
     );
+
+    expect(node.innerHTML.replace(/\s+/g, '')).toContain(EXPECTED);
+  });
+
+  it('escapes HTML in HTML', () => {
+    const EXPECTED = `
+      <span class="syntax--source syntax--gfm">
+        &lt;&gt;
+      </span>
+    `.replace(/\s+/g, '');
+
+    const html = highlightCodeHtml(grammar, '<>');
+    expect(html.replace(/\s+/g, '')).toBe(EXPECTED);
   });
 });
