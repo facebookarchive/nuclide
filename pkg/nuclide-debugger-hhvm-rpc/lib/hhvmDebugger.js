@@ -1,3 +1,33 @@
+'use strict';
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _child_process = _interopRequireDefault(require('child_process'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _vscodeDebugadapter;
+
+function _load_vscodeDebugadapter() {
+  return _vscodeDebugadapter = require('vscode-debugadapter');
+}
+
+var _net = _interopRequireDefault(require('net'));
+
+var _os = _interopRequireDefault(require('os'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,38 +35,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import * as DebugProtocol from 'vscode-debugprotocol';
-import child_process from 'child_process';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  OutputEvent,
-  launchRequest,
-  attachRequest,
-  request,
-} from 'vscode-debugadapter';
-import net from 'net';
-import os from 'os';
 
 const TWO_CRLF = '\r\n\r\n';
 const CONTENT_LENGTH_PATTERN = new RegExp('Content-Length: (\\d+)');
 const DEFAULT_HHVM_DEBUGGER_PORT = 8999;
 
-type DebuggerWriteCallback = (data: string) => void;
-
 class HHVMDebuggerWrapper {
-  _sequenceNumber: number;
-  _currentOutputData: string;
-  _currentInputData: string;
-  _currentContentLength: number;
-  _bufferedRequests: Array<request>;
-  _debugging: boolean;
-  _debuggerWriteCallback: ?DebuggerWriteCallback;
-  _nonLoaderBreakSeen: boolean;
-  _initializeArgs: DebugProtocol.InitializeRequestArguments;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -47,7 +54,7 @@ class HHVMDebuggerWrapper {
     this._debugging = false;
     this._debuggerWriteCallback = null;
     this._nonLoaderBreakSeen = false;
-    this._initializeArgs = {adapterID: 'hhvm'};
+    this._initializeArgs = { adapterID: 'hhvm' };
   }
 
   debug() {
@@ -61,92 +68,81 @@ class HHVMDebuggerWrapper {
     });
   }
 
-  _attachTarget(attachMessage: attachRequest, retries: number = 0) {
+  _attachTarget(attachMessage, retries = 0) {
     if (attachMessage.arguments == null) {
       attachMessage.arguments = {};
     }
     const args = attachMessage.arguments;
-    const attachPort =
-      args.debugPort != null
-        ? parseInt(args.debugPort, 10)
-        : DEFAULT_HHVM_DEBUGGER_PORT;
+    const attachPort = args.debugPort != null ? parseInt(args.debugPort, 10) : DEFAULT_HHVM_DEBUGGER_PORT;
 
     if (Number.isNaN(attachPort)) {
       throw new Error('Invalid HHVM debug port specified.');
     }
 
     if (args.sandboxUser == null || args.sandboxUser.trim() === '') {
-      args.sandboxUser = os.userInfo().username;
+      args.sandboxUser = _os.default.userInfo().username;
     }
 
-    const socket = new net.Socket();
-    socket
-      .once('connect', () => {
-        socket.on('data', chunk => {
-          this._processDebuggerMessage(chunk);
-        });
-
-        socket.on('close', () => {
-          this._writeOutputWithHeader({
-            seq: ++this._sequenceNumber,
-            type: 'event',
-            event: 'hhvmConnectionDied',
-          });
-        });
-
-        socket.on('disconnect', () => {
-          process.stderr.write(
-            'The connection to the debug target has been closed.\n',
-          );
-          process.exit(0);
-        });
-
-        const callback = (data: string) => {
-          socket.write(data + '\0', 'utf8');
-        };
-
-        callback(JSON.stringify(attachMessage));
-        this._debuggerWriteCallback = callback;
-        this._forwardBufferedMessages();
-        this._debugging = true;
-
-        const attachResponse: attachResponse = {
-          request_seq: attachMessage.seq,
-          success: true,
-          command: attachMessage.command,
-        };
-        this._writeResponseMessage(attachResponse);
-      })
-      .on('error', error => {
-        if (retries >= 5) {
-          process.stderr.write(
-            'Error communicating with debugger target: ' +
-              error.toString() +
-              '\n',
-          );
-
-          try {
-            // $FlowFB
-            const fbConfig = require('./fbConfig');
-            process.stderr.write(fbConfig.getRestartInstructions() + '\n');
-          } catch (_) {}
-          process.exit(error.code);
-        } else {
-          // When reconnecting to a target we just disconnected from, especially
-          // in the case of an unclean disconnection, it may take a moment
-          // for HHVM to receive a TCP socket error and realize the client is
-          // gone. Rather than failing to reconnect, wait a moment and try
-          // again to provide a better user experience.
-          setTimeout(() => {
-            this._attachTarget(attachMessage, retries + 1);
-          }, 2000);
-        }
+    const socket = new _net.default.Socket();
+    socket.once('connect', () => {
+      socket.on('data', chunk => {
+        this._processDebuggerMessage(chunk);
       });
 
-    socket.connect({port: attachPort, host: 'localhost'});
+      socket.on('close', () => {
+        this._writeOutputWithHeader({
+          seq: ++this._sequenceNumber,
+          type: 'event',
+          event: 'hhvmConnectionDied'
+        });
+      });
+
+      socket.on('disconnect', () => {
+        process.stderr.write('The connection to the debug target has been closed.\n');
+        process.exit(0);
+      });
+
+      const callback = data => {
+        socket.write(data + '\0', 'utf8');
+      };
+
+      callback(JSON.stringify(attachMessage));
+      this._debuggerWriteCallback = callback;
+      this._forwardBufferedMessages();
+      this._debugging = true;
+
+      const attachResponse = {
+        request_seq: attachMessage.seq,
+        success: true,
+        command: attachMessage.command
+      };
+      this._writeResponseMessage(attachResponse);
+    }).on('error', error => {
+      if (retries >= 5) {
+        process.stderr.write('Error communicating with debugger target: ' + error.toString() + '\n');
+
+        try {
+          // $FlowFB
+          const fbConfig = require('./fbConfig');
+          process.stderr.write(fbConfig.getRestartInstructions() + '\n');
+        } catch (_) {}
+        process.exit(error.code);
+      } else {
+        // When reconnecting to a target we just disconnected from, especially
+        // in the case of an unclean disconnection, it may take a moment
+        // for HHVM to receive a TCP socket error and realize the client is
+        // gone. Rather than failing to reconnect, wait a moment and try
+        // again to provide a better user experience.
+        setTimeout(() => {
+          this._attachTarget(attachMessage, retries + 1);
+        }, 2000);
+      }
+    });
+
+    socket.connect({ port: attachPort, host: 'localhost' });
   }
 
-  _launchTarget(launchMessage: launchRequest) {
+  _launchTarget(launchMessage) {
     if (launchMessage.arguments == null) {
       launchMessage.arguments = {};
     }
@@ -157,7 +153,7 @@ class HHVMDebuggerWrapper {
     }
 
     if (args.sandboxUser == null || args.sandboxUser.trim() === '') {
-      args.sandboxUser = os.userInfo().username;
+      args.sandboxUser = _os.default.userInfo().username;
     }
 
     const hhvmArgs = args.hhvmArgs;
@@ -167,32 +163,28 @@ class HHVMDebuggerWrapper {
       // STDIN, STDOUT and STDERR are the actual PHP streams.
       // If launchMessage.noDebug is specified, start the child but don't
       // connect the debugger fd pipe.
-      stdio: Boolean(launchMessage.noDebug)
-        ? ['pipe', 'pipe', 'pipe']
-        : ['pipe', 'pipe', 'pipe', 'pipe'],
+      stdio: Boolean(launchMessage.noDebug) ? ['pipe', 'pipe', 'pipe'] : ['pipe', 'pipe', 'pipe', 'pipe'],
       // When the wrapper exits, so does the target.
       detached: false,
-      env: process.env,
+      env: process.env
     };
 
-    const targetProcess = child_process.spawn(hhvmPath, hhvmArgs, options);
+    const targetProcess = _child_process.default.spawn(hhvmPath, hhvmArgs, options);
 
     // Exit with the same error code the target exits with.
     targetProcess.on('exit', code => process.exit(code));
-    targetProcess.on('error', error =>
-      process.stderr.write(error.toString() + '\n'),
-    );
+    targetProcess.on('error', error => process.stderr.write(error.toString() + '\n'));
 
     // Wrap any stdout from the target into a VS Code stdout event.
     targetProcess.stdout.on('data', chunk => {
-      const block: string = chunk.toString();
+      const block = chunk.toString();
       this._writeOutputEvent('stdout', block);
     });
     targetProcess.stdout.on('error', () => {});
 
     // Wrap any stderr from the target into a VS Code stderr event.
     targetProcess.stderr.on('data', chunk => {
-      const block: string = chunk.toString();
+      const block = chunk.toString();
       this._writeOutputEvent('stderr', block);
     });
     targetProcess.stderr.on('error', () => {});
@@ -204,7 +196,7 @@ class HHVMDebuggerWrapper {
 
     // Read data from the debugger client on stdin and forward to the
     // debugger engine in the target.
-    const callback = (data: string) => {
+    const callback = data => {
       targetProcess.stdio[3].write(data + '\0', 'utf8');
     };
 
@@ -223,7 +215,7 @@ class HHVMDebuggerWrapper {
     }
   }
 
-  _processClientMessage(chunk: Buffer) {
+  _processClientMessage(chunk) {
     this._currentInputData += chunk.toString();
     while (true) {
       if (this._currentContentLength === 0) {
@@ -253,23 +245,20 @@ class HHVMDebuggerWrapper {
     }
   }
 
-  _translateNuclideRequest(requestMsg: request): string {
+  _translateNuclideRequest(requestMsg) {
     // Nuclide has some extension messages that are not actually part of the
     // VS Code Debug protocol. These are prefixed with "nuclide_" to indicate
     // that they are non-standard requests. Since the HHVM side is agnostic
     // to what IDE it is talking to, these same commands (if they are available)
     // are actually prefixed with a more generic 'fb_' so convert.
-    if (
-      requestMsg.command != null &&
-      requestMsg.command.startsWith('nuclide_')
-    ) {
+    if (requestMsg.command != null && requestMsg.command.startsWith('nuclide_')) {
       requestMsg.command = requestMsg.command.replace('nuclide_', 'fb_');
       return JSON.stringify(requestMsg);
     }
     return JSON.stringify(requestMsg);
   }
 
-  _handleWrapperRequest(requestMsg: request): boolean {
+  _handleWrapperRequest(requestMsg) {
     // Certain messages should be handled in the wrapper rather than forwarding
     // to HHVM.
     if (requestMsg.command != null) {
@@ -281,13 +270,11 @@ class HHVMDebuggerWrapper {
             success: true,
             command: requestMsg.command,
             body: {
-              exceptionBreakpointFilters: [
-                {
-                  default: false,
-                  label: 'Break On All Exceptions',
-                  filter: 'all',
-                },
-              ],
+              exceptionBreakpointFilters: [{
+                default: false,
+                label: 'Break On All Exceptions',
+                filter: 'all'
+              }],
               supportsLoadedSourcesRequest: false,
               supportTerminateDebuggee: false,
               supportsExceptionOptions: true,
@@ -308,15 +295,15 @@ class HHVMDebuggerWrapper {
               supportsStepInTargetsRequest: false,
 
               // Experimental support for terminate thread
-              supportsTerminateThreadsRequest: true,
-            },
+              supportsTerminateThreadsRequest: true
+            }
           });
           break;
         case 'disconnect':
           this._writeResponseMessage({
             request_seq: requestMsg.seq,
             success: true,
-            command: requestMsg.command,
+            command: requestMsg.command
           });
 
           // Exit this process, which will also result in the child being killed
@@ -325,12 +312,12 @@ class HHVMDebuggerWrapper {
           process.exit(0);
           return true;
         case 'launch':
-          const launchMessage: launchRequest = requestMsg;
+          const launchMessage = requestMsg;
           this._launchTarget(launchMessage);
           return true;
 
         case 'attach':
-          const attachMessage: attachRequest = requestMsg;
+          const attachMessage = requestMsg;
           this._attachTarget(attachMessage);
           return true;
         default:
@@ -348,7 +335,7 @@ class HHVMDebuggerWrapper {
     return false;
   }
 
-  _processDebuggerMessage(chunk: Buffer) {
+  _processDebuggerMessage(chunk) {
     this._currentOutputData += chunk.toString();
 
     // The messages from HHVM are each terminated by a NULL character.
@@ -363,9 +350,7 @@ class HHVMDebuggerWrapper {
         obj.seq = ++this._sequenceNumber;
         this._writeOutputWithHeader(obj);
       } catch (e) {
-        process.stderr.write(
-          `Error parsing message from target: ${e.toString()}: ${message}\n`,
-        );
+        process.stderr.write(`Error parsing message from target: ${e.toString()}: ${message}\n`);
       }
 
       // Advance to idx + 1 (lose the NULL char)
@@ -389,31 +374,28 @@ class HHVMDebuggerWrapper {
     // Chop the Content-Length header off the input data and start looking for
     // the message.
     this._currentContentLength = parseInt(match[1], 10);
-    this._currentInputData = this._currentInputData.substr(
-      idx + TWO_CRLF.length,
-    );
+    this._currentInputData = this._currentInputData.substr(idx + TWO_CRLF.length);
     ++this._sequenceNumber;
   }
 
-  _writeOutputEvent(eventType: string, message: string) {
-    const outputEvent: OutputEvent = {
+  _writeOutputEvent(eventType, message) {
+    const outputEvent = {
       seq: ++this._sequenceNumber,
       type: 'event',
       event: 'output',
       body: {
         category: eventType,
-        output: message,
-      },
+        output: message
+      }
     };
     this._writeOutputWithHeader(outputEvent);
   }
 
-  _writeResponseMessage(message: Object) {
-    this._writeOutputWithHeader({
+  _writeResponseMessage(message) {
+    this._writeOutputWithHeader(Object.assign({
       seq: ++this._sequenceNumber,
-      type: 'response',
-      ...message,
-    });
+      type: 'response'
+    }, message));
   }
 
   // Helper to apply compatibility fixes and errata to messages coming
@@ -421,72 +403,69 @@ class HHVMDebuggerWrapper {
   // more quickly than a new HHVM release, this allows us to modify
   // behavior and fix compatibility bugs before presenting the messages
   // to the client.
-  _applyCompatabilityFixes(message: Object) {
+  _applyCompatabilityFixes(message) {
     if (message.type === 'response') {
       switch (message.command) {
-        case 'threads': {
-          if (Array.isArray(message.body)) {
-            // TODO(ericblue): Fix threads response on the HHVM side.
-            message.body = {threads: message.body};
-          }
-          break;
-        }
-        case 'stackTrace': {
-          message.body.stackFrames.forEach(stackFrame => {
-            if (stackFrame.source != null) {
-              if (stackFrame.source.path === '<unknown>') {
-                // TODO(ericblue): Delete source when there's none known.
-                delete stackFrame.source;
-              } else if (nuclideUri.isAbsolute(stackFrame.source.name)) {
-                // TODO(ericblue): source names shouldn't be absolute paths.
-                stackFrame.source.name = nuclideUri.basename(
-                  stackFrame.source.name,
-                );
-              }
+        case 'threads':
+          {
+            if (Array.isArray(message.body)) {
+              // TODO(ericblue): Fix threads response on the HHVM side.
+              message.body = { threads: message.body };
             }
-          });
-          break;
-        }
+            break;
+          }
+        case 'stackTrace':
+          {
+            message.body.stackFrames.forEach(stackFrame => {
+              if (stackFrame.source != null) {
+                if (stackFrame.source.path === '<unknown>') {
+                  // TODO(ericblue): Delete source when there's none known.
+                  delete stackFrame.source;
+                } else if ((_nuclideUri || _load_nuclideUri()).default.isAbsolute(stackFrame.source.name)) {
+                  // TODO(ericblue): source names shouldn't be absolute paths.
+                  stackFrame.source.name = (_nuclideUri || _load_nuclideUri()).default.basename(stackFrame.source.name);
+                }
+              }
+            });
+            break;
+          }
         default:
           // No fixes needed.
           break;
       }
     } else if (message.type === 'event') {
       switch (message.event) {
-        case 'output': {
-          // Nuclide console requires all output messages to end with a newline
-          // to work properly.
-          if (message.body != null && !message.body.output.endsWith('\n')) {
-            message.body.output += '\n';
-          }
+        case 'output':
+          {
+            // Nuclide console requires all output messages to end with a newline
+            // to work properly.
+            if (message.body != null && !message.body.output.endsWith('\n')) {
+              message.body.output += '\n';
+            }
 
-          // Map custom output types onto explicit protocol types.
-          switch (message.body.category) {
-            case 'warning':
-              message.body.category = 'console';
-              break;
-            case 'error':
-              message.body.category = 'stderr';
-              break;
-            case 'stdout':
-            case 'info':
-              message.body.category = 'log';
-              break;
+            // Map custom output types onto explicit protocol types.
+            switch (message.body.category) {
+              case 'warning':
+                message.body.category = 'console';
+                break;
+              case 'error':
+                message.body.category = 'stderr';
+                break;
+              case 'stdout':
+              case 'info':
+                message.body.category = 'log';
+                break;
+            }
+            break;
           }
-          break;
-        }
-        case 'stopped': {
-          if (message.body.threadCausedFocus == null) {
-            const reason = (message.body.reason || '')
-              .toLowerCase()
-              .split(' ')[0];
-            message.body.threadCausedFocus =
-              reason === 'step' ||
-              reason === 'breakpoint' ||
-              reason === 'exception';
+        case 'stopped':
+          {
+            if (message.body.threadCausedFocus == null) {
+              const reason = (message.body.reason || '').toLowerCase().split(' ')[0];
+              message.body.threadCausedFocus = reason === 'step' || reason === 'breakpoint' || reason === 'exception';
+            }
+            break;
           }
-          break;
-        }
         default:
           // No fixes needed.
           break;
@@ -494,7 +473,7 @@ class HHVMDebuggerWrapper {
     }
   }
 
-  _writeOutputWithHeader(message: Object) {
+  _writeOutputWithHeader(message) {
     this._applyCompatabilityFixes(message);
 
     // TODO(ericblue): Fix breakpoint events format on the HHVM side.
@@ -507,15 +486,8 @@ class HHVMDebuggerWrapper {
       message.body.breakpoint.column = 1;
     }
 
-    if (
-      !this._nonLoaderBreakSeen &&
-      message.type === 'event' &&
-      message.event === 'stopped'
-    ) {
-      if (
-        message.body != null &&
-        message.body.description !== 'execution paused'
-      ) {
+    if (!this._nonLoaderBreakSeen && message.type === 'event' && message.event === 'stopped') {
+      if (message.body != null && message.body.description !== 'execution paused') {
         // This is the first real (non-loader-break) stopped event.
         this._nonLoaderBreakSeen = true;
       } else {
@@ -527,12 +499,7 @@ class HHVMDebuggerWrapper {
     // Skip forwarding non-focused thread stop events to VSCode's UI
     // to avoid confusing the UX on what thread to focus.
     // https://github.com/Microsoft/vscode-debugadapter-node/issues/147
-    if (
-      message.type === 'event' &&
-      message.event === 'stopped' &&
-      !message.body.threadCausedFocus &&
-      !this._initializeArgs.supportsThreadCausedFocus
-    ) {
+    if (message.type === 'event' && message.event === 'stopped' && !message.body.threadCausedFocus && !this._initializeArgs.supportsThreadCausedFocus) {
       return;
     }
 

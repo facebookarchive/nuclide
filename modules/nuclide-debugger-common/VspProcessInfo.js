@@ -1,68 +1,32 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  ControlButtonSpecification,
-  DebuggerCapabilities,
-  DebuggerConfigAction,
-  DebuggerProperties,
-  IProcessConfig,
-  IVspInstance,
-  MessageProcessor,
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type MessagePreprocessors = {
-  vspAdapterPreprocessor: MessageProcessor,
-  vspClientPreprocessor: MessageProcessor,
-};
+var _vscodeDebugprotocol;
 
-type CustomDebuggerCapabilities = {
-  threads?: boolean,
-};
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
 
-type CustomDebuggerProperties = {
-  customControlButtons?: Array<ControlButtonSpecification>,
-  threadsComponentTitle?: string,
-};
+var _UniversalDisposable;
 
-export default class VspProcessInfo {
-  _targetUri: NuclideUri;
-  _debugMode: DebuggerConfigAction;
-  _adapterType: VsAdapterType;
-  _adapterExecutable: VSAdapterExecutableInfo;
-  _config: Object;
-  _customCapabilities: CustomDebuggerCapabilities;
-  _customProperties: CustomDebuggerProperties;
-  _preprocessors: ?MessagePreprocessors;
-  _vspInstance: ?IVspInstance;
-  _disposables: UniversalDisposable;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-  constructor(
-    targetUri: NuclideUri,
-    debugMode: DebuggerConfigAction,
-    adapterType: VsAdapterType,
-    adapterExecutable: VSAdapterExecutableInfo,
-    config: Object,
-    customCapabilities?: ?CustomDebuggerCapabilities,
-    customProperties?: ?CustomDebuggerProperties,
-    preprocessors?: ?MessagePreprocessors,
-  ) {
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class VspProcessInfo {
+
+  constructor(targetUri, debugMode, adapterType, adapterExecutable, config, customCapabilities, customProperties, preprocessors) {
     this._targetUri = targetUri;
     this._debugMode = debugMode;
     this._adapterType = adapterType;
@@ -71,63 +35,60 @@ export default class VspProcessInfo {
     this._customCapabilities = customCapabilities || {};
     this._customProperties = customProperties || {};
     this._preprocessors = preprocessors;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  setVspDebuggerInstance(vspInstance: IVspInstance): void {
+  setVspDebuggerInstance(vspInstance) {
     this._vspInstance = vspInstance;
   }
 
-  _getDebuggerCapabilities(): DebuggerCapabilities {
-    return {
-      threads: false,
-      ...this._customCapabilities,
-    };
+  _getDebuggerCapabilities() {
+    return Object.assign({
+      threads: false
+    }, this._customCapabilities);
   }
 
-  _getDebuggerProps(): DebuggerProperties {
-    return {
+  _getDebuggerProps() {
+    return Object.assign({
       customControlButtons: [],
-      threadsComponentTitle: 'Threads',
-      ...this._customProperties,
-    };
+      threadsComponentTitle: 'Threads'
+    }, this._customProperties);
   }
 
-  async customRequest(
-    request: string,
-    args: any,
-  ): Promise<DebugProtocol.CustomResponse> {
-    if (this._vspInstance != null) {
-      return this._vspInstance.customRequest(request, args);
-    } else {
-      throw new Error('Cannot send custom requests to inactive debug sessions');
-    }
+  customRequest(request, args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._vspInstance != null) {
+        return _this._vspInstance.customRequest(request, args);
+      } else {
+        throw new Error('Cannot send custom requests to inactive debug sessions');
+      }
+    })();
   }
 
-  observeCustomEvents(): Observable<DebugProtocol.DebugEvent> {
+  observeCustomEvents() {
     if (this._vspInstance != null) {
       return this._vspInstance.observeCustomEvents();
     } else {
-      return Observable.throw(
-        new Error('Cannot send custom requests to inactive debug sessions'),
-      );
+      return _rxjsBundlesRxMinJs.Observable.throw(new Error('Cannot send custom requests to inactive debug sessions'));
     }
   }
 
-  addCustomDisposable(disposable: IDisposable): void {
+  addCustomDisposable(disposable) {
     this._disposables.add(disposable);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._vspInstance = null;
   }
 
-  getProcessConfig(): IProcessConfig {
+  getProcessConfig() {
     return {
       targetUri: this._targetUri,
       debugMode: this._debugMode,
@@ -136,18 +97,23 @@ export default class VspProcessInfo {
       capabilities: this._getDebuggerCapabilities(),
       properties: this._getDebuggerProps(),
       config: this._config,
-      clientPreprocessor:
-        this._preprocessors == null
-          ? null
-          : this._preprocessors.vspClientPreprocessor,
-      adapterPreprocessor:
-        this._preprocessors == null
-          ? null
-          : this._preprocessors.vspAdapterPreprocessor,
+      clientPreprocessor: this._preprocessors == null ? null : this._preprocessors.vspClientPreprocessor,
+      adapterPreprocessor: this._preprocessors == null ? null : this._preprocessors.vspAdapterPreprocessor
     };
   }
 
-  getConfig(): Object {
+  getConfig() {
     return this._config;
   }
 }
+exports.default = VspProcessInfo; /**
+                                   * Copyright (c) 2017-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the BSD-style license found in the
+                                   * LICENSE file in the root directory of this source tree. An additional grant
+                                   * of patent rights can be found in the PATENTS file in the same directory.
+                                   *
+                                   * 
+                                   * @format
+                                   */

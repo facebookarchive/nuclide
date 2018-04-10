@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isPending = isPending;
+exports.observePendingStateEnd = observePendingStateEnd;
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,25 +20,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-
-export function isPending(paneItem: atom$PaneItem) {
+function isPending(paneItem) {
   const pane = atom.workspace.paneForItem(paneItem);
   return pane && pane.getPendingItem() === paneItem;
 }
 
-export function observePendingStateEnd(paneItem: atom$PaneItem) {
-  invariant(
-    typeof paneItem.onDidTerminatePendingState === 'function',
-    'paneItem must implement onDidTerminatePendingState method',
-  );
+function observePendingStateEnd(paneItem) {
+  if (!(typeof paneItem.onDidTerminatePendingState === 'function')) {
+    throw new Error('paneItem must implement onDidTerminatePendingState method');
+  }
 
-  return observableFromSubscribeFunction(
-    paneItem.onDidTerminatePendingState.bind(paneItem),
-  );
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(paneItem.onDidTerminatePendingState.bind(paneItem));
 }

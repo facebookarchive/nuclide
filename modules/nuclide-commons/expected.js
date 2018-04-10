@@ -1,3 +1,8 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +11,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -16,63 +21,38 @@
  * the subscription.
  */
 
-type ExpectedError<T> = {
-  isError: true,
-  isPending: false,
-  error: Error,
-  getOrDefault: (def: T) => T,
-};
-
-type ExpectedValue<T> = {
-  isError: false,
-  isPending: false,
-  value: T,
-  getOrDefault: (def: T) => T,
-};
-
-type ExpectedPendingValue<T> = {
-  isError: false,
-  isPending: true,
-  value: T,
-  getOrDefault: (def: T) => T,
-};
-
-export type Expected<T> =
-  | ExpectedError<T>
-  | ExpectedValue<T>
-  | ExpectedPendingValue<T>;
-
-export class Expect {
-  static error<T>(error: Error): ExpectedError<T> {
+class Expect {
+  static error(error) {
     return {
       isError: true,
       isPending: false,
       error,
-      getOrDefault(def: T): T {
+      getOrDefault(def) {
         return def;
-      },
+      }
     };
   }
 
-  static value<T>(value: T): ExpectedValue<T> {
+  static value(value) {
     return {
       isError: false,
       isPending: false,
       value,
-      getOrDefault(def: T): T {
+      getOrDefault(def) {
         return this.value;
-      },
+      }
     };
   }
 
-  static pendingValue<T>(value: T): ExpectedPendingValue<T> {
+  static pendingValue(value) {
     return {
       isError: false,
       isPending: true,
       value,
-      getOrDefault(def: T): T {
+      getOrDefault(def) {
         return this.value;
-      },
+      }
     };
   }
 }
+exports.Expect = Expect;

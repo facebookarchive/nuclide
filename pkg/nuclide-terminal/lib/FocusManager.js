@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FocusManager = exports.LastItemManager = undefined;
+
+var _terminalView;
+
+function _load_terminalView() {
+  return _terminalView = require('./terminal-view.js');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('terminal-focus-manager');
+
+// These could be individual fields of LastItemManager, but by grouping them,
+// we ensure they are always assigned together.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,25 +34,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {TerminalView} from './terminal-view.js';
-import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
-
-const logger = getLogger('terminal-focus-manager');
-
-// These could be individual fields of LastItemManager, but by grouping them,
-// we ensure they are always assigned together.
-type LastItem<T> = {
-  item: T,
-  onWillRemoveSubscription: IDisposable,
-};
-
-export class LastItemManager<T> {
-  _last: ?LastItem<T> = null;
+class LastItemManager {
+  constructor() {
+    this._last = null;
+  }
 
   dispose() {
     if (this._last != null) {
@@ -31,11 +49,11 @@ export class LastItemManager<T> {
     }
   }
 
-  get item(): ?T {
+  get item() {
     return this._last != null ? this._last.item : null;
   }
 
-  onActiveItem(item: T) {
+  onActiveItem(item) {
     const pane = atom.workspace.paneForItem(item);
     if (pane == null) {
       logger.error(`Suspicious: no pane for item: ${String(item)}`);
@@ -60,23 +78,19 @@ export class LastItemManager<T> {
         }
       }
     });
-    this._last = {item, onWillRemoveSubscription};
+    this._last = { item, onWillRemoveSubscription };
   }
 }
 
-export class FocusManager {
-  _observeActivePaneItemSubscription: IDisposable;
-  _lastTerminal: LastItemManager<TerminalView> = new LastItemManager();
-  _observeActiveTextEditorSubscription: IDisposable;
-  _lastEditor: LastItemManager<atom$TextEditor> = new LastItemManager();
+exports.LastItemManager = LastItemManager;
+class FocusManager {
 
   constructor() {
-    this._observeActivePaneItemSubscription = atom.workspace.observeActivePaneItem(
-      this._onActivePaneItem.bind(this),
-    );
-    this._observeActiveTextEditorSubscription = atom.workspace.observeActiveTextEditor(
-      this._onActiveTextEditor.bind(this),
-    );
+    this._lastTerminal = new LastItemManager();
+    this._lastEditor = new LastItemManager();
+
+    this._observeActivePaneItemSubscription = atom.workspace.observeActivePaneItem(this._onActivePaneItem.bind(this));
+    this._observeActiveTextEditorSubscription = atom.workspace.observeActiveTextEditor(this._onActiveTextEditor.bind(this));
   }
 
   dispose() {
@@ -87,8 +101,8 @@ export class FocusManager {
   }
 
   toggleFocus() {
-    track('toggle-terminal-focus');
-    if (atom.workspace.getActivePaneItem() instanceof TerminalView) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('toggle-terminal-focus');
+    if (atom.workspace.getActivePaneItem() instanceof (_terminalView || _load_terminalView()).TerminalView) {
       const editor = this._lastEditor.item;
       if (editor != null) {
         focus(editor);
@@ -98,13 +112,13 @@ export class FocusManager {
     }
   }
 
-  _onActivePaneItem(item: ?mixed) {
-    if (item instanceof TerminalView) {
+  _onActivePaneItem(item) {
+    if (item instanceof (_terminalView || _load_terminalView()).TerminalView) {
       this._lastTerminal.onActiveItem(item);
     }
   }
 
-  _onActiveTextEditor(editor: TextEditor) {
+  _onActiveTextEditor(editor) {
     // Apparently `editor` can be null on startup.
     if (editor != null && editor !== this._lastEditor.item) {
       this._lastEditor.onActiveItem(editor);
@@ -130,8 +144,9 @@ export class FocusManager {
   }
 }
 
-/** Focus the specified Terminal. */
-function focus(item: Object) {
+exports.FocusManager = FocusManager; /** Focus the specified Terminal. */
+
+function focus(item) {
   const pane = atom.workspace.paneForItem(item);
   if (pane == null) {
     return;
@@ -147,10 +162,10 @@ function focus(item: Object) {
  * Traverses the panes and pane items and returns the first TerminalView it
  * finds, if any.
  */
-function findTerminal(): ?TerminalView {
+function findTerminal() {
   for (const pane of atom.workspace.getPanes()) {
     for (const item of pane.getItems()) {
-      if (item instanceof TerminalView) {
+      if (item instanceof (_terminalView || _load_terminalView()).TerminalView) {
         return item;
       }
     }

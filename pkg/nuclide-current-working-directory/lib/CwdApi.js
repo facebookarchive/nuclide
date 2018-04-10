@@ -1,70 +1,82 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Directory} from '../../nuclide-remote-connection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {memoize} from 'lodash';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _memoize2;
+
+function _load_memoize() {
+  return _memoize2 = _interopRequireDefault(require('lodash/memoize'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('../../nuclide-file-tree/lib/FileTreeHelpers'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {BehaviorSubject, Observable, ReplaySubject} from 'rxjs';
+class CwdApi {
 
-export default class CwdApi implements nuclide$CwdApi {
-  _explicitlySetPaths: BehaviorSubject<?string>;
-  _disposed: ReplaySubject<void> = new ReplaySubject(1);
+  constructor(initialPath) {
+    this._disposed = new _rxjsBundlesRxMinJs.ReplaySubject(1);
+    this._getPaths = (0, (_memoize2 || _load_memoize()).default)(() => {
+      // Since adding and removing projects can affect the validity of cwdPath, we need to re-query
+      // every time it happens.
+      const projectPathChanges = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.project.onDidChangePaths(cb)).mapTo(null).share();
 
-  constructor(initialPath: ?string) {
-    this._explicitlySetPaths = new BehaviorSubject(initialPath);
+      return _rxjsBundlesRxMinJs.Observable.merge(this._explicitlySetPaths, projectPathChanges).map(() => this.getCwd()).distinctUntilChanged().takeUntil(this._disposed);
+    });
+
+    this._explicitlySetPaths = new _rxjsBundlesRxMinJs.BehaviorSubject(initialPath);
   }
 
-  setCwd(path: string): void {
+  setCwd(path) {
     if (getDirectory(path) == null) {
       throw new Error(`Path does not belong to a project root: ${path}`);
     }
     this._explicitlySetPaths.next(path);
   }
 
-  observeCwd(callback: (path: ?string) => void): IDisposable {
-    return new UniversalDisposable(
-      this._getPaths().subscribe(path => {
-        callback(path);
-      }),
-    );
+  observeCwd(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._getPaths().subscribe(path => {
+      callback(path);
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposed.next();
   }
 
   /**
    * Create an observable that represents the CWD path changes.
    */
-  _getPaths = memoize(() => {
-    // Since adding and removing projects can affect the validity of cwdPath, we need to re-query
-    // every time it happens.
-    const projectPathChanges = observableFromSubscribeFunction(cb =>
-      atom.project.onDidChangePaths(cb),
-    )
-      .mapTo(null)
-      .share();
 
-    return Observable.merge(this._explicitlySetPaths, projectPathChanges)
-      .map(() => this.getCwd())
-      .distinctUntilChanged()
-      .takeUntil(this._disposed);
-  });
 
-  _getDefaultPath(): ?string {
+  _getDefaultPath() {
     for (const directory of atom.project.getDirectories()) {
       if (isValidDirectory(directory)) {
         return directory.getPath();
@@ -73,7 +85,7 @@ export default class CwdApi implements nuclide$CwdApi {
     return null;
   }
 
-  getCwd(): ?string {
+  getCwd() {
     if (isValidDirectoryPath(this._explicitlySetPaths.getValue())) {
       return this._explicitlySetPaths.getValue();
     } else if (isValidDirectoryPath(this._getDefaultPath())) {
@@ -83,7 +95,18 @@ export default class CwdApi implements nuclide$CwdApi {
   }
 }
 
-function getDirectory(path: ?string): ?Directory {
+exports.default = CwdApi; /**
+                           * Copyright (c) 2015-present, Facebook, Inc.
+                           * All rights reserved.
+                           *
+                           * This source code is licensed under the license found in the LICENSE file in
+                           * the root directory of this source tree.
+                           *
+                           * 
+                           * @format
+                           */
+
+function getDirectory(path) {
   if (path == null) {
     return null;
   }
@@ -92,20 +115,20 @@ function getDirectory(path: ?string): ?Directory {
       continue;
     }
     const dirPath = directory.getPath();
-    if (nuclideUri.contains(dirPath, path)) {
-      const relative = nuclideUri.relative(dirPath, path);
+    if ((_nuclideUri || _load_nuclideUri()).default.contains(dirPath, path)) {
+      const relative = (_nuclideUri || _load_nuclideUri()).default.relative(dirPath, path);
       return directory.getSubdirectory(relative);
     }
   }
 }
 
-function isValidDirectoryPath(path: ?string): boolean {
+function isValidDirectoryPath(path) {
   return getDirectory(path) != null;
 }
 
-function isValidDirectory(directory: ?Directory): boolean {
+function isValidDirectory(directory) {
   if (directory == null) {
     return true;
   }
-  return FileTreeHelpers.isValidDirectory(directory);
+  return (_FileTreeHelpers || _load_FileTreeHelpers()).default.isValidDirectory(directory);
 }

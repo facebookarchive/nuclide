@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.JavaDebuggerDevicePanelProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('../../commons-atom/debugger');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,66 +30,50 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from '../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NuclideJavaDebuggerProvider} from './types';
+class JavaDebuggerDevicePanelProvider {
 
-import {Observable} from 'rxjs';
-import {getDebuggerService} from '../../commons-atom/debugger';
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-export class JavaDebuggerDevicePanelProvider
-  implements DeviceProcessTaskProvider {
-  _javaDebugger: NuclideJavaDebuggerProvider;
-
-  constructor(javaDebugger: NuclideJavaDebuggerProvider) {
+  constructor(javaDebugger) {
     this._javaDebugger = javaDebugger;
   }
 
-  getType(): string {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'DEBUG';
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(
-      new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)),
-    );
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)));
   }
 
-  getName(): string {
+  getName() {
     return 'Attach Java debugger';
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(host);
-    if (service == null) {
-      throw new Error('Java debugger service is not available.');
-    }
+  run(host, device, proc) {
+    var _this = this;
 
-    const debuggerService = await getDebuggerService();
-    const {processInfo} = await this._javaDebugger.createAndroidDebugInfo({
-      targetUri: host,
-      packageName: '',
-      device,
-      pid: proc.pid,
-    });
-    debuggerService.startDebugging(processInfo);
+    return (0, _asyncToGenerator.default)(function* () {
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getVSCodeDebuggerAdapterServiceByNuclideUri)(host);
+      if (service == null) {
+        throw new Error('Java debugger service is not available.');
+      }
+
+      const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+      const { processInfo } = yield _this._javaDebugger.createAndroidDebugInfo({
+        targetUri: host,
+        packageName: '',
+        device,
+        pid: proc.pid
+      });
+      debuggerService.startDebugging(processInfo);
+    })();
   }
 }
+exports.JavaDebuggerDevicePanelProvider = JavaDebuggerDevicePanelProvider;

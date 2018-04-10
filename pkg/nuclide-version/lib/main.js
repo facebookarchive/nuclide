@@ -1,15 +1,15 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getPackageMinorVersion} from 'nuclide-commons/package';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getVersion = getVersion;
+
+var _package;
+
+function _load_package() {
+  return _package = require('nuclide-commons/package');
+}
 
 let version;
 
@@ -29,12 +29,23 @@ let version;
  * (new feature or whatever) that do not work with the older servers.
  * It also includes server changes that break older clients.
  */
-export function getVersion(): string {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+function getVersion() {
   if (!version) {
     // Don't use require() because it may be reading from the module cache.
     // Do use require.resolve so the paths can be codemoded in the future.
     const packageJsonPath = require.resolve('../../../package.json');
-    version = getPackageMinorVersion(packageJsonPath);
+    version = (0, (_package || _load_package()).getPackageMinorVersion)(packageJsonPath);
   }
   return version;
 }

@@ -1,26 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ClangCompilationDatabaseEntry} from './rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.fallbackReadCompilationFlags = undefined;
 
-import fs from 'fs';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {Observable} from 'rxjs';
-import {observeStream} from 'nuclide-commons/stream';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let fallbackReadCompilationFlags = exports.fallbackReadCompilationFlags = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (flagsFile) {
+    const contents = yield (_fsPromise || _load_fsPromise()).default.readFile(flagsFile);
+    return JSON.parse(contents.toString());
+  });
+
+  return function fallbackReadCompilationFlags(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.readCompilationFlags = readCompilationFlags;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('nuclide-commons/stream');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Remark: this approach will fail if a { or }
 // appears in a string (e.g. in a filename), fall back to JSON.parse otherwise.
-export function readCompilationFlags(
-  flagsFile: string,
-): Observable<ClangCompilationDatabaseEntry> {
+function readCompilationFlags(flagsFile) {
   // For some real-world numbers:
   // 1. 217 MB compilation db with 330 entries,
   //    - full read: 1400ms
@@ -28,8 +48,8 @@ export function readCompilationFlags(
   // 2. 434 MB compilation db with 660 entries,
   //    -  full read: "Error: toString() failed"
   //    -  chunked read: 4500ms
-  return Observable.create(subscriber => {
-    let chunk: string = '';
+  return _rxjsBundlesRxMinJs.Observable.create(subscriber => {
+    let chunk = '';
     function emitChunk() {
       try {
         subscriber.next(JSON.parse(chunk));
@@ -38,7 +58,7 @@ export function readCompilationFlags(
       }
       chunk = '';
     }
-    function handleChunk(data: string) {
+    function handleChunk(data) {
       if (chunk.length === 0) {
         // If the chunk is empty we look for the opening brace.
         const start = data.indexOf('{');
@@ -58,17 +78,15 @@ export function readCompilationFlags(
         }
       }
     }
-    return observeStream(fs.createReadStream(flagsFile)).subscribe(
-      handleChunk,
-      subscriber.error.bind(subscriber),
-      subscriber.complete.bind(subscriber),
-    );
+    return (0, (_stream || _load_stream()).observeStream)(_fs.default.createReadStream(flagsFile)).subscribe(handleChunk, subscriber.error.bind(subscriber), subscriber.complete.bind(subscriber));
   });
-}
-
-export async function fallbackReadCompilationFlags(
-  flagsFile: string,
-): Promise<Array<ClangCompilationDatabaseEntry>> {
-  const contents = await fsPromise.readFile(flagsFile);
-  return JSON.parse(contents.toString());
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

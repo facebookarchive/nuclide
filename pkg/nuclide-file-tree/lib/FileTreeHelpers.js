@@ -1,3 +1,55 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Constants;
+
+function _load_Constants() {
+  return _Constants = require('./Constants');
+}
+
+var _atom = require('atom');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideFsAtom;
+
+function _load_nuclideFsAtom() {
+  return _nuclideFsAtom = require('../../nuclide-fs-atom');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,77 +57,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  RemoteDirectory,
-  RemoteFile,
-} from '../../nuclide-remote-connection';
-import type {ShowUncommittedChangesKindValue} from './Constants';
-
-import {
-  ShowUncommittedChangesKind,
-  SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
-} from './Constants';
-import {Directory as LocalDirectory} from 'atom';
-import {File as LocalFile} from 'atom';
-import {
-  RemoteConnection,
-  ServerConnection,
-  RemoteDirectoryPlaceholder,
-} from '../../nuclide-remote-connection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {cacheWhileSubscribed} from 'nuclide-commons/observable';
-import {Observable} from 'rxjs';
-import invariant from 'assert';
-import crypto from 'crypto';
-import os from 'os';
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
-
-export type Directory =
-  | LocalDirectory
-  | RemoteDirectory
-  | RemoteDirectoryPlaceholder;
-type File = LocalFile | RemoteFile;
-type Entry = Directory | File;
-
-export type SelectionMode =
-  | 'single-select'
-  | 'multi-select'
-  | 'range-select'
-  | 'invalid-select';
-
-function dirPathToKey(path: string): string {
-  return nuclideUri.ensureTrailingSeparator(
-    nuclideUri.trimTrailingSeparator(path),
-  );
+function dirPathToKey(path) {
+  return (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator((_nuclideUri || _load_nuclideUri()).default.trimTrailingSeparator(path));
 }
 
-function isDirOrArchiveKey(key: string): boolean {
-  return (
-    nuclideUri.endsWithSeparator(key) ||
-    nuclideUri.hasKnownArchiveExtension(key)
-  );
+function isDirOrArchiveKey(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.endsWithSeparator(key) || (_nuclideUri || _load_nuclideUri()).default.hasKnownArchiveExtension(key);
 }
 
-function keyToName(key: string): string {
-  return nuclideUri.basename(key);
+function keyToName(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.basename(key);
 }
 
-function keyToPath(key: string): string {
-  return nuclideUri.trimTrailingSeparator(key);
+function keyToPath(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.trimTrailingSeparator(key);
 }
 
-function getParentKey(key: string): string {
-  return nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(key));
+function getParentKey(key) {
+  return (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator((_nuclideUri || _load_nuclideUri()).default.dirname(key));
 }
 
 // The array this resolves to contains the `nodeKey` of each child
-function fetchChildren(nodeKey: string): Promise<Array<string>> {
+function fetchChildren(nodeKey) {
   const directory = getDirectoryByKey(nodeKey);
 
   return new Promise((resolve, reject) => {
@@ -106,57 +113,57 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
   });
 }
 
-function getDirectoryByKey(key: string): ?Directory {
+function getDirectoryByKey(key) {
   const path = keyToPath(key);
   if (!isDirOrArchiveKey(key)) {
     return null;
-  } else if (nuclideUri.isRemote(path)) {
-    const connection = ServerConnection.getForUri(path);
+  } else if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(path);
     if (connection == null) {
       // Placeholder remote directories are just empty.
       // These will be removed by nuclide-remote-projects after reconnection, anyway.
-      return new RemoteDirectoryPlaceholder(path);
+      return new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteDirectoryPlaceholder(path);
     }
-    if (nuclideUri.hasKnownArchiveExtension(key)) {
+    if ((_nuclideUri || _load_nuclideUri()).default.hasKnownArchiveExtension(key)) {
       return connection.createFileAsDirectory(path);
     } else {
       return connection.createDirectory(path);
     }
-  } else if (nuclideUri.hasKnownArchiveExtension(key)) {
-    return ROOT_ARCHIVE_FS.newArchiveFileAsDirectory(path);
-  } else if (!nuclideUri.isInArchive(path)) {
-    return new LocalDirectory(path);
+  } else if ((_nuclideUri || _load_nuclideUri()).default.hasKnownArchiveExtension(key)) {
+    return (_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveFileAsDirectory(path);
+  } else if (!(_nuclideUri || _load_nuclideUri()).default.isInArchive(path)) {
+    return new _atom.Directory(path);
   } else {
-    return ROOT_ARCHIVE_FS.newArchiveDirectory(path);
+    return (_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveDirectory(path);
   }
 }
 
-function getFileByKey(key: string): ?File {
+function getFileByKey(key) {
   const path = keyToPath(key);
   if (isDirOrArchiveKey(key)) {
     return null;
-  } else if (nuclideUri.isRemote(path)) {
-    const connection = ServerConnection.getForUri(path);
+  } else if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ServerConnection.getForUri(path);
     if (connection == null) {
       return null;
     }
     return connection.createFile(path);
-  } else if (!nuclideUri.isInArchive(path)) {
-    return new LocalFile(path);
+  } else if (!(_nuclideUri || _load_nuclideUri()).default.isInArchive(path)) {
+    return new _atom.File(path);
   } else {
-    return ROOT_ARCHIVE_FS.newArchiveFile(path);
+    return (_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveFile(path);
   }
 }
 
-function getEntryByKey(key: string): ?Entry {
+function getEntryByKey(key) {
   return getFileByKey(key) || getDirectoryByKey(key);
 }
 
-function getDisplayTitle(key: string): ?string {
+function getDisplayTitle(key) {
   const path = keyToPath(key);
 
-  if (nuclideUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(path)) {
+    const connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getForUri(path);
 
     if (connection != null) {
       return connection.getDisplayTitle();
@@ -167,62 +174,44 @@ function getDisplayTitle(key: string): ?string {
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 // Also, until https://github.com/atom/atom/issues/10297 is fixed in 1.12,
 // Atom sometimes creates phantom "atom:" directories when opening atom:// URIs.
-function isValidDirectory(directory: Directory): boolean {
-  if (!isLocalEntry((directory: any))) {
+function isValidDirectory(directory) {
+  if (!isLocalEntry(directory)) {
     return true;
   }
 
   const dirPath = directory.getPath();
-  return nuclideUri.isAbsolute(dirPath);
+  return (_nuclideUri || _load_nuclideUri()).default.isAbsolute(dirPath);
 }
 
-function isLocalEntry(entry: Entry): boolean {
+function isLocalEntry(entry) {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);
 }
 
-function isContextClick(event: SyntheticMouseEvent<>): boolean {
-  return (
-    event.button === 2 ||
-    (event.button === 0 &&
-      event.ctrlKey === true &&
-      process.platform === 'darwin')
-  );
+function isContextClick(event) {
+  return event.button === 2 || event.button === 0 && event.ctrlKey === true && process.platform === 'darwin';
 }
 
-function buildHashKey(nodeKey: string): string {
-  return crypto
-    .createHash('MD5')
-    .update(nodeKey)
-    .digest('base64');
+function buildHashKey(nodeKey) {
+  return _crypto.default.createHash('MD5').update(nodeKey).digest('base64');
 }
 
-function observeUncommittedChangesKindConfigKey(): Observable<
-  ShowUncommittedChangesKindValue,
-> {
-  return cacheWhileSubscribed(
-    featureConfig
-      .observeAsStream(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY)
-      .map(setting => {
-        // We need to map the unsanitized feature-setting string
-        // into a properly typed value:
-        switch (setting) {
-          case ShowUncommittedChangesKind.HEAD:
-            return ShowUncommittedChangesKind.HEAD;
-          case ShowUncommittedChangesKind.STACK:
-            return ShowUncommittedChangesKind.STACK;
-          default:
-            return ShowUncommittedChangesKind.UNCOMMITTED;
-        }
-      })
-      .distinctUntilChanged(),
-  );
+function observeUncommittedChangesKindConfigKey() {
+  return (0, (_observable || _load_observable()).cacheWhileSubscribed)((_featureConfig || _load_featureConfig()).default.observeAsStream((_Constants || _load_Constants()).SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY).map(setting => {
+    // We need to map the unsanitized feature-setting string
+    // into a properly typed value:
+    switch (setting) {
+      case (_Constants || _load_Constants()).ShowUncommittedChangesKind.HEAD:
+        return (_Constants || _load_Constants()).ShowUncommittedChangesKind.HEAD;
+      case (_Constants || _load_Constants()).ShowUncommittedChangesKind.STACK:
+        return (_Constants || _load_Constants()).ShowUncommittedChangesKind.STACK;
+      default:
+        return (_Constants || _load_Constants()).ShowUncommittedChangesKind.UNCOMMITTED;
+    }
+  }).distinctUntilChanged());
 }
 
-function updatePathInOpenedEditors(
-  oldPath: NuclideUri,
-  newPath: NuclideUri,
-): void {
+function updatePathInOpenedEditors(oldPath, newPath) {
   atom.workspace.getTextEditors().forEach(editor => {
     const buffer = editor.getBuffer();
     const bufferPath = buffer.getPath();
@@ -230,29 +219,27 @@ function updatePathInOpenedEditors(
       return;
     }
 
-    if (nuclideUri.contains(oldPath, bufferPath)) {
-      const relativeToOld = nuclideUri.relative(oldPath, bufferPath);
-      const newBufferPath = nuclideUri.join(newPath, relativeToOld);
+    if ((_nuclideUri || _load_nuclideUri()).default.contains(oldPath, bufferPath)) {
+      const relativeToOld = (_nuclideUri || _load_nuclideUri()).default.relative(oldPath, bufferPath);
+      const newBufferPath = (_nuclideUri || _load_nuclideUri()).default.join(newPath, relativeToOld);
       // setPath() doesn't work correctly with remote files.
       // We need to create a new remote file and reset the underlying file.
       const file = getFileByKey(newBufferPath);
-      invariant(
-        file != null,
-        `Could not update open file ${oldPath} to ${newBufferPath}`,
-      );
+
+      if (!(file != null)) {
+        throw new Error(`Could not update open file ${oldPath} to ${newBufferPath}`);
+      }
+
       buffer.setFile(file);
     }
   });
 }
 
-function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
-  if (
-    (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
-    (os.platform() !== 'darwin' && event.ctrlKey && event.button === 0)
-  ) {
+function getSelectionMode(event) {
+  if (_os.default.platform() === 'darwin' && event.metaKey && event.button === 0 || _os.default.platform() !== 'darwin' && event.ctrlKey && event.button === 0) {
     return 'multi-select';
   }
-  if (os.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
+  if (_os.default.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
     return 'single-select';
   }
   if (event.shiftKey && event.button === 0) {
@@ -264,7 +251,7 @@ function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
   return 'invalid-select';
 }
 
-export default {
+exports.default = {
   dirPathToKey,
   isDirOrArchiveKey,
   keyToName,
@@ -281,5 +268,5 @@ export default {
   buildHashKey,
   observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
-  getSelectionMode,
+  getSelectionMode
 };

@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AndroidDeviceStopProcessProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +24,35 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from '../../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {Observable} from 'rxjs';
-import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-
-export class AndroidDeviceStopProcessProvider
-  implements DeviceProcessTaskProvider {
-  getType(): string {
+class AndroidDeviceStopProcessProvider {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'KILL';
   }
 
-  getName(): string {
+  getName() {
     return 'Stop process/package';
   }
 
-  isSupported(proc: Process): boolean {
+  isSupported(proc) {
     return true;
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(new Set(procs.map(proc => proc.pid)));
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.map(proc => proc.pid)));
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return getAdbServiceByNuclideUri(host).stopProcess(
-      device,
-      proc.name,
-      proc.pid,
-    );
+  run(host, device, proc) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getAdbServiceByNuclideUri)(host).stopProcess(device, proc.name, proc.pid);
+    })();
   }
 }
+exports.AndroidDeviceStopProcessProvider = AndroidDeviceStopProcessProvider;

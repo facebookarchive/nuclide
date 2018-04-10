@@ -1,3 +1,37 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setConsoleService = setConsoleService;
+exports.getConsoleService = getConsoleService;
+exports.setConsoleRegisterExecutor = setConsoleRegisterExecutor;
+exports.getConsoleRegisterExecutor = getConsoleRegisterExecutor;
+exports.setDatatipService = setDatatipService;
+exports.getDatatipService = getDatatipService;
+exports.setNotificationService = setNotificationService;
+exports.getNotificationService = getNotificationService;
+exports.setTerminalService = setTerminalService;
+exports.getTerminalService = getTerminalService;
+exports.setRpcService = setRpcService;
+exports.getVSCodeDebuggerAdapterServiceByNuclideUri = getVSCodeDebuggerAdapterServiceByNuclideUri;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _VSCodeDebuggerAdapterService;
+
+function _load_VSCodeDebuggerAdapterService() {
+  return _VSCodeDebuggerAdapterService = _interopRequireWildcard(require('nuclide-debugger-vsps/VSCodeDebuggerAdapterService'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,106 +40,80 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DatatipService} from 'atom-ide-ui';
-import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
+let _raiseNativeNotification = null;
+let _registerExecutor = null;
+let _datatipService = null;
+let _createConsole = null;
+let _terminalService = null;
+let _rpcService = null;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as VSCodeDebuggerAdapterServiceLocal from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
-
-type raiseNativeNotificationFunc = ?(
-  title: string,
-  body: string,
-  timeout: number,
-  raiseIfAtomHasFocus: boolean,
-) => ?IDisposable;
-
-let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
-let _registerExecutor: ?RegisterExecutorFunction = null;
-let _datatipService: ?DatatipService = null;
-let _createConsole: ?ConsoleService = null;
-let _terminalService: ?nuclide$TerminalApi = null;
-let _rpcService: ?nuclide$RpcService = null;
-
-export function setConsoleService(createConsole: ConsoleService): IDisposable {
+function setConsoleService(createConsole) {
   _createConsole = createConsole;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _createConsole = null;
   });
 }
 
-export function getConsoleService(): ?ConsoleService {
+function getConsoleService() {
   return _createConsole;
 }
 
-export function setConsoleRegisterExecutor(
-  registerExecutor: RegisterExecutorFunction,
-): IDisposable {
+function setConsoleRegisterExecutor(registerExecutor) {
   _registerExecutor = registerExecutor;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _registerExecutor = null;
   });
 }
 
-export function getConsoleRegisterExecutor(): ?RegisterExecutorFunction {
+function getConsoleRegisterExecutor() {
   return _registerExecutor;
 }
 
-export function setDatatipService(datatipService: DatatipService): IDisposable {
+function setDatatipService(datatipService) {
   _datatipService = datatipService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _datatipService = null;
   });
 }
 
-export function getDatatipService(): ?DatatipService {
+function getDatatipService() {
   return _datatipService;
 }
 
-export function setNotificationService(
-  raiseNativeNotification: raiseNativeNotificationFunc,
-): void {
+function setNotificationService(raiseNativeNotification) {
   _raiseNativeNotification = raiseNativeNotification;
 }
 
-export function getNotificationService(): ?raiseNativeNotificationFunc {
+function getNotificationService() {
   return _raiseNativeNotification;
 }
 
-export function setTerminalService(
-  terminalService: nuclide$TerminalApi,
-): IDisposable {
+function setTerminalService(terminalService) {
   _terminalService = terminalService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _terminalService = null;
   });
 }
 
-export function getTerminalService(): ?nuclide$TerminalApi {
+function getTerminalService() {
   return _terminalService;
 }
 
-export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
+function setRpcService(rpcService) {
   _rpcService = rpcService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _rpcService = null;
   });
 }
 
-export function getVSCodeDebuggerAdapterServiceByNuclideUri(
-  uri: NuclideUri,
-): VSCodeDebuggerAdapterService {
+function getVSCodeDebuggerAdapterServiceByNuclideUri(uri) {
   if (_rpcService != null) {
-    return _rpcService.getServiceByNuclideUri(
-      'VSCodeDebuggerAdapterService',
-      uri,
-    );
+    return _rpcService.getServiceByNuclideUri('VSCodeDebuggerAdapterService', uri);
   } else {
-    return VSCodeDebuggerAdapterServiceLocal;
+    return _VSCodeDebuggerAdapterService || _load_VSCodeDebuggerAdapterService();
   }
 }
