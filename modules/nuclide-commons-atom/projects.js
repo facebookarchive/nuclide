@@ -13,7 +13,10 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {File, Directory} from 'atom';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {diffSets} from 'nuclide-commons/observable';
+import {Observable} from 'rxjs';
 
 function getValidProjectPaths(): Array<string> {
   return atom.project
@@ -129,4 +132,36 @@ export function onDidRemoveProjectPath(
     changing = false;
     projectPaths = newProjectPaths;
   });
+}
+
+function observeHostnames() {
+  return (atom.packages.initialPackagesActivated
+    ? Observable.of(null)
+    : observableFromSubscribeFunction(
+        atom.packages.onDidActivateInitialPackages.bind(atom.packages),
+      )
+  ).switchMap(() =>
+    observableFromSubscribeFunction(
+      atom.project.onDidChangePaths.bind(atom.project),
+    )
+      .startWith(null)
+      .map(
+        () =>
+          new Set(
+            atom.project
+              .getPaths()
+              .filter(nuclideUri.isRemote)
+              .map(nuclideUri.getHostname),
+          ),
+      )
+      .let(diffSets()),
+  );
+}
+
+export function observeRemovedHostnames(): Observable<string> {
+  return observeHostnames().flatMap(diff => Observable.from(diff.removed));
+}
+
+export function observeAddedHostnames(): Observable<string> {
+  return observeHostnames().flatMap(diff => Observable.from(diff.added));
 }

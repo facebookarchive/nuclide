@@ -336,6 +336,8 @@ type atom$PackageMetadata = {
 };
 
 declare class atom$PackageManager {
+  +initialPackagesActivated: boolean,
+
   // Event Subscription
   onDidLoadInitialPackages(callback: () => void): IDisposable,
   onDidActivateInitialPackages(callback: () => void): IDisposable,
