@@ -29,10 +29,12 @@ import type {CreatePasteFunction} from './types';
 import {List} from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {Observable} from 'rxjs';
 import {
   combineEpics,
   createEpicMiddleware,
 } from 'nuclide-commons/redux-observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
@@ -54,8 +56,6 @@ class Activation {
   _store: Store;
 
   constructor(rawState: ?Object) {
-    this._migrateFontSizeSetting();
-
     this._rawState = rawState;
     this._disposables = new UniversalDisposable(
       atom.contextMenu.add({
@@ -84,25 +84,17 @@ class Activation {
           );
         },
       ),
-      featureConfig
-        .observeAsStream('atom-ide-console.fontSize')
-        .map(fontSize => Actions.setFontSize(parseFloat(fontSize)))
+      Observable.combineLatest(
+        observableFromSubscribeFunction(cb =>
+          atom.config.observe('editor.fontSize', cb),
+        ),
+        featureConfig.observeAsStream('atom-ide-console.fontScale'),
+        (fontSize, fontScale) => fontSize * parseFloat(fontScale),
+      )
+        .map(Actions.setFontSize)
         .subscribe(this._store.dispatch),
       this._registerCommandAndOpener(),
     );
-  }
-
-  // TODO: Remove this after a few releases. It was added 4/6/2018.
-  _migrateFontSizeSetting(): void {
-    const CONSOLE_FONT_SCALE_KEY = 'atom-ide-console.consoleFontScale';
-    const fontScale = featureConfig.get(CONSOLE_FONT_SCALE_KEY);
-    if (fontScale != null) {
-      const normalFontSize =
-        parseInt(atom.config.get('editor.fontSize'), 10) || 14;
-      const consoleFontSize = (parseFloat(fontScale) || 0.9) * normalFontSize;
-      featureConfig.unset(CONSOLE_FONT_SCALE_KEY);
-      featureConfig.set('atom-ide-console.fontSize', consoleFontSize);
-    }
   }
 
   _getStore(): Store {

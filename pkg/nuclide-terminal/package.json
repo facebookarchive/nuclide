@@ -45,10 +45,12 @@
         "type": "string",
         "default": "courier-new, courier, monospace"
       },
-      "fontSize": {
-        "title": "Font Size",
-        "type": "integer",
-        "default": 15
+      "fontScale": {
+        "title": "Font Scale",
+        "description": "The scale of the font used in the terminal relative to the editor font size.",
+        "type": "number",
+        "default": 1.0,
+        "minimum": 0.1
       },
       "lineHeight": {
         "title": "Line Height",

@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
 import url from 'url';
 import {Terminal} from 'xterm';
@@ -72,7 +73,7 @@ const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'nuclide-terminal.cursorBlink';
 const FONT_FAMILY_CONFIG = 'nuclide-terminal.fontFamily';
-const FONT_SIZE_CONFIG = 'nuclide-terminal.fontSize';
+const FONT_SCALE_CONFIG = 'nuclide-terminal.fontScale';
 const LINE_HEIGHT_CONFIG = 'nuclide-terminal.lineHeight';
 const DOCUMENTATION_MESSAGE_CONFIG = 'nuclide-terminal.documentationMessage';
 const ADD_ESCAPE_COMMAND = 'nuclide-terminal:add-escape-prefix';
@@ -177,9 +178,6 @@ export class TerminalView implements PtyClient {
       cursorBlink: featureConfig.get(CURSOR_BLINK_CONFIG),
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
-      fontFamily: featureConfig.get(FONT_FAMILY_CONFIG),
-      fontSize: featureConfig.get(FONT_SIZE_CONFIG),
-      lineHeight: featureConfig.get(LINE_HEIGHT_CONFIG),
     }));
     (div: any).terminal = terminal;
     terminal.open(this._div);
@@ -224,23 +222,17 @@ export class TerminalView implements PtyClient {
         .observeAsStream(SCROLLBACK_CONFIG)
         .skip(1)
         .subscribe(scrollback => terminal.setOption('scrollback', scrollback)),
-      featureConfig
-        .observeAsStream(FONT_SIZE_CONFIG)
-        .skip(1)
-        .subscribe(fontSize => terminal.setOption('fontSize', fontSize)),
-      featureConfig
-        .observeAsStream(FONT_FAMILY_CONFIG)
-        .skip(1)
-        .subscribe(fontFamily => terminal.setOption('fontFamily', fontFamily)),
-      featureConfig
-        .observeAsStream(LINE_HEIGHT_CONFIG)
-        .skip(1)
-        .subscribe(lineHeight => terminal.setOption('lineHeight', lineHeight)),
       Observable.merge(
+        observableFromSubscribeFunction(cb =>
+          atom.config.onDidChange('editor.fontSize', cb),
+        ),
+        featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
+        featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
+        featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
         Observable.fromEvent(this._terminal, 'focus'),
         Observable.fromEvent(window, 'resize'),
         new ResizeObservable(this._div),
-      ).subscribe(this._fitAndResize.bind(this)),
+      ).subscribe(this._syncFontAndFit),
     );
 
     if (process.platform === 'win32') {
@@ -358,7 +350,7 @@ export class TerminalView implements PtyClient {
         this._blurred.bind(this),
       ),
     );
-    this._fitAndResize();
+    this._syncFontAndFit();
   }
 
   _focused(): void {
@@ -405,6 +397,24 @@ export class TerminalView implements PtyClient {
       error: String(error),
     });
   }
+
+  // Since changing the font settings may resize the contents, we have to
+  // trigger a re-fit when updating font settings.
+  _syncFontAndFit = (): void => {
+    const scaledFont =
+      parseFloat(featureConfig.get(FONT_SCALE_CONFIG)) *
+      parseFloat(atom.config.get('editor.fontSize'));
+    this._terminal.setOption('fontSize', scaledFont);
+    this._terminal.setOption(
+      'lineHeight',
+      featureConfig.get(LINE_HEIGHT_CONFIG),
+    );
+    this._terminal.setOption(
+      'fontFamily',
+      featureConfig.get(FONT_FAMILY_CONFIG),
+    );
+    this._fitAndResize();
+  };
 
   _fitAndResize(): void {
     // Force character measure before 'fit' runs.

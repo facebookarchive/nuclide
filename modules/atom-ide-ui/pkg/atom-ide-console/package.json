@@ -52,12 +52,12 @@
       "type": "string",
       "default": ""
     },
-    "fontSize": {
-      "title": "Font Size",
-      "description": "The size of the font used in the console.",
+    "fontScale": {
+      "title": "Font Scale",
+      "description": "The scale of the font used in the console relative to the editor font size.",
       "type": "number",
-      "default": 11,
-      "minimum": 6
+      "default": 0.9,
+      "minimum": 0.1
     }
   },
   "activationCommands": {},
