@@ -19,7 +19,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NuclideJavaDebuggerProvider} from './types';
 
 import {Observable} from 'rxjs';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class JavaDebuggerDevicePanelProvider

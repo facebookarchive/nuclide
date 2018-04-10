@@ -25,7 +25,7 @@ import {
   VspProcessInfo,
 } from 'nuclide-debugger-common';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {getActiveScriptPath, getAdapterExecutableWithProperNode} from './utils';
 
 type Props = {|

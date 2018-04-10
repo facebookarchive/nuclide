@@ -18,7 +18,7 @@ import type {
 import type {TunnelBehavior} from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 
 export async function openTunnel(
   serviceUri: NuclideUri,

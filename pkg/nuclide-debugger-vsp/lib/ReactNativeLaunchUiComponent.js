@@ -22,7 +22,7 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from 'nuclide-debugger-common';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {
   getReactNativeLaunchProcessInfo,
   REACT_NATIVE_PACKAGER_DEFAULT_PORT,

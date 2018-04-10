@@ -21,7 +21,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import invariant from 'assert';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 import {memoize} from 'lodash';

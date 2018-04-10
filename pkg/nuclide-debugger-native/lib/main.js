@@ -13,7 +13,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {PlatformGroup} from '../../nuclide-buck/lib/types';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {

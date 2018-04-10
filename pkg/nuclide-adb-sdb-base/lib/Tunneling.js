@@ -20,7 +20,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import {Cache} from '../../commons-node/cache';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export function startTunnelingAdb(uri: NuclideUri): Promise<void> {

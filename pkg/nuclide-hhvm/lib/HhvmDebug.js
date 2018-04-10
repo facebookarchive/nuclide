@@ -11,7 +11,7 @@
 
 import type {DebugMode} from './types';
 
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import invariant from 'assert';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports

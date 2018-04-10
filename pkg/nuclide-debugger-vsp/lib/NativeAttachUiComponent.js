@@ -24,7 +24,7 @@ import {
 } from 'nuclide-debugger-common';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getNativeVSPAttachProcessInfo} from './utils';
 import {Observable} from 'rxjs';

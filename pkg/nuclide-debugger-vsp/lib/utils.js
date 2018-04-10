@@ -31,7 +31,7 @@ import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Logger} from 'vscode-debugadapter';
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 import {

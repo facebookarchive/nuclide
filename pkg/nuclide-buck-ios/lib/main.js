@@ -20,7 +20,7 @@ import {getDevicePlatform, getSimulatorPlatform} from './Platforms';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 
 let disposable: ?IDisposable = null;
 

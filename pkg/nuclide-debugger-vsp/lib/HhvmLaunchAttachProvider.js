@@ -19,7 +19,7 @@ import type {
   HHVMAttachConfig,
 } from '../../nuclide-debugger-hhvm-rpc';
 
-import {getDebuggerService} from '../../commons-atom/debugger';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
