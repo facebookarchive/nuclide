@@ -87,6 +87,21 @@ class Activation {
     this._connectionProviders = new Map();
     this._layoutManager = new DebuggerLayoutManager(this._service, state);
 
+    // Manually manipulate the `Debugger` top level menu order.
+    const insertIndex = atom.menu.template.findIndex(
+      item => item.role === 'window' || item.role === 'help',
+    );
+    if (insertIndex !== -1) {
+      const deuggerIndex = atom.menu.template.findIndex(
+        item => item.label === 'Debugger',
+      );
+      const menuItem = atom.menu.template.splice(deuggerIndex, 1)[0];
+      const newIndex =
+        insertIndex > deuggerIndex ? insertIndex - 1 : insertIndex;
+      atom.menu.template.splice(newIndex, 0, menuItem);
+      atom.menu.update();
+    }
+
     const removedHostnames = observeRemovedHostnames();
 
     this._disposables = new UniversalDisposable(
