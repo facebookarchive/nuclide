@@ -15,18 +15,15 @@ import type {
   VsAdapterType,
 } from 'nuclide-debugger-common';
 import type {
+  AutoGenConfig,
+  AutoGenProperty,
+} from 'nuclide-debugger-common/types';
+import type {
   PythonDebuggerAttachTarget,
   RemoteDebugCommandRequest,
 } from 'nuclide-debugger-vsps/RemoteDebuggerCommandService';
-import type {Adapter} from 'nuclide-debugger-vsps/main';
-import type {
-  ReactNativeAttachArgs,
-  ReactNativeLaunchArgs,
-  AutoGenConfig,
-  AutoGenProperty,
-} from './types';
+import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
 
-import nullthrows from 'nullthrows';
 import {diffSets, fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -37,13 +34,11 @@ import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 import {
   ServerConnection,
   getRemoteDebuggerCommandServiceByNuclideUri,
-  getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 import {track} from '../../nuclide-analytics';
 import {isRunningInTest} from '../../commons-node/system-info';
-import {getNodeBinaryPath} from '../../commons-node/node-info';
 
 const DEFAULT_DEBUG_OPTIONS = new Set([
   'WaitOnAbnormalExit',
@@ -70,22 +65,6 @@ export type VspNativeDebuggerAttachBuilderParms = {
   pid?: number,
   sourcePath: string,
 };
-
-// extension must be a string starting with a '.' like '.js' or '.py'
-export function getActiveScriptPath(extension: string): string {
-  const center = atom.workspace.getCenter
-    ? atom.workspace.getCenter()
-    : atom.workspace;
-  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
-  if (
-    activeEditor == null ||
-    !activeEditor.getPath() ||
-    !nullthrows(activeEditor.getPath()).endsWith(extension)
-  ) {
-    return '';
-  }
-  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
-}
 
 function generatePropertyArray(
   launchOrAttachConfigProperties: Object,
@@ -135,7 +114,7 @@ export async function getPythonParLaunchProcessInfo(
     parPath,
     'launch',
     VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(parPath),
+    null,
     getPythonParConfig(parPath, args),
     {threads: true},
   );
@@ -174,7 +153,6 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.PYTHON,
-      adapterType: VsAdapterTypes.PYTHON,
       threads: true,
       properties: generatePropertyArray(
         launchProperties,
@@ -197,26 +175,6 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     },
     attach: null,
   };
-}
-
-export async function getAdapterExecutableWithProperNode(
-  adapterType: Adapter,
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  const service = getVSCodeDebuggerAdapterServiceByNuclideUri(path);
-  const adapterInfo = await service.getAdapterExecutableInfo(adapterType);
-
-  if (adapterInfo.command === 'node') {
-    adapterInfo.command = await getNodeBinaryPath(path);
-  }
-
-  return adapterInfo;
-}
-
-async function getPythonAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('python', path);
 }
 
 function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
@@ -242,7 +200,7 @@ async function getPythonAttachTargetProcessInfo(
     targetRootUri,
     'attach',
     VsAdapterTypes.PYTHON,
-    await getPythonAdapterInfo(targetRootUri),
+    null,
     getPythonAttachTargetConfig(target),
     {threads: true},
   );
@@ -295,7 +253,6 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
   const autoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.PREPACK,
-    adapterType: VsAdapterTypes.PREPACK,
     threads: false,
     properties: [fileToPrepack, prepackRuntimePath, argumentsProperty],
     scriptPropertyName: 'fileToPrepack',
@@ -390,7 +347,6 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.NODE,
-      adapterType: VsAdapterTypes.NODE,
       threads: false,
       properties: generatePropertyArray(
         launchProperties,
@@ -407,7 +363,6 @@ export function getNodeAutoGenConfig(): AutoGenConfig {
     attach: {
       launch: false,
       vsAdapterType: VsAdapterTypes.NODE,
-      adapterType: VsAdapterTypes.NODE,
       threads: false,
       properties: generatePropertyArray(
         attachProperties,
@@ -490,7 +445,6 @@ export function getOCamlAutoGenConfig(): AutoGenConfig {
   const autoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.OCAML,
-    adapterType: VsAdapterTypes.OCAML,
     threads: false,
     properties: [
       debugExecutable,
@@ -525,9 +479,9 @@ async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
 async function getNativeVSPAdapterExecutable(
   adapter: VsAdapterType,
   program: string,
-): Promise<VSAdapterExecutableInfo> {
+): Promise<?VSAdapterExecutableInfo> {
   if (adapter === 'native_gdb') {
-    return getAdapterExecutableWithProperNode(adapter, program);
+    return null;
   }
 
   const adapterInfo = {
@@ -544,7 +498,6 @@ export async function getNativeVSPLaunchProcessInfo(
   args: VspNativeDebuggerLaunchBuilderParms,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
-
   return new VspProcessInfo(
     program,
     'launch',
@@ -564,7 +517,6 @@ export async function getNativeVSPAttachProcessInfo(
   args: VspNativeDebuggerAttachBuilderParms,
 ): Promise<VspProcessInfo> {
   const adapterInfo = await getNativeVSPAdapterExecutable(adapter, targetUri);
-
   return new VspProcessInfo(targetUri, 'attach', adapter, adapterInfo, args, {
     threads: true,
   });
@@ -573,12 +525,11 @@ export async function getNativeVSPAttachProcessInfo(
 export async function getReactNativeAttachProcessInfo(
   args: ReactNativeAttachArgs,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getReactNativeAdapterInfo(args.program);
   return new VspProcessInfo(
     args.program,
     'attach',
     VsAdapterTypes.REACT_NATIVE,
-    adapterInfo,
+    null,
     args,
     {threads: false},
   );
@@ -587,27 +538,14 @@ export async function getReactNativeAttachProcessInfo(
 export async function getReactNativeLaunchProcessInfo(
   args: ReactNativeLaunchArgs,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getReactNativeAdapterInfo(args.program);
   return new VspProcessInfo(
     args.program,
     'launch',
     VsAdapterTypes.REACT_NATIVE,
-    adapterInfo,
+    null,
     args,
     {threads: false},
   );
-}
-
-async function getReactNativeAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('react-native', path);
-}
-
-export async function getHhvmAdapterInfo(
-  path: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutableWithProperNode('hhvm', path);
 }
 
 export function listenToRemoteDebugCommands(): IDisposable {

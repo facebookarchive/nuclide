@@ -56,11 +56,11 @@ import type {
 import type {IProcessConfig, MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from 'nuclide-commons/analytics';
-
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
 import invariant from 'assert';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -83,6 +83,7 @@ import {
   getConsoleService,
   getNotificationService,
   getDatatipService,
+  getDefaultNodeBinaryPath,
   getVSCodeDebuggerAdapterServiceByNuclideUri,
   getTerminalService,
 } from '../AtomServiceContainer';
@@ -1149,12 +1150,33 @@ export default class DebugService implements IDebugService {
     configuration: IProcessConfig,
     sessionId: string,
   ): Promise<?IProcess> {
+    const errorHandler = (error: Error) => {
+      if (this._timer != null) {
+        this._timer.onError(error);
+        this._timer = null;
+      }
+      track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
+      const errorMessage = error instanceof Error ? error.message : error;
+      atom.notifications.addError(
+        `Failed to start debugger process: ${errorMessage}`,
+      );
+      this._consoleDisposables.dispose();
+      this._updateModeAndEmit(DebuggerMode.STOPPED);
+      if (!session.isDisconnected()) {
+        this._onSessionEnd();
+        session.disconnect().catch(onUnexpectedError);
+      }
+      if (process != null) {
+        this._model.removeProcess(process.getId());
+      }
+    };
+
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: configuration.adapterType,
       clientType: 'VSP',
     });
     let process: ?IProcess;
-    const session = this._createVsDebugSession(configuration, sessionId);
+    const session = await this._createVsDebugSession(configuration, sessionId);
     try {
       process = this._model.addProcess(configuration, session);
       this.focusStackFrame(null, null, process);
@@ -1179,48 +1201,37 @@ export default class DebugService implements IDebugService {
       this._model.setExceptionBreakpoints(
         session.getCapabilities().exceptionBreakpointFilters || [],
       );
-      if (configuration.debugMode === 'attach') {
-        await session.attach(configuration.config);
-      } else {
-        // It's 'launch'
-        await session.launch(configuration.config);
-      }
-      if (session.isDisconnected()) {
-        return;
-      }
-      this._updateModeAndEmit(DebuggerMode.RUNNING);
+      // We're not awaiting launch/attach to finish because some debug adapters
+      // need to do custom work for launch/attach to work (e.g. mobilejs)
+      this._launchOrAttachTarget(session, configuration).catch(errorHandler);
       return process;
     } catch (error) {
-      if (this._timer != null) {
-        this._timer.onError(error);
-        this._timer = null;
-      }
-      track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
-      const errorMessage = error instanceof Error ? error.message : error;
-      atom.notifications.addError(
-        `Failed to start debugger process: ${errorMessage}`,
-      );
-      this._consoleDisposables.dispose();
-      this._updateModeAndEmit(DebuggerMode.STOPPED);
-      if (!session.isDisconnected()) {
-        this._onSessionEnd();
-        session.disconnect().catch(onUnexpectedError);
-      }
-      if (process != null) {
-        this._model.removeProcess(process.getId());
-      }
+      errorHandler(error);
       return null;
     }
   }
 
-  _createVsDebugSession(
+  async _createVsDebugSession(
     configuration: IProcessConfig,
     sessionId: string,
-  ): VsDebugSession {
-    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(
-      configuration.targetUri,
-    );
+  ): Promise<VsDebugSession> {
+    const {targetUri} = configuration;
+    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(targetUri);
     const spawner = new service.VsRawAdapterSpawnerService();
+    let adapterExecutable = configuration.adapterExecutable;
+    if (adapterExecutable == null) {
+      adapterExecutable = await service.getAdapterExecutableInfo(
+        configuration.adapterType,
+      );
+    }
+    if (adapterExecutable.command === 'node') {
+      const nodeBinaryPath =
+        (await getDefaultNodeBinaryPath(targetUri)) ||
+        (featureConfig.get('atom-ide-debugger.nodeBinaryPath') || null: any) ||
+        'node';
+      adapterExecutable.command = nodeBinaryPath;
+    }
+
     const clientPreprocessors: Array<MessageProcessor> = [];
     const adapterPreprocessors: Array<MessageProcessor> = [];
     if (configuration.clientPreprocessor != null) {
@@ -1229,23 +1240,36 @@ export default class DebugService implements IDebugService {
     if (configuration.adapterPreprocessor != null) {
       adapterPreprocessors.push(configuration.adapterPreprocessor);
     }
-    const isRemote = nuclideUri.isRemote(configuration.targetUri);
+    const isRemote = nuclideUri.isRemote(targetUri);
     if (isRemote) {
       clientPreprocessors.push(remoteToLocalProcessor());
-      adapterPreprocessors.push(
-        localToRemoteProcessor(configuration.targetUri),
-      );
+      adapterPreprocessors.push(localToRemoteProcessor(targetUri));
     }
     return new VsDebugSession(
       sessionId,
       logger,
-      configuration.adapterExecutable,
+      adapterExecutable,
       {adapter: configuration.adapterType, host: 'debugService', isRemote},
       spawner,
       clientPreprocessors,
       adapterPreprocessors,
       this._runInTerminal,
     );
+  }
+
+  async _launchOrAttachTarget(
+    session: VsDebugSession,
+    configuration: IProcessConfig,
+  ): Promise<void> {
+    if (configuration.debugMode === 'attach') {
+      await session.attach(configuration.config);
+    } else {
+      // It's 'launch'
+      await session.launch(configuration.config);
+    }
+    if (!session.isDisconnected()) {
+      this._updateModeAndEmit(DebuggerMode.RUNNING);
+    }
   }
 
   _sourceIsNotAvailable(uri: string): void {

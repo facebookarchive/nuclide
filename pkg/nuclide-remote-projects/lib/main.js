@@ -19,6 +19,7 @@ import {
   enforceReadOnlyEditor,
   observeTextEditors,
 } from 'nuclide-commons-atom/text-editor';
+import {getNodeBinaryPath} from '../../commons-node/node-info';
 import {
   loadBufferForUri,
   bufferForUri,
@@ -601,6 +602,7 @@ export function provideRpcServices(): nuclide$RpcService {
   return Object.freeze({
     getServiceByNuclideUri: (serviceName: string, uri: ?string) =>
       getServiceByNuclideUri(serviceName, uri),
+    getNodeBinaryPath,
   });
 }
 

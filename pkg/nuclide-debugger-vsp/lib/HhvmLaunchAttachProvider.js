@@ -32,7 +32,6 @@ import * as React from 'react';
 import {LaunchUiComponent} from './HhvmLaunchUiComponent';
 import {AttachUiComponent} from './HhvmAttachUiComponent';
 import invariant from 'assert';
-import {getHhvmAdapterInfo} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type PhpDebuggerSessionConfig = {
@@ -189,7 +188,6 @@ export async function getLaunchProcessInfo(
   runInTerminal: boolean,
   cwdPath: string,
 ): Promise<VspProcessInfo> {
-  const adapterExecutable = await getHhvmAdapterInfo(targetUri);
   const config = _getHHVMLaunchConfig(
     targetUri,
     scriptPath,
@@ -203,7 +201,7 @@ export async function getLaunchProcessInfo(
     targetUri,
     'launch',
     adapterType,
-    adapterExecutable,
+    null,
     config,
     CUSTOM_CPABILITIES,
   );
@@ -243,13 +241,12 @@ export async function startAttachProcessInfo(
   attachPort: ?number,
   serverAttach: boolean,
 ): Promise<VspProcessInfo> {
-  const adapterExecutable = await getHhvmAdapterInfo(targetUri);
   const config = _getHHVMAttachConfig(targetUri, attachPort);
   const processInfo = new VspProcessInfo(
     targetUri,
     'attach',
     VsAdapterTypes.HHVM,
-    adapterExecutable,
+    null,
     config,
     CUSTOM_CPABILITIES,
     CUSTOM_ATTACH_PROPERTIES,

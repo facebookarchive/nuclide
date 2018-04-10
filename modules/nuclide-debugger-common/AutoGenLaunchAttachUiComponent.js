@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -22,11 +23,10 @@ import {capitalize, shellParse} from 'nuclide-commons/string';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
-  VspProcessInfo,
-} from 'nuclide-debugger-common';
+} from './DebuggerConfigSerializer';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-import {getActiveScriptPath, getAdapterExecutableWithProperNode} from './utils';
+import nullthrows from 'nullthrows';
 
 type Props = {|
   +targetUri: NuclideUri,
@@ -40,6 +40,22 @@ type State = {
   booleanValues: Map<string, boolean>,
   atomInputValues: Map<string, string>,
 };
+
+// extension must be a string starting with a '.' like '.js' or '.py'
+function getActiveScriptPath(extension: string): string {
+  const center = atom.workspace.getCenter
+    ? atom.workspace.getCenter()
+    : atom.workspace;
+  const activeEditor: ?atom$TextEditor = center.getActiveTextEditor();
+  if (
+    activeEditor == null ||
+    !activeEditor.getPath() ||
+    !nullthrows(activeEditor.getPath()).endsWith(extension)
+  ) {
+    return '';
+  }
+  return nuclideUri.getPath(nullthrows(activeEditor.getPath()));
+}
 
 export default class AutoGenLaunchAttachUiComponent extends React.Component<
   Props,
@@ -367,17 +383,19 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         values[name] = idx(property, _ => _.defaultValue);
       });
 
-    const vspProcessInfo = new VspProcessInfo(
-      targetUri,
-      config.launch ? 'launch' : 'attach',
-      config.vsAdapterType,
-      await getAdapterExecutableWithProperNode(config.adapterType, targetUri),
-      values,
-      {threads: config.threads},
-    );
-
     const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(vspProcessInfo);
+    debuggerService.startVspDebugging({
+      targetUri,
+      debugMode: config.launch ? 'launch' : 'attach',
+      adapterType: config.vsAdapterType,
+      adapterExecutable: null,
+      config: values,
+      capabilities: {threads: config.threads},
+      properties: {
+        customControlButtons: [],
+        threadsComponentTitle: 'Threads',
+      },
+    });
 
     serializeDebuggerConfig(...this._getSerializationArgs(this.props), {
       atomInputValues: Array.from(atomInputValues),

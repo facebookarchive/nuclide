@@ -14,10 +14,12 @@ import type {
   LaunchRequestArguments,
   AttachRequestArguments,
 } from 'vscode-debugprotocol';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
+import type {
+  VSAdapterExecutableInfo,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
 import type {StartAction} from './VSPOptionsData';
 import type {CustomArgumentType} from './VSPOptionsParser';
-import type {Adapter} from 'nuclide-debugger-vsps/main';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -31,7 +33,7 @@ import VSPOptionsParser from './VSPOptionsParser';
 
 export type ParsedVSAdapter = {
   action: StartAction,
-  type: Adapter,
+  type: VsAdapterType,
   adapterInfo: VSAdapterExecutableInfo,
   launchArgs?: LaunchRequestArguments,
   attachArgs?: AttachRequestArguments,
@@ -45,7 +47,7 @@ type Arguments = {
 };
 
 type AdapterData = {
-  key: Adapter,
+  key: VsAdapterType,
   type: string,
   customArguments: Map<string, CustomArgumentType>,
 };

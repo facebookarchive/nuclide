@@ -45,7 +45,7 @@ export default class VspProcessInfo {
   _targetUri: NuclideUri;
   _debugMode: DebuggerConfigAction;
   _adapterType: VsAdapterType;
-  _adapterExecutable: VSAdapterExecutableInfo;
+  _adapterExecutable: ?VSAdapterExecutableInfo;
   _config: Object;
   _customCapabilities: CustomDebuggerCapabilities;
   _customProperties: CustomDebuggerProperties;
@@ -57,7 +57,7 @@ export default class VspProcessInfo {
     targetUri: NuclideUri,
     debugMode: DebuggerConfigAction,
     adapterType: VsAdapterType,
-    adapterExecutable: VSAdapterExecutableInfo,
+    adapterExecutable: ?VSAdapterExecutableInfo,
     config: Object,
     customCapabilities?: ?CustomDebuggerCapabilities,
     customProperties?: ?CustomDebuggerProperties,

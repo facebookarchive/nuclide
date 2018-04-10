@@ -15,7 +15,7 @@ import type {VsAdapterType} from './types';
 export const VsAdapterTypes = Object.freeze({
   HHVM: 'hhvm',
   PYTHON: 'python',
-  REACT_NATIVE: 'react_native',
+  REACT_NATIVE: 'react-native',
   NODE: 'node',
   JAVA: 'java',
   PREPACK: 'prepack',

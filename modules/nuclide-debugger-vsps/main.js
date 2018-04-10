@@ -12,24 +12,17 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
-
-export type Adapter =
-  | 'node'
-  | 'python'
-  | 'prepack'
-  | 'react-native'
-  | 'ocaml'
-  | 'hhvm'
-  | 'native_gdb'
-  | 'native_lldb';
+import type {
+  VSAdapterExecutableInfo,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,
   root: string,
 };
 
-const _adapters: Map<Adapter, AdapterInfo> = new Map([
+const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
   [
     'node',
     {
@@ -135,7 +128,7 @@ const _adapters: Map<Adapter, AdapterInfo> = new Map([
 ]);
 
 export function getAdapterExecutable(
-  adapter: Adapter,
+  adapter: VsAdapterType,
 ): VSAdapterExecutableInfo {
   const adapterInfo = _adapters.get(adapter);
   if (adapterInfo == null) {
@@ -144,7 +137,7 @@ export function getAdapterExecutable(
   return adapterInfo.executable;
 }
 
-export function getAdapterPackageRoot(adapter: Adapter): string {
+export function getAdapterPackageRoot(adapter: VsAdapterType): string {
   const adapterInfo = _adapters.get(adapter);
   if (adapterInfo == null) {
     throw new Error(`Cannot find VSP for given adapter type ${adapter}`);

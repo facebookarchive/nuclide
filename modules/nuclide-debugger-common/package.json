@@ -16,9 +16,11 @@
     "idx": "1.2.0",
     "invariant": "2.2.2",
     "nuclide-commons": "0.5.1-dev",
+    "nuclide-commons-atom": "0.5.1-dev",
     "nuclide-commons-ui": "0.5.1-dev",
+    "nullthrows": "1.0.0",
     "react": "16.2.0",
-    "rxjs": "5.5.5",
+  "rxjs": "5.5.5",
     "vscode-debugprotocol": "1.24.0"
   },
   "devDependencies": {

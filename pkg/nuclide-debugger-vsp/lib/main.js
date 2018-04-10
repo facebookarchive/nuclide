@@ -13,7 +13,7 @@ import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import passesGK from '../../commons-node/passesGK';
-import AutoGenLaunchAttachProvider from './AutoGenLaunchAttachProvider';
+import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';

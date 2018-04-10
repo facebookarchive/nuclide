@@ -30,7 +30,9 @@ export default class RemoteControlService {
   }
 
   async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = this._startVspDebugging(processInfo.getProcessConfig());
+    const instance = await this.startVspDebugging(
+      processInfo.getProcessConfig(),
+    );
 
     processInfo.setVspDebuggerInstance(instance);
 
@@ -49,8 +51,8 @@ export default class RemoteControlService {
     });
   }
 
-  _startVspDebugging(config: IProcessConfig): IVspInstance {
-    this._service.startDebugging(config);
+  async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
+    await this._service.startDebugging(config);
 
     const {viewModel} = this._service;
     const {focusedProcess} = viewModel;

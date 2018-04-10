@@ -97,6 +97,16 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
   });
 }
 
+export async function getDefaultNodeBinaryPath(
+  uri: NuclideUri,
+): Promise<?string> {
+  if (_rpcService == null) {
+    return null;
+  } else {
+    return _rpcService.getNodeBinaryPath(uri);
+  }
+}
+
 export function getVSCodeDebuggerAdapterServiceByNuclideUri(
   uri: NuclideUri,
 ): VSCodeDebuggerAdapterService {

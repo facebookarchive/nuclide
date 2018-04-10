@@ -55,4 +55,5 @@ declare interface nuclide$TerminalApi {
 
 declare interface nuclide$RpcService {
   getServiceByNuclideUri(serviceName: string, uri: ?string): any;
+  getNodeBinaryPath(uri: string): Promise<string>;
 }

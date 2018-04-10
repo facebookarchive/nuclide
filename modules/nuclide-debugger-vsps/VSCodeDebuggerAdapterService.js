@@ -10,9 +10,11 @@
  * @format
  */
 
-import type {Adapter} from 'nuclide-debugger-vsps';
 import type {ConnectableObservable} from 'rxjs';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
+import type {
+  VSAdapterExecutableInfo,
+  VsAdapterType,
+} from 'nuclide-debugger-common';
 import type {ProcessMessage} from 'nuclide-commons/process';
 import type {ProcessInfo} from 'nuclide-commons/process';
 
@@ -41,7 +43,15 @@ export async function getProcessTree(): Promise<Array<ProcessInfo>> {
 }
 
 export async function getAdapterExecutableInfo(
-  adapterType: Adapter,
+  adapterType: VsAdapterType,
+  defaultNodeBinaryPath: ?string,
 ): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutable(adapterType);
+  const adapter = getAdapterExecutable(adapterType);
+  if (adapter.command === 'node') {
+    adapter.command =
+      defaultNodeBinaryPath != null
+        ? defaultNodeBinaryPath
+        : process.title === 'node' ? process.execPath : 'node';
+  }
+  return adapter;
 }
