@@ -15,7 +15,6 @@ import type {Expected} from 'nuclide-commons/expected';
 import type {VspProcessInfo} from 'nuclide-debugger-common';
 
 import * as React from 'react';
-import {getDebuggerService} from '../../commons-atom/debugger';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -34,7 +33,7 @@ type AttachType = 'webserver' | 'script';
 type PropsType = {
   targetUri: NuclideUri,
   configIsValidChanged: (valid: boolean) => void,
-  getAttachProcessInfo: (
+  startAttachProcessInfo: (
     targetUri: NuclideUri,
     debugPort: ?number,
     serverAttach: boolean,
@@ -317,14 +316,11 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
         ? this.state.pathMenuItems[this.state.selectedPathIndex].label
         : '/';
 
-    const processInfo = await this.props.getAttachProcessInfo(
+    await this.props.startAttachProcessInfo(
       nuclideUri.createRemoteUri(hostname, selectedPath),
       this.state.attachPort,
       this.state.attachType === 'webserver',
     );
-
-    const debuggerService = await getDebuggerService();
-    await debuggerService.startDebugging(processInfo);
 
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedPath,

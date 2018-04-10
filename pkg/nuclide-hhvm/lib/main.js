@@ -21,11 +21,10 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {getDebuggerService} from '../../commons-atom/debugger';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {getAttachProcessInfo} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
+import {startAttachProcessInfo} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
@@ -170,21 +169,16 @@ class Activation {
     }
 
     if (startDebugger) {
-      // Debug the remote HHVM server!
-      const debuggerService = await getDebuggerService();
-
       if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
         // Insert a breakpoint if requested.
         // NOTE: Nuclide protocol breakpoint line numbers start at 0, so subtract 1.
         // TODO debuggerService.addBreakpoint(navUri, lineNumber - 1);
       }
 
-      await debuggerService.startDebugging(
-        await getAttachProcessInfo(
-          hackRootUri,
-          null /* attachPort */,
-          true /* serverAttach */,
-        ),
+      await startAttachProcessInfo(
+        hackRootUri,
+        null /* attachPort */,
+        true /* serverAttach */,
       );
     }
 

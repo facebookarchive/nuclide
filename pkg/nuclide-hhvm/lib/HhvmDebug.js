@@ -17,7 +17,7 @@ import invariant from 'assert';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {
   getLaunchProcessInfo,
-  getAttachProcessInfo,
+  startAttachProcessInfo,
 } from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 
 export async function debug(
@@ -52,15 +52,14 @@ export async function debug(
         useTerminal,
         '' /* cwdPath */,
       );
+      const debuggerService = await getDebuggerService();
+      await debuggerService.startDebugging(processInfo);
     } else {
-      processInfo = await getAttachProcessInfo(
+      await startAttachProcessInfo(
         activeProjectRoot,
         null /* attachPort */,
         true /* serverAttach */,
       );
     }
   }
-
-  const debuggerService = await getDebuggerService();
-  await debuggerService.startDebugging(processInfo);
 }

@@ -9,9 +9,12 @@
  * @format
  */
 
+import type {HHVMLaunchConfig, HHVMAttachConfig} from './types';
+
 import * as DebugProtocol from 'vscode-debugprotocol';
 import child_process from 'child_process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Deferred} from 'nuclide-commons/promise';
 import {
   OutputEvent,
   launchRequest,
@@ -20,6 +23,7 @@ import {
 } from 'vscode-debugadapter';
 import net from 'net';
 import os from 'os';
+import {getDebuggerArgs, getLaunchArgs} from '..';
 
 const TWO_CRLF = '\r\n\r\n';
 const CONTENT_LENGTH_PATTERN = new RegExp('Content-Length: (\\d+)');
@@ -37,6 +41,7 @@ class HHVMDebuggerWrapper {
   _debuggerWriteCallback: ?DebuggerWriteCallback;
   _nonLoaderBreakSeen: boolean;
   _initializeArgs: DebugProtocol.InitializeRequestArguments;
+  _runInTerminalRequest: ?Deferred<void>;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -61,11 +66,12 @@ class HHVMDebuggerWrapper {
     });
   }
 
-  _attachTarget(attachMessage: attachRequest, retries: number = 0) {
-    if (attachMessage.arguments == null) {
-      attachMessage.arguments = {};
-    }
-    const args = attachMessage.arguments;
+  async _attachTarget(
+    attachMessage: attachRequest,
+    retries: number = 0,
+  ): Promise<void> {
+    const attachArgs: HHVMAttachConfig = attachMessage.arguments;
+    const args = await getDebuggerArgs(attachArgs);
     const attachPort =
       args.debugPort != null
         ? parseInt(args.debugPort, 10)
@@ -146,11 +152,14 @@ class HHVMDebuggerWrapper {
     socket.connect({port: attachPort, host: 'localhost'});
   }
 
-  _launchTarget(launchMessage: launchRequest) {
-    if (launchMessage.arguments == null) {
-      launchMessage.arguments = {};
+  async _launchTarget(launchMessage: launchRequest): Promise<void> {
+    const launchConfig: HHVMLaunchConfig = launchMessage.arguments;
+    if (launchConfig.deferLaunch) {
+      await this._launchTargetInTerminal(launchMessage);
+      return;
     }
-    const args = launchMessage.arguments;
+
+    const args = await getDebuggerArgs(launchConfig);
     const hhvmPath = args.hhvmPath;
     if (hhvmPath == null || hhvmPath === '') {
       throw new Error('Expected a path to HHVM.');
@@ -167,7 +176,7 @@ class HHVMDebuggerWrapper {
       // STDIN, STDOUT and STDERR are the actual PHP streams.
       // If launchMessage.noDebug is specified, start the child but don't
       // connect the debugger fd pipe.
-      stdio: Boolean(launchMessage.noDebug)
+      stdio: Boolean(launchConfig.noDebug)
         ? ['pipe', 'pipe', 'pipe']
         : ['pipe', 'pipe', 'pipe', 'pipe'],
       // When the wrapper exits, so does the target.
@@ -212,6 +221,41 @@ class HHVMDebuggerWrapper {
     this._debuggerWriteCallback = callback;
     this._forwardBufferedMessages();
     this._debugging = true;
+  }
+
+  async _launchTargetInTerminal(requestMessage: launchRequest): Promise<void> {
+    const launchConfig: HHVMLaunchConfig = requestMessage.arguments;
+    // This is a launch in terminal request. Perform the launch and then
+    // return an attach configuration.
+    const startupArgs = await getLaunchArgs(launchConfig);
+
+    // Terminal args require everything to be a string, but debug port
+    // is typed as a number.
+    const terminalArgs = [startupArgs.hhvmPath];
+    for (const arg of startupArgs.hhvmArgs) {
+      terminalArgs.push(String(arg));
+    }
+    const runInTerminalArgs: DebugProtocol.RunInTerminalRequestArguments = {
+      kind: 'integrated',
+      cwd: nuclideUri.dirname(launchConfig.targetUri),
+      args: terminalArgs,
+    };
+
+    this._writeOutputWithHeader({
+      seq: ++this._sequenceNumber,
+      type: 'request',
+      command: 'runInTerminal',
+      arguments: runInTerminalArgs,
+    });
+    this._runInTerminalRequest = new Deferred();
+    await this._runInTerminalRequest.promise;
+
+    const attachConfig: HHVMAttachConfig = {
+      targetUri: launchConfig.targetUri,
+      action: 'attach',
+      debugPort: startupArgs.debugPort,
+    };
+    await this._attachTarget({...requestMessage, arguments: attachConfig});
   }
 
   _forwardBufferedMessages() {
@@ -325,13 +369,21 @@ class HHVMDebuggerWrapper {
           process.exit(0);
           return true;
         case 'launch':
-          const launchMessage: launchRequest = requestMsg;
-          this._launchTarget(launchMessage);
+          this._launchTarget(requestMsg);
           return true;
 
         case 'attach':
-          const attachMessage: attachRequest = requestMsg;
-          this._attachTarget(attachMessage);
+          this._attachTarget(requestMsg);
+          return true;
+
+        case 'runInTerminal':
+          if (this._runInTerminalRequest != null) {
+            if (requestMsg.success) {
+              this._runInTerminalRequest.resolve();
+            } else {
+              this._runInTerminalRequest.reject(new Error(requestMsg.message));
+            }
+          }
           return true;
         default:
           break;

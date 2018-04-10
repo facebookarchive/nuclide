@@ -22,6 +22,7 @@ export type HHVMLaunchConfig = {
   deferLaunch: boolean,
   launchWrapperCommand?: string,
   cwd?: string,
+  noDebug?: boolean,
 };
 
 export type HHVMAttachConfig = {

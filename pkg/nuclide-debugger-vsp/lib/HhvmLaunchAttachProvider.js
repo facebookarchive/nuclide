@@ -19,6 +19,7 @@ import type {
   HHVMAttachConfig,
 } from '../../nuclide-debugger-hhvm-rpc';
 
+import {getDebuggerService} from '../../commons-atom/debugger';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
@@ -28,8 +29,6 @@ import {
   VspProcessInfo,
 } from 'nuclide-debugger-common';
 import * as React from 'react';
-import {getDebuggerService} from '../../commons-atom/debugger';
-import {getHhvmDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {LaunchUiComponent} from './HhvmLaunchUiComponent';
 import {AttachUiComponent} from './HhvmAttachUiComponent';
 import invariant from 'assert';
@@ -118,7 +117,7 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
             <AttachUiComponent
               targetUri={this.getTargetUri()}
               configIsValidChanged={configIsValidChanged}
-              getAttachProcessInfo={getAttachProcessInfo}
+              startAttachProcessInfo={startAttachProcessInfo}
             />
           );
         } else {
@@ -136,14 +135,14 @@ function getConfig(): PhpDebuggerSessionConfig {
 }
 
 // Determines the debug configuration for launching the HHVM debugger
-async function _getHHVMLaunchConfig(
+function _getHHVMLaunchConfig(
   targetUri: NuclideUri,
   scriptPath: string,
   scriptArgs: string,
   scriptWrapperCommand: ?string,
   runInTerminal: boolean,
   cwdPath: string,
-): Promise<Object> {
+): HHVMLaunchConfig {
   const userConfig = getConfig();
   const deferLaunch = runInTerminal;
 
@@ -179,45 +178,7 @@ async function _getHHVMLaunchConfig(
     config.launchWrapperCommand = scriptWrapperCommand;
   }
 
-  const service = getHhvmDebuggerServiceByNuclideUri(targetUri);
-
-  if (deferLaunch) {
-    // This is a launch in terminal request. Perform the launch and then
-    // return an attach configuration.
-    const startupArgs = await service.getLaunchArgs(config);
-
-    // Launch the script and then convert this to an attach operation.
-    const hostname = nuclideUri.getHostname(targetUri);
-    const launchUri = nuclideUri.createRemoteUri(hostname, scriptPath);
-
-    const remoteService = await getDebuggerService();
-    invariant(remoteService != null);
-
-    // Terminal args require everything to be a string, but debug port
-    // is typed as a number.
-    const terminalArgs = [];
-    for (const arg of startupArgs.hhvmArgs) {
-      terminalArgs.push(String(arg));
-    }
-
-    await remoteService.launchDebugTargetInTerminal(
-      launchUri,
-      startupArgs.hhvmPath,
-      terminalArgs,
-      nuclideUri.dirname(launchUri),
-      new Map(),
-    );
-
-    const attachConfig: HHVMAttachConfig = {
-      targetUri: nuclideUri.getPath(targetUri),
-      action: 'attach',
-      debugPort: startupArgs.debugPort,
-    };
-
-    return service.getDebuggerArgs(attachConfig);
-  }
-
-  return service.getDebuggerArgs(config);
+  return config;
 }
 
 export async function getLaunchProcessInfo(
@@ -229,7 +190,7 @@ export async function getLaunchProcessInfo(
   cwdPath: string,
 ): Promise<VspProcessInfo> {
   const adapterExecutable = await getHhvmAdapterInfo(targetUri);
-  const config = await _getHHVMLaunchConfig(
+  const config = _getHHVMLaunchConfig(
     targetUri,
     scriptPath,
     scriptArgs,
@@ -240,7 +201,7 @@ export async function getLaunchProcessInfo(
   const adapterType = VsAdapterTypes.HHVM;
   return new VspProcessInfo(
     targetUri,
-    runInTerminal ? 'attach' : 'launch',
+    'launch',
     adapterType,
     adapterExecutable,
     config,
@@ -248,10 +209,10 @@ export async function getLaunchProcessInfo(
   );
 }
 
-async function _getHHVMAttachConfig(
+function _getHHVMAttachConfig(
   targetUri: NuclideUri,
   attachPort: ?number,
-): Promise<Object> {
+): HHVMAttachConfig {
   // Note: not specifying startup document or debug port here, the backend
   // will use the default parameters. We can surface these options in the
   // Attach Dialog if users need to be able to customize them in the future.
@@ -274,17 +235,16 @@ async function _getHHVMAttachConfig(
     config.debugPort = attachPort;
   }
 
-  const service = getHhvmDebuggerServiceByNuclideUri(targetUri);
-  return service.getDebuggerArgs(config);
+  return config;
 }
 
-export async function getAttachProcessInfo(
+export async function startAttachProcessInfo(
   targetUri: NuclideUri,
   attachPort: ?number,
   serverAttach: boolean,
 ): Promise<VspProcessInfo> {
   const adapterExecutable = await getHhvmAdapterInfo(targetUri);
-  const config = await _getHHVMAttachConfig(targetUri, attachPort);
+  const config = _getHHVMAttachConfig(targetUri, attachPort);
   const processInfo = new VspProcessInfo(
     targetUri,
     'attach',
@@ -294,14 +254,13 @@ export async function getAttachProcessInfo(
     CUSTOM_CPABILITIES,
     CUSTOM_ATTACH_PROPERTIES,
   );
+
+  const debugService = await getDebuggerService();
+  const startDebuggingPromise = debugService.startDebugging(processInfo);
   try {
     // $FlowFB
     const services = require('./fb-HhvmServices');
     services.startSlog();
-
-    if (serverAttach) {
-      services.startCrashHandler(targetUri, processInfo, getAttachProcessInfo);
-    }
 
     processInfo.addCustomDisposable(
       new UniversalDisposable(() => {
@@ -312,6 +271,15 @@ export async function getAttachProcessInfo(
         }
       }),
     );
+
+    if (serverAttach) {
+      await startDebuggingPromise;
+      services.startCrashHandler(
+        targetUri,
+        processInfo,
+        startAttachProcessInfo,
+      );
+    }
   } catch (_) {}
   return processInfo;
 }
