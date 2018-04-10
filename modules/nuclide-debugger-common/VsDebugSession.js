@@ -45,6 +45,10 @@ function raiseAdapterExitedEvent(exitCode: number): AdapterExitedEvent {
   };
 }
 
+type RunInTerminalHandler = (
+  arguments: DebugProtocol.RunInTerminalRequestArguments,
+) => Promise<void>;
+
 /**
  * Use V8 JSON-RPC protocol to send & receive messages
  * (requests, responses & events) over `stdio` of adapter child processes.
@@ -75,6 +79,7 @@ export default class VsDebugSession extends V8Protocol {
   _onDidLoadSource: Subject<DebugProtocol.LoadedSourceEvent>;
   _onDidCustom: Subject<DebugProtocol.DebugEvent>;
   _onDidEvent: Subject<DebugProtocol.Event | AdapterExitedEvent>;
+  _runInTerminalHandler: ?RunInTerminalHandler;
 
   constructor(
     id: string,
@@ -84,6 +89,7 @@ export default class VsDebugSession extends V8Protocol {
     spawner?: IVsAdapterSpawner,
     sendPreprocessors?: MessageProcessor[] = [],
     receivePreprocessors?: MessageProcessor[] = [],
+    runInTerminalHandler?: RunInTerminalHandler,
   ) {
     super(id, logger, sendPreprocessors, receivePreprocessors);
     this._adapterExecutable = adapterExecutable;
@@ -106,6 +112,7 @@ export default class VsDebugSession extends V8Protocol {
     this._onDidCustom = new Subject();
     this._onDidEvent = new Subject();
     this.capabilities = {};
+    this._runInTerminalHandler = runInTerminalHandler || null;
   }
 
   observeInitializeEvents(): Observable<DebugProtocol.InitializedEvent> {
@@ -453,12 +460,26 @@ export default class VsDebugSession extends V8Protocol {
     return (new Date().getTime() - this._startTime) / 1000;
   }
 
-  dispatchRequest(
+  async dispatchRequest(
     request: DebugProtocol.Request,
     response: DebugProtocol.Response,
-  ): void {
+  ): Promise<void> {
     if (request.command === 'runInTerminal') {
-      this._logger.error('TODO: runInTerminal', request);
+      const runInTerminalHandler = this._runInTerminalHandler;
+      if (runInTerminalHandler == null) {
+        this._logger.error(
+          "'runInTerminal' isn't supported for this debug session",
+          request,
+        );
+        return;
+      }
+      try {
+        await runInTerminalHandler((request.arguments: any));
+      } catch (error) {
+        response.success = false;
+        response.message = error.message;
+      }
+      this.sendResponse(response);
     } else if (request.command === 'handshake') {
       this._logger.error('TODO: handshake', request);
     } else {

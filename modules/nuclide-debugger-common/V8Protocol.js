@@ -57,10 +57,10 @@ export default class V8Protocol {
     throw new Error('No implementation found!');
   }
 
-  dispatchRequest(
+  async dispatchRequest(
     request: DebugProtocol.Request,
     response: DebugProtocol.Response,
-  ): void {
+  ): Promise<void> {
     throw new Error('No implementation found!');
   }
 

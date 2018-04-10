@@ -56,10 +56,13 @@ import type {
 import type {IProcessConfig, MessageProcessor} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from 'nuclide-commons/analytics';
+
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
 import invariant from 'assert';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
@@ -81,6 +84,7 @@ import {
   getNotificationService,
   getDatatipService,
   getVSCodeDebuggerAdapterServiceByNuclideUri,
+  getTerminalService,
 } from '../AtomServiceContainer';
 import {
   expressionAsEvaluationResultStream,
@@ -97,7 +101,7 @@ import {
 } from './DebuggerModel';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Emitter, TextBuffer} from 'atom';
-import {distinct} from 'nuclide-commons/collection';
+import {distinct, mapFromObject} from 'nuclide-commons/collection';
 import {onUnexpectedError, notifyOpenDebugSession} from '../utils';
 import uuid from 'uuid';
 import {
@@ -185,6 +189,10 @@ class ViewModel implements IViewModel {
       this._emitter.emit(CHANGE_FOCUSED_STACKFRAME, {stackFrame, explicit});
     }
   }
+}
+
+function getDebuggerName(adapterType: string): string {
+  return `${capitalize(adapterType)} Debugger`;
 }
 
 export default class DebugService implements IDebugService {
@@ -624,7 +632,7 @@ export default class DebugService implements IDebugService {
 
     const createConsole = getConsoleService();
     if (createConsole != null) {
-      const name = `${capitalize(process.configuration.adapterType)} Debugger`;
+      const name = getDebuggerName(process.configuration.adapterType);
       const consoleApi = createConsole({
         id: name,
         name,
@@ -1163,7 +1171,7 @@ export default class DebugService implements IDebugService {
         columnsStartAt1: true,
         supportsVariableType: true,
         supportsVariablePaging: false,
-        supportsRunInTerminalRequest: false,
+        supportsRunInTerminalRequest: getTerminalService() != null,
         // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
         supportsThreadCausedFocus: true,
         locale: 'en_US',
@@ -1236,12 +1244,93 @@ export default class DebugService implements IDebugService {
       spawner,
       clientPreprocessors,
       adapterPreprocessors,
+      this._runInTerminal,
     );
   }
 
   _sourceIsNotAvailable(uri: string): void {
     this._model.sourceIsNotAvailable(uri);
   }
+
+  _runInTerminal = async (
+    args: DebugProtocol.RunInTerminalRequestArguments,
+  ): Promise<void> => {
+    const terminalService = getTerminalService();
+    if (terminalService == null) {
+      throw new Error(
+        'Unable to launch in terminal since the service is not available',
+      );
+    }
+    const process = this._getCurrentProcess();
+    if (process == null) {
+      throw new Error("There's no debug process to create a terminal for!");
+    }
+    const {adapterType, targetUri} = process.configuration;
+    const key = `targetUri=${targetUri}&command=${args.args[0]}`;
+
+    // Ensure any previous instances of this same target are closed before
+    // opening a new terminal tab. We don't want them to pile up if the
+    // user keeps running the same app over and over.
+    destroyItemWhere(item => {
+      if (item.getURI == null || item.getURI() == null) {
+        return false;
+      }
+
+      const uri = nullthrows(item.getURI());
+      try {
+        // Only close terminal tabs with the same title and target binary.
+        const otherInfo = terminalService.infoFromUri(uri);
+        return otherInfo.key === key;
+      } catch (e) {}
+      return false;
+    });
+
+    const title =
+      args.title != null ? args.title : getDebuggerName(adapterType);
+    const hostname = nuclideUri.getHostnameOpt(targetUri);
+    const cwd =
+      hostname == null
+        ? args.cwd
+        : nuclideUri.createRemoteUri(hostname, args.cwd);
+
+    const info: nuclide$TerminalInfo = {
+      key,
+      title,
+      cwd,
+      command: {
+        file: args.args[0],
+        args: args.args.slice(1),
+      },
+      environmentVariables:
+        args.env != null ? mapFromObject(args.env) : undefined,
+      preservedCommands: [
+        'debugger:continue-debugging',
+        'debugger:stop-debugging',
+        'debugger:restart-debugging',
+        'debugger:step-over',
+        'debugger:step-into',
+        'debugger:step-out',
+      ],
+      remainOnCleanExit: true,
+      icon: 'nuclicon-debugger',
+      defaultLocation: 'bottom',
+    };
+    // TODO(pelmers): flow-type this?
+    const terminal: any = await goToLocation(terminalService.uriFromInfo(info));
+    terminal.setProcessExitCallback(() => {
+      // This callback is invoked if the target process dies first, ensuring
+      // we tear down the debugger.
+      this.stopProcess();
+    });
+
+    this._sessionEndDisposables.add(() => {
+      // This termination path is invoked if the debugger dies first, ensuring
+      // we terminate the target process. This can happen if the user hits stop,
+      // or if the debugger crashes.
+      terminal.setProcessExitCallback(() => {});
+      terminal.terminateProcess();
+    });
+  };
 
   async restartProcess(): Promise<void> {
     const process = this._getCurrentProcess();
