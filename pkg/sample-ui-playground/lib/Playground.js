@@ -39,6 +39,7 @@ import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.exampl
 import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
 import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
+import {HighlightedCodeExamples} from 'nuclide-commons-ui/HighlightedCode.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -67,6 +68,7 @@ const playgroundComponents = [
   PathWithFileIconExamples,
   AnimatedEllipsisExamples,
   FileChangesExamples,
+  HighlightedCodeExamples,
 ];
 
 type ComponentSpec = {
