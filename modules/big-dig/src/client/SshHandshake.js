@@ -18,6 +18,7 @@ import type {
 } from './SshClient';
 import type {DnsFamily} from './lookup-prefer-ip-v6';
 
+import {getLogger} from 'log4js';
 import net from 'net';
 import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
@@ -54,6 +55,8 @@ const SFTP_TIMEOUT_MS = 20 * 1000;
 
 // Automatically retry with a password prompt if existing authentication methods fail.
 const PASSWORD_RETRIES = 3;
+
+const logger = getLogger('SshHandshake');
 
 export type SshConnectionConfiguration = {
   host: string, // host nuclide server is running on
@@ -359,11 +362,16 @@ export class SshHandshake {
       try {
         privateKey = await fs.readFileAsBuffer(expandedPath);
       } catch (error) {
-        throw new SshHandshakeError(
-          `Failed to read private key at ${expandedPath}.`,
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          error,
+        logger.warn(
+          `Failed to read private key at ${expandedPath}, falling back to password auth`,
         );
+        return {
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS,
+        };
       }
 
       return {
