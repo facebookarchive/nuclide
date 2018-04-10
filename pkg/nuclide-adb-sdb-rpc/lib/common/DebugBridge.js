@@ -16,6 +16,7 @@ import {Observable} from 'rxjs';
 import {observeProcess, runCommand} from 'nuclide-commons/process';
 
 export const DEFAULT_ADB_PORT = 5037;
+const ADB_TIMEOUT = 5000; // 5s
 
 export type getDevicesOptions = {
   port?: number,
@@ -81,14 +82,14 @@ export class DebugBridge {
                 this._parseDevicesCommandOutput(stdout, -1),
               ),
             );
-
       return commandObs
         .toArray()
         .switchMap(deviceList =>
           Observable.of(
             deviceList.reduce((a, b) => (a != null ? a.concat(...b) : b)),
           ),
-        );
+        )
+        .timeout(ADB_TIMEOUT);
     });
   }
 
