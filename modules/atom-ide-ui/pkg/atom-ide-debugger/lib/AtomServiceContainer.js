@@ -10,8 +10,11 @@
  * @format
  */
 
-import type {DatatipService} from 'atom-ide-ui';
-import type {ConsoleService, RegisterExecutorFunction} from 'atom-ide-ui';
+import type {
+  DatatipService,
+  ConsoleService,
+  RegisterExecutorFunction,
+} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 

@@ -49,11 +49,14 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            'VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+            '../atom-ide-debugger-python/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'VendorLib/vs-py-debugger'),
+      root: nuclideUri.join(
+        __dirname,
+        '../atom-ide-debugger-python/VendorLib/vs-py-debugger',
+      ),
     },
   ],
   [

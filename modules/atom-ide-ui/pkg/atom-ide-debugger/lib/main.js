@@ -24,9 +24,7 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {SerializedState, IBreakpoint} from './types';
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {diffSets} from 'nuclide-commons/observable';
-import {Observable} from 'rxjs';
+import {observeRemovedHostnames} from 'nuclide-commons-atom/projects';
 import BreakpointManager from './BreakpointManager';
 import {AnalyticsEvents, DebuggerMode} from './constants';
 import BreakpointConfigComponent from './ui/BreakpointConfigComponent';
@@ -89,17 +87,7 @@ class Activation {
     this._connectionProviders = new Map();
     this._layoutManager = new DebuggerLayoutManager(this._service, state);
 
-    const removedHostnames = observableFromSubscribeFunction(
-      atom.project.onDidChangePaths.bind(atom.project),
-    )
-      .map(
-        paths =>
-          new Set(
-            paths.filter(nuclideUri.isRemote).map(nuclideUri.getHostname),
-          ),
-      )
-      .let(diffSets())
-      .flatMap(diff => Observable.from(diff.removed));
+    const removedHostnames = observeRemovedHostnames();
 
     this._disposables = new UniversalDisposable(
       this._layoutManager,

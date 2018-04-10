@@ -9,7 +9,7 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-node",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "scripts/test.js",
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec",
     "lint": "../../node_modules/.bin/eslint .",
     "flow": "../../node_modules/.bin/flow"
   },

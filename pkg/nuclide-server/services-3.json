@@ -116,7 +116,7 @@
     "name": "CqueryLSPService"
   },
   {
-    "implementation": "../../modules/nuclide-debugger-vsps/RemoteDebuggerCommandService.js",
+    "implementation": "../../modules/atom-ide-debugger-python/RemoteDebuggerCommandService.js",
     "name": "RemoteDebuggerCommandService"
   },
   {

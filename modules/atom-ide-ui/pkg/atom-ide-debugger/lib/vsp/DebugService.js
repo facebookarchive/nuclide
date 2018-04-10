@@ -689,7 +689,7 @@ export default class DebugService implements IDebugService {
         notificationStream.subscribe(({type, message}) => {
           atom.notifications.add(type, message);
         }),
-        // TODO handle non string & unkown categories
+        // TODO handle non string output (e.g. files & objects)
       );
     }
 

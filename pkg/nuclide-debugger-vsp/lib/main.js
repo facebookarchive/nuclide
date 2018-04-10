@@ -19,12 +19,7 @@ import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  listenToRemoteDebugCommands,
-  getPythonAutoGenConfig,
-  getOCamlAutoGenConfig,
-  getPrepackAutoGenConfig,
-} from './utils';
+import {getOCamlAutoGenConfig, getPrepackAutoGenConfig} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -32,31 +27,15 @@ class Activation {
   _subscriptions: UniversalDisposable;
 
   constructor() {
-    this._subscriptions = new UniversalDisposable(
-      listenToRemoteDebugCommands(),
-    );
+    this._subscriptions = new UniversalDisposable();
 
     fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
       const isOpenSource = !exists;
-      this._registerPythonDebugProvider();
       this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerOcamlDebugProvider();
       this._registerNativeVspProvider();
       this._registerHHVMDebugProvider();
-    });
-  }
-
-  _registerPythonDebugProvider(): void {
-    this._registerDebugProvider({
-      name: 'Python',
-      getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          'Python',
-          connection,
-          getPythonAutoGenConfig(),
-        );
-      },
     });
   }
 

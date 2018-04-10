@@ -20,7 +20,6 @@ import type {NuclideJavaDebuggerProvider} from './types';
 
 import {Observable} from 'rxjs';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class JavaDebuggerDevicePanelProvider
   implements DeviceProcessTaskProvider {
@@ -53,11 +52,6 @@ export class JavaDebuggerDevicePanelProvider
   }
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    const service = getVSCodeDebuggerAdapterServiceByNuclideUri(host);
-    if (service == null) {
-      throw new Error('Java debugger service is not available.');
-    }
-
     const debuggerService = await getDebuggerService();
     const {processInfo} = await this._javaDebugger.createAndroidDebugInfo({
       targetUri: host,
