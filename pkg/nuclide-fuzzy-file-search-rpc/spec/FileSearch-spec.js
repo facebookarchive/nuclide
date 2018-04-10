@@ -143,11 +143,15 @@ function aFileSearchShould(typename, dirPathFn) {
   });
 }
 
-function createTestFolder(): Promise<string> {
-  return generateFixture(
+async function createTestFolder(): Promise<string> {
+  const folder = await generateFixture(
     'fuzzy-file-search-rpc',
-    new Map([['test', ''], ['deeper/deeper', '']]),
+    new Map([['project/test', ''], ['project/deeper/deeper', '']]),
   );
+  // The basename of the root folder is included for search purposes.
+  // Since fixtures have random folders, add a top level "project" dir
+  // to prevent this from causing false search results.
+  return nuclideUri.join(folder, 'project');
 }
 
 async function hgTestFolder(): Promise<string> {
