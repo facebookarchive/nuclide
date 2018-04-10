@@ -42,7 +42,8 @@ public class EclipseShim {
     return "{ return " + returnToken + "; }";
   }
 
-  // Replaces the specified method in the specified class with the specified replacement Java source.
+  // Replaces the specified method in the specified class with the specified replacement Java
+  // source.
   public static void hotReplaceMethod(String className, String methodName, String replacementCode) {
     String key = className + "!" + methodName;
     if (_modifiedRoutines.contains(key)) {

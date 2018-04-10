@@ -16,7 +16,6 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
-import java.lang.UnsupportedOperationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

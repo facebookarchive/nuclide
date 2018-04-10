@@ -11,8 +11,6 @@ package com.facebook.nuclide.debugger;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
-import java.lang.Math;
-import java.lang.StringBuilder;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;

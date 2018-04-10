@@ -9,7 +9,6 @@
 package com.facebook.nuclide.shim;
 
 import com.facebook.nuclide.debugger.Utils;
-import java.lang.UnsupportedOperationException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
