@@ -20,6 +20,7 @@ import type {
 } from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import {macrotask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
@@ -78,8 +79,8 @@ export default class ConsoleView extends React.Component<Props, State> {
   // Used when _scrollToBottom is called. The console optimizes message loading
   // so scrolling to the bottom once doesn't always scroll to the bottom since
   // more messages can be loaded after.
-  _isScrollingToBottom: boolean;
-  _scrollingThrottle: rxjs$Subscription;
+  _continuouslyScrollToBottom: boolean;
+  _scrollingThrottle: ?rxjs$Subscription;
 
   _outputTable: ?OutputTable;
 
@@ -91,21 +92,25 @@ export default class ConsoleView extends React.Component<Props, State> {
     };
     this._disposables = new UniversalDisposable();
     this._isScrolledNearBottom = true;
-    this._isScrollingToBottom = false;
+    this._continuouslyScrollToBottom = false;
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
     this._id = count++;
   }
 
   componentDidMount(): void {
-    // Wait for `<OutputTable />` to render itself via react-virtualized before scrolling and
-    // re-measuring; Otherwise, the scrolled location will be inaccurate, preventing the Console
-    // from auto-scrolling.
-    const immediate = setImmediate(() => {
-      this._startScrollToBottom();
-    });
-    this._disposables.add(() => {
-      clearImmediate(immediate);
-    });
+    this._disposables.add(
+      // Wait for `<OutputTable />` to render itself via react-virtualized before scrolling and
+      // re-measuring; Otherwise, the scrolled location will be inaccurate, preventing the Console
+      // from auto-scrolling.
+      macrotask.subscribe(() => {
+        this._startScrollToBottom();
+      }),
+      () => {
+        if (this._scrollingThrottle != null) {
+          this._scrollingThrottle.unsubscribe();
+        }
+      },
+    );
   }
 
   componentWillUnmount(): void {
@@ -318,7 +323,7 @@ export default class ConsoleView extends React.Component<Props, State> {
       scrollTop,
     );
 
-    if (this._isScrollingToBottom && !isScrolledToBottom) {
+    if (this._continuouslyScrollToBottom && !isScrolledToBottom) {
       this._scrollToBottom();
     } else {
       this._isScrolledNearBottom = isScrolledToBottom;
@@ -345,13 +350,13 @@ export default class ConsoleView extends React.Component<Props, State> {
   };
 
   _startScrollToBottom = (): void => {
-    if (!this._isScrollingToBottom) {
-      this._isScrollingToBottom = true;
+    if (!this._continuouslyScrollToBottom) {
+      this._continuouslyScrollToBottom = true;
 
       this._scrollingThrottle = Observable.timer(
         MAXIMUM_SCROLLING_TIME,
       ).subscribe(() => {
-        this._isScrollingToBottom = false;
+        this._stopScrollToBottom();
       });
     }
 
@@ -359,11 +364,13 @@ export default class ConsoleView extends React.Component<Props, State> {
   };
 
   _stopScrollToBottom = (): void => {
-    this._isScrollingToBottom = false;
-    this._scrollingThrottle.unsubscribe();
+    this._continuouslyScrollToBottom = false;
+    if (this._scrollingThrottle != null) {
+      this._scrollingThrottle.unsubscribe();
+    }
   };
 
   _shouldScrollToBottom = (): boolean => {
-    return this._isScrolledNearBottom || this._isScrollingToBottom;
+    return this._isScrolledNearBottom || this._continuouslyScrollToBottom;
   };
 }
