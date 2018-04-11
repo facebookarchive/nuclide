@@ -339,7 +339,7 @@ export default class ConnectionDialog extends React.Component<Props, State> {
   }
 
   ok = () => {
-    const {mode} = this.state;
+    const {mode, isDirty} = this.state;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -379,7 +379,8 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           cwd,
           remoteServerCommand,
           password,
-          displayTitle,
+          // Modified profiles probably don't match the display title.
+          displayTitle: isDirty ? '' : displayTitle,
         });
       } else {
         remote.dialog.showErrorBox(
