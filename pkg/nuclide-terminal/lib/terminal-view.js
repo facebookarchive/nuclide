@@ -12,6 +12,10 @@
 import invariant from 'assert';
 import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
+import {
+  observeAddedHostnames,
+  observeRemovedHostnames,
+} from 'nuclide-commons-atom/projects';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
 import url from 'url';
@@ -28,10 +32,6 @@ import {
 } from '../../commons-node/nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  RemoteConnection,
-  ServerConnection,
-} from '../../nuclide-remote-connection';
 import {spawn, useTitleAsPath} from '../../nuclide-pty-rpc';
 import {track} from '../../nuclide-analytics';
 
@@ -256,8 +256,8 @@ export class TerminalView implements PtyClient {
 
     if (cwd != null && nuclideUri.isRemote(cwd)) {
       this._subscriptions.add(
-        ServerConnection.onDidCloseServerConnection(connection => {
-          if (nuclideUri.getHostname(cwd) === connection.getRemoteHostname()) {
+        observeRemovedHostnames().subscribe(hostname => {
+          if (nuclideUri.getHostname(cwd) === hostname) {
             this._closeTab();
           }
         }),
@@ -268,44 +268,37 @@ export class TerminalView implements PtyClient {
     (this._div: any).focus = () => terminal.focus();
     (this._div: any).blur = () => terminal.blur();
 
-    this._spawn(cwd);
+    this._spawn(cwd)
+      .then(pty => this._onPtyFulfill(pty))
+      .catch(error => this._onPtyFail(error));
   }
 
-  _spawn(cwd: ?NuclideUri): void {
+  _spawn(cwd: ?NuclideUri): Promise<Pty> {
     const command = this._command;
     const info: PtyInfo = {
       terminalType: 'xterm-256color',
       environment: this._terminalInfo.environmentVariables,
       ...(command == null ? {} : {command}),
     };
-    if (
-      cwd == null ||
-      nuclideUri.isLocal(cwd) ||
-      RemoteConnection.getByHostname(nuclideUri.getHostname(cwd)).length > 0
-    ) {
+    const performSpawn = () => {
       this._setUseTitleAsPath(cwd);
-      const promise =
-        cwd == null
-          ? spawn(info, this)
-          : getPtyServiceByNuclideUri(cwd).spawn(
-              {...info, cwd: nuclideUri.getPath(cwd)},
-              this,
-            );
-      promise
-        .then(pty => this._onPtyFulfill(pty))
-        .catch(error => this._onPtyFail(error));
+      return cwd == null
+        ? spawn(info, this)
+        : getPtyServiceByNuclideUri(cwd).spawn(
+            {...info, cwd: nuclideUri.getPath(cwd)},
+            this,
+          );
+    };
+    if (cwd == null || nuclideUri.isLocal(cwd)) {
+      return performSpawn();
     } else {
-      // If the remote connection is not ready, retry when we see a new connection.
-      const subscription = RemoteConnection.onDidAddRemoteConnection(
-        connection => {
-          if (RemoteConnection.getForUri(cwd) != null) {
-            this._subscriptions.remove(subscription);
-            subscription.dispose();
-            this._spawn(cwd);
-          }
-        },
-      );
-      this._subscriptions.add(subscription);
+      const cwdHostname = nuclideUri.getHostname(cwd);
+      // Wait for the remote connection to be added before spawning.
+      const hostnameAddedPromise = observeAddedHostnames()
+        .filter(hostname => hostname === cwdHostname)
+        .take(1)
+        .toPromise();
+      return hostnameAddedPromise.then(performSpawn);
     }
   }
 
