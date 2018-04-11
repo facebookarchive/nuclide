@@ -9,7 +9,7 @@
  * @format
  */
 
-import {parseConfig} from '../lib/shellConfig';
+import {parseConfig} from '../lib/pty-service/shellConfig';
 
 describe('shellConfig', () => {
   describe('parseConfig', () => {

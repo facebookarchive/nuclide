@@ -22,7 +22,7 @@ import url from 'url';
 import {Terminal} from 'xterm';
 import * as Fit from 'xterm/lib/addons/fit/fit';
 
-import {getPtyServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getPtyServiceByNuclideUri} from './AtomServiceContainer';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
@@ -32,19 +32,13 @@ import {
 } from '../../commons-node/nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {spawn, useTitleAsPath} from '../../nuclide-pty-rpc';
 import {track} from '../../nuclide-analytics';
 
 import {removePrefixSink, patternCounterSink} from './sink';
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  Command,
-  Pty,
-  PtyClient,
-  PtyInfo,
-} from '../../nuclide-pty-rpc/rpc-types';
+import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';
 
 import type {Sink} from './sink';
 
@@ -282,12 +276,10 @@ export class TerminalView implements PtyClient {
     };
     const performSpawn = () => {
       this._setUseTitleAsPath(cwd);
-      return cwd == null
-        ? spawn(info, this)
-        : getPtyServiceByNuclideUri(cwd).spawn(
-            {...info, cwd: nuclideUri.getPath(cwd)},
-            this,
-          );
+      return getPtyServiceByNuclideUri(cwd).spawn(
+        cwd != null ? {...info, cwd: nuclideUri.getPath(cwd)} : info,
+        this,
+      );
     };
     if (cwd == null || nuclideUri.isLocal(cwd)) {
       return performSpawn();
@@ -303,11 +295,9 @@ export class TerminalView implements PtyClient {
   }
 
   _setUseTitleAsPath(cwd: ?NuclideUri): void {
-    const promise =
-      cwd == null
-        ? useTitleAsPath(this)
-        : getPtyServiceByNuclideUri(cwd).useTitleAsPath(this);
-    promise.then(value => (this._useTitleAsPath = value));
+    getPtyServiceByNuclideUri(cwd)
+      .useTitleAsPath(this)
+      .then(value => (this._useTitleAsPath = value));
   }
 
   _onPtyFulfill(pty: Pty): void {

@@ -78,7 +78,6 @@ import typeof * as JavaDebuggerHelpersService from '../../nuclide-debugger-java-
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
-import typeof * as PtyService from '../../nuclide-pty-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
@@ -180,10 +179,6 @@ export function getOpenFilesServiceByNuclideUri(
   uri: NuclideUri,
 ): OpenFilesService {
   return nullthrows(getServiceByNuclideUri('OpenFilesService', uri));
-}
-
-export function getPtyServiceByNuclideUri(uri: NuclideUri): PtyService {
-  return nullthrows(getServiceByNuclideUri('PtyService', uri));
 }
 
 export function getPythonServiceByNuclideUri(uri: NuclideUri): PythonService {

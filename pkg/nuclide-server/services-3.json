@@ -84,7 +84,7 @@
     "name": "HhvmDebuggerService"
   },
   {
-    "implementation": "../nuclide-pty-rpc/lib/PtyService.js",
+    "implementation": "../nuclide-terminal/lib/pty-service/PtyService.js",
     "name": "PtyService"
   },
   {

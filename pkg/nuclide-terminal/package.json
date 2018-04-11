@@ -200,6 +200,11 @@
         "0.0.0": "initializeCwdApi"
       }
     },
+    "nuclide-rpc-services": {
+      "versions": {
+        "0.0.0": "consumeRpcService"
+      }
+    },
     "nuclide-paste": {
       "versions": {
         "0.0.0": "consumePasteProvider"

@@ -19,12 +19,12 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {objectFromMap} from 'nuclide-commons/collection';
 import performanceNow from 'nuclide-commons/performanceNow';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import {runCommand} from 'nuclide-commons/process';
 
 import {readConfig} from './shellConfig';
 
-import type {Command, Pty, PtyInfo, PtyClient} from '../rpc-types';
+import type {Command, Pty, PtyInfo, PtyClient} from './rpc-types';
 
 export async function spawn(info: PtyInfo, client: PtyClient): Promise<Pty> {
   return new PtyImplementation(

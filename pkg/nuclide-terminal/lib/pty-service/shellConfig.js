@@ -16,7 +16,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
 
-import type {Command} from '../rpc-types';
+import type {Command} from './rpc-types';
 
 const CONFIG_BASENAME = '.nuclide-terminal.json';
 

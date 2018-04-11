@@ -9,10 +9,10 @@
  * @format
  */
 
+import type {PtyClient} from '../lib/pty-service/rpc-types';
 import invariant from 'assert';
 
-import {spawn} from '../lib/PtyService';
-import {PtyClient} from '../rpc-types';
+import {spawn} from '../lib/pty-service/PtyService';
 
 describe('PtyService', () => {
   describe('spawn', () => {

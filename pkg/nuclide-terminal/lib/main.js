@@ -19,6 +19,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+import {setRpcService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {
   infoFromUri,
@@ -164,6 +165,10 @@ class Activation {
     return new UniversalDisposable(() => {
       this._cwd = null;
     });
+  }
+
+  consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
+    return setRpcService(rpcService);
   }
 
   _getPathOrCwd(event: Event): ?string {
