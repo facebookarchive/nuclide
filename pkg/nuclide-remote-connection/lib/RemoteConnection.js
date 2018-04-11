@@ -28,6 +28,7 @@ import {Emitter} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {getLogger} from 'log4js';
+import toml from 'toml';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -109,7 +110,7 @@ export class RemoteConnection {
       }
       directories.push(realPath);
     } else {
-      const projectContents = season.parse(contents.toString());
+      const projectContents = parseProject(contents.toString());
       const dirname = nuclideUri.dirname(realPath);
 
       const projectPaths = projectContents.paths;
@@ -478,4 +479,15 @@ export class RemoteConnection {
 function hasAtomProjectFormat(filepath) {
   const ext = nuclideUri.extname(filepath);
   return ext === '.json' || ext === '.cson';
+}
+
+function parseProject(raw: string): any {
+  try {
+    return toml.parse(raw);
+  } catch (err) {
+    if (err.name === 'SyntaxError') {
+      return season.parse(raw);
+    }
+    throw err;
+  }
 }
