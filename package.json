@@ -213,6 +213,7 @@
     "language-graphql",
     "language-haskell",
     "language-ini",
+    "language-kotlin",
     "language-lua",
     "language-ocaml",
     "language-rust",
