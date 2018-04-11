@@ -249,4 +249,48 @@ import {w} from './local';
       },
     ]);
   });
+
+  it('groups imports/requires with their own kind', () => {
+    const sourceFile = `
+import type {x} from 'def';
+
+import {x} from 'abc';
+
+const z = require('xyz');
+`;
+
+    const importFormatter = new ImportFormatter(['node_modules'], true);
+    function getExport(id, uri, isTypeExport = false, isDefault = false) {
+      return {id, uri, line: 1, isTypeExport, isDefault};
+    }
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', 'node_modules/def', false),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 5, character: 0}, end: {line: 5, character: 0}},
+        newText: "const {test} = require('def');\n",
+      },
+    ]);
+
+    importFormatter.useRequire = false;
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', 'node_modules/def', false),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 4, character: 0}, end: {line: 4, character: 0}},
+        newText: "import {test} from 'def';\n",
+      },
+    ]);
+  });
 });

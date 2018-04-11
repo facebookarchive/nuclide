@@ -166,7 +166,12 @@ export function getEditsForImport(
   return [
     createEdit(
       importFormatter.formatImport(fileMissingImport, missingImport),
-      createNewImport(missingImport, programBody, importPath),
+      createNewImport(
+        missingImport,
+        programBody,
+        importPath,
+        importFormatter.useRequire,
+      ),
     ),
   ];
 }
@@ -258,6 +263,7 @@ function createNewImport(
   missingImport: JSExport,
   programBody: Array<Object>,
   importPath: string,
+  useRequire: boolean,
 ): EditParams {
   const nodesByType = {
     require: [],
@@ -284,11 +290,16 @@ function createNewImport(
       }
     }
   } else {
-    if (nodesByType.import.length > 0) {
-      return insertInto(nodesByType.import, importPath);
-    } else if (nodesByType.require.length > 0) {
-      return insertInto(nodesByType.require, importPath);
-    } else if (nodesByType.importType.length > 0) {
+    // Make sure we try to insert imports/requires in their own group (if possible).
+    const preferred = useRequire
+      ? [nodesByType.require, nodesByType.import]
+      : [nodesByType.import, nodesByType.require];
+    for (const nodes of preferred) {
+      if (nodes.length > 0) {
+        return insertInto(nodes, importPath);
+      }
+    }
+    if (nodesByType.importType.length > 0) {
       return insertAfter(
         nodesByType.importType[nodesByType.importType.length - 1].node,
         1,
