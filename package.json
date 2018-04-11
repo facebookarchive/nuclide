@@ -199,7 +199,7 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "atom": ">=1.25.0",
+    "atom": ">=1.25.1",
     "node": ">=7.9.0"
   },
   "private": true,
