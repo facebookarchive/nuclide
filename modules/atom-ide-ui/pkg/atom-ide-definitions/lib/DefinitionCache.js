@@ -59,7 +59,14 @@ class DefinitionCache {
     const wordGuess = wordAtPosition(editor, position);
     this._cachedResultRange = wordGuess && wordGuess.range;
     this._cachedResultEditor = editor;
-    this._cachedResultPromise = getImpl();
+    this._cachedResultPromise = getImpl().then(result => {
+      // Rejected providers turn into null values here.
+      // Invalidate the cache to ensure that the user can retry the request.
+      if (result == null) {
+        invalidateAndStopListening();
+      }
+      return result;
+    });
 
     return this._cachedResultPromise;
   }

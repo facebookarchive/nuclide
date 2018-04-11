@@ -212,4 +212,40 @@ describe('DefinitionHyperclick', () => {
       expect(result.range).toEqual(def.queryRange);
     });
   });
+
+  it('does not cache null values', () => {
+    waitsForPromise(async () => {
+      editor.setText('test');
+      const def = {
+        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+        definitions: [
+          {
+            path: 'path1',
+            position: new Point(1, 2),
+            range: null,
+            id: 'symbol-name',
+            name: null,
+            projectRoot: null,
+          },
+        ],
+      };
+      const newProvider = {
+        priority: 10,
+        name: '',
+        grammarScopes: ['text.plain.null-grammar'],
+        getDefinition: () => Promise.resolve(null),
+      };
+      atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
+      invariant(provider != null);
+      invariant(provider.getSuggestion != null);
+      let result = await provider.getSuggestion(editor, position);
+      expect(result).toBe(null);
+
+      newProvider.getDefinition = () => Promise.resolve(def);
+      invariant(provider.getSuggestion != null);
+      result = await provider.getSuggestion(editor, position);
+      invariant(result != null);
+      expect(result.range).toEqual(def.queryRange);
+    });
+  });
 });
