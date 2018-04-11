@@ -244,9 +244,6 @@ declare module 'vscode-debugprotocol' {
     supportsVariablePaging?: boolean,
     /** Client supports the runInTerminal request. */
     supportsRunInTerminalRequest?: boolean,
-    /** Experimental: Client supports the `threadCausedFocus` stopped event attribute . */
-    // https://github.com/Microsoft/vscode-debugadapter-node/issues/147
-    supportsThreadCausedFocus?: boolean,
   };
 
   /** Response to 'initialize' request. */

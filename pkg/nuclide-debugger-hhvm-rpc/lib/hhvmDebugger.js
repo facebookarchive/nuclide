@@ -528,15 +528,22 @@ class HHVMDebuggerWrapper {
           break;
         }
         case 'stopped': {
-          if (message.body.threadCausedFocus == null) {
-            const reason = (message.body.reason || '')
-              .toLowerCase()
-              .split(' ')[0];
-            message.body.threadCausedFocus =
-              reason === 'step' ||
-              reason === 'breakpoint' ||
-              reason === 'exception';
+          // TODO: Ericblue: Remove this block once HHVM version that always
+          // specifies preserveFocusHint is landed and the supported version.
+          const reason = (message.body.reason || '')
+            .toLowerCase()
+            .split(' ')[0];
+          const focusThread =
+            message.body.threadCausedFocus != null
+              ? message.body.threadCausedFocus
+              : reason === 'step' ||
+                reason === 'breakpoint' ||
+                reason === 'exception';
+
+          if (message.body.preserveFocusHint == null) {
+            message.body.preserveFocusHint = !focusThread;
           }
+
           break;
         }
         default:
@@ -582,8 +589,9 @@ class HHVMDebuggerWrapper {
     if (
       message.type === 'event' &&
       message.event === 'stopped' &&
-      !message.body.threadCausedFocus &&
-      !this._initializeArgs.supportsThreadCausedFocus
+      ((message.body.threadCausedFocus === false ||
+        message.body.preserveFocusHint === true) &&
+        this._initializeArgs.clientID !== 'atom')
     ) {
       return;
     }

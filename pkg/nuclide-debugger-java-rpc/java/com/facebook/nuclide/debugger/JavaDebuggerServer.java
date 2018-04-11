@@ -621,10 +621,8 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
     send(new BreakpointEvent().setReason(reason.getValue()).setBreakpoint(breakpoint));
   }
 
-  public void sendDebuggerPausedNotification(ThreadReference mainThread) {
-    // send main threads stopped event first because translator considers the first stopped event as
-    //   the main paused thread
-    sendStoppedEventForThread(mainThread, "breakpoint");
+  public void sendDebuggerPausedNotification(ThreadReference focusedThread) {
+    sendStoppedEventForThread(focusedThread, "breakpoint", true);
     getContextManager()
         .getVirtualMachine()
         .allThreads()
@@ -635,16 +633,18 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
         //   threads. They have something to do with ANRs I think...
         .filter(thread -> !thread.name().equals("Signal Catcher"))
         // exclude the one we have already sent
-        .filter(thread -> thread.uniqueID() != mainThread.uniqueID())
-        .forEach(thread -> this.sendStoppedEventForThread(thread, "paused"));
+        .filter(thread -> thread.uniqueID() != focusedThread.uniqueID())
+        .forEach(thread -> this.sendStoppedEventForThread(thread, "paused", false));
   }
 
-  private void sendStoppedEventForThread(ThreadReference thread, String reason) {
+  private void sendStoppedEventForThread(
+      ThreadReference thread, String reason, boolean focusedThread) {
     send(
         new StoppedEvent()
             .setReason(reason)
             .setThreadId(thread.uniqueID())
-            .setAllThreadsStopped(false));
+            .setAllThreadsStopped(false)
+            .setPreserveFocusHint(!focusedThread));
   }
 
   public void sendThreadStartEvent(ThreadReference thread) {

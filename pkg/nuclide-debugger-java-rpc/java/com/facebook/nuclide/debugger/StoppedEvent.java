@@ -33,6 +33,11 @@ public class StoppedEvent extends base$Event {
     return this;
   }
 
+  public StoppedEvent setPreserveFocusHint(boolean preserveFocusHint) {
+    body.put("preserveFocusHint", preserveFocusHint);
+    return this;
+  }
+
   public JSONObject toJSON() {
     return super.toJSON().put("body", body);
   }

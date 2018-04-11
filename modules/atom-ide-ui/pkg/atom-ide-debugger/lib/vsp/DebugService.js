@@ -557,16 +557,14 @@ export default class DebugService implements IDebugService {
       toFocusThreads
         .concatMap(thread => {
           const {focusedThread} = this._viewModel;
-          // Prioritize auto-focusing the thread that caused stop.
-          // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
-          const threadCausedFocus =
-            idx(thread, _ => _.stoppedDetails.threadCausedFocus) || false;
+          const preserveFocusHint =
+            idx(thread, _ => _.stoppedDetails.preserveFocusHint) || false;
 
           if (
             focusedThread != null &&
             focusedThread.stopped &&
             focusedThread.getId() !== thread.getId() &&
-            !threadCausedFocus
+            preserveFocusHint
           ) {
             // The debugger is already stopped elsewhere.
             return Observable.empty();
@@ -1194,8 +1192,6 @@ export default class DebugService implements IDebugService {
         supportsVariableType: true,
         supportsVariablePaging: false,
         supportsRunInTerminalRequest: getTerminalService() != null,
-        // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
-        supportsThreadCausedFocus: true,
         locale: 'en_US',
       });
       this._model.setExceptionBreakpoints(

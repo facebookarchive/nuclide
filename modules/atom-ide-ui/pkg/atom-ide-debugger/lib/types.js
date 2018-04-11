@@ -470,8 +470,7 @@ export type IRawModelUpdate = IRawStopppedUpdate | IRawThreadUpdate;
 
 export interface IRawStoppedDetails {
   reason?: string;
-  // Experimental: https://github.com/Microsoft/vscode-debugadapter-node/issues/147
-  threadCausedFocus?: boolean;
+  preserveFocusHint?: boolean;
   description?: string;
   threadId?: number;
   text?: string;
