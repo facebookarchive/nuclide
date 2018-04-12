@@ -11,13 +11,12 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import type {Subject} from 'rxjs';
+import type {Observable, Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
 import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
 import type {ActiveTunnels} from './ActiveTunnels';
 
-import {Map} from 'immutable';
-import * as Immutable from 'immutable';
+import {Map, Set} from 'immutable';
 
 export type SshTunnelService = {
   openTunnel(
@@ -25,6 +24,7 @@ export type SshTunnelService = {
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
   ): UniversalDisposable,
+  openTunnels(tunnels: Array<Tunnel>): Observable<'ready'>,
   getOpenTunnels(): Set<ResolvedTunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };
@@ -60,7 +60,7 @@ export type TunnelSubscription = {
 
 export type ActiveTunnel = $ReadOnly<{
   tunnel: ResolvedTunnel,
-  subscriptions: Immutable.Set<TunnelSubscription>,
+  subscriptions: Set<TunnelSubscription>,
   state: TunnelState,
   error: ?Error,
   close?: (?Error) => void,

@@ -16,6 +16,7 @@ import type {SshTunnelService} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {createObservableForTunnels} from './CreateObservables';
 import {
   getSharedHostUri,
   getSocketServiceByHost,
@@ -83,9 +84,13 @@ class Activation {
           this._store.dispatch(Actions.closeTunnel(resolved)),
         );
       },
-      getOpenTunnels: () => {
-        return new Set(this._store.getState().openTunnels.keys());
-      },
+      openTunnels: tunnel => createObservableForTunnels(tunnel, this._store),
+      getOpenTunnels: () =>
+        this._store
+          .getState()
+          .tunnels.toList()
+          .map(t => t.tunnel)
+          .toSet(),
       getAvailableServerPort: async uri =>
         getSocketServiceByHost(getSharedHostUri(uri)).getAvailableServerPort(),
     };
