@@ -51,7 +51,7 @@ export function deleteTunnel(tunnel: ResolvedTunnel): DeleteTunnelAction {
 export function openTunnel(
   tunnel: ResolvedTunnel,
   open: () => void,
-  close: (?Error) => void,
+  close: () => void,
 ): OpenTunnelAction {
   return {
     type: OPEN_TUNNEL,

@@ -37,7 +37,7 @@ export function subscribeToTunnelEpic(
         })`;
         store.getState().consoleOutput.next({
           text: `Reusing tunnel: ${friendlyString}`,
-          level: 'log',
+          level: 'info',
         });
         onOpen(null);
         return null;
@@ -70,7 +70,12 @@ export function unsubscribeFromTunnelEpic(
       const {subscription, tunnel} = action.payload;
       const {tunnels} = store.getState();
       const activeTunnel = tunnels.get(tunnel);
-      if (activeTunnel == null) {
+      if (
+        activeTunnel == null ||
+        activeTunnel.error != null ||
+        activeTunnel.state === 'initializing'
+      ) {
+        // We want to show the tunnel error message only once, not for every subscription.
         return null;
       }
       const friendlyString = `${tunnelDescription(tunnel)} (${
@@ -81,6 +86,7 @@ export function unsubscribeFromTunnelEpic(
           text: `Stopped reusing tunnel: ${friendlyString}`,
           level: 'info',
         });
+        // Don't close the tunnel just yet, there are other subscribers.
         return null;
       } else {
         store.getState().consoleOutput.next({
@@ -112,9 +118,8 @@ export function requestTunnelEpic(
     .ofType(Actions.REQUEST_TUNNEL)
     .mergeMap(async action => {
       invariant(action.type === Actions.REQUEST_TUNNEL);
-      const {description, tunnel, onOpen, onClose} = action.payload;
+      const {tunnel, onOpen} = action.payload;
       const {from, to} = tunnel;
-      const friendlyString = `${tunnelDescription(tunnel)} (${description})`;
 
       if (!await validateTunnel(tunnel)) {
         onOpen(
@@ -141,7 +146,15 @@ export function requestTunnelEpic(
         subscription = events.refCount().subscribe({
           next: event => {
             if (event.type === 'server_started') {
-              store.getState().consoleOutput.next({
+              const state = store.getState();
+              const activeTunnel = state.tunnels.get(tunnel);
+              invariant(activeTunnel);
+              const friendlyString = `${tunnelDescription(
+                tunnel,
+              )} (${activeTunnel.subscriptions
+                .map(s => s.description)
+                .join(', ')})`;
+              state.consoleOutput.next({
                 text: `Opened tunnel: ${friendlyString}`,
                 level: 'info',
               });
@@ -167,30 +180,10 @@ export function requestTunnelEpic(
         });
       };
 
-      const close = error => {
-        subscription.unsubscribe();
-        if (!isTunnelOpen) {
-          return;
-        }
-        let message;
-        if (error == null) {
-          message = {
-            text: `Closed tunnel: ${friendlyString}`,
-            level: 'info',
-          };
-        } else {
-          message = {
-            text: `Tunnel error: ${friendlyString}\n${error.message}`,
-            level: 'error',
-          };
-        }
-        store.getState().consoleOutput.next(message);
-        onClose(error);
-      };
-
+      const close = () => subscription.unsubscribe();
       return Actions.openTunnel(tunnel, open, close);
     })
-    .switchMap(action => {
+    .mergeMap(action => {
       if (action == null) {
         return Observable.empty();
       } else {
@@ -219,12 +212,25 @@ export function closeTunnelEpic(
   return actions.ofType(Actions.CLOSE_TUNNEL).map(action => {
     invariant(action.type === Actions.CLOSE_TUNNEL);
     const {tunnels} = store.getState();
-    const {tunnel} = action.payload;
+    const {error, tunnel} = action.payload;
     const activeTunnel = tunnels.get(tunnel);
+
     if (activeTunnel != null) {
-      invariant(activeTunnel.close);
-      activeTunnel.close(action.payload.error);
+      if (activeTunnel.close != null) {
+        activeTunnel.close(error);
+      }
+      activeTunnel.subscriptions.forEach(s => s.onTunnelClose(error));
+      if (error != null) {
+        const friendlyString = `${tunnelDescription(
+          tunnel,
+        )} (${activeTunnel.subscriptions.map(s => s.description).join(', ')})`;
+        store.getState().consoleOutput.next({
+          text: `Tunnel error: ${friendlyString}\n${error.message}`,
+          level: 'error',
+        });
+      }
     }
+
     return Actions.deleteTunnel(tunnel);
   });
 }
