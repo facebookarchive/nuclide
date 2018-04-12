@@ -47,7 +47,18 @@ export class AdbTunnelingProvider implements DeviceTypeComponentProvider {
           isAdbTunneled(host).map(value => ({
             host,
             status: value ? 'active' : 'inactive',
-            enable: () => startTunnelingAdb(host),
+            enable: () => {
+              let noMoreNotifications = false;
+              startTunnelingAdb(host)
+                .do(() => (noMoreNotifications = true))
+                .subscribe({
+                  error: e => {
+                    if (!noMoreNotifications) {
+                      atom.notifications.addError(e);
+                    }
+                  },
+                });
+            },
             disable: () => stopTunnelingAdb(host),
           })),
           AdbTunnelButton,
