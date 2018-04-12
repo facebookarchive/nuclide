@@ -175,19 +175,9 @@ export async function getAdbAttachPortTargetInfo(
       },
       to: {host: 'localhost', port: adbPort, family: 4},
     };
-    subscriptions.add(
-      tunnelService.openTunnel(
-        tunnel,
-        error => {
-          if (error == null) {
-            resolve(debuggerPort);
-          } else {
-            reject(error);
-          }
-        },
-        () => {},
-      ),
-    );
+    const openTunnel = tunnelService.openTunnels([tunnel]).share();
+    subscriptions.add(openTunnel.subscribe());
+    await openTunnel.take(1).toPromise();
   });
   return {
     debugMode: 'attach',
