@@ -218,6 +218,13 @@ export function closeTunnelEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.CLOSE_TUNNEL).map(action => {
     invariant(action.type === Actions.CLOSE_TUNNEL);
-    return Actions.deleteTunnel(action.payload.tunnel);
+    const {tunnels} = store.getState();
+    const {tunnel} = action.payload;
+    const activeTunnel = tunnels.get(tunnel);
+    if (activeTunnel != null) {
+      invariant(activeTunnel.close);
+      activeTunnel.close(action.payload.error);
+    }
+    return Actions.deleteTunnel(tunnel);
   });
 }

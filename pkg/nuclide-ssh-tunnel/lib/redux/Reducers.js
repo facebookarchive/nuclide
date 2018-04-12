@@ -81,11 +81,6 @@ export function openTunnels(
   switch (action.type) {
     case Actions.CLOSE_TUNNEL:
       const toClose = action.payload.tunnel;
-      const openTunnel = state.get(toClose);
-      if (openTunnel == null) {
-        return state;
-      }
-      openTunnel.close(action.payload.error);
       return state.delete(toClose);
     case Actions.OPEN_TUNNEL:
       const {close, tunnel} = action.payload;
