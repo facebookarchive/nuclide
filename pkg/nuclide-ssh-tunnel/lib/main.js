@@ -101,10 +101,12 @@ class Activation {
   }
 
   _closeAllTunnels() {
-    const tunnels = this._store.getState().openTunnels;
-    tunnels.forEach((_, tunnel) =>
-      this._store.dispatch(Actions.closeTunnel(tunnel)),
-    );
+    const tunnels = this._store.getState().tunnels;
+    tunnels
+      .toList()
+      .forEach(active =>
+        this._store.dispatch(Actions.closeTunnel(active.tunnel)),
+      );
   }
 
   consumeCurrentWorkingDirectory(api: CwdApi): void {

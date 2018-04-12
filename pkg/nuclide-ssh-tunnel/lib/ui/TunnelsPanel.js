@@ -14,7 +14,7 @@ import type {Props} from './TunnelsPanelContents';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {resolveTunnel} from '../Normalization';
+import {createObservableForTunnel} from '../CreateObservables';
 import * as Actions from '../redux/Actions';
 import {Observable} from 'rxjs';
 import {TunnelsPanelContents} from './TunnelsPanelContents';
@@ -25,6 +25,7 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/ssh-tunnels';
 
 export class TunnelsPanel {
   _store: Store;
+  _wat: any;
 
   constructor(store: Store) {
     this._store = store;
@@ -54,7 +55,7 @@ export class TunnelsPanel {
     // $FlowFixMe: We need to teach Flow about Symbol.observable
     const states: Observable<AppState> = Observable.from(this._store);
 
-    const props: Observable<Props> = states.map(state => {
+    const props: Observable<Props> = states.map((state: AppState) => {
       let workingDirectoryHost;
       if (state.currentWorkingDirectory == null) {
         workingDirectoryHost = null;
@@ -67,25 +68,23 @@ export class TunnelsPanel {
         }
       }
       return {
-        tunnels: Array.from(state.openTunnels.entries()),
+        tunnels: state.tunnels.toList(),
         openTunnel: tunnel => {
-          this._store.dispatch(
-            Actions.requestTunnel(
-              tunnel.description,
-              resolveTunnel(tunnel),
-              // onOpen
-              error => {
-                if (error != null) {
-                  atom.notifications.addError(error.message);
+          let noMoreNotifications = false;
+          createObservableForTunnel(tunnel, this._store)
+            .do(() => (noMoreNotifications = true))
+            .subscribe({
+              error: e => {
+                if (!noMoreNotifications) {
+                  atom.notifications.addError(e);
                 }
               },
-              // onClose
-              () => {},
-            ),
-          );
+            });
         },
         closeTunnel: tunnel =>
-          this._store.dispatch(Actions.closeTunnel(tunnel)),
+          this._store.dispatch(
+            Actions.closeTunnel(tunnel, new Error('Closed from panel')),
+          ),
         workingDirectoryHost,
       };
     });

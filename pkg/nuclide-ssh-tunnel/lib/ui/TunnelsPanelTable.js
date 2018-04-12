@@ -9,15 +9,16 @@
  * @format
  */
 import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
-import type {OpenTunnel} from '../types';
+import type {ActiveTunnel} from '../types';
 
 import {shortenHostname} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';
+import {List} from 'immutable';
 
 type Props = {
-  tunnels: Array<[ResolvedTunnel, OpenTunnel]>,
+  tunnels: List<ActiveTunnel>,
   closeTunnel: (tunnel: ResolvedTunnel) => void,
 };
 
@@ -47,24 +48,29 @@ export class TunnelsPanelTable extends React.Component<Props> {
         minWidth: 35,
       },
     ];
-    const rows = this.props.tunnels.map(([tunnel, openTunnel]) => {
-      const {from, to} = tunnel;
-      return {
-        className: 'nuclide-ssh-tunnels-table-row',
-        data: {
-          description: '', // temporarily unavailable
-          from: `${shortenHostname(from.host)}:${from.port}`,
-          to: `${shortenHostname(to.host)}:${to.port}`,
-          status: openTunnel.state,
-          close: (
-            <TunnelCloseButton
-              tunnel={tunnel}
-              closeTunnel={this.props.closeTunnel}
-            />
-          ),
-        },
-      };
-    });
+    const rows = this.props.tunnels
+      .map(active => {
+        const {from, to} = active.tunnel;
+        const descriptions = new Set(
+          active.subscriptions.map(s => s.description),
+        );
+        return {
+          className: 'nuclide-ssh-tunnels-table-row',
+          data: {
+            description: Array.from(descriptions).join(', '),
+            from: `${shortenHostname(from.host)}:${from.port}`,
+            to: `${shortenHostname(to.host)}:${to.port}`,
+            status: active.state,
+            close: (
+              <TunnelCloseButton
+                tunnel={active.tunnel}
+                closeTunnel={this.props.closeTunnel}
+              />
+            ),
+          },
+        };
+      })
+      .toArray();
     return (
       <Table
         emptyComponent={() => (
