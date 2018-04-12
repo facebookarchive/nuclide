@@ -27,6 +27,7 @@ import {
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import nullthrows from 'nullthrows';
+import SelectableFilterableProcessTable from './SelectableFilterableProcessTable';
 
 type Props = {|
   +targetUri: NuclideUri,
@@ -39,6 +40,7 @@ type State = {
   enumValues: Map<string, string>,
   booleanValues: Map<string, boolean>,
   atomInputValues: Map<string, string>,
+  processTableValues: Map<string, number>,
 };
 
 // extension must be a string starting with a '.' like '.js' or '.py'
@@ -70,6 +72,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       atomInputValues: new Map(),
       booleanValues: new Map(),
       enumValues: new Map(),
+      processTableValues: new Map(),
     };
   }
 
@@ -175,10 +178,13 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           booleanValues,
           enumValues,
         );
+        // do not serialize and deserialize processes
+        const processTableValues = new Map();
         this.setState({
           atomInputValues,
           booleanValues,
           enumValues,
+          processTableValues,
         });
       },
     );
@@ -226,6 +232,12 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       return value != null && !isNaN(value);
     } else if (type === 'boolean') {
       const value = this.state.booleanValues.get(name);
+      return value != null;
+    } else if (type === 'enum') {
+      const value = this.state.enumValues.get(name);
+      return value != null;
+    } else if (type === 'process') {
+      const value = this.state.processTableValues.get(name);
       return value != null;
     }
     return false;
@@ -298,6 +310,23 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           />
         </div>
       );
+    } else if (type === 'process') {
+      return (
+        <div>
+          {nameLabel}
+          <SelectableFilterableProcessTable
+            targetUri={this.props.targetUri}
+            onSelect={selectedProcess => {
+              if (selectedProcess != null) {
+                this.state.processTableValues.set(name, selectedProcess.pid);
+              } else {
+                this.state.processTableValues.delete(name);
+              }
+              this.props.configIsValidChanged(this._debugButtonShouldEnable());
+            }}
+          />
+        </div>
+      );
     }
     return (
       <div>
@@ -330,7 +359,12 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
 
   _handleDebugButtonClick = async (): Promise<void> => {
     const {targetUri, config} = this.props;
-    const {atomInputValues, booleanValues, enumValues} = this.state;
+    const {
+      atomInputValues,
+      booleanValues,
+      enumValues,
+      processTableValues,
+    } = this.state;
 
     const stringValues = new Map();
     const stringArrayValues = new Map();
@@ -368,6 +402,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       stringArrayValues,
       objectValues,
       numberValues,
+      processTableValues,
     ].forEach(map => {
       map.forEach((value, key) => {
         values[key] = value;
@@ -383,12 +418,21 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         values[name] = idx(property, _ => _.defaultValue);
       });
 
+    if (config.resolveConfig != null) {
+      config.resolveConfig(values, config);
+    }
+
+    const adapterExecutable =
+      config.resolveAdapterExecutable != null
+        ? await config.resolveAdapterExecutable(config.vsAdapterType, targetUri)
+        : null;
+
     const debuggerService = await getDebuggerService();
     debuggerService.startVspDebugging({
       targetUri,
       debugMode: config.launch ? 'launch' : 'attach',
       adapterType: config.vsAdapterType,
-      adapterExecutable: null,
+      adapterExecutable,
       config: values,
       capabilities: {threads: config.threads},
       properties: {

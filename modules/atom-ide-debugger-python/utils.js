@@ -29,35 +29,6 @@ import * as RemoteDebuggerCommandServiceLocal from './RemoteDebuggerCommandServi
 
 let _rpcService: ?nuclide$RpcService = null;
 
-export async function getPythonParLaunchProcessInfo(
-  parPath: NuclideUri,
-  args: Array<string>,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    parPath,
-    'launch',
-    VsAdapterTypes.PYTHON,
-    null,
-    getPythonParConfig(parPath, args),
-    {threads: true},
-  );
-}
-
-function getPythonParConfig(parPath: NuclideUri, args: Array<string>): Object {
-  const localParPath = nuclideUri.getPath(parPath);
-  const cwd = nuclideUri.dirname(localParPath);
-  return {
-    stopOnEntry: false,
-    console: 'none',
-    // Will be replaced with the main module at runtime.
-    program: '/dev/null',
-    args,
-    debugOptions: ['WaitOnAbnormalExit', 'WaitOnNormalExit', 'RedirectOutput'],
-    pythonPath: localParPath,
-    cwd,
-  };
-}
-
 async function getPythonAttachTargetProcessInfo(
   targetRootUri: NuclideUri,
   target: PythonDebuggerAttachTarget,

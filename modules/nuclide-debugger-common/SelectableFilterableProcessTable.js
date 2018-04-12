@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -12,33 +13,34 @@
 import type {Column} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ProcessInfo} from 'nuclide-commons/process';
-import type {VsAdapterType} from 'nuclide-debugger-common';
-import type {Option} from 'nuclide-commons-ui/Dropdown';
 
-import * as React from 'react';
+import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/AtomServiceContainer';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from 'nuclide-debugger-common';
-import {track} from '../../nuclide-analytics';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getNativeVSPAttachProcessInfo} from './utils';
-import {Observable} from 'rxjs';
 import {Table} from 'nuclide-commons-ui/Table';
-import {Dropdown} from 'nuclide-commons-ui/Dropdown';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import * as React from 'react';
+import {Observable} from 'rxjs';
 
 const PROCESS_UPDATES_INTERVAL_MS = 2000;
 
-type Props = {|
-  +targetUri: NuclideUri,
-  +configIsValidChanged: (valid: boolean) => void,
-  +debuggerBackends: Array<Option>,
-  +defaultDebuggerBackend: VsAdapterType,
-|};
+const COLUMNS: Array<Column<*>> = [
+  {
+    title: 'Process Binary',
+    key: 'process',
+    width: 0.25,
+  },
+  {
+    title: 'PID',
+    key: 'pid',
+    width: 0.1,
+  },
+  {
+    title: 'Command',
+    key: 'command',
+    width: 0.65,
+  },
+];
 
 type ColumnName = 'process' | 'pid' | 'command';
 
@@ -48,35 +50,18 @@ type ProcessRow = {
   command: string,
 };
 
+type Props = {|
+  +targetUri: NuclideUri,
+  +onSelect?: (selectedProcess: ?ProcessRow) => mixed,
+|};
+
 type State = {
   processList: Array<ProcessRow>,
   selectedProcess: ?ProcessRow,
   sortDescending: boolean,
   sortedColumn: ?ColumnName,
   filterText: string,
-  sourcePath: string,
-  debuggerBackend: VsAdapterType,
 };
-
-function getColumns(): Array<Column<*>> {
-  return [
-    {
-      title: 'Process Binary',
-      key: 'process',
-      width: 0.25,
-    },
-    {
-      title: 'PID',
-      key: 'pid',
-      width: 0.1,
-    },
-    {
-      title: 'Command',
-      key: 'command',
-      width: 0.65,
-    },
-  ];
-}
 
 function getCompareFunction(
   sortedColumn: ?ColumnName,
@@ -121,7 +106,7 @@ function filterProcesses(processes: Array<ProcessRow>, filterText: string) {
   );
 }
 
-export default class NativeAttachUiComponent extends React.Component<
+export default class SelectableFilterableProcessTable extends React.Component<
   Props,
   State,
 > {
@@ -136,56 +121,10 @@ export default class NativeAttachUiComponent extends React.Component<
       sortDescending: false,
       sortedColumn: null,
       filterText: '',
-      sourcePath: '',
-      debuggerBackend: props.defaultDebuggerBackend,
     };
-  }
-
-  _getSerializationArgs() {
-    return [
-      nuclideUri.isRemote(this.props.targetUri)
-        ? nuclideUri.getHostname(this.props.targetUri)
-        : 'local',
-      'attach',
-      'gdb',
-    ];
-  }
-
-  setState(newState: Object): void {
-    super.setState(newState, () =>
-      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
-    );
   }
 
   componentDidMount(): void {
-    const defaults = {
-      sortDescending: false,
-      sortedColumn: null,
-      filterText: '',
-      sourcePath: '',
-    };
-
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        this.setState({
-          ...transientSettings,
-          ...defaults,
-        });
-      },
-    );
-
-    this.props.configIsValidChanged(this._debugButtonShouldEnable());
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleAttachButtonClick();
-          }
-        },
-      }),
-    );
-
     this._disposables.add(
       Observable.interval(PROCESS_UPDATES_INTERVAL_MS)
         .startWith(0)
@@ -200,10 +139,6 @@ export default class NativeAttachUiComponent extends React.Component<
 
   componentWillUnmount() {
     this._disposables.dispose();
-  }
-
-  _debugButtonShouldEnable(): boolean {
-    return this.state.selectedProcess != null;
   }
 
   _updateList = (processes: Array<ProcessInfo>): void => {
@@ -232,36 +167,69 @@ export default class NativeAttachUiComponent extends React.Component<
     this.setState({processList});
   };
 
-  _handleFilterTextChange = (text: string): void => {
+  _handleFilterTextChange = (filterText: string): void => {
     // Check if we've filtered down to one option and select if so
+    const filteredProcesses = filterProcesses(
+      this.state.processList,
+      filterText,
+    );
     let selectedProcess = this.state.selectedProcess;
-    const filteredProcesses = filterProcesses(this.state.processList, text);
     if (filteredProcesses.length === 1) {
+      // Check if we've filtered down to one option and select if so
       selectedProcess = filteredProcesses[0];
+    } else if (
+      filteredProcesses.findIndex(
+        processRow =>
+          selectedProcess != null && selectedProcess.pid === processRow.pid,
+      ) === -1
+    ) {
+      // If we filter out our current selection,
+      //   set our current selection to null
+      selectedProcess = null;
     }
 
     this.setState({
-      filterText: text,
+      filterText,
       selectedProcess,
     });
   };
 
+  setState(newState: Object): void {
+    const onSelect =
+      this.props.onSelect != null ? this.props.onSelect : _ => {};
+
+    let changedSelectedProcess = false;
+    if (newState.selectedProcess != null) {
+      if (this.state.selectedProcess != null) {
+        changedSelectedProcess =
+          newState.selectedProcess.pid !== this.state.selectedProcess.pid;
+      } else {
+        changedSelectedProcess = true;
+      }
+    } else if (typeof newState.selectedProcess === 'undefined') {
+      // this is the case that setState was not called with a selectedProcess
+      changedSelectedProcess = false;
+    } else {
+      changedSelectedProcess = this.state.selectedProcess != null;
+    }
+
+    super.setState(newState, () => {
+      changedSelectedProcess && onSelect(newState.selectedProcess);
+    });
+  }
+
   _handleSelectTableRow = (
-    selectedProcess: ProcessInfo,
+    selectedProcess: ProcessRow,
     selectedIndex: number,
   ): void => {
     this.setState({selectedProcess});
   };
 
-  _handleSort = (sortedColumn: string, sortDescending: boolean): void => {
+  _handleSort = (sortedColumn: ColumnName, sortDescending: boolean): void => {
     this.setState({
       sortedColumn,
       sortDescending,
     });
-  };
-
-  _onDebuggerBackendChange = (debuggerBackend: ?string): void => {
-    this.setState({debuggerBackend});
   };
 
   render(): React.Node {
@@ -300,7 +268,7 @@ export default class NativeAttachUiComponent extends React.Component<
           autofocus={true}
         />
         <Table
-          columns={getColumns()}
+          columns={COLUMNS}
           fixedHeader={true}
           maxBodyHeight="30em"
           rows={rows}
@@ -313,51 +281,7 @@ export default class NativeAttachUiComponent extends React.Component<
           onSelect={this._handleSelectTableRow}
           collapsable={true}
         />
-        <label>Source path: </label>
-        <AtomInput
-          placeholderText="Optional base path for sources"
-          value={this.state.sourcePath}
-          onDidChange={value => this.setState({sourcePath: value})}
-        />
-        <label>Debugger backend: </label>
-        <Dropdown
-          options={this.props.debuggerBackends}
-          onChange={this._onDebuggerBackendChange}
-          value={this.state.debuggerBackend}
-        />
       </div>
     );
   }
-
-  _handleAttachButtonClick = async (): Promise<void> => {
-    const selectedProcess = this.state.selectedProcess;
-    if (selectedProcess == null) {
-      return;
-    }
-
-    track('fb-native-debugger-attach-from-dialog');
-    const pid = selectedProcess.pid;
-    const attachInfo = await getNativeVSPAttachProcessInfo(
-      this.state.debuggerBackend,
-      this.props.targetUri,
-      {
-        pid,
-        sourcePath: this.state.sourcePath,
-      },
-    );
-
-    const debuggerService = await getDebuggerService();
-    debuggerService.startDebugging(attachInfo);
-
-    serializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      {},
-      {
-        sortDescending: this.state.sortDescending,
-        sortedColumn: this.state.sortedColumn,
-        filterText: this.state.filterText,
-        sourcePath: this.state.sourcePath,
-      },
-    );
-  };
 }

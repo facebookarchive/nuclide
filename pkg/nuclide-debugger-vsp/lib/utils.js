@@ -14,9 +14,16 @@ import type {
   VSAdapterExecutableInfo,
   VsAdapterType,
 } from 'nuclide-debugger-common';
-import type {AutoGenConfig} from 'nuclide-debugger-common/types';
+import type {
+  AutoGenConfig,
+  AutoGenAttachConfig,
+  AutoGenLaunchConfig,
+  NativeVsAdapterType,
+  ResolveAdapterExecutable,
+} from 'nuclide-debugger-common/types';
 import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
 
+import * as React from 'react';
 import {Logger} from 'vscode-debugadapter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
@@ -61,7 +68,7 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
     visible: true,
   };
 
-  const autoGenLaunchConfig = {
+  const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.PREPACK,
     threads: false,
@@ -145,7 +152,7 @@ export function getOCamlAutoGenConfig(): AutoGenConfig {
     visible: false,
   };
 
-  const autoGenLaunchConfig = {
+  const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
     vsAdapterType: VsAdapterTypes.OCAML,
     threads: false,
@@ -177,6 +184,92 @@ async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
   } catch (ex) {
     return 'lldb-vscode';
   }
+}
+
+export function getNativeAutoGenConfig(
+  vsAdapterType: NativeVsAdapterType,
+): AutoGenConfig {
+  const program = {
+    name: 'program',
+    type: 'string',
+    description: 'Input the program/executable you want to launch',
+    required: true,
+    visible: true,
+  };
+  const cwd = {
+    name: 'cwd',
+    type: 'string',
+    description: 'Working directory for the launched executable',
+    required: true,
+    visible: true,
+  };
+  const args = {
+    name: 'args',
+    type: 'array',
+    itemType: 'string',
+    description: 'Arguments to the executable',
+    required: false,
+    defaultValue: '',
+    visible: true,
+  };
+  const env = {
+    name: 'env',
+    type: 'array',
+    itemType: 'string',
+    description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
+    required: false,
+    defaultValue: '',
+    visible: true,
+  };
+  const sourcePath = {
+    name: 'sourcePath',
+    type: 'string',
+    description: 'Optional base path for sources',
+    required: false,
+    defaultValue: '',
+    visible: true,
+  };
+
+  const resolveAdapterExecutable: ResolveAdapterExecutable = (
+    adapter: VsAdapterType,
+    targetUri: NuclideUri,
+  ) => {
+    return getNativeVSPAdapterExecutable(vsAdapterType, targetUri);
+  };
+
+  const autoGenLaunchConfig: AutoGenLaunchConfig = {
+    launch: true,
+    vsAdapterType,
+    threads: true,
+    properties: [program, cwd, args, env, sourcePath],
+    scriptPropertyName: 'program',
+    scriptExtension: '.c',
+    cwdPropertyName: 'working directory',
+    header: (
+      <p>This is intended to debug native programs with either gdb or lldb.</p>
+    ),
+    resolveAdapterExecutable,
+  };
+
+  const pid = {
+    name: 'pid',
+    type: 'process',
+    description: '',
+    required: true,
+    visible: true,
+  };
+  const autoGenAttachConfig: AutoGenAttachConfig = {
+    launch: false,
+    vsAdapterType,
+    threads: true,
+    properties: [pid, sourcePath],
+    header: <p>Attach to a running native process</p>,
+    resolveAdapterExecutable,
+  };
+  return {
+    launch: autoGenLaunchConfig,
+    attach: autoGenAttachConfig,
+  };
 }
 
 async function getNativeVSPAdapterExecutable(

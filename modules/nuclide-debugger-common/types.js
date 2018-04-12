@@ -35,6 +35,8 @@ export type VSAdapterExecutableInfo = {
   args: Array<string>,
 };
 
+export type NativeVsAdapterType = 'native_lldb' | 'native_gdb';
+
 export type VsAdapterType =
   | 'hhvm'
   | 'python'
@@ -101,7 +103,8 @@ export type AutoGenPropertyType =
   | AutoGenPropertyPrimitiveType
   | 'array'
   | 'enum'
-  | 'object';
+  | 'object'
+  | 'process';
 
 export type AutoGenProperty = {
   name: string,
@@ -115,6 +118,23 @@ export type AutoGenProperty = {
   enumsDefaultValue?: string,
 };
 
+export type ResolveAdapterExecutable = (
+  adapter: VsAdapterType,
+  targetUri: NuclideUri,
+) => Promise<?VSAdapterExecutableInfo>;
+
+// const resolveAdapterExecutable: ResolveAdapterExecutable = (
+//   adapter: VsAdapterType,
+//   targetUri: NuclideUri,
+// ) => {
+//   return getNativeVSPAdapterExecutable(vsAdapterType, targetUri);
+// };
+
+// async function getNativeVSPAdapterExecutable(
+//   adapter: VsAdapterType,
+//   program: string,
+// ): Promise<?VSAdapterExecutableInfo> {
+
 export type AutoGenLaunchConfig = {|
   // Disjoint Union Flag
   launch: true,
@@ -123,6 +143,7 @@ export type AutoGenLaunchConfig = {|
   header?: React.Node,
   threads: boolean,
   vsAdapterType: VsAdapterType,
+  resolveAdapterExecutable?: ResolveAdapterExecutable,
   // Launch Specific Properties
   scriptPropertyName: string,
   cwdPropertyName: ?string,
@@ -137,6 +158,7 @@ export type AutoGenAttachConfig = {|
   header?: React.Node,
   threads: boolean,
   vsAdapterType: VsAdapterType,
+  resolveAdapterExecutable?: ResolveAdapterExecutable,
   // Attach Specific Properties
 |};
 

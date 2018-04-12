@@ -12,14 +12,18 @@
 import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import passesGK from '../../commons-node/passesGK';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
-import NativeLaunchAttachProvider from './NativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {getOCamlAutoGenConfig, getPrepackAutoGenConfig} from './utils';
+import {
+  getOCamlAutoGenConfig,
+  getPrepackAutoGenConfig,
+  getNativeAutoGenConfig,
+} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -34,7 +38,8 @@ class Activation {
       this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerOcamlDebugProvider();
-      this._registerNativeVspProvider();
+      this._registerLLDBProvider();
+      this._registerGDBProvider();
       this._registerHHVMDebugProvider();
     });
   }
@@ -88,11 +93,28 @@ class Activation {
     }
   }
 
-  async _registerNativeVspProvider(): Promise<void> {
+  _registerLLDBProvider() {
     this._registerDebugProvider({
-      name: 'Native (C/C++)',
+      name: 'Native - LLDB (C/C++)',
       getLaunchAttachProvider: connection => {
-        return new NativeLaunchAttachProvider(connection);
+        return new AutoGenLaunchAttachProvider(
+          'Native - LLDB (C/C++)',
+          connection,
+          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_LLDB),
+        );
+      },
+    });
+  }
+
+  _registerGDBProvider() {
+    this._registerDebugProvider({
+      name: 'Native - GDB (C/C++)',
+      getLaunchAttachProvider: connection => {
+        return new AutoGenLaunchAttachProvider(
+          'Native - GDB (C/C++)',
+          connection,
+          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
+        );
       },
     });
   }
