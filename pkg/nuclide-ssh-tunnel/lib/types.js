@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
+import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
 
 import * as Immutable from 'immutable';
 
@@ -49,6 +50,10 @@ export type Tunnel = {
   to: Host,
 };
 
+export type TunnelSubscription = {
+  description: string,
+};
+
 export type OpenTunnel = {
   close(error: ?Error): void,
   state: TunnelState,
@@ -61,7 +66,9 @@ export type Action =
   | OpenTunnelAction
   | RequestTunnelAction
   | SetCurrentWorkingDirectoryAction
-  | SetTunnelStateAction;
+  | SetTunnelStateAction
+  | SubscribeToTunnelAction
+  | UnsubscribeFromTunnelAction;
 
 export type CloseTunnelAction = {
   type: 'CLOSE_TUNNEL',
@@ -101,5 +108,22 @@ export type SetTunnelStateAction = {
   payload: {
     tunnel: Tunnel,
     state: TunnelState,
+  },
+};
+
+export type SubscribeToTunnelAction = {
+  type: 'SUBSCRIBE_TO_TUNNEL',
+  payload: {
+    onOpen: (?Error) => void,
+    subscription: TunnelSubscription,
+    tunnel: ResolvedTunnel,
+  },
+};
+
+export type UnsubscribeFromTunnelAction = {
+  type: 'UNSUBSCRIBE_FROM_TUNNEL',
+  payload: {
+    subscription: TunnelSubscription,
+    tunnel: ResolvedTunnel,
   },
 };

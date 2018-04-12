@@ -9,13 +9,17 @@
  * @format
  */
 
+import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
 import type {
   CloseTunnelAction,
   OpenTunnelAction,
   RequestTunnelAction,
   SetTunnelStateAction,
+  SubscribeToTunnelAction,
   Tunnel,
   TunnelState,
+  TunnelSubscription,
+  UnsubscribeFromTunnelAction,
 } from '../types';
 
 export const CLOSE_TUNNEL = 'CLOSE_TUNNEL';
@@ -23,6 +27,8 @@ export const OPEN_TUNNEL = 'OPEN_TUNNEL';
 export const REQUEST_TUNNEL = 'REQUEST_TUNNEL';
 export const SET_TUNNEL_STATE = 'SET_TUNNEL_STATE';
 export const SET_CURRENT_WORKING_DIRECTORY = 'SET_CURRENT_WORKING_DIRECTORY';
+export const SUBSCRIBE_TO_TUNNEL = 'SUBSCRIBE_TO_TUNNEL';
+export const UNSUBSCRIBE_FROM_TUNNEL = 'UNSUBSCRIBE_FROM_TUNNEL';
 
 export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
   return {
@@ -67,5 +73,26 @@ export function setCurrentWorkingDirectory(directory: ?string) {
   return {
     type: SET_CURRENT_WORKING_DIRECTORY,
     payload: {directory},
+  };
+}
+
+export function subscribeToTunnel(
+  subscription: TunnelSubscription,
+  tunnel: ResolvedTunnel,
+  onOpen: (?Error) => void,
+): SubscribeToTunnelAction {
+  return {
+    type: SUBSCRIBE_TO_TUNNEL,
+    payload: {onOpen, subscription, tunnel},
+  };
+}
+
+export function unsubscribeFromTunnel(
+  subscription: TunnelSubscription,
+  tunnel: ResolvedTunnel,
+): UnsubscribeFromTunnelAction {
+  return {
+    type: UNSUBSCRIBE_FROM_TUNNEL,
+    payload: {subscription, tunnel},
   };
 }
