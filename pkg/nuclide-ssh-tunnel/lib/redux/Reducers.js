@@ -10,7 +10,8 @@
  */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {Action, OpenTunnel, Tunnel} from '../types';
+import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
+import type {Action, OpenTunnel} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
 import {ActiveTunnels} from '../ActiveTunnels';
@@ -51,7 +52,7 @@ export function tunnels(
 }
 
 export function openTunnels(
-  state: Map<Tunnel, OpenTunnel> = Map(),
+  state: Map<ResolvedTunnel, OpenTunnel> = Map(),
   action: Action,
 ) {
   switch (action.type) {

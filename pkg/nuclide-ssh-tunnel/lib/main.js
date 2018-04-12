@@ -16,7 +16,11 @@ import type {SshTunnelService} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getSharedHostUri, getSocketServiceByHost} from './Normalization';
+import {
+  getSharedHostUri,
+  getSocketServiceByHost,
+  resolveTunnel,
+} from './Normalization';
 import {TunnelsPanel, WORKSPACE_VIEW_URI} from './ui/TunnelsPanel';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -71,9 +75,12 @@ class Activation {
   provideSshTunnelService(): SshTunnelService {
     return {
       openTunnel: (tunnel, onOpen, onClose) => {
-        this._store.dispatch(Actions.requestTunnel(tunnel, onOpen, onClose));
+        const resolved = resolveTunnel(tunnel);
+        this._store.dispatch(
+          Actions.requestTunnel(tunnel.description, resolved, onOpen, onClose),
+        );
         return new UniversalDisposable(() =>
-          this._store.dispatch(Actions.closeTunnel(tunnel)),
+          this._store.dispatch(Actions.closeTunnel(resolved)),
         );
       },
       getOpenTunnels: () => {

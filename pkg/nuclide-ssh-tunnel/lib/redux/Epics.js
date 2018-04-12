@@ -12,7 +12,7 @@
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {Action, Store} from '../types';
 
-import {getSocketServiceByHost, resolveTunnel} from '../Normalization';
+import {getSocketServiceByHost} from '../Normalization';
 import {validateTunnel} from '../Whitelist';
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
@@ -27,12 +27,9 @@ export function requestTunnelEpic(
     .ofType(Actions.REQUEST_TUNNEL)
     .mergeMap(async action => {
       invariant(action.type === Actions.REQUEST_TUNNEL);
-      const {tunnel, onOpen, onClose} = action.payload;
-      const resolved = resolveTunnel(tunnel);
-      const {from, to} = resolved;
-      const friendlyString = `${tunnelDescription(resolved)} (${
-        tunnel.description
-      })`;
+      const {description, tunnel, onOpen, onClose} = action.payload;
+      const {from, to} = tunnel;
+      const friendlyString = `${tunnelDescription(tunnel)} (${description})`;
 
       if (!await validateTunnel(tunnel)) {
         onOpen(
@@ -55,7 +52,7 @@ export function requestTunnelEpic(
 
       let isTunnelOpen = false;
       const open = () => {
-        const events = fromService.createTunnel(resolved, connectionFactory);
+        const events = fromService.createTunnel(tunnel, connectionFactory);
         subscription = events.refCount().subscribe({
           next: event => {
             if (event.type === 'server_started') {

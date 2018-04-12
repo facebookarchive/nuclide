@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {Tunnel} from './types';
+import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
 
 import {memoize} from 'lodash';
 
-export async function validateTunnel(tunnel: Tunnel): Promise<boolean> {
+export async function validateTunnel(tunnel: ResolvedTunnel): Promise<boolean> {
   if (tunnel.to.host === 'localhost') {
     return true;
   }

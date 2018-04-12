@@ -8,7 +8,8 @@
  * @flow
  * @format
  */
-import type {OpenTunnel, Tunnel} from '../types';
+import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
+import type {OpenTunnel} from '../types';
 
 import {shortenHostname} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import TunnelCloseButton from './TunnelCloseButton';
@@ -16,8 +17,8 @@ import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';
 
 type Props = {
-  tunnels: Array<[Tunnel, OpenTunnel]>,
-  closeTunnel: (tunnel: Tunnel) => void,
+  tunnels: Array<[ResolvedTunnel, OpenTunnel]>,
+  closeTunnel: (tunnel: ResolvedTunnel) => void,
 };
 
 export class TunnelsPanelTable extends React.Component<Props> {
@@ -51,7 +52,7 @@ export class TunnelsPanelTable extends React.Component<Props> {
       return {
         className: 'nuclide-ssh-tunnels-table-row',
         data: {
-          description: tunnel.description,
+          description: '', // temporarily unavailable
           from: `${shortenHostname(from.host)}:${from.port}`,
           to: `${shortenHostname(to.host)}:${to.port}`,
           status: openTunnel.state,

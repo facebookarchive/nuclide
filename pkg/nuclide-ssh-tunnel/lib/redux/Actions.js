@@ -16,7 +16,6 @@ import type {
   RequestTunnelAction,
   SetTunnelStateAction,
   SubscribeToTunnelAction,
-  Tunnel,
   TunnelState,
   TunnelSubscription,
   UnsubscribeFromTunnelAction,
@@ -30,7 +29,10 @@ export const SET_CURRENT_WORKING_DIRECTORY = 'SET_CURRENT_WORKING_DIRECTORY';
 export const SUBSCRIBE_TO_TUNNEL = 'SUBSCRIBE_TO_TUNNEL';
 export const UNSUBSCRIBE_FROM_TUNNEL = 'UNSUBSCRIBE_FROM_TUNNEL';
 
-export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
+export function closeTunnel(
+  tunnel: ResolvedTunnel,
+  error: ?Error,
+): CloseTunnelAction {
   return {
     type: CLOSE_TUNNEL,
     payload: {tunnel, error},
@@ -38,7 +40,7 @@ export function closeTunnel(tunnel: Tunnel, error: ?Error): CloseTunnelAction {
 }
 
 export function openTunnel(
-  tunnel: Tunnel,
+  tunnel: ResolvedTunnel,
   open: () => void,
   close: (?Error) => void,
 ): OpenTunnelAction {
@@ -49,18 +51,19 @@ export function openTunnel(
 }
 
 export function requestTunnel(
-  tunnel: Tunnel,
+  description: string,
+  tunnel: ResolvedTunnel,
   onOpen: (?Error) => void,
   onClose: (?Error) => void,
 ): RequestTunnelAction {
   return {
     type: REQUEST_TUNNEL,
-    payload: {tunnel, onOpen, onClose},
+    payload: {description, tunnel, onOpen, onClose},
   };
 }
 
 export function setTunnelState(
-  tunnel: Tunnel,
+  tunnel: ResolvedTunnel,
   state: TunnelState,
 ): SetTunnelStateAction {
   return {

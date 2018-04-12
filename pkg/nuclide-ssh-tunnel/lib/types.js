@@ -25,7 +25,7 @@ export type SshTunnelService = {
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
   ): UniversalDisposable,
-  getOpenTunnels(): Set<Tunnel>,
+  getOpenTunnels(): Set<ResolvedTunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };
 
@@ -35,8 +35,7 @@ export type Store = {
 };
 
 export type AppState = {
-  openTunnels: Immutable.Map<Tunnel, OpenTunnel>,
-  openTunnels: Map<Tunnel, OpenTunnel>,
+  openTunnels: Map<ResolvedTunnel, OpenTunnel>,
   tunnels: ActiveTunnels,
   currentWorkingDirectory: ?string,
   consoleOutput: Subject<ConsoleMessage>,
@@ -86,7 +85,7 @@ export type Action =
 export type CloseTunnelAction = {
   type: 'CLOSE_TUNNEL',
   payload: {
-    tunnel: Tunnel,
+    tunnel: ResolvedTunnel,
     error: ?Error,
   },
 };
@@ -94,7 +93,7 @@ export type CloseTunnelAction = {
 export type OpenTunnelAction = {
   type: 'OPEN_TUNNEL',
   payload: {
-    tunnel: Tunnel,
+    tunnel: ResolvedTunnel,
     open: () => void,
     close: (?Error) => void,
   },
@@ -103,7 +102,8 @@ export type OpenTunnelAction = {
 export type RequestTunnelAction = {
   type: 'REQUEST_TUNNEL',
   payload: {
-    tunnel: Tunnel,
+    description: string,
+    tunnel: ResolvedTunnel,
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
   },
@@ -119,7 +119,7 @@ export type SetCurrentWorkingDirectoryAction = {
 export type SetTunnelStateAction = {
   type: 'SET_TUNNEL_STATE',
   payload: {
-    tunnel: Tunnel,
+    tunnel: ResolvedTunnel,
     state: TunnelState,
   },
 };

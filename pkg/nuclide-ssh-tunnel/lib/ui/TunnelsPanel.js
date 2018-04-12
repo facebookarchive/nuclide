@@ -14,6 +14,7 @@ import type {Props} from './TunnelsPanelContents';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {resolveTunnel} from '../Normalization';
 import * as Actions from '../redux/Actions';
 import {Observable} from 'rxjs';
 import {TunnelsPanelContents} from './TunnelsPanelContents';
@@ -70,7 +71,8 @@ export class TunnelsPanel {
         openTunnel: tunnel => {
           this._store.dispatch(
             Actions.requestTunnel(
-              tunnel,
+              tunnel.description,
+              resolveTunnel(tunnel),
               // onOpen
               error => {
                 if (error != null) {

@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
 import type {OpenTunnel, Tunnel} from '../types';
 
 import * as React from 'react';
@@ -17,8 +18,8 @@ import ManualTunnelSection from './ManualTunnelSection';
 import {TunnelsPanelTable} from './TunnelsPanelTable';
 
 export type Props = {
-  tunnels: Array<[Tunnel, OpenTunnel]>,
-  closeTunnel: Tunnel => void,
+  tunnels: Array<[ResolvedTunnel, OpenTunnel]>,
+  closeTunnel: ResolvedTunnel => void,
   workingDirectoryHost: 'localhost' | ?NuclideUri,
   openTunnel(tunnel: Tunnel): void,
 };
