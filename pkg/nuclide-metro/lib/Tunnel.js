@@ -10,51 +10,58 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {
   SshTunnelService,
   Tunnel,
 } from '../../nuclide-ssh-tunnel/lib/types';
 import type {TunnelBehavior} from './types';
 
+import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
+import {Observable} from 'rxjs';
 
-export async function openTunnel(
+export function openTunnel(
   serviceUri: NuclideUri,
   behavior: TunnelBehavior,
-): Promise<?UniversalDisposable> {
+): Observable<'ready'> {
   if (!nuclideUri.isRemote(serviceUri) || behavior === 'do_not_open_tunnel') {
-    return null;
+    return Observable.of('ready').concat(Observable.never());
   }
-  const tunnelService = await _getTunnelService();
-  const desired = _desiredTunnelTo(serviceUri);
-  for (const tunnel of tunnelService.getOpenTunnels()) {
-    const {from, to} = tunnel;
-    if (from.port === desired.from.port && from.host === desired.from.host) {
-      if (to.host !== desired.to.host) {
-        throw new Error(
-          'You have a tunnel open from `localhost:8081` to a different host than your ' +
-            'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
-        );
+  return Observable.defer(() =>
+    nullthrows(consumeFirstProvider('nuclide.ssh-tunnel')),
+  )
+    .switchMap((service: SshTunnelService) => {
+      const desired = _desiredTunnelTo(serviceUri);
+      for (const tunnel of service.getOpenTunnels()) {
+        const {from, to} = tunnel;
+        if (
+          from.port === desired.from.port &&
+          from.host === desired.from.host
+        ) {
+          if (to.host !== desired.to.host) {
+            throw new Error(
+              'You have a tunnel open from `localhost:8081` to a different host than your ' +
+                'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
+            );
+          }
+        }
       }
-      return null;
-    }
-  }
-  if (behavior === 'ask_about_tunnel') {
-    return _askToRequestTunnel(tunnelService, desired);
-  } else {
-    const disposable = await _requestTunnelFromService(tunnelService, desired);
-    return disposable;
-  }
+      if (behavior === 'ask_about_tunnel') {
+        return _askToRequestTunnel(service, desired);
+      } else {
+        return service.openTunnels([desired]);
+      }
+    })
+    .share();
 }
 
 function _askToRequestTunnel(
   service: SshTunnelService,
   tunnel: Tunnel,
-): Promise<?UniversalDisposable> {
-  return new Promise(resolve => {
-    let disposable = null;
+): Observable<'ready'> {
+  return Observable.create(observer => {
+    let subscription;
     const notification = atom.notifications.addSuccess('Open tunnel?', {
       detail: 'Open a new tunnel so Metro becomes available at localhost:8081?',
       icon: 'milestone',
@@ -62,8 +69,8 @@ function _askToRequestTunnel(
       buttons: [
         {
           text: 'Open tunnel',
-          onDidClick: async () => {
-            disposable = await _requestTunnelFromService(service, tunnel);
+          onDidClick: () => {
+            subscription = service.openTunnels([tunnel]).subscribe(observer);
             notification.dismiss();
           },
         },
@@ -73,39 +80,14 @@ function _askToRequestTunnel(
         },
       ],
     });
-    notification.onDidDismiss(() => resolve(disposable));
-  });
-}
 
-function _requestTunnelFromService(
-  service: SshTunnelService,
-  tunnel: Tunnel,
-): Promise<UniversalDisposable> {
-  return new Promise((resolve, reject) => {
-    const disposable = service.openTunnel(
-      tunnel,
-      error => {
-        if (error == null) {
-          resolve(disposable);
-        } else {
-          reject(error);
-        }
-      },
-      () => {},
-    );
+    return () => {
+      if (subscription != null) {
+        subscription.unsubscribe();
+      }
+      notification.dismiss();
+    };
   });
-}
-
-async function _getTunnelService(): Promise<SshTunnelService> {
-  const tunnelService: ?SshTunnelService = await consumeFirstProvider(
-    'nuclide.ssh-tunnel',
-  );
-  if (tunnelService == null) {
-    throw new Error(
-      'No package to open a tunnel to the remote host available.',
-    );
-  }
-  return tunnelService;
 }
 
 function _desiredTunnelTo(uri: NuclideUri): Tunnel {
@@ -115,6 +97,6 @@ function _desiredTunnelTo(uri: NuclideUri): Tunnel {
       host: 'localhost',
       port: 8081,
     },
-    to: {host: nuclideUri.getHostname(uri), port: 8081},
+    to: {host: uri, port: 8081},
   };
 }

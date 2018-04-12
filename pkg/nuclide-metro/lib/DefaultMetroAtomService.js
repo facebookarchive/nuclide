@@ -36,7 +36,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
   _logTailer: LogTailer;
   _projectRootPath: BehaviorSubject<?NuclideUri>;
   _disposables: UniversalDisposable;
-  _currentTunnelDisposable: ?UniversalDisposable;
+  _currentTunnelSubscription: ?Subscription;
 
   constructor(projectRootPath: BehaviorSubject<?NuclideUri>) {
     this._projectRootPath = projectRootPath;
@@ -95,10 +95,12 @@ export class DefaultMetroAtomService implements MetroAtomService {
     logger.trace('hotkey register success: ' + String(success));
     const projectRoot = this._projectRootPath.getValue();
     invariant(projectRoot != null);
-    this._currentTunnelDisposable = await openTunnel(
-      projectRoot,
-      tunnelBehavior,
-    );
+    const tunnelEvents = openTunnel(projectRoot, tunnelBehavior).catch(e => {
+      this._closeTunnel();
+      throw e;
+    });
+    this._currentTunnelSubscription = tunnelEvents.subscribe();
+    await tunnelEvents.take(1).toPromise();
   };
 
   stop = () => {
@@ -106,10 +108,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
     invariant(remote != null);
     logger.trace('unregistering global reload hotkey');
     remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
-    if (this._currentTunnelDisposable != null) {
-      this._currentTunnelDisposable.dispose();
-      this._currentTunnelDisposable = null;
-    }
+    this._closeTunnel();
     this._logTailer.stop();
   };
 
@@ -128,6 +127,13 @@ export class DefaultMetroAtomService implements MetroAtomService {
 
   observeStatus = (callback: OutputProviderStatus => void): IDisposable => {
     return this._logTailer.observeStatus(callback);
+  };
+
+  _closeTunnel = () => {
+    if (this._currentTunnelSubscription != null) {
+      this._currentTunnelSubscription.unsubscribe();
+      this._currentTunnelSubscription = null;
+    }
   };
 
   _registerShutdownOnWorkingRootChange = (): Subscription => {
