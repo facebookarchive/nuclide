@@ -26,7 +26,7 @@ import * as Immutable from 'immutable';
 import {mapEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
-import {getSocketServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getSharedHostUri, getSocketServiceByHost} from './Normalization';
 import {TunnelsPanel, WORKSPACE_VIEW_URI} from './ui/TunnelsPanel';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -109,11 +109,8 @@ class Activation {
           this._tunnels.subscribe(tunnels => callback(tunnels)),
         );
       },
-      getAvailableServerPort: async nuclideUri => {
-        return getSocketServiceByNuclideUri(
-          nuclideUri,
-        ).getAvailableServerPort();
-      },
+      getAvailableServerPort: async uri =>
+        getSocketServiceByHost(getSharedHostUri(uri)).getAvailableServerPort(),
     };
   }
 

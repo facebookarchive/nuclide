@@ -12,14 +12,12 @@
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {Action, Store} from '../types';
 
+import {descriptorForTunnel, getSocketServiceByHost} from '../Normalization';
 import {validateTunnel} from '../Whitelist';
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
-import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
-import * as SocketService from '../../../nuclide-socket-rpc';
 
 export function requestTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -30,20 +28,9 @@ export function requestTunnelEpic(
     .mergeMap(async action => {
       invariant(action.type === Actions.REQUEST_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
-      const {from, to} = tunnel;
-      const tunnelDescriptor = {
-        from: {
-          host: from.host,
-          port: from.port,
-          family: from.family || 6,
-        },
-        to: {
-          host: to.host,
-          port: to.port,
-          family: to.family || 6,
-        },
-      };
-      const friendlyString = `${tunnelDescription(tunnelDescriptor)} (${
+      const descriptor = descriptorForTunnel(tunnel);
+      const {from, to} = descriptor;
+      const friendlyString = `${tunnelDescription(descriptor)} (${
         tunnel.description
       })`;
 
@@ -68,10 +55,7 @@ export function requestTunnelEpic(
 
       let isTunnelOpen = false;
       const open = () => {
-        const events = fromService.createTunnel(
-          tunnelDescriptor,
-          connectionFactory,
-        );
+        const events = fromService.createTunnel(descriptor, connectionFactory);
         subscription = events.refCount().subscribe({
           next: event => {
             if (event.type === 'server_started') {
@@ -144,14 +128,4 @@ export function openTunnelEpic(
       action.payload.open();
     })
     .ignoreElements();
-}
-
-function getSocketServiceByHost(host) {
-  if (host === 'localhost') {
-    // Bypass the RPC framework to avoid extra marshal/unmarshaling.
-    return SocketService;
-  } else {
-    const uri = nuclideUri.createRemoteUri(host, '/');
-    return getSocketServiceByNuclideUri(uri);
-  }
 }
