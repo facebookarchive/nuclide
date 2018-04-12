@@ -14,7 +14,9 @@ import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
 import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
+import type {ActiveTunnels} from './ActiveTunnels';
 
+import {Map} from 'immutable';
 import * as Immutable from 'immutable';
 
 export type SshTunnelService = {
@@ -34,6 +36,8 @@ export type Store = {
 
 export type AppState = {
   openTunnels: Immutable.Map<Tunnel, OpenTunnel>,
+  openTunnels: Map<Tunnel, OpenTunnel>,
+  tunnels: ActiveTunnels,
   currentWorkingDirectory: ?string,
   consoleOutput: Subject<ConsoleMessage>,
 };
@@ -52,14 +56,23 @@ export type Tunnel = {
 
 export type TunnelSubscription = {
   description: string,
+  onTunnelClose: (?Error) => void,
 };
+
+export type ActiveTunnel = $ReadOnly<{
+  tunnel: ResolvedTunnel,
+  subscriptions: Immutable.Set<TunnelSubscription>,
+  state: TunnelState,
+  error: ?Error,
+  close?: (?Error) => void,
+}>;
 
 export type OpenTunnel = {
   close(error: ?Error): void,
   state: TunnelState,
 };
 
-export type TunnelState = 'initializing' | 'ready' | 'active';
+export type TunnelState = 'initializing' | 'ready' | 'active' | 'closing';
 
 export type Action =
   | CloseTunnelAction

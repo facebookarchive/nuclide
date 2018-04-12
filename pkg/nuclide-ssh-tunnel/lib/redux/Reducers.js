@@ -10,16 +10,48 @@
  */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {Action, Tunnel, OpenTunnel} from '../types';
+import type {Action, OpenTunnel, Tunnel} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
+import {ActiveTunnels} from '../ActiveTunnels';
 import * as Actions from './Actions';
-import * as Immutable from 'immutable';
 import invariant from 'assert';
+import {Map, Set} from 'immutable';
 import {Subject} from 'rxjs';
 
+export function tunnels(
+  state: ActiveTunnels = new ActiveTunnels(),
+  action: Action,
+) {
+  switch (action.type) {
+    case Actions.SUBSCRIBE_TO_TUNNEL:
+      let existing = state.get(action.payload.tunnel);
+      if (existing == null) {
+        existing = {
+          tunnel: action.payload.tunnel,
+          subscriptions: Set(),
+          state: 'initializing',
+        };
+      }
+
+      return state.set(action.payload.tunnel, {
+        ...existing,
+        subscriptions: existing.subscriptions.add(action.payload.subscription),
+      });
+
+    case Actions.UNSUBSCRIBE_FROM_TUNNEL:
+      return state.update(action.payload.tunnel, value => ({
+        ...value,
+        subscriptions: value.subscriptions.remove(action.payload.subscription),
+      }));
+
+    default:
+      return state;
+  }
+}
+
 export function openTunnels(
-  state: Immutable.Map<Tunnel, OpenTunnel> = Immutable.Map(),
+  state: Map<Tunnel, OpenTunnel> = Map(),
   action: Action,
 ) {
   switch (action.type) {
