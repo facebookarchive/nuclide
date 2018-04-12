@@ -157,16 +157,18 @@ public class SourceLocator {
                             }
                           });
                     } catch (IOException e) {
-                      Utils.logException("Error walking file tree:", e);
-                      Utils.logException("Coming from:", new Throwable());
+                      // TODO (goom): Surface a message to the user indicating which file paths were
+                      //   not traversed
+                      Utils.logVerboseException("Error walking file tree:", e);
+                    } finally {
+                      Utils.logVerbose(
+                          "Added "
+                              + (_binarySearchPaths.size() - count)
+                              + " binaries to the classpath.\n"
+                              + "Classpath now contains "
+                              + _binarySearchPaths.size()
+                              + " binaries.");
                     }
-
-                    Utils.logVerbose(
-                        "Added "
-                            + (_binarySearchPaths.size() - count)
-                            + " binaries to the classpath.");
-                    Utils.logVerbose(
-                        "Classpath now contains " + _binarySearchPaths.size() + " binaries.");
                   }
                 });
 
