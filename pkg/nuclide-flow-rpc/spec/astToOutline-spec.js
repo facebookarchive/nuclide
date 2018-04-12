@@ -30,6 +30,7 @@ import exportDefaultAnonymousFuncAST34 from './fixtures/export-default-anonymous
 import typesASTOld from './fixtures/types-ast-old.json';
 import typesAST34 from './fixtures/types-ast-v0.34.json';
 import declareAST from './fixtures/declare-ast.json';
+import interfacesAST from './fixtures/interfaces-ast.json';
 
 const expectedClassOutline: Array<OutlineTree> = [
   {
@@ -716,6 +717,22 @@ const expectedExportDefaultAnonymousFuncOutline: Array<OutlineTree> = [
     ],
   },
 ];
+const expectedInterfaceOutline: Array<OutlineTree> = [
+  {
+    kind: 'interface',
+    tokenizedText: [
+      {kind: 'keyword', value: 'export'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'keyword', value: 'interface'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'type', value: 'ISource'},
+    ],
+    representativeName: 'ISource',
+    children: [],
+    startPosition: new Point(50, 0),
+    endPosition: new Point(60, 1),
+  },
+];
 
 describe('astToOutline', () => {
   beforeEach(function() {
@@ -784,6 +801,11 @@ describe('astToOutline', () => {
   it('should provide an outline for declare class, declare module and declare function', () => {
     expect(astToOutline(declareAST).outlineTrees).diffJson(
       expectedDeclareOutline,
+    );
+  });
+  it('should provide an outline with interface declarations', () => {
+    expect(astToOutline(interfacesAST).outlineTrees).diffJson(
+      expectedInterfaceOutline,
     );
   });
 });

@@ -121,6 +121,8 @@ function itemToTree(item: any): ?OutlineTree {
       return declareModuleOutline(item, extent);
     case 'DeclareVariable':
       return declareVariableOutline(item, extent);
+    case 'InterfaceDeclaration':
+      return declareInterfaceOutline(item, extent);
     default:
       return null;
   }
@@ -563,6 +565,22 @@ function declareVariableOutline(item: any, extent: Extent): ?OutlineTree {
     kind: 'variable',
     tokenizedText: [keyword('var'), whitespace(' '), method(item.id.name)],
     representativeName: item.id.name,
+    children: [],
+    ...extent,
+  };
+}
+
+function declareInterfaceOutline(item: any, extent: Extent): ?OutlineTree {
+  const tokenizedText = [keyword('interface')];
+  let representativeName = undefined;
+  if (item.id != null) {
+    tokenizedText.push(whitespace(' '), type(item.id.name));
+    representativeName = item.id.name;
+  }
+  return {
+    kind: 'interface',
+    tokenizedText,
+    representativeName,
     children: [],
     ...extent,
   };
