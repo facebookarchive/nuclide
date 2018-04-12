@@ -10,18 +10,22 @@
  * @format
  */
 
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import * as React from 'react';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 
 import {URL_REGEX} from 'nuclide-commons/string';
 const DIFF_PATTERN = '\\b[dD][1-9][0-9]{5,}\\b';
 const TASK_PATTERN = '\\b[tT]\\d+\\b';
-const FILE_PATH_PATTERN =
-  '([/A-Za-z_-s0-9.-]+[.][A-Za-z]+)(:([0-9]+))?(:([0-9]+))?';
+
+/**
+ * This does NOT contain a pattern to match file references. It's difficult to write such a pattern
+ * that matches all and only file references, and it's even worse when you add remote development
+ * into the mix. The upshot is that it adds more confusion than convenience, and a proper solution
+ * will require moving to a more robust parsing and rendering approach entirely.
+ */
 const CLICKABLE_PATTERNS = `(${DIFF_PATTERN})|(${TASK_PATTERN})|(${
   URL_REGEX.source
-})|${FILE_PATH_PATTERN}`;
+})`;
 const CLICKABLE_RE = new RegExp(CLICKABLE_PATTERNS, 'g');
 
 function toString(value: mixed): string {
@@ -75,15 +79,6 @@ export default function parseText(
     } else if (match[3] != null) {
       // It's a URL
       href = matchedText;
-    } else if (match[5] != null) {
-      // It's a file path
-      href = '#';
-      handleOnClick = () => {
-        goToLocation(match[5], {
-          line: match[7] ? parseInt(match[7], 10) - 1 : 0,
-          column: match[9] ? parseInt(match[9], 10) - 1 : 0,
-        });
-      };
     }
 
     chunks.push(
