@@ -22,9 +22,6 @@ export type SshTunnelService = {
     onOpen: (?Error) => void,
     onClose: (?Error) => void,
   ): UniversalDisposable,
-  observeTunnels(
-    callback: (Immutable.Map<Tunnel, TunnelState>) => void,
-  ): IDisposable,
   getOpenTunnels(): Set<Tunnel>,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
 };
