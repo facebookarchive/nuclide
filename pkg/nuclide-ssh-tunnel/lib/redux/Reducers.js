@@ -46,6 +46,26 @@ export function tunnels(
         subscriptions: value.subscriptions.remove(action.payload.subscription),
       }));
 
+    case Actions.OPEN_TUNNEL:
+      const toOpen = state.get(action.payload.tunnel);
+      return state.set(action.payload.tunnel, {
+        ...toOpen,
+        close: action.payload.close,
+      });
+
+    case Actions.SET_TUNNEL_STATE:
+      return state.update(action.payload.tunnel, value => ({
+        ...value,
+        state: action.payload.state,
+      }));
+
+    case Actions.CLOSE_TUNNEL:
+      return state.update(action.payload.tunnel, value => ({
+        ...value,
+        error: action.payload.error,
+        state: 'closing',
+      }));
+
     case Actions.DELETE_TUNNEL:
       return state.delete(action.payload.tunnel);
 
