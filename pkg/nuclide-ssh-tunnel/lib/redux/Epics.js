@@ -211,3 +211,13 @@ export function openTunnelEpic(
     })
     .ignoreElements();
 }
+
+export function closeTunnelEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.CLOSE_TUNNEL).map(action => {
+    invariant(action.type === Actions.CLOSE_TUNNEL);
+    return Actions.deleteTunnel(action.payload.tunnel);
+  });
+}

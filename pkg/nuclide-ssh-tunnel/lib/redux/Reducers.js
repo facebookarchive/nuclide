@@ -46,6 +46,9 @@ export function tunnels(
         subscriptions: value.subscriptions.remove(action.payload.subscription),
       }));
 
+    case Actions.DELETE_TUNNEL:
+      return state.delete(action.payload.tunnel);
+
     default:
       return state;
   }

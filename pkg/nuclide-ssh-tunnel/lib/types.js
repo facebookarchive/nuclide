@@ -75,6 +75,7 @@ export type TunnelState = 'initializing' | 'ready' | 'active' | 'closing';
 
 export type Action =
   | CloseTunnelAction
+  | DeleteTunnelAction
   | OpenTunnelAction
   | RequestTunnelAction
   | SetCurrentWorkingDirectoryAction
@@ -87,6 +88,13 @@ export type CloseTunnelAction = {
   payload: {
     tunnel: ResolvedTunnel,
     error: ?Error,
+  },
+};
+
+export type DeleteTunnelAction = {
+  type: 'DELETE_TUNNEL',
+  payload: {
+    tunnel: ResolvedTunnel,
   },
 };
 

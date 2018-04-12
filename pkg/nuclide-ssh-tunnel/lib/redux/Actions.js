@@ -12,6 +12,7 @@
 import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
 import type {
   CloseTunnelAction,
+  DeleteTunnelAction,
   OpenTunnelAction,
   RequestTunnelAction,
   SetTunnelStateAction,
@@ -22,6 +23,7 @@ import type {
 } from '../types';
 
 export const CLOSE_TUNNEL = 'CLOSE_TUNNEL';
+export const DELETE_TUNNEL = 'DELETE_TUNNEL';
 export const OPEN_TUNNEL = 'OPEN_TUNNEL';
 export const REQUEST_TUNNEL = 'REQUEST_TUNNEL';
 export const SET_TUNNEL_STATE = 'SET_TUNNEL_STATE';
@@ -36,6 +38,13 @@ export function closeTunnel(
   return {
     type: CLOSE_TUNNEL,
     payload: {tunnel, error},
+  };
+}
+
+export function deleteTunnel(tunnel: ResolvedTunnel): DeleteTunnelAction {
+  return {
+    type: DELETE_TUNNEL,
+    payload: {tunnel},
   };
 }
 
