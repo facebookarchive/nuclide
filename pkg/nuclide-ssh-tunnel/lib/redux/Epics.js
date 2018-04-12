@@ -19,6 +19,91 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 
+export function subscribeToTunnelEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.SUBSCRIBE_TO_TUNNEL)
+    .mergeMap(async action => {
+      invariant(action.type === Actions.SUBSCRIBE_TO_TUNNEL);
+      const {onOpen, subscription, tunnel} = action.payload;
+      const {tunnels} = store.getState();
+      const activeTunnel = tunnels.get(tunnel);
+      invariant(activeTunnel);
+      if (activeTunnel.subscriptions.count() > 1) {
+        const friendlyString = `${tunnelDescription(tunnel)} (${
+          subscription.description
+        })`;
+        store.getState().consoleOutput.next({
+          text: `Reusing tunnel: ${friendlyString}`,
+          level: 'log',
+        });
+        onOpen(null);
+        return null;
+      }
+
+      return Actions.requestTunnel(
+        subscription.description,
+        tunnel,
+        onOpen,
+        subscription.onTunnelClose,
+      );
+    })
+    .mergeMap(action => {
+      if (action == null) {
+        return Observable.empty();
+      } else {
+        return Observable.of(action);
+      }
+    });
+}
+
+export function unsubscribeFromTunnelEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.UNSUBSCRIBE_FROM_TUNNEL)
+    .mergeMap(async action => {
+      invariant(action.type === Actions.UNSUBSCRIBE_FROM_TUNNEL);
+      const {subscription, tunnel} = action.payload;
+      const {tunnels} = store.getState();
+      const activeTunnel = tunnels.get(tunnel);
+      if (activeTunnel == null) {
+        return null;
+      }
+      const friendlyString = `${tunnelDescription(tunnel)} (${
+        subscription.description
+      })`;
+      if (activeTunnel.subscriptions.count() > 0) {
+        store.getState().consoleOutput.next({
+          text: `Stopped reusing tunnel: ${friendlyString}`,
+          level: 'info',
+        });
+        return null;
+      } else {
+        store.getState().consoleOutput.next({
+          text: `Closed tunnel: ${friendlyString}`,
+          level: 'info',
+        });
+      }
+
+      if (activeTunnel.state === 'closing') {
+        return null;
+      }
+
+      return Actions.closeTunnel(tunnel, null);
+    })
+    .mergeMap(action => {
+      if (action == null) {
+        return Observable.empty();
+      } else {
+        return Observable.of(action);
+      }
+    });
+}
+
 export function requestTunnelEpic(
   actions: ActionsObservable<Action>,
   store: Store,
