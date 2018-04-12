@@ -15,7 +15,7 @@ export type TunnelHost = {
   family: 4 | 6,
 };
 
-export type TunnelDescriptor = {
+export type ResolvedTunnel = {
   from: TunnelHost,
   to: TunnelHost,
 };

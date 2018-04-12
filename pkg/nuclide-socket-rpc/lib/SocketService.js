@@ -13,7 +13,7 @@ import * as Tunnel from './Tunnel';
 import {ConnectionFactory} from './Connection';
 import {getAvailableServerPort as _getAvailableServerPort} from '../../commons-node/serverPort';
 
-import type {TunnelDescriptor, SocketEvent} from './types.js';
+import type {ResolvedTunnel, SocketEvent} from './types.js';
 import type {ConnectableObservable} from 'rxjs';
 
 /**
@@ -26,10 +26,10 @@ export function getConnectionFactory(): Promise<ConnectionFactory> {
 }
 
 export function createTunnel(
-  td: TunnelDescriptor,
+  t: ResolvedTunnel,
   cf: ConnectionFactory,
 ): ConnectableObservable<SocketEvent> {
-  return Tunnel.createTunnel(td, cf);
+  return Tunnel.createTunnel(t, cf);
 }
 
 export async function getAvailableServerPort(): Promise<number> {

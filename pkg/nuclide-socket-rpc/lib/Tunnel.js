@@ -15,13 +15,13 @@ import {ConnectableObservable, Observable} from 'rxjs';
 import net from 'net';
 
 import type {Connection, ConnectionFactory} from './Connection';
-import type {SocketEvent, TunnelDescriptor, IRemoteSocket} from './types.js';
+import type {ResolvedTunnel, SocketEvent, IRemoteSocket} from './types.js';
 
 const LOG_DELTA = 500000; // log for every half megabyte of transferred data
 const DEBUG_VERBOSE = false;
 
 export function createTunnel(
-  td: TunnelDescriptor,
+  t: ResolvedTunnel,
   cf: ConnectionFactory,
 ): ConnectableObservable<SocketEvent> {
   const logStatsIfNecessary = getStatLogger(LOG_DELTA);
@@ -29,10 +29,10 @@ export function createTunnel(
   let bytesWritten: number = 0;
 
   return Observable.create(observer => {
-    const descriptor = td;
-    trace(`Tunnel: creating tunnel -- ${tunnelDescription(descriptor)}`);
+    const tunnel = t;
+    trace(`Tunnel: creating tunnel -- ${tunnelDescription(tunnel)}`);
 
-    const {port, family} = descriptor.from;
+    const {port, family} = tunnel.from;
     const connections: Map<number, Promise<Connection>> = new Map();
 
     // set up server to start listening for connections
@@ -54,7 +54,7 @@ export function createTunnel(
         }
       });
       const remoteSocket = new RemoteSocket(localSocket);
-      const connectionPromise = cf.createConnection(td.to, remoteSocket);
+      const connectionPromise = cf.createConnection(tunnel.to, remoteSocket);
       connections.set(clientPort, connectionPromise);
 
       // set up socket listeners
@@ -65,18 +65,14 @@ export function createTunnel(
       if (DEBUG_VERBOSE) {
         socket.on('end', () => {
           trace(
-            `Tunnel: end (port: ${clientPort}, ${tunnelDescription(
-              descriptor,
-            )})`,
+            `Tunnel: end (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
           );
         });
       }
 
       socket.on('error', err => {
         trace(
-          `Tunnel: error (port: ${clientPort}, ${tunnelDescription(
-            descriptor,
-          )})`,
+          `Tunnel: error (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
         );
         trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
         socket.destroy(err);
@@ -96,9 +92,7 @@ export function createTunnel(
         // on client_disconnect remove and dispose the connection
         if (DEBUG_VERBOSE) {
           trace(
-            `Tunnel: close (port: ${clientPort}, ${tunnelDescription(
-              descriptor,
-            )})`,
+            `Tunnel: close (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
           );
         }
         connectionPromise.then(connection => {
@@ -119,7 +113,7 @@ export function createTunnel(
     });
 
     return () => {
-      trace(`Tunnel: shutting down tunnel ${tunnelDescription(descriptor)}`);
+      trace(`Tunnel: shutting down tunnel ${tunnelDescription(tunnel)}`);
       connections.forEach(connectionPromise =>
         connectionPromise.then(conn => {
           conn.dispose();
@@ -132,7 +126,7 @@ export function createTunnel(
   }).publish();
 }
 
-export function tunnelDescription(tunnel: TunnelDescriptor) {
+export function tunnelDescription(tunnel: ResolvedTunnel) {
   return `${shortenHostname(tunnel.from.host)}:${
     tunnel.from.port
   }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;

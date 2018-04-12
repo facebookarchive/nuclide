@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TunnelDescriptor} from '../../nuclide-socket-rpc/lib/types';
+import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
 import type {Tunnel} from './types';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 
@@ -18,7 +18,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getSocketServiceByNuclideUri} from '../../nuclide-remote-connection';
 import * as SocketServiceImpl from '../../nuclide-socket-rpc';
 
-export function descriptorForTunnel(tunnel: Tunnel): TunnelDescriptor {
+// Normalize host URIs
+export function resolveTunnel(tunnel: Tunnel): ResolvedTunnel {
   const {from, to} = tunnel;
   return {
     from: {
