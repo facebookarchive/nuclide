@@ -10,14 +10,12 @@
  */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
-import type {Action, OpenTunnel} from '../types';
+import type {Action} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
 
 import {ActiveTunnels} from '../ActiveTunnels';
 import * as Actions from './Actions';
-import invariant from 'assert';
-import {Map, Set} from 'immutable';
+import {Set} from 'immutable';
 import {Subject} from 'rxjs';
 
 export function tunnels(
@@ -69,31 +67,6 @@ export function tunnels(
     case Actions.DELETE_TUNNEL:
       return state.delete(action.payload.tunnel);
 
-    default:
-      return state;
-  }
-}
-
-export function openTunnels(
-  state: Map<ResolvedTunnel, OpenTunnel> = Map(),
-  action: Action,
-) {
-  switch (action.type) {
-    case Actions.CLOSE_TUNNEL:
-      const toClose = action.payload.tunnel;
-      return state.delete(toClose);
-    case Actions.OPEN_TUNNEL:
-      const {close, tunnel} = action.payload;
-      return state.set(tunnel, {
-        close,
-        state: 'initializing',
-      });
-    case Actions.SET_TUNNEL_STATE:
-      invariant(state.get(action.payload.tunnel) != null);
-      return state.update(action.payload.tunnel, value => ({
-        ...value,
-        state: action.payload.state,
-      }));
     default:
       return state;
   }
