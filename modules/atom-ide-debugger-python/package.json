@@ -56,5 +56,8 @@
     "vscode-debugprotocol": "1.24.0",
     "vscode-nls": "2.0.2",
     "xml2js": "0.4.17"
-  }
+  },
+  "package-deps": [
+    "atom-ide-ui"
+  ]
 }
