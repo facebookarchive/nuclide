@@ -10,20 +10,17 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  VSAdapterExecutableInfo,
-  VsAdapterType,
-} from 'nuclide-debugger-common';
+import type {IProcessConfig, VsAdapterType} from 'nuclide-debugger-common';
 import type {
   AutoGenConfig,
   AutoGenAttachConfig,
   AutoGenLaunchConfig,
   NativeVsAdapterType,
-  ResolveAdapterExecutable,
 } from 'nuclide-debugger-common/types';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
+import {getNodeBinaryPath} from '../../commons-node/node-info';
 
 export type VspNativeDebuggerLaunchBuilderParms = {
   args: Array<string>,
@@ -79,13 +76,31 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
   };
 }
 
-async function lldbVspAdapterWrapperPath(program: string): Promise<string> {
+async function lldbVspAdapterWrapperPath(program: NuclideUri): Promise<string> {
   try {
     // $FlowFB
     return require('./fb-LldbVspAdapterPath').getLldbVspAdapterPath(program);
   } catch (ex) {
     return 'lldb-vscode';
   }
+}
+
+export async function resolveConfiguration(
+  configuration: IProcessConfig,
+): Promise<IProcessConfig> {
+  const {adapterExecutable} = configuration;
+  if (adapterExecutable == null) {
+    throw new Error('Cannot resolve configuration for unset adapterExecutable');
+  } else if (adapterExecutable.command === 'node') {
+    adapterExecutable.command = await getNodeBinaryPath(
+      configuration.targetUri,
+    );
+  } else if (adapterExecutable.command === 'lldb-vscode') {
+    adapterExecutable.command = await lldbVspAdapterWrapperPath(
+      configuration.targetUri,
+    );
+  }
+  return configuration;
 }
 
 export function getNativeAutoGenConfig(
@@ -132,12 +147,9 @@ export function getNativeAutoGenConfig(
     visible: true,
   };
 
-  const resolveAdapterExecutable: ResolveAdapterExecutable = (
-    adapter: VsAdapterType,
-    targetUri: NuclideUri,
-  ) => {
-    return getNativeVSPAdapterExecutable(vsAdapterType, targetUri);
-  };
+  const debugTypeMessage = `using ${
+    vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
+  }`;
 
   const autoGenLaunchConfig: AutoGenLaunchConfig = {
     launch: true,
@@ -147,10 +159,7 @@ export function getNativeAutoGenConfig(
     scriptPropertyName: 'program',
     scriptExtension: '.c',
     cwdPropertyName: 'working directory',
-    header: (
-      <p>This is intended to debug native programs with either gdb or lldb.</p>
-    ),
-    resolveAdapterExecutable,
+    header: <p>Debug native programs {debugTypeMessage}.</p>,
   };
 
   const pid = {
@@ -165,8 +174,7 @@ export function getNativeAutoGenConfig(
     vsAdapterType,
     threads: true,
     properties: [pid, sourcePath],
-    header: <p>Attach to a running native process</p>,
-    resolveAdapterExecutable,
+    header: <p>Attach to a running native process {debugTypeMessage}</p>,
   };
   return {
     launch: autoGenLaunchConfig,
@@ -174,33 +182,16 @@ export function getNativeAutoGenConfig(
   };
 }
 
-async function getNativeVSPAdapterExecutable(
-  adapter: VsAdapterType,
-  program: string,
-): Promise<?VSAdapterExecutableInfo> {
-  if (adapter === 'native_gdb') {
-    return null;
-  }
-
-  const adapterInfo = {
-    command: await lldbVspAdapterWrapperPath(program),
-    args: [],
-  };
-
-  return adapterInfo;
-}
-
 export async function getNativeVSPLaunchProcessInfo(
   adapter: VsAdapterType,
   program: NuclideUri,
   args: VspNativeDebuggerLaunchBuilderParms,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, program);
   return new VspProcessInfo(
     program,
     'launch',
     adapter,
-    adapterInfo,
+    null,
     {
       program: nuclideUri.getPath(program),
       ...args,
@@ -214,8 +205,7 @@ export async function getNativeVSPAttachProcessInfo(
   targetUri: NuclideUri,
   args: VspNativeDebuggerAttachBuilderParms,
 ): Promise<VspProcessInfo> {
-  const adapterInfo = await getNativeVSPAdapterExecutable(adapter, targetUri);
-  return new VspProcessInfo(targetUri, 'attach', adapter, adapterInfo, args, {
+  return new VspProcessInfo(targetUri, 'attach', adapter, null, args, {
     threads: true,
   });
 }

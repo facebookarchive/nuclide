@@ -53,14 +53,17 @@ import type {
   IStackFrame,
   SerializedState,
 } from '../types';
-import type {IProcessConfig, MessageProcessor} from 'nuclide-debugger-common';
+import type {
+  IProcessConfig,
+  MessageProcessor,
+  VSAdapterExecutableInfo,
+} from 'nuclide-debugger-common';
 import type {EvaluationResult} from 'nuclide-commons-ui/TextRenderer';
 import type {TimingTracker} from 'nuclide-commons/analytics';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
 import invariant from 'assert';
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -83,9 +86,9 @@ import {
   getConsoleService,
   getNotificationService,
   getDatatipService,
-  getDefaultNodeBinaryPath,
   getVSCodeDebuggerAdapterServiceByNuclideUri,
   getTerminalService,
+  resolveDebugConfiguration,
 } from '../AtomServiceContainer';
 import {
   expressionAsEvaluationResultStream,
@@ -1145,7 +1148,7 @@ export default class DebugService implements IDebugService {
   }
 
   async _doCreateProcess(
-    configuration: IProcessConfig,
+    rawConfiguration: IProcessConfig,
     sessionId: string,
   ): Promise<?IProcess> {
     const errorHandler = (error: Error) => {
@@ -1169,12 +1172,26 @@ export default class DebugService implements IDebugService {
       }
     };
 
+    let process: ?IProcess;
+
+    const adapterExecutable = await this._resolveAdapterExecutable(
+      rawConfiguration,
+    );
+    const configuration = await resolveDebugConfiguration({
+      ...rawConfiguration,
+      adapterExecutable,
+    });
+
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: configuration.adapterType,
       clientType: 'VSP',
     });
-    let process: ?IProcess;
-    const session = await this._createVsDebugSession(configuration, sessionId);
+
+    const session = await this._createVsDebugSession(
+      configuration,
+      adapterExecutable,
+      sessionId,
+    );
     try {
       process = this._model.addProcess(configuration, session);
       this.focusStackFrame(null, null, process);
@@ -1207,26 +1224,25 @@ export default class DebugService implements IDebugService {
     }
   }
 
+  async _resolveAdapterExecutable(
+    configuration: IProcessConfig,
+  ): Promise<VSAdapterExecutableInfo> {
+    if (configuration.adapterExecutable != null) {
+      return configuration.adapterExecutable;
+    }
+    return getVSCodeDebuggerAdapterServiceByNuclideUri(
+      configuration.targetUri,
+    ).getAdapterExecutableInfo(configuration.adapterType);
+  }
+
   async _createVsDebugSession(
     configuration: IProcessConfig,
+    adapterExecutable: VSAdapterExecutableInfo,
     sessionId: string,
   ): Promise<VsDebugSession> {
     const {targetUri} = configuration;
     const service = getVSCodeDebuggerAdapterServiceByNuclideUri(targetUri);
     const spawner = new service.VsRawAdapterSpawnerService();
-    let adapterExecutable = configuration.adapterExecutable;
-    if (adapterExecutable == null) {
-      adapterExecutable = await service.getAdapterExecutableInfo(
-        configuration.adapterType,
-      );
-    }
-    if (adapterExecutable.command === 'node') {
-      const nodeBinaryPath =
-        (await getDefaultNodeBinaryPath(targetUri)) ||
-        (featureConfig.get('atom-ide-debugger.nodeBinaryPath') || null: any) ||
-        'node';
-      adapterExecutable.command = nodeBinaryPath;
-    }
 
     const clientPreprocessors: Array<MessageProcessor> = [];
     const adapterPreprocessors: Array<MessageProcessor> = [];

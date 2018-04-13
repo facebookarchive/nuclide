@@ -118,23 +118,6 @@ export type AutoGenProperty = {
   enumsDefaultValue?: string,
 };
 
-export type ResolveAdapterExecutable = (
-  adapter: VsAdapterType,
-  targetUri: NuclideUri,
-) => Promise<?VSAdapterExecutableInfo>;
-
-// const resolveAdapterExecutable: ResolveAdapterExecutable = (
-//   adapter: VsAdapterType,
-//   targetUri: NuclideUri,
-// ) => {
-//   return getNativeVSPAdapterExecutable(vsAdapterType, targetUri);
-// };
-
-// async function getNativeVSPAdapterExecutable(
-//   adapter: VsAdapterType,
-//   program: string,
-// ): Promise<?VSAdapterExecutableInfo> {
-
 export type AutoGenLaunchConfig = {|
   // Disjoint Union Flag
   launch: true,
@@ -143,7 +126,6 @@ export type AutoGenLaunchConfig = {|
   header?: React.Node,
   threads: boolean,
   vsAdapterType: VsAdapterType,
-  resolveAdapterExecutable?: ResolveAdapterExecutable,
   // Launch Specific Properties
   scriptPropertyName: string,
   cwdPropertyName: ?string,
@@ -158,7 +140,6 @@ export type AutoGenAttachConfig = {|
   header?: React.Node,
   threads: boolean,
   vsAdapterType: VsAdapterType,
-  resolveAdapterExecutable?: ResolveAdapterExecutable,
   // Attach Specific Properties
 |};
 
@@ -175,3 +156,7 @@ export type LaunchAttachProviderIsEnabled = (
   action: DebuggerConfigAction,
   config: AutoGenConfig,
 ) => Promise<boolean>;
+
+export interface DebuggerConfigurationProvider {
+  resolveConfiguration(configuration: IProcessConfig): Promise<IProcessConfig>;
+}

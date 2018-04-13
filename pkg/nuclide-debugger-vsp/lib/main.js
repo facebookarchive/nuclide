@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
+import type {
+  NuclideDebuggerProvider,
+  DebuggerConfigurationProvider,
+} from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes} from 'nuclide-debugger-common';
@@ -18,7 +21,11 @@ import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAt
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {getPrepackAutoGenConfig, getNativeAutoGenConfig} from './utils';
+import {
+  getPrepackAutoGenConfig,
+  getNativeAutoGenConfig,
+  resolveConfiguration,
+} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -91,6 +98,12 @@ class Activation {
         return new HhvmLaunchAttachProvider('Hack / PHP', connection);
       },
     });
+  }
+
+  createDebuggerConfigurator(): DebuggerConfigurationProvider {
+    return {
+      resolveConfiguration,
+    };
   }
 
   dispose(): void {

@@ -14,6 +14,7 @@ import type {
   DebuggerConfigAction,
   DebuggerLaunchAttachProvider,
   NuclideDebuggerProvider,
+  DebuggerConfigurationProvider,
 } from 'nuclide-debugger-common';
 import type {
   ConsoleService,
@@ -49,6 +50,7 @@ import {
   setDatatipService,
   setTerminalService,
   setRpcService,
+  addDebugConfigurationProvider,
 } from './AtomServiceContainer';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import DebuggerLayoutManager from './ui/DebuggerLayoutManager';
@@ -842,6 +844,12 @@ class Activation {
     return new UniversalDisposable(() => {
       this._uiModel.removeDebuggerProvider(provider);
     });
+  }
+
+  consumeDebuggerConfigurationProvider(
+    provider: DebuggerConfigurationProvider,
+  ): IDisposable {
+    return addDebugConfigurationProvider(provider);
   }
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {

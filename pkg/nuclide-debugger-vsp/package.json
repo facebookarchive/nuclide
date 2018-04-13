@@ -9,5 +9,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "debugger.configurator": {
+      "description": "Provides debugger configuration resolution at runtime.",
+      "versions": {
+        "0.0.0": "createDebuggerConfigurator"
+      }
+    }
+  },
   "private": true
 }

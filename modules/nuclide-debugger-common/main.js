@@ -15,6 +15,7 @@ export type {
   ControlButtonSpecification,
   DebuggerCapabilities,
   DebuggerConfigAction,
+  DebuggerConfigurationProvider,
   DebuggerProperties,
   IProcessConfig,
   IVspInstance,

@@ -44,14 +44,6 @@ export async function getProcessTree(): Promise<Array<ProcessInfo>> {
 
 export async function getAdapterExecutableInfo(
   adapterType: VsAdapterType,
-  defaultNodeBinaryPath: ?string,
 ): Promise<VSAdapterExecutableInfo> {
-  const adapter = getAdapterExecutable(adapterType);
-  if (adapter.command === 'node') {
-    adapter.command =
-      defaultNodeBinaryPath != null
-        ? defaultNodeBinaryPath
-        : process.title === 'node' ? process.execPath : 'node';
-  }
-  return adapter;
+  return getAdapterExecutable(adapterType);
 }

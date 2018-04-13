@@ -16,6 +16,10 @@ import type {
   RegisterExecutorFunction,
 } from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {
+  DebuggerConfigurationProvider,
+  IProcessConfig,
+} from 'nuclide-debugger-common';
 import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -34,6 +38,7 @@ let _datatipService: ?DatatipService = null;
 let _createConsole: ?ConsoleService = null;
 let _terminalService: ?nuclide$TerminalApi = null;
 let _rpcService: ?nuclide$RpcService = null;
+let _configurationProviders: Array<DebuggerConfigurationProvider> = [];
 
 export function setConsoleService(createConsole: ConsoleService): IDisposable {
   _createConsole = createConsole;
@@ -104,16 +109,6 @@ export function isNuclideEnvironment(): boolean {
   return _rpcService != null;
 }
 
-export async function getDefaultNodeBinaryPath(
-  uri: NuclideUri,
-): Promise<?string> {
-  if (_rpcService == null) {
-    return null;
-  } else {
-    return _rpcService.getNodeBinaryPath(uri);
-  }
-}
-
 export function getVSCodeDebuggerAdapterServiceByNuclideUri(
   uri: NuclideUri,
 ): VSCodeDebuggerAdapterService {
@@ -125,4 +120,28 @@ export function getVSCodeDebuggerAdapterServiceByNuclideUri(
   } else {
     return VSCodeDebuggerAdapterServiceLocal;
   }
+}
+
+export function addDebugConfigurationProvider(
+  provider: DebuggerConfigurationProvider,
+): IDisposable {
+  _configurationProviders.push(provider);
+  return new UniversalDisposable(() => {
+    _configurationProviders = _configurationProviders.filter(
+      p => p !== provider,
+    );
+  });
+}
+
+export async function resolveDebugConfiguration(
+  configuration: IProcessConfig,
+): Promise<IProcessConfig> {
+  let resolvedConfiguration = configuration;
+  for (const provider of _configurationProviders) {
+    // eslint-disable-next-line no-await-in-loop
+    resolvedConfiguration = await provider.resolveConfiguration(
+      resolvedConfiguration,
+    );
+  }
+  return resolvedConfiguration;
 }

@@ -418,21 +418,12 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         values[name] = idx(property, _ => _.defaultValue);
       });
 
-    if (config.resolveConfig != null) {
-      config.resolveConfig(values, config);
-    }
-
-    const adapterExecutable =
-      config.resolveAdapterExecutable != null
-        ? await config.resolveAdapterExecutable(config.vsAdapterType, targetUri)
-        : null;
-
     const debuggerService = await getDebuggerService();
     debuggerService.startVspDebugging({
       targetUri,
       debugMode: config.launch ? 'launch' : 'attach',
       adapterType: config.vsAdapterType,
-      adapterExecutable,
+      adapterExecutable: null,
       config: values,
       capabilities: {threads: config.threads},
       properties: {

@@ -20,12 +20,6 @@
       "type": "boolean",
       "default": true,
       "description": "Shows the debugger, if it is currently hidden, when the user sets a breakpoint in a file via the gutter."
-    },
-    "nodeBinaryPath": {
-      "title": "NODE.JS absolute path",
-      "type": "string",
-      "default": "",
-      "description": "NodeJS absolute path, to be used for launching debuggers for open source Atom IDE (>= v7.4.0)"
     }
   },
   "providedServices": {
@@ -65,6 +59,11 @@
     "debugger.provider": {
       "versions": {
         "0.0.0": "consumeDebuggerProvider"
+      }
+    },
+    "debugger.configurator": {
+      "versions": {
+        "0.0.0": "consumeDebuggerConfigurationProvider"
       }
     },
     "nuclide-current-working-directory": {
