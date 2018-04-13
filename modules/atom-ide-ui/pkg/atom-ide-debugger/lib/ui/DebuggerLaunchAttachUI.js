@@ -11,8 +11,10 @@
  */
 /* global localStorage */
 
-import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+import type {
+  DebuggerConfigAction,
+  DebuggerLaunchAttachProvider,
+} from 'nuclide-debugger-common';
 
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -23,6 +25,7 @@ import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import Tabs from 'nuclide-commons-ui/Tabs';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
+import {isNuclideEnvironment} from '../AtomServiceContainer';
 
 type Props = {|
   +dialogMode: DebuggerConfigAction,
@@ -243,27 +246,32 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       // No debugging providers available.
       providerContent = (
         <div className="debugger-launch-attach-tabcontent">
-          There are no debuggers available.
+          No debuggers installed, look for available debuggers on{' '}
+          <a href="https://atom.io/packages/search?q=atom-ide-debugger-">
+            atom.io/packages
+          </a>
         </div>
       );
     }
 
     return (
       <div className="padded debugger-launch-attach-container">
-        <h1 className="debugger-launch-attach-header">
-          <span className="padded">
-            {this.props.dialogMode === 'attach'
-              ? 'Attach debugger to '
-              : 'Launch debugger on '}
-          </span>
-          <Dropdown
-            className="inline"
-            options={this.props.connectionOptions}
-            onChange={(value: ?string) => this.props.connectionChanged(value)}
-            size="xs"
-            value={this.props.connection}
-          />
-        </h1>
+        {isNuclideEnvironment() ? (
+          <h1 className="debugger-launch-attach-header">
+            <span className="padded">
+              {this.props.dialogMode === 'attach'
+                ? 'Attach debugger to '
+                : 'Launch debugger on '}
+            </span>
+            <Dropdown
+              className="inline"
+              options={this.props.connectionOptions}
+              onChange={(value: ?string) => this.props.connectionChanged(value)}
+              size="xs"
+              value={this.props.connection}
+            />
+          </h1>
+        ) : null}
         {providerContent}
         <div className="debugger-launch-attach-actions">
           <ButtonGroup>

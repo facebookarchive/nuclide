@@ -100,6 +100,10 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
   });
 }
 
+export function isNuclideEnvironment(): boolean {
+  return _rpcService != null;
+}
+
 export async function getDefaultNodeBinaryPath(
   uri: NuclideUri,
 ): Promise<?string> {
