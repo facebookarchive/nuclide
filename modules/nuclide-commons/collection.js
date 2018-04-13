@@ -602,3 +602,22 @@ export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
     return true;
   });
 }
+
+export class DefaultMap<K, V> extends Map<K, V> {
+  _factory: () => V;
+
+  constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {
+    super(iterable);
+    this._factory = factory;
+  }
+
+  get(key: K): V {
+    if (!this.has(key)) {
+      const value = this._factory();
+      this.set(key, value);
+      return value;
+    }
+    // If the key is present we must have a value of type V.
+    return (super.get(key): any);
+  }
+}

@@ -25,6 +25,7 @@ import {
   setIntersect,
   setUnion,
   collect,
+  DefaultMap,
   MultiMap,
   objectEntries,
   objectFromPairs,
@@ -285,6 +286,48 @@ describe('collect', () => {
     expect(result.get('fizz')).toEqual([3, 6, 9]);
     expect(result.get('buzz')).toEqual([5]);
     expect(result.get('neither')).toEqual([1, 2, 4, 7, 8]);
+  });
+});
+
+describe('DefaultMap', () => {
+  it('calls the factory each time you get a nonexistant key', () => {
+    const spy = jasmine.createSpy().andReturn('default');
+    const map = new DefaultMap(spy);
+    expect(map.size).toBe(0);
+    expect(map.get('a')).toBe('default');
+    expect(map.get('b')).toBe('default');
+    expect(map.size).toBe(2);
+    expect(spy.callCount).toBe(2);
+  });
+
+  it('can be cleared', () => {
+    const map = new DefaultMap(() => 'default');
+    map.get('a');
+    map.get('b');
+    map.clear();
+    expect(map.size).toBe(0);
+  });
+
+  it('can update default values', () => {
+    const map = new DefaultMap(() => 'default');
+    expect(map.get('a')).toBe('default');
+    map.set('a', 'custom');
+    expect(map.get('a')).toBe('custom');
+  });
+
+  it('can be iterated', () => {
+    const map = new DefaultMap(() => 'default');
+    map.get('a');
+    map.get('b');
+    expect([...map.keys()]).toEqual(['a', 'b']);
+    expect([...map.entries()]).toEqual([['a', 'default'], ['b', 'default']]);
+  });
+
+  it('takes initial values', () => {
+    const map = new DefaultMap(() => 0, [['a', 1], ['b', 2]]);
+    map.get('c');
+    expect([...map.entries()]).toEqual([['a', 1], ['b', 2], ['c', 0]]);
+    expect(map.size).toBe(3);
   });
 });
 
