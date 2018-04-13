@@ -1056,6 +1056,7 @@ declare class atom$TextEditor extends atom$Model {
   serialize(): Object,
   foldBufferRowRange(startRow: number, endRow: number): void,
   getNonWordCharacters(position?: atom$PointLike): string,
+  scheduleComponentUpdate(): void,
 }
 
 /**

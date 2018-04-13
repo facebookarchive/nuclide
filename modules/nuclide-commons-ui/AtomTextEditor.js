@@ -234,6 +234,10 @@ export class AtomTextEditor extends React.Component<Props, void> {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
     }
+    if (nextProps.placeholderText !== this.props.placeholderText) {
+      this.getModel().setPlaceholderText(nextProps.placeholderText || '');
+      this.getModel().scheduleComponentUpdate();
+    }
   }
 
   _onDidUpdateTextEditorElement(props: Props): void {
