@@ -297,17 +297,17 @@ export function successorInfoToDisplay(
   const shorthash = successorInfo.hash.slice(0, 6);
   switch (successorInfo.type) {
     case 'public':
-      return `(Landed as ${shorthash})`;
+      return `Landed as ${shorthash}`;
     case 'amend':
-      return `(Amended as ${shorthash})`;
+      return `Amended as ${shorthash}`;
     case 'rebase':
-      return `(Rebased as ${shorthash})`;
+      return `Rebased as ${shorthash}`;
     case 'split':
-      return `(Split as ${shorthash})`;
+      return `Split as ${shorthash}`;
     case 'fold':
-      return `(Folded as ${shorthash})`;
+      return `Folded as ${shorthash}`;
     case 'histedit':
-      return `(Histedited as ${shorthash})`;
+      return `Histedited as ${shorthash}`;
     default:
       return '';
   }
