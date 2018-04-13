@@ -148,3 +148,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-lightbulb-filled::before {
   content: "\f128";
 }
+.icon-nuclicon-nt::before {
+  content: "\f129";
+}
