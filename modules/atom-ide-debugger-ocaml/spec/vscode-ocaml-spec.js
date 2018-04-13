@@ -17,21 +17,14 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 import {Logger} from 'vscode-debugadapter';
-import {THREAD_ID} from '../vscode-ocaml/OCamlDebugger';
+import {THREAD_ID} from '../lib/OCamlDebugger';
 
-const logger = getLogger('vscode-ocaml-spec');
+const logger = getLogger('ocaml-debugger-spec');
 const adapterInfo = {
   command: 'node',
-  args: [
-    nuclideUri.join(
-      __dirname,
-      '..',
-      'vscode-ocaml',
-      'vscode-debugger-entry.js',
-    ),
-  ],
+  args: [nuclideUri.join(__dirname, '../lib/vscode-debugger-entry.js')],
 };
-const OCAML_FIXTURES = nuclideUri.join(__dirname, 'fixtures', 'ocaml');
+const OCAML_FIXTURES = nuclideUri.join(__dirname, 'fixtures');
 
 function makeSource(name: string): DebugProtocol.Source {
   return {
@@ -73,12 +66,7 @@ async function withSession(
     await checkResponse(
       session.launch({
         ocamldebugExecutable: 'ocamldebug',
-        executablePath: nuclideUri.join(
-          __dirname,
-          'fixtures',
-          'ocaml',
-          executableName,
-        ),
+        executablePath: nuclideUri.join(__dirname, 'fixtures', executableName),
         arguments: [],
         environmentVariables: [],
         workingDirectory: OCAML_FIXTURES,
@@ -131,7 +119,7 @@ async function checkLine(
   );
 }
 
-describe('vscode-ocaml', () => {
+describe('ocaml-debugger', () => {
   if (process.env.SANDCASTLE == null) {
     return;
   }

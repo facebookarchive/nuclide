@@ -24,7 +24,6 @@ import type {
 import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
 
 import * as React from 'react';
-import {Logger} from 'vscode-debugadapter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 
@@ -76,99 +75,6 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
     scriptPropertyName: 'fileToPrepack',
     scriptExtension: '.js',
     cwdPropertyName: null,
-    header: null,
-  };
-  return {
-    launch: autoGenLaunchConfig,
-    attach: null,
-  };
-}
-
-export function getOCamlAutoGenConfig(): AutoGenConfig {
-  const debugExecutable = {
-    name: 'ocamldebugExecutable',
-    type: 'string',
-    description: 'Path to ocamldebug or launch script',
-    required: true,
-    visible: true,
-  };
-  const executablePath = {
-    name: 'executablePath',
-    type: 'string',
-    description:
-      'Input the executable path you want to launch (leave blank if using an ocamldebug launch script)',
-    required: false,
-    visible: true,
-  };
-  const argumentsProperty = {
-    name: 'arguments',
-    type: 'array',
-    itemType: 'string',
-    description: 'Arguments to the executable',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-  const environmentVariables = {
-    name: 'environmentVariables',
-    type: 'array',
-    itemType: 'string',
-    description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-  const workingDirectory = {
-    name: 'workingDirectory',
-    type: 'string',
-    description: 'Working directory for the launched executable',
-    required: true,
-    visible: true,
-  };
-  const additionalIncludeDirectories = {
-    name: 'includeDirectories',
-    type: 'array',
-    itemType: 'string',
-    description:
-      'Additional include directories that debugger will use to search for source code',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-  const breakAfterStart = {
-    name: 'breakAfterStart',
-    type: 'boolean',
-    description: '',
-    required: false,
-    defaultValue: true,
-    visible: true,
-  };
-  const logLevel = {
-    name: 'logLevel',
-    type: 'string',
-    description: '',
-    required: false,
-    defaultValue: Logger.LogLevel.Verbose,
-    visible: false,
-  };
-
-  const autoGenLaunchConfig: AutoGenLaunchConfig = {
-    launch: true,
-    vsAdapterType: VsAdapterTypes.OCAML,
-    threads: false,
-    properties: [
-      debugExecutable,
-      executablePath,
-      argumentsProperty,
-      environmentVariables,
-      workingDirectory,
-      additionalIncludeDirectories,
-      breakAfterStart,
-      logLevel,
-    ],
-    scriptPropertyName: 'executable',
-    scriptExtension: '.ml',
-    cwdPropertyName: 'working directory',
     header: null,
   };
   return {

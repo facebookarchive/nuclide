@@ -19,11 +19,7 @@ import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  getOCamlAutoGenConfig,
-  getPrepackAutoGenConfig,
-  getNativeAutoGenConfig,
-} from './utils';
+import {getPrepackAutoGenConfig, getNativeAutoGenConfig} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -37,7 +33,6 @@ class Activation {
       const isOpenSource = !exists;
       this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
-      this._registerOcamlDebugProvider();
       this._registerLLDBProvider();
       this._registerGDBProvider();
       this._registerHHVMDebugProvider();
@@ -72,21 +67,6 @@ class Activation {
             'Prepack',
             connection,
             getPrepackAutoGenConfig(),
-          );
-        },
-      });
-    }
-  }
-
-  async _registerOcamlDebugProvider(): Promise<void> {
-    if (await passesGK('nuclide_debugger_ocaml')) {
-      this._registerDebugProvider({
-        name: 'OCaml',
-        getLaunchAttachProvider: connection => {
-          return new AutoGenLaunchAttachProvider(
-            'OCaml',
-            connection,
-            getOCamlAutoGenConfig(),
           );
         },
       });

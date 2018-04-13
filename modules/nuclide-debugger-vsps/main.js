@@ -95,10 +95,13 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
       executable: {
         command: 'node',
         args: [
-          nuclideUri.join(__dirname, 'vscode-ocaml/vscode-debugger-entry.js'),
+          nuclideUri.join(
+            __dirname,
+            '../atom-ide-debugger-ocaml/lib/vscode-debugger-entry.js',
+          ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'vscode-ocaml'),
+      root: nuclideUri.join(__dirname, '../atom-ide-debugger-ocaml'),
     },
   ],
   [
