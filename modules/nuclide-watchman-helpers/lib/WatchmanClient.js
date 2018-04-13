@@ -47,9 +47,12 @@ export default class WatchmanClient {
 
   constructor() {
     this._initWatchmanClient();
-    this._serializedReconnect = serializeAsyncCall(() =>
-      this._reconnectClient(),
-    );
+    this._serializedReconnect = serializeAsyncCall(() => {
+      logger.info('Calling _reconnectClient from _serializedReconnect.');
+      return this._reconnectClient().catch(error =>
+        logger.error('_reconnectClient failed', error),
+      );
+    });
     this._subscriptions = new Map();
   }
 
@@ -97,22 +100,39 @@ export default class WatchmanClient {
     await this._restoreSubscriptions();
   }
 
+  // TODO(mbolin): What happens if someone calls watchDirectoryRecursive() while
+  // this method is executing?
   async _restoreSubscriptions(): Promise<void> {
     const watchSubscriptions = Array.from(this._subscriptions.values());
+    const numSubscriptions = watchSubscriptions.length;
+    logger.info(
+      `Attempting to restore ${numSubscriptions} Watchman subscriptions.`,
+    );
+    let numRestored = 0;
     await Promise.all(
-      watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
-        await this._watchProject(subscription.path);
-        // We have already missed the change events from the disconnect time,
-        // watchman could have died, so the last clock result is not valid.
-        await sleep(WATCHMAN_SETTLE_TIME_MS);
-        // Register the subscriptions after the filesystem settles.
-        subscription.options.since = await this._clock(subscription.root);
-        await this._subscribe(
-          subscription.root,
-          subscription.name,
-          subscription.options,
-        );
-      }),
+      watchSubscriptions.map(
+        async (subscription: WatchmanSubscription, index: number) => {
+          // Note that this call to `watchman watch-project` could fail if the
+          // subscription.path has been unmounted/deleted.
+          await this._watchProject(subscription.path);
+
+          // We have already missed the change events from the disconnect time,
+          // watchman could have died, so the last clock result is not valid.
+          await sleep(WATCHMAN_SETTLE_TIME_MS);
+
+          // Register the subscriptions after the filesystem settles.
+          const {name, options, root} = subscription;
+          subscription.options.since = await this._clock(root);
+          logger.info(
+            `Subscribing to ${name}: (${index + 1}/${numSubscriptions})`,
+          );
+          await this._subscribe(root, name, options);
+          ++numRestored;
+          logger.info(
+            `Subscribed to ${name}: (${numRestored}/${numSubscriptions}) complete.`,
+          );
+        },
+      ),
     );
   }
 
@@ -137,13 +157,16 @@ export default class WatchmanClient {
       logger.error('Subscription not found for response:!', response);
       return;
     }
-    if (!Array.isArray(response.files)) {
-      if (response.canceled === true) {
-        logger.info(`Watch for ${response.root} was deleted.`);
-        // Ending the client will trigger a reconnect.
-        this._clientPromise.then(client => client.end());
-        return;
-      }
+
+    if (Array.isArray(response.files)) {
+      subscription.emit('change', response.files);
+    } else if (response.canceled === true) {
+      logger.info(
+        `Watch for ${response.root} was deleted: triggering a reconnect.`,
+      );
+      // Ending the client will trigger a reconnect.
+      this._clientPromise.then(client => client.end());
+    } else {
       // TODO(most): use state messages to decide on when to send updates.
       const stateEnter = response['state-enter'];
       const stateLeave = response['state-leave'];
@@ -152,9 +175,7 @@ export default class WatchmanClient {
           ? `Entering ${stateEnter}`
           : `Leaving ${maybeToString(stateLeave)}`;
       logger.info(`Subscription state: ${stateMessage}`);
-      return;
     }
-    subscription.emit('change', response.files);
   }
 
   async watchDirectoryRecursive(
@@ -281,6 +302,12 @@ export default class WatchmanClient {
     subscriptionName: ?string,
     options: WatchmanSubscriptionOptions,
   ): Promise<WatchmanSubscription> {
+    logger.info(
+      `Creating Watchman subscription ${String(
+        subscriptionName,
+      )} under ${watchRoot}`,
+      JSON.stringify(options),
+    );
     return this._command('subscribe', watchRoot, subscriptionName, options);
   }
 
