@@ -21,13 +21,9 @@ import type {
   NativeVsAdapterType,
   ResolveAdapterExecutable,
 } from 'nuclide-debugger-common/types';
-import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
-
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
-
-export const REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
 
 export type VspNativeDebuggerLaunchBuilderParms = {
   args: Array<string>,
@@ -222,30 +218,4 @@ export async function getNativeVSPAttachProcessInfo(
   return new VspProcessInfo(targetUri, 'attach', adapter, adapterInfo, args, {
     threads: true,
   });
-}
-
-export async function getReactNativeAttachProcessInfo(
-  args: ReactNativeAttachArgs,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    args.program,
-    'attach',
-    VsAdapterTypes.REACT_NATIVE,
-    null,
-    args,
-    {threads: false},
-  );
-}
-
-export async function getReactNativeLaunchProcessInfo(
-  args: ReactNativeLaunchArgs,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    args.program,
-    'launch',
-    VsAdapterTypes.REACT_NATIVE,
-    null,
-    args,
-    {threads: false},
-  );
 }

@@ -67,11 +67,14 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            'VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
+            '../atom-ide-debugger-react-native/VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'VendorLib/vscode-react-native'),
+      root: nuclideUri.join(
+        __dirname,
+        '../atom-ide-debugger-react-native/VendorLib/vscode-react-native',
+      ),
     },
   ],
   [

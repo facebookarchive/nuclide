@@ -16,7 +16,6 @@ import {VsAdapterTypes} from 'nuclide-debugger-common';
 import passesGK from '../../commons-node/passesGK';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
-import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getPrepackAutoGenConfig, getNativeAutoGenConfig} from './utils';
@@ -31,7 +30,6 @@ class Activation {
 
     fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
       const isOpenSource = !exists;
-      this._registerReactNativeDebugProvider(isOpenSource);
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerLLDBProvider();
       this._registerGDBProvider();
@@ -43,19 +41,6 @@ class Activation {
     this._subscriptions.add(
       atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider),
     );
-  }
-
-  async _registerReactNativeDebugProvider(
-    isOpenSource: boolean,
-  ): Promise<void> {
-    if ((await passesGK('nuclide_debugger_reactnative')) || isOpenSource) {
-      this._registerDebugProvider({
-        name: 'React Native',
-        getLaunchAttachProvider: connection => {
-          return new ReactNativeLaunchAttachProvider(connection);
-        },
-      });
-    }
   }
 
   async _registerPrepackDebugProvider(isOpenSource: boolean): Promise<void> {
