@@ -69,20 +69,6 @@ function getNodeAutoGenConfig(): AutoGenConfig {
     description: '',
     default: 'inspector',
   };
-  Object.entries(configurationAttributes.attach.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.attach.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.attach.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
 
   const launchProperties = {};
   const launchRequired = ['program', 'cwd'];
@@ -105,17 +91,6 @@ function getNodeAutoGenConfig(): AutoGenConfig {
       launchProperties[name] = propertyDetails;
     });
 
-  const attachProperties = {};
-  const attachRequired = ['port'];
-
-  Object.entries(configurationAttributes.attach.properties).forEach(
-    property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      attachProperties[name] = propertyDetails;
-    },
-  );
-
   return {
     launch: {
       launch: true,
@@ -137,11 +112,15 @@ function getNodeAutoGenConfig(): AutoGenConfig {
       launch: false,
       vsAdapterType: VsAdapterTypes.NODE,
       threads: false,
-      properties: generatePropertyArray(
-        attachProperties,
-        attachRequired,
-        attachRequired,
-      ),
+      properties: [
+        {
+          name: 'port',
+          type: 'number',
+          description: 'Port',
+          required: true,
+          visible: true,
+        },
+      ],
       header: <p>Attach to a running node.js process</p>,
     },
   };

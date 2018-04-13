@@ -1209,7 +1209,7 @@ export default class DebugService implements IDebugService {
         supportsVariableType: true,
         supportsVariablePaging: false,
         supportsRunInTerminalRequest: getTerminalService() != null,
-        locale: 'en_US',
+        locale: 'en-us',
       });
       this._model.setExceptionBreakpoints(
         session.getCapabilities().exceptionBreakpointFilters || [],
