@@ -105,6 +105,10 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
+anser@^1.4.1:
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/anser/-/anser-1.4.6.tgz#f159112561e1c30af2c4c9c58f6747af534e8ea2"
+
 ansi-cyan@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/ansi-cyan/-/ansi-cyan-0.1.1.tgz#538ae528af8982f28ae30d86f2f17456d2609873"
@@ -144,6 +148,13 @@ ansi-styles@^3.1.0, ansi-styles@^3.2.0:
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-3.2.0.tgz#c159b8d5be0f9e5a6f346dab94f16ce022161b88"
   dependencies:
     color-convert "^1.9.0"
+
+ansi-to-react@2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/ansi-to-react/-/ansi-to-react-2.0.6.tgz#a325b384915fbdb502bfad438d41759753210b11"
+  dependencies:
+    anser "^1.4.1"
+    escape-carriage "^1.2.0"
 
 ansi-wrap@0.1.0:
   version "0.1.0"
@@ -1772,6 +1783,10 @@ es6-promise@3.0.2:
 es6-promise@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.1.1.tgz#8811e90915d9a0dba36274f0b242dbda78f9c92a"
+
+escape-carriage@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/escape-carriage/-/escape-carriage-1.2.0.tgz#35ce51a7960efcb5ae8bb59b83f566a98c946dfd"
 
 escape-html@1.0.3, escape-html@~1.0.3:
   version "1.0.3"
