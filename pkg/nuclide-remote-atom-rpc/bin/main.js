@@ -57,11 +57,37 @@ function parseLocationParameter(value: string): FileLocation {
   };
 }
 
+/**
+ * Attempts to resolve the physical path of the filename (if it's local).
+ * Sometimes filePath may not exist yet, in which case we need to look upwards
+ * for the first prefix that actually does exist.
+ */
 async function getRealPath(filePath: NuclideUri): Promise<NuclideUri> {
   if (nuclideUri.isRemote(filePath)) {
     return filePath;
   }
-  return nuclideUri.resolve(filePath);
+  const resolved = nuclideUri.resolve(filePath);
+  let prefix = resolved;
+  let suffix = null;
+  while (true) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const realpath = await fsPromise.realpath(prefix);
+      return suffix == null ? realpath : nuclideUri.join(realpath, suffix);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+      const basename = nuclideUri.basename(prefix);
+      if (basename === '') {
+        // We've reached the filesystem root.
+        break;
+      }
+      suffix = suffix == null ? basename : nuclideUri.join(basename, suffix);
+      prefix = nuclideUri.dirname(prefix);
+    }
+  }
+  return resolved;
 }
 
 async function getIsDirectory(filePath: NuclideUri): Promise<boolean> {
