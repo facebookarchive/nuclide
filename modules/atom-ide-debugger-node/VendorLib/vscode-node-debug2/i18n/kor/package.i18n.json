@@ -29,7 +29,6 @@
 	"node.launch.cwd.description": "디버그 중인 프로그램의 작업 디렉터리의 절대 경로입니다.",
 	"node.launch.runtimeExecutable.description": "사용할 런타임입니다. PATH에서 사용할 수 있는 런타임의 이름 또는 절대 경로입니다. 생략하면 'node'가 가정됩니다.",
 	"node.launch.runtimeArgs.description": "선택적 인수가 런타임 실행 파일에 전달되었습니다.",
-	"node.launch.env.description": "환경 변수가 프로그램에 전달되었습니다.",
 	"node.launch.envFile.description": "환경 변수 정의가 포함된 파일의 절대 경로입니다.",
 	"node.launch.outputCapture.description": "출력 메시지를 캡처하는 위치: 디버그 API 또는 stdout/stderr 스트림",
 	"node.launch.config.name": "시작",

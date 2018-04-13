@@ -29,7 +29,6 @@
 	"node.launch.cwd.description": "程式工作目錄的絕對路徑 (該程式正在進行偵錯)。",
 	"node.launch.runtimeExecutable.description": "要使用的執行階段。可以是 PATH 上可用執行階段的絕對路徑或名稱。如果省略則預設為 'node'。",
 	"node.launch.runtimeArgs.description": "傳遞給執行階段可執行檔的選擇性引數。",
-	"node.launch.env.description": "傳遞給程式的環境變數。",
 	"node.launch.envFile.description": "包含環境變數定義之檔案的絕對路徑。",
 	"node.launch.outputCapture.description": "從該處擷取輸出訊息: 偵錯 API 或 StdOut/STDERR 資料流。",
 	"node.launch.config.name": "啟動",

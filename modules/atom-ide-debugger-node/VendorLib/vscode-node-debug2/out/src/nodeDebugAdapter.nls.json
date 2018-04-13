@@ -1,5 +1,6 @@
 {
 	"messages": [
+		"Cannot find Windows Subsystem for Linux installation.",
 		"Program path uses differently cased character as file on disk; this might result in breakpoints not being hit.",
 		"Node Debug Console",
 		"Attribute '{0}' does not exist ('{1}').",
@@ -10,6 +11,7 @@
 		"read-only core module"
 	],
 	"keys": [
+		"attribute.wsl.not.exist",
 		"program.path.case.mismatch.warning",
 		"node.console.title",
 		"attribute.path.not.exist",

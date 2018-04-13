@@ -9,7 +9,7 @@ const cp = require("child_process");
 const NODE_SHEBANG_MATCHER = new RegExp('#! */usr/bin/env +node');
 function isJavaScript(aPath) {
     const name = path.basename(aPath).toLowerCase();
-    if (name.endsWith('.js')) {
+    if (name.endsWith('.js') || name.endsWith('.mjs')) {
         return true;
     }
     try {

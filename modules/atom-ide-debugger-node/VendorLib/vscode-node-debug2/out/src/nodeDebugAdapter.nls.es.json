@@ -1,4 +1,5 @@
 [
+	"Cannot find Windows Subsystem for Linux installation.",
 	"El uso de mayúsculas y minúsculas en la ruta de acceso del programa no es igual al del archivo en disco. Esto puede hacer que no se llegue a los puntos de interrupción.",
 	"Consola de depuración de nodos",
 	"El atributo '{0}' no existe ('{1}').",

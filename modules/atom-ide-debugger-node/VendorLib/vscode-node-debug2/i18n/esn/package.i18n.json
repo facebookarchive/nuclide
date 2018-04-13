@@ -29,7 +29,7 @@
 	"node.launch.cwd.description": "Ruta de acceso absoluta al directorio de trabajo del programa que se está depurando.",
 	"node.launch.runtimeExecutable.description": "Tiempo de ejecución que se va a usar. Puede ser una ruta de acceso absoluta o el nombre de un tiempo de ejecución disponible en PATH. Si se omite, se asume que es 'node'.",
 	"node.launch.runtimeArgs.description": "Argumentos opcionales pasados al ejecutable del entorno de ejecución.",
-	"node.launch.env.description": "Variables de entorno pasadas al programa.",
+	"node.launch.env.description": "Variables de entorno pasadas al programa. El valor 'nulo' elimina la variable de entorno.",
 	"node.launch.envFile.description": "Ruta de acceso absoluta a un archivo que contiene definiciones de variables de entorno.",
 	"node.launch.outputCapture.description": "Capturar los mensajes de salida desde el API de depuración o desde los canales stdout/stderr.",
 	"node.launch.config.name": "Iniciar",

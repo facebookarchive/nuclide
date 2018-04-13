@@ -29,7 +29,7 @@
 	"node.launch.cwd.description": "Caminho absoluto para o diretório de trabalho do programa que está sendo depurado.",
 	"node.launch.runtimeExecutable.description": "Runtime a ser usado. Pode ser um caminho absoluto ou o nome de um runtime disponível no caminho. Se omitido o valor 'node' é utilizado.",
 	"node.launch.runtimeArgs.description": "Argumentos opcionais passados ao executável runtime.",
-	"node.launch.env.description": "Variáveis de ambiente passadas ao programa.",
+	"node.launch.env.description": "Variáveis de ambiente passadas para o programa. O valor 'null' remove a variável do ambiente.",
 	"node.launch.envFile.description": "Caminho absoluto para um arquivo que contém definições de variáveis de ambiente.",
 	"node.launch.outputCapture.description": "De onde capturar as mensagens de saída: Da API de depuração ou dos fluxos stdout/stderr.",
 	"node.launch.config.name": "Executar",

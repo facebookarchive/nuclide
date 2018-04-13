@@ -1,4 +1,5 @@
 [
+	"Cannot find Windows Subsystem for Linux installation.",
 	"程序路径与磁盘上的文件一样使用大小写不同的字符；这可能导致出现未被命中的断点。",
 	"节点调试控制台",
 	"属性 \"{0}\" 不存在(\"{1}\")。",

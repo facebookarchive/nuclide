@@ -29,7 +29,7 @@
 	"node.launch.cwd.description": "Chemin absolu du répertoire de travail du programme en cours de débogage.",
 	"node.launch.runtimeExecutable.description": "Runtime à utiliser. Chemin absolu ou nom d'un runtime disponible dans PATH. En cas d'omission, 'node' est choisi par défaut.",
 	"node.launch.runtimeArgs.description": "Arguments facultatifs passés à l'exécutable du runtime.",
-	"node.launch.env.description": "Variables d'environnement passées au programme.",
+	"node.launch.env.description": "Variables d'environnement passées au programme. La valeur 'null' supprime la variable de l'environnement.",
 	"node.launch.envFile.description": "Chemin absolu d'un fichier contenant des définitions de variables d'environnement.",
 	"node.launch.outputCapture.description": "A partir de quelle source capturer les messages de sortie : l’API de débogage ou les flux stdout/stderr.",
 	"node.launch.config.name": "Lancer",

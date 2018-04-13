@@ -29,7 +29,6 @@
 	"node.launch.cwd.description": "Der absolute Pfad zum Arbeitsverzeichnis des Programms, das debuggt wird.",
 	"node.launch.runtimeExecutable.description": "Die zu verwendende Runtime. Ein absoluter Pfad oder der Name einer in PATH verfügbaren Runtime. Wird die Runtime nicht angegeben, wird \"node\" angenommen.",
 	"node.launch.runtimeArgs.description": "Optionale Argumente, die an die ausführbare Laufzeitdatei übergeben werden.",
-	"node.launch.env.description": "Umgebungsvariablen, die an das Programm übergeben werden.",
 	"node.launch.envFile.description": "Absoluter Pfad zu einer Datei mit Definitionen für Umgebungsvariablen.",
 	"node.launch.outputCapture.description": "Ort der Erfassung von Ausgabemeldungen: die Debug-API oder stdout/stderr-Streams.",
 	"node.launch.config.name": "Starten",

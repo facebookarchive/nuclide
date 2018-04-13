@@ -29,7 +29,7 @@
 	"node.launch.cwd.description": "Absolute path to the working directory of the program being debugged.",
 	"node.launch.runtimeExecutable.description": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH. If ommitted 'node' is assumed.",
 	"node.launch.runtimeArgs.description": "Optional arguments passed to the runtime executable.",
-	"node.launch.env.description": "Environment variables passed to the program.",
+    "node.launch.env.description": "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
 	"node.launch.envFile.description": "Absolute path to a file containing environment variable definitions.",
 	"node.launch.outputCapture.description": "From where to capture output messages: The debug API, or stdout/stderr streams.",
 

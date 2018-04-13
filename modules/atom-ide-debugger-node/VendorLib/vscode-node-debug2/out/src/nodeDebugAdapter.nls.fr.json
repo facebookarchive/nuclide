@@ -1,4 +1,5 @@
 [
+	"Cannot find Windows Subsystem for Linux installation.",
 	"Le chemin du programme utilise un nom de fichier contenant des caractères avec des casses différentes, ce qui peut empêcher l'accès aux points d'arrêt.",
 	"Console de débogage de nœud",
 	"L'attribut '{0}' n'existe pas ('{1}').",

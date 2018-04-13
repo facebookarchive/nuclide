@@ -29,7 +29,7 @@
 	"node.launch.cwd.description": "デバッグされるプログラムの作業ディレクトリへの絶対パス。",
 	"node.launch.runtimeExecutable.description": "使用するランタイム。絶対パス、または PATH 上で使用可能なランタイムの名前のいずれかです。省略した場合は、'node' とみなされます。",
 	"node.launch.runtimeArgs.description": "ランタイム実行可能ファイルに渡される省略可能な引数。",
-	"node.launch.env.description": "プログラムに渡される環境変数。",
+	"node.launch.env.description": "プログラムに渡された環境変数。'null' 値は環境から変数を削除します。",
 	"node.launch.envFile.description": "環境変数の定義を含むファイルへの絶対パス。",
 	"node.launch.outputCapture.description": "出力メッセージのキャプチャ場所: debug API, stdout/stderr ストリーム",
 	"node.launch.config.name": "起動",

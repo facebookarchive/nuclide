@@ -1,4 +1,5 @@
 [
+	"Cannot find Windows Subsystem for Linux installation.",
 	"程式路徑使用大小寫相異的字元作為磁碟上的文件，這可能導致無法叫用中斷點。",
 	"節點偵錯主控台",
 	"屬性 '{0}' 不存在 ('{1}')。",

@@ -62,9 +62,9 @@ You can also skip a file at runtime by right clicking on the stack frame and sel
 When a file is skipped, it will be grayed out in the callstack.
 
 ## Contributing
-Contributions are welcome, please see [CONTRIBUTING.txt](CONTRIBUTING.txt).
+Contributions are welcome, please see [CONTRIBUTING.txt](https://github.com/Microsoft/vscode-node-debug2/blob/master/CONTRIBUTING.txt).
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](https://github.com/Microsoft/vscode-node-debug2/blob/master/mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## License
-[MIT](LICENSE.txt)
+[MIT](https://github.com/Microsoft/vscode-node-debug2/blob/master/LICENSE.txt)

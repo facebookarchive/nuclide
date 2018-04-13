@@ -29,7 +29,6 @@
 	"node.launch.cwd.description": "Percorso assoluto della directory di lavoro del programma di cui eseguire il debug.",
 	"node.launch.runtimeExecutable.description": "Runtime da usare. Corrisponde a un percorso assoluto o al nome di un runtime disponibile in PATH. Se viene omesso, si presuppone che sia 'node'.",
 	"node.launch.runtimeArgs.description": "Argomenti facoltativi passati all'eseguibile del runtime.",
-	"node.launch.env.description": "Variabili di ambiente passate al programma.",
 	"node.launch.envFile.description": "Percorso assoluto di un file che contiene le definizioni delle variabili di ambiente.",
 	"node.launch.outputCapture.description": "Da dove catturare i messaggi di output: dalle API di debug o dai flussi stdout/stderr.",
 	"node.launch.config.name": "Launch",
