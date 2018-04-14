@@ -36,9 +36,8 @@ function codeToRun() {
     try {
         /* tslint:disable:no-var-requires */
         // BEGIN MODIFIED BY PELMERS
-        nodeDebugFolder = path.join(__dirname, "..", "..", "..", "vscode-node-debug2");
+        Node2DebugAdapter = require('atom-ide-debugger-node/VendorLib/vscode-node-debug2/out/src/nodeDebugAdapter').NodeDebugAdapter; 
         // END MODIFIED BY PELMERS
-        Node2DebugAdapter = require(path.join(nodeDebugFolder, "out/src/nodeDebugAdapter")).NodeDebugAdapter;
         /* tslint:enable:no-var-requires */
         /**
          * We did find chrome debugger package and node2 debug adapter. Lets create debug
