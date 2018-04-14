@@ -32,7 +32,7 @@ import {
 } from '../../commons-node/nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 
 import {removePrefixSink, patternCounterSink} from './sink';
 

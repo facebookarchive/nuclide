@@ -11,7 +11,7 @@
 
 import {TerminalView} from './terminal-view.js';
 import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 
 const logger = getLogger('terminal-focus-manager');
 
