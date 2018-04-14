@@ -11,7 +11,6 @@
 
 // for homedir
 import os from 'os';
-import invariant from 'assert';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
@@ -30,10 +29,7 @@ import {
 import {FocusManager} from './FocusManager';
 
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
-
-const TERMINAL_CONTEXT_MENU_PRIORITY = 100;
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -129,35 +125,6 @@ class Activation {
       disposable.dispose();
       this._subscriptions.remove(disposable);
     });
-  }
-
-  addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const menuItemSubscriptions = new UniversalDisposable();
-    menuItemSubscriptions.add(
-      contextMenu.addItemToShowInSection(
-        {
-          label: 'New Terminal Here',
-          callback() {
-            const node = contextMenu.getSingleSelectedNode();
-            invariant(node != null);
-            const cwd = node.isContainer
-              ? node.uri
-              : nuclideUri.dirname(node.uri);
-            goToLocation(uriFromCwd(cwd));
-          },
-          shouldDisplay(): boolean {
-            const node = contextMenu.getSingleSelectedNode();
-            return node != null && node.uri != null && node.uri.length > 0;
-          },
-        },
-        TERMINAL_CONTEXT_MENU_PRIORITY,
-      ),
-    );
-    this._subscriptions.add(menuItemSubscriptions);
-
-    return new UniversalDisposable(() =>
-      this._subscriptions.remove(menuItemSubscriptions),
-    );
   }
 
   initializeCwdApi(cwd: CwdApi): IDisposable {

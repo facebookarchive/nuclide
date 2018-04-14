@@ -20,6 +20,8 @@ import type {AdditionalLogFilesProvider} from '../../nuclide-logging/lib/rpc-typ
 
 import invariant from 'assert';
 
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -53,6 +55,8 @@ type SerializedState = {
  * item in the file tree.
  */
 const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
+
+const TERMINAL_CONTEXT_MENU_PRIORITY = 100;
 
 const DESERIALIZER_VERSION = atom.workspace.getLeftDock == null ? 1 : 2;
 
@@ -204,6 +208,33 @@ class Activation {
     };
 
     return disposables;
+  }
+
+  consumeTerminal(terminal: nuclide$TerminalApi): IDisposable {
+    const contextMenu = this.getContextMenuForFileTree();
+    const terminalMenuSubscription = new UniversalDisposable(
+      contextMenu.addItemToShowInSection(
+        {
+          label: 'New Terminal Here',
+          callback() {
+            const node = contextMenu.getSingleSelectedNode();
+            invariant(node != null);
+            const cwd = node.isContainer
+              ? node.uri
+              : nuclideUri.dirname(node.uri);
+            goToLocation(terminal.uriFromCwd(cwd));
+          },
+          shouldDisplay(): boolean {
+            const node = contextMenu.getSingleSelectedNode();
+            return node != null && node.uri != null && node.uri.length > 0;
+          },
+        },
+        TERMINAL_CONTEXT_MENU_PRIORITY,
+      ),
+    );
+    this._disposables.add(terminalMenuSubscription);
+
+    return terminalMenuSubscription;
   }
 
   consumeCwdApi(cwdApi: CwdApi): IDisposable {

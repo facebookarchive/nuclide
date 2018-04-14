@@ -15,6 +15,11 @@
         "0.0.0": "consumeWorkingSetsStore"
       }
     },
+    "nuclide-terminal": {
+      "versions": {
+        "0.0.0": "consumeTerminal"
+      }
+    },
     "nuclide-remote-projects": {
       "versions": {
         "0.0.0": "consumeRemoteProjectsService"
