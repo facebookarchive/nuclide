@@ -43,7 +43,10 @@ export function setupLogging() {
   initializeLogging();
 }
 
-export function reportConnectionErrorAndExit(detailMessage: string): void {
+export function reportConnectionErrorAndExit(
+  error: FailedConnectionError,
+): void {
+  const detailMessage = error.message;
   process.stderr.write(
     `Error connecting to nuclide-server on ${os.hostname()}:\n`,
   );
@@ -69,3 +72,5 @@ export function reportErrorAndExit(error: Error, exitCode: number): void {
   process.stderr.write('\n');
   process.exit(exitCode);
 }
+
+export class FailedConnectionError extends Error {}

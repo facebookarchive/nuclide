@@ -21,7 +21,7 @@ import {
 } from '../../nuclide-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
-import {reportConnectionErrorAndExit} from './errors';
+import {FailedConnectionError} from './errors';
 import invariant from 'assert';
 
 function convertStringFamilyToNumberFamily(family: string): number {
@@ -39,7 +39,7 @@ export async function getCommands(): Promise<AtomCommands> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
-    reportConnectionErrorAndExit(
+    throw new FailedConnectionError(
       'Could not find a nuclide-server with a connected Atom',
     );
   }
@@ -64,7 +64,7 @@ export async function startCommands(
   } catch (e) {
     // This is usually ECONNREFUSED ...
     // ... indicating that there was a nuclide-server but it is now shutdown.
-    reportConnectionErrorAndExit(
+    throw new FailedConnectionError(
       'Could not find a nuclide-server with a connected Atom ' +
         '("Nuclide/Kill Nuclide Server and Restart" will likely help)',
     );
@@ -80,7 +80,7 @@ export async function startCommands(
   const service: CommandService = connection.getService('CommandService');
   const commands = await service.getAtomCommands();
   if (commands == null) {
-    reportConnectionErrorAndExit(
+    throw new FailedConnectionError(
       'Nuclide server is running but no Atom process with Nuclide is connected.',
     );
   }

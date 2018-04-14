@@ -12,6 +12,10 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
+export type ClientConnection = {
+  rootFolders: Array<NuclideUri>,
+};
+
 export type AtomFileEvent = 'open' | 'close';
 export interface AtomCommands {
   openFile(
@@ -35,6 +39,13 @@ export interface AtomCommands {
    * newWindow is true.
    */
   addProject(projectPath: NuclideUri, newWindow: boolean): Promise<void>;
+
+  /**
+   * Returns information about the Atom windows that have a Nuclide server
+   * connection to the specified hostname.
+   */
+  getClientConnections(hostname: string): Promise<Array<ClientConnection>>;
+
   dispose(): void;
 }
 

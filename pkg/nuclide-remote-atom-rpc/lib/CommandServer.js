@@ -9,7 +9,12 @@
  * @format
  */
 
-import type {AtomCommands, AtomFileEvent, ConnectionDetails} from './rpc-types';
+import type {
+  AtomCommands,
+  AtomFileEvent,
+  ClientConnection,
+  ConnectionDetails,
+} from './rpc-types';
 import type {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
@@ -138,7 +143,7 @@ export class CommandServer {
   }
 }
 
-class ServiceAtomCommands {
+class ServiceAtomCommands implements AtomCommands {
   openFile(
     filePath: NuclideUri,
     line: number,
@@ -174,6 +179,17 @@ class ServiceAtomCommands {
     } else {
       throw new Error('No connected Atom windows');
     }
+  }
+
+  async getClientConnections(
+    hostname: string,
+  ): Promise<Array<ClientConnection>> {
+    const clientConnections = await Promise.all(
+      CommandServer._connections.map(commandServer =>
+        commandServer._atomCommands.getClientConnections(hostname),
+      ),
+    );
+    return [].concat(...clientConnections);
   }
 
   dispose(): void {}

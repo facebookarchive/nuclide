@@ -17,9 +17,11 @@ import {
   setupErrorHandling,
   setupLogging,
   reportErrorAndExit,
+  reportConnectionErrorAndExit,
   EXIT_CODE_SUCCESS,
   EXIT_CODE_APPLICATION_ERROR,
   EXIT_CODE_INVALID_ARGUMENTS,
+  FailedConnectionError,
 } from './errors';
 import {getLogger} from 'log4js';
 import yargs from 'yargs';
@@ -111,10 +113,22 @@ async function main(argv): Promise<number> {
 
   // TODO(t10180337): Consider a batch API for openFile().
   if (argv._ != null && argv._.length > 0) {
-    const commands =
-      argv.port != null
-        ? await startCommands(argv.port, argv.family)
-        : await getCommands();
+    let commands;
+    try {
+      commands =
+        argv.port != null
+          ? await startCommands(argv.port, argv.family)
+          : await getCommands();
+    } catch (error) {
+      if (error instanceof FailedConnectionError) {
+        // Note this does not throw: reportConnectionErrorAndExit()
+        // does not return. However, we use throw to convince Flow
+        // that any code after this is unreachable.
+        throw reportConnectionErrorAndExit(error);
+      } else {
+        throw error;
+      }
+    }
 
     for (const arg of argv._) {
       const {filePath, line, column} = parseLocationParameter(arg);

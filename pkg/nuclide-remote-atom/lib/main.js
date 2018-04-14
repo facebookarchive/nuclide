@@ -13,6 +13,7 @@ import typeof * as RemoteCommandServiceType from '../../nuclide-remote-atom-rpc/
 import type {
   AtomCommands,
   AtomFileEvent,
+  ClientConnection,
 } from '../../nuclide-remote-atom-rpc/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
@@ -92,6 +93,27 @@ class Activation {
             querystring.stringify(queryParams);
           shell.openExternal(url);
         }
+      },
+
+      /**
+       * In practice, the hostname of the server making the request is
+       * the hostname passed to this method, though that is not enforced
+       * programmatically.
+       */
+      async getClientConnections(
+        hostname: string,
+      ): Promise<Array<ClientConnection>> {
+        return [
+          {
+            rootFolders: atom.project
+              .getPaths()
+              .filter(
+                uri =>
+                  nuclideUri.isRemote(uri) &&
+                  nuclideUri.getHostname(uri) === hostname,
+              ),
+          },
+        ];
       },
       dispose(): void {},
     };
