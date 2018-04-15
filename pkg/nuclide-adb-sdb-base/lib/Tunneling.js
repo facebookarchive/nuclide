@@ -37,7 +37,7 @@ export function startTunnelingAdb(uri: NuclideUri): Observable<'ready'> {
       .publishReplay(1);
     const subscription = observable.connect();
     return {
-      tunnels: observable.share(),
+      tunnels: observable,
       subscription,
     };
   });
