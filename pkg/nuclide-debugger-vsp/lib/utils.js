@@ -32,6 +32,7 @@ export type VspNativeDebuggerLaunchBuilderParms = {
 export type VspNativeDebuggerAttachBuilderParms = {
   pid?: number,
   sourcePath: string,
+  stopCommands?: Array<string>,
 };
 
 export function getPrepackAutoGenConfig(): AutoGenConfig {
