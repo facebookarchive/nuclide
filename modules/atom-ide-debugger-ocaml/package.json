@@ -30,6 +30,7 @@
     "nuclide-commons": "0.6.0-dev",
     "nuclide-commons-atom": "0.6.0-dev",
     "nuclide-debugger-common": "0.6.0-dev",
+    "nuclide-node-transpiler": "0.6.0-dev",
     "vscode-debugadapter": "1.24.0",
     "vscode-debugprotocol": "1.24.0"
   },

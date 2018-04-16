@@ -13,11 +13,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IProcessConfig, VsAdapterType} from 'nuclide-debugger-common';
 import type {
   AutoGenConfig,
-  AutoGenAttachConfig,
   AutoGenLaunchConfig,
-  NativeVsAdapterType,
 } from 'nuclide-debugger-common/types';
-import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
 import {getNodeBinaryPath} from '../../commons-node/node-info';
@@ -102,85 +99,6 @@ export async function resolveConfiguration(
     );
   }
   return configuration;
-}
-
-export function getNativeAutoGenConfig(
-  vsAdapterType: NativeVsAdapterType,
-): AutoGenConfig {
-  const program = {
-    name: 'program',
-    type: 'string',
-    description: 'Input the program/executable you want to launch',
-    required: true,
-    visible: true,
-  };
-  const cwd = {
-    name: 'cwd',
-    type: 'string',
-    description: 'Working directory for the launched executable',
-    required: true,
-    visible: true,
-  };
-  const args = {
-    name: 'args',
-    type: 'array',
-    itemType: 'string',
-    description: 'Arguments to the executable',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-  const env = {
-    name: 'env',
-    type: 'array',
-    itemType: 'string',
-    description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-  const sourcePath = {
-    name: 'sourcePath',
-    type: 'string',
-    description: 'Optional base path for sources',
-    required: false,
-    defaultValue: '',
-    visible: true,
-  };
-
-  const debugTypeMessage = `using ${
-    vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
-  }`;
-
-  const autoGenLaunchConfig: AutoGenLaunchConfig = {
-    launch: true,
-    vsAdapterType,
-    threads: true,
-    properties: [program, cwd, args, env, sourcePath],
-    scriptPropertyName: 'program',
-    scriptExtension: '.c',
-    cwdPropertyName: 'working directory',
-    header: <p>Debug native programs {debugTypeMessage}.</p>,
-  };
-
-  const pid = {
-    name: 'pid',
-    type: 'process',
-    description: '',
-    required: true,
-    visible: true,
-  };
-  const autoGenAttachConfig: AutoGenAttachConfig = {
-    launch: false,
-    vsAdapterType,
-    threads: true,
-    properties: [pid, sourcePath],
-    header: <p>Attach to a running native process {debugTypeMessage}</p>,
-  };
-  return {
-    launch: autoGenLaunchConfig,
-    attach: autoGenAttachConfig,
-  };
 }
 
 export async function getNativeVSPLaunchProcessInfo(

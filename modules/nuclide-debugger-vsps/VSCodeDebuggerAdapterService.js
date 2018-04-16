@@ -15,8 +15,7 @@ import type {
   VSAdapterExecutableInfo,
   VsAdapterType,
 } from 'nuclide-debugger-common';
-import type {ProcessMessage} from 'nuclide-commons/process';
-import type {ProcessInfo} from 'nuclide-commons/process';
+import type {ProcessInfo, ProcessMessage} from 'nuclide-commons/process';
 
 import {psTree} from 'nuclide-commons/process';
 import {VsAdapterSpawner} from 'nuclide-debugger-common';

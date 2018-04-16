@@ -16,16 +16,13 @@ import type {
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import passesGK from '../../commons-node/passesGK';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  getPrepackAutoGenConfig,
-  getNativeAutoGenConfig,
-  resolveConfiguration,
-} from './utils';
+import {getPrepackAutoGenConfig, resolveConfiguration} from './utils';
 // eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
@@ -39,7 +36,6 @@ class Activation {
       const isOpenSource = !exists;
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerLLDBProvider();
-      this._registerGDBProvider();
       this._registerHHVMDebugProvider();
     });
   }
@@ -73,19 +69,6 @@ class Activation {
           'Native - LLDB (C/C++)',
           connection,
           getNativeAutoGenConfig(VsAdapterTypes.NATIVE_LLDB),
-        );
-      },
-    });
-  }
-
-  _registerGDBProvider() {
-    this._registerDebugProvider({
-      name: 'Native - GDB (C/C++)',
-      getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          'Native - GDB (C/C++)',
-          connection,
-          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
         );
       },
     });

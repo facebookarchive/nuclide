@@ -115,7 +115,7 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            'fb-native-debugger-gdb-vsp/src/RunTranspiledServer.js',
+            '../atom-ide-debugger-native-gdb/lib/RunTranspiledServer.js',
           ),
         ],
       },
