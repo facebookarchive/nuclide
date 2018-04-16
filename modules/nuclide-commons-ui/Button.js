@@ -26,7 +26,7 @@ type Props = {
   /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
   icon?: IconName,
   /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
-  buttonType?: ButtonType,
+  buttonType?: ?ButtonType,
   selected?: boolean,
   /**  */
   size?: ButtonSize,
