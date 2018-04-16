@@ -21,6 +21,8 @@ import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
+import {createSelector} from 'reselect';
 
 const getActions = FileTreeActions.getInstance;
 const store = FileTreeStore.getInstance();
@@ -138,8 +140,27 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     this._selectedRow = treeItem;
   };
 
+  _getDisplayNames = createSelector([(props: Props) => props.uris], x => {
+    return computeDisplayPaths(x);
+  });
+
+  propsToEntries(): Array<OpenFileEntry> {
+    const displayPaths = this._getDisplayNames(this.props);
+    const entries = this.props.uris.map((uri, index) => {
+      const isModified = this.props.modifiedUris.indexOf(uri) >= 0;
+      const isSelected = uri === this.props.activeUri;
+      return {uri, name: displayPaths[index], isModified, isSelected};
+    });
+
+    // Sort by uri and not display name to keep order stable.
+    entries.sort((e1, e2) =>
+      e1.uri.toLowerCase().localeCompare(e2.uri.toLowerCase()),
+    );
+    return entries;
+  }
+
   render(): React.Node {
-    const sortedEntries = propsToEntries(this.props);
+    const sortedEntries = this.propsToEntries();
 
     return (
       <div className="nuclide-file-tree-open-files">
@@ -188,17 +209,4 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
       </div>
     );
   }
-}
-
-function propsToEntries(props: Props): Array<OpenFileEntry> {
-  const entries = props.uris.map(uri => {
-    const isModified = props.modifiedUris.indexOf(uri) >= 0;
-    const isSelected = uri === props.activeUri;
-    return {uri, name: FileTreeHelpers.keyToName(uri), isModified, isSelected};
-  });
-
-  entries.sort((e1, e2) =>
-    e1.name.toLowerCase().localeCompare(e2.name.toLowerCase()),
-  );
-  return entries;
 }
