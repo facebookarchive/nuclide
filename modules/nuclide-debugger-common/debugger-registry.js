@@ -19,6 +19,18 @@ type AdapterInfo = {
   root: string,
 };
 
+const modulesPath = nuclideUri.dirname(__dirname);
+
+function resolvePackagePath(packageName: string): string {
+  if (typeof atom !== 'undefined') {
+    const pkg = atom.packages.getActivePackage(packageName);
+    if (pkg != null) {
+      return pkg.path;
+    }
+  }
+  return nuclideUri.join(modulesPath, packageName);
+}
+
 const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
   [
     'node',
@@ -27,15 +39,12 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         command: 'node',
         args: [
           nuclideUri.join(
-            __dirname,
-            '../atom-ide-debugger-node/VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
+            resolvePackagePath('atom-ide-debugger-node'),
+            'VendorLib/vscode-node-debug2/out/src/nodeDebug.js',
           ),
         ],
       },
-      root: nuclideUri.join(
-        __dirname,
-        '../atom-ide-debugger-node/VendorLib/vscode-node-debug2',
-      ),
+      root: resolvePackagePath('atom-ide-debugger-node'),
     },
   ],
   [
@@ -45,15 +54,12 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         command: 'node',
         args: [
           nuclideUri.join(
-            __dirname,
-            '../atom-ide-debugger-python/VendorLib/vs-py-debugger/out/client/debugger/Main.js',
+            resolvePackagePath('atom-ide-debugger-python'),
+            'VendorLib/vs-py-debugger/out/client/debugger/Main.js',
           ),
         ],
       },
-      root: nuclideUri.join(
-        __dirname,
-        '../atom-ide-debugger-python/VendorLib/vs-py-debugger',
-      ),
+      root: resolvePackagePath('atom-ide-debugger-python'),
     },
   ],
   [
@@ -63,15 +69,12 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         command: 'node',
         args: [
           nuclideUri.join(
-            __dirname,
-            '../atom-ide-debugger-react-native/VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
+            resolvePackagePath('atom-ide-debugger-react-native'),
+            'VendorLib/vscode-react-native/out/debugger/reactNativeDebugEntryPoint.js',
           ),
         ],
       },
-      root: nuclideUri.join(
-        __dirname,
-        '../atom-ide-debugger-react-native/VendorLib/vscode-react-native',
-      ),
+      root: resolvePackagePath('atom-ide-debugger-react-native'),
     },
   ],
   [
@@ -96,12 +99,12 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         command: 'node',
         args: [
           nuclideUri.join(
-            __dirname,
-            '../atom-ide-debugger-ocaml/lib/vscode-debugger-entry.js',
+            resolvePackagePath('atom-ide-debugger-ocaml'),
+            'lib/vscode-debugger-entry.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, '../atom-ide-debugger-ocaml'),
+      root: resolvePackagePath('atom-ide-debugger-ocaml'),
     },
   ],
   [
@@ -111,12 +114,12 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         command: 'node',
         args: [
           nuclideUri.join(
-            __dirname,
-            '../atom-ide-debugger-native-gdb/lib/RunTranspiledServer.js',
+            resolvePackagePath('atom-ide-debugger-native-gdb'),
+            'lib/RunTranspiledServer.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'fb-native-debugger-gdb-vsp'),
+      root: resolvePackagePath('atom-ide-debugger-native-gdb'),
     },
   ],
   [
