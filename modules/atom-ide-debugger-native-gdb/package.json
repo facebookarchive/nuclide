@@ -1,6 +1,6 @@
 {
   "name": "atom-ide-debugger-native-gdb",
-  "version": "0.6.0-dev",
+  "version": "0.7.0-dev",
   "main": "./main.js",
   "description": "NodeJS Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
@@ -24,10 +24,10 @@
   "dependencies": {
     "async-to-generator": "1.1.0",
     "big-integer": "1.6.17",
-    "nuclide-commons": "0.6.0-dev",
-    "nuclide-commons-atom": "0.6.0-dev",
-    "nuclide-debugger-common": "0.6.0-dev",
-    "nuclide-node-transpiler": "0.6.0-dev",
+    "nuclide-commons": "0.7.0-dev",
+    "nuclide-commons-atom": "0.7.0-dev",
+    "nuclide-debugger-common": "0.7.0-dev",
+    "nuclide-node-transpiler": "0.7.0-dev",
     "nuclide-prebuilt-libs": "0.4.0",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
@@ -39,95 +39,110 @@
   "package-deps": [
     "atom-ide-ui"
   ],
-  "categories": ["Debuggers"],
+  "categories": [
+    "Debuggers"
+  ],
   "contributes": {
     "breakpoints": [
-      {"language": "c"},
-      {"language": "c++"},
-      {"language": "cpp"}
+      {
+        "language": "c"
+      },
+      {
+        "language": "c++"
+      },
+      {
+        "language": "cpp"
+      }
     ],
-    "debuggers": [{
-      "type": "mi",
-      "label": "Native debugging via gdb or lldb",
-      "program": "./src/RunTranspiledServer.js",
-      "runtime": "node",
-      "configurationAttributes": {
-        "launch": {
-          "required": ["cwd", "program"],
-          "properties": {
-            "cwd": {
-              "type": "string",
-              "description": "Working directory to run program in",
-              "default": "${workspaceFolder}"
-            },
-            "program": {
-              "type": "string",
-              "description": "Absolute path of program to run"
-            },
-            "arguments": {
-              "type": "string",
-              "description": "Arguments to pass in on the command line"
-            },
-            "sourcePath": {
-              "type": "string",
-              "description": "Path to search for source files"
-            },
-            "env": {
-              "type": "string",
-              "description": "Environment variables to start process with"
-            },
-            "debuggerRoot": {
-              "type": "string",
-              "description": "Optional directory to spawn the debugger in"
-            }
-          }
-        },
-        "attach": {
-          "required": ["pid"],
-          "properties": {
-            "pid": {
-              "type": "number",
-              "description": "Process id of the process to debug"
-            },
-            "sourcePath": {
-              "type": "string",
-              "description": "Path to search for source files"
-            },
-            "debuggerRoot": {
-              "type": "string",
-              "description": "Optional directory to spawn the debugger in"
-            },
-            "stopOnAttach": {
-              "type": "boolean",
-              "description": "If true, target will break into debugger on attach",
-              "default": false
-            }
-          }
-        },
-        "configurationSnippets": [
-          {
-            "label": "Native Debugger: Launch",
-            "description": "A new configuration for launching a native program",
-            "body": {
-              "type": "mi",
-              "request": "launch",
-              "name": "Launch Program",
-              "cwd": "${workspaceFolder}",
-              "program": "${workspaceFolder}/a.out"
+    "debuggers": [
+      {
+        "type": "mi",
+        "label": "Native debugging via gdb or lldb",
+        "program": "./src/RunTranspiledServer.js",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "cwd",
+              "program"
+            ],
+            "properties": {
+              "cwd": {
+                "type": "string",
+                "description": "Working directory to run program in",
+                "default": "${workspaceFolder}"
+              },
+              "program": {
+                "type": "string",
+                "description": "Absolute path of program to run"
+              },
+              "arguments": {
+                "type": "string",
+                "description": "Arguments to pass in on the command line"
+              },
+              "sourcePath": {
+                "type": "string",
+                "description": "Path to search for source files"
+              },
+              "env": {
+                "type": "string",
+                "description": "Environment variables to start process with"
+              },
+              "debuggerRoot": {
+                "type": "string",
+                "description": "Optional directory to spawn the debugger in"
+              }
             }
           },
-          {
-            "label": "Native Debugger: Attach",
-            "description": "A new configuration for attaching to a running native program",
-            "body": {
-              "type": "mi",
-              "request": "attach",
-              "name": "Attach to Program",
-              "pid": 1
+          "attach": {
+            "required": [
+              "pid"
+            ],
+            "properties": {
+              "pid": {
+                "type": "number",
+                "description": "Process id of the process to debug"
+              },
+              "sourcePath": {
+                "type": "string",
+                "description": "Path to search for source files"
+              },
+              "debuggerRoot": {
+                "type": "string",
+                "description": "Optional directory to spawn the debugger in"
+              },
+              "stopOnAttach": {
+                "type": "boolean",
+                "description": "If true, target will break into debugger on attach",
+                "default": false
+              }
             }
-          }
-        ]
+          },
+          "configurationSnippets": [
+            {
+              "label": "Native Debugger: Launch",
+              "description": "A new configuration for launching a native program",
+              "body": {
+                "type": "mi",
+                "request": "launch",
+                "name": "Launch Program",
+                "cwd": "${workspaceFolder}",
+                "program": "${workspaceFolder}/a.out"
+              }
+            },
+            {
+              "label": "Native Debugger: Attach",
+              "description": "A new configuration for attaching to a running native program",
+              "body": {
+                "type": "mi",
+                "request": "attach",
+                "name": "Attach to Program",
+                "pid": 1
+              }
+            }
+          ]
+        }
       }
-    }]
+    ]
   }
 }
