@@ -28,7 +28,7 @@ import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {
   getAdapterExecutable,
   getAdapterPackageRoot,
-} from 'nuclide-debugger-vsps/main';
+} from 'nuclide-debugger-common/debugger-registry';
 import VSPOptionsParser from './VSPOptionsParser';
 
 export type ParsedVSAdapter = {

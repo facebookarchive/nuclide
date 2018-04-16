@@ -13,13 +13,13 @@
 import type {Column} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ProcessInfo} from 'nuclide-commons/process';
+import * as React from 'react';
 
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/AtomServiceContainer';
+import {getVSCodeDebuggerAdapterServiceByNuclideUri} from './debug-adapter-service';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Table} from 'nuclide-commons-ui/Table';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
 import {Observable} from 'rxjs';
 
 const PROCESS_UPDATES_INTERVAL_MS = 2000;

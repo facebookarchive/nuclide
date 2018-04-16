@@ -12,7 +12,6 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerConfigAction} from './types';
-
 import * as React from 'react';
 
 let uniqueKeySeed = 0;

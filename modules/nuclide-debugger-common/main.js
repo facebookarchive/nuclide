@@ -26,6 +26,10 @@ export type {
 } from './types';
 
 export {
+  getVSCodeDebuggerAdapterServiceByNuclideUri,
+} from './debug-adapter-service';
+
+export {
   default as DebuggerLaunchAttachProvider,
 } from './DebuggerLaunchAttachProvider';
 

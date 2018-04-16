@@ -12,10 +12,7 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import type {
-  VSAdapterExecutableInfo,
-  VsAdapterType,
-} from 'nuclide-debugger-common';
+import type {VSAdapterExecutableInfo, VsAdapterType} from './types';
 
 type AdapterInfo = {
   executable: VSAdapterExecutableInfo,

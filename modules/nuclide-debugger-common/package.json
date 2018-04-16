@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
-    "atom-ide-ui": "0.6.0-dev",
     "idx": "1.2.0",
     "invariant": "2.2.2",
     "nuclide-commons": "0.6.0-dev",

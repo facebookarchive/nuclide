@@ -85,7 +85,6 @@ import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
 import typeof * as CqueryLSPService from '../../nuclide-cquery-lsp-rpc';
-import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));
@@ -235,12 +234,4 @@ export function getCqueryLSPServiceByNuclideUri(
   uri: NuclideUri,
 ): CqueryLSPService {
   return nullthrows(getServiceByNuclideUri('CqueryLSPService', uri));
-}
-
-export function getVSCodeDebuggerAdapterServiceByNuclideUri(
-  uri: NuclideUri,
-): VSCodeDebuggerAdapterService {
-  return nullthrows(
-    getServiceByNuclideUri('VSCodeDebuggerAdapterService', uri),
-  );
 }

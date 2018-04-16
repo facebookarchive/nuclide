@@ -120,7 +120,7 @@
     "name": "RemoteDebuggerCommandService"
   },
   {
-    "implementation": "../../modules/nuclide-debugger-vsps/VSCodeDebuggerAdapterService.js",
+    "implementation": "../../modules/nuclide-debugger-common/VSCodeDebuggerAdapterService.js",
     "name": "VSCodeDebuggerAdapterService"
   }
 ]

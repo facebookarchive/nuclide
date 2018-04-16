@@ -12,21 +12,21 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AutoGenProperty, AutoGenLaunchOrAttachConfig} from './types';
+import * as React from 'react';
 
 import idx from 'idx';
+import nullthrows from 'nullthrows';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import RadioGroup from 'nuclide-commons-ui/RadioGroup';
-import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {capitalize, shellParse} from 'nuclide-commons/string';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from './DebuggerConfigSerializer';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-import nullthrows from 'nullthrows';
 import SelectableFilterableProcessTable from './SelectableFilterableProcessTable';
 
 type Props = {|

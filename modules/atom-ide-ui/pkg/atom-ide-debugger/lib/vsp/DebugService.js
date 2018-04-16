@@ -75,6 +75,7 @@ import {
   VsDebugSession,
   localToRemoteProcessor,
   remoteToLocalProcessor,
+  getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from 'nuclide-debugger-common';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
@@ -86,7 +87,6 @@ import {
   getConsoleService,
   getNotificationService,
   getDatatipService,
-  getVSCodeDebuggerAdapterServiceByNuclideUri,
   getTerminalService,
   resolveDebugConfiguration,
 } from '../AtomServiceContainer';

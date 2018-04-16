@@ -15,15 +15,12 @@ import type {
   ConsoleService,
   RegisterExecutorFunction,
 } from 'atom-ide-ui';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DebuggerConfigurationProvider,
   IProcessConfig,
 } from 'nuclide-debugger-common';
-import typeof * as VSCodeDebuggerAdapterService from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as VSCodeDebuggerAdapterServiceLocal from 'nuclide-debugger-vsps/VSCodeDebuggerAdapterService';
 
 type raiseNativeNotificationFunc = ?(
   title: string,
@@ -107,19 +104,6 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 
 export function isNuclideEnvironment(): boolean {
   return _rpcService != null;
-}
-
-export function getVSCodeDebuggerAdapterServiceByNuclideUri(
-  uri: NuclideUri,
-): VSCodeDebuggerAdapterService {
-  if (_rpcService != null) {
-    return _rpcService.getServiceByNuclideUri(
-      'VSCodeDebuggerAdapterService',
-      uri,
-    );
-  } else {
-    return VSCodeDebuggerAdapterServiceLocal;
-  }
 }
 
 export function addDebugConfigurationProvider(

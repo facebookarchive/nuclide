@@ -28,7 +28,6 @@
     "nuclide-commons-atom": "0.6.0-dev",
     "nuclide-commons-ui": "0.6.0-dev",
     "nuclide-debugger-common": "0.6.0-dev",
-    "nuclide-debugger-vsps": "0.6.0-dev",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
     "react-dom": "16.2.0",
