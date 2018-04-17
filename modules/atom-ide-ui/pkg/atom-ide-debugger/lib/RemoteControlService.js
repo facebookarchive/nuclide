@@ -1,94 +1,108 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {IDebugService} from './types';
-import type {
-  IProcessConfig,
-  IVspInstance,
-  VspProcessInfo,
-} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {DebuggerMode} from './constants';
-import invariant from 'assert';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class RemoteControlService {
-  _service: IDebugService;
+var _vscodeDebugprotocol;
 
-  constructor(service: IDebugService) {
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class RemoteControlService {
+
+  constructor(service) {
     this._service = service;
   }
 
-  async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = await this.startVspDebugging(
-      processInfo.getProcessConfig(),
-    );
+  startDebugging(processInfo) {
+    var _this = this;
 
-    processInfo.setVspDebuggerInstance(instance);
+    return (0, _asyncToGenerator.default)(function* () {
+      const instance = yield _this.startVspDebugging(processInfo.getProcessConfig());
 
-    const {focusedProcess} = this._service.viewModel;
-    invariant(focusedProcess != null);
-    const disposable = this._service.viewModel.onDidFocusProcess(() => {
-      if (
-        !this._service
-          .getModel()
-          .getProcesses()
-          .includes(focusedProcess)
-      ) {
-        processInfo.dispose();
-        disposable.dispose();
+      processInfo.setVspDebuggerInstance(instance);
+
+      const { focusedProcess } = _this._service.viewModel;
+
+      if (!(focusedProcess != null)) {
+        throw new Error('Invariant violation: "focusedProcess != null"');
       }
-    });
+
+      const disposable = _this._service.viewModel.onDidFocusProcess(function () {
+        if (!_this._service.getModel().getProcesses().includes(focusedProcess)) {
+          processInfo.dispose();
+          disposable.dispose();
+        }
+      });
+    })();
   }
 
-  async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
-    await this._service.startDebugging(config);
+  startVspDebugging(config) {
+    var _this2 = this;
 
-    const {viewModel} = this._service;
-    const {focusedProcess} = viewModel;
-    invariant(focusedProcess != null);
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this2._service.startDebugging(config);
 
-    const isFocusedProcess = (): boolean => {
-      return (
-        this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
-        viewModel.focusedProcess === focusedProcess
-      );
-    };
+      const { viewModel } = _this2._service;
+      const { focusedProcess } = viewModel;
 
-    const customRequest = async (
-      request: string,
-      args: any,
-    ): Promise<DebugProtocol.CustomResponse> => {
-      if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+      if (!(focusedProcess != null)) {
+        throw new Error('Invariant violation: "focusedProcess != null"');
       }
-      return focusedProcess.session.custom(request, args);
-    };
 
-    const observeCustomEvents = (): Observable<DebugProtocol.DebugEvent> => {
-      if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
-      }
-      return focusedProcess.session.observeCustomEvents();
-    };
+      const isFocusedProcess = function () {
+        return _this2._service.getDebuggerMode() !== (_constants || _load_constants()).DebuggerMode.STOPPED && viewModel.focusedProcess === focusedProcess;
+      };
 
-    return Object.freeze({
-      customRequest,
-      observeCustomEvents,
-    });
+      const customRequest = (() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (request, args) {
+          if (!isFocusedProcess()) {
+            throw new Error('Cannot send custom requests to a no longer active debug session!');
+          }
+          return focusedProcess.session.custom(request, args);
+        });
+
+        return function customRequest(_x, _x2) {
+          return _ref.apply(this, arguments);
+        };
+      })();
+
+      const observeCustomEvents = function () {
+        if (!isFocusedProcess()) {
+          throw new Error('Cannot send custom requests to a no longer active debug session!');
+        }
+        return focusedProcess.session.observeCustomEvents();
+      };
+
+      return Object.freeze({
+        customRequest,
+        observeCustomEvents
+      });
+    })();
   }
 }
+exports.default = RemoteControlService; /**
+                                         * Copyright (c) 2017-present, Facebook, Inc.
+                                         * All rights reserved.
+                                         *
+                                         * This source code is licensed under the BSD-style license found in the
+                                         * LICENSE file in the root directory of this source tree. An additional grant
+                                         * of patent rights can be found in the PATENTS file in the same directory.
+                                         *
+                                         * 
+                                         * @format
+                                         */

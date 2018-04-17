@@ -1,64 +1,66 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from '../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NuclideJavaDebuggerProvider} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.JavaDebuggerDevicePanelProvider = undefined;
 
-import {Observable} from 'rxjs';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class JavaDebuggerDevicePanelProvider
-  implements DeviceProcessTaskProvider {
-  _javaDebugger: NuclideJavaDebuggerProvider;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-  constructor(javaDebugger: NuclideJavaDebuggerProvider) {
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('nuclide-commons-atom/debugger');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class JavaDebuggerDevicePanelProvider {
+
+  constructor(javaDebugger) {
     this._javaDebugger = javaDebugger;
   }
 
-  getType(): string {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'DEBUG';
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(
-      new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)),
-    );
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)));
   }
 
-  getName(): string {
+  getName() {
     return 'Attach Java debugger';
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    const debuggerService = await getDebuggerService();
-    const {processInfo} = await this._javaDebugger.createAndroidDebugInfo({
-      targetUri: host,
-      packageName: '',
-      device,
-      pid: proc.pid,
-    });
-    debuggerService.startDebugging(processInfo);
+  run(host, device, proc) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_debugger || _load_debugger()).getDebuggerService)();
+      const { processInfo } = yield _this._javaDebugger.createAndroidDebugInfo({
+        targetUri: host,
+        packageName: '',
+        device,
+        pid: proc.pid
+      });
+      debuggerService.startDebugging(processInfo);
+    })();
   }
 }
+exports.JavaDebuggerDevicePanelProvider = JavaDebuggerDevicePanelProvider; /**
+                                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                                            * All rights reserved.
+                                                                            *
+                                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                                            * the root directory of this source tree.
+                                                                            *
+                                                                            * 
+                                                                            * @format
+                                                                            */

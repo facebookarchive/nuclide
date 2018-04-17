@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _performanceNow;
+
+function _load_performanceNow() {
+  return _performanceNow = _interopRequireDefault(require('nuclide-commons/performanceNow'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _which;
+
+function _load_which() {
+  return _which = _interopRequireDefault(require('nuclide-commons/which'));
+}
+
+var _once;
+
+function _load_once() {
+  return _once = _interopRequireDefault(require('./once'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,16 +48,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import {getLogger} from 'log4js';
-import performanceNow from 'nuclide-commons/performanceNow';
-import os from 'os';
-import {spawn} from 'nuclide-commons/process';
-import which from 'nuclide-commons/which';
-import once from './once';
 
 const DEFAULT_JOIN_TIMEOUT = 5000;
 let SCRIBE_CAT_COMMAND = 'scribe_cat';
@@ -35,19 +71,9 @@ const SPAWN_TOO_LONG_MS = 2000;
  * call `scribeProcess.write($object)` to save an JSON schemaed Object into scribe category.
  * It will also recover from `scribe_cat` failure automatically.
  */
-export default class ScribeProcess {
-  static _enabled: boolean = true;
+class ScribeProcess {
 
-  _scribeCategory: string;
-  _childPromise: ?Promise<child_process$ChildProcess>;
-  _subscription: ?rxjs$ISubscription;
-  _joinTimer: ?TimeoutID;
-  _joinInterval: ?number;
-
-  constructor(
-    scribeCategory: string,
-    joinInterval: ?number = DEFAULT_JOIN_INTERVAL,
-  ) {
+  constructor(scribeCategory, joinInterval = DEFAULT_JOIN_INTERVAL) {
     this._scribeCategory = scribeCategory;
     this._joinInterval = joinInterval;
     this._getChildProcess();
@@ -56,11 +82,9 @@ export default class ScribeProcess {
   /**
    * Check if `scribe_cat` exists in PATH.
    */
-  static isScribeCatOnPath: () => Promise<boolean> = once(() =>
-    which(SCRIBE_CAT_COMMAND).then(cmd => cmd != null),
-  );
 
-  static isEnabled(): boolean {
+
+  static isEnabled() {
     return ScribeProcess._enabled;
   }
 
@@ -69,27 +93,28 @@ export default class ScribeProcess {
    * Ensure newlines are properly escaped.
    * Returns false if something is wrong with the Scribe process (use a fallback instead.)
    */
-  async write(message: string): Promise<boolean> {
-    if (!ScribeProcess._enabled) {
-      return false;
-    }
-    let child;
-    try {
-      child = await this._getChildProcess();
-    } catch (err) {
-      ScribeProcess._enabled = false;
-      // Note: Logging errors is potentially recursive, since they go through Scribe!
-      // It's important that we set _enabled before logging errors in this file.
-      getLogger('ScribeProcess').error(
-        'Disabling ScribeProcess due to spawn error:',
-        err,
-      );
-      return false;
-    }
-    await new Promise(resolve => {
-      child.stdin.write(`${message}${os.EOL}`, resolve);
-    });
-    return true;
+  write(message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!ScribeProcess._enabled) {
+        return false;
+      }
+      let child;
+      try {
+        child = yield _this._getChildProcess();
+      } catch (err) {
+        ScribeProcess._enabled = false;
+        // Note: Logging errors is potentially recursive, since they go through Scribe!
+        // It's important that we set _enabled before logging errors in this file.
+        (0, (_log4js || _load_log4js()).getLogger)('ScribeProcess').error('Disabling ScribeProcess due to spawn error:', err);
+        return false;
+      }
+      yield new Promise(function (resolve) {
+        child.stdin.write(`${message}${_os.default.EOL}`, resolve);
+      });
+      return true;
+    })();
   }
 
   /**
@@ -97,72 +122,71 @@ export default class ScribeProcess {
    * process has exited. This method is called when the server shuts down in order to guarantee we
    * capture logging during shutdown.
    */
-  async join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
-    const {_childPromise, _subscription} = this;
-    if (_childPromise == null || _subscription == null) {
-      return;
-    }
+  join(timeout = DEFAULT_JOIN_TIMEOUT) {
+    var _this2 = this;
 
-    // join() renders the existing process unusable.
-    // The next call to write() should create a new process, so clear out the references.
-    // Note that we stored them in local variables already above.
-    this._clear();
+    return (0, _asyncToGenerator.default)(function* () {
+      const { _childPromise, _subscription } = _this2;
+      if (_childPromise == null || _subscription == null) {
+        return;
+      }
 
-    const child = await _childPromise;
-    const {stdin} = child;
-    const waitForExit = new Promise(resolve => {
-      child.on('exit', () => {
-        resolve();
+      // join() renders the existing process unusable.
+      // The next call to write() should create a new process, so clear out the references.
+      // Note that we stored them in local variables already above.
+      _this2._clear();
+
+      const child = yield _childPromise;
+      const { stdin } = child;
+      const waitForExit = new Promise(function (resolve) {
+        child.on('exit', function () {
+          resolve();
+        });
+        setTimeout(function () {
+          _subscription.unsubscribe();
+          resolve();
+        }, timeout);
       });
-      setTimeout(() => {
-        _subscription.unsubscribe();
-        resolve();
-      }, timeout);
-    });
-    // Make sure stdin has drained before ending it.
-    if (!stdin.write(os.EOL)) {
-      stdin.once('drain', () => stdin.end());
-    } else {
-      stdin.end();
-    }
-    return waitForExit;
+      // Make sure stdin has drained before ending it.
+      if (!stdin.write(_os.default.EOL)) {
+        stdin.once('drain', function () {
+          return stdin.end();
+        });
+      } else {
+        stdin.end();
+      }
+      return waitForExit;
+    })();
   }
 
-  _getChildProcess(): Promise<child_process$ChildProcess> {
+  _getChildProcess() {
     if (this._childPromise) {
       return this._childPromise;
     }
 
     // Obtain a promise to get the child process, but don't start it yet.
     // this._subscription will have control over starting / stopping the process.
-    const startTime = performanceNow();
-    const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory], {
-      dontLogInNuclide: true,
-    })
-      .do(child => {
-        const duration = performanceNow() - startTime;
-        if (duration > SPAWN_TOO_LONG_MS) {
-          ScribeProcess._enabled = false;
-          getLogger('ScribeProcess').error(
-            `Disabling ScribeProcess because spawn took too long (${duration}ms)`,
-          );
-          // Don't raise any errors and allow the current write to complete.
-          // However, the next write will fail due to the _enabled check.
-          this.join();
-        }
-        child.stdin.setDefaultEncoding('utf8');
-      })
-      .finally(() => {
-        // We may have already started a new process in the meantime.
-        if (this._childPromise === childPromise) {
-          this._clear();
-        }
-      })
-      .publish();
+    const startTime = (0, (_performanceNow || _load_performanceNow()).default)();
+    const processStream = (0, (_process || _load_process()).spawn)(SCRIBE_CAT_COMMAND, [this._scribeCategory], {
+      dontLogInNuclide: true
+    }).do(child => {
+      const duration = (0, (_performanceNow || _load_performanceNow()).default)() - startTime;
+      if (duration > SPAWN_TOO_LONG_MS) {
+        ScribeProcess._enabled = false;
+        (0, (_log4js || _load_log4js()).getLogger)('ScribeProcess').error(`Disabling ScribeProcess because spawn took too long (${duration}ms)`);
+        // Don't raise any errors and allow the current write to complete.
+        // However, the next write will fail due to the _enabled check.
+        this.join();
+      }
+      child.stdin.setDefaultEncoding('utf8');
+    }).finally(() => {
+      // We may have already started a new process in the meantime.
+      if (this._childPromise === childPromise) {
+        this._clear();
+      }
+    }).publish();
 
-    const childPromise = (this._childPromise = processStream
-      .first()
-      .toPromise());
+    const childPromise = this._childPromise = processStream.first().toPromise();
     this._subscription = processStream.connect();
 
     if (this._joinInterval != null) {
@@ -185,10 +209,13 @@ export default class ScribeProcess {
   }
 }
 
-export const __test__ = {
-  setScribeCatCommand(newCommand: string): string {
+exports.default = ScribeProcess;
+ScribeProcess._enabled = true;
+ScribeProcess.isScribeCatOnPath = (0, (_once || _load_once()).default)(() => (0, (_which || _load_which()).default)(SCRIBE_CAT_COMMAND).then(cmd => cmd != null));
+const __test__ = exports.__test__ = {
+  setScribeCatCommand(newCommand) {
     const originalCommand = SCRIBE_CAT_COMMAND;
     SCRIBE_CAT_COMMAND = newCommand;
     return originalCommand;
-  },
+  }
 };

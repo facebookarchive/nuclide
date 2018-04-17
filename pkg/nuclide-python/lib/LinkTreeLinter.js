@@ -1,3 +1,73 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _debounced;
+
+function _load_debounced() {
+  return _debounced = require('nuclide-commons-atom/debounced');
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,142 +75,98 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {LinterMessageV2} from 'atom-ide-ui';
-import type {BuckTaskRunnerService} from '../../nuclide-buck/lib/types';
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-
-import {getLogger} from 'log4js';
-import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {compact} from 'nuclide-commons/observable';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable, Subject} from 'rxjs';
-import shallowEqual from 'shallowequal';
-import {track} from '../../nuclide-analytics';
-import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {GRAMMAR_SET} from './constants';
 
 const DEBOUNCE_INTERVAL = 1000;
 // TODO(hansonw): increase when code action UI supports more
 const NUM_SUGGESTIONS = 3;
 
-export default class LinkTreeLinter {
-  _buckTaskRunnerService: ?BuckTaskRunnerService;
-  _cwdApi: ?CwdApi;
+class LinkTreeLinter {
+  constructor() {
+    this._disposedPaths = new Set();
+  }
 
   // Once the user interacts with a diagnostic, hide it forever.
-  _disposedPaths: Set<string> = new Set();
 
-  consumeBuckTaskRunner(service: BuckTaskRunnerService): IDisposable {
+
+  consumeBuckTaskRunner(service) {
     this._buckTaskRunnerService = service;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._buckTaskRunnerService = null;
     });
   }
 
-  consumeCwdApi(api: CwdApi): IDisposable {
+  consumeCwdApi(api) {
     this._cwdApi = api;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._cwdApi = null;
     });
   }
 
-  observeMessages(): Observable<Array<LinterMessageV2>> {
-    return observeActiveEditorsDebounced(DEBOUNCE_INTERVAL)
-      .let(compact)
-      .switchMap(editor => {
-        const path = editor.getPath();
-        if (
-          path == null ||
-          this._disposedPaths.has(path) ||
-          !GRAMMAR_SET.has(editor.getGrammar().scopeName)
-        ) {
-          return Observable.of([]);
+  observeMessages() {
+    return (0, (_debounced || _load_debounced()).observeActiveEditorsDebounced)(DEBOUNCE_INTERVAL).let((_observable || _load_observable()).compact).switchMap(editor => {
+      const path = editor.getPath();
+      if (path == null || this._disposedPaths.has(path) || !(_constants || _load_constants()).GRAMMAR_SET.has(editor.getGrammar().scopeName)) {
+        return _rxjsBundlesRxMinJs.Observable.of([]);
+      }
+      // If the CWD doesn't contain the file, Buck isn't going to work.
+      const cwd = this._cwdApi == null ? null : this._cwdApi.getCwd();
+      if (cwd != null && !(_nuclideUri || _load_nuclideUri()).default.contains(cwd, path)) {
+        return _rxjsBundlesRxMinJs.Observable.of([]);
+      }
+      const pythonService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getPythonServiceByNuclideUri)(path);
+      return _rxjsBundlesRxMinJs.Observable.fromPromise(pythonService.getBuildableTargets(path)).filter(targets => targets.length > 0).switchMap(targets => {
+        const buckService = this._buckTaskRunnerService;
+        if (buckService == null || editor.getLineCount() === 0) {
+          return _rxjsBundlesRxMinJs.Observable.of([]);
         }
-        // If the CWD doesn't contain the file, Buck isn't going to work.
-        const cwd = this._cwdApi == null ? null : this._cwdApi.getCwd();
-        if (cwd != null && !nuclideUri.contains(cwd, path)) {
-          return Observable.of([]);
-        }
-        const pythonService = getPythonServiceByNuclideUri(path);
-        return Observable.fromPromise(pythonService.getBuildableTargets(path))
-          .filter(targets => targets.length > 0)
-          .switchMap(targets => {
-            const buckService = this._buckTaskRunnerService;
-            if (buckService == null || editor.getLineCount() === 0) {
-              return Observable.of([]);
-            }
-            const position = [
-              [0, 0],
-              [0, editor.lineTextForBufferRow(0).length],
-            ];
-            const disposed = new Subject();
-            // If the user happened to build a viable target - great!
-            const taskCompleted = observableFromSubscribeFunction(cb =>
-              buckService.onDidCompleteTask(task => {
-                if (targets.includes(task.buildTarget)) {
-                  cb();
-                }
-              }),
-            );
-            const solutions = targets.slice(0, NUM_SUGGESTIONS).map(target => ({
-              title: target,
-              position,
-              apply: () => {
-                track('python.link-tree-built', {target, path});
-                buckService.setBuildTarget(target);
-                atom.commands.dispatch(
-                  atom.views.getView(atom.workspace),
-                  'nuclide-task-runner:toggle-buck-toolbar',
-                  {visible: true},
-                );
-                // TODO: Ideally this would actually trigger the build -
-                // but there's no way to wait for 'build' to be enabled.
-                this._disposedPaths.add(path);
-                disposed.next();
-              },
-            }));
-            solutions.push({
-              title: 'No thanks',
-              position,
-              apply: () => {
-                track('python.link-tree-ignored', {path});
-                this._disposedPaths.add(path);
-                disposed.next();
-              },
-            });
-            return Observable.of([
-              {
-                kind: 'action',
-                severity: 'info',
-                location: {
-                  file: path,
-                  position,
-                },
-                excerpt:
-                  'For better language services, build a binary or unittest\n' +
-                  'that uses this file with Buck. Suggestions:',
-                solutions,
-              },
-            ])
-              .concat(Observable.never())
-              .takeUntil(disposed)
-              .takeUntil(taskCompleted);
-          })
-          .takeUntil(
-            observableFromSubscribeFunction(cb => editor.onDidDestroy(cb)),
-          )
-          .concat(Observable.of([]));
-      })
-      .catch((err, continuation) => {
-        getLogger('LinkTreeLinter').error(err);
-        return continuation;
-      })
-      .distinctUntilChanged(shallowEqual);
+        const position = [[0, 0], [0, editor.lineTextForBufferRow(0).length]];
+        const disposed = new _rxjsBundlesRxMinJs.Subject();
+        // If the user happened to build a viable target - great!
+        const taskCompleted = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => buckService.onDidCompleteTask(task => {
+          if (targets.includes(task.buildTarget)) {
+            cb();
+          }
+        }));
+        const solutions = targets.slice(0, NUM_SUGGESTIONS).map(target => ({
+          title: target,
+          position,
+          apply: () => {
+            (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('python.link-tree-built', { target, path });
+            buckService.setBuildTarget(target);
+            atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-task-runner:toggle-buck-toolbar', { visible: true });
+            // TODO: Ideally this would actually trigger the build -
+            // but there's no way to wait for 'build' to be enabled.
+            this._disposedPaths.add(path);
+            disposed.next();
+          }
+        }));
+        solutions.push({
+          title: 'No thanks',
+          position,
+          apply: () => {
+            (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('python.link-tree-ignored', { path });
+            this._disposedPaths.add(path);
+            disposed.next();
+          }
+        });
+        return _rxjsBundlesRxMinJs.Observable.of([{
+          kind: 'action',
+          severity: 'info',
+          location: {
+            file: path,
+            position
+          },
+          excerpt: 'For better language services, build a binary or unittest\n' + 'that uses this file with Buck. Suggestions:',
+          solutions
+        }]).concat(_rxjsBundlesRxMinJs.Observable.never()).takeUntil(disposed).takeUntil(taskCompleted);
+      }).takeUntil((0, (_event || _load_event()).observableFromSubscribeFunction)(cb => editor.onDidDestroy(cb))).concat(_rxjsBundlesRxMinJs.Observable.of([]));
+    }).catch((err, continuation) => {
+      (0, (_log4js || _load_log4js()).getLogger)('LinkTreeLinter').error(err);
+      return continuation;
+    }).distinctUntilChanged((_shallowequal || _load_shallowequal()).default);
   }
 }
+exports.default = LinkTreeLinter;

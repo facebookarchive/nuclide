@@ -1,3 +1,59 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _AutoGenLaunchAttachProvider;
+
+function _load_AutoGenLaunchAttachProvider() {
+  return _AutoGenLaunchAttachProvider = _interopRequireDefault(require('nuclide-debugger-common/AutoGenLaunchAttachProvider'));
+}
+
+var _HhvmLaunchAttachProvider;
+
+function _load_HhvmLaunchAttachProvider() {
+  return _HhvmLaunchAttachProvider = _interopRequireDefault(require('./HhvmLaunchAttachProvider'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _path = _interopRequireDefault(require('path'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,37 +61,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  NuclideDebuggerProvider,
-  DebuggerConfigurationProvider,
-} from 'nuclide-debugger-common';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
-import passesGK from '../../commons-node/passesGK';
-import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  getPrepackAutoGenConfig,
-  getNativeAutoGenConfig,
-  resolveConfiguration,
-} from './utils';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
-import path from 'path';
-
 class Activation {
-  _subscriptions: UniversalDisposable;
 
   constructor() {
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-    fsPromise.exists(path.join(__dirname, 'fb-marker')).then(exists => {
+    (_fsPromise || _load_fsPromise()).default.exists(_path.default.join(__dirname, 'fb-marker')).then(exists => {
       const isOpenSource = !exists;
       this._registerPrepackDebugProvider(isOpenSource);
       this._registerLLDBProvider();
@@ -44,37 +79,31 @@ class Activation {
     });
   }
 
-  _registerDebugProvider(provider: NuclideDebuggerProvider): void {
-    this._subscriptions.add(
-      atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider),
-    );
+  _registerDebugProvider(provider) {
+    this._subscriptions.add(atom.packages.serviceHub.provide('debugger.provider', '0.0.0', provider));
   }
 
-  async _registerPrepackDebugProvider(isOpenSource: boolean): Promise<void> {
-    if ((await passesGK('nuclide_debugger_prepack')) || isOpenSource) {
-      this._registerDebugProvider({
-        name: 'Prepack',
-        getLaunchAttachProvider: connection => {
-          return new AutoGenLaunchAttachProvider(
-            'Prepack',
-            connection,
-            getPrepackAutoGenConfig(),
-          );
-        },
-      });
-    }
+  _registerPrepackDebugProvider(isOpenSource) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if ((yield (0, (_passesGK || _load_passesGK()).default)('nuclide_debugger_prepack')) || isOpenSource) {
+        _this._registerDebugProvider({
+          name: 'Prepack',
+          getLaunchAttachProvider: function (connection) {
+            return new (_AutoGenLaunchAttachProvider || _load_AutoGenLaunchAttachProvider()).default('Prepack', connection, (0, (_utils || _load_utils()).getPrepackAutoGenConfig)());
+          }
+        });
+      }
+    })();
   }
 
   _registerLLDBProvider() {
     this._registerDebugProvider({
       name: 'Native - LLDB (C/C++)',
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          'Native - LLDB (C/C++)',
-          connection,
-          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_LLDB),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider || _load_AutoGenLaunchAttachProvider()).default('Native - LLDB (C/C++)', connection, (0, (_utils || _load_utils()).getNativeAutoGenConfig)((_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.NATIVE_LLDB));
+      }
     });
   }
 
@@ -82,33 +111,35 @@ class Activation {
     this._registerDebugProvider({
       name: 'Native - GDB (C/C++)',
       getLaunchAttachProvider: connection => {
-        return new AutoGenLaunchAttachProvider(
-          'Native - GDB (C/C++)',
-          connection,
-          getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
-        );
-      },
+        return new (_AutoGenLaunchAttachProvider || _load_AutoGenLaunchAttachProvider()).default('Native - GDB (C/C++)', connection, (0, (_utils || _load_utils()).getNativeAutoGenConfig)((_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.NATIVE_GDB));
+      }
     });
   }
 
-  async _registerHHVMDebugProvider(): Promise<void> {
-    this._registerDebugProvider({
-      name: 'Hack / PHP',
-      getLaunchAttachProvider: connection => {
-        return new HhvmLaunchAttachProvider('Hack / PHP', connection);
-      },
-    });
+  _registerHHVMDebugProvider() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this2._registerDebugProvider({
+        name: 'Hack / PHP',
+        getLaunchAttachProvider: function (connection) {
+          return new (_HhvmLaunchAttachProvider || _load_HhvmLaunchAttachProvider()).default('Hack / PHP', connection);
+        }
+      });
+    })();
   }
 
-  createDebuggerConfigurator(): DebuggerConfigurationProvider {
+  createDebuggerConfigurator() {
     return {
-      resolveConfiguration,
+      resolveConfiguration: (_utils || _load_utils()).resolveConfiguration
     };
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 
-createPackage(module.exports, Activation);
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

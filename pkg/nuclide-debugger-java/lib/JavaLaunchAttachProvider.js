@@ -1,34 +1,64 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.JavaLaunchAttachProvider = undefined;
 
-import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
-import * as React from 'react';
-import {LaunchUIComponent} from './LaunchUIComponent';
-import {AttachUIComponent} from './AttachUIComponent';
-import {AndroidLaunchComponent} from './AndroidLaunchComponent';
-import {AndroidAttachComponent} from './AndroidAttachComponent';
-import invariant from 'assert';
+var _nuclideDebuggerCommon;
 
-const JAVA_DEBUG_DESKTOP = 'Java (Desktop)';
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _LaunchUIComponent;
+
+function _load_LaunchUIComponent() {
+  return _LaunchUIComponent = require('./LaunchUIComponent');
+}
+
+var _AttachUIComponent;
+
+function _load_AttachUIComponent() {
+  return _AttachUIComponent = require('./AttachUIComponent');
+}
+
+var _AndroidLaunchComponent;
+
+function _load_AndroidLaunchComponent() {
+  return _AndroidLaunchComponent = require('./AndroidLaunchComponent');
+}
+
+var _AndroidAttachComponent;
+
+function _load_AndroidAttachComponent() {
+  return _AndroidAttachComponent = require('./AndroidAttachComponent');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const JAVA_DEBUG_DESKTOP = 'Java (Desktop)'; /**
+                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                              * All rights reserved.
+                                              *
+                                              * This source code is licensed under the license found in the LICENSE file in
+                                              * the root directory of this source tree.
+                                              *
+                                              * 
+                                              * @format
+                                              */
+
 const JAVA_DEBUG_ANDROID = 'Java (Android)';
 
-export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  getCallbacksForAction(action: DebuggerConfigAction) {
+class JavaLaunchAttachProvider extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerLaunchAttachProvider {
+  getCallbacksForAction(action) {
     return {
       /**
        * Whether this provider is enabled or not.
        */
-      isEnabled: (): Promise<boolean> => {
+      isEnabled: () => {
         return Promise.resolve(true);
       },
 
@@ -42,48 +72,40 @@ export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
       /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
-      getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      getComponent: (debuggerTypeName, configIsValidChanged) => {
         if (action === 'launch') {
           if (debuggerTypeName === JAVA_DEBUG_ANDROID) {
-            return (
-              <AndroidLaunchComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
+            return _react.createElement((_AndroidLaunchComponent || _load_AndroidLaunchComponent()).AndroidLaunchComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged
+            });
           } else if (debuggerTypeName === JAVA_DEBUG_DESKTOP) {
-            return (
-              <LaunchUIComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
+            return _react.createElement((_LaunchUIComponent || _load_LaunchUIComponent()).LaunchUIComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged
+            });
           }
         } else if (action === 'attach') {
           if (debuggerTypeName === JAVA_DEBUG_ANDROID) {
-            return (
-              <AndroidAttachComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
+            return _react.createElement((_AndroidAttachComponent || _load_AndroidAttachComponent()).AndroidAttachComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged
+            });
           } else if (debuggerTypeName === JAVA_DEBUG_DESKTOP) {
-            return (
-              <AttachUIComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
+            return _react.createElement((_AttachUIComponent || _load_AttachUIComponent()).AttachUIComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged
+            });
           }
         }
 
-        invariant(false, 'Unrecognized action for component.');
-      },
+        if (!false) {
+          throw new Error('Unrecognized action for component.');
+        }
+      }
     };
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.JavaLaunchAttachProvider = JavaLaunchAttachProvider;

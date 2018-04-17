@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.REACT_NATIVE_PACKAGER_DEFAULT_PORT = undefined;
+exports.getReactNativeAttachProcessInfo = getReactNativeAttachProcessInfo;
+exports.getReactNativeLaunchProcessInfo = getReactNativeLaunchProcessInfo;
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('nuclide-debugger-common');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,38 +21,16 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ReactNativeAttachArgs, ReactNativeLaunchArgs} from './types';
+const REACT_NATIVE_PACKAGER_DEFAULT_PORT = exports.REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
 
-import {VspProcessInfo, VsAdapterTypes} from 'nuclide-debugger-common';
-
-export const REACT_NATIVE_PACKAGER_DEFAULT_PORT = 8081;
-
-export function getReactNativeAttachProcessInfo(
-  args: ReactNativeAttachArgs,
-): VspProcessInfo {
-  return new VspProcessInfo(
-    args.program,
-    'attach',
-    VsAdapterTypes.REACT_NATIVE,
-    null,
-    args,
-    {threads: false},
-  );
+function getReactNativeAttachProcessInfo(args) {
+  return new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VspProcessInfo(args.program, 'attach', (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.REACT_NATIVE, null, args, { threads: false });
 }
 
-export function getReactNativeLaunchProcessInfo(
-  args: ReactNativeLaunchArgs,
-): VspProcessInfo {
-  return new VspProcessInfo(
-    args.program,
-    'launch',
-    VsAdapterTypes.REACT_NATIVE,
-    null,
-    args,
-    {threads: false},
-  );
+function getReactNativeLaunchProcessInfo(args) {
+  return new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VspProcessInfo(args.program, 'launch', (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.REACT_NATIVE, null, args, { threads: false });
 }

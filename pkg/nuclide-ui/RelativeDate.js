@@ -1,29 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import {relativeDate} from 'nuclide-commons/string';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type DefaultProps = {
-  delay: number,
-  shorten: boolean,
-  withToolip: boolean,
-};
-type Props = DefaultProps & {
-  date: Date,
-  delay?: number,
-  shorten?: boolean,
-  withToolip?: boolean,
-};
+var _react = _interopRequireWildcard(require('react'));
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                              * the root directory of this source tree.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
+
 const DEFAULT_RERENDER_DELAY = 10000; // ms
 
 /**
@@ -32,50 +41,45 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  *
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
-export default class RelativeDate extends React.Component<Props> {
-  _interval: ?IntervalID;
+class RelativeDate extends _react.Component {
 
-  static defaultProps: DefaultProps = {
-    delay: DEFAULT_RERENDER_DELAY,
-    shorten: false,
-    withToolip: false,
-  };
-
-  componentDidMount(): void {
-    const {delay} = this.props;
+  componentDidMount() {
+    const { delay } = this.props;
     this._interval = setInterval(() => this.forceUpdate(), delay);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._interval != null) {
       clearInterval(this._interval);
     }
   }
 
-  render(): React.Node {
-    const {
+  render() {
+    const _props = this.props,
+          {
       date,
       // eslint-disable-next-line no-unused-vars
       delay: _,
       shorten,
-      withToolip,
-      ...remainingProps
-    } = this.props;
-    return (
-      <span
-        {...remainingProps}
+      withToolip
+    } = _props,
+          remainingProps = _objectWithoutProperties(_props, ['date', 'delay', 'shorten', 'withToolip']);
+    return _react.createElement(
+      'span',
+      Object.assign({}, remainingProps, {
         // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
-        ref={
-          withToolip
-            ? addTooltip({
-                title: date.toLocaleString(),
-                delay: 200,
-                placement: 'top',
-              })
-            : null
-        }>
-        {relativeDate(date, undefined, shorten)}
-      </span>
+        ref: withToolip ? (0, (_addTooltip || _load_addTooltip()).default)({
+          title: date.toLocaleString(),
+          delay: 200,
+          placement: 'top'
+        }) : null }),
+      (0, (_string || _load_string()).relativeDate)(date, undefined, shorten)
     );
   }
 }
+exports.default = RelativeDate;
+RelativeDate.defaultProps = {
+  delay: DEFAULT_RERENDER_DELAY,
+  shorten: false,
+  withToolip: false
+};

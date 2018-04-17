@@ -1,32 +1,41 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideDebuggerProvider} from 'nuclide-debugger-common/types';
+var _createPackage;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import ReactNativeLaunchAttachProvider from './ReactNativeLaunchAttachProvider';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _ReactNativeLaunchAttachProvider;
+
+function _load_ReactNativeLaunchAttachProvider() {
+  return _ReactNativeLaunchAttachProvider = _interopRequireDefault(require('./ReactNativeLaunchAttachProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
   constructor() {}
   dispose() {}
 
-  createDebuggerProvider(): NuclideDebuggerProvider {
+  createDebuggerProvider() {
     return {
       name: 'React Native',
       getLaunchAttachProvider: connection => {
-        return new ReactNativeLaunchAttachProvider(connection);
-      },
+        return new (_ReactNativeLaunchAttachProvider || _load_ReactNativeLaunchAttachProvider()).default(connection);
+      }
     };
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

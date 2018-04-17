@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ConfigurePathTaskProvider = undefined;
+
+var _showModal;
+
+function _load_showModal() {
+  return _showModal = _interopRequireDefault(require('nuclide-commons-ui/showModal'));
+}
+
+var _CustomPathModal;
+
+function _load_CustomPathModal() {
+  return _CustomPathModal = require('./CustomPathModal');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _react = _interopRequireWildcard(require('react'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,63 +32,44 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DeviceTypeTaskProvider} from '../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TaskEvent} from 'nuclide-commons/process';
-import type {Bridge} from './types';
+class ConfigurePathTaskProvider {
 
-import showModal from 'nuclide-commons-ui/showModal';
-import {CustomPathModal} from './CustomPathModal';
-import {Observable} from 'rxjs';
-import * as React from 'react';
-
-export class ConfigurePathTaskProvider implements DeviceTypeTaskProvider {
-  _bridge: Bridge;
-
-  constructor(bridge: Bridge) {
+  constructor(bridge) {
     this._bridge = bridge;
   }
 
-  getType(): string {
+  getType() {
     return this._bridge.name;
   }
 
-  getName(): string {
+  getName() {
     return `Configure ${this._bridge.debugBridge}`;
   }
 
-  getTask(host: NuclideUri): Observable<TaskEvent> {
-    return Observable.defer(() => this._bridge.getFullConfig(host)).switchMap(
-      fullConfig => {
-        return Observable.create(observer => {
-          const disposable = showModal(
-            ({dismiss}) => (
-              <CustomPathModal
-                dismiss={dismiss}
-                activePath={fullConfig.active}
-                currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}
-                registeredPaths={fullConfig.all}
-                setCustomPath={customPath =>
-                  this._bridge.setCustomDebugBridgePath(host, customPath)
-                }
-                type={this._bridge.debugBridge}
-              />
-            ),
-            {
-              className: 'nuclide-adb-sdb-custom-path-modal',
-              onDismiss: () => {
-                disposable.dispose();
-                observer.complete();
-              },
-              shouldDismissOnClickOutsideModal: () => false,
-            },
-          );
+  getTask(host) {
+    return _rxjsBundlesRxMinJs.Observable.defer(() => this._bridge.getFullConfig(host)).switchMap(fullConfig => {
+      return _rxjsBundlesRxMinJs.Observable.create(observer => {
+        const disposable = (0, (_showModal || _load_showModal()).default)(({ dismiss }) => _react.createElement((_CustomPathModal || _load_CustomPathModal()).CustomPathModal, {
+          dismiss: dismiss,
+          activePath: fullConfig.active,
+          currentCustomPath: this._bridge.getCustomDebugBridgePath(host),
+          registeredPaths: fullConfig.all,
+          setCustomPath: customPath => this._bridge.setCustomDebugBridgePath(host, customPath),
+          type: this._bridge.debugBridge
+        }), {
+          className: 'nuclide-adb-sdb-custom-path-modal',
+          onDismiss: () => {
+            disposable.dispose();
+            observer.complete();
+          },
+          shouldDismissOnClickOutsideModal: () => false
         });
-      },
-    );
+      });
+    });
   }
 }
+exports.ConfigurePathTaskProvider = ConfigurePathTaskProvider;

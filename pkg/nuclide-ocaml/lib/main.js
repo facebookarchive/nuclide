@@ -1,35 +1,78 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getLogger} from 'log4js';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {observeForCodeLens} from './CodeLensListener';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {createLanguageService} from './OCamlLanguage';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deactivate = exports.activate = undefined;
 
-let disposables: UniversalDisposable = new UniversalDisposable();
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export async function activate(): Promise<void> {
-  const ocamlLspLanguageService = createLanguageService();
-  ocamlLspLanguageService.activate();
-  disposables.add(ocamlLspLanguageService);
+let activate = exports.activate = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* () {
+    const ocamlLspLanguageService = (0, (_OCamlLanguage || _load_OCamlLanguage()).createLanguageService)();
+    ocamlLspLanguageService.activate();
+    disposables.add(ocamlLspLanguageService);
 
-  if (featureConfig.get('nuclide-ocaml.codeLens')) {
-    disposables.add(
-      observeForCodeLens(ocamlLspLanguageService, getLogger('OcamlService')),
-    );
-  }
+    if ((_featureConfig || _load_featureConfig()).default.get('nuclide-ocaml.codeLens')) {
+      disposables.add((0, (_CodeLensListener || _load_CodeLensListener()).observeForCodeLens)(ocamlLspLanguageService, (0, (_log4js || _load_log4js()).getLogger)('OcamlService')));
+    }
+  });
+
+  return function activate() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let deactivate = exports.deactivate = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    disposables.dispose();
+    disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  });
+
+  return function deactivate() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
 }
 
-export async function deactivate(): Promise<void> {
-  disposables.dispose();
-  disposables = new UniversalDisposable();
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
 }
+
+var _CodeLensListener;
+
+function _load_CodeLensListener() {
+  return _CodeLensListener = require('./CodeLensListener');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _OCamlLanguage;
+
+function _load_OCamlLanguage() {
+  return _OCamlLanguage = require('./OCamlLanguage');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(); /**
+                                                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                        * All rights reserved.
+                                                                                        *
+                                                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                                                        * the root directory of this source tree.
+                                                                                        *
+                                                                                        * 
+                                                                                        * @format
+                                                                                        */

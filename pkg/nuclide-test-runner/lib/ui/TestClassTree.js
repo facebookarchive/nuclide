@@ -1,83 +1,122 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
-import type TestSuiteModel from '../TestSuiteModel';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import nullthrows from 'nullthrows';
-import * as React from 'react';
-import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
-import TestClassTreeNode from './TestClassTreeNode';
-import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';
+var _nullthrows;
 
-function labelClassNameForNode(): string {
-  return 'icon icon-code';
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
 }
 
-type Props = {
-  isRunning: boolean,
-  testSuiteModel: ?TestSuiteModel,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-export default class TestClassTree extends React.Component<Props> {
-  _tree: ?TreeRootComponent;
+var _PanelComponentScroller;
 
-  componentDidUpdate(prevProps: Object) {
-    const {testSuiteModel} = this.props;
+function _load_PanelComponentScroller() {
+  return _PanelComponentScroller = require('nuclide-commons-ui/PanelComponentScroller');
+}
+
+var _TestClassTreeNode;
+
+function _load_TestClassTreeNode() {
+  return _TestClassTreeNode = _interopRequireDefault(require('./TestClassTreeNode'));
+}
+
+var _TreeRootComponent;
+
+function _load_TreeRootComponent() {
+  return _TreeRootComponent = require('../../../nuclide-ui/TreeRootComponent');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function labelClassNameForNode() {
+  return 'icon icon-code';
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+class TestClassTree extends _react.Component {
+
+  componentDidUpdate(prevProps) {
+    const { testSuiteModel } = this.props;
     if (testSuiteModel !== prevProps.testSuiteModel) {
       const roots = [];
       if (testSuiteModel) {
         for (const testClass of testSuiteModel.testClasses.values()) {
-          roots.push(new TestClassTreeNode(testClass));
+          roots.push(new (_TestClassTreeNode || _load_TestClassTreeNode()).default(testClass));
         }
       }
-      nullthrows(this._tree).setRoots(roots);
+      (0, (_nullthrows || _load_nullthrows()).default)(this._tree).setRoots(roots);
     }
 
-    (this: any).rowClassNameForNode = this.rowClassNameForNode.bind(this);
+    this.rowClassNameForNode = this.rowClassNameForNode.bind(this);
   }
 
   render() {
-    const emptyRenderMessage = (
-      <div>
-        <h5>Running tests</h5>
-        <ol>
-          <li>Open the file you want to test</li>
-          <li>Choose the appropriate runner from the dropdown</li>
-          <li>{'Click "Test" to run tests for that file\'s directory'}</li>
-        </ol>
-      </div>
+    const emptyRenderMessage = _react.createElement(
+      'div',
+      null,
+      _react.createElement(
+        'h5',
+        null,
+        'Running tests'
+      ),
+      _react.createElement(
+        'ol',
+        null,
+        _react.createElement(
+          'li',
+          null,
+          'Open the file you want to test'
+        ),
+        _react.createElement(
+          'li',
+          null,
+          'Choose the appropriate runner from the dropdown'
+        ),
+        _react.createElement(
+          'li',
+          null,
+          'Click "Test" to run tests for that file\'s directory'
+        )
+      )
     );
 
-    return (
-      <PanelComponentScroller>
-        <div className="padded">
-          <TreeRootComponent
-            elementToRenderWhenEmpty={emptyRenderMessage}
-            eventHandlerSelector=".nuclide-test-runner-tree"
-            initialRoots={[]}
-            labelClassNameForNode={labelClassNameForNode}
-            onKeepSelection={() => {}}
-            ref={tree => {
-              this._tree = tree;
-            }}
-            rowClassNameForNode={this.rowClassNameForNode}
-          />
-        </div>
-      </PanelComponentScroller>
+    return _react.createElement(
+      (_PanelComponentScroller || _load_PanelComponentScroller()).PanelComponentScroller,
+      null,
+      _react.createElement(
+        'div',
+        { className: 'padded' },
+        _react.createElement((_TreeRootComponent || _load_TreeRootComponent()).TreeRootComponent, {
+          elementToRenderWhenEmpty: emptyRenderMessage,
+          eventHandlerSelector: '.nuclide-test-runner-tree',
+          initialRoots: [],
+          labelClassNameForNode: labelClassNameForNode,
+          onKeepSelection: () => {},
+          ref: tree => {
+            this._tree = tree;
+          },
+          rowClassNameForNode: this.rowClassNameForNode
+        })
+      )
     );
   }
 
-  rowClassNameForNode(node: LazyTreeNode): string {
-    const {testSuiteModel} = this.props;
+  rowClassNameForNode(node) {
+    const { testSuiteModel } = this.props;
     if (!testSuiteModel) {
       return '';
     }
@@ -102,3 +141,4 @@ export default class TestClassTree extends React.Component<Props> {
     return '';
   }
 }
+exports.default = TestClassTree;

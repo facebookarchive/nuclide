@@ -1,3 +1,65 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _os = _interopRequireDefault(require('os'));
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _getElementFilePath;
+
+function _load_getElementFilePath() {
+  return _getElementFilePath = _interopRequireDefault(require('../../commons-atom/getElementFilePath'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _AtomServiceContainer;
+
+function _load_AtomServiceContainer() {
+  return _AtomServiceContainer = require('./AtomServiceContainer');
+}
+
+var _terminalView;
+
+function _load_terminalView() {
+  return _terminalView = require('./terminal-view');
+}
+
+var _nuclideTerminalUri;
+
+function _load_nuclideTerminalUri() {
+  return _nuclideTerminalUri = require('../../commons-node/nuclide-terminal-uri');
+}
+
+var _FocusManager;
+
+function _load_FocusManager() {
+  return _FocusManager = require('./FocusManager');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,75 +67,34 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 // for homedir
-import os from 'os';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-import {setRpcService} from './AtomServiceContainer';
-import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {
-  infoFromUri,
-  uriFromInfo,
-  uriFromCwd,
-  URI_PREFIX,
-} from '../../commons-node/nuclide-terminal-uri';
-import {FocusManager} from './FocusManager';
-
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
-
 class Activation {
-  _subscriptions: UniversalDisposable;
-  _cwd: ?CwdApi;
 
   constructor() {
-    const focusManager = new FocusManager();
-    this._subscriptions = new UniversalDisposable(
-      focusManager,
-      atom.workspace.addOpener(uri => {
-        if (uri.startsWith(URI_PREFIX)) {
-          return new TerminalView(uri);
-        }
-      }),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-terminal:new-terminal',
-        event => {
-          const cwd = this._getPathOrCwd(event);
-          const uri = uriFromCwd(cwd);
-          goToLocation(uri);
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-terminal:new-local-terminal',
-        event => {
-          const uri = uriFromCwd(os.homedir());
-          goToLocation(uri);
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-terminal:toggle-terminal-focus',
-        () => focusManager.toggleFocus(),
-      ),
-    );
+    const focusManager = new (_FocusManager || _load_FocusManager()).FocusManager();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(focusManager, atom.workspace.addOpener(uri => {
+      if (uri.startsWith((_nuclideTerminalUri || _load_nuclideTerminalUri()).URI_PREFIX)) {
+        return new (_terminalView || _load_terminalView()).TerminalView(uri);
+      }
+    }), atom.commands.add('atom-workspace', 'nuclide-terminal:new-terminal', event => {
+      const cwd = this._getPathOrCwd(event);
+      const uri = (0, (_nuclideTerminalUri || _load_nuclideTerminalUri()).uriFromCwd)(cwd);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri);
+    }), atom.commands.add('atom-workspace', 'nuclide-terminal:new-local-terminal', event => {
+      const uri = (0, (_nuclideTerminalUri || _load_nuclideTerminalUri()).uriFromCwd)(_os.default.homedir());
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri);
+    }), atom.commands.add('atom-workspace', 'nuclide-terminal:toggle-terminal-focus', () => focusManager.toggleFocus()));
   }
 
-  provideTerminal(): nuclide$TerminalApi {
+  provideTerminal() {
     return Object.freeze({
-      infoFromUri,
-      uriFromInfo,
-      uriFromCwd,
+      infoFromUri: (_nuclideTerminalUri || _load_nuclideTerminalUri()).infoFromUri,
+      uriFromInfo: (_nuclideTerminalUri || _load_nuclideTerminalUri()).uriFromInfo,
+      uriFromCwd: (_nuclideTerminalUri || _load_nuclideTerminalUri()).uriFromCwd
     });
   }
 
@@ -81,73 +102,60 @@ class Activation {
     this._subscriptions.dispose();
   }
 
-  consumePasteProvider(provider: any): IDisposable {
-    const createPaste: CreatePasteFunction = provider.createPaste;
-    const disposable = new UniversalDisposable(
-      atom.commands.add(
-        '.terminal-pane',
-        'nuclide-terminal:create-paste',
-        async event => {
-          const {currentTarget: {terminal}} = (event: any);
-          const uri = await createPaste(
-            terminal.getSelection(),
-            {
-              title: 'Paste from Nuclide Terminal',
-            },
-            'terminal paste',
-          );
-          atom.notifications.addSuccess(`Created paste at ${uri}`);
-        },
-      ),
-      atom.contextMenu.add({
-        '.terminal-pane': [
-          {
-            label: 'Create Paste',
-            command: 'nuclide-terminal:create-paste',
-            shouldDisplay: event => {
-              const div = event.target.closest('.terminal-pane');
-              if (div == null) {
-                return false;
-              }
-              const {terminal} = (div: any);
-              if (terminal == null) {
-                return false;
-              }
-              return terminal.hasSelection();
-            },
-          },
-          {type: 'separator'},
-        ],
-      }),
-    );
+  consumePasteProvider(provider) {
+    const createPaste = provider.createPaste;
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('.terminal-pane', 'nuclide-terminal:create-paste', (() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (event) {
+        const { currentTarget: { terminal } } = event;
+        const uri = yield createPaste(terminal.getSelection(), {
+          title: 'Paste from Nuclide Terminal'
+        }, 'terminal paste');
+        atom.notifications.addSuccess(`Created paste at ${uri}`);
+      });
+
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })()), atom.contextMenu.add({
+      '.terminal-pane': [{
+        label: 'Create Paste',
+        command: 'nuclide-terminal:create-paste',
+        shouldDisplay: event => {
+          const div = event.target.closest('.terminal-pane');
+          if (div == null) {
+            return false;
+          }
+          const { terminal } = div;
+          if (terminal == null) {
+            return false;
+          }
+          return terminal.hasSelection();
+        }
+      }, { type: 'separator' }]
+    }));
     this._subscriptions.add(disposable);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       disposable.dispose();
       this._subscriptions.remove(disposable);
     });
   }
 
-  initializeCwdApi(cwd: CwdApi): IDisposable {
+  initializeCwdApi(cwd) {
     this._cwd = cwd;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._cwd = null;
     });
   }
 
-  consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
-    return setRpcService(rpcService);
+  consumeRpcService(rpcService) {
+    return (0, (_AtomServiceContainer || _load_AtomServiceContainer()).setRpcService)(rpcService);
   }
 
-  _getPathOrCwd(event: Event): ?string {
-    const editorPath = getElementFilePath(
-      ((event.target: any): HTMLElement),
-      true,
-    );
+  _getPathOrCwd(event) {
+    const editorPath = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target, true);
 
     if (editorPath != null) {
-      return nuclideUri.endsWithSeparator(editorPath)
-        ? editorPath
-        : nuclideUri.dirname(editorPath);
+      return (_nuclideUri || _load_nuclideUri()).default.endsWithSeparator(editorPath) ? editorPath : (_nuclideUri || _load_nuclideUri()).default.dirname(editorPath);
     }
 
     if (this._cwd != null) {
@@ -161,7 +169,7 @@ class Activation {
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
   // exported for package.json entry
-  deserializeTerminalView,
+  deserializeTerminalView: (_terminalView || _load_terminalView()).deserializeTerminalView
 };
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);
