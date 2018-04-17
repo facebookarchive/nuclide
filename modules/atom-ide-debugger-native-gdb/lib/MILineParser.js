@@ -24,7 +24,6 @@ import type {
 } from './MIRecord';
 
 import {logVerbose} from './MIDebugSession';
-import invariant from 'assert';
 import {
   MIAsyncRecord,
   MIRecord,
@@ -46,35 +45,35 @@ export default class MILineParser {
     ['=', (token: ?number) => this._parseAsyncOutput('async-notify', token)],
   ]);
 
-  // matches the gdb prompt
-  _promptPattern = /^\s*\(gdb\)\s*$/;
-
-  // matches the token and classifier parts of an MI record
-  _lineClassifierPattern = /^\s*(\d+)?([*+=^~@&^])(.*)\s*$/;
-
   parseMILine(line: string): MIRecord {
     this._completeInput = line;
 
     // gdb still sends the prompt, but it isn't significant, so just return an
     // empty record.
-    if (line.match(this._promptPattern) != null) {
+    let trimmed = line.trim();
+    if (trimmed.startsWith('(gdb)')) {
       return new MIRecord();
     }
 
-    const match = line.match(this._lineClassifierPattern);
-    if (match == null) {
+    let end = 0;
+
+    while (trimmed[end] != null && trimmed[end] >= '0' && trimmed[end] <= '9') {
+      end++;
+    }
+
+    const tokenValue = end > 0 ? parseInt(trimmed.substr(0, end), 10) : null;
+    trimmed = trimmed.substr(end);
+
+    const parser = this._lineParserDispatch.get(trimmed[0]);
+    trimmed = trimmed.substr(1);
+
+    if (parser == null) {
       const error = `Line is not an MI record at: '${line}'`;
       logVerbose(error);
       throw new Error(error);
     }
 
-    const [, token, classifier, tail] = match;
-    const parser = this._lineParserDispatch.get(classifier);
-    invariant(parser != null, `Could not find parser for ${line}`);
-
-    const tokenValue: ?number = token == null ? null : parseInt(token, 10);
-
-    this._line = tail;
+    this._line = trimmed;
     return parser(tokenValue);
   }
 
@@ -114,17 +113,22 @@ export default class MILineParser {
 
   // result-record -> [token] "^" result-class ( "," result )* nl
   // result-class -> "done" | "running" | "connected" | "error" | "exit"
-
-  // matches the header of a result record
-  _resultRecordPattern = /^([a-z]+)(?:(,.*)|$)/;
   _parseResult(token: ?number): MIRecord {
-    const match = this._line.match(this._resultRecordPattern);
-    if (match == null) {
+    let end = 0;
+    while (
+      this._line[end] != null &&
+      this._line[end] >= 'a' &&
+      this._line[end] <= 'z'
+    ) {
+      end++;
+    }
+
+    if (end === 0) {
       throw new Error(`Result record expected at '${this._line}'`);
     }
 
-    const resultClass = this._ensureResultClass(match[1]);
-    this._line = match[2];
+    const resultClass = this._ensureResultClass(this._line.substr(0, end));
+    this._line = this._line.substr(end);
 
     const result = this._parseResultMap();
 
@@ -137,21 +141,28 @@ export default class MILineParser {
   // async-output -> async-class ( "," result )*
 
   // matches the header of an async record
-  _asyncOutputPattern = /^([a-z-]+)(?:(,.*)|$)/;
   _parseAsyncOutput(type: AsyncRecordType, token: ?number): MIRecord {
     // NB the grammar doesn't precisely specify what characters may
     // constitute async-class, but throughout gdb the convention is
     // lower-case alphabetics so it's probably safe to assume that.
-    const match = this._line.match(this._asyncOutputPattern);
-    if (match == null) {
+    let end = 0;
+    while (
+      this._line[end] != null &&
+      ((this._line[end] >= 'a' && this._line[end] <= 'z') ||
+        this._line[end] === '-')
+    ) {
+      end++;
+    }
+
+    if (end === 0) {
       throw new Error(`Async class expected at '${this._line}'`);
     }
 
-    const [, asyncClass, tail] = match;
+    const asyncClass = this._line.substr(0, end);
+    this._line = this._line.substr(end);
 
     let result = new Map();
-    if (tail != null) {
-      this._line = tail;
+    if (this._line !== '') {
       result = this._parseResultMap();
     }
 
@@ -160,19 +171,21 @@ export default class MILineParser {
 
   // at this point we have (, result)+ nl from multiple rules
   //
-  // matches another result record (varname=value)
-  _resultContinuationPattern = /^,([^=]+)=(.*)$/;
   _parseResultMap(): MICommandResult {
     const result: MICommandResult = {};
 
     while (this._line != null) {
-      const match = this._line.match(this._resultContinuationPattern);
-      if (match == null) {
+      if (this._line[0] !== ',') {
         break;
       }
 
-      const [, varname, tail] = match;
-      this._line = tail;
+      const equals = this._line.indexOf('=', 1);
+      if (equals === -1) {
+        break;
+      }
+
+      const varname = this._line.substr(1, equals - 1);
+      this._line = this._line.substr(equals + 1);
 
       // This is mega hacky. In C++ the idea of a function breakpoint matching
       // multiple source locations had to be introduced because of overloading.
@@ -188,8 +201,8 @@ export default class MILineParser {
       // which does not conform to the documented grammar of a result record and
       // breaks the parser.
 
-      if (varname === 'bkpt' && tail != null && tail[0] === '{') {
-        this._line = `[${tail}]`;
+      if (varname === 'bkpt' && this._line != null && this._line[0] === '{') {
+        this._line = `[${this._line}]`;
       }
       result[varname] = this._parseValue();
     }
@@ -203,8 +216,6 @@ export default class MILineParser {
   // list -> "[]" | "[" value ( "," value )* "]" | "[" result ( "," result )* "]"
 
   // matches the leading part of a value
-  _valuePattern = /^\s*(["{[])(.*)$/;
-
   _valueParsers: Map<string, () => any> = new Map([
     ['"', () => this._parseCStringTail()],
     ['{', () => this._parseTuple()],
@@ -212,27 +223,22 @@ export default class MILineParser {
   ]);
 
   _parseValue(): Value {
-    const match = this._line.match(this._valuePattern);
-    if (match == null) {
+    this._line = this._line.trim();
+    const handler: ?() => any = this._valueParsers.get(this._line[0]);
+    this._line = this._line.substr(1);
+
+    if (handler == null) {
       throw new Error(`Invalid result; value expected at: '${this._line}'`);
     }
 
-    const [, leading, rest] = match;
-    this._line = rest;
-
-    const parser = this._valueParsers.get(leading);
-    invariant(parser != null, `BUG Could not find value parser for ${leading}`);
-    return parser();
+    return handler();
   }
 
   // tuple -> "{}" | "{" result ( "," result )* "}"
   // The leading { has already been removed
-  _tupleTailPattern = /^(.)(.*)$/;
   _parseTuple(endChar: string = '}'): Value {
-    // is it an empty tuple?
-    let match = this._line.match(this._tupleTailPattern);
-    if (match != null && match[1] === endChar) {
-      this._line = match[2];
+    if (this._line[0] === endChar) {
+      this._line = this._line.substr(1);
       return {};
     }
 
@@ -240,14 +246,13 @@ export default class MILineParser {
     this._line = ',' + this._line;
     const result = this._parseResultMap();
 
-    match = this._line.match(this._tupleTailPattern);
     let error = false;
 
-    if (match != null) {
-      const [, close, rest] = match;
+    if (this._line.length > 0) {
+      const close = this._line[0];
+      this._line = this._line.substr(1);
 
       error = close !== endChar;
-      this._line = rest;
     } else {
       error = true;
     }
@@ -263,40 +268,38 @@ export default class MILineParser {
   // the leading [ has already been stripped
   //
 
-  // matches the end of a list
-  _listTailPattern = /^](.*)$/;
-
   // matches a result (varname=value)
-  _resultPattern = /^([^=]+)=(.*)$/;
   _parseList(): Value {
     const result: Array<Value | MICommandResult> = [];
-    const match = this._line.match(this._listTailPattern);
-    if (match != null) {
-      this._line = match[1];
+
+    if (this._line[0] === ']') {
+      this._line = this._line.substr(1);
       return result;
     }
 
     while (true) {
-      if (this._line.match(this._valuePattern) != null) {
+      this._line = this._line.trim();
+      if (this._valueParsers.get(this._line[0]) != null) {
         result.push(this._parseValue());
       } else {
-        const resultMatch = this._line.match(this._resultPattern);
-        if (resultMatch == null) {
+        const equals = this._line.indexOf('=');
+        if (equals === -1) {
           throw new Error(`value or result expected at ${this._line}`);
         }
-        const [, varname, tail] = resultMatch;
-        this._line = tail;
+
+        const varname = this._line.substr(0, equals);
+        this._line = this._line.substr(equals + 1);
         const value = this._parseValue();
         result.push({[varname]: value});
       }
 
-      const tailMatch = this._line.match(/^\s*([\],])(.*)$/);
-      if (tailMatch == null) {
+      this._line = this._line.trim();
+      const close = this._line[0];
+      if (close !== ']' && close !== ',') {
         throw new Error(`',' or ']' expected at: ${this._line}`);
       }
 
-      const [, close, rest] = tailMatch;
-      this._line = rest;
+      this._line = this._line.substr(1);
 
       if (close === ']') {
         break;
