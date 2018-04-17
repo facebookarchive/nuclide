@@ -104,6 +104,7 @@ export type AutoGenPropertyType =
   | 'array'
   | 'enum'
   | 'object'
+  | 'json'
   | 'process';
 
 export type AutoGenProperty = {
@@ -118,30 +119,31 @@ export type AutoGenProperty = {
   enumsDefaultValue?: string,
 };
 
-export type AutoGenLaunchConfig = {|
-  // Disjoint Union Flag
-  launch: true,
+export type ResolveConfig = (config: Object) => Promise<void>;
+
+type AutoGenLaunchOrAttachConfigBase = {
   // General Properties
   properties: AutoGenProperty[],
-  header?: React.Node,
   threads: boolean,
   vsAdapterType: VsAdapterType,
-  // Launch Specific Properties
-  scriptPropertyName: string,
-  cwdPropertyName: ?string,
-  scriptExtension: string,
-|};
+  cwdPropertyName?: ?string,
+  scriptExtension?: string,
+  scriptPropertyName?: ?string,
+  header?: React.Node,
+};
 
-export type AutoGenAttachConfig = {|
+export type AutoGenLaunchConfig = AutoGenLaunchOrAttachConfigBase & {
+  // Disjoint Union Flag
+  launch: true,
+  // Launch Specific Properties
+};
+
+export type AutoGenAttachConfig = AutoGenLaunchOrAttachConfigBase & {
   // Disjoint Union Flag
   launch: false,
   // General Properties
-  properties: AutoGenProperty[],
-  header?: React.Node,
-  threads: boolean,
-  vsAdapterType: VsAdapterType,
   // Attach Specific Properties
-|};
+};
 
 export type AutoGenLaunchOrAttachConfig =
   | AutoGenLaunchConfig

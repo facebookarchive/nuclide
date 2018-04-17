@@ -11,7 +11,12 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AutoGenProperty, AutoGenLaunchOrAttachConfig} from './types';
+import type {
+  AutoGenProperty,
+  AutoGenLaunchOrAttachConfig,
+  AutoGenPropertyType,
+  AutoGenPropertyPrimitiveType,
+} from './types';
 import * as React from 'react';
 
 import idx from 'idx';
@@ -76,6 +81,19 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     };
   }
 
+  _atomInputType(
+    type: AutoGenPropertyType,
+    itemType: ?AutoGenPropertyPrimitiveType,
+  ): boolean {
+    return (
+      type === 'string' ||
+      (type === 'array' && itemType === 'string') ||
+      type === 'object' ||
+      type === 'number' ||
+      type === 'json'
+    );
+  }
+
   _getConfigurationProperties(): AutoGenProperty[] {
     const {config} = this.props;
     return config.properties;
@@ -90,12 +108,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     config.properties.filter(property => property.visible).map(property => {
       const {name, type} = property;
       const itemType = idx(property, _ => _.itemType);
-      if (
-        type === 'string' ||
-        (type === 'array' && itemType === 'string') ||
-        type === 'object' ||
-        type === 'number'
-      ) {
+      if (this._atomInputType(type, itemType)) {
         const existingValue = atomInputValues.get(name);
         if (
           existingValue == null &&
@@ -103,7 +116,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         ) {
           // String(propertyDescription.default) deals with both strings and numbers
           const defaultValue =
-            type === 'string' || type === 'number'
+            type === 'string' || type === 'number' || type === 'json'
               ? String(property.defaultValue)
               : '';
           atomInputValues.set(name, defaultValue);
@@ -150,24 +163,31 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     deserializeDebuggerConfig(
       ...this._getSerializationArgs(props),
       (transientSettings, savedSettings) => {
-        const atomInputValues = new Map(savedSettings.atomInputValues || []);
         const {config} = props;
-        if (config.launch) {
-          const scriptPath =
-            atomInputValues.get(config.scriptPropertyName) ||
-            getActiveScriptPath(config.scriptExtension);
-          if (scriptPath !== '') {
-            atomInputValues.set(config.scriptPropertyName, scriptPath);
+        const {
+          cwdPropertyName,
+          scriptPropertyName,
+          launch,
+          scriptExtension,
+        } = config;
+        const atomInputValues = new Map(savedSettings.atomInputValues || []);
+
+        const scriptPath =
+          (scriptPropertyName != null &&
+            atomInputValues.get(scriptPropertyName)) ||
+          (scriptExtension != null && getActiveScriptPath(scriptExtension)) ||
+          '';
+        if (cwdPropertyName != null) {
+          const cwd =
+            atomInputValues.get(cwdPropertyName) ||
+            (scriptPath !== '' ? nuclideUri.dirname(scriptPath) : '');
+          if (cwd !== '') {
+            atomInputValues.set(cwdPropertyName, cwd);
           }
-          // current working directory
-          const {cwdPropertyName} = config;
-          if (cwdPropertyName != null) {
-            const cwd =
-              atomInputValues.get(cwdPropertyName) ||
-              (scriptPath.length > 0 ? nuclideUri.dirname(scriptPath) : '');
-            if (cwd !== '') {
-              atomInputValues.set(cwdPropertyName, cwd);
-            }
+        }
+        if (launch) {
+          if (scriptPath !== '' && scriptPropertyName != null) {
+            atomInputValues.set(scriptPropertyName, scriptPath);
           }
         }
         const booleanValues = new Map(savedSettings.booleanValues || []);
@@ -252,16 +272,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
   _getComponentForProperty(property: AutoGenProperty): React.Node {
     const {name, type, description, required} = property;
     const formattedName =
-      capitalize(name).replace(/([a-z])([A-Z])/, '$1 $2') +
+      capitalize(name.replace(/([A-Z])/g, ' $1')) +
       (required ? ' (Required)' : '');
     const nameLabel = <label>{formattedName}:</label>;
     const itemType = idx(property, _ => _.itemType);
-    if (
-      type === 'string' ||
-      (type === 'array' && itemType === 'string') ||
-      type === 'object' ||
-      type === 'number'
-    ) {
+    if (this._atomInputType(type, itemType)) {
       const value = this.state.atomInputValues.get(name) || '';
       return (
         <div>
@@ -336,16 +351,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     );
   }
 
-  _renderHeader(): ?React.Node {
-    const {config} = this.props;
-    return config.header != null ? config.header : null;
-  }
-
   render(): React.Node {
-    const {debuggerTypeName} = this.props;
+    const {debuggerTypeName, config} = this.props;
     return (
       <div className="block">
-        {this._renderHeader()}
+        {config.header}
         {this._getConfigurationProperties()
           .filter(property => property.visible)
           .map(property => (
@@ -365,11 +375,13 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       enumValues,
       processTableValues,
     } = this.state;
+    const {launch, vsAdapterType, threads} = config;
 
     const stringValues = new Map();
     const stringArrayValues = new Map();
     const objectValues = new Map();
     const numberValues = new Map();
+    const jsonValues = new Map();
     this._getConfigurationProperties()
       .filter(
         property => property.visible && atomInputValues.has(property.name),
@@ -391,6 +403,8 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           objectValues.set(name, objectValue);
         } else if (type === 'number') {
           numberValues.set(name, Number(value));
+        } else if (type === 'json') {
+          jsonValues.set(name, JSON.parse(value));
         }
       });
 
@@ -403,6 +417,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       objectValues,
       numberValues,
       processTableValues,
+      jsonValues,
     ].forEach(map => {
       map.forEach((value, key) => {
         values[key] = value;
@@ -421,11 +436,11 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     const debuggerService = await getDebuggerService();
     debuggerService.startVspDebugging({
       targetUri,
-      debugMode: config.launch ? 'launch' : 'attach',
-      adapterType: config.vsAdapterType,
+      debugMode: launch ? 'launch' : 'attach',
+      adapterType: vsAdapterType,
       adapterExecutable: null,
       config: values,
-      capabilities: {threads: config.threads},
+      capabilities: {threads},
       properties: {
         customControlButtons: [],
         threadsComponentTitle: 'Threads',

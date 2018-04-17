@@ -46,6 +46,9 @@ export function generatePropertyArray(
       ) {
         autoGenProperty.itemType = propertyDetails.items.type;
       }
+      if (typeof propertyDetails.enums !== 'undefined') {
+        autoGenProperty.enums = propertyDetails.enums;
+      }
       return autoGenProperty;
     })
     .sort((p1, p2) => {

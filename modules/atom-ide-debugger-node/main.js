@@ -121,6 +121,7 @@ function getNodeAutoGenConfig(): AutoGenConfig {
           visible: true,
         },
       ],
+      scriptExtension: '.js',
       header: <p>Attach to a running node.js process</p>,
     },
   };

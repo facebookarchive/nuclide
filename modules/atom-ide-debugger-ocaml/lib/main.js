@@ -122,7 +122,6 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
       logLevel,
     ],
     scriptPropertyName: 'executable',
-    scriptExtension: '.ml',
     cwdPropertyName: 'working directory',
     header: null,
   };
