@@ -49,6 +49,7 @@
       "nuclide-syntactic-selection",
       "nuclide-task-runner",
       "nuclide-terminal",
+      "atom-ide-terminal",
       "nuclide-test-runner",
       "nuclide-type-coverage",
       "nuclide-type-hint",

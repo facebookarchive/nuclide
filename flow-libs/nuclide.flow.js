@@ -44,6 +44,11 @@ type TerminalInfoTrustedFields = {
 declare type nuclide$TerminalInfo = TerminalInfoUntrustedFields &
   TerminalInfoTrustedFields;
 
+declare type nuclide$Command = {
+  file: string,
+  args: Array<string>,
+};
+
 declare interface nuclide$TerminalInstance {
   setProcessExitCallback(callback: () => mixed): void;
   terminateProcess(): void;

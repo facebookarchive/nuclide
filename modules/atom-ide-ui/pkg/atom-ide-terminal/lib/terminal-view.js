@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -42,32 +43,32 @@ import type {Sink} from './sink';
 
 export const COLOR_CONFIGS = Object.freeze({
   // dark
-  black: 'nuclide-terminal.black',
-  red: 'nuclide-terminal.red',
-  green: 'nuclide-terminal.green',
-  blue: 'nuclide-terminal.blue',
-  yellow: 'nuclide-terminal.yellow',
-  cyan: 'nuclide-terminal.cyan',
-  magenta: 'nuclide-terminal.magenta',
-  white: 'nuclide-terminal.white',
+  black: 'atom-ide-terminal.black',
+  red: 'atom-ide-terminal.red',
+  green: 'atom-ide-terminal.green',
+  blue: 'atom-ide-terminal.blue',
+  yellow: 'atom-ide-terminal.yellow',
+  cyan: 'atom-ide-terminal.cyan',
+  magenta: 'atom-ide-terminal.magenta',
+  white: 'atom-ide-terminal.white',
   // bright
-  brightBlack: 'nuclide-terminal.brightBlack',
-  brightRed: 'nuclide-terminal.brightRed',
-  brightGreen: 'nuclide-terminal.brightGreen',
-  brightBlue: 'nuclide-terminal.brightBlue',
-  brightYellow: 'nuclide-terminal.brightYellow',
-  brightCyan: 'nuclide-terminal.brightCyan',
-  brightMagenta: 'nuclide-terminal.brightMagenta',
-  brightWhite: 'nuclide-terminal.brightWhite',
+  brightBlack: 'atom-ide-terminal.brightBlack',
+  brightRed: 'atom-ide-terminal.brightRed',
+  brightGreen: 'atom-ide-terminal.brightGreen',
+  brightBlue: 'atom-ide-terminal.brightBlue',
+  brightYellow: 'atom-ide-terminal.brightYellow',
+  brightCyan: 'atom-ide-terminal.brightCyan',
+  brightMagenta: 'atom-ide-terminal.brightMagenta',
+  brightWhite: 'atom-ide-terminal.brightWhite',
 });
-const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
-const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
-const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
-const CURSOR_BLINK_CONFIG = 'nuclide-terminal.cursorBlink';
-const FONT_FAMILY_CONFIG = 'nuclide-terminal.fontFamily';
-const FONT_SCALE_CONFIG = 'nuclide-terminal.fontScale';
-const LINE_HEIGHT_CONFIG = 'nuclide-terminal.lineHeight';
-const DOCUMENTATION_MESSAGE_CONFIG = 'nuclide-terminal.documentationMessage';
+const PRESERVED_COMMANDS_CONFIG = 'atom-ide-terminal.preservedCommands';
+const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
+const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
+const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
+const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
+const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
+const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
+const DOCUMENTATION_MESSAGE_CONFIG = 'atom-ide-terminal.documentationMessage';
 const ADD_ESCAPE_COMMAND = 'nuclide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';

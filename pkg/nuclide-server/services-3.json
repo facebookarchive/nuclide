@@ -84,7 +84,7 @@
     "name": "HhvmDebuggerService"
   },
   {
-    "implementation": "../nuclide-terminal/lib/pty-service/PtyService.js",
+    "implementation": "../../modules/atom-ide-ui/pkg/atom-ide-terminal/lib/pty-service/PtyService.js",
     "name": "PtyService"
   },
   {
