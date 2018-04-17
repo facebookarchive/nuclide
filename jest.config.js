@@ -22,4 +22,5 @@ module.exports = {
     '\\.js$': '<rootDir>/modules/nuclide-jest/jestTransformer.js',
   },
   testFailureExitCode: 0,
+  forceExit: true,
 };
