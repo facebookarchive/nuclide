@@ -67,12 +67,11 @@ class BlameToggleContainer extends React.Component<
 
   constructor(props) {
     super(props);
-
     this.state = {visible: false};
-    this._setVisible();
   }
 
   componentDidMount() {
+    this._setVisible();
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
       // update visibility on editor changed (may now be modified, non-blamable)
