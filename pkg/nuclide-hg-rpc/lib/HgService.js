@@ -320,6 +320,30 @@ function resolvePathForPlatform(path: string): string {
   return path;
 }
 
+/** @return .hg/store directory for the specified Hg working directory root. */
+async function findStoreDirectory(workingDirectory: string): Promise<string> {
+  // If .hg/sharedpath is present, then this directory is using the Hg "share"
+  // extension, in which case it is sharing the store with the .hg folder
+  // specified by .hg/sharedpath.
+  //
+  // Note that we could be extra paranoid and watch for changes to
+  // .hg/sharedpath, but that seems too rare to be worth the extra complexity.
+  const sharedpath = nuclideUri.join(workingDirectory, '.hg', 'sharedpath');
+  let hgFolderWithStore;
+  try {
+    hgFolderWithStore = await fsPromise.readFile(sharedpath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      // .hg/sharedpath does not exist: use .hg in workingDirectory.
+      hgFolderWithStore = nuclideUri.join(workingDirectory, '.hg');
+    } else {
+      throw error;
+    }
+  }
+
+  return nuclideUri.join(hgFolderWithStore, 'store');
+}
+
 export class HgService {
   _isInConflict: boolean;
   _watchmanClient: ?WatchmanClient;
@@ -664,7 +688,7 @@ export class HgService {
     // Those files' changes indicate a commit-changing action has been applied to the repository,
     // Watchman currently (v4.7) ignores `.hg/store` file updates.
     // Hence, we here use node's filesystem watchers instead.
-    const hgStoreDirectory = nuclideUri.join(workingDirectory, '.hg', 'store');
+    const hgStoreDirectory = await findStoreDirectory(workingDirectory);
     const commitChangeIndicators = ['00changelog.i', 'obsstore', 'inhibit'];
     try {
       this._hgStoreDirWatcher = fs.watch(
