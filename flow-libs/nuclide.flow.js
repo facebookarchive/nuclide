@@ -26,9 +26,9 @@ type nuclide$TerminalCommand = {
 type TerminalInfoUntrustedFields = {
   title?: string,
   key?: string,
-  remainOnCleanExit: boolean,
-  defaultLocation: string,
-  icon: string,
+  remainOnCleanExit?: boolean,
+  defaultLocation?: atom$PaneLocation | 'pane',
+  icon?: string,
   trustToken?: string,
 };
 
@@ -44,13 +44,14 @@ type TerminalInfoTrustedFields = {
 declare type nuclide$TerminalInfo = TerminalInfoUntrustedFields &
   TerminalInfoTrustedFields;
 
+declare interface nuclide$TerminalInstance {
+  setProcessExitCallback(callback: () => mixed): void;
+  terminateProcess(): void;
+}
+
 declare interface nuclide$TerminalApi {
-  uriFromCwd(cwd: ?string): string;
-  uriFromInfo(info: nuclide$TerminalInfo): string;
-  infoFromUri(
-    paneUri: string,
-    uriFromTrustedSource?: boolean,
-  ): nuclide$TerminalInfo;
+  open(info: nuclide$TerminalInfo): Promise<nuclide$TerminalInstance>;
+  close(key: string): void;
 }
 
 declare interface nuclide$RpcService {

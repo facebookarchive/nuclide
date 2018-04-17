@@ -9,8 +9,10 @@
  * @format
  */
 
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 // for homedir
 import os from 'os';
+import nullthrows from 'nullthrows';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
@@ -23,7 +25,6 @@ import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {
   infoFromUri,
   uriFromInfo,
-  uriFromCwd,
   URI_PREFIX,
 } from '../../commons-node/nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
@@ -49,7 +50,7 @@ class Activation {
         'nuclide-terminal:new-terminal',
         event => {
           const cwd = this._getPathOrCwd(event);
-          const uri = uriFromCwd(cwd);
+          const uri = cwd != null ? uriFromInfo({cwd}) : uriFromInfo({});
           goToLocation(uri);
         },
       ),
@@ -57,7 +58,7 @@ class Activation {
         'atom-workspace',
         'nuclide-terminal:new-local-terminal',
         event => {
-          const uri = uriFromCwd(os.homedir());
+          const uri = uriFromInfo({cwd: os.homedir()});
           goToLocation(uri);
         },
       ),
@@ -70,11 +71,27 @@ class Activation {
   }
 
   provideTerminal(): nuclide$TerminalApi {
-    return Object.freeze({
-      infoFromUri,
-      uriFromInfo,
-      uriFromCwd,
-    });
+    return {
+      open: (info: nuclide$TerminalInfo): Promise<nuclide$TerminalInstance> => {
+        const terminalView: any = goToLocation(uriFromInfo(info));
+        return terminalView;
+      },
+      close: (key: string) => {
+        destroyItemWhere(item => {
+          if (item.getURI == null || item.getURI() == null) {
+            return false;
+          }
+
+          const uri = nullthrows(item.getURI());
+          try {
+            // Only close terminal tabs with the same unique key.
+            const otherInfo = infoFromUri(uri);
+            return otherInfo.key === key;
+          } catch (e) {}
+          return false;
+        });
+      },
+    };
   }
 
   dispose() {

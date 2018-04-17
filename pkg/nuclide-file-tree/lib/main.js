@@ -20,7 +20,6 @@ import type {AdditionalLogFilesProvider} from '../../nuclide-logging/lib/rpc-typ
 
 import invariant from 'assert';
 
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -222,7 +221,7 @@ class Activation {
             const cwd = node.isContainer
               ? node.uri
               : nuclideUri.dirname(node.uri);
-            goToLocation(terminal.uriFromCwd(cwd));
+            terminal.open({cwd});
           },
           shouldDisplay(): boolean {
             const node = contextMenu.getSingleSelectedNode();

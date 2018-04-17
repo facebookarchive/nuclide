@@ -39,6 +39,7 @@ import {removePrefixSink, patternCounterSink} from './sink';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';
+import type {InstantiatedTerminalInfo} from '../../commons-node/nuclide-terminal-uri';
 
 import type {Sink} from './sink';
 
@@ -79,9 +80,9 @@ export interface TerminalViewState {
   paneUri: string;
 }
 
-type ProcessExitCallback = () => void;
+type ProcessExitCallback = () => mixed;
 
-export class TerminalView implements PtyClient {
+export class TerminalView implements PtyClient, nuclide$TerminalInstance {
   _paneUri: string;
   _cwd: ?NuclideUri;
   _path: ?NuclideUri;
@@ -100,7 +101,7 @@ export class TerminalView implements PtyClient {
   _bytesOut: number;
   _focusStart: ?number;
   _focusDuration: number;
-  _terminalInfo: nuclide$TerminalInfo;
+  _terminalInfo: InstantiatedTerminalInfo;
   _processExitCallback: ProcessExitCallback;
   _isFirstOutput: boolean;
   _initialInput: string;

@@ -64,8 +64,6 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 import * as React from 'react';
 
 import invariant from 'assert';
-import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream} from 'nuclide-commons/observable';
@@ -1307,19 +1305,7 @@ export default class DebugService implements IDebugService {
     // Ensure any previous instances of this same target are closed before
     // opening a new terminal tab. We don't want them to pile up if the
     // user keeps running the same app over and over.
-    destroyItemWhere(item => {
-      if (item.getURI == null || item.getURI() == null) {
-        return false;
-      }
-
-      const uri = nullthrows(item.getURI());
-      try {
-        // Only close terminal tabs with the same title and target binary.
-        const otherInfo = terminalService.infoFromUri(uri);
-        return otherInfo.key === key;
-      } catch (e) {}
-      return false;
-    });
+    terminalService.close(key);
 
     const title =
       args.title != null ? args.title : getDebuggerName(adapterType);
@@ -1351,8 +1337,7 @@ export default class DebugService implements IDebugService {
       icon: 'nuclicon-debugger',
       defaultLocation: 'bottom',
     };
-    // TODO(pelmers): flow-type this?
-    const terminal: any = await goToLocation(terminalService.uriFromInfo(info));
+    const terminal = await terminalService.open(info);
     terminal.setProcessExitCallback(() => {
       // This callback is invoked if the target process dies first, ensuring
       // we tear down the debugger.

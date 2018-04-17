@@ -21,24 +21,39 @@ import uuid from 'uuid';
 // execution.
 const trustToken = crypto.randomBytes(256).toString('hex');
 
+// The external interface nuclide$terminalInfo leaves everything optional.
+// When we open a terminal we will instantiate missing fields with defaults.
+export type InstantiatedTerminalInfo = {
+  title: string,
+  key: string,
+  remainOnCleanExit: boolean,
+  defaultLocation: atom$PaneLocation | 'pane',
+  icon: string,
+  trustToken: string,
+  command?: nuclide$TerminalCommand,
+  cwd: string,
+  environmentVariables?: Map<string, string>,
+  preservedCommands: Array<string>,
+  initialInput: string,
+};
+
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 export const TERMINAL_DEFAULT_LOCATION = 'pane';
 export const TERMINAL_DEFAULT_ICON = 'terminal';
-export const TERMINAL_DEFAULT_INFO: nuclide$TerminalInfo = {
+export const TERMINAL_DEFAULT_INFO = {
   remainOnCleanExit: false,
   defaultLocation: TERMINAL_DEFAULT_LOCATION,
   icon: TERMINAL_DEFAULT_ICON,
+  initialInput: '',
+  title: '',
+  cwd: '',
+  preservedCommands: [],
+  trustToken,
 };
 
-export function uriFromCwd(cwd: ?string): string {
-  const cwdOptions = cwd == null ? {} : {cwd};
-  return uriFromInfo({
-    ...cwdOptions,
-    ...TERMINAL_DEFAULT_INFO,
-  });
-}
-
-export function uriFromInfo(info: nuclide$TerminalInfo): string {
+export function uriFromInfo(
+  info: nuclide$TerminalInfo | InstantiatedTerminalInfo,
+): string {
   const uri = url.format({
     protocol: 'atom',
     host: 'nuclide-terminal-view',
@@ -67,11 +82,11 @@ export function uriFromInfo(info: nuclide$TerminalInfo): string {
 export function infoFromUri(
   paneUri: string,
   uriFromTrustedSource: boolean = false,
-): nuclide$TerminalInfo {
+): InstantiatedTerminalInfo {
   const {query} = url.parse(paneUri, true);
 
   if (query == null) {
-    return TERMINAL_DEFAULT_INFO;
+    return {...TERMINAL_DEFAULT_INFO, key: uuid.v4()};
   } else {
     const cwd = query.cwd === '' ? {} : {cwd: query.cwd};
     const command =
@@ -99,7 +114,7 @@ export function infoFromUri(
     //
     // If we detect that the URL did not come from this instance of Nuclide,
     // we just omit these fields so the user gets a default shell.
-    const trustedFields: TerminalInfoTrustedFields = {
+    const trustedFields = {
       ...cwd,
       ...command,
       environmentVariables,
@@ -109,7 +124,7 @@ export function infoFromUri(
 
     // Everything here is cosmetic information that does not affect
     // processes running in the resulting terminal.
-    const untrustedFields: TerminalInfoUntrustedFields = {
+    const untrustedFields = {
       ...title,
       remainOnCleanExit,
       defaultLocation,
@@ -120,7 +135,7 @@ export function infoFromUri(
     const isTrusted = uriFromTrustedSource || query.trustToken === trustToken;
     return {
       ...untrustedFields,
-      ...(isTrusted ? trustedFields : {}),
+      ...(isTrusted ? trustedFields : TERMINAL_DEFAULT_INFO),
     };
   }
 }

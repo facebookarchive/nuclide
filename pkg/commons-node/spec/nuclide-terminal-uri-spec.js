@@ -13,7 +13,6 @@ import url from 'url';
 
 import {
   infoFromUri,
-  uriFromCwd,
   uriFromInfo,
   TERMINAL_DEFAULT_LOCATION,
   TERMINAL_DEFAULT_ICON,
@@ -24,6 +23,10 @@ const defaultInfo = {
   defaultLocation: TERMINAL_DEFAULT_LOCATION,
   icon: TERMINAL_DEFAULT_ICON,
 };
+
+function uriFromCwd(cwd: ?string) {
+  return uriFromInfo(cwd != null ? {cwd} : {});
+}
 
 describe('main', () => {
   describe('infoFromUri', () => {
@@ -111,7 +114,7 @@ describe('main', () => {
       );
       const info = infoFromUri(uri);
       expect(info).not.toBeNull();
-      expect(info.cwd).toBeUndefined();
+      expect(info.cwd).toEqual('');
     });
   });
   it('ignores command with incorrect trustToken', () => {
@@ -148,7 +151,7 @@ describe('main', () => {
     );
     const info = infoFromUri(uri);
     expect(info).not.toBeNull();
-    expect(info.preservedCommands).toBeUndefined();
+    expect(info.preservedCommands).toEqual([]);
   });
   it('ignores initialInput with incorrect trustToken', () => {
     const initialInput = 'echo rm -rf /';
@@ -160,7 +163,7 @@ describe('main', () => {
     );
     const info = infoFromUri(uri);
     expect(info).not.toBeNull();
-    expect(info.initialInput).toBeUndefined();
+    expect(info.initialInput).toEqual('');
   });
 
   function breakTrustToken(uri: string): string {
