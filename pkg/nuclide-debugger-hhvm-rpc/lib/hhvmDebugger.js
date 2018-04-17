@@ -85,6 +85,7 @@ class HHVMDebuggerWrapper {
       args.sandboxUser = os.userInfo().username;
     }
 
+    attachMessage.arguments = args;
     const socket = new net.Socket();
     socket
       .once('connect', () => {
@@ -217,6 +218,7 @@ class HHVMDebuggerWrapper {
       targetProcess.stdio[3].write(data + '\0', 'utf8');
     };
 
+    launchMessage.arguments = args;
     callback(JSON.stringify(launchMessage));
     this._debuggerWriteCallback = callback;
     this._forwardBufferedMessages();
