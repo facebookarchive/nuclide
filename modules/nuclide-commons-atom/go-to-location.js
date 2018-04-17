@@ -12,6 +12,7 @@
 
 import type {Observable} from 'rxjs';
 
+import {getLogger} from 'log4js';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 import idx from 'idx';
@@ -95,6 +96,14 @@ export async function goToLocation(
       activateItem,
       pending,
     });
+    // TODO(T28305560) Investigate offenders for this error
+    if (editor == null) {
+      const tmp = {};
+      Error.captureStackTrace(tmp);
+      const error = Error(`atom.workspace.open returned null on ${file}`);
+      getLogger('goToLocation').error(error);
+      throw error;
+    }
 
     if (center && line != null) {
       editor.scrollToBufferPosition([line, column], {center: true});
