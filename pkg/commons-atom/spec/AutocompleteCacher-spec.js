@@ -112,6 +112,7 @@ describe('AutocompleteCacher', () => {
 
       expect(updateResults.callCount).toBe(1);
       expect(updateResults).toHaveBeenCalledWith(
+        mockedRequest,
         mockedRequest2,
         await mockedSuggestions,
       );
@@ -145,6 +146,7 @@ describe('AutocompleteCacher', () => {
 
       expect(updateResults.callCount).toBe(1);
       expect(updateResults).toHaveBeenCalledWith(
+        mockedRequest,
         mockedRequest2,
         await firstResultPromise,
       );
@@ -175,8 +177,8 @@ describe('AutocompleteCacher', () => {
 
       expect(updateResults.callCount).toBe(2);
       expect(updateResults.calls.map(call => call.args)).toEqual([
-        [mockedRequest2, await mockedSuggestions],
-        [mockedRequest3, await mockedSuggestions],
+        [mockedRequest, mockedRequest2, await mockedSuggestions],
+        [mockedRequest2, mockedRequest3, await mockedSuggestions],
       ]);
 
       expect(getSuggestions.callCount).toBe(3);
@@ -262,6 +264,7 @@ describe('AutocompleteCacher', () => {
 
         expect(updateResults.callCount).toBe(1);
         expect(updateResults).toHaveBeenCalledWith(
+          mockedRequest,
           mockedRequest2,
           await mockedSuggestions,
         );

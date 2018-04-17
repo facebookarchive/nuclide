@@ -16,7 +16,12 @@ export type AutocompleteCacherConfig<T> = {|
   // This function filters+sorts the firstResult that came back from `getSuggestions`.
   // Return null here to if firstResult isn't appropriate and we should go back
   // to the language service.
-  updateResults: (request: atom$AutocompleteRequest, firstResult: T) => ?T,
+  // This function is also responsible for updating any cached TextEdit ranges.
+  updateResults: (
+    originalRequest: atom$AutocompleteRequest,
+    currentRequest: atom$AutocompleteRequest,
+    firstResult: T,
+  ) => ?T,
   // If we had to go to `getSuggestions` for whatever reason, we can still configure
   // a filter+sort function to be used in that case too.
   updateFirstResults?: (request: atom$AutocompleteRequest, firstResult: T) => T,
@@ -37,6 +42,7 @@ export type AutocompleteCacherConfig<T> = {|
 
 type AutocompleteSession<T> = {
   firstResultPromise: PromiseWithState<?T>,
+  originalRequest: atom$AutocompleteRequest,
   lastRequest: atom$AutocompleteRequest,
 };
 
@@ -85,7 +91,11 @@ export default class AutocompleteCacher<T> {
         // Maybe an earlier request had already resolved to not-null so we can use
         // it right now, synchronously?
         const firstResult = state.value;
-        const result = this._config.updateResults(request, firstResult);
+        const result = this._config.updateResults(
+          session.originalRequest,
+          request,
+          firstResult,
+        );
         if (result != null) {
           this._session = {...this._session, lastRequest: request};
           return Promise.resolve(result);
@@ -101,7 +111,7 @@ export default class AutocompleteCacher<T> {
       const resultFromLanguageService = this._getSuggestions(request);
       const result = this._filterSuggestionsIfPossible(
         request,
-        session.firstResultPromise.getPromise(),
+        session,
         resultFromLanguageService,
       );
       this._session = {
@@ -111,6 +121,7 @@ export default class AutocompleteCacher<T> {
             resultFromLanguageService,
           ),
         ),
+        originalRequest: request,
         lastRequest: request,
       };
       return result;
@@ -118,6 +129,7 @@ export default class AutocompleteCacher<T> {
       const result = this._getSuggestions(request);
       this._session = {
         firstResultPromise: new PromiseWithState(result),
+        originalRequest: request,
         lastRequest: request,
       };
       return result;
@@ -126,12 +138,16 @@ export default class AutocompleteCacher<T> {
 
   async _filterSuggestionsIfPossible(
     request: atom$AutocompleteRequest,
-    firstResultPromise: Promise<?T>,
+    session: AutocompleteSession<T>,
     resultFromLanguageService: Promise<?T>,
   ): Promise<?T> {
-    const firstResult = await firstResultPromise;
+    const firstResult = await session.firstResultPromise.getPromise();
     if (firstResult != null) {
-      const updated = this._config.updateResults(request, firstResult);
+      const updated = this._config.updateResults(
+        session.originalRequest,
+        request,
+        firstResult,
+      );
       if (updated != null) {
         return updated;
       }

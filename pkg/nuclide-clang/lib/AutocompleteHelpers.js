@@ -224,7 +224,8 @@ export default class AutocompleteHelpers {
   static _cacher = new AutocompleteCacher(
     AutocompleteHelpers._getAutocompleteSuggestions,
     {
-      updateResults(request, results) {
+      updateResults(_originalRequest, request, results) {
+        // TODO: update the ranges once Clang LSP starts returning TextEdits.
         const {editor} = request;
         const prefix = getCompletionPrefix(editor);
         // We hit the results limit, so there may be unlisted results.

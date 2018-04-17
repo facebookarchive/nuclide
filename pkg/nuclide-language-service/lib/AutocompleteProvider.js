@@ -227,7 +227,36 @@ export class AutocompleteProvider<T: LanguageService> {
     if (resolved != null) {
       // A few members of the suggestion aren't RPC-able (such as the provider),
       // so merge the objects together.
-      return {...suggestion, ...resolved};
+      const result = {...suggestion, ...resolved};
+
+      // Some language services (such as LspLanguageService) store a separate
+      // cached version of the original completion that we're resolving since
+      // they'll need to send it back to the language server in its original
+      // form, rather than after it's been converted into a form that Nuclide
+      // understands (see the usage of the extraData field in convert.js).
+      // This means that with some servers, the resolved completion will have
+      // the original old ranges on its textEdits, rather than the ones that
+      // have been updated by updateRanges in AutocompleteCacher. Because of
+      // that, we need to go through and update the ranges if we detect that we
+      // can.
+      if (suggestion.textEdits != null && resolved.textEdits != null) {
+        const suggestionTextEdits = suggestion.textEdits;
+        const resolvedTextEdits = resolved.textEdits;
+        const localTextEdits = new Map(
+          suggestionTextEdits.map(textEdit => [textEdit.newText, textEdit]),
+        );
+        const remoteTextEdits = new Map(
+          resolvedTextEdits.map(textEdit => [textEdit.newText, textEdit]),
+        );
+        localTextEdits.forEach((textEdit, idx) => {
+          const remoteTextEdit = remoteTextEdits.get(idx);
+          if (remoteTextEdit != null) {
+            remoteTextEdit.oldRange = textEdit.oldRange;
+          }
+        });
+      }
+
+      return result;
     }
 
     return null;
@@ -240,6 +269,34 @@ function maybeApplyTextEdits(
   const {editor, suggestion} = insertedSuggestionArgument;
   const textEdits = suggestion.textEdits;
   if (textEdits != null) {
+    const cursors = editor.getCursors();
+    if (textEdits.length === 1 && cursors.length > 1) {
+      // Special case: if we have a single TextEdit and multiple cursors,
+      // duplicate the TextEdit for each cursor. This is to preserve the
+      // existing multi-autocomplete functionality that we had in insertText
+      // completions.
+      const textEdit = textEdits[0];
+      const matches = cursor =>
+        cursor.getBufferPosition().isEqual(textEdit.oldRange.end);
+      const shouldCopy = cursors.some(matches);
+
+      if (shouldCopy) {
+        const columnDelta =
+          textEdit.oldRange.end.column - textEdit.oldRange.start.column;
+
+        for (const cursor of cursors) {
+          if (!matches(cursor) && cursor.getBufferColumn() - columnDelta >= 0) {
+            const newOldEnd = cursor.getBufferPosition();
+            const newOldStart = Point.fromObject([
+              newOldEnd.row,
+              newOldEnd.column - columnDelta,
+            ]);
+            const newOldRange = Range.fromObject([newOldStart, newOldEnd]);
+            textEdits.push({...textEdit, oldRange: newOldRange});
+          }
+        }
+      }
+    }
     applyTextEditsToBuffer(editor.getBuffer(), textEdits);
   }
 }
@@ -342,13 +399,20 @@ function padEnd(s: string, targetLength: number, padString: string): string {
 }
 
 export function updateAutocompleteResults(
-  request: atom$AutocompleteRequest,
+  originalRequest: atom$AutocompleteRequest,
+  currentRequest: atom$AutocompleteRequest,
   firstResult: AutocompleteResult,
 ): ?AutocompleteResult {
   if (firstResult.isIncomplete) {
     return null;
   }
-  return updateAutocompleteFirstResults(request, firstResult);
+
+  const results = updateAutocompleteFirstResults(currentRequest, firstResult);
+  return updateAutocompleteResultRanges(
+    originalRequest,
+    currentRequest,
+    results,
+  );
 }
 
 export function updateAutocompleteFirstResults(
@@ -450,4 +514,50 @@ export function updateAutocompleteFirstResults(
   });
 
   return {...firstResult, items: items.map(item => item.completion)};
+}
+
+// Gotta be careful not to mutate here or we could mess up the cache for
+// subsequent requests.
+export function updateAutocompleteResultRanges(
+  originalRequest: atom$AutocompleteRequest,
+  currentRequest: atom$AutocompleteRequest,
+  cachedResult: AutocompleteResult,
+): AutocompleteResult {
+  const needsUpdate = cachedResult.items.some(
+    item => item.textEdits != null && item.textEdits.length > 0,
+  );
+  if (!needsUpdate) {
+    return cachedResult;
+  }
+
+  const items = cachedResult.items.map(item => {
+    if (item.textEdits == null || item.textEdits.length === 0) {
+      return item;
+    }
+
+    const textEdits = item.textEdits.map(textEdit => {
+      const oldRange = textEdit.oldRange;
+      if (
+        oldRange.end.column === originalRequest.bufferPosition.column &&
+        oldRange.end.row === originalRequest.bufferPosition.row
+      ) {
+        return {
+          ...textEdit,
+          oldRange: new Range(
+            oldRange.start,
+            new Point(oldRange.end.row, currentRequest.bufferPosition.column),
+          ),
+        };
+      } else {
+        return textEdit;
+      }
+    });
+
+    return {...item, textEdits};
+  });
+
+  return {
+    ...cachedResult,
+    items,
+  };
 }

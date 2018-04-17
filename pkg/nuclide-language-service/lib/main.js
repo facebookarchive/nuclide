@@ -14,4 +14,5 @@ export {getHostServices} from './HostServices';
 export {
   updateAutocompleteResults,
   updateAutocompleteFirstResults,
+  updateAutocompleteResultRanges,
 } from './AutocompleteProvider';

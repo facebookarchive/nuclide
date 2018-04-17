@@ -254,7 +254,8 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
         shouldLogInsertedSuggestion: false,
       },
       autocompleteCacherConfig: {
-        updateResults: (request, results) =>
+        // TODO: update the ranges once Flow LSP starts returning TextEdits.
+        updateResults: (_originalRequest, request, results) =>
           filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },

@@ -213,6 +213,7 @@ export async function isFileInHackProject(
 }
 
 function hackUpdateAutocompleteResults(
+  _originalRequest: atom$AutocompleteRequest,
   request: atom$AutocompleteRequest,
   firstResult: AutocompleteResult,
 ): ?AutocompleteResult {
