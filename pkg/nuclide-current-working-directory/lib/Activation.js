@@ -12,7 +12,7 @@
 import CwdApi from './CwdApi';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getAtomProjectRootPath} from 'nuclide-commons-atom/projects';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
+import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 
 export default class Activation {
   _cwdApi: CwdApi;

@@ -15,7 +15,7 @@ import os from 'os';
 import nullthrows from 'nullthrows';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
+import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

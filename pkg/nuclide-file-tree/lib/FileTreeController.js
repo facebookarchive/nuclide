@@ -26,7 +26,7 @@ import {track} from '../../nuclide-analytics';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
+import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 import removeProjectPath from '../../commons-atom/removeProjectPath';
 import {isRunningInWindows} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

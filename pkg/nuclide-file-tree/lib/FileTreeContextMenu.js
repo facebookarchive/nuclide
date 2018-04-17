@@ -13,7 +13,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
 
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
+import getElementFilePath from 'nuclide-commons-atom/getElementFilePath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
 import {
