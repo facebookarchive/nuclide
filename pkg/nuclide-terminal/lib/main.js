@@ -25,12 +25,11 @@ import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
 
 class Activation {
   _subscriptions: UniversalDisposable;
-  _cwd: ?CwdApi;
+  _cwd: ?nuclide$CwdApi;
 
   constructor() {
     const focusManager = new FocusManager();
@@ -140,7 +139,7 @@ class Activation {
     });
   }
 
-  initializeCwdApi(cwd: CwdApi): IDisposable {
+  initializeCwdApi(cwd: nuclide$CwdApi): IDisposable {
     this._cwd = cwd;
     return new UniversalDisposable(() => {
       this._cwd = null;
