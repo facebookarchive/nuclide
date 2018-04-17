@@ -193,9 +193,7 @@ describe('StackFrames', () => {
     stackFrames = new StackFrames(proxy);
   });
 
-  // TODO(jimge): fix and re-enable
-  // eslint-disable-next-line jasmine/no-disabled-tests
-  xit('should return stack frames', done => {
+  it('should return stack frames', done => {
     stackFrames
       .stackFramesForThread(1)
       .then(body => {
@@ -214,18 +212,14 @@ describe('StackFrames', () => {
 
         expect(body.stackFrames[1].id).toBeDefined();
         expect(body.stackFrames[1].name).toBe('??');
-        expect(body.stackFrames[1].source).toBeDefined();
-        expect(body.stackFrames[1].source.name).toBeUndefined();
-        expect(body.stackFrames[1].source.path).toBeUndefined();
-        expect(body.stackFrames[1].line).toBeUndefined();
+        expect(body.stackFrames[1].source).toBeUndefined();
+        expect(body.stackFrames[1].line).toBe(0);
         expect(body.stackFrames[1].column).toBe(0);
 
         expect(body.stackFrames[2].id).toBeDefined();
         expect(body.stackFrames[2].name).toBe('??');
-        expect(body.stackFrames[2].source).toBeDefined();
-        expect(body.stackFrames[2].source.name).toBeUndefined();
-        expect(body.stackFrames[2].source.path).toBeUndefined();
-        expect(body.stackFrames[2].line).toBeUndefined();
+        expect(body.stackFrames[2].source).toBeUndefined();
+        expect(body.stackFrames[2].line).toBe(0);
         expect(body.stackFrames[2].column).toBe(0);
 
         // $FlowFixMe
