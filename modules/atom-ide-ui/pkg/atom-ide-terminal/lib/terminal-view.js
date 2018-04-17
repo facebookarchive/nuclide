@@ -70,7 +70,7 @@ const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
 const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
 const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
 const DOCUMENTATION_MESSAGE_CONFIG = 'atom-ide-terminal.documentationMessage';
-const ADD_ESCAPE_COMMAND = 'nuclide-terminal:add-escape-prefix';
+const ADD_ESCAPE_COMMAND = 'atom-ide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
@@ -199,7 +199,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
         ADD_ESCAPE_COMMAND,
         this._addEscapePrefix.bind(this),
       ),
-      atom.commands.add(div, 'nuclide-terminal:clear', this._clear.bind(this)),
+      atom.commands.add(div, 'atom-ide-terminal:clear', this._clear.bind(this)),
       featureConfig
         .observeAsStream(CURSOR_STYLE_CONFIG)
         .skip(1)

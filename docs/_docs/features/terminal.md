@@ -14,11 +14,11 @@ Nuclide includes support for a terminal via the excellent [xterm.js](https://git
 
 To open a new terminal window, right-click on a folder or file in the file tree and choose 'New Terminal Here'.
 
-You can also open a terminal by running the command `nuclide-terminal:new-terminal` from the command-palette or via a key-binding.  For example, here is a keymap.cson (menu command Atom/Keymaps) you can use to bind `ctrl-t` to create a new terminal:
+You can also open a terminal by running the command `atom-ide-terminal:new-terminal` from the command-palette or via a key-binding.  For example, here is a keymap.cson (menu command Atom/Keymaps) you can use to bind `ctrl-t` to create a new terminal:
 
 ```
 'atom-text-editor':
-  'ctrl-t': 'nuclide-terminal:new-terminal'
+  'ctrl-t': 'atom-ide-terminal:new-terminal'
 ```
 By default, this command is bound to `ctrl-shift-t` on macOS and `alt-shift-t` on Windows and Linux.
 
@@ -75,11 +75,11 @@ fi
 
 # Scrollback
 
-Go to Atom > Preferences > Packages > Nuclide, expand `nuclide-terminal`, and there is a setting there.  Note that xterm.js does an eager memory allocation proportional to the size of the number here, so there is no 'unlimited' value.
+Go to Atom > Preferences > Packages > Nuclide, expand `atom-ide-terminal`, and there is a setting there.  Note that xterm.js does an eager memory allocation proportional to the size of the number here, so there is no 'unlimited' value.
 
 # Preserved Commands
 
-When you are using a terminal window, you might want a key binding to go to Atom/Nuclide rather than to the terminal.  The commands bound to these keys are called 'Preserved Commands'.  To add a preserved command, go to Atom > Preferences > Packages > Nuclide, expand `nuclide-terminal`, and add the command to the list under 'Preserved Commands'.
+When you are using a terminal window, you might want a key binding to go to Atom/Nuclide rather than to the terminal.  The commands bound to these keys are called 'Preserved Commands'.  To add a preserved command, go to Atom > Preferences > Packages > Nuclide, expand `atom-ide-terminal`, and add the command to the list under 'Preserved Commands'.
 
 If you do not already know the name of the command, you can use 'key-binding-resolver:toggle' (cmd-. on mac) in a context where the command works, like another editor window, and type the key you want.  The pane at the bottom of the screen will show you what you pressed and the command(s) for that key binding.
 
@@ -109,9 +109,9 @@ Tabs in Atom also have a 'path' property. E.g. you can right click a tab and `Co
 
 # Clearing the Screen
 
-Some terminal emulators bind `cmd-k` to clear the screen.  Unfortunately, this key combination is used already for splitting windows in Atom.  To avoid conflicting keybindings, we don't automatically bind this, but in your Atom > Keymap..., you can bind the command `nuclide-terminal:clear` to get this functionality.
+Some terminal emulators bind `cmd-k` to clear the screen.  Unfortunately, this key combination is used already for splitting windows in Atom.  To avoid conflicting keybindings, we don't automatically bind this, but in your Atom > Keymap..., you can bind the command `atom-ide-terminal:clear` to get this functionality.
 
-Note that just binding `nuclide-terminal:clear` to `cmd-k` will result in conflicting bindings, which manifests as needing to hit `cmd-k` twice to get it to work.  To fix this, you need to unbind all commands that use `cmd-k` as a prefix.  Here are the settings to put in Atom > Keymap... to get this working:
+Note that just binding `atom-ide-terminal:clear` to `cmd-k` will result in conflicting bindings, which manifests as needing to hit `cmd-k` twice to get it to work.  To fix this, you need to unbind all commands that use `cmd-k` as a prefix.  Here are the settings to put in Atom > Keymap... to get this working:
 
 ```
 '.terminal-pane':
@@ -128,12 +128,12 @@ Note that just binding `nuclide-terminal:clear` to `cmd-k` will result in confli
   'cmd-k left': 'unset!'
   'cmd-k right': 'unset!'
   'cmd-k up': 'unset!'
-  'cmd-k': 'nuclide-terminal:clear'
+  'cmd-k': 'atom-ide-terminal:clear'
 ```
 
 # Binding Meta Keys
 
-Many terminal programs interpret `ESC`+//key// to mean `Meta`+//key//.  Nuclide terminal supports a command  `nuclide-terminal:add-escape-prefix` for this scenario. When you bind a key combination to this command, the terminal sends `ESC` followed by the key with modifiers removed.
+Many terminal programs interpret `ESC`+//key// to mean `Meta`+//key//.  Nuclide terminal supports a command  `atom-ide-terminal:add-escape-prefix` for this scenario. When you bind a key combination to this command, the terminal sends `ESC` followed by the key with modifiers removed.
 
 Here is an example keymap.cson (Under the menu: Atom > Keymap...) that enables the `Command` key as `Meta` for several combinations:
 
@@ -145,25 +145,25 @@ Here is an example keymap.cson (Under the menu: Atom > Keymap...) that enables t
   'cmd-b d': 'unset!'
   'cmd-b s': 'unset!'
 
-  'cmd-a': 'nuclide-terminal:add-escape-prefix'
-  'cmd-b': 'nuclide-terminal:add-escape-prefix'
-  'cmd-c': 'nuclide-terminal:add-escape-prefix'
-  'cmd-d': 'nuclide-terminal:add-escape-prefix'
-  'cmd-e': 'nuclide-terminal:add-escape-prefix'
-  'cmd-f': 'nuclide-terminal:add-escape-prefix'
-  'cmd-g': 'nuclide-terminal:add-escape-prefix'
-  'cmd-m': 'nuclide-terminal:add-escape-prefix'
-  'cmd-p': 'nuclide-terminal:add-escape-prefix'
-  'cmd-q': 'nuclide-terminal:add-escape-prefix'
-  'cmd-r': 'nuclide-terminal:add-escape-prefix'
-  'cmd-v': 'nuclide-terminal:add-escape-prefix'
-  'cmd-w': 'nuclide-terminal:add-escape-prefix'
-  'cmd-x': 'nuclide-terminal:add-escape-prefix'
-  'cmd-y': 'nuclide-terminal:add-escape-prefix'
-  'cmd-z': 'nuclide-terminal:add-escape-prefix'
-  'cmd-.': 'nuclide-terminal:add-escape-prefix'
-  'cmd-/': 'nuclide-terminal:add-escape-prefix'
-  'cmd-\\': 'nuclide-terminal:add-escape-prefix'
+  'cmd-a': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-b': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-c': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-d': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-e': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-f': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-g': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-m': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-p': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-q': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-r': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-v': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-w': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-x': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-y': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-z': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-.': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-/': 'atom-ide-terminal:add-escape-prefix'
+  'cmd-\\': 'atom-ide-terminal:add-escape-prefix'
 ```
 
 Note that `cmd-b` is a prefix for several commands, all of which must be unbound to make `cmd-b` work as a standalone key binding.

@@ -36,6 +36,12 @@ const DEPRECATED_COMMANDS = {
   'nuclide-debugger:step-out': 'debugger:step-out',
   'nuclide-debugger:run-to-location': 'debugger:run-to-location',
   'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint',
+  'nuclide-terminal:new-terminal': 'atom-ide-terminal:new-terminal',
+  'nuclide-terminal:toggle-terminal-focus':
+    'atom-ide-terminal:toggle-terminal-focus',
+  'nuclide-terminal:add-escape-prefix': 'atom-ide-terminal:add-escape-prefix',
+  'nuclide-terminal:create-paste': 'atom-ide-terminal:create-paste',
+  'nuclide-terminal:clear': 'atom-ide-terminal:clear',
 };
 
 class Activation {

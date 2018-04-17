@@ -8,15 +8,15 @@
           "submenu": [
             {
               "label": "New Project Terminal Window",
-              "command": "nuclide-terminal:new-terminal"
+              "command": "atom-ide-terminal:new-terminal"
             },
             {
               "label": "New Local Terminal Window",
-              "command": "nuclide-terminal:new-local-terminal"
+              "command": "atom-ide-terminal:new-local-terminal"
             },
             {
               "label": "Toggle Terminal Focus",
-              "command": "nuclide-terminal:toggle-terminal-focus"
+              "command": "atom-ide-terminal:toggle-terminal-focus"
             }
           ]
         }
@@ -27,7 +27,7 @@
     "atom-pane atom-text-editor, .tab-bar .tab [data-path]:not(.nuclide-file-tree-path), .nuclide-path-with-terminal": [
       {
         "label": "New Terminal Here",
-        "command": "nuclide-terminal:new-terminal"
+        "command": "atom-ide-terminal:new-terminal"
       }
     ]
   }

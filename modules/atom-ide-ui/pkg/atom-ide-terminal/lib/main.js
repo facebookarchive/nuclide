@@ -44,7 +44,7 @@ class Activation {
       }),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-terminal:new-terminal',
+        'atom-ide-terminal:new-terminal',
         event => {
           const cwd = this._getPathOrCwd(event);
           const uri = cwd != null ? uriFromInfo({cwd}) : uriFromInfo({});
@@ -53,7 +53,7 @@ class Activation {
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-terminal:new-local-terminal',
+        'atom-ide-terminal:new-local-terminal',
         event => {
           const uri = uriFromInfo({cwd: os.homedir()});
           goToLocation(uri);
@@ -61,7 +61,7 @@ class Activation {
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-terminal:toggle-terminal-focus',
+        'atom-ide-terminal:toggle-terminal-focus',
         () => focusManager.toggleFocus(),
       ),
     );
@@ -100,13 +100,13 @@ class Activation {
     const disposable = new UniversalDisposable(
       atom.commands.add(
         '.terminal-pane',
-        'nuclide-terminal:create-paste',
+        'atom-ide-terminal:create-paste',
         async event => {
           const {currentTarget: {terminal}} = (event: any);
           const uri = await createPaste(
             terminal.getSelection(),
             {
-              title: 'Paste from Nuclide Terminal',
+              title: 'Paste from Atom IDE Terminal',
             },
             'terminal paste',
           );
@@ -117,7 +117,7 @@ class Activation {
         '.terminal-pane': [
           {
             label: 'Create Paste',
-            command: 'nuclide-terminal:create-paste',
+            command: 'atom-ide-terminal:create-paste',
             shouldDisplay: event => {
               const div = event.target.closest('.terminal-pane');
               if (div == null) {
