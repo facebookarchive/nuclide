@@ -30,26 +30,27 @@ type Separator = {
   type: 'separator',
 };
 
-export type Option =
-  | Separator
-  | {
-      type?: void,
-      value: any,
-      label: string,
-      selectedLabel?: string,
-      submenu?: void,
-      icon?: IconName,
-      iconset?: string,
-      disabled?: boolean,
-    }
-  | {
-      type: 'submenu',
-      label: string,
-      submenu: Array<Option>,
-      icon?: IconName,
-      iconset?: string,
-      disabled?: boolean,
-    };
+export type MenuItem = {
+  type?: void,
+  value: any,
+  label: string,
+  selectedLabel?: string,
+  submenu?: void,
+  icon?: IconName,
+  iconset?: string,
+  disabled?: boolean,
+};
+
+type SubMenuItem = {
+  type: 'submenu',
+  label: string,
+  submenu: Array<Option>,
+  icon?: IconName,
+  iconset?: string,
+  disabled?: boolean,
+};
+
+export type Option = Separator | MenuItem | SubMenuItem;
 
 type Props = {
   className: string,

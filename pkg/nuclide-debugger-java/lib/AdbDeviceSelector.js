@@ -12,6 +12,7 @@
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
@@ -109,7 +110,7 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
     this.props.onChange(selectedDevice);
   }
 
-  _getDeviceItems(): Array<{value: ?Device, label: string}> {
+  _getDeviceItems(): Array<MenuItem> {
     invariant(
       !this.state.deviceList.isError && !this.state.deviceList.isPending,
     );
@@ -141,18 +142,11 @@ export class AdbDeviceSelector extends React.Component<Props, State> {
 
     const deviceItems = this._getDeviceItems();
     return (
-      <table>
-        <tr>
-          <td>
-            {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-            <Dropdown
-              options={deviceItems}
-              onChange={this._handleDeviceDropdownChange}
-              value={this.state.selectedDevice}
-            />
-          </td>
-        </tr>
-      </table>
+      <Dropdown
+        options={deviceItems}
+        onChange={this._handleDeviceDropdownChange}
+        value={this.state.selectedDevice}
+      />
     );
   }
 
