@@ -21,6 +21,7 @@ import type {
   DatatipProvider,
   DatatipService,
   RegisterExecutorFunction,
+  TerminalApi,
 } from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {SerializedState, IBreakpoint} from './types';
@@ -825,7 +826,7 @@ class Activation {
     return setConsoleService(createConsole);
   }
 
-  consumeTerminal(terminalApi: nuclide$TerminalApi): IDisposable {
+  consumeTerminal(terminalApi: TerminalApi): IDisposable {
     return setTerminalService(terminalApi);
   }
 

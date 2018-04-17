@@ -10,6 +10,9 @@
  * @format
  */
 
+import type {Command} from './pty-service/rpc-types';
+import type {TerminalInfo} from './types';
+
 import crypto from 'crypto';
 import invariant from 'assert';
 import url from 'url';
@@ -22,7 +25,7 @@ import uuid from 'uuid';
 // execution.
 const trustToken = crypto.randomBytes(256).toString('hex');
 
-// The external interface nuclide$terminalInfo leaves everything optional.
+// The external interface TerminalInfo leaves everything optional.
 // When we open a terminal we will instantiate missing fields with defaults.
 export type InstantiatedTerminalInfo = {
   title: string,
@@ -31,7 +34,7 @@ export type InstantiatedTerminalInfo = {
   defaultLocation: atom$PaneLocation | 'pane',
   icon: string,
   trustToken: string,
-  command?: nuclide$TerminalCommand,
+  command?: Command,
   cwd: string,
   environmentVariables?: Map<string, string>,
   preservedCommands: Array<string>,
@@ -53,7 +56,7 @@ export const TERMINAL_DEFAULT_INFO = {
 };
 
 export function uriFromInfo(
-  info: nuclide$TerminalInfo | InstantiatedTerminalInfo,
+  info: TerminalInfo | InstantiatedTerminalInfo,
 ): string {
   const uri = url.format({
     protocol: 'atom',

@@ -27,6 +27,7 @@ import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
 import type {CreatePasteFunction} from 'atom-ide-ui/pkg/atom-ide-console/lib/types';
+import type {TerminalApi, TerminalInfo, TerminalInstance} from './types';
 
 class Activation {
   _subscriptions: UniversalDisposable;
@@ -66,9 +67,9 @@ class Activation {
     );
   }
 
-  provideTerminal(): nuclide$TerminalApi {
+  provideTerminal(): TerminalApi {
     return {
-      open: (info: nuclide$TerminalInfo): Promise<nuclide$TerminalInstance> => {
+      open: (info: TerminalInfo): Promise<TerminalInstance> => {
         const terminalView: any = goToLocation(uriFromInfo(info));
         return terminalView;
       },

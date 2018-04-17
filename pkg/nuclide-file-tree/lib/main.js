@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {TerminalApi} from 'atom-ide-ui';
 import type {FileTreeProjectSelectionManager} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
@@ -209,7 +210,7 @@ class Activation {
     return disposables;
   }
 
-  consumeTerminal(terminal: nuclide$TerminalApi): IDisposable {
+  consumeTerminal(terminal: TerminalApi): IDisposable {
     const contextMenu = this.getContextMenuForFileTree();
     const terminalMenuSubscription = new UniversalDisposable(
       contextMenu.addItemToShowInSection(

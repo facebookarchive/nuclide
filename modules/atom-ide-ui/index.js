@@ -115,3 +115,13 @@ export type {
 export {
   default as DebuggerService,
 } from './pkg/atom-ide-debugger/lib/RemoteControlService';
+
+export type {
+  TerminalInfo,
+  TerminalInstance,
+  TerminalApi,
+} from './pkg/atom-ide-terminal/lib/types';
+
+export type {
+  Command as TerminalCommand,
+} from './pkg/atom-ide-terminal/lib/pty-service/rpc-types';

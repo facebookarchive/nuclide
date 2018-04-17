@@ -40,6 +40,7 @@ SOFTWARE.
 */
 
 import type {ConsoleMessage} from 'atom-ide-ui';
+import type {TerminalInfo} from '../../../atom-ide-terminal/lib/types';
 import type {
   DebuggerModeType,
   IDebugService,
@@ -1315,7 +1316,7 @@ export default class DebugService implements IDebugService {
         ? args.cwd
         : nuclideUri.createRemoteUri(hostname, args.cwd);
 
-    const info: nuclide$TerminalInfo = {
+    const info: TerminalInfo = {
       key,
       title,
       cwd,

@@ -14,6 +14,7 @@ import type {
   DatatipService,
   ConsoleService,
   RegisterExecutorFunction,
+  TerminalApi,
 } from 'atom-ide-ui';
 import type {
   DebuggerConfigurationProvider,
@@ -33,7 +34,7 @@ let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
 let _registerExecutor: ?RegisterExecutorFunction = null;
 let _datatipService: ?DatatipService = null;
 let _createConsole: ?ConsoleService = null;
-let _terminalService: ?nuclide$TerminalApi = null;
+let _terminalService: ?TerminalApi = null;
 let _rpcService: ?nuclide$RpcService = null;
 let _configurationProviders: Array<DebuggerConfigurationProvider> = [];
 
@@ -82,16 +83,14 @@ export function getNotificationService(): ?raiseNativeNotificationFunc {
   return _raiseNativeNotification;
 }
 
-export function setTerminalService(
-  terminalService: nuclide$TerminalApi,
-): IDisposable {
+export function setTerminalService(terminalService: TerminalApi): IDisposable {
   _terminalService = terminalService;
   return new UniversalDisposable(() => {
     _terminalService = null;
   });
 }
 
-export function getTerminalService(): ?nuclide$TerminalApi {
+export function getTerminalService(): ?TerminalApi {
   return _terminalService;
 }
 
