@@ -85,6 +85,7 @@ class MIDebugSession extends LoggingDebugSession {
   _expectingPause: boolean;
   _pauseQueue: Array<() => Promise<void>>;
   _continueOnAttach: boolean;
+  _stepping: boolean;
 
   constructor() {
     const logfile = nuclideUri.join(os.tmpdir(), 'native-debugger-vsp.log');
@@ -290,6 +291,7 @@ class MIDebugSession extends LoggingDebugSession {
     response: DebugProtocol.DisconnectResponse,
     request: DebugProtocol.DisconnectRequest,
   ): Promise<void> {
+    this._stepping = false;
     this._runWhenStopped(async () => {
       if (this._attachPID != null) {
         await this._client.sendCommand('target-detach');
@@ -530,36 +532,41 @@ class MIDebugSession extends LoggingDebugSession {
     response: DebugProtocol.ContinueResponse,
     args: DebugProtocol.ContinueRequest,
   ): Promise<void> {
-    return this._executeCommon('exec-continue', response);
+    return this._executeCommon('exec-continue', null, response);
   }
 
   async nextRequest(
     response: DebugProtocol.NextResponse,
     args: DebugProtocol.NextArguments,
   ): Promise<void> {
-    return this._executeCommon('exec-next', response);
+    this._stepping = true;
+    return this._executeCommon('exec-next', args.threadId, response);
   }
 
   async stepInRequest(
     response: DebugProtocol.StepInResponse,
     args: DebugProtocol.StepInArguments,
   ): Promise<void> {
-    return this._executeCommon('exec-next', response);
+    this._stepping = true;
+    return this._executeCommon('exec-step', args.threadId, response);
   }
 
   async stepOutRequest(
     response: DebugProtocol.StepOutResponse,
     args: DebugProtocol.StepOutArguments,
   ): Promise<void> {
-    return this._executeCommon('exec-finish', response);
+    this._stepping = true;
+    return this._executeCommon('exec-finish', args.threadId, response);
   }
 
   async _executeCommon(
     execCommand: string,
+    threadId: ?number,
     response: DebugProtocol.Response,
   ): Promise<void> {
     try {
-      const result = await this._client.sendCommand(execCommand);
+      const thread = threadId != null ? `--thread ${threadId}` : '';
+      const result = await this._client.sendCommand(`${execCommand} ${thread}`);
       if (!result.running) {
         this._sendFailureResponse(
           response,
@@ -567,8 +574,6 @@ class MIDebugSession extends LoggingDebugSession {
         );
         return;
       }
-
-      this._pauseIfThereAreQueuedCommands();
 
       this._running = true;
       this.sendResponse(response);
@@ -766,6 +771,13 @@ class MIDebugSession extends LoggingDebugSession {
     }
 
     this._pauseQueue.push(fn);
+
+    if (this._stepping) {
+      // If we are stepping, then sending a signal and then continuing will
+      // disrupt the step. We're going to stop anyway, so just don't.
+      return;
+    }
+
     if (this._pauseQueue.length === 1) {
       this._client.pause();
     }
@@ -823,6 +835,7 @@ class MIDebugSession extends LoggingDebugSession {
     } else if (stopped.reason === 'end-stepping-range') {
       reason = 'step';
       description = 'Execution stepped';
+      this._stepping = false;
     } else if (stopped.reason === 'exited') {
       this._onTargetTerminated();
       return;
