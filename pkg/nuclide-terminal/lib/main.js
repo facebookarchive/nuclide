@@ -22,11 +22,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {setRpcService} from './AtomServiceContainer';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {
-  infoFromUri,
-  uriFromInfo,
-  URI_PREFIX,
-} from '../../commons-node/nuclide-terminal-uri';
+import {infoFromUri, uriFromInfo, URI_PREFIX} from './nuclide-terminal-uri';
 import {FocusManager} from './FocusManager';
 
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';

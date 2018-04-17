@@ -26,10 +26,7 @@ import {getPtyServiceByNuclideUri} from './AtomServiceContainer';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
-import {
-  infoFromUri,
-  uriFromInfo,
-} from '../../commons-node/nuclide-terminal-uri';
+import {infoFromUri, uriFromInfo} from './nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
@@ -39,7 +36,7 @@ import {removePrefixSink, patternCounterSink} from './sink';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Command, Pty, PtyClient, PtyInfo} from './pty-service/rpc-types';
-import type {InstantiatedTerminalInfo} from '../../commons-node/nuclide-terminal-uri';
+import type {InstantiatedTerminalInfo} from './nuclide-terminal-uri';
 
 import type {Sink} from './sink';
 

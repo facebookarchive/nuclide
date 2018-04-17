@@ -16,7 +16,7 @@ import {
   uriFromInfo,
   TERMINAL_DEFAULT_LOCATION,
   TERMINAL_DEFAULT_ICON,
-} from '../nuclide-terminal-uri';
+} from '../lib/nuclide-terminal-uri';
 
 const defaultInfo = {
   remainOnCleanExit: false,
