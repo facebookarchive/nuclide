@@ -56,7 +56,6 @@ function runParent() {
   const jsFiles = pathRules.getIncludedFiles(directory);
 
   // Sanity checks
-  assert(jsFiles.length > 0);
   jsFiles.forEach(filename => {
     assert(path.isAbsolute(filename));
   });

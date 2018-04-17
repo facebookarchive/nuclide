@@ -11,6 +11,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import fs from 'fs';
 
 import type {VSAdapterExecutableInfo, VsAdapterType} from './types';
 
@@ -22,13 +23,16 @@ type AdapterInfo = {
 const modulesPath = nuclideUri.dirname(__dirname);
 
 function resolvePackagePath(packageName: string): string {
-  if (typeof atom !== 'undefined') {
+  const bundledPath = nuclideUri.join(modulesPath, packageName);
+  if (fs.existsSync(bundledPath)) {
+    return bundledPath;
+  } else if (typeof atom !== 'undefined') {
     const pkg = atom.packages.getActivePackage(packageName);
     if (pkg != null) {
-      return pkg.path;
+      return nuclideUri.join(pkg.path, 'node_modules', packageName);
     }
   }
-  return nuclideUri.join(modulesPath, packageName);
+  return 'DEBUGGER_RUNTIME_NOT_FOUND';
 }
 
 const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
