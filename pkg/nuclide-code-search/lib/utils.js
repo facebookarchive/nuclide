@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {CodeSearchTool} from '../../nuclide-code-search-rpc/lib/types';
 import type {NuclideCodeSearchConfig} from './types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -17,7 +18,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export function pickConfigByUri(
   uri: NuclideUri,
-): {tool: string, useVcsSearch: boolean, maxResults: number} {
+): {tool: CodeSearchTool, useVcsSearch: boolean, maxResults: number} {
   const config: NuclideCodeSearchConfig = (featureConfig.get(
     'nuclide-code-search',
   ): any);

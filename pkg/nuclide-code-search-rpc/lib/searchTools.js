@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CodeSearchResult, CodeSearchParams} from './types';
+import type {CodeSearchResult, CodeSearchParams, CodeSearchTool} from './types';
 import {asyncFind} from 'nuclide-commons/promise';
 import os from 'os';
 
@@ -22,13 +22,15 @@ import {search as rgSearch} from './RgHandler';
 export const WINDOWS_TOOLS = ['rg', 'grep'];
 export const POSIX_TOOLS = ['rg', 'ack', 'grep'];
 
-const searchToolHandlers = new Map([
-  ['ack', ackSearch],
-  ['rg', rgSearch],
-  ['grep', grepSearch],
-]);
+const searchToolHandlers = Object.freeze({
+  ack: ackSearch,
+  rg: rgSearch,
+  grep: grepSearch,
+});
 
-export async function resolveTool(tool: ?string): Promise<?string> {
+export async function resolveTool(
+  tool: ?CodeSearchTool,
+): Promise<?CodeSearchTool> {
   if (tool != null) {
     return tool;
   }
@@ -38,12 +40,12 @@ export async function resolveTool(tool: ?string): Promise<?string> {
 }
 
 export function searchWithTool(
-  tool: ?string,
+  tool: ?CodeSearchTool,
   params: CodeSearchParams,
 ): Observable<CodeSearchResult> {
   return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
-    const handler = searchToolHandlers.get(actualTool);
-    if (handler != null) {
+    if (actualTool != null) {
+      const handler = searchToolHandlers[actualTool];
       return handler(params);
     }
     return Observable.empty();

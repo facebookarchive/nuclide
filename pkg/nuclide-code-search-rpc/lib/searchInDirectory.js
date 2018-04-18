@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CodeSearchResult} from './types';
+import type {CodeSearchResult, CodeSearchTool} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Minimatch} from 'minimatch';
@@ -22,7 +22,7 @@ import {search as vcsSearch} from './VcsSearchHandler';
 export function searchInDirectory(
   directory: NuclideUri,
   regex: RegExp,
-  tool: ?string,
+  tool: ?CodeSearchTool,
   useVcsSearch: boolean,
 ): Observable<CodeSearchResult> {
   const params = {regex, directory, recursive: true};
@@ -36,7 +36,7 @@ export function searchInDirectories(
   regex: RegExp,
   subdirs: Array<string>,
   useVcsSearch: boolean,
-  tool: ?string,
+  tool: ?CodeSearchTool,
 ): Observable<CodeSearchResult> {
   // Resolve tool once here so we do not call 'which' for each subdir.
   return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {

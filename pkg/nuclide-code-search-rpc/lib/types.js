@@ -11,6 +11,8 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+export type CodeSearchTool = 'rg' | 'ack' | 'grep';
+
 type CodeSearchParamsBase = {
   regex: RegExp,
   limit?: number,

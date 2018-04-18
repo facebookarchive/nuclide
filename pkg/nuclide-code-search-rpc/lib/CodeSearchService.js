@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {search$FileResult, CodeSearchResult} from './types';
+import type {
+  search$FileResult,
+  CodeSearchResult,
+  CodeSearchTool,
+} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {resolveTool, searchWithTool} from './searchTools';
@@ -51,7 +55,7 @@ export function codeSearch(
   directory: NuclideUri,
   regex: RegExp,
   useVcsSearch: boolean,
-  tool: ?string,
+  tool: ?CodeSearchTool,
   maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
   return searchInDirectory(directory, regex, tool, useVcsSearch)
@@ -70,7 +74,7 @@ export function codeSearch(
 export function searchFiles(
   files: Array<NuclideUri>,
   regex: RegExp,
-  tool: ?string,
+  tool: ?CodeSearchTool,
   maxResults?: number,
 ): ConnectableObservable<CodeSearchResult> {
   return searchWithTool(tool, {
@@ -97,7 +101,7 @@ export function remoteAtomSearch(
   regex: RegExp,
   subdirs: Array<string>,
   useVcsSearch: boolean,
-  tool: ?string,
+  tool: ?CodeSearchTool,
 ): ConnectableObservable<search$FileResult> {
   return mergeSearchResults(
     searchInDirectories(directory, regex, subdirs, useVcsSearch, tool),

@@ -9,10 +9,12 @@
  * @format
  */
 
+import type {CodeSearchTool} from '../../nuclide-code-search-rpc/lib/types';
+
 export type NuclideCodeSearchConfig = {
-  localTool: string,
+  localTool: CodeSearchTool,
   localUseVcsSearch: boolean,
-  remoteTool: string,
+  remoteTool: CodeSearchTool,
   remoteUseVcsSearch: boolean,
   maxResults: number,
 };
