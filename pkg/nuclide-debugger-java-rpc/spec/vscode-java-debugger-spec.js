@@ -159,7 +159,8 @@ async function verifyUnverifiedBreakpoints(
   }
 }
 
-describe('vscode-java-debugger', () => {
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('vscode-java-debugger', () => {
   let hasDoneSetup = false;
   beforeEach(() => {
     waitsForPromise({timeout: 120000}, async () => {
