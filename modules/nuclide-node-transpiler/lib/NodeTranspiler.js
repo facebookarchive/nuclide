@@ -35,6 +35,7 @@ const docblock = require('./docblock');
 const {__DEV__} = require('./env');
 
 const BABEL_OPTIONS = {
+  retainLines: true,
   parserOpts: {
     plugins: [
       'classProperties',
