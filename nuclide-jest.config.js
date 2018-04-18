@@ -20,4 +20,6 @@ const path = require('path');
 module.exports = {
   jestConfig: path.resolve(__dirname, 'jest.config.js'),
   nodeBin: path.resolve(__dirname, '../third-party/node/bin/node'),
+  testRegex: '__tests__\\/.*\\.js$',
+  jestBin: path.resolve(__dirname, 'node_modules/.bin/jest'),
 };
