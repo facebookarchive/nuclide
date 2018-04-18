@@ -12,7 +12,9 @@
   },
   "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {
+    "anser": "1.4.6",
     "async-to-generator": "1.1.0",
+    "escape-carriage": "1.2.0",
     "classnames": "2.2.5",
     "dedent": "0.6.0",
     "escape-html": "1.0.3",

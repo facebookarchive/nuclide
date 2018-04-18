@@ -18,12 +18,15 @@ import type {
   OutputProvider,
 } from '../types';
 
+import type {RenderSegmentProps} from 'nuclide-commons-ui/Ansi';
+
 import classnames from 'classnames';
 import {MeasuredComponent} from 'nuclide-commons-ui/MeasuredComponent';
 import * as React from 'react';
 import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
 import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
+import Ansi from 'nuclide-commons-ui/Ansi';
 import {TextRenderer} from 'nuclide-commons-ui/TextRenderer';
 import debounce from 'nuclide-commons/debounce';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
@@ -36,6 +39,12 @@ type Props = {
   getProvider: (id: string) => ?OutputProvider,
   onHeightChange: (recordId: number, newHeight: number) => void,
 };
+
+const AnsiRenderSegment = ({key, style, content}: RenderSegmentProps) => (
+  <span key={key} style={style}>
+    {parseText(content)}
+  </span>
+);
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 export default class RecordView extends React.Component<Props> {
@@ -83,6 +92,10 @@ export default class RecordView extends React.Component<Props> {
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
+
+      if (record.format === 'ansi') {
+        return <Ansi renderSegment={AnsiRenderSegment}>{text}</Ansi>;
+      }
       return <pre>{parseText(text)}</pre>;
     }
   }

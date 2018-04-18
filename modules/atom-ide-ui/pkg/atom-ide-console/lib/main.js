@@ -240,6 +240,7 @@ class Activation {
             Actions.recordReceived({
               text: message.text,
               level: message.level,
+              format: message.format,
               data: message.data,
               tags: message.tags,
               scopeName: message.scopeName,

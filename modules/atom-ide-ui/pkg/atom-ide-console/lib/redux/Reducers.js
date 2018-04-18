@@ -19,6 +19,7 @@ import * as Actions from './Actions';
 const RECORD_PROPERTIES_TO_COMPARE = [
   'text',
   'level',
+  'format',
   'scopeName',
   'sourceId',
   'kind',

@@ -105,7 +105,7 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
-anser@^1.4.1:
+anser@1.4.6, anser@^1.4.1:
   version "1.4.6"
   resolved "https://registry.yarnpkg.com/anser/-/anser-1.4.6.tgz#f159112561e1c30af2c4c9c58f6747af534e8ea2"
 
@@ -1784,7 +1784,7 @@ es6-promise@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.1.1.tgz#8811e90915d9a0dba36274f0b242dbda78f9c92a"
 
-escape-carriage@^1.2.0:
+escape-carriage@1.2.0, escape-carriage@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/escape-carriage/-/escape-carriage-1.2.0.tgz#35ce51a7960efcb5ae8bb59b83f566a98c946dfd"
 
