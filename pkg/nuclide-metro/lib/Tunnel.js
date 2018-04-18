@@ -39,7 +39,10 @@ export function openTunnel(
           from.port === desired.from.port &&
           from.host === desired.from.host
         ) {
-          if (to.host !== desired.to.host) {
+          if (
+            nuclideUri.getHostname(to.host) !==
+            nuclideUri.getHostname(desired.to.host)
+          ) {
             throw new Error(
               'You have a tunnel open from `localhost:8081` to a different host than your ' +
                 'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
