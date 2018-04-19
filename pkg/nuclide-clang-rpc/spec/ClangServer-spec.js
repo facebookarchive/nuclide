@@ -121,7 +121,7 @@ describe('ClangServer', () => {
       response = await service.get_completions(FILE_CONTENTS, 4, 7, 7, 'f');
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([
-        'f(int x)',
+        'f(int x = 0)',
         'false',
         'float',
       ]);
@@ -134,7 +134,7 @@ describe('ClangServer', () => {
       // Function argument completions are a little special.
       response = await service.get_completions(FILE_CONTENTS, 4, 4, 4, '');
       invariant(response);
-      expect(response[0].spelling).toBe('f(int x)');
+      expect(response[0].spelling).toBe('f(int x = 0)');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
       response = await service.get_declaration(FILE_CONTENTS, 4, 2);

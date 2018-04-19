@@ -109,6 +109,7 @@ function spawnClangProcess(
       stdio: [null, null, null, 'pipe'], // check argsFd
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
       env: {
+        ...process.env,
         PYTHONPATH: pythonPathEnv,
       },
     };
