@@ -79,17 +79,15 @@ export class Adb extends DebugBridge {
       this.getBrand().catch(unknownCB),
       this.getWifiIp().catch(unknownCB),
     ).map(
-      (
-        [
-          architecture,
-          apiVersion,
-          model,
-          android_version,
-          manufacturer,
-          brand,
-          wifi_ip,
-        ],
-      ) => {
+      ([
+        architecture,
+        apiVersion,
+        model,
+        android_version,
+        manufacturer,
+        brand,
+        wifi_ip,
+      ]) => {
         return new Map([
           ['name', this._device.name],
           ['adb_port', String(this._device.port)],
@@ -338,7 +336,7 @@ export class Adb extends DebugBridge {
   }
 
   async dumpsysPackage(pkg: string): Promise<?string> {
-    if (!await this.isPackageInstalled(pkg)) {
+    if (!(await this.isPackageInstalled(pkg))) {
       return null;
     }
     return this.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();

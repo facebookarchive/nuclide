@@ -52,7 +52,7 @@ export default class RefactoringHelpers {
     range: atom$Range,
   ): Promise<Array<AvailableRefactoring>> {
     const path = editor.getPath();
-    if (path == null || !await checkDiagnostics(editor)) {
+    if (path == null || !(await checkDiagnostics(editor))) {
       return [];
     }
 
@@ -84,7 +84,7 @@ export default class RefactoringHelpers {
     invariant(request.kind === 'rename');
     const {editor, originalPoint, newName} = request;
     const path = editor.getPath();
-    if (path == null || !await checkDiagnostics(editor)) {
+    if (path == null || !(await checkDiagnostics(editor))) {
       return null;
     }
 

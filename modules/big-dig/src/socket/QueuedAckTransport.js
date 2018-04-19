@@ -97,7 +97,9 @@ export class QueuedAckTransport {
     this._checkLeaks();
     return this._isClosed
       ? 'closed'
-      : this._transport == null ? 'disconnected' : 'open';
+      : this._transport == null
+        ? 'disconnected'
+        : 'open';
   }
 
   onDisconnect(

@@ -169,20 +169,20 @@ export type LinterMessageV2 = {
   // TODO: only the first solution is used at the moment.
   solutions?: Array<
     | {
-      title?: string,
-      position: atom$RangeLike,
-      priority?: number,
-      currentText?: string,
-      replaceWith: string,
-    }
+        title?: string,
+        position: atom$RangeLike,
+        priority?: number,
+        currentText?: string,
+        replaceWith: string,
+      }
     | {
-      // TODO: not currently supported.
-      title?: string,
-      position: atom$RangeLike,
-      priority?: number,
-      apply: () => any,
-      replaceWith?: void, // Hint for Flow.
-    },
+        // TODO: not currently supported.
+        title?: string,
+        position: atom$RangeLike,
+        priority?: number,
+        apply: () => any,
+        replaceWith?: void, // Hint for Flow.
+      },
   >,
   // TODO: the callback version is not supported.
   description?: string | (() => Promise<string> | string),
@@ -247,62 +247,62 @@ export type Store = {
 export type Action =
   // Providers
   | {
-    type: 'ADD_PROVIDER',
-    payload: {provider: ObservableDiagnosticProvider},
-  }
+      type: 'ADD_PROVIDER',
+      payload: {provider: ObservableDiagnosticProvider},
+    }
   | {
-    type: 'REMOVE_PROVIDER',
-    payload: {provider: ObservableDiagnosticProvider},
-  }
+      type: 'REMOVE_PROVIDER',
+      payload: {provider: ObservableDiagnosticProvider},
+    }
 
   // Code Actions
   | {
-    type: 'SET_CODE_ACTION_FETCHER',
-    payload: {codeActionFetcher: ?CodeActionFetcher},
-  }
+      type: 'SET_CODE_ACTION_FETCHER',
+      payload: {codeActionFetcher: ?CodeActionFetcher},
+    }
   | {
-    type: 'FETCH_CODE_ACTIONS',
-    payload: {editor: atom$TextEditor, messages: Array<DiagnosticMessage>},
-  }
+      type: 'FETCH_CODE_ACTIONS',
+      payload: {editor: atom$TextEditor, messages: Array<DiagnosticMessage>},
+    }
   | {
-    type: 'SET_CODE_ACTIONS',
-    payload: {codeActionsForMessage: CodeActionsState},
-  }
+      type: 'SET_CODE_ACTIONS',
+      payload: {codeActionsForMessage: CodeActionsState},
+    }
 
   // Fixes
   | {
-    type: 'APPLY_FIX',
-    payload: {
-      message: DiagnosticMessage,
-    },
-  }
+      type: 'APPLY_FIX',
+      payload: {
+        message: DiagnosticMessage,
+      },
+    }
   | {
-    type: 'APPLY_FIXES_FOR_FILE',
-    payload: {
-      file: NuclideUri,
-    },
-  }
+      type: 'APPLY_FIXES_FOR_FILE',
+      payload: {
+        file: NuclideUri,
+      },
+    }
   | {type: 'FIX_FAILED'}
   | {
-    type: 'FIXES_APPLIED',
-    payload: {
-      filePath: NuclideUri,
-      messages: Set<DiagnosticMessage>,
-    },
-  }
+      type: 'FIXES_APPLIED',
+      payload: {
+        filePath: NuclideUri,
+        messages: Set<DiagnosticMessage>,
+      },
+    }
 
   // Messages
   | {
-    type: 'UPDATE_MESSAGES',
-    payload: {
-      provider: ObservableDiagnosticProvider,
-      update: DiagnosticProviderUpdate,
-    },
-  }
+      type: 'UPDATE_MESSAGES',
+      payload: {
+        provider: ObservableDiagnosticProvider,
+        update: DiagnosticProviderUpdate,
+      },
+    }
   | {
-    type: 'INVALIDATE_MESSAGES',
-    payload: {
-      provider: ObservableDiagnosticProvider,
-      invalidation: DiagnosticInvalidationMessage,
-    },
-  };
+      type: 'INVALIDATE_MESSAGES',
+      payload: {
+        provider: ObservableDiagnosticProvider,
+        invalidation: DiagnosticInvalidationMessage,
+      },
+    };

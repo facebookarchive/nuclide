@@ -721,7 +721,8 @@ export type TaskEvent =
 
 type CreateProcessStreamOptions = (
   | child_process$spawnOpts
-  | child_process$forkOpts) & {
+  | child_process$forkOpts
+) & {
   killTreeWhenDone?: ?boolean,
   timeout?: ?number,
   input?: ?(string | Observable<string>),

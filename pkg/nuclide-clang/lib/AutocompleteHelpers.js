@@ -253,7 +253,11 @@ export default class AutocompleteHelpers {
   static async _getAutocompleteSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<ClangAutocompleteSuggestion>> {
-    const {editor, bufferPosition: {row, column}, activatedManually} = request;
+    const {
+      editor,
+      bufferPosition: {row, column},
+      activatedManually,
+    } = request;
     const prefix = getCompletionPrefix(editor);
     // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?),
     // or function call (f(...)).

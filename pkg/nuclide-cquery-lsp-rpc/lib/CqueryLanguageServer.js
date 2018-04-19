@@ -33,9 +33,9 @@ import {CqueryInvalidator} from './CqueryInvalidator';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import {CqueryProjectManager} from './CqueryProjectManager';
 
-export default class CqueryLanguageServer extends MultiProjectLanguageService<
-  CqueryLanguageClient,
-> implements CqueryLanguageService {
+export default class CqueryLanguageServer
+  extends MultiProjectLanguageService<CqueryLanguageClient>
+  implements CqueryLanguageService {
   // Maps clang settings => settings metadata with same key as _processes field.
   _projectManager: CqueryProjectManager;
   _projectInvalidator: CqueryInvalidator;

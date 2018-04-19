@@ -214,10 +214,10 @@ class MIDebugSession extends LoggingDebugSession {
     if (
       debuggerRoot != null &&
       debuggerRoot.trim() !== '' &&
-      !await this._sendWithFailureCheck(
+      !(await this._sendWithFailureCheck(
         response,
         `environment-directory -r "${debuggerRoot}"`,
-      )
+      ))
     ) {
       return;
     }
@@ -225,26 +225,29 @@ class MIDebugSession extends LoggingDebugSession {
     if (
       args.cwd != null &&
       args.cwd.trim() !== '' &&
-      !await this._sendWithFailureCheck(response, `environment-cd ${args.cwd}`)
+      !(await this._sendWithFailureCheck(
+        response,
+        `environment-cd ${args.cwd}`,
+      ))
     ) {
       return;
     }
 
     if (
       args.arguments != null &&
-      !await this._sendWithFailureCheck(
+      !(await this._sendWithFailureCheck(
         response,
         `exec-arguments ${args.arguments}`,
-      )
+      ))
     ) {
       return;
     }
 
     if (
-      !await this._sendWithFailureCheck(
+      !(await this._sendWithFailureCheck(
         response,
         `file-exec-and-symbols ${args.program}`,
-      )
+      ))
     ) {
       return;
     }
@@ -272,10 +275,10 @@ class MIDebugSession extends LoggingDebugSession {
     if (
       debuggerRoot != null &&
       debuggerRoot.trim() !== '' &&
-      !await this._sendWithFailureCheck(
+      !(await this._sendWithFailureCheck(
         response,
         `environment-directory -r "${debuggerRoot}"`,
-      )
+      ))
     ) {
       return;
     }
@@ -308,7 +311,7 @@ class MIDebugSession extends LoggingDebugSession {
   ): Promise<void> {
     this._configurationDone = true;
 
-    if (!await this._initializeTargetIO(response)) {
+    if (!(await this._initializeTargetIO(response))) {
       return;
     }
 
@@ -318,15 +321,15 @@ class MIDebugSession extends LoggingDebugSession {
 
     if (this._attachPID != null) {
       if (
-        !await this._sendWithFailureCheck(
+        !(await this._sendWithFailureCheck(
           response,
           `target-attach ${this._attachPID}`,
-        )
+        ))
       ) {
         return;
       }
     } else {
-      if (!await this._sendWithFailureCheck(response, 'exec-run')) {
+      if (!(await this._sendWithFailureCheck(response, 'exec-run'))) {
         return;
       }
     }
@@ -738,10 +741,10 @@ class MIDebugSession extends LoggingDebugSession {
     targetIO.once('error', () => this._onTargetTerminated());
 
     if (
-      !await this._sendWithFailureCheck(
+      !(await this._sendWithFailureCheck(
         response,
         `inferior-tty-set ${targetIO.ptyName}`,
-      )
+      ))
     ) {
       return false;
     }

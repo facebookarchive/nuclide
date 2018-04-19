@@ -33,7 +33,7 @@ export default {
             });
             resolve(cookieMap);
           }
-        }
+        },
       );
     });
   },
@@ -59,7 +59,7 @@ export default {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
   },

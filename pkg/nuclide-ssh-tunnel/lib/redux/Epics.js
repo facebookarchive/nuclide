@@ -121,7 +121,7 @@ export function requestTunnelEpic(
       const {tunnel, onOpen} = action.payload;
       const {from, to} = tunnel;
 
-      if (!await validateTunnel(tunnel)) {
+      if (!(await validateTunnel(tunnel))) {
         onOpen(
           new Error(
             `Trying to open a tunnel on a non-whitelisted port: ${

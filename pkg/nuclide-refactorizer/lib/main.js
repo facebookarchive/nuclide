@@ -200,7 +200,7 @@ class Activation {
         if (
           provider == null ||
           diagnostics.length > 0 ||
-          !await passesGK('nuclide_refactorizer_code_actions')
+          !(await passesGK('nuclide_refactorizer_code_actions'))
         ) {
           return [];
         }

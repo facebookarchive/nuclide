@@ -508,7 +508,7 @@ export class SshHandshake {
   }
 
   async _onConnect(): Promise<void> {
-    if (!await this._startRemoteServer()) {
+    if (!(await this._startRemoteServer())) {
       return;
     }
 

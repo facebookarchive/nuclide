@@ -37,7 +37,9 @@ class Activation {
     provider.priority =
       provider.priority != null
         ? provider.priority
-        : provider.inclusionPriority != null ? provider.inclusionPriority : 0;
+        : provider.inclusionPriority != null
+          ? provider.inclusionPriority
+          : 0;
     if (provider.formatCode) {
       return this.consumeRangeProvider(provider);
     } else if (provider.formatEntireFile) {

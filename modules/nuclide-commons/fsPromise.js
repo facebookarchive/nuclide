@@ -224,7 +224,7 @@ async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
   try {
     const stats = await stat(directoryPath);
     if (stats.isDirectory()) {
-      return !await isNfs(directoryPath);
+      return !(await isNfs(directoryPath));
     } else {
       return false;
     }

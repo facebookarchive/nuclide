@@ -61,7 +61,7 @@ export function observeAttachDebugTargets(): ConnectableObservable<
     .switchMap(() =>
       Promise.all(
         Array.from(attachReady.values()).map(async target => {
-          if (!await isPortUsed(target.port)) {
+          if (!(await isPortUsed(target.port))) {
             attachReady.delete(target.port);
           }
         }),

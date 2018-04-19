@@ -91,7 +91,9 @@ export default class StackFrames {
           name:
             _.frame.func != null
               ? _.frame.func
-              : _.frame.from != null ? _.frame.from : _.frame.addr,
+              : _.frame.from != null
+                ? _.frame.from
+                : _.frame.addr,
           source:
             _.frame.file == null && _.frame.fullname == null
               ? undefined

@@ -539,7 +539,9 @@ export class StackFrame implements IStackFrame {
 
   async _getScopesImpl(): Promise<Scope[]> {
     try {
-      const {body: {scopes}} = await this.thread.process.session.scopes({
+      const {
+        body: {scopes},
+      } = await this.thread.process.session.scopes({
         frameId: this.frameId,
       });
       return scopes.map(

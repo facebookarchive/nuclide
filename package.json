@@ -195,7 +195,7 @@
     "jest-util": "22.4.1",
     "mock-spawn": "0.2.6",
     "nyc": "11.2.1",
-    "prettier": "1.9.1",
+    "prettier": "1.12.1",
     "relay-compiler": "1.4.1",
     "sabor": "0.9.0",
     "touch": "1.0.0",

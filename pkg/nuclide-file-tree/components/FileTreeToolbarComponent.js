@@ -294,7 +294,9 @@ class DefineWorkingSetButton extends React.Component<{
         onClick={onClick}>
         {isActive
           ? 'Cancel selection'
-          : isWorkingSetEmpty && shouldShowLabel ? 'Working Set...' : null}
+          : isWorkingSetEmpty && shouldShowLabel
+            ? 'Working Set...'
+            : null}
       </Button>
     );
   }

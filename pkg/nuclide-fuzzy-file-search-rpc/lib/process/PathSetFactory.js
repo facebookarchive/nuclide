@@ -152,7 +152,7 @@ function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
 async function getFilesFromRepo(
   localDirectory: string,
 ): Promise<Array<string>> {
-  if (!await fsPromise.exists(nuclideUri.join(localDirectory, '.repo'))) {
+  if (!(await fsPromise.exists(nuclideUri.join(localDirectory, '.repo')))) {
     throw new Error(`${localDirectory} is not a repo root`);
   }
   const subRoots = (await runCommand('repo', ['list', '-p'], {

@@ -200,7 +200,9 @@ export default class Debugger implements DebuggerInterface {
     thread: number,
     levels: number,
   ): Promise<DebugProtocol.StackFrame[]> {
-    const {body: {stackFrames}} = await this._ensureDebugSession().stackTrace({
+    const {
+      body: {stackFrames},
+    } = await this._ensureDebugSession().stackTrace({
       threadId: thread,
       levels,
     });
@@ -263,7 +265,9 @@ export default class Debugger implements DebuggerInterface {
       return [];
     }
 
-    const {body: {scopes}} = await session.scopes({frameId});
+    const {
+      body: {scopes},
+    } = await session.scopes({frameId});
 
     let queries: DebugProtocol.Scope[];
 
@@ -279,7 +283,9 @@ export default class Debugger implements DebuggerInterface {
     }
 
     const executers = queries.map(async scope => {
-      const {body: {variables}} = await session.variables({
+      const {
+        body: {variables},
+      } = await session.variables({
         variablesReference: scope.variablesReference,
       });
       return [scope.variablesReference, variables];
@@ -596,7 +602,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onContinued(event: DebugProtocol.ContinuedEvent) {
-    const {body: {threadId, allThreadsContinued}} = event;
+    const {
+      body: {threadId, allThreadsContinued},
+    } = event;
 
     if (allThreadsContinued === true) {
       this._threads.markAllThreadsRunning();
@@ -611,7 +619,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
-    const {body: {description, threadId, allThreadsStopped}} = event;
+    const {
+      body: {description, threadId, allThreadsStopped},
+    } = event;
 
     if (description != null) {
       this._console.outputLine(description);
@@ -660,7 +670,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onThread(event: DebugProtocol.ThreadEvent) {
-    const {body: {reason, threadId}} = event;
+    const {
+      body: {reason, threadId},
+    } = event;
 
     if (reason === 'started') {
       // to avoid a race, create a thread immediately. then call _cacheThreads,
@@ -729,7 +741,12 @@ export default class Debugger implements DebuggerInterface {
   }
 
   _onBreakpointEvent(event: DebugProtocol.BreakpointEvent): void {
-    const {body: {reason, breakpoint: {id, verified}}} = event;
+    const {
+      body: {
+        reason,
+        breakpoint: {id, verified},
+      },
+    } = event;
 
     if (id != null && (reason === 'new' || reason === 'changed')) {
       try {
@@ -785,7 +802,9 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async _getSourceByReference(sourceReference: number): Promise<string> {
-    const {body: {content}} = await this._ensureDebugSession().source({
+    const {
+      body: {content},
+    } = await this._ensureDebugSession().source({
       sourceReference,
     });
     return content;

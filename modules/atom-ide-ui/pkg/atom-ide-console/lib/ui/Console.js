@@ -483,7 +483,9 @@ async function serializeRecordObject(
       indent +
       (record.description != null
         ? record.description
-        : record.value != null ? record.value : '')
+        : record.value != null
+          ? record.value
+          : '')
     );
   };
 

@@ -148,7 +148,9 @@ class HackProcess {
   ): Promise<?simpleTextBuffer$TextBuffer> {
     const buffer = await getBufferAtVersion(fileVersion);
     // Must also wait for edits to be sent to Hack
-    if (!await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion)) {
+    if (
+      !(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))
+    ) {
       return null;
     }
     return buffer != null && buffer.changeCount === fileVersion.version

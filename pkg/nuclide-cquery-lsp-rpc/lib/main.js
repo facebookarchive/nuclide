@@ -200,7 +200,7 @@ export async function createCqueryService(params: {|
   const languageId = 'cquery';
   const logger = createLogger(params.logCategory, params.logLevel);
 
-  if (!await ensureCommandExists(command, logger, params.host, languageId)) {
+  if (!(await ensureCommandExists(command, logger, params.host, languageId))) {
     return null;
   }
 

@@ -66,7 +66,9 @@ export default class RegExpFilter extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {value: {text, isRegExp, invalid}} = this.props;
+    const {
+      value: {text, isRegExp, invalid},
+    } = this.props;
     const size = this.props.size || 'sm';
     const buttonSize = getButtonSize(size);
     const inputWidth =

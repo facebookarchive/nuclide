@@ -102,7 +102,9 @@ class Activation {
         '.terminal-pane',
         'atom-ide-terminal:create-paste',
         async event => {
-          const {currentTarget: {terminal}} = (event: any);
+          const {
+            currentTarget: {terminal},
+          } = (event: any);
           const uri = await createPaste(
             terminal.getSelection(),
             {

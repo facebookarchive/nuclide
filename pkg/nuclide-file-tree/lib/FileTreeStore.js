@@ -1654,7 +1654,9 @@ export class FileTreeStore {
     const direction =
       rangeIndex > anchorIndex
         ? 'down'
-        : rangeIndex === anchorIndex ? 'none' : 'up';
+        : rangeIndex === anchorIndex
+          ? 'none'
+          : 'up';
 
     selectionRange = new SelectionRange(
       RangeKey.of(anchorNode),

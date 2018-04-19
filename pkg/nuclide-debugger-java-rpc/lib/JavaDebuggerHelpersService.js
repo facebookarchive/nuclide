@@ -161,7 +161,7 @@ async function _getClassPath(): Promise<string> {
     'java_debugger_server.jar',
   );
 
-  if (!await fsPromise.exists(serverJarPath)) {
+  if (!(await fsPromise.exists(serverJarPath))) {
     throw new Error(
       `Could not locate the java debugger server jar: ${serverJarPath}. ` +
         'Please check your Nuclide installation.',
@@ -194,7 +194,7 @@ async function _getClassPath(): Promise<string> {
       break;
     }
   }
-  if (!await fsPromise.exists(toolsJarPath)) {
+  if (!(await fsPromise.exists(toolsJarPath))) {
     throw new Error(
       `Could not locate required JDK tools jar: ${toolsJarPath}. Is the JDK installed?`,
     );

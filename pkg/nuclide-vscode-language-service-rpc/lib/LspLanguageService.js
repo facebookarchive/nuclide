@@ -1231,7 +1231,7 @@ export class LspLanguageService {
 
     // Await until this exact version has been pushed to LSP too.
     if (
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       if (buffer != null) {
         // Invariant: LSP is never ahead of our fileCache.
@@ -1399,7 +1399,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       this._serverCapabilities.completionProvider == null ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -1485,7 +1485,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.definitionProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -1541,7 +1541,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.referencesProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -1667,7 +1667,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.documentSymbolProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -1787,7 +1787,7 @@ export class LspLanguageService {
   async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
     if (
       this._state !== 'Running' ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -1984,7 +1984,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.hoverProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -2054,7 +2054,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.documentHighlightProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -2188,7 +2188,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !triggerCharacters.has(triggerCharacter) ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }
@@ -2220,7 +2220,7 @@ export class LspLanguageService {
     if (
       this._state !== 'Running' ||
       !this._serverCapabilities.signatureHelpProvider ||
-      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+      !(await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion))
     ) {
       return null;
     }

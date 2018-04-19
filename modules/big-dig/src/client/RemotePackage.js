@@ -310,7 +310,7 @@ class ManagedPackage implements RemotePackage {
     getLogger().info('Verifying installation...');
 
     try {
-      if (!await sftp.exists(pkg.installationPath)) {
+      if (!(await sftp.exists(pkg.installationPath))) {
         return needsInstall('Installation path does not exist');
       }
       const installPathStats = await sftp.lstat(pkg.installationPath);
@@ -321,7 +321,7 @@ class ManagedPackage implements RemotePackage {
         );
       } else if ((await sftp.readdir(pkg.installationPath)).length === 0) {
         return needsInstall('Installation path is empty');
-      } else if (!await sftp.exists(manifestFile)) {
+      } else if (!(await sftp.exists(manifestFile))) {
         return corrupt(
           `Manifest does not exist at ${manifestFile}`,
           'missing-manifest',

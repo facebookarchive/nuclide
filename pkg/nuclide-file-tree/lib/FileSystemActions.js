@@ -306,8 +306,8 @@ class FileSystemActions {
           const service = getFileSystemServiceByNuclideUri(newPath);
           const isFile = (await service.stat(oldPath)).isFile();
           const exists = isFile
-            ? !await service.copy(oldPath, newPath)
-            : !await service.copyDir(oldPath, newPath);
+            ? !(await service.copy(oldPath, newPath))
+            : !(await service.copyDir(oldPath, newPath));
           if (exists) {
             atom.notifications.addError(`'${newPath}' already exists.`);
             return [];

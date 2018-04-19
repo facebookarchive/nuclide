@@ -177,12 +177,10 @@ export function getShortHeadChangesFromStateStream(
   return states
     .pairwise()
     .flatMap(
-      (
-        [oldBookShelfState, newBookShelfState]: [
-          BookShelfState,
-          BookShelfState,
-        ],
-      ) => {
+      ([oldBookShelfState, newBookShelfState]: [
+        BookShelfState,
+        BookShelfState,
+      ]) => {
         const {
           repositoryPathToState: oldRepositoryPathToState,
         } = oldBookShelfState;

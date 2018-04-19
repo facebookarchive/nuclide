@@ -39,8 +39,7 @@ describe('ClangFlagsManager', () => {
         compilationDatabase: null,
         projectRoot: null,
       };
-    }),
-  );
+    }));
 
   it('sanitizeCommand()', () => {
     const originalArgs = [

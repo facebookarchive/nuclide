@@ -50,7 +50,9 @@ in complex ways.
   async execute(args: string[]): Promise<void> {
     const expr: string = args.join(' ');
     try {
-      const {body: {result}} = await this._debugger.evaluateExpression(expr);
+      const {
+        body: {result},
+      } = await this._debugger.evaluateExpression(expr);
       this._console.outputLine(result);
     } catch (err) {
       const failure: DebugProtocol.base$Response = JSON.parse(err.message);
