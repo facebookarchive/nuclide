@@ -55,6 +55,12 @@ async function createOCamlLanguageService(
       // ocaml-language-server will use defaults for any settings that aren't
       // given, so we only need to list non-defaults here.
       initializationOptions: {
+        codelens: {
+          // This doesn't actually change the encoding (Nuclide/Atom can handle
+          // unicode just fine), but instead just disables some single-character
+          // substitutions that make displayed code lenses not valid OCaml.
+          unicode: false,
+        },
         format: {
           width: 80,
         },
