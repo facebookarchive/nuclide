@@ -556,7 +556,7 @@ export function deactivate(): void {
   }
 
   if (controller != null) {
-    controller.destroy();
+    controller.dispose();
     controller = null;
   }
 

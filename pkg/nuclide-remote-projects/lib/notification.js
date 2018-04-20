@@ -15,30 +15,6 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import {SshHandshake} from '../../nuclide-remote-connection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export function notifyLocalDiskFile(fileUri: string): void {
-  atom.notifications.addInfo(
-    `File <code>${fileUri}</code> exists on the local filesystem.`,
-  );
-}
-
-export function notifyConnectedRemoteFile(fileUri: string): void {
-  atom.notifications.addInfo(
-    `The connection to the server: <code>${nuclideUri.getHostname(
-      fileUri,
-    )}</code> is healthy.`,
-  );
-}
-
-export function notifyDisconnectedRemoteFile(fileUri: string): void {
-  atom.notifications.addError(
-    `The connection to the server: <code>${nuclideUri.getHostname(
-      fileUri,
-    )}</code> is lost,
-    retrying in the background!`,
-  );
-}
 
 export function notifySshHandshakeError(
   errorType: SshHandshakeErrorType,

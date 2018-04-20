@@ -165,6 +165,10 @@ export class XhrConnectionHeartbeat {
     return this._emitter.on('reconnect', callback);
   }
 
+  isAway(): boolean {
+    return this._lastHeartbeat === 'away';
+  }
+
   close() {
     if (this._heartbeatInterval != null) {
       clearInterval(this._heartbeatInterval);
