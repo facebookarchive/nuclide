@@ -52,14 +52,17 @@ export async function debug(
         useTerminal,
         '' /* cwdPath */,
       );
-      const debuggerService = await getDebuggerService();
-      await debuggerService.startDebugging(processInfo);
     } else {
       await startAttachProcessInfo(
         activeProjectRoot,
         null /* attachPort */,
         true /* serverAttach */,
       );
+      return;
     }
   }
+
+  invariant(processInfo != null);
+  const debuggerService = await getDebuggerService();
+  await debuggerService.startDebugging(processInfo);
 }
