@@ -19,7 +19,6 @@ import type {
 } from 'nuclide-debugger-common/types';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VsAdapterTypes, VspProcessInfo} from 'nuclide-debugger-common';
-import {getNodeBinaryPath} from '../../commons-node/node-info';
 import * as React from 'react';
 
 export type VspNativeDebuggerLaunchBuilderParms = {
@@ -92,10 +91,6 @@ export async function resolveConfiguration(
   const {adapterExecutable} = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
-  } else if (adapterExecutable.command === 'node') {
-    adapterExecutable.command = await getNodeBinaryPath(
-      configuration.targetUri,
-    );
   } else if (adapterExecutable.command === 'lldb-vscode') {
     adapterExecutable.command = await lldbVspAdapterWrapperPath(
       configuration.targetUri,
