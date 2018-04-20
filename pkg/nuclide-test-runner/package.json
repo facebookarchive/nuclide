@@ -28,5 +28,6 @@
         "^1.0.0": "consumeToolBar"
       }
     }
-  }
+  },
+  "activationHooks": ["!nuclide_experimental_test_runner:gk:nuclide"]
 }
