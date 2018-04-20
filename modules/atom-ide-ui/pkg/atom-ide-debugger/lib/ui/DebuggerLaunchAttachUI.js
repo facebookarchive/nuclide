@@ -15,6 +15,7 @@ import type {
   DebuggerConfigAction,
   DebuggerLaunchAttachProvider,
 } from 'nuclide-debugger-common';
+import type {Tab} from 'nuclide-commons-ui/Tabs';
 
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -27,12 +28,22 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {isNuclideEnvironment} from '../AtomServiceContainer';
 
+type ConnectionOption = {
+  value: string,
+  label: string,
+};
+
+type EnabledProvider = {|
+  provider: DebuggerLaunchAttachProvider,
+  debuggerName: string,
+|};
+
 type Props = {|
   +dialogMode: DebuggerConfigAction,
   +connection: string,
   +connectionChanged: (newValue: ?string) => void,
   // $FlowFixMe
-  +connectionOptions: Array<{value: string, label: string}>,
+  +connectionOptions: Array<ConnectionOption>,
   +providers: Map<string, Array<DebuggerLaunchAttachProvider>>,
   +dialogCloser: () => void,
 |};
@@ -40,10 +51,7 @@ type Props = {|
 type State = {
   selectedProviderTab: ?string,
   configIsValid: boolean,
-  enabledProviders: Array<{
-    provider: DebuggerLaunchAttachProvider,
-    debuggerName: string,
-  }>,
+  enabledProviders: Array<EnabledProvider>,
 };
 
 // TODO those should be managed by the debugger store state
@@ -190,7 +198,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
     });
   };
 
-  render(): React.Node {
+  _getTabsFromEnabledProviders(enabledProviders: EnabledProvider[]): Tab[] {
     const tabs = this.state.enabledProviders
       .map(debuggerType => ({
         name: debuggerType.debuggerName,
@@ -201,7 +209,35 @@ export default class DebuggerLaunchAttachUI extends React.Component<
         ),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
+    return tabs;
+  }
 
+  setState(
+    partialState: $Shape<State> | ((State, Props) => $Shape<State> | void),
+    callback?: () => mixed,
+  ): void {
+    if (typeof partialState === 'function') {
+      super.setState(partialState, callback);
+    } else {
+      const fullState = {
+        ...this.state,
+        ...partialState,
+      };
+      if (fullState.selectedProviderTab == null) {
+        const tabs = this._getTabsFromEnabledProviders(
+          fullState.enabledProviders,
+        );
+        if (tabs.length > 0) {
+          const firstTab = tabs[0];
+          fullState.selectedProviderTab = firstTab.name;
+        }
+      }
+      super.setState(fullState, callback);
+    }
+  }
+
+  render(): React.Node {
+    const tabs = this._getTabsFromEnabledProviders(this.state.enabledProviders);
     let providerContent = null;
     if (tabs.length > 0) {
       let selectedTab =
@@ -237,11 +273,6 @@ export default class DebuggerLaunchAttachUI extends React.Component<
           </div>
         </div>
       );
-
-      if (this.state.selectedProviderTab == null) {
-        // Select the first tab.
-        this.setState({selectedProviderTab: tabs[0].name});
-      }
     } else {
       // No debugging providers available.
       providerContent = (
