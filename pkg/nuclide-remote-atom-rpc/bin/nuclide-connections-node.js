@@ -9,6 +9,8 @@
  * @format
  */
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {runCommand} from 'nuclide-commons/process';
 import os from 'os';
 import yargs from 'yargs';
 import {getCommands, startCommands} from './CommandClient';
@@ -52,14 +54,29 @@ async function main(argv): Promise<number> {
     foldersArray = [];
   } else {
     const hostname = os.hostname();
+    const isAliasForHostname = async function(alias: string): Promise<boolean> {
+      if (hostname === alias) {
+        return true;
+      } else {
+        return (await resolveAlias(alias)) === hostname;
+      }
+    };
+
     // Note that each ClientConnection represents an Atom window, so
     // the rootFolders across windows may overlap. Add all of them to
     // a Set to de-dupe.
-    const connections = await commands.getClientConnections(hostname);
+    const connections = await commands.getClientConnections();
     const rootFolders = new Set();
     for (const connection of connections) {
       for (const rootFolder of connection.rootFolders) {
-        rootFolders.add(rootFolder);
+        if (nuclideUri.isRemote(rootFolder)) {
+          const alias = nuclideUri.getHostname(rootFolder);
+          // eslint-disable-next-line no-await-in-loop
+          if (await isAliasForHostname(alias)) {
+            const path = nuclideUri.getPath(rootFolder);
+            rootFolders.add(path);
+          }
+        }
       }
     }
     foldersArray = Array.from(rootFolders);
@@ -69,6 +86,32 @@ async function main(argv): Promise<number> {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(foldersArray, null, 2));
   return EXIT_CODE_SUCCESS;
+}
+
+async function resolveAlias(alias: string): Promise<?string> {
+  let stdout;
+  try {
+    stdout = await runCommand('dig', ['+short', 'cname', alias]).toPromise();
+  } catch (e) {
+    // Defend against the case where `dig` is not installed.
+    return null;
+  }
+
+  // Strip trailing newline. It is possible there was no output
+  // if there was nothing to resolve, e.g.: dig +short cname `hostname`.
+  stdout = stdout.trim();
+  if (stdout === '') {
+    return null;
+  }
+
+  // The result likely includes '.' at the end to indicate the
+  // result is a fully-qualified domain name. If so, we strip it
+  // so it can be compared directly with hostname(1).
+  if (stdout.endsWith('.')) {
+    stdout = stdout.slice(0, -1);
+  }
+
+  return stdout;
 }
 
 async function run(): Promise<void> {

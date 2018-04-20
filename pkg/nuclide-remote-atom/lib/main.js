@@ -95,23 +95,10 @@ class Activation {
         }
       },
 
-      /**
-       * In practice, the hostname of the server making the request is
-       * the hostname passed to this method, though that is not enforced
-       * programmatically.
-       */
-      async getClientConnections(
-        hostname: string,
-      ): Promise<Array<ClientConnection>> {
+      async getClientConnections(): Promise<Array<ClientConnection>> {
         return [
           {
-            rootFolders: atom.project
-              .getPaths()
-              .filter(
-                uri =>
-                  nuclideUri.isRemote(uri) &&
-                  nuclideUri.getHostname(uri) === hostname,
-              ),
+            rootFolders: atom.project.getPaths(),
           },
         ];
       },

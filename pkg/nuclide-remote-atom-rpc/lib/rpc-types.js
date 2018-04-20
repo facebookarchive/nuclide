@@ -13,7 +13,12 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
 export type ClientConnection = {
-  rootFolders: Array<NuclideUri>,
+  /**
+   * This is the raw value of atom.project.getPaths(). It can
+   * contain a mix of absolute paths that are local to the machine
+   * where Atom is running in addition to nuclide:// URIs.
+   */
+  rootFolders: Array<string>,
 };
 
 export type AtomFileEvent = 'open' | 'close';
@@ -42,9 +47,9 @@ export interface AtomCommands {
 
   /**
    * Returns information about the Atom windows that have a Nuclide server
-   * connection to the specified hostname.
+   * connection to this AtomCommands.
    */
-  getClientConnections(hostname: string): Promise<Array<ClientConnection>>;
+  getClientConnections(): Promise<Array<ClientConnection>>;
 
   dispose(): void;
 }

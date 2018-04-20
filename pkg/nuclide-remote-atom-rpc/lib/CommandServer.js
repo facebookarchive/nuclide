@@ -181,12 +181,10 @@ class ServiceAtomCommands implements AtomCommands {
     }
   }
 
-  async getClientConnections(
-    hostname: string,
-  ): Promise<Array<ClientConnection>> {
+  async getClientConnections(): Promise<Array<ClientConnection>> {
     const clientConnections = await Promise.all(
       CommandServer._connections.map(commandServer =>
-        commandServer._atomCommands.getClientConnections(hostname),
+        commandServer._atomCommands.getClientConnections(),
       ),
     );
     return [].concat(...clientConnections);
