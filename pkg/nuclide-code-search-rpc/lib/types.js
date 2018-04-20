@@ -16,6 +16,8 @@ export type CodeSearchTool = 'rg' | 'ack' | 'grep';
 type CodeSearchParamsBase = {
   regex: RegExp,
   limit?: number,
+  leadingLines?: number,
+  trailingLines?: number,
 };
 
 export type CodeSearchParams =
@@ -35,6 +37,8 @@ export type CodeSearchResult = {
   column: number,
   line: string,
   matchLength: number,
+  leadingContext: Array<string>,
+  trailingContext: Array<string>,
 };
 
 export type search$Match = {

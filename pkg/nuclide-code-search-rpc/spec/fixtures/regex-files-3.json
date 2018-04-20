@@ -3,6 +3,8 @@
     "column": 11,
     "file": "directory/file2.js",
     "line": "        // console.log(x);",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 11,
     "row": 1
   },
@@ -10,6 +12,8 @@
     "column": 8,
     "file": "directory/file2.js",
     "line": "        console.log();",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 11,
     "row": 2
   },
@@ -17,6 +21,8 @@
     "column": 8,
     "file": "directory/file2.js",
     "line": "        console.log(a); // good",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 11,
     "row": 4
   },
@@ -24,6 +30,8 @@
     "column": 11,
     "file": "file1.js",
     "line": "        // console.trace(x);",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 13,
     "row": 1
   },
@@ -31,6 +39,8 @@
     "column": 8,
     "file": "file1.js",
     "line": "        console.log(n); //bad",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 11,
     "row": 4
   },
@@ -38,6 +48,8 @@
     "column": 8,
     "file": "file1.js",
     "line": "        console.error(\"Hello World!\");",
+    "leadingContext": [],
+    "trailingContext": [],
     "matchLength": 13,
     "row": 5
   }

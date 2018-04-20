@@ -75,12 +75,16 @@ export function searchFiles(
   files: Array<NuclideUri>,
   regex: RegExp,
   tool: ?CodeSearchTool,
+  leadingLines?: number,
+  trailingLines?: number,
   maxResults?: number,
 ): ConnectableObservable<CodeSearchResult> {
   return searchWithTool(tool, {
     recursive: false,
     files,
     regex,
+    leadingLines,
+    trailingLines,
     limit: maxResults,
   }).publish();
 }
@@ -115,7 +119,7 @@ function mergeSearchResults(
   regex: RegExp,
 ): Observable<search$FileResult> {
   const results = codeSearchResults
-    .flatMap((searchResult: CodeSearchResult) => {
+    .flatMap(searchResult => {
       const {file, row, line} = searchResult;
 
       // Try to extract all actual "matched" texts on the same line.

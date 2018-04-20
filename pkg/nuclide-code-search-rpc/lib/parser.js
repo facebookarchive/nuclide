@@ -47,6 +47,8 @@ export function parseAckRgLine(
         column: columnNumber,
         line,
         matchLength,
+        trailingContext: [],
+        leadingContext: [],
       });
     }
   }
@@ -80,6 +82,8 @@ export function parseGrepLine(
         column,
         line,
         matchLength,
+        trailingContext: [],
+        leadingContext: [],
       });
     }
   }
