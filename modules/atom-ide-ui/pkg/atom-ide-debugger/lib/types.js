@@ -267,6 +267,9 @@ export interface IViewModel {
   onDidFocusStackFrame(
     callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
   ): IDisposable;
+  onDidChangeExpressionContext(
+    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+  ): IDisposable;
 }
 
 export interface IModel extends ITreeElement {

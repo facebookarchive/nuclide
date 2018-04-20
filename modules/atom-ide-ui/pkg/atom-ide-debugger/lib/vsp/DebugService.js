@@ -125,6 +125,7 @@ const CHANGE_DEBUG_MODE = 'CHANGE_DEBUG_MODE';
 
 const CHANGE_FOCUSED_PROCESS = 'CHANGE_FOCUSED_PROCESS';
 const CHANGE_FOCUSED_STACKFRAME = 'CHANGE_FOCUSED_STACKFRAME';
+const CHANGE_EXPRESSION_CONTEXT = 'CHANGE_EXPRESSION_CONTEXT';
 
 // Berakpoint events may arrive sooner than breakpoint responses.
 const MAX_BREAKPOINT_EVENT_DELAY_MS = 5 * 1000;
@@ -166,6 +167,12 @@ class ViewModel implements IViewModel {
     return this._emitter.on(CHANGE_FOCUSED_STACKFRAME, callback);
   }
 
+  onDidChangeExpressionContext(
+    callback: (data: {stackFrame: ?IStackFrame, explicit: boolean}) => mixed,
+  ): IDisposable {
+    return this._emitter.on(CHANGE_EXPRESSION_CONTEXT, callback);
+  }
+
   isMultiProcessView(): boolean {
     return false;
   }
@@ -190,6 +197,10 @@ class ViewModel implements IViewModel {
 
     if (shouldEmit) {
       this._emitter.emit(CHANGE_FOCUSED_STACKFRAME, {stackFrame, explicit});
+    } else {
+      // The focused stack frame didn't change, but something about the
+      // context did, so interested listeners should re-evaluate expressions.
+      this._emitter.emit(CHANGE_EXPRESSION_CONTEXT, {stackFrame, explicit});
     }
   }
 }
@@ -1584,7 +1595,7 @@ export default class DebugService implements IDebugService {
               this._viewModel.focusedStackFrame,
               this._viewModel.focusedThread,
               null,
-              true,
+              false,
             );
 
             if (result == null || !expression.available) {
