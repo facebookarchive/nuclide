@@ -7,7 +7,7 @@
   "main": "./lib/main.js",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "node ../../modules/nuclide-jest/bin/jest-node.js spec"
+    "test": "true"
   },
   "nuclide": {
     "packageType": "Node",
