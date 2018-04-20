@@ -70,7 +70,7 @@ describe('memoryLogger', () => {
     expect(logger.dump()).toBe('00:00:00 INFO - 11\n');
   });
 
-  it('tails correctly when count is less than the number of logs', () => {
+  it('dumps correctly when count is less than the number of logs', () => {
     const nextToLastLog = 'next to last log';
     const lastLog = 'last log';
 
@@ -83,7 +83,7 @@ describe('memoryLogger', () => {
     logger.info(lastLog);
 
     const tail = logger
-      .tail(2)
+      .dump(2)
       .split('\n')
       .filter(line => line !== '');
 
@@ -92,7 +92,7 @@ describe('memoryLogger', () => {
     expect(tail[1].indexOf(lastLog)).toBeGreaterThan(-1);
   });
 
-  it('tails correctly when count is greater than the number of logs, and around boundaries', () => {
+  it('dumps correctly when count is greater than the number of logs, and around boundaries', () => {
     const lastLog = 'last log';
 
     time = 0;
@@ -104,21 +104,21 @@ describe('memoryLogger', () => {
     logger.info(lastLog);
 
     let tail = logger
-      .tail(10)
+      .dump(10)
       .split('\n')
       .filter(line => line !== '');
 
     expect(tail.length).toBe(6);
 
     tail = logger
-      .tail(6)
+      .dump(6)
       .split('\n')
       .filter(line => line !== '');
 
     expect(tail.length).toBe(6);
 
     tail = logger
-      .tail(1)
+      .dump(1)
       .split('\n')
       .filter(line => line !== '');
 
@@ -126,11 +126,11 @@ describe('memoryLogger', () => {
     expect(tail[0].indexOf(lastLog)).toBeGreaterThan(-1);
 
     expect(() => {
-      logger.tail(-1);
+      logger.dump(-1);
     }).toThrow();
 
     expect(() => {
-      logger.tail(0);
+      logger.dump(0);
     }).toThrow();
   });
 });

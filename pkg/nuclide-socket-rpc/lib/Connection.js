@@ -65,7 +65,7 @@ export class Connection {
         track('socket-service:attempting-to-write-data-after-close', {
           disposeCalled: this._disposeCalled,
           lastError: this._error,
-          protocolLog: protocolLogger.tail(PROTOCOL_LOGGER_COUNT),
+          protocolLog: protocolLogger.dump(PROTOCOL_LOGGER_COUNT),
         });
       }
     });

@@ -13,7 +13,7 @@ import {default as Deque} from 'double-ended-queue';
 import util from 'util';
 import invariant from 'assert';
 
-type LogEntry = {|time: number, text: string|};
+type LogEntry = {|time: number, level: string, text: string|};
 
 // Retain past five minutes
 const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000;
@@ -43,24 +43,17 @@ export class MemoryLogger {
     this._logs.isEmpty();
   }
 
-  dump(): string {
-    return this._logs
-      .toArray()
-      .map(entry => `${entry.text}\n`)
-      .join('');
-  }
-
-  tail(count: number): string {
-    invariant(count > 0);
-    if (count >= this._logs.length) {
-      return this.dump();
-    } else {
-      return this._logs
-        .toArray()
-        .slice(this._logs.length - count, this._logs.length)
-        .map(entry => `${entry.text}\n`)
-        .join('');
+  dump(count?: number): string {
+    let logs = this._logs.toArray();
+    if (count != null && count < this._logs.length) {
+      invariant(count > 0, 'Must provide a positive count');
+      logs = logs.slice(logs.length - count);
     }
+    return logs
+      .map(
+        entry => `${formatTime(entry.time)} ${entry.level} - ${entry.text}\n`,
+      )
+      .join('');
   }
 
   getUnderlyingLogger(): ?log4js$Logger {
@@ -119,16 +112,11 @@ export class MemoryLogger {
 
     // this._logs will keep the past five minute's worth of logs
     const time = Date.now();
-    const text =
-      new Date(time).toLocaleTimeString('en-US', {hour12: false}) +
-      ' ' +
-      level +
-      ' - ' +
-      message;
     // push the new entry
-    const newLog: LogEntry = {time, text};
+    const newLog: LogEntry = {time, level, text: message};
     this._logs.push(newLog);
-    this._size += text.length;
+    // the format is HH:MM:SS level - text (level + text + 12 chars)
+    this._size += newLog.level.length + newLog.text.length + 12;
     // and remove all expired entries
     while (true) {
       const front = this._logs.peekFront();
@@ -142,7 +130,7 @@ export class MemoryLogger {
         break;
       }
       this._logs.shift();
-      this._size -= front.text.length;
+      this._size -= front.level.length + front.text.length + 12;
     }
   }
 }
@@ -171,12 +159,10 @@ export class SnapshotLogger {
     const results = [];
     for (const [filepath, snapshots] of this._files) {
       for (const snapshot of snapshots) {
-        const time = new Date(snapshot.time).toLocaleTimeString('en-US', {
-          hour12: false,
-        });
-        const version = String(snapshot.version);
         results.push({
-          title: `${filepath} ${time},v${version}`,
+          title: `${filepath} ${formatTime(snapshot.time)},v${
+            snapshot.version
+          }`,
           text: snapshot.text,
         });
       }
@@ -225,4 +211,12 @@ export class SnapshotLogger {
   close(filepath: string): void {
     this._files.delete(filepath);
   }
+}
+
+/**
+ * Formats a UNIX timestamp in 24-hour US format.
+ * e.g. 16:01:19
+ */
+function formatTime(time: number): string {
+  return new Date(time).toLocaleTimeString('en-US', {hour12: false});
 }
