@@ -19,7 +19,6 @@ import * as React from 'react';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import {generatePropertyArray} from 'nuclide-debugger-common/autogen-utils';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {listenToRemoteDebugCommands, setRpcService} from './utils';
 
@@ -58,44 +57,78 @@ class Activation {
 }
 
 export function getPythonAutoGenConfig(): AutoGenConfig {
-  const pkgJson = require('./VendorLib/vs-py-debugger/package.json');
-  const configurationAttributes =
-    pkgJson.contributes.debuggers[0].configurationAttributes;
-  configurationAttributes.launch.properties.pythonPath.description =
-    'Path (fully qualified) to python executable.';
-  const launchProperties = {};
-  const launchRequired = ['pythonPath', 'program', 'cwd'];
-  const launchVisible = launchRequired.concat(['args', 'env', 'stopOnEntry']);
-  const launchWhitelisted = new Set(
-    launchVisible.concat(['console', 'debugOptions']),
-  );
-
-  Object.entries(configurationAttributes.launch.properties)
-    .filter(property => launchWhitelisted.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      // TODO(goom): replace the indexOf '$' stuff with logic that accesses settings
-      if (
-        propertyDetails.default != null &&
-        typeof propertyDetails.default === 'string' &&
-        propertyDetails.default.indexOf('$') === 0
-      ) {
-        delete propertyDetails.default;
-      }
-      launchProperties[name] = propertyDetails;
-    });
+  const program = {
+    name: 'program',
+    type: 'string',
+    description: 'Absolute path to the program.',
+    required: true,
+    visible: true,
+  };
+  const pythonPath = {
+    name: 'pythonPath',
+    type: 'string',
+    description: 'Path (fully qualified) to python executable.',
+    required: true,
+    visible: true,
+  };
+  const cwd = {
+    name: 'cwd',
+    type: 'string',
+    description:
+      'Absolute path to the working directory of the program being debugged. Default is the root directory of the file (leave empty).',
+    required: true,
+    visible: true,
+  };
+  const args = {
+    name: 'args',
+    type: 'array',
+    itemType: 'string',
+    description: 'Command line arguments passed to the program',
+    defaultValue: [],
+    required: false,
+    visible: true,
+  };
+  const stopOnEntry = {
+    name: 'stopOnEntry',
+    type: 'boolean',
+    description: 'Automatically stop after launch.',
+    defaultValue: false,
+    required: false,
+    visible: true,
+  };
+  const debugOptions = {
+    name: 'debugOptions',
+    type: 'array',
+    itemType: 'string',
+    description: 'Advanced options, view read me for further details.',
+    defaultValue: ['WaitOnAbnormalExit', 'WaitOnNormalExit', 'RedirectOutput'],
+    required: false,
+    visible: false,
+  };
+  const env = {
+    name: 'env',
+    type: 'object',
+    description:
+      'Environment variables defined as a key value pair. Property ends up being the Environment Variable and the value of the property ends up being the value of the Env Variable.',
+    defaultValue: {},
+    required: false,
+    visible: true,
+  };
 
   return {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.PYTHON,
       threads: true,
-      properties: generatePropertyArray(
-        launchProperties,
-        launchRequired,
-        launchVisible,
-      ),
+      properties: [
+        program,
+        pythonPath,
+        cwd,
+        args,
+        stopOnEntry,
+        debugOptions,
+        env,
+      ],
       scriptPropertyName: 'program',
       scriptExtension: '.py',
       cwdPropertyName: 'cwd',

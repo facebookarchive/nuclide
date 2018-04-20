@@ -114,11 +114,15 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           existingValue == null &&
           typeof property.defaultValue !== 'undefined'
         ) {
-          // String(propertyDescription.default) deals with both strings and numbers
+          // String(propertyDescription.default) deals with both strings and numbers and arrays
+          // JSON.stringify for JSON
+          // empty string otherwise
           const defaultValue =
-            type === 'string' || type === 'number' || type === 'json'
+            type === 'string' || type === 'number' || type === 'array'
               ? String(property.defaultValue)
-              : '';
+              : type === 'json'
+                ? JSON.stringify(property.defaultValue)
+                : '';
           atomInputValues.set(name, defaultValue);
         }
       } else if (type === 'boolean') {

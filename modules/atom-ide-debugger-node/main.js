@@ -18,7 +18,6 @@ import * as React from 'react';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import {generatePropertyArray} from 'nuclide-debugger-common/autogen-utils';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 
 class Activation {
@@ -32,75 +31,106 @@ class Activation {
         return new AutoGenLaunchAttachProvider(
           'Node',
           connection,
-          getNodeAutoGenConfig(),
+          getNodeConfig(),
         );
       },
     };
   }
 }
 
-function getNodeAutoGenConfig(): AutoGenConfig {
-  const pkgJson = require('./VendorLib/vscode-node-debug2/package.json');
-  const pkgJsonDescriptions = require('./VendorLib/vscode-node-debug2/package.nls.json');
-  const configurationAttributes =
-    pkgJson.contributes.debuggers[1].configurationAttributes;
-  Object.entries(configurationAttributes.launch.properties).forEach(
-    property => {
-      const name = property[0];
-      const descriptionSubstitution =
-        configurationAttributes.launch.properties[name].description;
-      if (
-        descriptionSubstitution != null &&
-        typeof descriptionSubstitution === 'string'
-      ) {
-        configurationAttributes.launch.properties[name].description =
-          pkgJsonDescriptions[descriptionSubstitution.slice(1, -1)];
-      }
-    },
-  );
-  configurationAttributes.launch.properties.runtimeExecutable = {
+function getNodeConfig(): AutoGenConfig {
+  const program = {
+    name: 'program',
+    type: 'string',
+    description: 'Absolute path to the program.',
+    required: true,
+    visible: true,
+  };
+  const cwd = {
+    name: 'cwd',
+    type: 'string',
+    description:
+      'Absolute path to the working directory of the program being debugged.',
+    required: true,
+    visible: true,
+  };
+  const stopOnEntry = {
+    name: 'stopOnEntry',
+    type: 'boolean',
+    description: 'Automatically stop program after launch.',
+    defaultValue: false,
+    required: false,
+    visible: true,
+  };
+
+  const args = {
+    name: 'args',
+    type: 'array',
+    itemType: 'string',
+    description: 'Command line arguments passed to the program.',
+    defaultValue: [],
+    required: false,
+    visible: true,
+  };
+  const runtimeExecutable = {
+    name: 'runtimeExecutable',
     type: 'string',
     description:
       "Runtime to use. Either an absolute path or the name of a runtime available on the PATH. If ommitted 'node' is assumed.",
-    default: '',
+    required: false,
+    visible: true,
   };
-  configurationAttributes.launch.properties.protocol = {
+  const env = {
+    name: 'env',
+    type: 'object',
+    description:
+      "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
+    defaultValue: {},
+    required: false,
+    visible: true,
+  };
+  const outFiles = {
+    name: 'outFiles',
+    type: 'array',
+    itemType: 'string',
+    description:
+      "If source maps are enabled, these glob patterns specify the generated JavaScript files. If a pattern starts with '!' the files are excluded. If not specified, the generated code is expected in the same directory as its source.",
+    defaultValue: [],
+    required: false,
+    visible: true,
+  };
+  const protocol = {
+    name: 'protocol',
     type: 'string',
     description: '',
-    default: 'inspector',
+    defaultValue: 'inspector',
+    required: false,
+    visible: false,
   };
 
-  const launchProperties = {};
-  const launchRequired = ['program', 'cwd'];
-  const launchVisible = launchRequired.concat([
-    'runtimeExecutable',
-    'args',
-    'outFiles',
-    'env',
-    'stopOnEntry',
-  ]);
-  const launchWhitelisted = new Set(
-    launchVisible.concat(['protocol', 'outFiles']),
-  );
-
-  Object.entries(configurationAttributes.launch.properties)
-    .filter(property => launchWhitelisted.has(property[0]))
-    .forEach(property => {
-      const name = property[0];
-      const propertyDetails: any = property[1];
-      launchProperties[name] = propertyDetails;
-    });
+  const port = {
+    name: 'port',
+    type: 'number',
+    description: 'Port',
+    required: true,
+    visible: true,
+  };
 
   return {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.NODE,
       threads: false,
-      properties: generatePropertyArray(
-        launchProperties,
-        launchRequired,
-        launchVisible,
-      ),
+      properties: [
+        program,
+        cwd,
+        stopOnEntry,
+        args,
+        runtimeExecutable,
+        env,
+        outFiles,
+        protocol,
+      ],
       scriptPropertyName: 'program',
       cwdPropertyName: 'cwd',
       scriptExtension: '.js',
@@ -112,15 +142,7 @@ function getNodeAutoGenConfig(): AutoGenConfig {
       launch: false,
       vsAdapterType: VsAdapterTypes.NODE,
       threads: false,
-      properties: [
-        {
-          name: 'port',
-          type: 'number',
-          description: 'Port',
-          required: true,
-          visible: true,
-        },
-      ],
+      properties: [port],
       scriptExtension: '.js',
       header: <p>Attach to a running node.js process</p>,
     },

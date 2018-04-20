@@ -61,7 +61,7 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
     itemType: 'string',
     description: 'Arguments to the executable',
     required: false,
-    defaultValue: '',
+    defaultValue: [],
     visible: true,
   };
   const environmentVariables = {
@@ -70,7 +70,7 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
     itemType: 'string',
     description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
     required: false,
-    defaultValue: '',
+    defaultValue: [],
     visible: true,
   };
   const workingDirectory = {
@@ -87,7 +87,7 @@ function getOCamlAutoGenConfig(): AutoGenConfig {
     description:
       'Additional include directories that debugger will use to search for source code',
     required: false,
-    defaultValue: '',
+    defaultValue: [],
     visible: true,
   };
   const breakAfterStart = {

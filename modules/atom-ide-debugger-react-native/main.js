@@ -89,7 +89,7 @@ function getReactNativeConfig(): AutoGenConfig {
     type: 'json',
     description:
       'A set of mappings for rewriting the locations of source files from what the sourcemap says, to their locations on disk. See README for details.',
-    defaultValue: '{}',
+    defaultValue: {},
     required: false,
     visible: true,
   };
@@ -97,7 +97,7 @@ function getReactNativeConfig(): AutoGenConfig {
     name: 'port',
     type: 'number',
     description: 'Debug port to attach to. Default is 8081.',
-    defaultValue: '8081',
+    defaultValue: 8081,
     required: false,
     visible: true,
   };

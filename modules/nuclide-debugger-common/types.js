@@ -112,7 +112,7 @@ export type AutoGenProperty = {
   type: AutoGenPropertyType,
   itemType?: AutoGenPropertyPrimitiveType,
   description: string,
-  defaultValue?: string | number | boolean,
+  defaultValue?: any,
   required: boolean,
   visible: boolean,
   enums?: string[],
