@@ -27,6 +27,10 @@ export function getShowGlobalVariables(): boolean {
   return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
 }
 
+export function getShowSignatureHelp(): boolean {
+  return Boolean(featureConfig.get('nuclide-python.showSignatureHelp'));
+}
+
 export function getEnableLinting(): boolean {
   return (featureConfig.get('nuclide-python.enableLinting'): any);
 }

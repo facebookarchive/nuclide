@@ -32,6 +32,7 @@ import {
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   getShowGlobalVariables,
+  getShowSignatureHelp,
   getAutocompleteArguments,
   getIncludeOptionalArguments,
 } from './config';
@@ -52,57 +53,61 @@ async function connectionToPythonService(
   return languageService;
 }
 
-const atomConfig: AtomLanguageServiceConfig = {
-  name: 'Python',
-  grammars: GRAMMARS,
-  outline: {
-    version: '0.1.0',
-    priority: 1,
-    analyticsEventName: 'python.outline',
-  },
-  codeFormat: {
-    version: '0.1.0',
-    priority: 1,
-    analyticsEventName: 'python.formatCode',
-    canFormatRanges: false,
-    canFormatAtPosition: false,
-  },
-  findReferences: {
-    version: '0.1.0',
-    analyticsEventName: 'python.get-references',
-  },
-  autocomplete: {
-    inclusionPriority: 5,
-    suggestionPriority: 5, // Higher than the snippets provider.
-    disableForSelector: '.source.python .comment, .source.python .string',
-    excludeLowerPriority: false,
-    analytics: {
-      eventName: 'nuclide-python',
-      shouldLogInsertedSuggestion: false,
+function getAtomConfig(): AtomLanguageServiceConfig {
+  return {
+    name: 'Python',
+    grammars: GRAMMARS,
+    outline: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'python.outline',
     },
-    autocompleteCacherConfig: {
-      updateResults: updateAutocompleteResults,
-      updateFirstResults: updateAutocompleteFirstResults,
+    codeFormat: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'python.formatCode',
+      canFormatRanges: false,
+      canFormatAtPosition: false,
     },
-    supportsResolve: false,
-  },
-  definition: {
-    version: '0.1.0',
-    priority: 20,
-    definitionEventName: 'python.get-definition',
-  },
-  typeHint: {
-    version: '0.0.0',
-    priority: 5,
-    analyticsEventName: 'python.hover',
-  },
-  signatureHelp: {
-    version: '0.1.0',
-    priority: 1,
-    triggerCharacters: new Set(['(', ',']),
-    analyticsEventName: 'python.signatureHelp',
-  },
-};
+    findReferences: {
+      version: '0.1.0',
+      analyticsEventName: 'python.get-references',
+    },
+    autocomplete: {
+      inclusionPriority: 5,
+      suggestionPriority: 5, // Higher than the snippets provider.
+      disableForSelector: '.source.python .comment, .source.python .string',
+      excludeLowerPriority: false,
+      analytics: {
+        eventName: 'nuclide-python',
+        shouldLogInsertedSuggestion: false,
+      },
+      autocompleteCacherConfig: {
+        updateResults: updateAutocompleteResults,
+        updateFirstResults: updateAutocompleteFirstResults,
+      },
+      supportsResolve: false,
+    },
+    definition: {
+      version: '0.1.0',
+      priority: 20,
+      definitionEventName: 'python.get-definition',
+    },
+    typeHint: {
+      version: '0.0.0',
+      priority: 5,
+      analyticsEventName: 'python.hover',
+    },
+    signatureHelp: getShowSignatureHelp()
+      ? {
+          version: '0.1.0',
+          priority: 1,
+          triggerCharacters: new Set(['(', ',']),
+          analyticsEventName: 'python.signatureHelp',
+        }
+      : undefined,
+  };
+}
 
 function resetServices(): void {
   getPythonServiceByConnection(null).reset();
@@ -119,7 +124,7 @@ class Activation {
   constructor(rawState: ?Object) {
     this._pythonLanguageService = new AtomLanguageService(
       connectionToPythonService,
-      atomConfig,
+      getAtomConfig(),
     );
     this._pythonLanguageService.activate();
     this._linkTreeLinter = new LinkTreeLinter();
