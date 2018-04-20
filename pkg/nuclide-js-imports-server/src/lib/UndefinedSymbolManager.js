@@ -106,7 +106,7 @@ function traverseTreeForUndefined(
         );
     },
     JSXIdentifier(path) {
-      if (!csx) {
+      if (!csx && path.parent.type === 'JSXOpeningElement') {
         if (path.node.name === FBT_TAG) {
           findUndefinedValues(path, undefinedSymbols, globals);
         } else {

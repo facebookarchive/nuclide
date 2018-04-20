@@ -63,7 +63,7 @@ describe('UndefinedSymbolManager', () => {
   });
   it('Should have special treatment for the fbt tag', () => {
     const manager = new UndefinedSymbolManager([]);
-    const program = 'const x = <fbt />;';
+    const program = 'const x = <fbt key="value"/>;';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols).toBeDefined();
