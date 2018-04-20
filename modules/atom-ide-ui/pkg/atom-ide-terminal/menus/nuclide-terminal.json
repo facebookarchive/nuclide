@@ -1,17 +1,17 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "View",
       "submenu": [
         {
           "label": "Terminal",
           "submenu": [
             {
-              "label": "New Project Terminal Window",
+              "label": "New Terminal Window",
               "command": "atom-ide-terminal:new-terminal"
             },
             {
-              "label": "New Local Terminal Window",
+              "label": "New Terminal Window (Local)",
               "command": "atom-ide-terminal:new-local-terminal"
             },
             {

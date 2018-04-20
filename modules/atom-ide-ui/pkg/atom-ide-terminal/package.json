@@ -3,7 +3,7 @@
   "displayName": "Terminal",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "A terminal integrated into nuclide.",
+  "description": "A terminal integrated into Atom IDE.",
   "author": "NEEDS OWNER",
   "private": true,
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
