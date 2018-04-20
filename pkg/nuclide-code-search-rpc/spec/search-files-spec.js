@@ -210,6 +210,69 @@ describe('Code search in files', () => {
         expect(results).diffJson(expected);
       });
     });
+    it('Can find context before and after matches', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool == null) {
+          return;
+        }
+        const results = await searchWithTool(tool, {
+          regex: /var x/,
+          recursive: false,
+          files: joinFolder(folder, ['file1.js']),
+          leadingLines: 2,
+          trailingLines: 2,
+        })
+          .toArray()
+          .toPromise();
+        const expected = loadExpectedFixture(folder, 'context-files-1.json');
+        sortResults(results);
+
+        expect(results).diffJson(expected);
+      });
+    });
+    it('Leading context found for match near first line.', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool == null) {
+          return;
+        }
+        const results = await searchWithTool(tool, {
+          regex: /console\.trace/,
+          recursive: false,
+          files: joinFolder(folder, ['file1.js']),
+          leadingLines: 2,
+          trailingLines: 2,
+        })
+          .toArray()
+          .toPromise();
+        const expected = loadExpectedFixture(folder, 'context-files-2.json');
+        sortResults(results);
+
+        expect(results).diffJson(expected);
+      });
+    });
+    it('Trailing context found for match near last line.', () => {
+      waitsForPromise(async () => {
+        const tool = await toolPromise;
+        if (tool == null) {
+          return;
+        }
+        const results = await searchWithTool(tool, {
+          regex: /console\.log/,
+          recursive: false,
+          files: joinFolder(folder, ['file1.js']),
+          leadingLines: 2,
+          trailingLines: 2,
+        })
+          .toArray()
+          .toPromise();
+        const expected = loadExpectedFixture(folder, 'context-files-3.json');
+        sortResults(results);
+
+        expect(results).diffJson(expected);
+      });
+    });
   });
 });
 

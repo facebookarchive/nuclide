@@ -12,11 +12,11 @@
 import type {CodeSearchResult, CodeSearchParams} from './types';
 
 import {Observable} from 'rxjs';
-import {observeGrepLikeProcess} from './handlerCommon';
-import {parseAckRgLine} from './parser';
+import {observeGrepLikeProcess, mergeOutputToResults} from './handlerCommon';
+import {parseProcessLine} from './parser';
 
 export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
-  const {regex, limit} = params;
+  const {regex, limit, leadingLines, trailingLines} = params;
   const searchSources = params.recursive ? [params.directory] : params.files;
   if (searchSources.length === 0) {
     return Observable.empty();
@@ -28,14 +28,15 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   const output = observeGrepLikeProcess(
     'rg',
     (regex.ignoreCase ? ['--ignore-case'] : [])
+      .concat(leadingLines != null ? ['-A', String(leadingLines)] : [])
+      .concat(trailingLines != null ? ['-B', String(trailingLines)] : [])
       .concat([
         // no colors, show line number, search hidden files,
-        // show column number, one result per line, show filename with null byte
+        // one result per line, show filename with null byte
         '--color',
         'never',
         '--line-number',
         '--hidden',
-        '--column',
         '--no-heading',
         '-H',
         '-0',
@@ -43,6 +44,13 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
         source,
       ])
       .concat(searchSources),
-  ).flatMap(event => parseAckRgLine(event, regex, 'rg'));
-  return limit != null ? output.take(limit) : output;
+  );
+  const results = mergeOutputToResults(
+    output,
+    event => parseProcessLine(event, 'rg'),
+    regex,
+    leadingLines || 0,
+    trailingLines || 0,
+  );
+  return limit != null ? results.take(limit) : results;
 }

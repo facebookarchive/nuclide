@@ -12,11 +12,11 @@
 import type {CodeSearchResult, CodeSearchParams} from './types';
 
 import {Observable} from 'rxjs';
-import {observeGrepLikeProcess} from './handlerCommon';
-import {parseAckRgLine} from './parser';
+import {observeGrepLikeProcess, mergeOutputToResults} from './handlerCommon';
+import {parseProcessLine} from './parser';
 
 export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
-  const {regex, limit} = params;
+  const {regex, limit, leadingLines, trailingLines} = params;
   const searchSources = params.recursive ? [params.directory] : params.files;
   if (searchSources.length === 0) {
     return Observable.empty();
@@ -28,20 +28,27 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   if (limit != null) {
     baseArgs.push('-m', String(limit));
   }
-  return observeGrepLikeProcess(
+  const output = observeGrepLikeProcess(
     'ack',
     baseArgs
+      .concat(leadingLines != null ? ['-A', String(leadingLines)] : [])
+      .concat(trailingLines != null ? ['-B', String(trailingLines)] : [])
       .concat([
-        // no colors, always show column of first match, one result per line,
-        // always show filename, no smart case
+        // no colors, one result per line, always show filename, no smart case
         '--with-filename',
         '--nosmart-case',
         '--nocolor',
         '--nopager',
-        '--column',
         '--nogroup',
         regex.source,
       ])
       .concat(searchSources),
-  ).flatMap(event => parseAckRgLine(event, regex, 'ack'));
+  );
+  return mergeOutputToResults(
+    output,
+    event => parseProcessLine(event, 'ack'),
+    regex,
+    leadingLines || 0,
+    trailingLines || 0,
+  );
 }

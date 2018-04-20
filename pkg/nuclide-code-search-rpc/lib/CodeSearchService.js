@@ -109,54 +109,23 @@ export function remoteAtomSearch(
 ): ConnectableObservable<search$FileResult> {
   return mergeSearchResults(
     searchInDirectories(directory, regex, subdirs, useVcsSearch, tool),
-    regex,
   ).publish();
 }
 
 // Convert CodeSearchResults into search$FileResult.
 function mergeSearchResults(
   codeSearchResults: Observable<CodeSearchResult>,
-  regex: RegExp,
 ): Observable<search$FileResult> {
   const results = codeSearchResults
-    .flatMap(searchResult => {
-      const {file, row, line} = searchResult;
-
-      // Try to extract all actual "matched" texts on the same line.
-      const result = [];
-      // Loop through each matched text on a line
-      let matchTextResult;
-      // Note: Atom will auto-insert 'g' flag, so, we can loop through all matches.
-      while ((matchTextResult = regex.exec(line)) != null) {
-        const matchText = matchTextResult[0];
-        const matchIndex = matchTextResult.index;
-        // Some invalid regex (e.g. /||/g) will always match,
-        // but with an empty match string, so the exec loop becomes infinite.
-        // Check for this case and abort early.
-        if (matchText.length === 0) {
-          break;
-        }
-        result.push({
-          filePath: file,
-          match: {
-            lineText: line,
-            lineTextOffset: 0,
-            matchText,
-            range: [[row, matchIndex], [row, matchIndex + matchText.length]],
-          },
-        });
-
-        // Handle corner case if 'g' flag is not provided
-        if (!regex.global) {
-          break;
-        }
-      }
-
-      // IMPORTANT: reset the regex for the next search
-      regex.lastIndex = 0;
-
-      return result;
-    })
+    .map(({file, row, line, column, matchLength}) => ({
+      filePath: file,
+      match: {
+        lineText: line,
+        lineTextOffset: 0,
+        matchText: line.slice(column, column + matchLength),
+        range: [[row, column], [row, column + matchLength]],
+      },
+    }))
     .share();
 
   return (
