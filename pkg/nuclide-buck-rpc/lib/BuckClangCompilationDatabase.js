@@ -159,12 +159,19 @@ class BuckClangCompilationDatabaseHandler {
     buckProjectRoot: string,
     target: string,
   ): Promise<BuckClangCompilationDatabase> {
-    // TODO(t12973165): Allow configuring a custom flavor.
-    // For now, this seems to use cxx.default_platform, which tends to be correct.
     const allFlavors = [
       'compilation-database',
       ...this._params.flavorsForTarget,
     ];
+    if (this._params.useDefaultPlatform) {
+      const platform = await BuckService.getDefaultPlatform(
+        buckProjectRoot,
+        target,
+      );
+      if (platform != null) {
+        allFlavors.push(platform);
+      }
+    }
     const allArgs =
       this._params.args.length === 0
         ? await BuckService._getFbRepoSpecificArgs(buckProjectRoot)

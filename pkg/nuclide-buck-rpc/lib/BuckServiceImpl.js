@@ -199,6 +199,24 @@ export function build(
   return _build(rootPath, buildTargets, options || {});
 }
 
+export async function getDefaultPlatform(
+  rootPath: NuclideUri,
+  target: string,
+): Promise<?string> {
+  const result = await query(rootPath, target, [
+    '--output-attributes',
+    'defaults',
+  ]);
+  if (
+    result[target] != null &&
+    result[target].defaults != null &&
+    result[target].defaults.platform != null
+  ) {
+    return result[target].defaults.platform;
+  }
+  return null;
+}
+
 export async function getOwners(
   rootPath: NuclideUri,
   filePath: NuclideUri,

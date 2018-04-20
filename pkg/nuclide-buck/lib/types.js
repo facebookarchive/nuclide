@@ -115,6 +115,7 @@ export type MobilePlatform = {
 export type CompilationDatabaseParams = {
   flavorsForTarget: Array<string>,
   args: Array<string>,
+  useDefaultPlatform?: boolean,
 };
 
 export type DesktopPlatform = {
