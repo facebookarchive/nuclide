@@ -9,8 +9,6 @@
  * @format
  */
 
-/* @providesModule HgConstants */
-
 import type {
   AmendModeValue,
   CommitPhaseType,
