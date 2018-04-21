@@ -55,7 +55,12 @@ export type Nuclicon =
   | 'nuclicon-metro-disabled'
   | 'nuclicon-metro-waiting'
   | 'nuclicon-lightbulb-filled'
-  | 'nuclicon-nt';
+  | 'nuclicon-nt'
+  | 'nuclicon-archive'
+  | 'nuclicon-infinity'
+  | 'nuclicon-desktop'
+  | 'nuclicon-mobile'
+  | 'nuclicon-lightning';
 
 export type IconName = Nuclicon | atom$Octicon;
 
