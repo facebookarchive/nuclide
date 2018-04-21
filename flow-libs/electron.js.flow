@@ -771,6 +771,7 @@ declare class electron$IpcRenderer {
   removeAllListeners(channel?: string): electron$IpcRenderer,
   send(channel: string, ...args: Array<any>): void,
   sendSync(channel: string, ...args: Array<any>): void,
+  sendTo(windowId: number, channel: string, ...args: Array<any>): void,
   sendToHost(channel: string, ...args: Array<any>): void,
 }
 

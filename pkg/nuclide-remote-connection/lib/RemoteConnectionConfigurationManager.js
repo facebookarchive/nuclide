@@ -20,10 +20,18 @@ import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import keytarWrapper from '../../commons-node/keytarWrapper';
+import electron from 'electron';
 
 const CONFIG_DIR = 'nuclide-connections';
-
 const logger = getLogger('nuclide-remote-connection');
+const remote = electron.remote;
+const ipc = electron.ipcRenderer;
+
+invariant(remote);
+invariant(ipc);
+
+export const SERVER_CONFIG_RESPONSE_EVENT = 'server-config-response';
+export const SERVER_CONFIG_REQUEST_EVENT = 'server-config-request';
 
 /**
  * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
@@ -52,6 +60,58 @@ function getStorageKey(host: string): string {
   return `${CONFIG_DIR}:${host}`;
 }
 
+async function getConnectionConfigViaIPC(
+  host: string,
+): Promise<?ServerConnectionConfiguration> {
+  const thisWindowsId = remote.getCurrentWindow().id;
+  const otherWindows = remote.BrowserWindow.getAllWindows().filter(
+    win => win.isVisible() && win.id !== thisWindowsId,
+  );
+  const timeoutInMilliseconds = 5000;
+
+  return new Promise(resolve => {
+    if (otherWindows.length === 0) {
+      resolve(null);
+      return;
+    }
+
+    let responseCount = 0;
+
+    // set a timeout to remove all listeners and resolve if
+    // we don't get responses in some fixed amount of time
+    const timeout = setTimeout(() => {
+      logger.error('timed out waiting for ipc response(s) from other windows');
+      resolve(null);
+      ipc.removeAllListeners(SERVER_CONFIG_RESPONSE_EVENT);
+    }, timeoutInMilliseconds);
+
+    ipc.on(
+      SERVER_CONFIG_RESPONSE_EVENT,
+      (event, config: ?ServerConnectionConfiguration) => {
+        responseCount++;
+
+        if (config != null || responseCount === otherWindows.length) {
+          if (config != null) {
+            logger.info('received the config! removing other listeners');
+          }
+          resolve(config);
+          clearTimeout(timeout);
+          ipc.removeAllListeners(SERVER_CONFIG_RESPONSE_EVENT);
+        }
+      },
+    );
+
+    otherWindows.forEach(window => {
+      logger.info(`requesting config from window ${window.id}`);
+
+      // NOTE: I tried using sendTo here but it wasn't working well
+      // (seemed like it was flaky). It might be worth trying it
+      // again after we upgrade electron
+      window.send(SERVER_CONFIG_REQUEST_EVENT, host, thisWindowsId);
+    });
+  });
+}
+
 export async function getConnectionConfig(
   host: string,
 ): Promise<?ServerConnectionConfiguration> {
@@ -63,7 +123,11 @@ export async function getConnectionConfig(
     return await decryptConfig(JSON.parse(storedConfig));
   } catch (e) {
     logger.error(`The configuration file for ${host} is corrupted.`, e);
-    return null;
+
+    logger.info('falling back to getting the config via ipc');
+    const config = await getConnectionConfigViaIPC(host);
+
+    return config;
   }
 }
 

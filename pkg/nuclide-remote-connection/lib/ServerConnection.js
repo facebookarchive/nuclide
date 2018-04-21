@@ -28,6 +28,8 @@ import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {
   setConnectionConfig,
   clearConnectionConfig,
+  SERVER_CONFIG_REQUEST_EVENT,
+  SERVER_CONFIG_RESPONSE_EVENT,
 } from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
@@ -46,6 +48,15 @@ import {getLogger} from 'log4js';
 import {getVersion} from '../../nuclide-version';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigRpcClient from './createBigDigRpcClient';
+
+import electron from 'electron';
+
+const logger = getLogger('nuclide-remote-connection');
+const remote = electron.remote;
+const ipc = electron.ipcRenderer;
+
+invariant(remote);
+invariant(ipc);
 
 export type ServerConnectionVersion = 1 | 2;
 export const BIG_DIG_VERSION: ServerConnectionVersion = 2;
@@ -141,6 +152,23 @@ export class ServerConnection {
         'FileWatcherService',
       );
       return fileWatcherService.watchDirectory(path).refCount();
+    });
+
+    ipc.on(SERVER_CONFIG_REQUEST_EVENT, (event, host, id) => {
+      logger.info(
+        `received request for server config for ${host} from window ${id}`,
+      );
+      let response = null;
+      if (host === this._config.host) {
+        logger.info(`found the server config for ${host}, sending it via ipc`);
+        response = this._config;
+      }
+
+      const window = remote.BrowserWindow.getAllWindows().filter(
+        win => win.id === id,
+      )[0];
+      invariant(window);
+      window.send(SERVER_CONFIG_RESPONSE_EVENT, response);
     });
   }
 
@@ -284,6 +312,8 @@ export class ServerConnection {
     if (this._healthNotifier != null) {
       this._healthNotifier.dispose();
     }
+
+    ipc.removeAllListeners(SERVER_CONFIG_REQUEST_EVENT);
   }
 
   getClient(): RpcConnection<Transport> {
@@ -387,7 +417,7 @@ export class ServerConnection {
       'Attempt to remove a non-existent RemoteConnection',
     );
     this._connections.splice(this._connections.indexOf(connection), 1);
-    getLogger('nuclide-remote-connection').info('Removed connection.', {
+    logger.info('Removed connection.', {
       cwd: connection.getUriForInitialWorkingDirectory(),
       title: connection.getDisplayTitle(),
       remainingConnections: this._connections.length,
