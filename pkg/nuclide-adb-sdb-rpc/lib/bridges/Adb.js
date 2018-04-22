@@ -145,7 +145,20 @@ export class Adb extends DebugBridge {
   installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this.runLongCommand('install', '-r', packagePath);
+    // The -d option allows downgrades, which happen frequently during development.
+    return this.getAPIVersion()
+      .map(version => parseInt(version, 10) >= 17)
+      .catch(() => Observable.of(false))
+      .switchMap(canUseDowngradeOption =>
+        this.runLongCommand(
+          ...[
+            'install',
+            '-r',
+            ...(canUseDowngradeOption ? ['-d'] : []),
+            packagePath,
+          ],
+        ),
+      );
   }
 
   uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
