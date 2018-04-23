@@ -23,8 +23,8 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   }
   const args = (regex.ignoreCase ? ['-i'] : [])
     .concat(limit != null ? ['-m', String(limit)] : [])
-    .concat(leadingLines != null ? ['-A', String(leadingLines)] : [])
-    .concat(trailingLines != null ? ['-B', String(trailingLines)] : [])
+    .concat(leadingLines != null ? ['-B', String(leadingLines)] : [])
+    .concat(trailingLines != null ? ['-A', String(trailingLines)] : [])
     .concat([
       // recursive, always print filename, print line number with null byte,
       // use extended regex

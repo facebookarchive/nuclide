@@ -220,7 +220,7 @@ describe('Code search in files', () => {
           regex: /var x/,
           recursive: false,
           files: joinFolder(folder, ['file1.js']),
-          leadingLines: 2,
+          leadingLines: 1,
           trailingLines: 2,
         })
           .toArray()

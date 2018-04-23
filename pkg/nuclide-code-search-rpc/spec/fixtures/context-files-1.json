@@ -3,7 +3,6 @@
     "column": 11,
     "file": "file1.js",
     "leadingContext": [
-      "        // console.trace(x);",
       "        console3log(b);"
     ],
     "line": "        // var x = a + 2;",

@@ -31,8 +31,8 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   const output = observeGrepLikeProcess(
     'ack',
     baseArgs
-      .concat(leadingLines != null ? ['-A', String(leadingLines)] : [])
-      .concat(trailingLines != null ? ['-B', String(trailingLines)] : [])
+      .concat(leadingLines != null ? ['-B', String(leadingLines)] : [])
+      .concat(trailingLines != null ? ['-A', String(trailingLines)] : [])
       .concat([
         // no colors, one result per line, always show filename, no smart case
         '--with-filename',

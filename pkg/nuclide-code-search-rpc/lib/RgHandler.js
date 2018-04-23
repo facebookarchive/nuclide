@@ -28,8 +28,8 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
   const output = observeGrepLikeProcess(
     'rg',
     (regex.ignoreCase ? ['--ignore-case'] : [])
-      .concat(leadingLines != null ? ['-A', String(leadingLines)] : [])
-      .concat(trailingLines != null ? ['-B', String(trailingLines)] : [])
+      .concat(leadingLines != null ? ['-B', String(leadingLines)] : [])
+      .concat(trailingLines != null ? ['-A', String(trailingLines)] : [])
       .concat([
         // no colors, show line number, search hidden files,
         // one result per line, show filename with null byte
