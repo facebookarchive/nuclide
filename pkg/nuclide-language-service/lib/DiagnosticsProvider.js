@@ -16,7 +16,11 @@ import type {
   DiagnosticProviderUpdate,
   DiagnosticUpdateCallback,
 } from 'atom-ide-ui';
-import type {FileDiagnosticMap, LanguageService} from './LanguageService';
+import type {
+  FileDiagnosticMap,
+  LanguageService,
+  FileDiagnosticProviderUpdate,
+} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
 
 import {Cache} from 'nuclide-commons/cache';
@@ -297,7 +301,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
 }
 
 export class ObservableDiagnosticProvider<T: LanguageService> {
-  updates: Observable<DiagnosticProviderUpdate>;
+  updates: Observable<FileDiagnosticProviderUpdate>;
   invalidations: Observable<DiagnosticInvalidationMessage>;
   _analyticsEventName: string;
   _grammarScopes: Set<string>;

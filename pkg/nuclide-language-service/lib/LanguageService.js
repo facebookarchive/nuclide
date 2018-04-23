@@ -114,6 +114,12 @@ export type FileDiagnosticMessage = {|
 // Ensure that this is actually a subset.
 (((null: any): FileDiagnosticMessage): DiagnosticMessage);
 
+// A (RPC-able) subset of DiagnosticProviderUpdate.
+export type FileDiagnosticProviderUpdate = Map<
+  NuclideUri,
+  Array<FileDiagnosticMessage>,
+>;
+
 export type FileDiagnosticMap = Map<NuclideUri, Array<FileDiagnosticMessage>>;
 export type CodeLensData = {
   range: atom$Range,

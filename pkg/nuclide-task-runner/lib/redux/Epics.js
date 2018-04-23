@@ -634,6 +634,7 @@ function createTaskObservable(
     const taskStatus = {
       metadata: taskMeta,
       task,
+      progress: null,
       startDate: new Date(),
     };
     const events = observableFromTask(task);
