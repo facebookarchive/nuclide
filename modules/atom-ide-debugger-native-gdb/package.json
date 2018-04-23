@@ -31,7 +31,6 @@
     "nuclide-prebuilt-libs": "0.4.0",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
-    "v8-compile-cache": "1.1.0",
     "vscode-debugadapter": "1.24.0",
     "vscode-debugprotocol": "1.24.0",
     "yargs": "3.32.0"

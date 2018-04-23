@@ -14,7 +14,6 @@
    rulesdir/no-commonjs: 0,
    */
 
-require('v8-compile-cache');
 // eslint-disable-next-line rulesdir/modules-dependencies
 const {__DEV__} = require('nuclide-node-transpiler/lib/env');
 if (__DEV__) {
