@@ -76,7 +76,10 @@ export class TunnelsPanel {
             .subscribe({
               error: e => {
                 if (!noMoreNotifications) {
-                  atom.notifications.addError(e);
+                  atom.notifications.addError('Failed to open tunnel', {
+                    detail: e.code,
+                    dismissable: true,
+                  });
                 }
               },
             });
