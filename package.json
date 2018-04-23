@@ -188,7 +188,7 @@
     "eslint-plugin-prettier": "2.3.1",
     "eslint-plugin-react": "7.4.0",
     "eslint-plugin-rulesdir": "0.1.0",
-    "flow-bin": "0.67.1",
+    "flow-bin": "0.68.0",
     "jasmine-node": "1.14.5",
     "jest-cli": "22.4.2",
     "jest-mock": "22.2.0",

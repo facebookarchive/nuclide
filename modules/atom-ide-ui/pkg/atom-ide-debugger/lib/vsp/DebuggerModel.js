@@ -1114,6 +1114,7 @@ export class Model implements IModel {
   async fetchCallStack(threadI: IThread): Promise<void> {
     const thread: Thread = (threadI: any);
     if (
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       nullthrows(thread.process).session.capabilities
         .supportsDelayedStackTraceLoading
     ) {

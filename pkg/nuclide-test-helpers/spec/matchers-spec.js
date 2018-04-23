@@ -43,6 +43,7 @@ describe('matchers', () => {
         chalk.gray('}');
 
       expect(isMatch).toBe(false);
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       invariant(typeof match.message === 'function');
       expect(match.message()).toEqual(expected);
     });
@@ -69,6 +70,7 @@ describe('matchers', () => {
         chalk.gray('line1\n') + chalk.green('line2\n') + chalk.gray('line3');
 
       expect(isMatch).toBe(false);
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       invariant(typeof match.message === 'function');
       expect(match.message()).toEqual(expected);
     });

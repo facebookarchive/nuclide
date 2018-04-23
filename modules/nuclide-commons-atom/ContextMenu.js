@@ -217,6 +217,7 @@ export default class ContextMenu {
     // Context menu commands contain a specific `detail` parameter:
     // https://github.com/atom/atom/blob/v1.15.0/src/main-process/context-menu.coffee#L17
     return (
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       Array.isArray(event.detail) &&
       // flowlint-next-line sketchy-null-mixed:off
       event.detail[0] &&

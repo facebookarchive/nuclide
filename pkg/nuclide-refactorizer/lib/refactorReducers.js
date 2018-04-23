@@ -38,6 +38,7 @@ export default function refactorReducers(
     state = {type: 'closed'};
   }
 
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (action.error) {
     // We handle errors in epics, display an appropriate message, and then send an ordinary action
     // to update the state appropriately.

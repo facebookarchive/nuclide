@@ -900,6 +900,7 @@ export class LspLanguageService {
     const exceptionStack = e.stack;
     const callStack = new Error().stack;
     const remoteStack =
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       e.data != null && e.data.stack != null ? e.data.stack : null;
 
     track('lsp-exception', {
@@ -909,10 +910,12 @@ export class LspLanguageService {
       callStack,
       remoteStack,
       state: this._state,
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       code: typeof e.code === 'number' ? e.code : null,
     });
 
     if (
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       e.code != null &&
       // eslint-disable-next-line rulesdir/api-spelling
       Number(e.code) === ErrorCodes.RequestCancelled &&
@@ -1847,7 +1850,7 @@ export class LspLanguageService {
           this._languageServerName
         } is not currently in a state to handle the request`,
       );
-      // flowlint-next-line sketchy-null-mixed:off
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     } else if (!this._serverCapabilities.executeCommandProvider) {
       throw new Error(`${this._languageServerName} cannot handle the request`);
     }

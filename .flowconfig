@@ -9,6 +9,11 @@
 <PROJECT_ROOT>/node_modules/rxjs/.*
 <PROJECT_ROOT>/node_modules/semver/.*
 <PROJECT_ROOT>/node_modules/jest-validate/.*
+; TODO(T28589014): re-enable flow typing of graphql module
+<PROJECT_ROOT>/node_modules/graphql/.*
+<PROJECT_ROOT>/node_modules/graphql-language-service/.*
+<PROJECT_ROOT>/node_modules/graphql-language-service-utils/.*
+<PROJECT_ROOT>/node_modules/graphql-language-service-types/.*
 ; annotated with `@flow` but have errors
 <PROJECT_ROOT>/node_modules/\(.*/\)*fbjs/lib/.*
 <PROJECT_ROOT>/modules/nuclide-node-transpiler/spec/fixtures/.*
@@ -37,4 +42,4 @@ sketchy-null=error
 sketchy-null-bool=off
 
 [version]
-0.67.1
+0.68.0

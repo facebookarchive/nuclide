@@ -326,6 +326,7 @@ export class QueuedAckTransport {
       // See T27348369 for more details.
       if (
         process.platform === 'win32' &&
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
         typeof process.activateUvLoop === 'function'
       ) {
         process.activateUvLoop();

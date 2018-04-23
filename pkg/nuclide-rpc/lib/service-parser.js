@@ -366,6 +366,7 @@ class FileParser {
     serviceParser: ServiceParser,
     declaration: any,
   ): FunctionDefinition {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (this._fileType === 'import') {
       throw this._error(declaration, 'Exported function in imported RPC file');
     }
@@ -431,6 +432,7 @@ class FileParser {
     serviceParser: ServiceParser,
     declaration: Object,
   ): InterfaceDefinition {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (this._fileType === 'import') {
       throw this._error(declaration, 'Exported class in imported RPC file');
     }

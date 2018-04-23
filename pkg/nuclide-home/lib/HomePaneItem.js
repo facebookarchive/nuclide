@@ -173,6 +173,7 @@ export default class HomePaneItem extends React.Component<
 
 function trackAnchorClicks(e: SyntheticMouseEvent<>) {
   const {target} = e;
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (target.tagName !== 'A' || target.href == null) {
     return;
   }

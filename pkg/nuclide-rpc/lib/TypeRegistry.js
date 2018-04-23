@@ -896,6 +896,7 @@ function addMarshallingContextToError(
   value: any,
   e: Error,
 ): void {
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (e.hasMarshallingError == null) {
     (e: any).hasMarshallingError = true;
     e.message += `\nError marshalling value: '${valueToString(value)}'\n`;

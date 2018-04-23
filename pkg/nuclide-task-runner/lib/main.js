@@ -60,6 +60,7 @@ const SERIALIZED_VERSION = 2;
 const COMMON_TASK_TYPES = ['build', 'run', 'test', 'debug'];
 
 function getVisible(event: Event): ?boolean {
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (event.detail != null && typeof event.detail === 'object') {
     const {visible} = event.detail;
     return visible != null ? Boolean(visible) : null;
@@ -412,7 +413,7 @@ class Activation {
 createPackage(module.exports, Activation);
 
 function activateInitialPackagesObservable(): Observable<void> {
-  // flowlint-next-line sketchy-null-mixed:off
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (atom.packages.hasActivatedInitialPackages) {
     return Observable.of(undefined);
   }

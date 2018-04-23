@@ -183,6 +183,7 @@ export function getMountedReactRootNames(): Array<string> {
     .map(([element, container]) => element)
     .map(element => {
       const constructor = element.constructor;
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (typeof constructor.displayName === 'string') {
         return constructor.displayName;
       } else if (typeof constructor.name === 'string') {

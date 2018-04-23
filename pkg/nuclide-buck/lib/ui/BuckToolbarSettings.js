@@ -113,6 +113,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
       );
     } else if (buckversionFileContents instanceof Error) {
       let errorMessage;
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (buckversionFileContents.code === 'ENOENT') {
         errorMessage = 'not found';
       } else {

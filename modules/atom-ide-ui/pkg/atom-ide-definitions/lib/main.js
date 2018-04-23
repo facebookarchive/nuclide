@@ -198,7 +198,7 @@ class Activation {
       grammar,
     );
 
-    // flowlint-next-line sketchy-null-mixed:off
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (previewDatatip != null && previewDatatip.markedStrings) {
       analytics.track('hyperclick-preview-popup', {
         grammar: grammar.name,

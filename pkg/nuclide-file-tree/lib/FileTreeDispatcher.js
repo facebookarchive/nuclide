@@ -309,6 +309,7 @@ export const ActionTypes = Object.freeze({
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.
+// $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
 (('': $PropertyType<FileTreeAction, 'actionType'>): $Keys<typeof ActionTypes>);
 
 let instance: ?FileTreeDispatcher;

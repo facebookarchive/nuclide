@@ -123,10 +123,12 @@ function getDirectoryByKey(key: string): ?Directory {
       return connection.createDirectory(path);
     }
   } else if (nuclideUri.hasKnownArchiveExtension(key)) {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     return ROOT_ARCHIVE_FS.newArchiveFileAsDirectory(path);
   } else if (!nuclideUri.isInArchive(path)) {
     return new LocalDirectory(path);
   } else {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     return ROOT_ARCHIVE_FS.newArchiveDirectory(path);
   }
 }
@@ -144,6 +146,7 @@ function getFileByKey(key: string): ?File {
   } else if (!nuclideUri.isInArchive(path)) {
     return new LocalFile(path);
   } else {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     return ROOT_ARCHIVE_FS.newArchiveFile(path);
   }
 }

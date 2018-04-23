@@ -541,6 +541,7 @@ function getTaskTrackEventData(action: Action, state: AppState): Object {
   const {taskStatus} = action.payload;
   const {task} = taskStatus;
   const taskTrackingData =
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     typeof task.getTrackingData === 'function' ? task.getTrackingData() : {};
   const error =
     action.type === Actions.TASK_ERRORED ? action.payload.error : null;

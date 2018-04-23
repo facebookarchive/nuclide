@@ -37,7 +37,8 @@ class Activation {
     provider.priority =
       provider.priority != null
         ? provider.priority
-        : provider.inclusionPriority != null
+        : // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+          provider.inclusionPriority != null
           ? provider.inclusionPriority
           : 0;
     if (provider.formatCode) {

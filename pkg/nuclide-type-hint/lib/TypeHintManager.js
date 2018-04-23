@@ -49,7 +49,7 @@ export default class TypeHintManager {
     const typeHint = await analytics.trackTiming(name + '.typeHint', () =>
       provider.typeHint(editor, position),
     );
-    // flowlint-next-line sketchy-null-mixed:off
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (!typeHint || this._marker || !typeHint.hint.length === 0) {
       return;
     }

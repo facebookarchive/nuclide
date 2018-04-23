@@ -57,6 +57,7 @@ class FindAndReplaceProvider {
       const paneContainer = paneElem.parentElement;
       if (
         paneContainer != null &&
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
         paneContainer.style != null &&
         paneContainer.style.display != null
       ) {

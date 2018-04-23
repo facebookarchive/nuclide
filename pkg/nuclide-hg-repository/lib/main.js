@@ -61,6 +61,7 @@ function shouldDisplayActionTreeItem(
       if (
         node.repo == null ||
         node.repo.getType() !== 'hg' ||
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
         typeof node.repo.isStatusUntracked !== 'function'
       ) {
         return false;

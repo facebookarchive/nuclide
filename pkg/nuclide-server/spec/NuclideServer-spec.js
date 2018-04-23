@@ -96,6 +96,7 @@ describe('Nuclide Server test suite', () => {
       runs(() => {
         // Close the client socket and start a reconnect trial, send a message in between.
         // A server socket close will trigger a client disconnect and a scheduled reconnect.
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
         if (serverSocketClient != null && serverSocketClient.socket != null) {
           // $FlowIgnore: This test has bitrotted
           serverSocketClient.socket.close();

@@ -68,6 +68,7 @@ class Activation {
       }),
       atom.commands.add('.console-record', 'console:copy-message', event => {
         const el = event.target;
+        // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
         if (el == null || typeof el.innerText !== 'string') {
           return;
         }
@@ -145,6 +146,7 @@ class Activation {
   consumeWatchEditor(watchEditor: WatchEditorFunction): IDisposable {
     this._getStore().dispatch(Actions.setWatchEditor(watchEditor));
     return new UniversalDisposable(() => {
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (this._getStore().getState().watchEditor === watchEditor) {
         this._getStore().dispatch(Actions.setWatchEditor(null));
       }

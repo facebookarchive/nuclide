@@ -342,9 +342,11 @@ export class SshHandshake {
   }
 
   _updateServerInfo(serverInfo: {}) {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     invariant(typeof serverInfo.port === 'number');
     this._remotePort = serverInfo.port || 0;
     this._remoteHost =
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       typeof serverInfo.hostname === 'string'
         ? serverInfo.hostname
         : this._config.host;
@@ -352,6 +354,7 @@ export class SshHandshake {
     // Because the value for the Initial Directory that the user supplied may have
     // been a symlink that was resolved by the server, overwrite the original `cwd`
     // value with the resolved value.
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     invariant(typeof serverInfo.workspace === 'string');
     this._config.cwd = serverInfo.workspace;
 
@@ -360,12 +363,15 @@ export class SshHandshake {
     // Do not throw when any of them (`ca`, `cert`, or `key`) are undefined because that will be the
     // case when the server is started in "insecure" mode. See `::_isSecure`, which returns the
     // security of this connection after the server is started.
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (typeof serverInfo.ca === 'string') {
       this._certificateAuthorityCertificate = new Buffer(serverInfo.ca);
     }
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (typeof serverInfo.cert === 'string') {
       this._clientCertificate = new Buffer(serverInfo.cert);
     }
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (typeof serverInfo.key === 'string') {
       this._clientKey = new Buffer(serverInfo.key);
     }

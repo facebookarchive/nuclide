@@ -90,6 +90,7 @@ export default class KeyBindingHint extends React.Component<any, State> {
     if (!this._areProcessingUserEvent) {
       this._areProcessingUserEvent = true;
       // If they are already using the keyboard, they don't need our advice.
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (event.originalEvent instanceof KeyboardEvent) {
         this.setState({event: null});
       } else {

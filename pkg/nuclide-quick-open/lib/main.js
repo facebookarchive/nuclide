@@ -131,7 +131,7 @@ class Activation {
           'quickopen-provider': providerName,
           'quickopen-session': this._analyticsSessionId || '',
           // Because the `provider` is usually OmniSearch, also track the original provider.
-          // flowlint-next-line sketchy-null-mixed:off
+          // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
           'quickopen-provider-source': selection.sourceProvider || '',
         });
       }

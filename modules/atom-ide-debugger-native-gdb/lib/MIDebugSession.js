@@ -186,6 +186,7 @@ class MIDebugSession extends LoggingDebugSession {
     args: LaunchRequestArguments,
   ): Promise<void> {
     logger.setup(
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
       true,
     );
@@ -263,6 +264,7 @@ class MIDebugSession extends LoggingDebugSession {
     args: AttachRequestArguments,
   ): Promise<void> {
     logger.setup(
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
       true,
     );

@@ -225,6 +225,7 @@ export default class NuclideSettingsPaneItem extends React.Component<
 }
 
 function getOrder(schema: atom$ConfigSchema): number {
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   return typeof schema.order === 'number' ? schema.order : 0;
 }
 

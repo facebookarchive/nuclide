@@ -528,7 +528,7 @@ export default function createProxyGenerator(
     const convertArgs = [id, objectToLiteral(type)];
 
     // If the type is parameterized, we send the parameters as an optional fourth argument.
-    // flowlint-next-line sketchy-null-mixed:off
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (type.param) {
       convertArgs.push(objectToLiteral(type.param));
     }

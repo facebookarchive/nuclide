@@ -71,6 +71,7 @@ function doSplit(
 function findNearestPane(el_: HTMLElement): ?atom$Pane {
   let el = el_;
   while (el != null) {
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (el.tagName === 'ATOM-PANE' && typeof el.getModel === 'function') {
       return el.getModel();
     }

@@ -100,6 +100,7 @@ export function getRuntimePath(): string {
   // Linux: "/usr/share/atom/resources"
   // Windows: "C:\\Users\\asuarez\\AppData\\Local\\atom\\app-1.6.2\\resources"
   //          "C:\Atom\resources"
+  // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
   if (global.atom && typeof process.resourcesPath === 'string') {
     const resourcesPath = process.resourcesPath;
     if (os.platform() === 'darwin') {

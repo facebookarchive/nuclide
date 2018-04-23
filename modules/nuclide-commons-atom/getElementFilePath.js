@@ -23,6 +23,7 @@ export default function getElementFilePath(
     if (el.dataset != null && el.dataset.path != null) {
       return (el.dataset: any).path;
     }
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (typeof el.getModel === 'function') {
       const model = el.getModel();
       if (isValidTextEditor(model)) {

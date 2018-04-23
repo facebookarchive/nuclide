@@ -113,6 +113,7 @@ export function registerRecordProviderEpic(
 
     // TODO: Can this be delayed until sometime after registration?
     const statusActions =
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       typeof recordProvider.observeStatus === 'function'
         ? observableFromSubscribeFunction(recordProvider.observeStatus).map(
             status => Actions.updateStatus(recordProvider.id, status),

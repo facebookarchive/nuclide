@@ -138,7 +138,6 @@ export class ModalMultiSelect extends React.Component<Props, State> {
           this._modal = c;
         }}
         onDismiss={this._dismissModal}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <MultiSelectList
           commandScope={atom.views.getView(atom.workspace)}
           value={this.state.activeValues}

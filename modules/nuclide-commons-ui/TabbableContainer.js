@@ -225,6 +225,7 @@ function eachTabIndexedElement(
     index = (index + elements.length + increment) % elements.length;
     const element = elements[index];
     if (
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       element.disabled === true ||
       element.tabIndex == null ||
       element.tabIndex === -1

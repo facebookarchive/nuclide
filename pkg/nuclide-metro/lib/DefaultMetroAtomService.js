@@ -59,6 +59,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
         onRunning: error => {
           if (error != null) {
             // Handling these errors here because LogTailer never becomes "ready"
+            // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
             if (error.code === NO_METRO_PROJECT_ERROR) {
               atom.notifications.addError('Could not find Metro project', {
                 dismissable: true,
@@ -67,6 +68,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
                   ' `node_modules` directory with react-native installed, or a .buckconfig file' +
                   ' with a `[react-native]` section that has a `server` key.',
               });
+              // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
             } else if (error.code === METRO_PORT_BUSY_ERROR) {
               atom.notifications.addWarning(
                 'Metro failed to start. This is expected if you are ' +

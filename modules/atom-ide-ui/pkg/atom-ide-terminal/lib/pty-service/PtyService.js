@@ -39,6 +39,7 @@ export async function spawn(info: PtyInfo, client: PtyClient): Promise<Pty> {
 export async function useTitleAsPath(client: PtyClient): Promise<boolean> {
   try {
     const config = await readConfig();
+    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (config != null && config.useTitleAsPath != null) {
       return config.useTitleAsPath;
     }

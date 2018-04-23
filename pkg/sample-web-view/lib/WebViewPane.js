@@ -52,6 +52,7 @@ class WebViewPane extends HTMLElement {
     this._webview = webview;
 
     webview.addEventListener('page-title-set', (event: Event) => {
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (typeof event.title === 'string') {
         this._title = event.title;
         this._emitter.emit('did-change-title');
@@ -61,7 +62,7 @@ class WebViewPane extends HTMLElement {
     // Unfortunately, page-title-set never seems to fire, so we listen for frame loads and update
     // the title based on those instead.
     webview.addEventListener('did-frame-finish-load', (event: Event) => {
-      // flowlint-next-line sketchy-null-mixed:off
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       if (event.isMainFrame) {
         this._title = webview.getTitle();
         this._emitter.emit('did-change-title');
