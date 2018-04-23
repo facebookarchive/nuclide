@@ -1,47 +1,47 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";Object.defineProperty(exports, "__esModule", { value: true });
 
-/**
- * Tiny class that is useful to cache simple values.
- * It's quite useful for promises with a Cache<Promise<T>> which allows reusing the same promise.
- */
 
-type DisposeCallback<T> = (value: T) => void;
-type KeyFactory<KeyArgs> = (args: KeyArgs) => mixed;
 
-type CacheConfig<KeyArgs, T> = {
-  keyFactory?: KeyFactory<KeyArgs>,
-  dispose?: DisposeCallback<T>,
-};
 
-export class Cache<KeyArgs, T> {
-  store: Map<mixed, T> = new Map();
-  _dispose: ?DisposeCallback<T>;
-  _keyFactory: KeyFactory<KeyArgs>;
 
-  constructor(config: CacheConfig<KeyArgs, T> = {}) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Cache {
+
+
+
+
+  constructor(config = {}) {this.store = new Map();
     if (config.dispose != null) {
       this._dispose = config.dispose;
     }
     this._keyFactory =
-      config.keyFactory != null
-        ? config.keyFactory
-        : (keyArgs: KeyArgs) => keyArgs;
+    config.keyFactory != null ?
+    config.keyFactory :
+    keyArgs => keyArgs;
   }
 
-  _getUnsafe(key: mixed): T {
-    return ((this.store.get(key): any): T);
+  _getUnsafe(key) {
+    return this.store.get(key);
   }
 
-  getOrCreate(keyArgs: KeyArgs, factory: (KeyArgs, mixed) => T): T {
+  getOrCreate(keyArgs, factory) {
     const key = this._keyFactory(keyArgs);
     if (this.store.has(key)) {
       return this._getUnsafe(key);
@@ -51,7 +51,7 @@ export class Cache<KeyArgs, T> {
     return value;
   }
 
-  delete(keyArgs: KeyArgs): void {
+  delete(keyArgs) {
     const key = this._keyFactory(keyArgs);
     if (this._dispose != null) {
       this._ifHas(key, this._dispose);
@@ -59,32 +59,43 @@ export class Cache<KeyArgs, T> {
     this.store.delete(key);
   }
 
-  clear(): void {
+  clear() {
     if (this._dispose != null) {
       this.store.forEach(this._dispose);
     }
     this.store.clear();
   }
 
-  get(keyArgs: KeyArgs): ?T {
+  get(keyArgs) {
     return this.store.get(this._keyFactory(keyArgs));
   }
 
-  set(keyArgs: KeyArgs, value: T): void {
+  set(keyArgs, value) {
     this.store.set(this._keyFactory(keyArgs), value);
   }
 
-  ifHas(keyArgs: KeyArgs, callback: (value: T) => void) {
+  ifHas(keyArgs, callback) {
     this._ifHas(this._keyFactory(keyArgs), callback);
   }
 
-  _ifHas(key: mixed, callback: (value: T) => void) {
+  _ifHas(key, callback) {
     if (this.store.has(key)) {
       callback(this._getUnsafe(key));
     }
   }
 
-  keyForArgs(keyArgs: KeyArgs): mixed {
+  keyForArgs(keyArgs) {
     return this._keyFactory(keyArgs);
-  }
-}
+  }}exports.Cache = Cache; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            * @format
+                            */ /**
+                                * Tiny class that is useful to cache simple values.
+                                * It's quite useful for promises with a Cache<Promise<T>> which allows reusing the same promise.
+                                */

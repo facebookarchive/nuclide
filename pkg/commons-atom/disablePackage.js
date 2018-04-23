@@ -1,29 +1,29 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';var _featureConfig;
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-function deactivateAndUnloadPackage(name) {
-  if (atom.packages.initialPackagesActivated === true) {
-    const packageName = featureConfig.getPackageName();
-    atom.notifications.addWarning(`Incompatible Package: ${name}`, {
-      description:
-        `${name} can't be enabled because it's incompatible with ${packageName}. ` +
-        `If you need to use this package, you must first disable ${packageName}.`,
-    });
+
+
+
+
+
+
+
+
+function _load_featureConfig() {return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                           * All rights reserved.
+                                                                                                                                                                                                                                           *
+                                                                                                                                                                                                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                           * the root directory of this source tree.
+                                                                                                                                                                                                                                           *
+                                                                                                                                                                                                                                           * 
+                                                                                                                                                                                                                                           * @format
+                                                                                                                                                                                                                                           */function deactivateAndUnloadPackage(name) {if (atom.packages.initialPackagesActivated === true) {const packageName = (_featureConfig || _load_featureConfig()).default.getPackageName();atom.notifications.addWarning(`Incompatible Package: ${name}`, { description: `${name} can't be enabled because it's incompatible with ${packageName}. ` + `If you need to use this package, you must first disable ${packageName}.` });
   }
 
   const deactivationPromise =
-    atom.packages.deactivatePackage(name) || Promise.resolve();
+  atom.packages.deactivatePackage(name) || Promise.resolve();
   deactivationPromise.then(() => {
     atom.packages.disablePackage(name);
     atom.packages.unloadPackage(name);
@@ -36,7 +36,7 @@ function deactivateAndUnloadPackage(name) {
 }
 
 // eslint-disable-next-line rulesdir/no-commonjs
-module.exports = function(name: string) {
+module.exports = function (name) {
   const initiallyDisabled = atom.packages.isPackageDisabled(name);
   if (!initiallyDisabled) {
     // If it wasn't activated yet, maybe we can prevent the activation altogether
@@ -61,5 +61,5 @@ module.exports = function(name: string) {
     }
   };
 
-  return new UniversalDisposable(activationMonitor, stateRestorer);
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(activationMonitor, stateRestorer);
 };

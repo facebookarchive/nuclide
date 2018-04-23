@@ -1,52 +1,52 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * A simple app that pretends to be an MI server for tests
- */
-import readline from 'readline';
-import yargs from 'yargs';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
-type Handler = (
-  positionals: Array<string>,
-  args: Object,
-  token: number,
-) => void;
 
-function writeResult(token: number, resultClass: string, result: string): void {
+
+
+
+
+
+
+
+
+
+
+var _readline = _interopRequireDefault(require('readline'));var _yargs;
+function _load_yargs() {return _yargs = _interopRequireDefault(require('yargs'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                 * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                 * All rights reserved.
+                                                                                                                                                                                 *
+                                                                                                                                                                                 * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                 * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                 * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                 *
+                                                                                                                                                                                 * 
+                                                                                                                                                                                 * @format
+                                                                                                                                                                                 */ /**
+                                                                                                                                                                                     * A simple app that pretends to be an MI server for tests
+                                                                                                                                                                                     */const rl = _readline.default.createInterface({ input: process.stdin, output: process.stdout });
+function writeResult(token, resultClass, result) {
   process.stdout.write(`${token}^${resultClass},${result}\n`);
 }
 
-const handlers: Map<string, Handler> = new Map([
-  ['list-features', listFeatures],
-]);
+const handlers = new Map([
+['list-features', listFeatures]]);
+
 
 function listFeatures(
-  positionals: Array<string>,
-  args: Object,
-  token: number,
-): void {
+positionals,
+args,
+token)
+{
   writeResult(token, 'done', 'features=["argle", "bargle", "blab"]');
 }
 
-function respondTo(line: string): void {
+function respondTo(line) {
   process.stderr.write(`got line ${line}`);
 
-  const args = yargs.parse(line.split(/\s+/));
+  const args = (_yargs || _load_yargs()).default.parse(line.split(/\s+/));
   const positionals = args._;
 
   if (positionals.length === 0) {
@@ -62,13 +62,13 @@ function respondTo(line: string): void {
     // Untokenized commands come back as an error on the log stream
     process.stdout.write(`&"${first}\\n"\n`);
     process.stdout.write(
-      `&"Undefined command: \\"${first}\\". Try \\"help\\"."\n`,
-    );
+    `&"Undefined command: \\"${first}\\". Try \\"help\\"."\n`);
+
 
     // ... as well as returning a real error
     process.stdout.write(
-      `^error,msg="Undefined command: \\"${first}\\". Try \\"help\\"."\n`,
-    );
+    `^error,msg="Undefined command: \\"${first}\\". Try \\"help\\"."\n`);
+
     return;
   }
 
@@ -76,10 +76,10 @@ function respondTo(line: string): void {
   const handler = handlers.get(command);
   if (handler == null) {
     writeResult(
-      token,
-      'error',
-      'msg="Undefined command: \\"${command}\\". Try \\"help\\"."',
-    );
+    token,
+    'error',
+    'msg="Undefined command: \\"${command}\\". Try \\"help\\"."');
+
     return;
   }
 

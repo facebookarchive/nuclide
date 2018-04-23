@@ -1,3 +1,21 @@
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.SnapshotLogger = exports.MemoryLogger = undefined;var _doubleEndedQueue;
+
+
+
+
+
+
+
+
+
+
+function _load_doubleEndedQueue() {return _doubleEndedQueue = _interopRequireDefault(require('double-ended-queue'));}
+var _util = _interopRequireDefault(require('util'));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+
+
+
+// Retain past five minutes
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,63 +23,45 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
- */
-
-import {default as Deque} from 'double-ended-queue';
-import util from 'util';
-import invariant from 'assert';
-
-type LogEntry = {|time: number, level: string, text: string|};
-
-// Retain past five minutes
-const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000;
-
-// ...but only if it is less than 10 MB
-const DEFAULT_RETENTION_SIZE_LIMIT = 10 * 1000 * 1000;
-
-export class MemoryLogger {
-  _underlyingLogger: ?log4js$Logger;
-  _logs: Deque<LogEntry> = new Deque();
-  _retentionPeriod: number;
-  _sizeLimit: number;
-  _size: number;
+ */const DEFAULT_RETENTION_PERIOD_MS = 5 * 60 * 1000; // ...but only if it is less than 10 MB
+const DEFAULT_RETENTION_SIZE_LIMIT = 10 * 1000 * 1000;class MemoryLogger {
 
   constructor(
-    underlyingLogger: ?log4js$Logger,
-    retentionPeriod: number = DEFAULT_RETENTION_PERIOD_MS,
-    sizeLimit: number = DEFAULT_RETENTION_SIZE_LIMIT,
-  ) {
+  underlyingLogger,
+  retentionPeriod = DEFAULT_RETENTION_PERIOD_MS,
+  sizeLimit = DEFAULT_RETENTION_SIZE_LIMIT)
+  {this._logs = new (_doubleEndedQueue || _load_doubleEndedQueue()).default();
     this._underlyingLogger = underlyingLogger;
     this._retentionPeriod = retentionPeriod;
     this._sizeLimit = sizeLimit;
     this._size = 0;
   }
 
-  dispose(): void {
+  dispose() {
     this._logs.isEmpty();
   }
 
-  dump(count?: number): string {
+  dump(count) {
     let logs = this._logs.toArray();
-    if (count != null && count < this._logs.length) {
-      invariant(count > 0, 'Must provide a positive count');
+    if (count != null && count < this._logs.length) {if (!(
+      count > 0)) {throw new Error('Must provide a positive count');}
       logs = logs.slice(logs.length - count);
     }
-    return logs
-      .map(
-        entry => `${formatTime(entry.time)} ${entry.level} - ${entry.text}\n`,
-      )
-      .join('');
+    return logs.
+    map(
+    entry => `${formatTime(entry.time)} ${entry.level} - ${entry.text}\n`).
+
+    join('');
   }
 
-  getUnderlyingLogger(): ?log4js$Logger {
+  getUnderlyingLogger() {
     return this._underlyingLogger;
   }
 
-  debug(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  debug(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.debug(message.substring(0, 400));
@@ -69,8 +69,8 @@ export class MemoryLogger {
     this._appendAndExpunge('DEBUG', message);
   }
 
-  trace(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  trace(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.trace(message.substring(0, 400));
@@ -78,8 +78,8 @@ export class MemoryLogger {
     this._appendAndExpunge('TRACE', message);
   }
 
-  info(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  info(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.info(message.substring(0, 400));
@@ -87,8 +87,8 @@ export class MemoryLogger {
     this._appendAndExpunge('INFO', message);
   }
 
-  warn(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  warn(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.warn(message);
@@ -96,8 +96,8 @@ export class MemoryLogger {
     this._appendAndExpunge('WARN', message);
   }
 
-  error(format: string, ...values: Array<any>): void {
-    const message = util.format(format, ...values);
+  error(format, ...values) {
+    const message = _util.default.format(format, ...values);
     const underlying = this._underlyingLogger;
     if (underlying != null) {
       underlying.error(message);
@@ -105,7 +105,7 @@ export class MemoryLogger {
     this._appendAndExpunge('ERROR', message);
   }
 
-  _appendAndExpunge(level: string, message: string): void {
+  _appendAndExpunge(level, message) {
     if (this._retentionPeriod === 0) {
       return;
     }
@@ -113,7 +113,7 @@ export class MemoryLogger {
     // this._logs will keep the past five minute's worth of logs
     const time = Date.now();
     // push the new entry
-    const newLog: LogEntry = {time, level, text: message};
+    const newLog = { time, level, text: message };
     this._logs.push(newLog);
     // the format is HH:MM:SS level - text (level + text + 12 chars)
     this._size += newLog.level.length + newLog.text.length + 12;
@@ -124,57 +124,57 @@ export class MemoryLogger {
         break;
       }
       if (
-        time <= front.time + this._retentionPeriod &&
-        this._size <= this._sizeLimit
-      ) {
+      time <= front.time + this._retentionPeriod &&
+      this._size <= this._sizeLimit)
+      {
         break;
       }
       this._logs.shift();
       this._size -= front.level.length + front.text.length + 12;
     }
-  }
-}
+  }}exports.MemoryLogger = MemoryLogger;
 
-export class SnapshotLogger {
-  _retentionPeriod: number;
-  _snapshotInterval: number;
-  _files: Map<
-    string,
-    Array<{|time: number, text: string, version: number|}>,
-  > = new Map();
+
+class SnapshotLogger {
+
+
+
+
+
+
 
   constructor(
-    retentionPeriod: number = 5 * 60 * 1000, // retain past five minutes
-    snapshotInterval: number = 30 * 1000, // snapshot no more than every 30s
-  ) {
+  retentionPeriod = 5 * 60 * 1000, // retain past five minutes
+  snapshotInterval = 30 * 1000) // snapshot no more than every 30s
+  {this._files = new Map();
     this._retentionPeriod = retentionPeriod;
     this._snapshotInterval = snapshotInterval;
   }
 
-  dispose(): void {
+  dispose() {
     this._files.clear();
   }
 
-  dump(): Array<{|title: string, text: string|}> {
+  dump() {
     const results = [];
     for (const [filepath, snapshots] of this._files) {
       for (const snapshot of snapshots) {
         results.push({
           title: `${filepath} ${formatTime(snapshot.time)},v${
-            snapshot.version
+          snapshot.version
           }`,
-          text: snapshot.text,
-        });
+          text: snapshot.text });
+
       }
     }
     return results;
   }
 
   snapshot(
-    filepath: string,
-    version: number,
-    buffer: simpleTextBuffer$TextBuffer,
-  ): void {
+  filepath,
+  version,
+  buffer)
+  {
     if (this._retentionPeriod === 0) {
       return;
     }
@@ -187,9 +187,9 @@ export class SnapshotLogger {
     if (snapshots != null && snapshots.length > 0) {
       const mostRecent = snapshots[snapshots.length - 1];
       if (
-        mostRecent.time + this._snapshotInterval > time ||
-        mostRecent.version === version
-      ) {
+      mostRecent.time + this._snapshotInterval > time ||
+      mostRecent.version === version)
+      {
         return;
       }
     }
@@ -199,24 +199,24 @@ export class SnapshotLogger {
     }
     // Remove any old snapshots at the start of the array
     const firstRemainingSnapshot = snapshots.findIndex(
-      snapshot => snapshot.time + this._retentionPeriod > time,
-    );
+    snapshot => snapshot.time + this._retentionPeriod > time);
+
     if (firstRemainingSnapshot > 0) {
       snapshots.splice(0, firstRemainingSnapshot);
     }
     // Add a new snashot at the end
-    snapshots.push({time, text: buffer.getText(), version});
+    snapshots.push({ time, text: buffer.getText(), version });
   }
 
-  close(filepath: string): void {
+  close(filepath) {
     this._files.delete(filepath);
-  }
-}
+  }}exports.SnapshotLogger = SnapshotLogger;
+
 
 /**
- * Formats a UNIX timestamp in 24-hour US format.
- * e.g. 16:01:19
- */
-function formatTime(time: number): string {
-  return new Date(time).toLocaleTimeString('en-US', {hour12: false});
+                                              * Formats a UNIX timestamp in 24-hour US format.
+                                              * e.g. 16:01:19
+                                              */
+function formatTime(time) {
+  return new Date(time).toLocaleTimeString('en-US', { hour12: false });
 }

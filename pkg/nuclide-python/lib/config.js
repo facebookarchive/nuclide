@@ -1,40 +1,47 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
 
-export function getAutocompleteArguments(): boolean {
-  return (featureConfig.get('nuclide-python.autocompleteArguments'): any);
-}
 
-export function getIncludeOptionalArguments(): boolean {
-  return (featureConfig.get('nuclide-python.includeOptionalArguments'): any);
-}
 
-export function getPythonPath(): string {
-  return (featureConfig.get('nuclide-python.pathToPython'): any);
-}
 
-export function getShowGlobalVariables(): boolean {
-  return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
-}
 
-export function getShowSignatureHelp(): boolean {
-  return Boolean(featureConfig.get('nuclide-python.showSignatureHelp'));
-}
 
-export function getEnableLinting(): boolean {
-  return (featureConfig.get('nuclide-python.enableLinting'): any);
-}
 
-export function getLintExtensionBlacklist(): Array<string> {
-  return (featureConfig.get('nuclide-python.lintExtensionBlacklist'): any);
-}
+
+
+
+
+getAutocompleteArguments = getAutocompleteArguments;exports.
+
+
+
+getIncludeOptionalArguments = getIncludeOptionalArguments;exports.
+
+
+
+getPythonPath = getPythonPath;exports.
+
+
+
+getShowGlobalVariables = getShowGlobalVariables;exports.
+
+
+
+getShowSignatureHelp = getShowSignatureHelp;exports.
+
+
+
+getEnableLinting = getEnableLinting;exports.
+
+
+
+getLintExtensionBlacklist = getLintExtensionBlacklist;var _featureConfig;function _load_featureConfig() {return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function getAutocompleteArguments() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.autocompleteArguments');} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   */function getIncludeOptionalArguments() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.includeOptionalArguments');}function getPythonPath() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.pathToPython');}function getShowGlobalVariables() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.showGlobalVariables');}function getShowSignatureHelp() {return Boolean((_featureConfig || _load_featureConfig()).default.get('nuclide-python.showSignatureHelp'));}function getEnableLinting() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.enableLinting');}function getLintExtensionBlacklist() {return (_featureConfig || _load_featureConfig()).default.get('nuclide-python.lintExtensionBlacklist');}

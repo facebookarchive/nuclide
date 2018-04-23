@@ -1,3 +1,20 @@
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.UndefinedSymbolManager = undefined;var _babelTraverse;
+
+
+
+
+
+
+
+
+
+
+function _load_babelTraverse() {return _babelTraverse = _interopRequireDefault(require('babel-traverse'));}var _globals;
+function _load_globals() {return _globals = _interopRequireDefault(require('globals'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+// Prevent babel-traverse from yelling about Flow types in the scope.
+// We're not actually relying on this behavior here.
+// (Can be removed with babel-traverse 6.8+)
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,40 +22,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
- */
+ */(_babelTraverse || _load_babelTraverse()).default.Scope.prototype.warnOnFlowBinding = x => x;const BUILT_INS = ['Iterator', '__DEV__'];const FBT_TAG = 'fbt';const REACT_MODULE_NAME = 'React';const JSX_CSX_PRAGMA_REGEX = /\*?\s*@csx/;class UndefinedSymbolManager {
 
-import traverse from 'babel-traverse';
-import globalsJSON from 'globals';
 
-// Prevent babel-traverse from yelling about Flow types in the scope.
-// We're not actually relying on this behavior here.
-// (Can be removed with babel-traverse 6.8+)
-traverse.Scope.prototype.warnOnFlowBinding = x => x;
-
-import type {UndefinedSymbol} from './types';
-
-const BUILT_INS = ['Iterator', '__DEV__'];
-const FBT_TAG = 'fbt';
-const REACT_MODULE_NAME = 'React';
-const JSX_CSX_PRAGMA_REGEX = /\*?\s*@csx/;
-
-export class UndefinedSymbolManager {
-  globals: Set<string>;
-
-  constructor(envs: Array<string>) {
+  constructor(envs) {
     this.globals = new Set(BUILT_INS);
     envs.forEach(env => {
-      if (globalsJSON[env]) {
-        Object.keys(globalsJSON[env]).forEach(globalVar => {
+      if ((_globals || _load_globals()).default[env]) {
+        Object.keys((_globals || _load_globals()).default[env]).forEach(globalVar => {
           this.globals.add(globalVar);
         });
       }
     });
   }
 
-  findUndefined(ast: Object): Array<UndefinedSymbol> {
+  findUndefined(ast) {
     try {
       return traverseTreeForUndefined(ast, this.globals);
     } catch (error) {
@@ -47,18 +47,18 @@ export class UndefinedSymbolManager {
       // See https://github.com/babel/babel/issues/4640 for more information.
       return [];
     }
-  }
-}
+  }}exports.UndefinedSymbolManager = UndefinedSymbolManager;
+
 
 function traverseTreeForUndefined(
-  ast: Object,
-  globals: Set<string>,
-): Array<UndefinedSymbol> {
+ast,
+globals)
+{
   const undefinedSymbols = [];
   const definedTypes = new Set();
   const definedValues = new Set();
   let csx = false;
-  traverse(ast, {
+  (0, (_babelTraverse || _load_babelTraverse()).default)(ast, {
     ImportDeclaration: path => {
       saveImports(path, definedTypes);
     },
@@ -86,24 +86,24 @@ function traverseTreeForUndefined(
     GenericTypeAnnotation: {
       exit(path) {
         findUndefinedTypes(path, undefinedSymbols, globals);
-      },
-    },
+      } },
+
     Identifier(path) {
       // Allow identifiers on the LHS of an assignment.
       // In non-strict JavaScript, this might just be a declaration.
       if (
-        path.parent.type === 'AssignmentExpression' &&
-        path.node === path.parent.left
-      ) {
+      path.parent.type === 'AssignmentExpression' &&
+      path.node === path.parent.left)
+      {
         definedValues.add(path.node.name);
       }
     },
     Program(path) {
       csx =
-        csx ||
-        path.parent.comments.some(({value}) =>
-          JSX_CSX_PRAGMA_REGEX.test(value),
-        );
+      csx ||
+      path.parent.comments.some(({ value }) =>
+      JSX_CSX_PRAGMA_REGEX.test(value));
+
     },
     JSXIdentifier(path) {
       if (!csx && path.parent.type === 'JSXOpeningElement') {
@@ -119,31 +119,31 @@ function traverseTreeForUndefined(
       if (path.node.label && path.node.label.name) {
         definedValues.add(path.node.label.name);
       }
-    },
-  });
+    } });
+
   return undefinedSymbols.filter(
-    symbol =>
-      (symbol.type === 'value' && !definedValues.has(symbol.id)) ||
-      (symbol.type === 'type' && !definedTypes.has(symbol.id)),
-  );
+  symbol =>
+  symbol.type === 'value' && !definedValues.has(symbol.id) ||
+  symbol.type === 'type' && !definedTypes.has(symbol.id));
+
 }
 
 function findUndefinedValues(
-  path: Object,
-  undefinedSymbols: Array<UndefinedSymbol>,
-  globals: Set<string>,
-) {
-  const {node, scope} = path;
+path,
+undefinedSymbols,
+globals)
+{
+  const { node, scope } = path;
   if (
-    // Type Annotations are considered identifiers, so ignore them
-    isTypeIdentifier(path.parent.type) ||
-    // Other weird cases where we want to ignore identifiers
-    path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
-    (path.parent.type === 'QualifiedTypeIdentifier' &&
-      path.parentKey !== 'qualification') || // SomeModule.SomeType
-    globals.has(node.name) ||
-    scope.hasBinding(node.name)
-  ) {
+  // Type Annotations are considered identifiers, so ignore them
+  isTypeIdentifier(path.parent.type) ||
+  // Other weird cases where we want to ignore identifiers
+  path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
+  path.parent.type === 'QualifiedTypeIdentifier' &&
+  path.parentKey !== 'qualification' || // SomeModule.SomeType
+  globals.has(node.name) ||
+  scope.hasBinding(node.name))
+  {
     return;
   }
 
@@ -151,18 +151,18 @@ function findUndefinedValues(
     id: node.name,
     type: 'value',
     location: {
-      start: {line: node.loc.start.line, col: node.loc.start.column},
-      end: {line: node.loc.end.line, col: node.loc.end.column},
-    },
-  });
+      start: { line: node.loc.start.line, col: node.loc.start.column },
+      end: { line: node.loc.end.line, col: node.loc.end.column } } });
+
+
 }
 
 function findUndefinedReact(
-  path: Object,
-  undefinedSymbols: Array<UndefinedSymbol>,
-  globals: Set<string>,
-) {
-  const {node, scope} = path;
+path,
+undefinedSymbols,
+globals)
+{
+  const { node, scope } = path;
 
   if (scope.hasBinding(REACT_MODULE_NAME)) {
     return;
@@ -172,24 +172,24 @@ function findUndefinedReact(
     id: REACT_MODULE_NAME,
     type: 'value',
     location: {
-      start: {line: node.loc.start.line, col: node.loc.start.column},
-      end: {line: node.loc.end.line, col: node.loc.end.column},
-    },
-  });
+      start: { line: node.loc.start.line, col: node.loc.start.column },
+      end: { line: node.loc.end.line, col: node.loc.end.column } } });
+
+
 }
 
 function findUndefinedTypes(
-  path: Object,
-  undefinedSymbols: Array<UndefinedSymbol>,
-  globals: Set<string>,
-) {
-  const {node, scope} = path;
+path,
+undefinedSymbols,
+globals)
+{
+  const { node, scope } = path;
 
   if (
-    globals.has(node.id.name) ||
-    path.parent.type === 'TypeAlias' ||
-    scope.hasBinding(node.id.name)
-  ) {
+  globals.has(node.id.name) ||
+  path.parent.type === 'TypeAlias' ||
+  scope.hasBinding(node.id.name))
+  {
     return;
   }
 
@@ -199,30 +199,30 @@ function findUndefinedTypes(
       // "typeof" must refer to a value.
       type: path.parent.type === 'TypeofTypeAnnotation' ? 'value' : 'type',
       location: {
-        start: {line: node.loc.start.line, col: node.loc.start.column},
-        end: {line: node.loc.end.line, col: node.loc.end.column},
-      },
-    });
+        start: { line: node.loc.start.line, col: node.loc.start.column },
+        end: { line: node.loc.end.line, col: node.loc.end.column } } });
+
+
   }
 }
 
-function saveImports(path: Object, definedTypes: Set<string>) {
+function saveImports(path, definedTypes) {
   path.node.specifiers.forEach(specifier => {
     definedTypes.add(specifier.local.name);
   });
 }
 
-function save(path: Object, definedTypes: Set<string>) {
+function save(path, definedTypes) {
   if (path.node.id) {
     definedTypes.add(path.node.id.name);
   }
 }
 
-function saveTypeParameters(path: Object, definedTypes: Set<string>) {
+function saveTypeParameters(path, definedTypes) {
   definedTypes.add(path.node.name);
 }
 
-function isTypeIdentifier(node: Object) {
+function isTypeIdentifier(node) {
   return (
     node === 'GenericTypeAnnotation' ||
     node === 'ObjectTypeIndexer' ||
@@ -231,6 +231,6 @@ function isTypeIdentifier(node: Object) {
     node === 'ObjectTypeProperty' ||
     node === 'InterfaceDeclaration' ||
     node === 'DeclareClass' ||
-    node === 'InterfaceExtends'
-  );
+    node === 'InterfaceExtends');
+
 }

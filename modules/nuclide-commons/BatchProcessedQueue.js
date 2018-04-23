@@ -1,33 +1,33 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+"use strict";Object.defineProperty(exports, "__esModule", { value: true });
 
-export type BatchHandler<T> = (batch: Array<T>) => void;
+
+
+
+
+
+
+
+
+
+
+
 
 // A Queue which will process elements at intervals, only if the
 // queue contains any elements.
-export default class BatchProcessedQueue<T> {
-  _batchPeriod: number;
-  _handler: BatchHandler<T>;
-  _timeoutId: ?TimeoutID;
-  _items: Array<T>;
+class BatchProcessedQueue {
 
-  constructor(batchPeriod: number, handler: BatchHandler<T>) {
+
+
+
+
+  constructor(batchPeriod, handler) {
     this._batchPeriod = batchPeriod;
     this._handler = handler;
     this._timeoutId = null;
     this._items = [];
   }
 
-  add(item: T): void {
+  add(item) {
     this._items.push(item);
     // eslint-disable-next-line eqeqeq
     if (this._timeoutId === null) {
@@ -44,11 +44,20 @@ export default class BatchProcessedQueue<T> {
     this._handler(batch);
   }
 
-  dispose(): void {
+  dispose() {
     // eslint-disable-next-line eqeqeq
     if (this._timeoutId !== null) {
       clearTimeout(this._timeoutId);
       this._handleBatch();
     }
-  }
-}
+  }}exports.default = BatchProcessedQueue; /**
+                                            * Copyright (c) 2017-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the BSD-style license found in the
+                                            * LICENSE file in the root directory of this source tree. An additional grant
+                                            * of patent rights can be found in the PATENTS file in the same directory.
+                                            *
+                                            * 
+                                            * @format
+                                            */

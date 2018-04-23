@@ -1,44 +1,44 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.SignatureHelpProvider = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _UniversalDisposable;
 
-import type {LanguageService} from './LanguageService';
-import type {SignatureHelp, SignatureHelpRegistry} from 'atom-ide-ui';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
 
-export type SignatureHelpConfig = {|
-  version: '0.1.0',
-  priority: number,
-  // NOTE: We could theoretically have a 'getTriggerCharacters' API
-  // to resolve this asynchronously to support servers with dynamic trigger characters.
-  // However, we don't have any clear use cases for this yet.
-  triggerCharacters?: Set<string>,
-  analyticsEventName: string,
-|};
 
-export class SignatureHelpProvider<T: LanguageService> {
-  grammarScopes: Array<string>;
-  priority: number;
-  triggerCharacters: Set<string> | void;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+
+
+
+
+
+
+
+
+
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _nuclideRemoteConnection;
+function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');}var _nuclideOpenFiles;
+function _load_nuclideOpenFiles() {return _nuclideOpenFiles = require('../../nuclide-open-files');}var _nuclideAnalytics;
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                 * All rights reserved.
+                                                                                                                                                                                                 *
+                                                                                                                                                                                                 * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                 * the root directory of this source tree.
+                                                                                                                                                                                                 *
+                                                                                                                                                                                                 * 
+                                                                                                                                                                                                 * @format
+                                                                                                                                                                                                 */
+
+
+class SignatureHelpProvider {
+
+
+
+
+
 
   constructor(
-    grammarScopes: Array<string>,
-    config: SignatureHelpConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  grammarScopes,
+  config,
+  connectionToLanguageService)
+  {
     this.grammarScopes = grammarScopes;
     this.triggerCharacters = config.triggerCharacters;
     this._analyticsEventName = config.analyticsEventName;
@@ -46,47 +46,46 @@ export class SignatureHelpProvider<T: LanguageService> {
   }
 
   static register(
-    grammarScopes: Array<string>,
-    config: SignatureHelpConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    const disposables = new UniversalDisposable();
+  grammarScopes,
+  config,
+  connectionToLanguageService)
+  {
+    const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     disposables.add(
-      atom.packages.serviceHub.consume(
-        'signature-help',
-        config.version,
-        (registry: SignatureHelpRegistry) => {
-          disposables.add(
-            registry(
-              new SignatureHelpProvider(
-                grammarScopes,
-                config,
-                connectionToLanguageService,
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    atom.packages.serviceHub.consume(
+    'signature-help',
+    config.version,
+    registry => {
+      disposables.add(
+      registry(
+      new SignatureHelpProvider(
+      grammarScopes,
+      config,
+      connectionToLanguageService)));
+
+
+
+    }));
+
+
     return disposables;
   }
 
   getSignatureHelp(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?SignatureHelp> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const languageService = await this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  editor,
+  position)
+  {var _this = this;
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const languageService = yield _this._connectionToLanguageService.getForUri(
+      editor.getPath());
+
       if (languageService == null) {
         return null;
       }
-      const fileVersion = await getFileVersionOfEditor(editor);
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
       if (fileVersion == null) {
         return null;
       }
       return languageService.signatureHelp(fileVersion, position);
-    });
-  }
-}
+    }));
+  }}exports.SignatureHelpProvider = SignatureHelpProvider;

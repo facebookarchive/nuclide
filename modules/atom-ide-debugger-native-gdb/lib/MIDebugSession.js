@@ -1,971 +1,1001 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));exports.
 
-import type {ITerminal} from 'nuclide-prebuilt-libs/pty';
 
-import {
-  BreakpointEvent,
-  logger,
-  Logger,
-  LoggingDebugSession,
-  InitializedEvent,
-  OutputEvent,
-  StoppedEvent,
-  TerminatedEvent,
-  ThreadEvent,
-} from 'vscode-debugadapter';
-import Breakpoints from './Breakpoints';
-import SourceBreakpoints from './SourceBreakpoints';
-import * as DebugProtocol from 'vscode-debugprotocol';
-import Disassemble from './Disassemble';
-import ExceptionBreakpoints from './ExceptionBreakpoints';
-import FunctionBreakpoints from './FunctionBreakpoints';
-import invariant from 'assert';
-import MIProxy from './MIProxy';
-import {MIAsyncRecord, MIResultRecord} from './MIRecord';
-import * as pty from 'nuclide-prebuilt-libs/pty';
-import os from 'os';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  breakpointModifiedEventResult,
-  stoppedEventResult,
-  toCommandError,
-  threadInfoResult,
-} from './MITypes';
-import StackFrames from './StackFrames';
-import Variables from './Variables';
 
-export type StopReason = {
-  reason: string,
-  description: string,
-};
 
-type LaunchRequestArguments = {
-  ...DebugProtocol.LaunchRequestArguments,
-  program: string,
-  cwd: ?string,
-  arguments: ?string,
-  env: Array<string>,
-  sourcePath: string,
-  debuggerRoot: ?string,
-};
 
-type AttachRequestArguments = {
-  ...DebugProtocol.AttachRequestArguments,
-  pid: number,
-  sourcePath: string,
-  debuggerRoot: ?string,
-  stopOnAttach: ?boolean,
-};
 
-class MIDebugSession extends LoggingDebugSession {
-  _hasTarget: boolean;
-  _configurationDone: boolean;
-  _client: MIProxy;
-  _breakpoints: Breakpoints;
-  _sourceBreakpoints: SourceBreakpoints;
-  _functionBreakpoints: FunctionBreakpoints;
-  _disassemble: Disassemble;
-  _exceptionBreakpoints: ExceptionBreakpoints;
-  _stackFrames: StackFrames;
-  _variables: Variables;
-  _targetIO: ?ITerminal;
-  _asyncHandlers: Map<string, (record: MIAsyncRecord) => void>;
-  _attachPID: ?number;
-  _running: boolean;
-  _expectingPause: boolean;
-  _pauseQueue: Array<() => Promise<void>>;
-  _continueOnAttach: boolean;
-  _stepping: boolean;
 
-  constructor() {
-    const logfile = nuclideUri.join(os.tmpdir(), 'native-debugger-vsp.log');
-    super(logfile);
-    this._hasTarget = false;
-    this._configurationDone = false;
 
-    const client = new MIProxy();
-    this._client = client;
 
-    this._breakpoints = new Breakpoints();
-    this._sourceBreakpoints = new SourceBreakpoints(client, this._breakpoints);
-    this._functionBreakpoints = new FunctionBreakpoints(
-      client,
-      this._breakpoints,
-    );
-    this._exceptionBreakpoints = new ExceptionBreakpoints(client);
-    this._stackFrames = new StackFrames(client);
-    this._disassemble = new Disassemble(client, this._stackFrames);
-    this._variables = new Variables(client, this._stackFrames);
-    this._expectingPause = false;
-    this._continueOnAttach = false;
 
-    client.on('error', err => {
-      logVerbose(`proxy has exited with error ${err}`);
-      this._hasTarget = false;
-      this._configurationDone = false;
-    });
 
-    client.on('exit', () => {
-      logVerbose('proxy has exited cleanly');
-      this._hasTarget = false;
-      this._configurationDone = false;
-    });
 
-    client.on('async', record => this._asyncRecord(record));
 
-    this._asyncHandlers = new Map([
-      [
-        'stopped',
-        record => {
-          this._onAsyncStopped(record);
-        },
-      ],
-      ['thread-created', record => this._onAsyncThread(record, true)],
-      ['thread-exited', record => this._onAsyncThread(record, false)],
-      ['breakpoint-modified', record => this._onBreakpointModified(record)],
-    ]);
 
-    this._pauseQueue = [];
-  }
 
-  _asyncRecord(record: MIAsyncRecord): void {
-    const handler = this._asyncHandlers.get(record.asyncClass);
-    if (handler != null) {
-      handler(record);
-    }
-  }
 
-  start(inStream: ReadableStream, outStream: WritableStream): void {
-    super.start(inStream, outStream);
-    logVerbose(`using node ${process.version} at ${process.execPath}`);
-  }
 
-  initializeRequest(
-    response: DebugProtocol.InitializeResponse,
-    args: DebugProtocol.InitializeRequestArguments,
-  ): void {
-    response.body = response.body || {};
-    response.body.supportsFunctionBreakpoints = true;
-    response.body.supportsConfigurationDoneRequest = true;
-    response.body.supportsSetVariable = true;
-    response.body.supportsValueFormattingOptions = true;
-    response.body.exceptionBreakpointFilters = [
-      {
-        filter: 'uncaught',
-        label: 'Uncaught exceptions',
-        default: false,
-      },
-      {
-        filter: 'thrown',
-        label: 'Thrown exceptions',
-        default: false,
-      },
-    ];
 
-    this.sendResponse(response);
 
-    // sequencing: after this, we will get breakpoint requests, eventually followed by a configurationDoneRequest.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logVerbose = logVerbose;var _vscodeDebugadapter;function _load_vscodeDebugadapter() {return _vscodeDebugadapter = require('vscode-debugadapter');}var _Breakpoints;function _load_Breakpoints() {return _Breakpoints = _interopRequireDefault(require('./Breakpoints'));}var _SourceBreakpoints;function _load_SourceBreakpoints() {return _SourceBreakpoints = _interopRequireDefault(require('./SourceBreakpoints'));}var _vscodeDebugprotocol;function _load_vscodeDebugprotocol() {return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));}var _Disassemble;function _load_Disassemble() {return _Disassemble = _interopRequireDefault(require('./Disassemble'));}var _ExceptionBreakpoints;function _load_ExceptionBreakpoints() {return _ExceptionBreakpoints = _interopRequireDefault(require('./ExceptionBreakpoints'));}var _FunctionBreakpoints;function _load_FunctionBreakpoints() {return _FunctionBreakpoints = _interopRequireDefault(require('./FunctionBreakpoints'));}var _MIProxy;function _load_MIProxy() {return _MIProxy = _interopRequireDefault(require('./MIProxy'));}var _MIRecord;function _load_MIRecord() {return _MIRecord = require('./MIRecord');}var _pty;function _load_pty() {return _pty = _interopRequireWildcard(require('nuclide-prebuilt-libs/pty'));}var _os = _interopRequireDefault(require('os'));var _nuclideUri;function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}var _MITypes;function _load_MITypes() {return _MITypes = require('./MITypes');}var _StackFrames;function _load_StackFrames() {return _StackFrames = _interopRequireDefault(require('./StackFrames'));}var _Variables;function _load_Variables() {return _Variables = _interopRequireDefault(require('./Variables'));}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   */class MIDebugSession extends (_vscodeDebugadapter || _load_vscodeDebugadapter()).LoggingDebugSession {constructor() {const logfile = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), 'native-debugger-vsp.log');super(logfile);this._hasTarget = false;this._configurationDone = false;const client = new (_MIProxy || _load_MIProxy()).default();this._client = client;this._breakpoints = new (_Breakpoints || _load_Breakpoints()).default();this._sourceBreakpoints = new (_SourceBreakpoints || _load_SourceBreakpoints()).default(client, this._breakpoints);this._functionBreakpoints = new (_FunctionBreakpoints || _load_FunctionBreakpoints()).default(client, this._breakpoints);this._exceptionBreakpoints = new (_ExceptionBreakpoints || _load_ExceptionBreakpoints()).default(client);this._stackFrames = new (_StackFrames || _load_StackFrames()).default(client);this._disassemble = new (_Disassemble || _load_Disassemble()).default(client, this._stackFrames);this._variables = new (_Variables || _load_Variables()).default(client, this._stackFrames);this._expectingPause = false;this._continueOnAttach = false;client.on('error', err => {logVerbose(`proxy has exited with error ${err}`);this._hasTarget = false;this._configurationDone = false;});client.on('exit', () => {logVerbose('proxy has exited cleanly');this._hasTarget = false;this._configurationDone = false;});client.on('async', record => this._asyncRecord(record));this._asyncHandlers = new Map([['stopped', record => {this._onAsyncStopped(record);}], ['thread-created', record => this._onAsyncThread(record, true)], ['thread-exited', record => this._onAsyncThread(record, false)], ['breakpoint-modified', record => this._onBreakpointModified(record)]]);this._pauseQueue = [];}_asyncRecord(record) {const handler = this._asyncHandlers.get(record.asyncClass);if (handler != null) {handler(record);}}start(inStream, outStream) {super.start(inStream, outStream);logVerbose(`using node ${process.version} at ${process.execPath}`);}initializeRequest(response, args) {response.body = response.body || {};response.body.supportsFunctionBreakpoints = true;response.body.supportsConfigurationDoneRequest = true;response.body.supportsSetVariable = true;response.body.supportsValueFormattingOptions = true;response.body.exceptionBreakpointFilters = [{ filter: 'uncaught', label: 'Uncaught exceptions', default: false }, { filter: 'thrown', label: 'Thrown exceptions', default: false }];this.sendResponse(response); // sequencing: after this, we will get breakpoint requests, eventually followed by a configurationDoneRequest.
     // notably we will get a launchRequest *before* configuration done, and actually before the breakpoint
     // requests. so we have to be careful to bring up the debugger in the launch request, then set the
     // initial breakpoints, and not actually start the program until configuration done.
-    this.sendEvent(new InitializedEvent());
-  }
-
-  async launchRequest(
-    response: DebugProtocol.LaunchResponse,
-    args: LaunchRequestArguments,
-  ): Promise<void> {
-    logger.setup(
-      args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
-      true,
-    );
-
-    let environment = {};
-    if (args.env != null) {
-      args.env.forEach(_ => {
-        const equal = _.indexOf('=');
-        if (equal === -1) {
-          throw new Error('Given environment is malformed.');
-        }
-        const key = _.substr(0, equal);
-        const value = _.substr(equal + 1);
-        environment = {
-          ...environment,
-          [key]: value,
-        };
-      });
-    }
-
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
-
-    this._client.start('gdb', ['-q', '--interpreter=mi2'], environment);
-
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
-      return;
-    }
-
-    if (
-      args.cwd != null &&
-      args.cwd.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-cd ${args.cwd}`,
-      ))
-    ) {
-      return;
-    }
-
-    if (
-      args.arguments != null &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `exec-arguments ${args.arguments}`,
-      ))
-    ) {
-      return;
-    }
-
-    if (
-      !(await this._sendWithFailureCheck(
-        response,
-        `file-exec-and-symbols ${args.program}`,
-      ))
-    ) {
-      return;
-    }
-
-    this._attachPID = null;
-
-    this._hasTarget = true;
-    this.sendResponse(response);
-  }
-
-  async attachRequest(
-    response: DebugProtocol.AttachResponse,
-    args: AttachRequestArguments,
-  ): Promise<void> {
-    logger.setup(
-      args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
-      true,
-    );
-
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
-
-    this._client.start('gdb', ['-q', '--interpreter=mi2'], null);
-
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
-      return;
-    }
-
-    this._attachPID = args.pid;
-    this._continueOnAttach = args.stopOnAttach !== true;
-
-    this._hasTarget = true;
-    this.sendResponse(response);
-  }
-
-  async disconnectRequest(
-    response: DebugProtocol.DisconnectResponse,
-    request: DebugProtocol.DisconnectRequest,
-  ): Promise<void> {
-    this._stepping = false;
-    this._runWhenStopped(async () => {
-      if (this._attachPID != null) {
-        await this._client.sendCommand('target-detach');
-        this._attachPID = null;
-        this._hasTarget = false;
-      }
-      this.sendResponse(response);
-    });
-  }
-
-  async configurationDoneRequest(
-    response: DebugProtocol.ConfigurationDoneResponse,
-    args: DebugProtocol.ConfigurationDoneArguments,
-  ): Promise<void> {
-    this._configurationDone = true;
-
-    if (!(await this._initializeTargetIO(response))) {
-      return;
-    }
-
-    await this._sendCachedBreakpoints();
-
-    this._running = true;
-
-    if (this._attachPID != null) {
-      if (
-        !(await this._sendWithFailureCheck(
-          response,
-          `target-attach ${this._attachPID}`,
-        ))
-      ) {
-        return;
-      }
-    } else {
-      if (!(await this._sendWithFailureCheck(response, 'exec-run'))) {
-        return;
-      }
-    }
-
-    this.sendResponse(response);
-  }
-
-  async setBreakPointsRequest(
-    response: DebugProtocol.SetBreakpointsResponse,
-    args: DebugProtocol.SetBreakpointsArguments,
-  ): Promise<void> {
-    this._runWhenStopped(async () => {
-      try {
-        const source =
-          args.source.path != null ? args.source.path : args.source.name;
-        invariant(source != null);
-
-        const breakpoints = args.breakpoints;
-        if (breakpoints == null) {
-          this._sendFailureResponse(
-            response,
-            'No breakpoints specified in breakpoints request',
-          );
-          return;
-        }
-
-        const protocolBreakpoints = await this._sourceBreakpoints.setSourceBreakpoints(
-          source,
-          breakpoints,
-        );
-
-        response.body = {
-          breakpoints: protocolBreakpoints,
-        };
-
-        this.sendResponse(response);
-      } catch (error) {
-        this._sendFailureResponse(response, error.message);
-      }
-    });
-  }
-
-  async setFunctionBreakPointsRequest(
-    response: DebugProtocol.SetFunctionBreakpointsResponse,
-    args: DebugProtocol.SetFunctionBreakpointsArguments,
-  ): Promise<void> {
-    this._runWhenStopped(async () => {
-      try {
-        const breakpoints = args.breakpoints;
-        if (breakpoints == null) {
-          this._sendFailureResponse(
-            response,
-            'No breakpoints specified in breakpoints request',
-          );
-          return;
-        }
-
-        const functions = breakpoints.map(_ => _.name);
-        const breakpointsOut = await this._functionBreakpoints.setFunctionBreakpoints(
-          functions,
-        );
-
-        response.body = {
-          breakpoints: breakpointsOut,
-        };
-
-        this.sendResponse(response);
-      } catch (error) {
-        this._sendFailureResponse(response, error.message);
-      }
-    });
-  }
-
-  async _sendCachedBreakpoints(): Promise<void> {
-    logVerbose('_sendCachedBreakpoints');
-    const changedBreakpoints = [
-      ...(await this._sourceBreakpoints.setCachedBreakpoints()),
-      ...(await this._functionBreakpoints.setCachedBreakpoints()),
-    ];
-
-    changedBreakpoints.forEach(breakpoint => {
-      const event = new BreakpointEvent();
-      event.body = {
-        reason: 'changed',
-        breakpoint,
-      };
-
-      this.sendEvent(event);
-    });
-  }
-
-  async setExceptionBreakPointsRequest(
-    response: DebugProtocol.SetExceptionBreakpointsResponse,
-    args: DebugProtocol.SetExceptionBreakpointsArguments,
-  ): Promise<void> {
-    try {
-      await this._exceptionBreakpoints.setExceptionBreakpointFilters(
-        args.filters,
-      );
-      this.sendResponse(response);
-    } catch (error) {
-      this._sendFailureResponse(response, error.message);
-    }
-  }
-
-  async threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
-    this._runWhenStopped(async () => {
-      const threadRecord: MIResultRecord = await this._client.sendCommand(
-        'thread-info',
-      );
-
-      try {
-        if (!threadRecord.done) {
-          this._sendFailureResponse(response, 'Failed to retrieve threads');
-          return;
-        }
-
-        const threads = threadInfoResult(threadRecord).threads;
-
-        response.body = {
-          threads: threads.map(_ => {
-            return {
-              id: parseInt(_.id, 10),
-              name: _['target-id'],
-            };
-          }),
-        };
-
-        this.sendResponse(response);
-      } catch (err) {
-        this._sendFailureResponse(response, err.message);
-      }
-    });
-  }
-
-  async stackTraceRequest(
-    response: DebugProtocol.StackTraceResponse,
-    args: DebugProtocol.StackTraceArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
-
-    response.body = await this._stackFrames.stackFramesForThread(
-      args.threadId,
-      args.startFrame,
-      args.levels,
-    );
-
-    try {
-      response.body.stackFrames = await Promise.all(
-        response.body.stackFrames.map(async frame => {
-          let source = frame.source;
-          if (source == null || source.path == null) {
-            source = {
-              sourceReference: await this._disassemble.sourceReferenceForStackFrame(
-                frame.id,
-              ),
-            };
-          }
-          return {
-            ...frame,
-            source,
-          };
-        }),
-      );
-
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async sourceRequest(
-    response: DebugProtocol.SourceResponse,
-    args: DebugProtocol.SourceArguments,
-  ): Promise<void> {
-    try {
-      const content = await this._disassemble.getDisassembly(
-        args.sourceReference,
-      );
-      response.body = {content};
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async pauseRequest(
-    response: DebugProtocol.PauseResponse,
-    args: DebugProtocol.PauseArguments,
-  ): Promise<void> {
-    try {
-      this._expectingPause = true;
-      this._client.pause();
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async continueRequest(
-    response: DebugProtocol.ContinueResponse,
-    args: DebugProtocol.ContinueRequest,
-  ): Promise<void> {
-    return this._executeCommon('exec-continue', null, response);
-  }
-
-  async nextRequest(
-    response: DebugProtocol.NextResponse,
-    args: DebugProtocol.NextArguments,
-  ): Promise<void> {
-    this._stepping = true;
-    return this._executeCommon('exec-next', args.threadId, response);
-  }
-
-  async stepInRequest(
-    response: DebugProtocol.StepInResponse,
-    args: DebugProtocol.StepInArguments,
-  ): Promise<void> {
-    this._stepping = true;
-    return this._executeCommon('exec-step', args.threadId, response);
-  }
-
-  async stepOutRequest(
-    response: DebugProtocol.StepOutResponse,
-    args: DebugProtocol.StepOutArguments,
-  ): Promise<void> {
-    this._stepping = true;
-    return this._executeCommon('exec-finish', args.threadId, response);
-  }
-
-  async _executeCommon(
-    execCommand: string,
-    threadId: ?number,
-    response: DebugProtocol.Response,
-  ): Promise<void> {
-    try {
-      const thread = threadId != null ? `--thread ${threadId}` : '';
-      const result = await this._client.sendCommand(`${execCommand} ${thread}`);
-      if (!result.running) {
-        this._sendFailureResponse(
-          response,
-          `Failed to ${execCommand} program ${toCommandError(result).msg}`,
-        );
-        return;
-      }
-
-      this._running = true;
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async scopesRequest(
-    response: DebugProtocol.ScopesResponse,
-    args: DebugProtocol.ScopesArguments,
-  ): Promise<void> {
-    try {
-      const varref = this._variables.variableReferenceForStackFrame(
-        args.frameId,
-      );
-
-      const scopes = [
-        {
-          name: 'Locals',
-          variablesReference: varref,
-          expensive: false,
-        },
-      ];
-
-      const regVarref = await this._variables.registersVariableReference();
-      if (regVarref != null) {
-        scopes.push({
-          name: 'Registers',
-          variablesReference: regVarref,
-          expensive: false,
-        });
-      }
-
-      response.body = {scopes};
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async variablesRequest(
-    response: DebugProtocol.VariablesResponse,
-    args: DebugProtocol.VariablesArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
-
-    try {
-      const variables = await this._variables.getVariables(
-        args.variablesReference,
-        args.start,
-        args.count,
-      );
-
-      response.body = {variables};
-
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async setVariableRequest(
-    response: DebugProtocol.SetVariableResponse,
-    args: DebugProtocol.SetVariableArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
-
-    try {
-      const varref = this._variables.getVariableReference(
-        args.variablesReference,
-      );
-      if (varref == null) {
-        throw new Error(
-          `setVariableRequest: invalid variable reference ${
-            args.variablesReference
-          }`,
-        );
-      }
-
-      const varSet = await varref.setChildValue(args.name, args.value);
-
-      response.body = varSet;
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async evaluateRequest(
-    response: DebugProtocol.EvaluateResponse,
-    args: DebugProtocol.EvaluateArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
-
-    try {
-      let threadId: ?number;
-      let frameIndex: ?number;
-
-      const frameId = args.frameId;
-      if (frameId != null) {
-        const stackFrame = this._stackFrames.stackFrameByHandle(frameId);
-        if (stackFrame == null) {
-          throw new Error(`evaluateRequest passed invalid frameId ${frameId}`);
-        }
-        threadId = stackFrame.threadId;
-        frameIndex = stackFrame.frameIndex;
-      }
-
-      const handle = this._variables.expressionVariableReference(
-        threadId,
-        frameIndex,
-        args.expression,
-      );
-
-      const variables = await this._variables.getVariables(handle);
-      invariant(
-        variables.length === 1,
-        'call should return 1 element or throw on error',
-      );
-      const variable = variables[0];
-
-      response.body = {
-        result: variable.value,
-        type: variable.type,
-        variablesReference: variable.variablesReference,
-        namedVariables: variable.namedVariables,
-        indexedVariables: variable.indexedVariables,
-      };
-
-      this.sendResponse(response);
-    } catch (err) {
-      this._sendFailureResponse(response, err.message);
-    }
-  }
-
-  async _setOutputFormat(hex: boolean): Promise<void> {
-    this._client.sendCommand(`gdb-set output-radix ${hex ? 16 : 10}`);
-  }
-
-  async _initializeTargetIO(
-    response: DebugProtocol.ConfigurationDoneResponse,
-  ): Promise<boolean> {
-    // $TODO Windows
-
-    // gdb uses a pty to pipe target (what it calls inferior) output separately from
-    // MI traffic. set up a pty and handlers.
-    const targetIO = pty.open({});
-    this._targetIO = targetIO;
-    targetIO.on('data', line => this._onTargetIO(line));
-
-    // if the pty socket sends 'end' it means the target process has terminated.
-    targetIO.once('end', () => this._onTargetTerminated());
-
-    // if there's an error such as the actual debugger crashing, shut down cleanly
-    targetIO.once('error', () => this._onTargetTerminated());
-
-    if (
-      !(await this._sendWithFailureCheck(
-        response,
-        `inferior-tty-set ${targetIO.ptyName}`,
-      ))
-    ) {
-      return false;
-    }
-
-    return true;
-  }
-
-  _onTargetIO(line: string): void {
-    const event = new OutputEvent();
-    event.body = {
-      category: 'stdout',
-      output: line,
-    };
-
-    this.sendEvent(event);
-  }
-
-  _onTargetTerminated(): void {
-    this.sendEvent(new TerminatedEvent());
-    this._hasTarget = false;
-    this._configurationDone = false;
-  }
-
-  async _runWhenStopped(fn: () => Promise<void>): Promise<void> {
-    if (!this._running) {
-      return fn();
-    }
-
-    this._pauseQueue.push(fn);
-
-    if (this._stepping) {
-      // If we are stepping, then sending a signal and then continuing will
-      // disrupt the step. We're going to stop anyway, so just don't.
-      return;
-    }
-
-    if (this._pauseQueue.length === 1) {
-      this._client.pause();
-    }
-  }
-
-  async _processPauseQueue(): Promise<void> {
-    const fns = this._pauseQueue.slice();
-    this._pauseQueue = [];
-    await Promise.all(fns.map(fn => fn()));
-  }
-
-  _pauseIfThereAreQueuedCommands(): void {
-    if (this._pauseQueue.length !== 0) {
-      this._client.pause();
-    }
-  }
-
-  async _onAsyncStopped(record: MIAsyncRecord): Promise<void> {
-    const stopped = stoppedEventResult(record);
-
-    await this._processPauseQueue();
-
-    // A received signal means one of two things: SIGINT sent to gdb to drop
-    // into command mode (pausing the target), or an unexpected signal which
-    // is an exception to break on.
-    if (
-      !this._expectingPause &&
-      this._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped)
-    ) {
-      this._running = true;
-      await this._client.sendCommand('exec-continue');
-      // we are really running again. if any commands came in from the UI during
-      // the await here, they will have been queued. if we don't check now,
-      // we could drop them. pausing again will cause them to run.
-      this._pauseIfThereAreQueuedCommands();
-      return;
-    }
-
-    this._running = false;
-    this._stackFrames.clearCachedFrames();
-    this._variables.clearCachedVariables();
-
-    // Values: 'step', 'breakpoint', 'exception', 'pause', 'entry', etc.
-
-    let reason = 'pause';
-    let description = 'Execution paused';
-
-    const exceptionReason = this._exceptionBreakpoints.stopEventReason(stopped);
-    if (exceptionReason != null) {
-      reason = exceptionReason.reason;
-      description = exceptionReason.description;
-    } else if (stopped.reason === 'breakpoint-hit') {
-      reason = 'breakpoint';
-      description = 'Breakpoint hit';
-    } else if (stopped.reason === 'end-stepping-range') {
-      reason = 'step';
-      description = 'Execution stepped';
-      this._stepping = false;
-    } else if (stopped.reason === 'exited') {
-      this._onTargetTerminated();
-      return;
-    } else if (stopped.reason === 'signal-received') {
-      this._expectingPause = false;
-    } else if (
-      stopped.reason === 'exited-normally' ||
-      stopped.reason === 'exited-signalled'
-    ) {
-      this._onTargetTerminated();
-      return;
-    } else if (stopped.reason == null) {
-      // the stop reason is empty for attach start
-      if (this._continueOnAttach) {
-        this._continueOnAttach = false;
-        this._running = true;
-        await this._client.sendCommand('exec-continue');
-        return;
-      }
-    }
-
-    const event = new StoppedEvent();
-    event.body = {
-      reason,
-      description,
-      threadId: parseInt(stopped['thread-id'], 10),
-      preserveFocusHint: false,
-      allThreadsStopped: true,
-    };
-
-    this.sendEvent(event);
-  }
-
-  _onAsyncThread(record: MIAsyncRecord, started: boolean): void {
-    // NB that using a handle table is not needed for threads, because the MI
+    this.sendEvent(new (_vscodeDebugadapter || _load_vscodeDebugadapter()).InitializedEvent());}launchRequest(response, args) {var _this = this;return (0, _asyncToGenerator.default)(function* () {(_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.setup(args.trace === true ? (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Verbose : (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Error, true);let environment = {};if (args.env != null) {args.env.forEach(function (_) {const equal = _.indexOf('=');if (equal === -1) {throw new Error('Given environment is malformed.');}const key = _.substr(0, equal);const value = _.substr(equal + 1);environment = Object.assign({}, environment, { [key]: value });});}const debuggerRoot = args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;_this._client.start('gdb', ['-q', '--interpreter=mi2'], environment);if (debuggerRoot != null && debuggerRoot.trim() !== '' && !(yield _this._sendWithFailureCheck(response, `environment-directory -r "${debuggerRoot}"`))) {return;}if (args.cwd != null && args.cwd.trim() !== '' && !(yield _this._sendWithFailureCheck(response, `environment-cd ${args.cwd}`))) {return;}if (args.arguments != null && !(yield _this._sendWithFailureCheck(response, `exec-arguments ${args.arguments}`))) {return;}if (!(yield _this._sendWithFailureCheck(response, `file-exec-and-symbols ${args.program}`))) {return;}_this._attachPID = null;_this._hasTarget = true;_this.sendResponse(response);})();}attachRequest(response, args) {var _this2 = this;return (0, _asyncToGenerator.default)(function* () {(_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.setup(args.trace === true ? (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Verbose : (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Error, true);const debuggerRoot = args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;_this2._client.start('gdb', ['-q', '--interpreter=mi2'], null);if (debuggerRoot != null && debuggerRoot.trim() !== '' && !(yield _this2._sendWithFailureCheck(response, `environment-directory -r "${debuggerRoot}"`))) {return;}_this2._attachPID = args.pid;_this2._continueOnAttach = args.stopOnAttach !== true;_this2._hasTarget = true;_this2.sendResponse(response);})();}disconnectRequest(response, request) {var _this3 = this;return (0, _asyncToGenerator.default)(function* () {_this3._stepping = false;_this3._runWhenStopped((0, _asyncToGenerator.default)(function* () {if (_this3._attachPID != null) {yield _this3._client.sendCommand('target-detach');_this3._attachPID = null;_this3._hasTarget = false;}_this3.sendResponse(response);}));})();}configurationDoneRequest(response, args) {var _this4 = this;return (0, _asyncToGenerator.default)(function* () {_this4._configurationDone = true;if (!(yield _this4._initializeTargetIO(response))) {return;}yield _this4._sendCachedBreakpoints();_this4._running = true;if (_this4._attachPID != null) {if (!(yield _this4._sendWithFailureCheck(response, `target-attach ${_this4._attachPID}`))) {return;}} else {if (!(yield _this4._sendWithFailureCheck(response, 'exec-run'))) {return;}}_this4.sendResponse(response);})();}setBreakPointsRequest(response, args) {var _this5 = this;return (0, _asyncToGenerator.default)(function* () {_this5._runWhenStopped((0, _asyncToGenerator.default)(function* () {try {const source = args.source.path != null ? args.source.path : args.source.name;if (!(source != null)) {throw new Error('Invariant violation: "source != null"');}const breakpoints = args.breakpoints;if (breakpoints == null) {_this5._sendFailureResponse(response, 'No breakpoints specified in breakpoints request');return;}const protocolBreakpoints = yield _this5._sourceBreakpoints.setSourceBreakpoints(source, breakpoints);response.body = { breakpoints: protocolBreakpoints };_this5.sendResponse(response);} catch (error) {_this5._sendFailureResponse(response, error.message);}}));})();}setFunctionBreakPointsRequest(response, args) {var _this6 = this;return (0, _asyncToGenerator.default)(function* () {_this6._runWhenStopped((0, _asyncToGenerator.default)(function* () {try {const breakpoints = args.breakpoints;if (breakpoints == null) {_this6._sendFailureResponse(response, 'No breakpoints specified in breakpoints request');return;}const functions = breakpoints.map(function (_) {return _.name;});const breakpointsOut = yield _this6._functionBreakpoints.setFunctionBreakpoints(functions);response.body = { breakpoints: breakpointsOut };_this6.sendResponse(response);} catch (error) {_this6._sendFailureResponse(response, error.message);}}));})();}_sendCachedBreakpoints() {var _this7 = this;return (0, _asyncToGenerator.default)(function* () {logVerbose('_sendCachedBreakpoints');const changedBreakpoints = [...(yield _this7._sourceBreakpoints.setCachedBreakpoints()), ...(yield _this7._functionBreakpoints.setCachedBreakpoints())];changedBreakpoints.forEach(function (breakpoint) {const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).BreakpointEvent();event.body = { reason: 'changed', breakpoint };_this7.sendEvent(event);});})();}setExceptionBreakPointsRequest(response, args) {var _this8 = this;return (0, _asyncToGenerator.default)(function* () {try {yield _this8._exceptionBreakpoints.setExceptionBreakpointFilters(args.filters);_this8.sendResponse(response);} catch (error) {_this8._sendFailureResponse(response, error.message);}})();}threadsRequest(response) {var _this9 = this;return (0, _asyncToGenerator.default)(function* () {_this9._runWhenStopped((0, _asyncToGenerator.default)(function* () {const threadRecord = yield _this9._client.sendCommand('thread-info');try {if (!threadRecord.done) {_this9._sendFailureResponse(response, 'Failed to retrieve threads');return;}const threads = (0, (_MITypes || _load_MITypes()).threadInfoResult)(threadRecord).threads;response.body = { threads: threads.map(function (_) {return { id: parseInt(_.id, 10), name: _['target-id'] };}) };_this9.sendResponse(response);} catch (err) {_this9._sendFailureResponse(response, err.message);}}));})();}stackTraceRequest(response, args) {var _this10 = this;return (0, _asyncToGenerator.default)(function* () {yield _this10._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);response.body = yield _this10._stackFrames.stackFramesForThread(args.threadId, args.startFrame, args.levels);try {response.body.stackFrames = yield Promise.all(response.body.stackFrames.map((() => {var _ref5 = (0, _asyncToGenerator.default)(function* (frame) {let source = frame.source;if (source == null || source.path == null) {source = { sourceReference: yield _this10._disassemble.sourceReferenceForStackFrame(frame.id) };}return Object.assign({}, frame, { source });});return function (_x) {return _ref5.apply(this, arguments);};})()));_this10.sendResponse(response);} catch (err) {_this10._sendFailureResponse(response, err.message);}})();}sourceRequest(response, args) {var _this11 = this;return (0, _asyncToGenerator.default)(function* () {try {const content = yield _this11._disassemble.getDisassembly(args.sourceReference);response.body = { content };_this11.sendResponse(response);} catch (err) {_this11._sendFailureResponse(response, err.message);}})();}pauseRequest(response, args) {var _this12 = this;return (0, _asyncToGenerator.default)(function* () {try {_this12._expectingPause = true;_this12._client.pause();_this12.sendResponse(response);} catch (err) {_this12._sendFailureResponse(response, err.message);}})();}continueRequest(response, args) {var _this13 = this;return (0, _asyncToGenerator.default)(function* () {return _this13._executeCommon('exec-continue', null, response);})();}nextRequest(response, args) {var _this14 = this;return (0, _asyncToGenerator.default)(function* () {_this14._stepping = true;return _this14._executeCommon('exec-next', args.threadId, response);})();}stepInRequest(response, args) {var _this15 = this;return (0, _asyncToGenerator.default)(function* () {_this15._stepping = true;return _this15._executeCommon('exec-step', args.threadId, response);})();}stepOutRequest(response, args) {var _this16 = this;return (0, _asyncToGenerator.default)(function* () {_this16._stepping = true;return _this16._executeCommon('exec-finish', args.threadId, response);})();}_executeCommon(execCommand, threadId, response) {var _this17 = this;return (0, _asyncToGenerator.default)(function* () {try {const thread = threadId != null ? `--thread ${threadId}` : '';const result = yield _this17._client.sendCommand(`${execCommand} ${thread}`);if (!result.running) {_this17._sendFailureResponse(response, `Failed to ${execCommand} program ${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg}`);return;}_this17._running = true;_this17.sendResponse(response);} catch (err) {_this17._sendFailureResponse(response, err.message);}})();}scopesRequest(response, args) {var _this18 = this;return (0, _asyncToGenerator.default)(function* () {try {const varref = _this18._variables.variableReferenceForStackFrame(args.frameId);const scopes = [{ name: 'Locals', variablesReference: varref, expensive: false }];const regVarref = yield _this18._variables.registersVariableReference();if (regVarref != null) {scopes.push({ name: 'Registers', variablesReference: regVarref, expensive: false });}response.body = { scopes };_this18.sendResponse(response);} catch (err) {_this18._sendFailureResponse(response, err.message);}})();}variablesRequest(response, args) {var _this19 = this;return (0, _asyncToGenerator.default)(function* () {yield _this19._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);try {const variables = yield _this19._variables.getVariables(args.variablesReference, args.start, args.count);response.body = { variables };_this19.sendResponse(response);} catch (err) {_this19._sendFailureResponse(response, err.message);}})();}setVariableRequest(response, args) {var _this20 = this;return (0, _asyncToGenerator.default)(function* () {yield _this20._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);try {const varref = _this20._variables.getVariableReference(args.variablesReference);if (varref == null) {throw new Error(`setVariableRequest: invalid variable reference ${args.variablesReference}`);}const varSet = yield varref.setChildValue(args.name, args.value);response.body = varSet;_this20.sendResponse(response);} catch (err) {_this20._sendFailureResponse(response, err.message);}})();}evaluateRequest(response, args) {var _this21 = this;return (0, _asyncToGenerator.default)(function* () {yield _this21._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);try {let threadId;let frameIndex;const frameId = args.frameId;if (frameId != null) {const stackFrame = _this21._stackFrames.stackFrameByHandle(frameId);if (stackFrame == null) {throw new Error(`evaluateRequest passed invalid frameId ${frameId}`);}threadId = stackFrame.threadId;frameIndex = stackFrame.frameIndex;}const handle = _this21._variables.expressionVariableReference(threadId, frameIndex, args.expression);const variables = yield _this21._variables.getVariables(handle);if (!(variables.length === 1)) {throw new Error('call should return 1 element or throw on error');}const variable = variables[0];response.body = { result: variable.value, type: variable.type, variablesReference: variable.variablesReference, namedVariables: variable.namedVariables, indexedVariables: variable.indexedVariables };_this21.sendResponse(response);} catch (err) {_this21._sendFailureResponse(response, err.message);}})();}_setOutputFormat(hex) {var _this22 = this;return (0, _asyncToGenerator.default)(function* () {_this22._client.sendCommand(`gdb-set output-radix ${hex ? 16 : 10}`);})();}_initializeTargetIO(response) {var _this23 = this;return (0, _asyncToGenerator.default)(function* () {// $TODO Windows
+      // gdb uses a pty to pipe target (what it calls inferior) output separately from
+      // MI traffic. set up a pty and handlers.
+      const targetIO = (_pty || _load_pty()).open({});_this23._targetIO = targetIO;targetIO.on('data', function (line) {return _this23._onTargetIO(line);}); // if the pty socket sends 'end' it means the target process has terminated.
+      targetIO.once('end', function () {return _this23._onTargetTerminated();}); // if there's an error such as the actual debugger crashing, shut down cleanly
+      targetIO.once('error', function () {return _this23._onTargetTerminated();});if (!(yield _this23._sendWithFailureCheck(response, `inferior-tty-set ${targetIO.ptyName}`))) {return false;}return true;})();}_onTargetIO(line) {const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).OutputEvent();event.body = { category: 'stdout', output: line };this.sendEvent(event);}_onTargetTerminated() {this.sendEvent(new (_vscodeDebugadapter || _load_vscodeDebugadapter()).TerminatedEvent());this._hasTarget = false;this._configurationDone = false;}_runWhenStopped(fn) {var _this24 = this;return (0, _asyncToGenerator.default)(function* () {if (!_this24._running) {return fn();}_this24._pauseQueue.push(fn);if (_this24._stepping) {// If we are stepping, then sending a signal and then continuing will
+        // disrupt the step. We're going to stop anyway, so just don't.
+        return;}if (_this24._pauseQueue.length === 1) {_this24._client.pause();}})();}_processPauseQueue() {var _this25 = this;return (0, _asyncToGenerator.default)(function* () {const fns = _this25._pauseQueue.slice();_this25._pauseQueue = [];yield Promise.all(fns.map(function (fn) {return fn();}));})();}_pauseIfThereAreQueuedCommands() {if (this._pauseQueue.length !== 0) {this._client.pause();}}_onAsyncStopped(record) {var _this26 = this;return (0, _asyncToGenerator.default)(function* () {const stopped = (0, (_MITypes || _load_MITypes()).stoppedEventResult)(record);yield _this26._processPauseQueue(); // A received signal means one of two things: SIGINT sent to gdb to drop
+      // into command mode (pausing the target), or an unexpected signal which
+      // is an exception to break on.
+      if (!_this26._expectingPause && _this26._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped)) {_this26._running = true;yield _this26._client.sendCommand('exec-continue'); // we are really running again. if any commands came in from the UI during
+        // the await here, they will have been queued. if we don't check now,
+        // we could drop them. pausing again will cause them to run.
+        _this26._pauseIfThereAreQueuedCommands();return;}_this26._running = false;_this26._stackFrames.clearCachedFrames();_this26._variables.clearCachedVariables(); // Values: 'step', 'breakpoint', 'exception', 'pause', 'entry', etc.
+      let reason = 'pause';let description = 'Execution paused';const exceptionReason = _this26._exceptionBreakpoints.stopEventReason(stopped);if (exceptionReason != null) {reason = exceptionReason.reason;description = exceptionReason.description;} else if (stopped.reason === 'breakpoint-hit') {reason = 'breakpoint';description = 'Breakpoint hit';} else if (stopped.reason === 'end-stepping-range') {reason = 'step';description = 'Execution stepped';_this26._stepping = false;} else if (stopped.reason === 'exited') {_this26._onTargetTerminated();return;} else if (stopped.reason === 'signal-received') {_this26._expectingPause = false;} else if (stopped.reason === 'exited-normally' || stopped.reason === 'exited-signalled') {_this26._onTargetTerminated();return;} else if (stopped.reason == null) {// the stop reason is empty for attach start
+        if (_this26._continueOnAttach) {_this26._continueOnAttach = false;_this26._running = true;yield _this26._client.sendCommand('exec-continue');return;}}const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).StoppedEvent();event.body = { reason, description, threadId: parseInt(stopped['thread-id'], 10), preserveFocusHint: false, allThreadsStopped: true };_this26.sendEvent(event);})();}_onAsyncThread(record, started) {// NB that using a handle table is not needed for threads, because the MI
     // interface defines a thread id which is exactly the same thing.
-    const id = record.result.id;
-    const event = new ThreadEvent();
-
-    event.body = {
-      reason: started ? 'started' : 'exited',
-      threadId: parseInt(id, 10),
-    };
-
-    this.sendEvent(event);
-  }
-
-  async _sendWithFailureCheck(
-    response: DebugProtocol.Response,
-    command: string,
-  ): Promise<boolean> {
-    const result = await this._client.sendCommand(command);
-    if (result.error) {
-      this._sendFailureResponse(response, toCommandError(result).msg);
-      return false;
-    }
-    return true;
-  }
-
-  _onBreakpointModified(record: MIAsyncRecord): void {
-    const result = breakpointModifiedEventResult(record);
-    const breakpoint = this._breakpoints.breakpointByDebuggerId(
-      parseInt(result.bkpt[0].number, 10),
-    );
-
-    if (breakpoint != null && !breakpoint.verified) {
-      const handle = this._breakpoints.handleForBreakpoint(breakpoint);
-      invariant(handle != null);
-
-      breakpoint.setVerified();
-
-      const protocolBreakpoint = {
-        id: handle,
-        verified: true,
-        source: {
-          source: breakpoint.source,
-        },
-        line: breakpoint.line,
-      };
-
-      const event = new BreakpointEvent();
-      event.body = {
-        reason: 'changed',
-        breakpoint: protocolBreakpoint,
-      };
-
-      this.sendEvent(event);
-    }
-  }
-
-  _sendFailureResponse(
-    response: DebugProtocol.Response,
-    message?: string,
-  ): void {
-    response.success = false;
-    response.message = message;
-    this.sendResponse(response);
-  }
-}
-
-function timestamp(): string {
-  let ts = `${new Date().getTime()}`;
-
-  // This code put seperators in the timestamp in groups of thousands
+    const id = record.result.id;const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).ThreadEvent();event.body = { reason: started ? 'started' : 'exited', threadId: parseInt(id, 10) };this.sendEvent(event);}_sendWithFailureCheck(response, command) {var _this27 = this;return (0, _asyncToGenerator.default)(function* () {const result = yield _this27._client.sendCommand(command);if (result.error) {_this27._sendFailureResponse(response, (0, (_MITypes || _load_MITypes()).toCommandError)(result).msg);return false;}return true;})();}_onBreakpointModified(record) {const result = (0, (_MITypes || _load_MITypes()).breakpointModifiedEventResult)(record);const breakpoint = this._breakpoints.breakpointByDebuggerId(parseInt(result.bkpt[0].number, 10));if (breakpoint != null && !breakpoint.verified) {const handle = this._breakpoints.handleForBreakpoint(breakpoint);if (!(handle != null)) {throw new Error('Invariant violation: "handle != null"');}breakpoint.setVerified();const protocolBreakpoint = { id: handle, verified: true, source: { source: breakpoint.source }, line: breakpoint.line };const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).BreakpointEvent();event.body = { reason: 'changed', breakpoint: protocolBreakpoint };this.sendEvent(event);}}_sendFailureResponse(response, message) {response.success = false;response.message = message;this.sendResponse(response);}}function timestamp() {let ts = `${new Date().getTime()}`; // This code put seperators in the timestamp in groups of thousands
   // to make it easier to read, i.e.
   // 123456789 => 123_456_789
-  let fmt = '';
-  while (ts.length >= 3) {
-    if (fmt !== '') {
-      fmt = '_' + fmt;
-    }
-    fmt = ts.substring(ts.length - 3) + fmt;
-    ts = ts.substring(0, ts.length - 3);
-  }
-
-  if (ts !== '') {
-    if (fmt !== '') {
-      fmt = '_' + fmt;
-    }
-    fmt = ts + fmt;
-  }
-
-  return fmt;
-}
-
-export function logVerbose(line: string): void {
-  logger.verbose(`${timestamp()} ${line}`);
-}
-
-LoggingDebugSession.run(MIDebugSession);
+  let fmt = '';while (ts.length >= 3) {if (fmt !== '') {fmt = '_' + fmt;}fmt = ts.substring(ts.length - 3) + fmt;ts = ts.substring(0, ts.length - 3);}if (ts !== '') {if (fmt !== '') {fmt = '_' + fmt;}fmt = ts + fmt;}return fmt;}function logVerbose(line) {(_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.verbose(`${timestamp()} ${line}`);}(_vscodeDebugadapter || _load_vscodeDebugadapter()).LoggingDebugSession.run(MIDebugSession);
