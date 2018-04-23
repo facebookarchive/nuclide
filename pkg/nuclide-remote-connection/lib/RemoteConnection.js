@@ -185,16 +185,7 @@ export class RemoteConnection {
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
-    let connectionConfig = await getConnectionConfig(host);
-    if (!connectionConfig) {
-      try {
-        // Connection configs are also stored by IP address to share between hostnames.
-        const {address} = await lookupPreferIpv6(host);
-        connectionConfig = await getConnectionConfig(address);
-      } catch (err) {
-        // It's OK if the backup IP check fails.
-      }
-    }
+    const connectionConfig = await getConnectionConfig(host);
     if (!connectionConfig) {
       return null;
     }
@@ -239,12 +230,28 @@ export class RemoteConnection {
         return connection;
       }
     }
-    return RemoteConnection._createConnectionBySavedConfig(
+
+    let connection = await RemoteConnection._createConnectionBySavedConfig(
       host,
       cwd,
       displayTitle,
       promptReconnectOnFailure,
     );
+    if (connection == null) {
+      try {
+        // Connection configs are also stored by IP address to share between hostnames.
+        const {address} = await lookupPreferIpv6(host);
+        connection = await RemoteConnection._createConnectionBySavedConfig(
+          address,
+          cwd,
+          displayTitle,
+          promptReconnectOnFailure,
+        );
+      } catch (err) {
+        // It's OK if the backup IP check fails.
+      }
+    }
+    return connection;
   }
 
   // A workaround before Atom 2.0: Atom's Project::setPaths currently uses
