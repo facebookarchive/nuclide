@@ -194,6 +194,7 @@
     "jest-cli": "22.4.2",
     "jest-mock": "22.2.0",
     "jest-util": "22.4.1",
+    "lerna": "2.9.0",
     "mock-spawn": "0.2.6",
     "nyc": "11.2.1",
     "prettier": "1.12.1",
