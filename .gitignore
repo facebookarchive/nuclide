@@ -3,6 +3,7 @@ npm-debug.log*
 *.pyc
 /node_modules
 /modules/**/node_modules
+/coverage
 
 ## DOCS ##
 
