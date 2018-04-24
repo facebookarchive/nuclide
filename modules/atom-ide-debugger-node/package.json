@@ -1,6 +1,6 @@
 {
   "name": "atom-ide-debugger-node",
-  "version": "0.7.0-dev",
+  "version": "0.7.1-dev",
   "main": "./main.js",
   "description": "NodeJS Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
@@ -25,8 +25,8 @@
     }
   },
   "dependencies": {
-    "nuclide-commons-atom": "0.7.0-dev",
-    "nuclide-debugger-common": "0.7.0-dev",
+    "nuclide-commons-atom": "0.7.1-dev",
+    "nuclide-debugger-common": "0.7.1-dev",
     "react": "16.2.0",
     "vscode-chrome-debug-core": "3.17.10",
     "vscode-debugadapter": "1.24.0",

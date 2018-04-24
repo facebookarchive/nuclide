@@ -1,6 +1,6 @@
 {
   "name": "nuclide-jest",
-  "version": "0.7.0-dev",
+  "version": "0.7.1-dev",
   "description": "Atom-compatible Jest runner that runs inside of Atom",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
@@ -12,8 +12,8 @@
     "jest-cli": "22.4.2",
     "jest-mock": "22.2.0",
     "jest-util": "22.4.1",
-    "nuclide-commons": "0.7.0-dev",
-    "nuclide-commons-ui": "0.7.0-dev",
+    "nuclide-commons": "0.7.1-dev",
+    "nuclide-commons-ui": "0.7.1-dev",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
     "react-dom": "16.2.0",
