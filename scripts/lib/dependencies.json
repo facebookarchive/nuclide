@@ -5,13 +5,16 @@
       "atom",
       "--version"
     ],
-    "version-output": "Atom    : 1.25.1\nElectron: 1.7.11\nChrome  : 58.0.3029.110\nNode    : 7.9.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.25.1/atom-mac.zip",
-    "shasum": "6d0ded2ccdbd302be0fed021f6a41be36c4533b80040962ecb7814099127ffee"
+    "version-output": "Atom    : 1.26.0\nElectron: 1.7.11\nChrome  : 58.0.3029.110\nNode    : 7.9.0",
+    "url": "https://github.com/atom/atom/releases/download/v1.26.0/atom-mac.zip",
+    "shasum": "ac7510e317b965dac2676994a70bac7b70c7181d91a93cde83aa2ad0b33b51ba"
   },
   "flow": {
     "clientOnly": false,
-    "version-cmd": ["flow", "version"],
+    "version-cmd": [
+      "flow",
+      "version"
+    ],
     "version-output": "Flow, a static type checker for JavaScript, version 0.68.0",
     "url": null,
     "shasum": null
