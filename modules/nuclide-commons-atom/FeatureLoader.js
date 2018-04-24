@@ -16,11 +16,13 @@ import invariant from 'assert';
 import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
+import {activateExperimentalPackages} from './experimental-packages';
 import featureConfig from './feature-config';
 import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 import {MultiMap, setUnion} from 'nuclide-commons/collection';
 
 type FeaturePkg = {
+  name: string,
   atomConfig?: Object,
   consumedServices?: Object,
   description?: string,
@@ -111,6 +113,12 @@ export default class FeatureLoader {
     // https://atom.io/docs/api/latest/Config
     //
     this._config = buildConfig(this._features);
+
+    this._loadDisposable.add(
+      activateExperimentalPackages(
+        this._features.filter(feature => this.shouldEnable(feature)),
+      ),
+    );
 
     // Schedule the loading of features.
     this._loadDisposable.add(this.scheduleFeatureLoading());
