@@ -55,7 +55,7 @@ export default class FeatureLoader {
   _activationDisposable: ?UniversalDisposable;
   _loadDisposable: UniversalDisposable;
 
-  _config: Object;
+  _config: ?Object;
   _features: Array<Feature>;
   _featureGroups: {[string]: Array<string>};
   _featureGroupMap: MultiMap<string, Feature> = new MultiMap();
@@ -72,15 +72,6 @@ export default class FeatureLoader {
 
     // Constructs the map from feature groups to features.
     this.constructFeatureGroupMap();
-    this._config = {
-      use: {
-        title: 'Enabled Features',
-        description: 'Enable and disable individual features',
-        type: 'object',
-        collapsed: true,
-        properties: {},
-      },
-    };
   }
 
   // Build the config. Should occur with root package's load
@@ -104,6 +95,13 @@ export default class FeatureLoader {
       }),
     );
 
+    featureConfig.setPackageName(this._pkgName);
+
+    // Migrate the current features enabled state (from boolean on/off to enumerated states).
+    this._features.forEach(feature => {
+      this.migrateFeature(feature);
+    });
+
     //
     // Build the "config" object. This determines the config defaults and
     // it's what is shown by the Settings view. It includes:
@@ -112,68 +110,13 @@ export default class FeatureLoader {
     //
     // https://atom.io/docs/api/latest/Config
     //
-    this._features.forEach(feature => {
-      const featurePkg = feature.pkg;
-      const name = packageNameFromPath(feature.path);
+    this._config = buildConfig(this._features);
 
-      // Migrate the current feature (from boolean on/off to enumerated states).
-      this.migrateFeature(feature);
+    // Schedule the loading of features.
+    this._loadDisposable.add(this.scheduleFeatureLoading());
+  }
 
-      const setting = {
-        title:
-          featurePkg.displayName == null
-            ? `Enable the "${name}" feature`
-            : `Enable ${featurePkg.displayName}`,
-        description: featurePkg.description || '',
-        type: 'string',
-        enum: [
-          {value: ALWAYS_ENABLED, description: 'Always enabled'},
-          {value: NEVER_ENABLED, description: 'Never enabled'},
-          {
-            value: DEFAULT,
-            description: 'Only when in an enabled package group',
-          },
-        ],
-        default: getFeatureDefaultValue(feature),
-      };
-
-      if (devMode) {
-        if (featurePkg.providedServices) {
-          const provides = Object.keys(featurePkg.providedServices).join(', ');
-          setting.description += `<br/>**Provides:** _${provides}_`;
-        }
-        if (featurePkg.consumedServices) {
-          const consumes = Object.keys(featurePkg.consumedServices).join(', ');
-          setting.description += `<br/>**Consumes:** _${consumes}_`;
-        }
-      }
-
-      this._config.use.properties[name] = setting;
-
-      // Merge in the feature's config
-      const featurePkgConfig =
-        featurePkg.atomConfig ||
-        (featurePkg.nuclide && featurePkg.nuclide.config);
-
-      if (featurePkgConfig) {
-        this._config[name] = {
-          type: 'object',
-          title: featurePkg.displayName,
-          description: featurePkg.description,
-          collapsed: true,
-          properties: {},
-        };
-        Object.keys(featurePkgConfig).forEach(key => {
-          this._config[name].properties[key] = {
-            ...featurePkgConfig[key],
-            title: featurePkgConfig[key].title || key,
-          };
-        });
-      }
-    });
-
-    featureConfig.setPackageName(this._pkgName);
-
+  scheduleFeatureLoading(): IDisposable {
     // Nesting loads within loads leads to reverse activation order- that is, if
     // the root package loads feature packages, then the feature package activations will
     // happen before the root package's. So we wait until the root package is done loading,
@@ -193,12 +136,10 @@ export default class FeatureLoader {
         }
       });
 
-      invariant(initialLoadDisposable != null);
-      this._loadDisposable.remove(initialLoadDisposable);
       initialLoadDisposable.dispose();
     });
 
-    this._loadDisposable.add(initialLoadDisposable);
+    return initialLoadDisposable;
   }
 
   activate(): void {
@@ -365,6 +306,7 @@ export default class FeatureLoader {
   }
 
   getConfig(): Object {
+    invariant(this._config != null);
     return this._config;
   }
 
@@ -486,4 +428,73 @@ function packageNameFromPath(pkgPath: string): string {
 
 function packageIsRepositoryProvider(pkg: FeaturePkg): boolean {
   return Boolean(idx(pkg, _ => _.providedServices['atom.repository-provider']));
+}
+
+function buildConfig(features: Array<Feature>): Object {
+  const config = {
+    use: {
+      title: 'Enabled Features',
+      description: 'Enable and disable individual features',
+      type: 'object',
+      collapsed: true,
+      properties: {},
+    },
+  };
+  features.forEach(feature => {
+    const featurePkg = feature.pkg;
+    const name = packageNameFromPath(feature.path);
+
+    const setting = {
+      title:
+        featurePkg.displayName == null
+          ? `Enable the "${name}" feature`
+          : `Enable ${featurePkg.displayName}`,
+      description: featurePkg.description || '',
+      type: 'string',
+      enum: [
+        {value: ALWAYS_ENABLED, description: 'Always enabled'},
+        {value: NEVER_ENABLED, description: 'Never enabled'},
+        {
+          value: DEFAULT,
+          description: 'Only when in an enabled package group',
+        },
+      ],
+      default: getFeatureDefaultValue(feature),
+    };
+
+    if (devMode) {
+      if (featurePkg.providedServices) {
+        const provides = Object.keys(featurePkg.providedServices).join(', ');
+        setting.description += `<br/>**Provides:** _${provides}_`;
+      }
+      if (featurePkg.consumedServices) {
+        const consumes = Object.keys(featurePkg.consumedServices).join(', ');
+        setting.description += `<br/>**Consumes:** _${consumes}_`;
+      }
+    }
+
+    config.use.properties[name] = setting;
+
+    // Merge in the feature's config
+    const featurePkgConfig =
+      featurePkg.atomConfig ||
+      (featurePkg.nuclide && featurePkg.nuclide.config);
+
+    if (featurePkgConfig) {
+      config[name] = {
+        type: 'object',
+        title: featurePkg.displayName,
+        description: featurePkg.description,
+        collapsed: true,
+        properties: {},
+      };
+      Object.keys(featurePkgConfig).forEach(key => {
+        config[name].properties[key] = {
+          ...featurePkgConfig[key],
+          title: featurePkgConfig[key].title || key,
+        };
+      });
+    }
+  });
+  return config;
 }
