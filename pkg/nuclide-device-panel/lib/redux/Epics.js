@@ -19,6 +19,7 @@ import type {
   AppInfoRow,
   DeviceAppInfoProvider,
   DeviceTypeComponent,
+  IDeviceTask,
 } from '../types';
 import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
 
@@ -431,7 +432,7 @@ const deviceTaskCache = new Cache({
   keyFactory: ([state: AppState, providerName: string]) =>
     JSON.stringify([state.host, state.deviceType, providerName]),
 });
-function getDeviceTasks(state: AppState): Observable<DeviceTask[]> {
+function getDeviceTasks(state: AppState): Observable<IDeviceTask[]> {
   const device = state.device;
   if (device == null) {
     return Observable.of([]);

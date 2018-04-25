@@ -15,8 +15,18 @@ import type {Expected} from 'nuclide-commons/expected';
 import type {Device as DeviceIdType} from '../../nuclide-device-panel/lib/types';
 
 import * as Immutable from 'immutable';
-import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
+
+//
+// DeviceTask interface
+//
+
+export interface IDeviceTask {
+  getName(): string;
+  getTaskEvents(): Observable<?TaskEvent>;
+  start(): void;
+  cancel(): void;
+}
 
 //
 // Api
@@ -136,9 +146,9 @@ export type AppState = {
   appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   processTasks: ProcessTask[],
-  deviceTasks: DeviceTask[],
+  deviceTasks: IDeviceTask[],
   isDeviceConnected: boolean,
-  deviceTypeTasks: DeviceTask[],
+  deviceTypeTasks: IDeviceTask[],
   isPollingDevices: boolean,
   deviceTypeComponents: Immutable.Map<
     ComponentPosition,
@@ -268,7 +278,7 @@ export type SetProcessTasksAction = {
 export type SetDeviceTasksAction = {
   type: 'SET_DEVICE_TASKS',
   payload: {
-    deviceTasks: DeviceTask[],
+    deviceTasks: IDeviceTask[],
   },
 };
 
@@ -289,7 +299,7 @@ export type ToggleProcessPollingAction = {
 export type SetDeviceTypeTasksAction = {
   type: 'SET_DEVICE_TYPE_TASKS',
   payload: {
-    deviceTypeTasks: DeviceTask[],
+    deviceTypeTasks: IDeviceTask[],
   },
 };
 

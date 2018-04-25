@@ -32,11 +32,11 @@ import type {
   AppInfoRow,
   DeviceTypeComponent,
   ComponentPosition,
+  IDeviceTask,
 } from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as Immutable from 'immutable';
-import {DeviceTask} from '../DeviceTask';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
@@ -149,7 +149,7 @@ export function setDevice(device: ?Device): SetDeviceAction {
 }
 
 export function setDeviceTasks(
-  deviceTasks: DeviceTask[],
+  deviceTasks: IDeviceTask[],
 ): SetDeviceTasksAction {
   return {
     type: SET_DEVICE_TASKS,
@@ -158,7 +158,7 @@ export function setDeviceTasks(
 }
 
 export function setDeviceTypeTasks(
-  deviceTypeTasks: DeviceTask[],
+  deviceTypeTasks: IDeviceTask[],
 ): SetDeviceTypeTasksAction {
   return {
     type: SET_DEVICE_TYPE_TASKS,

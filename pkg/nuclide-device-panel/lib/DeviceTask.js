@@ -10,10 +10,11 @@
  */
 
 import type {TaskEvent} from 'nuclide-commons/process';
+import type {IDeviceTask} from './types';
 
 import {Observable, ReplaySubject, Subscription} from 'rxjs';
 
-export class DeviceTask {
+export class DeviceTask implements IDeviceTask {
   _name: string;
   _taskFactory: () => Observable<TaskEvent>;
   _subscription: ?Subscription = null;

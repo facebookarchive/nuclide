@@ -17,6 +17,7 @@ import type {
   DeviceTypeComponent,
   Process,
   ProcessTask,
+  IDeviceTask,
 } from '../types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
@@ -24,7 +25,6 @@ import type {Props as TaskButtonPropsType} from './TaskButton';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {TaskButton} from './TaskButton';
-import {DeviceTask} from '../DeviceTask';
 import * as React from 'react';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import invariant from 'assert';
@@ -45,13 +45,13 @@ export type Props = {|
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
-  deviceTasks: DeviceTask[],
+  deviceTasks: IDeviceTask[],
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
   appInfoTables: Expected<Map<string, Array<AppInfoRow>>>,
   processes: Expected<Process[]>,
   isDeviceConnected: boolean,
-  deviceTypeTasks: DeviceTask[],
+  deviceTypeTasks: IDeviceTask[],
   deviceTypeComponents: Immutable.Map<
     ComponentPosition,
     Immutable.List<DeviceTypeComponent>,
@@ -87,7 +87,7 @@ export class RootPanel extends React.Component<Props> {
   }
 
   _taskEventsToProps(
-    task: DeviceTask,
+    task: IDeviceTask,
     taskEvent: ?TaskEvent,
   ): TaskButtonPropsType {
     return {
