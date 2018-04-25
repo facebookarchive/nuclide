@@ -13,7 +13,6 @@ import type {
   AtomCommands,
   ConnectionDetails,
   MultiConnectionAtomCommands,
-  ProjectState,
 } from './rpc-types';
 import type {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -31,13 +30,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createNewEntry, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {firstOfIterable, concatIterators} from 'nuclide-commons/collection';
-import {timeoutPromise} from 'nuclide-commons/promise';
-
-/**
- * Timeout to use when making a getProjectState() RPC.
- * Note this is less than the server's default timeout of 60s.
- */
-const GET_PROJECT_STATES_TIMEOUT_MS = 10 * 1000;
 
 /**
  * A singleton instance of this class should exist in a Nuclide server.
@@ -70,6 +62,10 @@ export class CommandServer {
 
   getConnectionCount(): number {
     return this._connections.length;
+  }
+
+  getConnections(): Iterable<CommandServerConnection> {
+    return this._connections;
   }
 
   async _ensureServer(): Promise<SocketServer> {
@@ -140,22 +136,5 @@ export class CommandServer {
 
   getMultiConnectionAtomCommands(): MultiConnectionAtomCommands {
     return this._multiConnectionAtomCommands;
-  }
-
-  async getProjectStates(): Promise<Array<ProjectState>> {
-    const clientConnections = await Promise.all(
-      this._connections.map(connection =>
-        // Just in case the connection is no longer valid, we wrap it with a
-        // timeout less than Nuclide RPC's default of 60s. We swallow any
-        // errors and return an empty ProjectState if this happens.
-        timeoutPromise(
-          connection.getAtomCommands().getProjectState(),
-          GET_PROJECT_STATES_TIMEOUT_MS,
-        ).catch(error => ({
-          rootFolders: [],
-        })),
-      ),
-    );
-    return [].concat(...clientConnections);
   }
 }

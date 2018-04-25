@@ -19,6 +19,13 @@ import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Observable} from 'rxjs';
+import {timeoutPromise} from 'nuclide-commons/promise';
+
+/**
+ * Timeout to use when making a getProjectState() RPC.
+ * Note this is less than the server's default timeout of 60s.
+ */
+const GET_PROJECT_STATES_TIMEOUT_MS = 10 * 1000;
 
 /**
  * Implementation of MultiConnectionAtomCommands that routes requests
@@ -73,7 +80,22 @@ export class RoutingAtomCommands implements MultiConnectionAtomCommands {
   }
 
   async getProjectStates(): Promise<Array<ProjectState>> {
-    return this._server.getProjectStates();
+    const projectStates = [];
+    for (const connection of this._server.getConnections()) {
+      // Just in case the connection is no longer valid, we wrap it with a
+      // timeout less than Nuclide RPC's default of 60s. We swallow any
+      // errors and return an empty ProjectState if this happens.
+      projectStates.push(
+        timeoutPromise(
+          connection.getAtomCommands().getProjectState(),
+          GET_PROJECT_STATES_TIMEOUT_MS,
+        ).catch(error => ({
+          rootFolders: [],
+        })),
+      );
+    }
+    const resolvedProjectStates = await Promise.all(projectStates);
+    return [].concat(...resolvedProjectStates);
   }
 
   dispose() {}
