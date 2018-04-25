@@ -19,7 +19,7 @@ export async function getAdbPath(): Promise<?string> {
   try {
     // $FlowFB
     return require('../../commons-node/fb-sitevar').fetchSitevarOnce(
-      ' NUCLIDE_ONE_WORLD_ADB_PATH',
+      'NUCLIDE_ONE_WORLD_ADB_PATH',
     );
   } catch (e) {
     return 'adb';
