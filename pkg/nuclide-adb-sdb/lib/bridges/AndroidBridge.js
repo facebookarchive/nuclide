@@ -19,7 +19,7 @@ import type {DeviceTypeAndroid} from '../types';
 
 import * as Actions from '../redux/Actions';
 import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {observeAndroidDevicesX} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeAndroidDevicesX} from '../../../nuclide-adb-sdb-base/lib/AdbDevicePoller';
 import {Observable} from 'rxjs';
 
 export class AndroidBridge {

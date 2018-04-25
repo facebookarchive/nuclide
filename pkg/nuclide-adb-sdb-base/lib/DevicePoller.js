@@ -10,14 +10,13 @@
  */
 
 import type {Expected} from 'nuclide-commons/expected';
+import type {ConnectableObservable} from 'rxjs';
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
 import {arrayEqual} from 'nuclide-commons/collection';
 import shallowEqual from 'shallowequal';
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
 import {track} from '../../nuclide-analytics';
@@ -25,13 +24,18 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
 
 export type DBType = 'sdb' | 'adb';
+type DBDeviceListService = {
+  getDeviceList: () => ConnectableObservable<Array<DeviceDescription>>,
+};
 
 class DevicePoller {
   _type: DBType;
+  _service: DBDeviceListService;
   _observables: Cache<string, Observable<Expected<Device[]>>> = new Cache();
 
-  constructor(type: DBType) {
+  constructor(type: DBType, service: DBDeviceListService) {
     this._type = type;
+    this._service = service;
   }
 
   _getPlatform(): string {
@@ -82,12 +86,7 @@ class DevicePoller {
 
   fetch(host: NuclideUri): Observable<Device[]> {
     try {
-      const rpc =
-        this._type === 'adb'
-          ? getAdbServiceByNuclideUri(host)
-          : getSdbServiceByNuclideUri(host);
-
-      return rpc
+      return this._service
         .getDeviceList()
         .refCount()
         .map(devices => devices.map(device => this.parseRawDevice(device)));
@@ -126,34 +125,15 @@ class DevicePoller {
 
 const pollers: Map<DBType, DevicePoller> = new Map();
 
-function observeDevices(
+export function observeDevices(
   type: DBType,
+  service: DBDeviceListService,
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
   let poller = pollers.get(type);
   if (poller == null) {
-    poller = new DevicePoller(type);
+    poller = new DevicePoller(type, service);
     pollers.set(type, poller);
   }
   return poller.observe(host);
-}
-
-export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
-  return observeDevices('adb', host).map(devices => devices.getOrDefault([]));
-}
-
-export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
-  return observeDevices('sdb', host).map(devices => devices.getOrDefault([]));
-}
-
-export function observeAndroidDevicesX(
-  host: NuclideUri,
-): Observable<Expected<Device[]>> {
-  return observeDevices('adb', host);
-}
-
-export function observeTizenDevicesX(
-  host: NuclideUri,
-): Observable<Expected<Device[]>> {
-  return observeDevices('sdb', host);
 }

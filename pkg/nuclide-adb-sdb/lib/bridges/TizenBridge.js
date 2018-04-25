@@ -19,7 +19,7 @@ import type {DeviceTypeTizen} from '../types';
 
 import * as Actions from '../redux/Actions';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {observeTizenDevicesX} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeTizenDevicesX} from '../../../nuclide-adb-sdb-base/lib/SdbDevicePoller';
 import {Observable} from 'rxjs';
 
 export class TizenBridge {

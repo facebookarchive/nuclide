@@ -17,7 +17,7 @@ import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/AdbDevicePoller';
 import {Expect} from 'nuclide-commons/expected';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {arrayEqual} from 'nuclide-commons/collection';

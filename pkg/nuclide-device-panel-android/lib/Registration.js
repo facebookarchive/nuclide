@@ -12,7 +12,7 @@
 import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/AdbDevicePoller';
 import {AndroidDeviceInfoProvider} from './providers/AndroidDeviceInfoProvider';
 import {AndroidDeviceProcessesProvider} from './providers/AndroidDeviceProcessesProvider';
 import {AndroidDeviceStopProcessProvider} from './providers/AndroidDeviceStopProcessProvider';

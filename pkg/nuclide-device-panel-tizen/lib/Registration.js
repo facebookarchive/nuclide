@@ -12,7 +12,7 @@
 import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeTizenDevicesX} from '../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeTizenDevicesX} from '../../nuclide-adb-sdb-base/lib/SdbDevicePoller';
 import {TizenDeviceInfoProvider} from './providers/TizenDeviceInfoProvider';
 import {TizenDeviceProcessesProvider} from './providers/TizenDeviceProcessesProvider';
 import {TizenDeviceStopProcessProvider} from './providers/TizenDeviceStopProcessProvider';
