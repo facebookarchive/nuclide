@@ -13,7 +13,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import os from 'os';
 import yargs from 'yargs';
-import {getCommands, startCommands} from './CommandClient';
+import {getCommands} from './CommandClient';
 import {
   setupErrorHandling,
   setupLogging,
@@ -36,10 +36,7 @@ async function main(argv): Promise<number> {
   // Connect to the Nuclide server running on this host, if it exists.
   let commands = null;
   try {
-    commands =
-      argv.port != null
-        ? await startCommands(argv.port, argv.family)
-        : await getCommands();
+    commands = await getCommands(argv, /* rejectIfZeroConnections */ false);
   } catch (e) {
     // Only a FailedConnectionError is expected.
     if (!(e instanceof FailedConnectionError)) {
@@ -65,10 +62,10 @@ async function main(argv): Promise<number> {
     // Note that each ClientConnection represents an Atom window, so
     // the rootFolders across windows may overlap. Add all of them to
     // a Set to de-dupe.
-    const connections = await commands.getClientConnections();
+    const projectStates = await commands.getProjectStates();
     const rootFolders = new Set();
-    for (const connection of connections) {
-      for (const rootFolder of connection.rootFolders) {
+    for (const projectState of projectStates) {
+      for (const rootFolder of projectState.rootFolders) {
         if (nuclideUri.isRemote(rootFolder)) {
           const alias = nuclideUri.getHostname(rootFolder);
           // eslint-disable-next-line no-await-in-loop

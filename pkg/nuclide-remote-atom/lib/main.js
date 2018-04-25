@@ -13,7 +13,7 @@ import typeof * as RemoteCommandServiceType from '../../nuclide-remote-atom-rpc/
 import type {
   AtomCommands,
   AtomFileEvent,
-  ClientConnection,
+  ProjectState,
 } from '../../nuclide-remote-atom-rpc/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
@@ -95,12 +95,10 @@ class Activation {
         }
       },
 
-      async getClientConnections(): Promise<Array<ClientConnection>> {
-        return [
-          {
-            rootFolders: atom.project.getPaths(),
-          },
-        ];
+      async getProjectState(): Promise<ProjectState> {
+        return {
+          rootFolders: atom.project.getPaths(),
+        };
       },
       dispose(): void {},
     };

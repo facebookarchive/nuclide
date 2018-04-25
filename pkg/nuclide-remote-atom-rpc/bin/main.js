@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import {getCommands, startCommands} from './CommandClient';
+import {getCommands} from './CommandClient';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
@@ -115,10 +115,7 @@ async function main(argv): Promise<number> {
   if (argv._ != null && argv._.length > 0) {
     let commands;
     try {
-      commands =
-        argv.port != null
-          ? await startCommands(argv.port, argv.family)
-          : await getCommands();
+      commands = await getCommands(argv, /* rejectIfZeroConnections */ true);
     } catch (error) {
       if (error instanceof FailedConnectionError) {
         // Note this does not throw: reportConnectionErrorAndExit()

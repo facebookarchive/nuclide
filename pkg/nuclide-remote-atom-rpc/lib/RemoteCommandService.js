@@ -13,8 +13,8 @@ import type {AtomCommands} from './rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {CommandServer} from './CommandServer';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
+import {getCommandServer} from './command-server-singleton';
 import invariant from 'assert';
 
 // This interface is exposed by the nuclide server process to the client side
@@ -33,7 +33,7 @@ export class RemoteCommandService {
     invariant(fileNotifier instanceof FileCache);
     const fileCache = fileNotifier;
     this._disposables.add(
-      await CommandServer.register(fileCache, atomCommands),
+      await getCommandServer().register(fileCache, atomCommands),
     );
   }
 

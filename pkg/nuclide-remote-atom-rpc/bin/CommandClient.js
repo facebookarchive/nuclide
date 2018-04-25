@@ -10,7 +10,7 @@
  */
 
 import typeof * as CommandService from '../lib/CommandService';
-import type {AtomCommands} from '../lib/rpc-types';
+import type {MultiConnectionAtomCommands} from '../lib/rpc-types';
 
 import {getServer, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import net from 'net';
@@ -35,7 +35,25 @@ function convertStringFamilyToNumberFamily(family: string): number {
   }
 }
 
-export async function getCommands(): Promise<AtomCommands> {
+export async function getCommands(
+  argv: {port: ?number, family: ?string},
+  rejectIfZeroConnections: boolean,
+): Promise<MultiConnectionAtomCommands> {
+  const commands =
+    argv.port != null && argv.family != null
+      ? await startCommands(argv.port, argv.family)
+      : await findExistingCommands();
+
+  if (commands.getConnectionCount() === 0 && rejectIfZeroConnections) {
+    throw new FailedConnectionError(
+      'Nuclide server is running but no Atom process with Nuclide is connected.',
+    );
+  }
+
+  return commands;
+}
+
+async function findExistingCommands(): Promise<MultiConnectionAtomCommands> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
@@ -48,10 +66,10 @@ export async function getCommands(): Promise<AtomCommands> {
   return startCommands(commandPort, family);
 }
 
-export async function startCommands(
+async function startCommands(
   commandPort: number,
   family: string,
-): Promise<AtomCommands> {
+): Promise<MultiConnectionAtomCommands> {
   // Setup the RPC connection to the NuclideServer process.
   const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
   const socket = net.connect({
@@ -78,12 +96,5 @@ export async function startCommands(
 
   // Get the command interface
   const service: CommandService = connection.getService('CommandService');
-  const commands = await service.getAtomCommands();
-  if (commands == null) {
-    throw new FailedConnectionError(
-      'Nuclide server is running but no Atom process with Nuclide is connected.',
-    );
-  }
-  invariant(commands != null);
-  return commands;
+  return service.getAtomCommands();
 }

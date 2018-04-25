@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
-export type ClientConnection = {
+export type ProjectState = {
   /**
    * This is the raw value of atom.project.getPaths(). It can
    * contain a mix of absolute paths that are local to the machine
@@ -22,6 +22,12 @@ export type ClientConnection = {
 };
 
 export type AtomFileEvent = 'open' | 'close';
+
+/**
+ * Collection of client-side actions in Atom that can be invoked from
+ * a Nuclide server. Each Atom window will register its own instance
+ * of AtomCommands that it implements.
+ */
 export interface AtomCommands {
   openFile(
     // Path local to the machine that made the call to openFile().
@@ -49,7 +55,60 @@ export interface AtomCommands {
    * Returns information about the Atom windows that have a Nuclide server
    * connection to this AtomCommands.
    */
-  getClientConnections(): Promise<Array<ClientConnection>>;
+  getProjectState(): Promise<ProjectState>;
+
+  dispose(): void;
+}
+
+/**
+ * Router that forwards requests to the appropriate AtomCommands object, if
+ * any. Some methods, like openFile(), can be mapped to an AtomCommands based
+ * on a NuclideUri parameter. Other methods, like getClientConnections(),
+ * require consulting multiple AtomCommands objects.
+ */
+export interface MultiConnectionAtomCommands {
+  /** @return the number of AtomCommands registered with this object. */
+  getConnectionCount(): Promise<number>;
+
+  /**
+   * The ConnectableObservable will throw if there are no connected Atom
+   * windows where the file can be opened.
+   */
+  openFile(
+    // Path local to the machine that made the call to openFile().
+    filePath: NuclideUri,
+    line: number,
+    column: number,
+    isWaiting: boolean,
+  ): ConnectableObservable<AtomFileEvent>;
+
+  /**
+   * The ConnectableObservable will throw if there are no connected Atom
+   * windows where the file can be opened.
+   */
+  openRemoteFile(
+    // This is a remote NuclideUri. It is typed as a string so that it does not
+    // get converted as part of Nuclide-RPC.
+    uri: string,
+    line: number,
+    column: number,
+    isWaiting: boolean,
+  ): ConnectableObservable<AtomFileEvent>;
+
+  /**
+   * The returned Promise may resolve before the project is added to Atom if
+   * newWindow is true.
+   *
+   * The Promise will reject if there are no connected Atom clients where
+   * project can be added.
+   */
+  addProject(projectPath: NuclideUri, newWindow: boolean): Promise<void>;
+
+  /**
+   * Returns information about each Atom window that has a connection to this
+   * Nuclide server.
+   */
+  getProjectStates(): Promise<Array<ProjectState>>;
 
   dispose(): void;
 }

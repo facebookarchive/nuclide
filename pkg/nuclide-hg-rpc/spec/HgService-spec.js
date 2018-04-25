@@ -18,7 +18,6 @@ import {
 } from '../lib/hg-constants';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
-import {CommandServer} from '../../nuclide-remote-atom-rpc/lib/CommandServer';
 
 const mockOutput = `
 [
@@ -304,10 +303,6 @@ describe('HgService', () => {
         committedToHg = true;
         return Observable.of(processMessage);
       });
-      CommandServer._server = ({
-        getAddress: () => ({family: 'f', port: 12345}),
-      }: any);
-      CommandServer._connections = [({}: any)];
     });
 
     describe('::commit', () => {
