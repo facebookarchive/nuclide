@@ -1,17 +1,21 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
+// TODO: Merge this class with nuclide-commons/cache.js because they probably do
+//   very similar things
+
 /**
  * Tiny class that is useful to cache simple values.
- * It's quite useful for promises with a Cache<Promise<T>> which allows reusing the same promise.
+ * It's quite useful for promises with a SimpleCache<Promise<T>> which allows reusing the same promise.
  */
 
 type DisposeCallback<T> = (value: T) => void;
@@ -22,7 +26,7 @@ type CacheConfig<KeyArgs, T> = {
   dispose?: DisposeCallback<T>,
 };
 
-export class Cache<KeyArgs, T> {
+export class SimpleCache<KeyArgs, T> {
   store: Map<mixed, T> = new Map();
   _dispose: ?DisposeCallback<T>;
   _keyFactory: KeyFactory<KeyArgs>;

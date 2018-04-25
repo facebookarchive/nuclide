@@ -16,12 +16,12 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
 import {arrayEqual} from 'nuclide-commons/collection';
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Cache} from '../../commons-node/cache';
 
 export type DBType = 'sdb' | 'adb';
 type DBDeviceListService = {
@@ -31,7 +31,10 @@ type DBDeviceListService = {
 class DevicePoller {
   _type: DBType;
   _service: DBDeviceListService;
-  _observables: Cache<string, Observable<Expected<Device[]>>> = new Cache();
+  _observables: SimpleCache<
+    string,
+    Observable<Expected<Device[]>>,
+  > = new SimpleCache();
 
   constructor(type: DBType, service: DBDeviceListService) {
     this._type = type;

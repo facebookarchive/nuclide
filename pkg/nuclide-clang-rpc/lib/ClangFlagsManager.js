@@ -17,11 +17,11 @@ import type {
 } from './rpc-types';
 
 import invariant from 'assert';
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
 import {trackTiming} from '../../nuclide-analytics';
-import {Cache} from '../../commons-node/cache';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import {
@@ -73,10 +73,10 @@ function overrideIncludePath(src: string): string {
 
 export default class ClangFlagsManager {
   // Map from the database file to its files -> flags mappings.
-  _compilationDatabases: Cache<
+  _compilationDatabases: SimpleCache<
     string,
     Promise<Map<string, ClangFlagsHandle>>,
-  > = new Cache();
+  > = new SimpleCache();
 
   _flagPool: ClangFlagsPool;
 
@@ -84,7 +84,7 @@ export default class ClangFlagsManager {
 
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
-  _uriResolveCache: Cache<[string, string], string> = new Cache({
+  _uriResolveCache: SimpleCache<[string, string], string> = new SimpleCache({
     keyFactory: ([parent, relative]) => relative + parent,
   });
 

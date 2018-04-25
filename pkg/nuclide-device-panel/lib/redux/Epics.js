@@ -25,6 +25,7 @@ import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/typ
 
 import log4js from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {Observable} from 'rxjs';
 import {track} from '../../../nuclide-analytics';
 import {AnalyticsActions} from '../constants';
@@ -32,7 +33,6 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {getProviders} from '../providers';
 import {DeviceTask} from '../DeviceTask';
-import {Cache} from '../../../commons-node/cache';
 import shallowEqual from 'shallowequal';
 import * as Immutable from 'immutable';
 
@@ -138,7 +138,7 @@ export function setDeviceTypesEpic(
   });
 }
 
-const deviceTypeTaskCache = new Cache({
+const deviceTypeTaskCache = new SimpleCache({
   keyFactory: ([state: AppState, providerName: string]) =>
     JSON.stringify([state.host, state.deviceType, providerName]),
 });
@@ -428,7 +428,7 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
 
 // The actual device tasks are cached so that if a task is running when the store switches back and
 // forth from the device associated with that task, the same running task is used
-const deviceTaskCache = new Cache({
+const deviceTaskCache = new SimpleCache({
   keyFactory: ([state: AppState, providerName: string]) =>
     JSON.stringify([state.host, state.deviceType, providerName]),
 });

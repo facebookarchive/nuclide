@@ -16,10 +16,10 @@ import type {BusySignalService} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams, ConsolePrinter} from './types';
 
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {convertBuckClangCompilationDatabase} from '../../nuclide-buck-rpc/lib/types';
 import {track} from '../../nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {BuckTaskRunner, CONSOLE_VIEW_URI} from './BuckTaskRunner';
@@ -109,11 +109,11 @@ function emitCompilationDbError(
 }
 
 class Provider {
-  _projectRootCache: Cache<string, Promise<?string>> = new Cache();
-  _compilationDBCache: Cache<
+  _projectRootCache: SimpleCache<string, Promise<?string>> = new SimpleCache();
+  _compilationDBCache: SimpleCache<
     string,
     Promise<?BuckClangCompilationDatabase>,
-  > = new Cache();
+  > = new SimpleCache();
 
   _host: NuclideUri;
   _params: CompilationDatabaseParams;
@@ -201,7 +201,7 @@ class Provider {
   }
 }
 
-const providersCache = new Cache({
+const providersCache = new SimpleCache({
   keyFactory: ([host, params: CompilationDatabaseParams]) =>
     JSON.stringify([nuclideUri.getHostnameOpt(host) || '', params]),
   dispose: provider => provider.reset(),
@@ -217,7 +217,10 @@ function getProvider(
   );
 }
 
-const supportsSourceCache: Cache<string, Promise<boolean>> = new Cache();
+const supportsSourceCache: SimpleCache<
+  string,
+  Promise<boolean>,
+> = new SimpleCache();
 
 export function getClangProvider(
   taskRunner: BuckTaskRunner,

@@ -9,14 +9,14 @@
  * @format
  */
 
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {Subscription} from 'rxjs';
-import {Cache} from '../../commons-node/cache';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {getFileWatcherServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class ClangFlagsFileWatcher {
-  _flagsFileForSourceCache: Cache<string, string> = new Cache();
-  _watchedFilesCache: Cache<string, Subscription> = new Cache({
+  _flagsFileForSourceCache: SimpleCache<string, string> = new SimpleCache();
+  _watchedFilesCache: SimpleCache<string, Subscription> = new SimpleCache({
     dispose: subscription => subscription.unsubscribe(),
   });
 

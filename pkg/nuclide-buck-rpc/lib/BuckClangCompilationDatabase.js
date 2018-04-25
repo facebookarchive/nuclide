@@ -12,11 +12,11 @@
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 import type {BuckClangCompilationDatabase} from './types';
 
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import * as ClangService from '../../nuclide-clang-rpc';
 import * as BuckService from './BuckServiceImpl';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Cache} from '../../commons-node/cache';
 import {guessBuildFile, isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 
 const logger = getLogger('nuclide-buck');
@@ -37,8 +37,8 @@ const TARGET_KIND_REGEX = [
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
 
 class BuckClangCompilationDatabaseHandler {
-  _targetCache = new Cache();
-  _sourceCache = new Cache();
+  _targetCache = new SimpleCache();
+  _sourceCache = new SimpleCache();
   // Ensure that we can clear targetCache for a given file.
   _sourceToTargetKey = new Map();
   _params: CompilationDatabaseParams;
@@ -252,7 +252,7 @@ class BuckClangCompilationDatabaseHandler {
   }
 }
 
-const compilationDatabaseHandlerCache = new Cache({
+const compilationDatabaseHandlerCache = new SimpleCache({
   keyFactory: (params: CompilationDatabaseParams) => JSON.stringify(params),
 });
 

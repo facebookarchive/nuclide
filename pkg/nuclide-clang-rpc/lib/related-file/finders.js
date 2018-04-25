@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Cache} from '../../../commons-node/cache';
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {getFileBasename, isHeaderFile, isSourceFile} from '../utils';
 import {findSourceFileInSameFolderIfBelongsToBuck} from './buck-finder';
 import {searchFileWithBasename, findSubArrayIndex} from './common';
@@ -26,10 +26,10 @@ const SOURCE_FOR_HEADER_RECHECK_INTERVAL = 10 * 60 * 1000;
 export class RelatedFileFinder {
   // Finding the source file that relates to header may be very expensive
   // because we grep for '#include' directives, so cache the results.
-  _sourceForHeaderCache: Cache<
+  _sourceForHeaderCache: SimpleCache<
     {header: string, projectRoot: ?string},
     Promise<{source: ?string, time: number}>,
-  > = new Cache({keyFactory: key => JSON.stringify(key)});
+  > = new SimpleCache({keyFactory: key => JSON.stringify(key)});
 
   async getRelatedHeaderForSource(src: string): Promise<?string> {
     // search in folder

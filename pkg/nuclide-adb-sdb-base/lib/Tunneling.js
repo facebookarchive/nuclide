@@ -14,10 +14,10 @@ import type {Subscription} from 'rxjs';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
 
 import invariant from 'assert';
+import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
-import {Cache} from '../../commons-node/cache';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -58,10 +58,10 @@ export function isAdbTunneled(uri: NuclideUri): Observable<boolean> {
     .distinctUntilChanged();
 }
 
-const activeTunnels: Cache<
+const activeTunnels: SimpleCache<
   NuclideUri,
   {tunnels: Observable<'ready'>, subscription: Subscription},
-> = new Cache({
+> = new SimpleCache({
   keyFactory: uri =>
     nuclideUri.createRemoteUri(nuclideUri.getHostname(uri), '/'),
   dispose: value => value.subscription.unsubscribe(),
