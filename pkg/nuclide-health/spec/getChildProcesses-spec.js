@@ -86,7 +86,9 @@ function checkQueryPs(
         );
       });
     });
-    afterEach(() => setProcessPid(originalPid));
+    afterEach(() => {
+      setProcessPid(originalPid);
+    });
 
     it('parses', () => {
       waitsForPromise(async () => {

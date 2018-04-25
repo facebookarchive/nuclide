@@ -179,7 +179,6 @@ describe('Breakpoints', () => {
         'The returned breakpoint map should have our line in it',
       );
 
-      /* $FlowFixMe */
       done();
     });
   });
@@ -232,7 +231,6 @@ describe('Breakpoints', () => {
           );
         }
 
-        /* $FlowFixMe */
         done();
       });
   });
@@ -294,7 +292,6 @@ describe('Breakpoints', () => {
               );
             }
 
-            /* $FlowFixMe */
             done();
           });
       });

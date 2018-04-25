@@ -26,7 +26,6 @@ describe('MIProxy', () => {
   it('should talk to the MI server', done => {
     proxy.sendCommand('foo').then(response => {
       expect(response.resultClass).toEqual('error');
-      /* $FlowFixMe */
       done();
     });
   });
@@ -35,7 +34,6 @@ describe('MIProxy', () => {
     proxy.sendCommand('list-features').then(response => {
       expect(response.resultClass).toEqual('done');
       expect(response.result).toEqual({features: ['argle', 'bargle', 'blab']});
-      /* $FlowFixMe */
       done();
     });
   });

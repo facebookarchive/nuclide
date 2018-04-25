@@ -346,10 +346,8 @@ describe('PHP grammar', () => {
       inputs.forEach(input => {
         const tokens = grammar.tokenizeLines(input);
         expect(tokens[1][5].scopes).toContain('string.unquoted.heredoc.php');
-        expect(tokens[1][6].scopes).toContain(
-          'string.unquoted.heredoc.php',
-          'keyword.operator.heredoc.php',
-        );
+        expect(tokens[1][6].scopes).toContain('string.unquoted.heredoc.php');
+        expect(tokens[1][6].scopes).toContain('keyword.operator.heredoc.php');
         // Interpolated variables should still be highlighted.
         expect(tokens[2][2].scopes).toContain('variable.other.php');
 
@@ -362,10 +360,8 @@ describe('PHP grammar', () => {
 
         // The last one does end with a semicolon, so it should be considered an
         // operator.
-        expect(tokens[5][0].scopes).toContain(
-          'string.unquoted.heredoc.php',
-          'keyword.operator.heredoc.php',
-        );
+        expect(tokens[5][0].scopes).toContain('string.unquoted.heredoc.php');
+        expect(tokens[5][0].scopes).toContain('keyword.operator.heredoc.php');
       });
     });
 

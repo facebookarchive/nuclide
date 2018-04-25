@@ -140,12 +140,10 @@ describe('Variables', () => {
         // $$TODO when indexed variables are supported
         // expect(vars[1].variablesReference !== 0).toBeTruthy();
 
-        // $FlowFixMe
         done();
       })
       .catch(error => {
         expect(true).toBe(false, error.message);
-        // $FlowFixMe
         done();
       });
   });

@@ -222,12 +222,10 @@ describe('StackFrames', () => {
         expect(body.stackFrames[2].line).toBe(0);
         expect(body.stackFrames[2].column).toBe(0);
 
-        // $FlowFixMe
         done();
       })
       .catch(error => {
         expect(true).toBe(false, error.message);
-        // $FlowFixMe
         done();
       });
   });
@@ -249,12 +247,10 @@ describe('StackFrames', () => {
         expect(body.stackFrames[0].line).toBe(79);
         expect(body.stackFrames[0].column).toBe(0);
 
-        // $FlowFixMe
         done();
       })
       .catch(error => {
         expect(true).toBe(false, error.message);
-        // $FlowFixMe
         done();
       });
   });

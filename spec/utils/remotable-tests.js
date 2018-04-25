@@ -121,7 +121,6 @@ class RemoteTestContext {
 function getDescribeFunction(focus: boolean): Function {
   // Guard against `fdescribe` usages in prod.
   if (focus && process.env.SANDCASTLE === '1') {
-    // $FlowIgnore usage of `fdescribe`.
     fdescribe('Invalid usage of `focus` in production', () => {
       it('`fdescribe` not allowed in production', () => {
         throw new Error(
@@ -131,7 +130,6 @@ function getDescribeFunction(focus: boolean): Function {
     });
     return describe;
   }
-  // $FlowIgnore usage of `fdescribe`.
   return focus ? fdescribe : describe;
 }
 
