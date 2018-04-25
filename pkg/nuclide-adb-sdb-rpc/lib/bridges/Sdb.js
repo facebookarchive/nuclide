@@ -9,15 +9,15 @@
  * @format
  */
 
+import type {SimpleProcess} from 'nuclide-adb/lib/types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {SimpleProcess} from '../types';
 
 import invariant from 'assert';
+import {DebugBridge} from 'nuclide-adb/lib/common/DebugBridge';
+import {createConfigObs} from 'nuclide-adb/lib/common/Store';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
-import {DebugBridge} from '../common/DebugBridge';
-import {createConfigObs} from '../common/Store';
 
 export class Sdb extends DebugBridge {
   static configObs = createConfigObs('sdb');

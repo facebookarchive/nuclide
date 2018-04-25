@@ -18,14 +18,14 @@ import type {
 import type {
   JavaTargetConfig,
   JavaAttachPortTargetConfig,
-} from '../../../modules/atom-ide-debugger-java/JavaDebuggerHelpersService';
+} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
 
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
+import typeof * as AdbService from 'nuclide-adb/lib/AdbService';
 
 import {VsAdapterTypes} from 'nuclide-debugger-common';
 import passesGK from '../../commons-node/passesGK';
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 
 import invariant from 'assert';
 import {
@@ -43,7 +43,7 @@ import * as BuckService from '../../nuclide-buck-rpc';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VspProcessInfo} from 'nuclide-debugger-common';
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {SourceFilePathsModal} from './SourceFilePathsModal';
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded

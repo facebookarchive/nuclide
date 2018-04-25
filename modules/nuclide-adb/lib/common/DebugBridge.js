@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -29,6 +30,24 @@ export class DebugBridge {
 
   constructor(device: DeviceId) {
     this._device = device;
+  }
+
+  getDeviceArchitecture(): Observable<string> {
+    throw new Error(
+      'Base class DebugBridge.getDeviceArchitecture called (abstract method)',
+    );
+  }
+
+  getAPIVersion(): Observable<string> {
+    throw new Error(
+      'Base class DebugBridge.getAPIVersion called (abstract method)',
+    );
+  }
+
+  getDeviceModel(): Observable<string> {
+    throw new Error(
+      'Base class DebugBridge.getDeviceModel called (abstract method)',
+    );
   }
 
   runShortCommand(...command: string[]): Observable<string> {

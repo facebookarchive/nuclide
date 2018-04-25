@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {observeDevices} from './DevicePoller';
 
 export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {

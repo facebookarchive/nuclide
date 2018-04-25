@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AndroidJavaProcess} from '../../nuclide-adb-sdb-rpc/lib/types';
+import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
 import type {Column, Row} from 'nuclide-commons-ui/Table';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from 'nuclide-commons/expected';
@@ -39,7 +39,7 @@ import {
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Expect} from 'nuclide-commons/expected';
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import invariant from 'assert';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';

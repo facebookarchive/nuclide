@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -12,11 +13,10 @@
 import type {DeviceDescription} from '../types';
 import type {getDevicesOptions} from './DebugBridge';
 
-import {Adb} from '../bridges/Adb';
-import {Sdb} from '../bridges/Sdb';
 import {Observable} from 'rxjs';
+import {DebugBridge} from './DebugBridge';
 
-type Db = Class<Adb> | Class<Sdb>;
+type Db = Class<DebugBridge>;
 
 export class Devices {
   _db: Db;

@@ -18,7 +18,7 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Observable} from 'rxjs';
-import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 
 export class AndroidDeviceStopProcessProvider
   implements DeviceProcessTaskProvider {

@@ -16,13 +16,13 @@ import type {
   DebugBridgeFullConfig,
   DeviceId,
   Process,
-} from './types';
+} from 'nuclide-adb/lib/types';
 
-import {getStore} from './common/Store';
+import {getStore} from 'nuclide-adb/lib/common/Store';
 import {ConnectableObservable} from 'rxjs';
 import {Sdb} from './bridges/Sdb';
-import {Processes} from './common/Processes';
-import {Devices} from './common/Devices';
+import {Processes} from 'nuclide-adb/lib/common/Processes';
+import {Devices} from 'nuclide-adb/lib/common/Devices';
 
 const SDB = 'sdb';
 

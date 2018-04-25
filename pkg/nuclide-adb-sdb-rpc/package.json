@@ -1,6 +1,6 @@
 {
   "name": "nuclide-adb-sdb-rpc",
-  "main": "./lib/AdbService.js",
+  "main": "./lib/SdbService.js",
   "version": "0.0.0",
   "description": "Debug bridge rpc for adb and sdb",
   "author": "NEEDS OWNER",

@@ -15,7 +15,7 @@ import type {Action, Store} from '../types';
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'assert';
-import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
 export function setCustomAdbPathEpic(

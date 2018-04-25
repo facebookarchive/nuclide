@@ -19,7 +19,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 
 export function startTunnelingAdb(uri: NuclideUri): Observable<'ready'> {
   if (!nuclideUri.isRemote(uri)) {

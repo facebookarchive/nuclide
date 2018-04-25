@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as AdbService from 'nuclide-adb/lib/AdbService';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as React from 'react';
@@ -25,7 +25,7 @@ import {
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import debounce from 'nuclide-commons/debounce';
 import {
   serializeDebuggerConfig,

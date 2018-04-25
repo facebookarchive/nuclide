@@ -9,10 +9,10 @@
  * @format
  */
 
+import type {DebugBridgeFullConfig} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as SdbService from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {Store} from '../types';
-import type {DebugBridgeFullConfig} from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 import type {DeviceTypeTizen} from '../types';

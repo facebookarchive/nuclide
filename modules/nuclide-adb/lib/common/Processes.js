@@ -1,24 +1,27 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
-import type {Process} from '../types';
+import type {Process, SimpleProcess} from '../types';
 
-import {Adb} from '../bridges/Adb';
-import {Sdb} from '../bridges/Sdb';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import os from 'os';
 
 type CPU_MEM = [number, number];
-type Db = Adb | Sdb;
+interface Db {
+  runShortCommand(...command: string[]): Observable<string>;
+  getProcesses(): Observable<Array<SimpleProcess>>;
+  getDebuggableProcesses(): Observable<Array<SimpleProcess>>;
+}
 
 const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
 

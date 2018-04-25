@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import {Observable} from 'rxjs';
-import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 
 export class AndroidDeviceInfoProvider implements DeviceInfoProvider {
   getType(): string {

@@ -1,6 +1,6 @@
 [
   {
-    "implementation": "../nuclide-adb-sdb-rpc/lib/AdbService.js",
+    "implementation": "../../modules/nuclide-adb/lib/AdbService.js",
     "name": "AdbService"
   },
   {
