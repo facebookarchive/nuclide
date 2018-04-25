@@ -12,10 +12,14 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ControlButtonSpecification,
+  IProcessConfig,
   VSAdapterExecutableInfo,
 } from 'nuclide-debugger-common';
-import type {JavaTargetInfo} from '../../nuclide-debugger-java-rpc';
-import type {JavaAttachPortTargetInfo} from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
+import type {
+  JavaTargetConfig,
+  JavaAttachPortTargetConfig,
+} from '../../../modules/atom-ide-debugger-java/JavaDebuggerHelpersService';
+
 import type {Device} from '../../nuclide-device-panel/lib/types';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
 
@@ -23,8 +27,11 @@ import {VsAdapterTypes} from 'nuclide-debugger-common';
 import passesGK from '../../commons-node/passesGK';
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 
-import {getJavaDebuggerHelpersServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
+import {
+  getJavaDebuggerHelpersServiceByNuclideUri,
+  NUCLIDE_DEBUGGER_DEV_GK,
+} from 'atom-ide-debugger-java/utils';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import showModal from 'nuclide-commons-ui/showModal';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -43,16 +50,6 @@ import {SourceFilePathsModal} from './SourceFilePathsModal';
 // adb port, new instances need to wait for the previous one to clean up before
 // they can begin debugging.
 let cleanupSubject: ?Subject<void> = null;
-
-export const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
-
-export async function getJavaVSAdapterExecutableInfo(
-  targetUri: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getJavaDebuggerHelpersServiceByNuclideUri(
-    targetUri,
-  ).getJavaVSAdapterExecutableInfo(await passesGK(NUCLIDE_DEBUGGER_DEV_GK));
-}
 
 export type AndroidDebugTargetInfo = {
   pid: number,
@@ -119,7 +116,7 @@ export async function getAdbAttachPortTargetInfo(
   targetUri: NuclideUri,
   pid: ?number,
   subscriptions: UniversalDisposable,
-): Promise<JavaAttachPortTargetInfo> {
+): Promise<JavaAttachPortTargetConfig> {
   const tunnelRequired =
     nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
   let tunnelService: ?SshTunnelService;
@@ -192,14 +189,16 @@ export function getAdbService(adbServiceUri: NuclideUri): AdbService {
   return service;
 }
 
-export function getCustomSetSourcePathButton(
+function getCustomControlButtons(
   clickEvents: rxjs$Subject<void>,
-): ControlButtonSpecification {
-  return {
-    icon: 'file-code',
-    title: 'Set Source Path',
-    onClick: () => clickEvents.next(),
-  };
+): ControlButtonSpecification[] {
+  return [
+    {
+      icon: 'file-code',
+      title: 'Set Source Path',
+      onClick: () => clickEvents.next(),
+    },
+  ];
 }
 
 export function getDialogValues(
@@ -233,9 +232,41 @@ export function getDialogValues(
 
 export async function createJavaVspProcessInfo(
   targetUri: NuclideUri,
-  info: JavaTargetInfo,
+  config: JavaTargetConfig,
   clickEvents: rxjs$Subject<void>,
 ): Promise<VspProcessInfo> {
+  const processConfig = await createJavaVspIProcessConfig(
+    targetUri,
+    config,
+    clickEvents,
+  );
+  return new VspProcessInfo(
+    processConfig.targetUri,
+    processConfig.debugMode,
+    processConfig.adapterType,
+    processConfig.adapterExecutable,
+    processConfig.config,
+    {threads: true},
+    {
+      customControlButtons: getCustomControlButtons(clickEvents),
+      threadsComponentTitle: 'Threads',
+    },
+  );
+}
+
+async function getJavaVSAdapterExecutableInfo(
+  targetUri: NuclideUri,
+): Promise<VSAdapterExecutableInfo> {
+  return getJavaDebuggerHelpersServiceByNuclideUri(
+    targetUri,
+  ).getJavaVSAdapterExecutableInfo(await passesGK(NUCLIDE_DEBUGGER_DEV_GK));
+}
+
+export async function createJavaVspIProcessConfig(
+  targetUri: NuclideUri,
+  config: JavaTargetConfig,
+  clickEvents: rxjs$Subject<void>,
+): Promise<IProcessConfig> {
   const adapterExecutable = await getJavaVSAdapterExecutableInfo(targetUri);
   // If you have built using debug information, then print the debug server port:
   if (await passesGK(NUCLIDE_DEBUGGER_DEV_GK)) {
@@ -251,22 +282,26 @@ export async function createJavaVspProcessInfo(
       );
     }
   }
-  return new VspProcessInfo(
+
+  return {
     targetUri,
-    info.debugMode,
-    VsAdapterTypes.JAVA,
+    debugMode: config.debugMode,
+    adapterType: VsAdapterTypes.JAVA,
     adapterExecutable,
-    infoToArgs(info),
-    {threads: true},
-    {customControlButtons: [getCustomSetSourcePathButton(clickEvents)]},
-  );
+    config,
+    capabilities: {threads: true},
+    properties: {
+      customControlButtons: getCustomControlButtons(clickEvents),
+      threadsComponentTitle: 'Threads',
+    },
+  };
 }
 
 export type AndroidDebugInfo = {|
   attach: boolean,
   subscriptions: UniversalDisposable,
   pid: number,
-  attachPortTargetInfo: JavaAttachPortTargetInfo,
+  attachPortTargetInfo: JavaAttachPortTargetConfig,
 |};
 
 export async function debugAndroidDebuggerService(
@@ -291,7 +326,7 @@ export async function debugAndroidDebuggerService(
     packageName,
   );
 
-  const attachPortTargetInfo = await getAdbAttachPortTargetInfo(
+  const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
     device,
     adbService,
     adbServiceUri,
@@ -302,7 +337,7 @@ export async function debugAndroidDebuggerService(
 
   await debugJavaDebuggerService(
     targetUri,
-    attachPortTargetInfo,
+    attachPortTargetConfig,
     subscriptions,
     false /* do not track because we will */,
   );
@@ -311,7 +346,7 @@ export async function debugAndroidDebuggerService(
     startType: attach ? 'android-attach' : 'android-launch',
     target: packageName,
     targetType: 'android',
-    port: attachPortTargetInfo.port,
+    port: attachPortTargetConfig.port,
     deviceName: device.name,
     activity,
     action,
@@ -321,24 +356,24 @@ export async function debugAndroidDebuggerService(
 
 export async function debugJavaDebuggerService(
   targetUri: NuclideUri,
-  info: JavaTargetInfo,
+  config: JavaTargetConfig,
   subscriptions: UniversalDisposable = new UniversalDisposable(),
   trackDebug: boolean = true,
 ): Promise<void> {
   const clickEvents = new Subject();
-  const processInfo = await createJavaVspProcessInfo(
+  const processConfig = await createJavaVspIProcessConfig(
     targetUri,
-    info,
+    config,
     clickEvents,
   );
   const defaultValues = getDefaultSourceSearchPaths(targetUri);
 
   const debuggerService = await getDebuggerService();
-  await debuggerService.startDebugging(processInfo);
+  const vspInstance = await debuggerService.startVspDebugging(processConfig);
   //  The following line must come after `startDebugging` because otherwise
   //    the rpcService has not yet been initialized for us to send custom
   //    commands to
-  //  Additionally we set the disposable to be on the processInfo because
+  //  Additionally we set the disposable to be on the vspInstance because
   //    it cannot be in the UI lifecyle. The UI lifecycle disposes its
   //    disposable on componentWillUnmount which has already occurred
 
@@ -346,29 +381,29 @@ export async function debugJavaDebuggerService(
     getDialogValues(clickEvents)
       .startWith(getSavedPathsFromConfig())
       .subscribe(userValues => {
-        processInfo.customRequest('setSourcePath', {
+        vspInstance.customRequest('setSourcePath', {
           sourcePath: getSourcePathString(defaultValues.concat(userValues)),
         });
       }),
     clickEvents,
   );
-  processInfo.addCustomDisposable(subscriptions);
+  vspInstance.addCustomDisposable(subscriptions);
 
   if (trackDebug) {
-    if (info.debugMode === 'attach') {
+    if (config.debugMode === 'attach') {
       // if attach
       track('fb-java-debugger-start', {
         startType: 'java-attach',
-        machineName: info.machineName,
-        info: info.port,
+        machineName: config.machineName,
+        port: config.port,
         targetUri,
       });
-    } else if (info.debugMode === 'launch') {
+    } else if (config.debugMode === 'launch') {
       // else launch
       track('fb-java-debugger-start', {
         startType: 'java-launch',
-        commandLine: info.commandLine,
-        classPath: info.classPath,
+        commandLine: config.commandLine,
+        classPath: config.classPath,
         targetUri,
       });
     }
@@ -426,16 +461,7 @@ export function getDefaultSourceSearchPaths(
   return searchPaths;
 }
 
-export function infoToArgs(info: JavaTargetInfo) {
-  return {
-    config: {
-      info,
-    },
-    trace: false,
-  };
-}
-
-export async function javaDebugSetSourcePaths(
+async function javaDebugSetSourcePaths(
   processInfo: VspProcessInfo,
   sourcePaths: Array<string>,
 ): Promise<void> {

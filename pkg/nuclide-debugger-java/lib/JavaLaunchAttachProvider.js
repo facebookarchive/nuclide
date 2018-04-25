@@ -13,13 +13,10 @@ import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
 import * as React from 'react';
-import {LaunchUIComponent} from './LaunchUIComponent';
-import {AttachUIComponent} from './AttachUIComponent';
 import {AndroidLaunchComponent} from './AndroidLaunchComponent';
 import {AndroidAttachComponent} from './AndroidAttachComponent';
 import invariant from 'assert';
 
-const JAVA_DEBUG_DESKTOP = 'Java (Desktop)';
 const JAVA_DEBUG_ANDROID = 'Java (Android)';
 
 export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
@@ -36,7 +33,7 @@ export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
        * Returns a list of supported debugger types + environments for the specified action.
        */
       getDebuggerTypeNames: () => {
-        return [JAVA_DEBUG_DESKTOP, JAVA_DEBUG_ANDROID];
+        return [JAVA_DEBUG_ANDROID];
       },
 
       /**
@@ -45,42 +42,26 @@ export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
       getComponent: (
         debuggerTypeName: string,
         configIsValidChanged: (valid: boolean) => void,
-      ) => {
+      ): React.Element<any> => {
         if (action === 'launch') {
-          if (debuggerTypeName === JAVA_DEBUG_ANDROID) {
-            return (
-              <AndroidLaunchComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
-          } else if (debuggerTypeName === JAVA_DEBUG_DESKTOP) {
-            return (
-              <LaunchUIComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
-          }
-        } else if (action === 'attach') {
-          if (debuggerTypeName === JAVA_DEBUG_ANDROID) {
-            return (
-              <AndroidAttachComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
-          } else if (debuggerTypeName === JAVA_DEBUG_DESKTOP) {
-            return (
-              <AttachUIComponent
-                targetUri={this.getTargetUri()}
-                configIsValidChanged={configIsValidChanged}
-              />
-            );
-          }
+          return (
+            <AndroidLaunchComponent
+              targetUri={this.getTargetUri()}
+              configIsValidChanged={configIsValidChanged}
+            />
+          );
+        } else {
+          invariant(
+            action === 'attach',
+            'Unrecognized action: ' + action + ' for component',
+          );
+          return (
+            <AndroidAttachComponent
+              targetUri={this.getTargetUri()}
+              configIsValidChanged={configIsValidChanged}
+            />
+          );
         }
-
-        invariant(false, 'Unrecognized action for component.');
       },
     };
   }

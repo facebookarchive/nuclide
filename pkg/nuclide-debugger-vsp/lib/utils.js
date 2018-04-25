@@ -88,13 +88,11 @@ async function lldbVspAdapterWrapperPath(program: NuclideUri): Promise<string> {
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  const {adapterExecutable} = configuration;
+  const {adapterExecutable, targetUri} = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   } else if (adapterExecutable.command === 'lldb-vscode') {
-    adapterExecutable.command = await lldbVspAdapterWrapperPath(
-      configuration.targetUri,
-    );
+    adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
   }
   return configuration;
 }

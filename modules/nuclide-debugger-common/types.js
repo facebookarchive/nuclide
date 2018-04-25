@@ -24,6 +24,7 @@ export interface IVspInstance {
     args: any,
   ): Promise<DebugProtocol.CustomResponse>;
   observeCustomEvents(): Observable<DebugProtocol.DebugEvent>;
+  addCustomDisposable(disposable: IDisposable): void;
 }
 
 export type AtomNotificationType = 'info' | 'warning' | 'error' | 'fatalError';

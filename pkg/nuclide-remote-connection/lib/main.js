@@ -74,7 +74,6 @@ import typeof * as GrepService from '../../nuclide-grep-rpc';
 import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
-import typeof * as JavaDebuggerHelpersService from '../../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService';
 import typeof * as MetroService from '../../nuclide-metro-rpc/lib/MetroService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
@@ -162,12 +161,6 @@ export function getHhvmDebuggerServiceByNuclideUri(
 
 export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
   return nullthrows(getServiceByNuclideUri('InfoService', uri));
-}
-
-export function getJavaDebuggerHelpersServiceByNuclideUri(
-  uri: NuclideUri,
-): JavaDebuggerHelpersService {
-  return nullthrows(getServiceByNuclideUri('JavaDebuggerHelpersService', uri));
 }
 
 export function getMetroServiceByNuclideUri(uri: NuclideUri): MetroService {

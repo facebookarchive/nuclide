@@ -1,2 +1,2 @@
-/Build
+Build/*
 spec/fixtures/java/*.class

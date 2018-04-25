@@ -137,6 +137,16 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
     },
   ],
   [
+    'java',
+    {
+      executable: {
+        command: 'java',
+        args: [],
+      },
+      root: resolvePackagePath('atom-ide-debugger-java'),
+    },
+  ],
+  [
     'hhvm',
     {
       executable: {

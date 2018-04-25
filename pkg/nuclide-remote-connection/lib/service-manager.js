@@ -21,7 +21,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork, spawn, getOriginalEnvironment} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {__DEV__} from '../../commons-node/runtime-info';
-import {getAvailableServerPort} from '../../commons-node/serverPort';
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {RpcConnection} from '../../nuclide-rpc';
 import {getAtomSideLoopbackMarshalers} from '../../nuclide-marshalers-atom';

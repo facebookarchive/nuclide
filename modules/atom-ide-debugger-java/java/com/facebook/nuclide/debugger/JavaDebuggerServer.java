@@ -135,14 +135,16 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
   };
 
   private void handleAttachRequest(JSONObject arguments, AttachResponse response) {
+    int port = -1;
+    try {
+      port = arguments.getInt("javaJdwpPort");
+    } catch (Exception ex) {
+      port = arguments.getInt("port");
+    }
     try {
       // when attaching, vm may already be started, assume it has
       getContextManager().receivedVMStartEvent();
-      getContextManager()
-          .getBootstrapDomain()
-          .attachPort(
-              arguments.getJSONObject("config").getJSONObject("info").getInt("port"),
-              "" /* sourcePath */);
+      getContextManager().getBootstrapDomain().attachPort(port, "" /* sourcePath */);
       send(response);
       send(new InitializedEvent());
     } catch (JSONException | DomainHandlerException ex) {
@@ -152,11 +154,14 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
 
   private void handleLaunchRequest(JSONObject arguments, LaunchResponse response) {
     try {
-      JSONObject info = arguments.getJSONObject("config").getJSONObject("info");
+      Utils.logInfo("arguments: " + arguments.toString(2));
       getContextManager()
           .getBootstrapDomain()
           .launch(
-              info.getString("commandLine"), info.getString("classPath"), new JSONArray(), null);
+              arguments.getString("entryPointClass"),
+              arguments.getString("classPath"),
+              new JSONArray() /* args */,
+              "" /* sourcePath */);
       send(response);
       send(new InitializedEvent());
     } catch (JSONException | DomainHandlerException ex) {

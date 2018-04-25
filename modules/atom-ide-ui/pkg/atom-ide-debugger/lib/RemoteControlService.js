@@ -11,7 +11,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {IDebugService} from './types';
+import type {IDebugService, IProcess} from './types';
 import type {
   IProcessConfig,
   IVspInstance,
@@ -21,12 +21,37 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 
 import {DebuggerMode} from './constants';
 import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class RemoteControlService {
   _service: IDebugService;
+  _disposables: UniversalDisposable;
 
   constructor(service: IDebugService) {
     this._service = service;
+    this._disposables = new UniversalDisposable();
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
+  }
+
+  onSessionEnd(
+    focusedProcess: IProcess,
+    disposables: UniversalDisposable,
+  ): void {
+    disposables.add(
+      this._service.viewModel.onDidFocusProcess(() => {
+        if (
+          !this._service
+            .getModel()
+            .getProcesses()
+            .includes(focusedProcess)
+        ) {
+          disposables.dispose();
+        }
+      }),
+    );
   }
 
   async startDebugging(processInfo: VspProcessInfo): Promise<void> {
@@ -38,17 +63,9 @@ export default class RemoteControlService {
 
     const {focusedProcess} = this._service.viewModel;
     invariant(focusedProcess != null);
-    const disposable = this._service.viewModel.onDidFocusProcess(() => {
-      if (
-        !this._service
-          .getModel()
-          .getProcesses()
-          .includes(focusedProcess)
-      ) {
-        processInfo.dispose();
-        disposable.dispose();
-      }
-    });
+    const disposables = new UniversalDisposable();
+    disposables.add(processInfo);
+    this.onSessionEnd(focusedProcess, disposables);
   }
 
   async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
@@ -86,9 +103,17 @@ export default class RemoteControlService {
       return focusedProcess.session.observeCustomEvents();
     };
 
+    const disposables = new UniversalDisposable();
+    const addCustomDisposable = (disposable: IDisposable): void => {
+      disposables.add(disposable);
+    };
+
+    this.onSessionEnd(focusedProcess, disposables);
+
     return Object.freeze({
       customRequest,
       observeCustomEvents,
+      addCustomDisposable,
     });
   }
 }

@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -18,22 +19,24 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
-import {getAvailableServerPort} from '../../commons-node/serverPort';
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 
-export type JavaLaunchTargetInfo = {|
+export type JavaLaunchTargetConfig = {|
   +debugMode: 'launch',
   +commandLine: string,
   +classPath: string,
   +runArgs?: ?Array<string>,
 |};
 
-export type JavaAttachPortTargetInfo = {|
+export type JavaAttachPortTargetConfig = {|
   +debugMode: 'attach',
   +machineName: string,
   +port: number,
 |};
 
-export type JavaTargetInfo = JavaLaunchTargetInfo | JavaAttachPortTargetInfo;
+export type JavaTargetConfig =
+  | JavaLaunchTargetConfig
+  | JavaAttachPortTargetConfig;
 
 export type TerminalLaunchInfo = {|
   +launchCommand: string,
@@ -60,9 +63,9 @@ export async function getJavaVSAdapterExecutableInfo(
 }
 
 export async function prepareForTerminalLaunch(
-  launchInfo: JavaLaunchTargetInfo,
+  config: JavaLaunchTargetConfig,
 ): Promise<TerminalLaunchInfo> {
-  const {classPath, commandLine} = launchInfo;
+  const {classPath, commandLine} = config;
   const launchPath = nuclideUri.expandHomeDir(classPath);
   const attachPort = await getAvailableServerPort();
 
@@ -82,7 +85,7 @@ export async function prepareForTerminalLaunch(
       '-classpath',
       launchPath,
       commandLine,
-      ...(launchInfo.runArgs || []),
+      ...(config.runArgs || []),
     ],
   });
 }
@@ -156,7 +159,6 @@ async function _getJavaArgs(debug: boolean): Promise<Array<string>> {
 async function _getClassPath(): Promise<string> {
   const serverJarPath = nuclideUri.join(
     __dirname,
-    '..',
     'Build',
     'java_debugger_server.jar',
   );

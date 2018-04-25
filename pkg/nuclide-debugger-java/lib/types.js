@@ -35,10 +35,6 @@ export type NuclideJavaDebuggerProvider = {|
   createAndroidDebugInfo(
     parameters: AdbProcessParameters,
   ): Promise<JavaDebugInfo>,
-  createJavaAttachInfo(
-    targetUri: string,
-    attachPort: number,
-  ): Promise<JavaDebugInfo>,
   createJavaTestAttachInfo(
     targetUri: string,
     attachPort: number,

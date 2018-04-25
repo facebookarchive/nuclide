@@ -12,7 +12,7 @@
 import type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAvailableServerPort} from '../../commons-node/serverPort';
+import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';

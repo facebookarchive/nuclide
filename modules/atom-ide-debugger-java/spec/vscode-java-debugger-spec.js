@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -15,7 +16,7 @@ import * as fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from 'nuclide-commons/process';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
-import {getJavaVSAdapterExecutableInfo} from '../lib/JavaDebuggerHelpersService';
+import {getJavaVSAdapterExecutableInfo} from '../JavaDebuggerHelpersService';
 
 const logger = getLogger('vscode-java-debugger-spec');
 const JAVA_FIXTURES = nuclideUri.join(__dirname, 'fixtures', 'java');
@@ -79,14 +80,8 @@ async function withSessionLaunch(
     await Promise.all([
       checkResponse(
         session.launch({
-          config: {
-            info: {
-              classPath: JAVA_FIXTURES,
-              commandLine: className,
-            },
-            launch: true,
-          },
-          trace: false,
+          classPath: JAVA_FIXTURES,
+          entryPointClass: className,
         }),
       ),
       session

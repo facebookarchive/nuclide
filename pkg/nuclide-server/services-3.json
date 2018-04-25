@@ -64,7 +64,7 @@
     "name": "InfoService"
   },
   {
-    "implementation": "../nuclide-debugger-java-rpc/lib/JavaDebuggerHelpersService.js",
+    "implementation": "../../modules/atom-ide-debugger-java/JavaDebuggerHelpersService.js",
     "name": "JavaDebuggerHelpersService"
   },
   {

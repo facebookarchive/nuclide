@@ -11,7 +11,7 @@
 
 import * as Tunnel from './Tunnel';
 import {ConnectionFactory} from './Connection';
-import {getAvailableServerPort as _getAvailableServerPort} from '../../commons-node/serverPort';
+import {getAvailableServerPort as _getAvailableServerPort} from 'nuclide-commons/serverPort';
 
 import type {ResolvedTunnel, SocketEvent} from './types.js';
 import type {ConnectableObservable} from 'rxjs';
