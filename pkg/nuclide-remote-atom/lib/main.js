@@ -121,10 +121,7 @@ class Activation {
           connection,
         );
         const fileNotifier = await getNotifierByConnection(connection);
-        return service.RemoteCommandService.registerAtomCommands(
-          fileNotifier,
-          this._commands,
-        );
+        return service.registerAtomCommands(fileNotifier, this._commands);
       }),
     );
   }

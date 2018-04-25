@@ -19,35 +19,23 @@ import invariant from 'assert';
 
 // This interface is exposed by the nuclide server process to the client side
 // Atom process.
-export class RemoteCommandService {
-  _disposables: UniversalDisposable;
 
-  constructor() {
-    this._disposables = new UniversalDisposable();
-  }
+/** Dummy alias for IDisposable to satisfy Nuclide-RPC. */
+export interface Unregister {
+  dispose(): void;
+}
 
-  async _registerAtomCommands(
-    fileNotifier: FileNotifier,
-    atomCommands: AtomCommands,
-  ): Promise<void> {
-    invariant(fileNotifier instanceof FileCache);
-    const fileCache = fileNotifier;
-    this._disposables.add(
-      await getCommandServer().register(fileCache, atomCommands),
-    );
-  }
+/**
+ * Called by Atom once for each new remote connection.
+ */
+export async function registerAtomCommands(
+  fileNotifier: FileNotifier,
+  atomCommands: AtomCommands,
+): Promise<Unregister> {
+  invariant(fileNotifier instanceof FileCache);
+  const fileCache = fileNotifier;
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  // Called by Atom once for each new remote connection.
-  static async registerAtomCommands(
-    fileNotifier: FileNotifier,
-    atomCommands: AtomCommands,
-  ): Promise<RemoteCommandService> {
-    const result = new RemoteCommandService();
-    await result._registerAtomCommands(fileNotifier, atomCommands);
-    return result;
-  }
+  const disposables = new UniversalDisposable();
+  disposables.add(await getCommandServer().register(fileCache, atomCommands));
+  return disposables;
 }
