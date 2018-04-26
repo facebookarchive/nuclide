@@ -21,6 +21,7 @@ import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from 'log4js';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
 import {getIgnoredNames} from './utils';
+import {isGkEnabled} from '../../commons-node/passesGK';
 
 const logger = getLogger('nuclide-fuzzy-filename-provider');
 
@@ -115,6 +116,7 @@ class Activation {
         rootDirectory: projectPath,
         queryString: 'a',
         ignoredNames: getIgnoredNames(),
+        preferCustomSearch: Boolean(isGkEnabled('nuclide_prefer_myles_search')),
       });
     } catch (err) {
       throw err;

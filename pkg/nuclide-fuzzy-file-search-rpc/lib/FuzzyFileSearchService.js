@@ -22,8 +22,17 @@ import {
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 
+type CacheKey = string;
+
+function createCacheKey(
+  directory: NuclideUri,
+  preferCustomSearch: boolean,
+): CacheKey {
+  return `${directory}:${String(preferCustomSearch)}`;
+}
+
 const searchConfigCache: LRUCache<
-  NuclideUri,
+  CacheKey,
   Promise<DirectorySearchConfig>,
 > = LRU({
   // In practice, we expect this cache to have one entry for each item in
@@ -47,7 +56,10 @@ const getSearchConfig = (function() {
       throw e;
     }
 
-    return function(directory: NuclideUri): Promise<DirectorySearchConfig> {
+    return function(
+      directory: NuclideUri,
+      preferCustomSearch: boolean,
+    ): Promise<DirectorySearchConfig> {
       return Promise.resolve({useCustomSearch: false});
     };
   }
@@ -62,18 +74,22 @@ export async function queryFuzzyFile(config: {|
   queryString: string,
   ignoredNames: Array<string>,
   smartCase?: boolean,
+  preferCustomSearch: boolean,
 |}): Promise<Array<FileSearchResult>> {
-  let searchConfigPromise = searchConfigCache.get(config.rootDirectory);
+  const {rootDirectory, preferCustomSearch} = config;
+  const cacheKey = createCacheKey(rootDirectory, preferCustomSearch);
+  let searchConfigPromise = searchConfigCache.get(cacheKey);
   if (searchConfigPromise == null) {
-    searchConfigPromise = getSearchConfig(config.rootDirectory);
-    searchConfigCache.set(config.rootDirectory, searchConfigPromise);
+    searchConfigPromise = getSearchConfig(rootDirectory, preferCustomSearch);
+    searchConfigCache.set(cacheKey, searchConfigPromise);
   }
+
   const searchConfig = await searchConfigPromise;
   if (searchConfig.useCustomSearch) {
-    return searchConfig.search(config.queryString, config.rootDirectory);
+    return searchConfig.search(config.queryString, rootDirectory);
   } else {
     const search = await fileSearchForDirectory(
-      config.rootDirectory,
+      rootDirectory,
       config.ignoredNames,
     );
     return search.query(config.queryString, {
@@ -86,6 +102,7 @@ export async function queryFuzzyFile(config: {|
 export async function queryAllExistingFuzzyFile(
   queryString: string,
   ignoredNames: Array<string>,
+  preferCustomSearch: boolean,
 ): Promise<Array<FileSearchResult>> {
   const directories = getExistingSearchDirectories();
   const aggregateResults = await Promise.all(
@@ -94,6 +111,7 @@ export async function queryAllExistingFuzzyFile(
         ignoredNames,
         queryString,
         rootDirectory,
+        preferCustomSearch,
       }),
     ),
   );

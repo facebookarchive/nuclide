@@ -59,6 +59,7 @@ export default ({
       smartCase: Boolean(
         featureConfig.get('nuclide-fuzzy-filename-provider.smartCase'),
       ),
+      preferCustomSearch: Boolean(isGkEnabled('nuclide_prefer_myles_search')),
     });
 
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.

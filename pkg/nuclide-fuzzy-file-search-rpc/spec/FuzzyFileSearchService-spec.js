@@ -53,6 +53,7 @@ describe('FuzzyFileSearchService.queryFuzzyFile', () => {
         rootDirectory: __dirname,
         queryString: 'anything',
         ignoredNames: [],
+        preferCustomSearch: false,
       });
       expect(fileSearchResults).toEqual([]);
     });
