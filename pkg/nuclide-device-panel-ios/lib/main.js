@@ -1,83 +1,83 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';var _createPackage;
 
-import type {
-  DeviceArchitecture,
-  DevicePanelServiceApi,
-} from '../../nuclide-device-panel/lib/types';
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Expect} from 'nuclide-commons/expected';
-import {getDevices} from '../../nuclide-fbsimctl';
 
-class Activation {
-  _disposables = new UniversalDisposable();
-  _type = 'iOS';
 
-  consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
+
+
+
+
+
+
+
+
+
+
+
+function _load_createPackage() {return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _nuclideUri;
+function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}var _expected;
+function _load_expected() {return _expected = require('nuclide-commons/expected');}var _nuclideFbsimctl;
+function _load_nuclideFbsimctl() {return _nuclideFbsimctl = require('../../nuclide-fbsimctl');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+class Activation {constructor() {this.
+    _disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();this.
+    _type = 'iOS';}
+
+  consumeDevicePanelServiceApi(api) {
     this._disposables.add(this.registerDeviceList(api));
   }
 
-  registerDeviceList(api: DevicePanelServiceApi): IDisposable {
+  registerDeviceList(api) {
     return api.registerListProvider({
       observe: host => {
-        if (nuclideUri.isRemote(host)) {
-          return Observable.of(
-            Expect.error(
-              new Error(
-                'iOS devices on remote hosts are not currently supported.',
-              ),
-            ),
-          );
+        if ((_nuclideUri || _load_nuclideUri()).default.isRemote(host)) {
+          return _rxjsBundlesRxMinJs.Observable.of(
+          (_expected || _load_expected()).Expect.error(
+          new Error(
+          'iOS devices on remote hosts are not currently supported.')));
+
+
+
         } else {
-          return getDevices().map(devices => {
+          return (0, (_nuclideFbsimctl || _load_nuclideFbsimctl()).getDevices)().map(devices => {
             if (devices instanceof Error) {
-              return Expect.error(devices);
+              return (_expected || _load_expected()).Expect.error(devices);
             } else {
-              return Expect.value(
-                devices.map(device => ({
-                  name: device.udid,
-                  port: 0,
-                  displayName: device.name,
-                  architecture: devicePanelArchitecture(device.arch),
-                  rawArchitecture: device.arch,
-                  ignoresSelection: true,
-                })),
-              );
+              return (_expected || _load_expected()).Expect.value(
+              devices.map(device => ({
+                name: device.udid,
+                port: 0,
+                displayName: device.name,
+                architecture: devicePanelArchitecture(device.arch),
+                rawArchitecture: device.arch,
+                ignoresSelection: true })));
+
+
             }
           });
         }
       },
-      getType: () => this._type,
-    });
-  }
-}
+      getType: () => this._type });
 
-function devicePanelArchitecture(arch: string): DeviceArchitecture {
-  switch (arch) {
-    case 'x86_64':
-      return 'x86_64';
-    case 'i386':
-      return 'x86';
-    case 'arm64':
+  }} /**
+      * Copyright (c) 2015-present, Facebook, Inc.
+      * All rights reserved.
+      *
+      * This source code is licensed under the license found in the LICENSE file in
+      * the root directory of this source tree.
+      *
+      * 
+      * @format
+      */function devicePanelArchitecture(arch) {switch (arch) {case 'x86_64':return 'x86_64';case 'i386':return 'x86';case 'arm64':
       return 'arm64';
     case 'armv7':
     case 'armv7s':
       return 'arm';
     default:
-      return '';
-  }
+      return '';}
+
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

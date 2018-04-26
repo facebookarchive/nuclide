@@ -1,42 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.CodeHighlightProvider = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _nuclideAnalytics;
 
-import type {CodeHighlightProvider as CodeHighlightProviderType} from 'atom-ide-ui';
-import type {LanguageService} from './LanguageService';
 
-import {trackTiming} from '../../nuclide-analytics';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {Range} from 'atom';
 
-export type CodeHighlightConfig = {|
-  version: '0.1.0',
-  priority: number,
-  analyticsEventName: string,
-|};
 
-export class CodeHighlightProvider<T: LanguageService> {
-  name: string;
-  grammarScopes: Array<string>;
-  priority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+
+
+
+
+
+
+
+
+
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}var _nuclideRemoteConnection;
+function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');}var _nuclideOpenFiles;
+function _load_nuclideOpenFiles() {return _nuclideOpenFiles = require('../../nuclide-open-files');}
+var _atom = require('atom');function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                           * All rights reserved.
+                                                                                                                           *
+                                                                                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                           * the root directory of this source tree.
+                                                                                                                           *
+                                                                                                                           * 
+                                                                                                                           * @format
+                                                                                                                           */class CodeHighlightProvider {
+
+
+
+
 
   constructor(
-    name: string,
-    grammarScopes: Array<string>,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  name,
+  grammarScopes,
+  priority,
+  analyticsEventName,
+  connectionToLanguageService)
+  {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
@@ -45,50 +45,48 @@ export class CodeHighlightProvider<T: LanguageService> {
   }
 
   highlight(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  editor,
+  position)
+  {var _this = this;
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(
+      editor.getPath());
+
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
-      const result = await (await languageService).highlight(
-        fileVersion,
-        position,
-      );
+      const result = yield (yield languageService).highlight(
+      fileVersion,
+      position);
+
       if (result == null) {
         return null;
       }
 
-      return result.map(range => new Range(range.start, range.end));
-    });
+      return result.map(function (range) {return new _atom.Range(range.start, range.end);});
+    }));
   }
 
   static register(
-    name: string,
-    grammarScopes: Array<string>,
-    config: CodeHighlightConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
+  name,
+  grammarScopes,
+  config,
+  connectionToLanguageService)
+  {
     return atom.packages.serviceHub.provide(
-      'code-highlight',
-      config.version,
-      new CodeHighlightProvider(
-        name,
-        grammarScopes,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ),
-    );
-  }
-}
+    'code-highlight',
+    config.version,
+    new CodeHighlightProvider(
+    name,
+    grammarScopes,
+    config.priority,
+    config.analyticsEventName,
+    connectionToLanguageService));
 
-(((null: any): CodeHighlightProvider<
-  LanguageService,
->): CodeHighlightProviderType);
+
+  }}exports.CodeHighlightProvider = CodeHighlightProvider;
+
+
+null;

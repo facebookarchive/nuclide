@@ -1,61 +1,61 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HasteSettings} from '../Config';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
-export function hasteReduceName(
-  file: NuclideUri,
-  hasteSettings: HasteSettings,
-): ?string {
-  if (!hasteSettings.useNameReducers) {
-    return null;
-  }
-  const {
-    nameReducers,
-    nameReducerWhitelist,
-    nameReducerBlacklist,
-  } = hasteSettings;
-  if (
-    (nameReducerWhitelist.length === 0 ||
-      nameReducerWhitelist.some(r => r.test(file))) &&
-    !nameReducerBlacklist.some(r => r.test(file))
-  ) {
-    if (nameReducers.length === 0) {
-      // The default name reducer.
-      return nuclideUri.stripExtension(nuclideUri.basename(file));
-    }
-    return nameReducers.reduce(
-      (hasteName, reducer) =>
-        hasteName.replace(reducer.regexp, reducer.replacement),
-      file,
-    );
-  }
-}
 
-export function getHasteName(
-  file: NuclideUri,
-  ast: Object,
-  hasteSettings: HasteSettings,
-): ?string {
-  if (!hasteSettings.isHaste) {
-    return null;
-  }
-  // __mocks__ is also special cased in Flow. No joke:
+
+
+
+
+
+
+
+
+
+
+
+hasteReduceName = hasteReduceName;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+getHasteName = getHasteName;var _nuclideUri;function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function hasteReduceName(file, hasteSettings) {if (!hasteSettings.useNameReducers) {return null;}const { nameReducers, nameReducerWhitelist, nameReducerBlacklist } = hasteSettings;if ((nameReducerWhitelist.length === 0 || nameReducerWhitelist.some(r => r.test(file))) && !nameReducerBlacklist.some(r => r.test(file))) {if (nameReducers.length === 0) {// The default name reducer.
+      return (_nuclideUri || _load_nuclideUri()).default.stripExtension((_nuclideUri || _load_nuclideUri()).default.basename(file));}return nameReducers.reduce((hasteName, reducer) => hasteName.replace(reducer.regexp, reducer.replacement), file);}} /**
+                                                                                                                                                                                                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                          * All rights reserved.
+                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                          * the root directory of this source tree.
+                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                          * 
+                                                                                                                                                                                                                                                          * @format
+                                                                                                                                                                                                                                                          */function getHasteName(file, ast, hasteSettings) {if (!hasteSettings.isHaste) {return null;} // __mocks__ is also special cased in Flow. No joke:
   // https://github.com/facebook/flow/blob/master/src/services/inference/module_js.ml#L473
-  if (file.includes('/__mocks__/')) {
-    const basename = nuclideUri.basename(file);
-    const extIndex = basename.indexOf('.');
+  if (file.includes('/__mocks__/')) {const basename = (_nuclideUri || _load_nuclideUri()).default.basename(file);const extIndex = basename.indexOf('.');
     // The extension separator 1) must exist, and 2) can't be at the start.
     // https://caml.inria.fr/pub/docs/manual-ocaml/libref/Filename.html#VALchop_extension
     if (extIndex > 0) {

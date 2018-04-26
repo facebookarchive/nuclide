@@ -1,42 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.configure = exports.appender = undefined;exports.
 
-import type {Observable} from 'rxjs';
 
-import {Subject} from 'rxjs';
 
-type NuclideConsoleMessage = {
-  data: string,
-  level: string,
-  startTime: string,
-  categoryName: string,
-};
 
-let sub = null;
-function getSubject(): Subject<NuclideConsoleMessage> {
-  if (sub == null) {
-    sub = new Subject();
-  }
-  return sub;
-}
 
-export function getNuclideConsoleMessages(): Observable<NuclideConsoleMessage> {
-  return getSubject().asObservable();
-}
 
-function consoleAppender(): (loggingEvent: any) => void {
-  return loggingEvent => {
-    getSubject().next(loggingEvent);
-  };
-}
 
-export const appender = consoleAppender;
-export const configure = consoleAppender;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+getNuclideConsoleMessages = getNuclideConsoleMessages;var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js'); /**
+                                                                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                    * All rights reserved.
+                                                                                                                    *
+                                                                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                    * the root directory of this source tree.
+                                                                                                                    *
+                                                                                                                    * 
+                                                                                                                    * @format
+                                                                                                                    */let sub = null;function getSubject() {if (sub == null) {sub = new _rxjsBundlesRxMinJs.Subject();}return sub;}function getNuclideConsoleMessages() {return getSubject().asObservable();}function consoleAppender() {return loggingEvent => {getSubject().next(loggingEvent);};}
+const appender = exports.appender = consoleAppender;
+const configure = exports.configure = consoleAppender;

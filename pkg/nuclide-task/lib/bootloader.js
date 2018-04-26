@@ -1,57 +1,57 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });
 
-import child_process from 'child_process';
-import EventEmitter from 'events';
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-import {__DEV__} from '../../commons-node/runtime-info';
 
-export type InvokeRemoteMethodParams = {
-  file: string,
-  method?: string,
-  args?: Array<any>,
-};
 
-export type RemoteMessage = {id: string} & InvokeRemoteMethodParams;
 
+
+
+
+
+
+
+var _child_process = _interopRequireDefault(require('child_process'));
+var _events = _interopRequireDefault(require('events'));var _log4js;
+function _load_log4js() {return _log4js = require('log4js');}var _runtimeInfo;
+
+function _load_runtimeInfo() {return _runtimeInfo = require('../../commons-node/runtime-info');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                               * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                               * All rights reserved.
+                                                                                                                                                                                               *
+                                                                                                                                                                                               * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                               * the root directory of this source tree.
+                                                                                                                                                                                               *
+                                                                                                                                                                                               * 
+                                                                                                                                                                                               * @format
+                                                                                                                                                                                               */
 const BOOTSTRAP_PATH = require.resolve('./bootstrap');
 const TRANSPILER_PATH = require.resolve('../../commons-node/load-transpiler');
 
 /**
- * Task creates and manages communication with another Node process. In addition
- * to executing ordinary .js files, the other Node process can also run .js files
- * under the Babel transpiler, so long as they have the @flow pragma.
- */
-export default class Task {
-  _id: number;
-  _name: string;
-  _emitter: EventEmitter;
-  _child: ?child_process$ChildProcess;
+                                                                                * Task creates and manages communication with another Node process. In addition
+                                                                                * to executing ordinary .js files, the other Node process can also run .js files
+                                                                                * under the Babel transpiler, so long as they have the  pragma.
+                                                                                */
+class Task {
+
+
+
+
 
   /**
-   * The constructor takes a single string, `name`, used for tracking purposes.
-   * In particular, the "name" makes it easy to distinguish between bootloader
-   * processes in a system processes list.
-   */
-  constructor(name: string) {
+             * The constructor takes a single string, `name`, used for tracking purposes.
+             * In particular, the "name" makes it easy to distinguish between bootloader
+             * processes in a system processes list.
+             */
+  constructor(name) {
     this._id = 0;
     this._name = name;
-    this._emitter = new EventEmitter();
+    this._emitter = new _events.default();
     this._child = null;
   }
 
-  _initialize() {
-    invariant(this._child == null);
-    const child = (this._child = this._fork());
+  _initialize() {if (!(
+    this._child == null)) {throw new Error('Invariant violation: "this._child == null"');}
+    const child = this._child = this._fork();
     const log = buffer => {
       // eslint-disable-next-line no-console
       console.log(`TASK(${this._name}, ${child.pid}): ${buffer}`);
@@ -64,9 +64,9 @@ export default class Task {
     });
     child.on('error', buffer => {
       log(buffer);
-      getLogger('nuclide-task').error(
-        `Error from task ${this._name}: ${buffer}`,
-      );
+      (0, (_log4js || _load_log4js()).getLogger)('nuclide-task').error(
+      `Error from task ${this._name}: ${buffer}`);
+
       child.kill();
       this._emitter.emit('error', buffer.toString());
       this._emitter.emit('child-process-error', buffer);
@@ -84,46 +84,46 @@ export default class Task {
 
   _fork() {
     // The transpiler is only loaded in development.
-    if (__DEV__) {
-      return child_process.fork(
-        '--require',
-        // _name is not used, but just passed along as a tag for `ps`.
-        [TRANSPILER_PATH, BOOTSTRAP_PATH, this._name],
-        {silent: true}, // Needed so stdout/stderr are available.
+    if ((_runtimeInfo || _load_runtimeInfo()).__DEV__) {
+      return _child_process.default.fork(
+      '--require',
+      // _name is not used, but just passed along as a tag for `ps`.
+      [TRANSPILER_PATH, BOOTSTRAP_PATH, this._name],
+      { silent: true } // Needed so stdout/stderr are available.
       );
     } else {
-      return child_process.fork(
-        BOOTSTRAP_PATH,
-        [this._name],
-        {silent: true}, // Needed so stdout/stderr are available.
+      return _child_process.default.fork(
+      BOOTSTRAP_PATH,
+      [this._name],
+      { silent: true } // Needed so stdout/stderr are available.
       );
     }
   }
 
   /**
-   * Invokes a remote method that is specified as an export of a .js file.
-   *
-   * The absolute path to the .js file must be specified via the `file`
-   * property. In practice, `require.resolve()` is helpful in producing this
-   * path.
-   *
-   * If the .js file exports an object with multiple properties (rather than a
-   * single function), the name of the property (that should correspond to a
-   * function to invoke) must be specified via the `method` property.
-   *
-   * Any arguments to pass to the function must be specified via the `args`
-   * property as an Array. (This property can be omitted if there are no args.)
-   *
-   * Note that both the args for the remote method, as well as the return type
-   * of the remote method, must be JSON-serializable. (The return type of the
-   * remote method can also be a Promise that resolves to a JSON-serializable
-   * object.)
-   *
-   * @return Promise that resolves with the result of invoking the remote
-   *     method. If an error is thrown, a rejected Promise will be returned
-   *     instead.
-   */
-  invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<any> {
+     * Invokes a remote method that is specified as an export of a .js file.
+     *
+     * The absolute path to the .js file must be specified via the `file`
+     * property. In practice, `require.resolve()` is helpful in producing this
+     * path.
+     *
+     * If the .js file exports an object with multiple properties (rather than a
+     * single function), the name of the property (that should correspond to a
+     * function to invoke) must be specified via the `method` property.
+     *
+     * Any arguments to pass to the function must be specified via the `args`
+     * property as an Array. (This property can be omitted if there are no args.)
+     *
+     * Note that both the args for the remote method, as well as the return type
+     * of the remote method, must be JSON-serializable. (The return type of the
+     * remote method can also be a Promise that resolves to a JSON-serializable
+     * object.)
+     *
+     * @return Promise that resolves with the result of invoking the remote
+     *     method. If an error is thrown, a rejected Promise will be returned
+     *     instead.
+     */
+  invokeRemoteMethod(params) {
     if (this._child == null) {
       this._initialize();
     }
@@ -133,8 +133,8 @@ export default class Task {
       id: requestId,
       file: params.file,
       method: params.method,
-      args: params.args,
-    };
+      args: params.args };
+
 
     return new Promise((resolve, reject) => {
       // Ensure the response listener is set up before the request is sent.
@@ -151,17 +151,17 @@ export default class Task {
           reject(error);
         }
       });
-      this._emitter.once('error', reject);
-      invariant(this._child != null);
+      this._emitter.once('error', reject);if (!(
+      this._child != null)) {throw new Error('Invariant violation: "this._child != null"');}
       this._child.send(request);
     });
   }
 
-  onError(callback: (buffer: Buffer) => any): void {
+  onError(callback) {
     this._emitter.on('child-process-error', callback);
   }
 
-  onExit(callback: () => mixed): void {
+  onExit(callback) {
     this._emitter.on('exit', callback);
   }
 
@@ -170,5 +170,4 @@ export default class Task {
       this._child.kill();
     }
     this._emitter.removeAllListeners();
-  }
-}
+  }}exports.default = Task;

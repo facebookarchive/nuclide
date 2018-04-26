@@ -1,57 +1,56 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });
 
-import * as React from 'react';
-import {Notice} from './TextEditorBanner';
-import {Button, ButtonTypes} from './Button';
-import {MessageTypes} from './Message';
 
-type Props = {
-  detailedMessage: string,
-  canEditAnyway?: boolean,
-  onEditAnyway?: () => void,
-  onDismiss?: () => void,
-};
 
-export default class ReadOnlyNotice extends React.Component<Props> {
-  render(): React.Node {
+
+
+
+
+
+
+
+
+var _react = _interopRequireWildcard(require('react'));var _TextEditorBanner;
+function _load_TextEditorBanner() {return _TextEditorBanner = require('./TextEditorBanner');}var _Button;
+function _load_Button() {return _Button = require('./Button');}var _Message;
+function _load_Message() {return _Message = require('./Message');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}} /**
+                                                                                                                                                                                                                                                                                                                                    * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                    * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                    *
+                                                                                                                                                                                                                                                                                                                                    * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                                                                                                                                    * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                                                                                                                                    * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                                                                                                                                    *
+                                                                                                                                                                                                                                                                                                                                    * 
+                                                                                                                                                                                                                                                                                                                                    * @format
+                                                                                                                                                                                                                                                                                                                                    */class ReadOnlyNotice extends _react.Component {render() {
     let editAnywayButton;
 
     if (this.props.canEditAnyway) {
-      editAnywayButton = (
-        <Button buttonType={ButtonTypes.INFO} onClick={this.props.onEditAnyway}>
-          Edit Anyway
-        </Button>
-      );
+      editAnywayButton =
+      _react.createElement((_Button || _load_Button()).Button, { buttonType: (_Button || _load_Button()).ButtonTypes.INFO, onClick: this.props.onEditAnyway }, 'Edit Anyway');
+
+
+
     }
 
-    const dismissButton = (
-      <Button buttonType={ButtonTypes.INFO} onClick={this.props.onDismiss}>
-        Dismiss
-      </Button>
-    );
+    const dismissButton =
+    _react.createElement((_Button || _load_Button()).Button, { buttonType: (_Button || _load_Button()).ButtonTypes.INFO, onClick: this.props.onDismiss }, 'Dismiss');
+
+
+
 
     return (
-      <Notice messageType={MessageTypes.info}>
-        <span>
-          <strong>This is a read-only file.</strong>
-          <br />
-          {this.props.detailedMessage}
-        </span>
-        <div>
-          {editAnywayButton}
-          {dismissButton}
-        </div>
-      </Notice>
-    );
-  }
-}
+      _react.createElement((_TextEditorBanner || _load_TextEditorBanner()).Notice, { messageType: (_Message || _load_Message()).MessageTypes.info },
+        _react.createElement('span', null,
+          _react.createElement('strong', null, 'This is a read-only file.'),
+          _react.createElement('br', null),
+          this.props.detailedMessage),
+
+        _react.createElement('div', null,
+          editAnywayButton,
+          dismissButton)));
+
+
+
+  }}exports.default = ReadOnlyNotice;

@@ -1,53 +1,53 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.resolveTool = exports.POSIX_TOOLS = exports.WINDOWS_TOOLS = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));let resolveTool = exports.resolveTool = (() => {var _ref = (0, _asyncToGenerator.default)(
 
-import type {CodeSearchResult, CodeSearchParams, CodeSearchTool} from './types';
-import {asyncFind} from 'nuclide-commons/promise';
-import os from 'os';
 
-import which from 'nuclide-commons/which';
-import {Observable} from 'rxjs';
-import {search as ackSearch} from './AckHandler';
-import {search as grepSearch} from './GrepHandler';
-import {search as rgSearch} from './RgHandler';
 
-export const WINDOWS_TOOLS = ['rg', 'grep'];
-export const POSIX_TOOLS = ['rg', 'ack', 'grep'];
 
-const searchToolHandlers = Object.freeze({
-  ack: ackSearch,
-  rg: rgSearch,
-  grep: grepSearch,
-});
 
-export async function resolveTool(
-  tool: ?CodeSearchTool,
-): Promise<?CodeSearchTool> {
-  if (tool != null) {
-    return tool;
-  }
-  return asyncFind(os.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, t =>
-    which(t).then(cmd => (cmd != null ? t : null)),
-  );
-}
 
-export function searchWithTool(
-  tool: ?CodeSearchTool,
-  params: CodeSearchParams,
-): Observable<CodeSearchResult> {
-  return Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {
-    if (actualTool != null) {
-      const handler = searchToolHandlers[actualTool];
-      return handler(params);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function* (
+  tool)
+  {
+    if (tool != null) {
+      return tool;
     }
-    return Observable.empty();
+    return (0, (_promise || _load_promise()).asyncFind)(_os.default.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, function (t) {return (
+        (0, (_which || _load_which()).default)(t).then(function (cmd) {return cmd != null ? t : null;}));});
+
+  });return function resolveTool(_x) {return _ref.apply(this, arguments);};})();exports.
+
+searchWithTool = searchWithTool;var _promise;function _load_promise() {return _promise = require('nuclide-commons/promise');}var _os = _interopRequireDefault(require('os'));var _which;function _load_which() {return _which = _interopRequireDefault(require('nuclide-commons/which'));}var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _AckHandler;function _load_AckHandler() {return _AckHandler = require('./AckHandler');}var _GrepHandler;function _load_GrepHandler() {return _GrepHandler = require('./GrepHandler');}var _RgHandler;function _load_RgHandler() {return _RgHandler = require('./RgHandler');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */const WINDOWS_TOOLS = exports.WINDOWS_TOOLS = ['rg', 'grep'];const POSIX_TOOLS = exports.POSIX_TOOLS = ['rg', 'ack', 'grep'];const searchToolHandlers = Object.freeze({ ack: (_AckHandler || _load_AckHandler()).search, rg: (_RgHandler || _load_RgHandler()).search, grep: (_GrepHandler || _load_GrepHandler()).search });function searchWithTool(tool, params) {return _rxjsBundlesRxMinJs.Observable.defer(() => resolveTool(tool)).switchMap(actualTool => {if (actualTool != null) {const handler = searchToolHandlers[actualTool];return handler(params);}return _rxjsBundlesRxMinJs.Observable.empty();
   });
 }

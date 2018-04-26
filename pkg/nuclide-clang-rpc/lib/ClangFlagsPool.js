@@ -1,39 +1,39 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _collection;
 
-import type {ClangFlags} from './rpc-types';
 
-import {arrayEqual} from 'nuclide-commons/collection';
-import {track} from '../../nuclide-analytics';
+
+
+
+
+
+
+
+
+
+
+function _load_collection() {return _collection = require('nuclide-commons/collection');}var _nuclideAnalytics;
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}
 
 // Currently handles are just indices into the flag pool.
-export type ClangFlagsHandle = number;
 
-function flagsAreEqual(left: ClangFlags, right: ClangFlags): boolean {
+
+function flagsAreEqual(left, right) {
   return (
     left.directory === right.directory &&
     left.flagsFile === right.flagsFile &&
-    arrayEqual(left.flags, right.flags)
-  );
-}
+    (0, (_collection || _load_collection()).arrayEqual)(left.flags, right.flags));
 
-export default class ClangFlagsPool {
-  _pool: Array<ClangFlags> = [];
-  _totalFlags: number = 0;
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */class ClangFlagsPool {constructor() {this._pool = [];this._totalFlags = 0;}getHandle(flags) {this._totalFlags++;const index = this._pool.findIndex(candidate => flagsAreEqual(flags, candidate));
 
-  getHandle(flags: ClangFlags): ClangFlagsHandle {
-    this._totalFlags++;
-    const index = this._pool.findIndex(candidate =>
-      flagsAreEqual(flags, candidate),
-    );
     if (index !== -1) {
       return index;
     } else {
@@ -42,16 +42,16 @@ export default class ClangFlagsPool {
     }
   }
 
-  getFlags(handle: ClangFlagsHandle): ?ClangFlags {
+  getFlags(handle) {
     // Remark: out of bounds array access will return `undefined.`
     return this._pool[handle];
   }
 
-  trackStats(): void {
-    track('nuclide-clang.flag-pool', {
+  trackStats() {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-clang.flag-pool', {
       totalFlags: this._totalFlags,
-      totalHandles: this._pool.length,
-    });
+      totalHandles: this._pool.length });
+
   }
 
   reset() {
@@ -61,5 +61,4 @@ export default class ClangFlagsPool {
     // getHandle and match that against an internal version in getFlags.
     this._pool = [];
     this._totalFlags = 0;
-  }
-}
+  }}exports.default = ClangFlagsPool;
