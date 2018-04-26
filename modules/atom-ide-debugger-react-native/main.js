@@ -17,14 +17,22 @@ import type {
   AutoGenProperty,
   IProcessConfig,
 } from 'nuclide-debugger-common/types';
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 
 class Activation {
-  constructor() {}
+  _gkService: ?GatekeeperService;
+
+  constructor() {
+    this._gkService = null;
+  }
+
   dispose() {}
 
   createDebuggerProvider(): NuclideDebuggerProvider {
@@ -35,9 +43,21 @@ class Activation {
           'React Native',
           connection,
           getReactNativeConfig(),
+          async () => {
+            // This debugger is enabled for non-Facebook users, and Facebook
+            // users inside the Gatekeeper nuclide_debugger_reactnative
+            return this._gkService == null
+              ? Promise.resolve(true)
+              : this._gkService.passesGK('nuclide_debugger_reactnative');
+          },
         );
       },
     };
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    this._gkService = service;
+    return new UniversalDisposable(() => (this._gkService = null));
   }
 
   createDebuggerConfigurator(): DebuggerConfigurationProvider {

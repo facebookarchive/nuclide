@@ -16,6 +16,13 @@
   "engines": {
     "atom": ">= 1.17.0"
   },
+  "consumedServices": {
+    "fb-gatekeeper": {
+      "versions": {
+        "0.0.0": "consumeGatekeeperService"
+      }
+    }
+  },
   "providedServices": {
     "debugger.provider": {
       "description": "React Native debugger engine.",
