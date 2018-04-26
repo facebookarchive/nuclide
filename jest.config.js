@@ -28,8 +28,8 @@ module.exports = {
   transform: {
     '\\.js$': '<rootDir>/modules/nuclide-jest/jestTransformer.js',
   },
-  setupFiles: ['<rootDir>/jest-setup.js'],
   testFailureExitCode: 0,
+  setupFiles: ['<rootDir>/jest/setup.js'],
   forceExit: true,
   testPathIgnorePatterns: ['/node_modules/'],
 };

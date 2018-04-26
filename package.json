@@ -37,7 +37,8 @@
     "lint-all": "eslint .",
     "fix-all": "eslint --fix .",
     "release-transpile": "./modules/nuclide-node-transpiler/bin/release-transpile.js",
-    "test": "npm run lint-all && npm run flow"
+    "test": "npm run lint-all && npm run flow",
+    "jest": "NUCLIDE_TRANSPILE_WITH_SOURCEMAPS=1 jest"
   },
   "workspaces": [
     "modules/*"
