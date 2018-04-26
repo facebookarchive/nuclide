@@ -82,7 +82,7 @@ export default function connectClient(
   connection.onNotification({method: 'update'}, (params: UpdateParams<*>) => {
     logger.info('got update request:', params);
     const windowManager = nullthrows(windowManagers.get(params.id));
-    windowManager.update(params.props);
+    windowManager.update(params.update);
   });
   connection.onNotification({method: 'destroy'}, params => {
     logger.info('got destroy request:', params.id);
@@ -140,7 +140,7 @@ class WindowManager {
     /* const componentModule = */ win.webContents.send('initialize', {
       windowId,
       componentModule: nullthrows(viewRegistry.get(view.componentId)),
-      initialProps: view.initialProps,
+      initialState: view.initialState,
     });
 
     // TODO: Wait until first render is complete to show?
@@ -149,12 +149,12 @@ class WindowManager {
     return win;
   }
 
-  update(props: Object): void {
+  update(update: Object): void {
     this._initPromise.then(win => {
       if (this._destroyed || win == null) {
         return;
       }
-      win.webContents.send('update', {props});
+      win.webContents.send('update', update);
     });
   }
 

@@ -18,7 +18,7 @@ import {getLogger} from 'log4js';
 const logger = getLogger('sample-experimental-window-service.connectClient');
 
 export type WindowServiceClient = {
-  open(options: WindowOptions<*>): Window,
+  open(options: WindowOptions<*, *>): Window,
 };
 
 export type OpenParams<T> = {
@@ -27,28 +27,28 @@ export type OpenParams<T> = {
   frame: boolean,
   view: {
     componentId: string,
-    initialProps: T,
+    initialState: T,
   },
 };
 
-export type UpdateParams<T> = {
+export type UpdateParams<U> = {
   id: number,
-  props: T,
+  update: U,
 };
 
-type View<T> = {
+type View<T, U> = {
   componentId: string,
   render(): T,
-  +updates: Observable<mixed>,
+  +updates: Observable<U>,
   +dispose?: () => mixed,
   +handleAction?: (action: Object) => mixed, // TODO: Type action?
 };
 
-type WindowOptions<T> = {|
+type WindowOptions<T, U> = {|
   width: number,
   height: number,
   frame?: boolean,
-  createView: () => View<T>,
+  createView: () => View<T, U>,
 |};
 
 type Window = {|
@@ -59,7 +59,7 @@ export default function createClient(
   connection: ServiceConnection,
 ): WindowServiceClient {
   return {
-    open(options: WindowOptions<*>): Window {
+    open(options: WindowOptions<*, *>): Window {
       const view = options.createView();
       const idPromise = connection.sendRequest('open', {
         width: options.width,
@@ -67,11 +67,11 @@ export default function createClient(
         frame: options.frame,
         view: {
           componentId: view.componentId,
-          initialProps: view.render(),
+          initialState: view.render(),
         },
       });
       const updatesSubscription = Observable.fromPromise(idPromise)
-        .switchMap(id => view.updates.map(() => ({id, props: view.render()})))
+        .switchMap(id => view.updates.map(update => ({id, update})))
         .subscribe(params => {
           connection.sendNotification('update', params);
         });

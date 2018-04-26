@@ -15,20 +15,20 @@ type State = {count: number};
 
 export default class WidgetView {
   componentId = 'sample-experimental-service-consumer.WidgetComponent';
-  _updates = new Subject();
+  _updates: Subject<State> = new Subject();
   _disposed = new ReplaySubject(1);
   state: State = {count: 0};
 
-  get updates(): Observable<mixed> {
+  get updates(): Observable<State> {
     return this._updates.takeUntil(this._disposed);
   }
 
   setState(state: State): void {
     this.state = {...this.state, ...state};
-    this._updates.next();
+    this._updates.next(this.render());
   }
 
-  render() {
+  render(): State {
     return this.state;
   }
 

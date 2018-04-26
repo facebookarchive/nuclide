@@ -28,15 +28,13 @@ invariant(ipcRenderer != null);
 export type InitializeMessage<T> = {|
   windowId: number,
   componentModule: string,
-  initialProps: T,
-|};
-
-export type UpdateMessage<T> = {|
-  props: T,
+  initialState: T,
 |};
 
 let windowId;
 let Component;
+let reduceState;
+let currentState;
 const container = nullthrows(document.getElementById('app'));
 
 function dispatch(action) {
@@ -51,15 +49,20 @@ function render(props) {
 }
 
 ipcRenderer.on('initialize', (_, message: InitializeMessage<*>) => {
-  const {componentModule, initialProps} = message;
+  const {componentModule, initialState} = message;
   windowId = message.windowId;
   // $FlowIgnore
-  Component = require(componentModule).default;
-  render(initialProps);
+  const module = require(componentModule);
+  Component = module.default;
+  reduceState = module.reduceState;
+  currentState = initialState;
+  render(currentState);
 });
 
-ipcRenderer.on('update', (_, message: UpdateMessage<*>) => {
-  render(message.props);
+ipcRenderer.on('update', (_, update: Object) => {
+  currentState =
+    reduceState == null ? update : reduceState(currentState, update);
+  render(currentState);
 });
 
 // TODO: Use JSONRpc?
