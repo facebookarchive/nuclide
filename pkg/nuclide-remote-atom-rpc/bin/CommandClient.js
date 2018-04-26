@@ -44,7 +44,7 @@ export async function getCommands(
       ? await startCommands(argv.port, argv.family)
       : await findExistingCommands();
 
-  if (commands.getConnectionCount() === 0 && rejectIfZeroConnections) {
+  if ((await commands.getConnectionCount()) === 0 && rejectIfZeroConnections) {
     throw new FailedConnectionError(
       'Nuclide server is running but no Atom process with Nuclide is connected.',
     );
