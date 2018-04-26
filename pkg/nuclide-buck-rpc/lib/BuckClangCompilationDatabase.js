@@ -117,12 +117,26 @@ class BuckClangCompilationDatabaseHandler {
 
     let queryTarget = null;
     try {
-      queryTarget = (await BuckService.getOwners(
+      const owners = (await BuckService.getOwners(
         buckRoot,
         src,
         [],
         TARGET_KIND_REGEX,
-      )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+      )).filter(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+      // Deprioritize Android-related targets because they build with gcc and
+      // require gcc intrinsics that cause libclang to throw bad diagnostics.
+      owners.sort((a, b) => {
+        const aAndroid = a.endsWith('Android');
+        const bAndroid = b.endsWith('Android');
+        if (aAndroid && !bAndroid) {
+          return 1;
+        } else if (!aAndroid && bAndroid) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+      queryTarget = owners[0];
     } catch (err) {
       logger.error('Failed getting the target from buck', err);
     }
