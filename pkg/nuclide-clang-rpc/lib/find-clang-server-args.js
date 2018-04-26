@@ -24,6 +24,7 @@ export type ClangServerArgs = {
 export default (async function findClangServerArgs(
   src?: string,
   libclangPath: ?string = null,
+  configLibclangPath: ?string,
 ): Promise<ClangServerArgs> {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
@@ -50,15 +51,8 @@ export default (async function findClangServerArgs(
     } catch (err) {}
   }
 
-  // TODO(asuarez): Fix this when we have server-side settings.
-  if (global.atom) {
-    const path = ((atom.config.get(
-      'nuclide.nuclide-clang.libclangPath',
-    ): any): ?string);
-    // flowlint-next-line sketchy-null-string:off
-    if (path) {
-      libClangLibraryFile = path.trim();
-    }
+  if (configLibclangPath != null) {
+    libClangLibraryFile = configLibclangPath.trim();
   }
 
   let clangServerArgs = {

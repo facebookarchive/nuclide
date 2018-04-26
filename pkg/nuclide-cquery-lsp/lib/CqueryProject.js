@@ -18,7 +18,7 @@ import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {
   getClangRequestSettings,
-  getDefaultFlags,
+  getServerSettings,
 } from '../../nuclide-clang/lib/libclang';
 import {COMPILATION_DATABASE_FILE} from '../../nuclide-cquery-lsp-rpc/lib/CqueryProjectManager';
 import {
@@ -80,7 +80,10 @@ async function getCompilationDbAndFlagsFile(
     async () => findNearestCompilationDbDir(file),
   );
   if (compilationDbDir == null) {
-    return {hasCompilationDb: false, defaultFlags: getDefaultFlags()};
+    return {
+      hasCompilationDb: false,
+      defaultFlags: getServerSettings().defaultFlags,
+    };
   }
   return {
     hasCompilationDb: true,

@@ -10,7 +10,7 @@
  */
 
 import type {ClangServerFlags} from './ClangServer';
-import type {ClangRequestSettings} from './rpc-types';
+import type {ClangRequestSettings, ClangServerSettings} from './rpc-types';
 
 import LRUCache from 'lru-cache';
 import os from 'os';
@@ -90,12 +90,16 @@ export default class ClangServerManager {
     src: string,
     contents: string,
     _requestSettings: ?ClangRequestSettings,
-    defaultFlags?: ?Array<string>,
+    _defaultSettings?: ClangServerSettings,
     restartIfChanged?: boolean,
   ): ClangServer {
     const requestSettings = _requestSettings || {
       compilationDatabase: null,
       projectRoot: null,
+    };
+    const defaultSettings = _defaultSettings || {
+      libclangPath: null,
+      defaultFlags: null,
     };
     let server = this._servers.get(src);
     if (server != null) {
@@ -112,8 +116,9 @@ export default class ClangServerManager {
       findClangServerArgs(
         src,
         compilationDB == null ? null : compilationDB.libclangPath,
+        defaultSettings.libclangPath,
       ),
-      this._getFlags(src, requestSettings, defaultFlags),
+      this._getFlags(src, requestSettings, defaultSettings),
     );
     server.waitForReady().then(() => this._checkMemoryUsage());
     this._servers.set(src, server);
@@ -125,7 +130,7 @@ export default class ClangServerManager {
   async _getFlags(
     src: string,
     requestSettings: ClangRequestSettings,
-    defaultFlags: ?Array<string>,
+    defaultSettings: ClangServerSettings,
   ): Promise<?ClangServerFlags> {
     const flagsData = await this._flagsManager
       .getFlagsForSrc(src, requestSettings)
@@ -144,9 +149,9 @@ export default class ClangServerManager {
         usesDefaultFlags: false,
         flagsFile: flagsData.flagsFile,
       };
-    } else if (defaultFlags != null) {
+    } else if (defaultSettings.defaultFlags != null) {
       return {
-        flags: await augmentDefaultFlags(src, defaultFlags),
+        flags: await augmentDefaultFlags(src, defaultSettings.defaultFlags),
         usesDefaultFlags: true,
         flagsFile: flagsData != null ? flagsData.flagsFile : null,
       };

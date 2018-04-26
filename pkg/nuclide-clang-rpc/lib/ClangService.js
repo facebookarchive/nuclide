@@ -20,6 +20,7 @@ import type {
   ClangOutlineTree,
   ClangRequestSettings,
   ClangFlags,
+  ClangServerSettings,
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
@@ -87,14 +88,14 @@ async function getClangService(
   src: NuclideUri,
   contents: string,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
   blocking?: boolean,
 ): Promise<?ClangProcessService> {
   const server = serverManager.getClangServer(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
   );
   if (!server.isReady()) {
     if (blocking) {
@@ -119,7 +120,7 @@ export function compile(
   src: NuclideUri,
   contents: string,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags?: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): ConnectableObservable<?ClangCompileResult> {
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
@@ -127,7 +128,7 @@ export function compile(
       src,
       contents,
       requestSettings,
-      defaultFlags,
+      defaultSettings,
       true,
     );
     if (!server.isDisposed()) {
@@ -145,13 +146,13 @@ export async function getCompletions(
   tokenStartColumn: number,
   prefix: string,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags?: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): Promise<?Array<ClangCompletion>> {
   const service = await getClangService(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
   );
   if (service != null) {
     return service.get_completions(
@@ -170,13 +171,13 @@ export async function getDeclaration(
   line: number,
   column: number,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags?: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): Promise<?ClangDeclaration> {
   const service = await getClangService(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
   );
   if (service != null) {
     return service.get_declaration(contents, line, column);
@@ -192,13 +193,13 @@ export async function getDeclarationInfo(
   line: number,
   column: number,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): Promise<?Array<ClangCursor>> {
   const service = await getClangService(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
   );
   if (service != null) {
     return service.get_declaration_info(contents, line, column);
@@ -221,13 +222,13 @@ export async function getOutline(
   src: NuclideUri,
   contents: string,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): Promise<?Array<ClangOutlineTree>> {
   const service = await getClangService(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
     true,
   );
   if (service != null) {
@@ -241,13 +242,13 @@ export async function getLocalReferences(
   line: number,
   column: number,
   requestSettings: ?ClangRequestSettings,
-  defaultFlags: ?Array<string>,
+  defaultSettings?: ClangServerSettings,
 ): Promise<?ClangLocalReferences> {
   const service = await getClangService(
     src,
     contents,
     requestSettings,
-    defaultFlags,
+    defaultSettings,
     true,
   );
   if (service != null) {

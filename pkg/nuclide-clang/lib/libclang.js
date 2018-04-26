@@ -18,6 +18,7 @@ import type {
   ClangLocalReferences,
   ClangOutlineTree,
   ClangRequestSettings,
+  ClangServerSettings,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {ClangConfigurationProvider} from './types';
 
@@ -31,16 +32,22 @@ type NuclideClangConfig = {
   enableDefaultFlags: boolean,
   defaultFlags: Array<string>,
   serverProcessMemoryLimit: number,
+  libclangPath: string,
 };
 
 const clangProviders: Set<ClangConfigurationProvider> = new Set();
 
-function getDefaultFlags(): ?Array<string> {
+function getServerSettings(): ClangServerSettings {
   const config: NuclideClangConfig = (featureConfig.get('nuclide-clang'): any);
+  let {defaultFlags, libclangPath} = config;
   if (!config.enableDefaultFlags) {
-    return null;
+    defaultFlags = null;
   }
-  return config.defaultFlags;
+  // If the path is empty then don't set it, let server use the default.
+  if (libclangPath === '') {
+    libclangPath = null;
+  }
+  return {defaultFlags, libclangPath};
 }
 
 async function findSourcePath(path: NuclideUri): Promise<string> {
@@ -88,7 +95,7 @@ const clangServices = new WeakSet();
 
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
-  getDefaultFlags,
+  getServerSettings,
   getClangRequestSettings,
   registerClangProvider(provider: ClangConfigurationProvider): IDisposable {
     clangProviders.add(provider);
@@ -109,7 +116,7 @@ module.exports = {
     }
     const contents = editor.getText();
 
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
     const service = getClangServiceByNuclideUri(src);
 
     // When we fetch diagnostics for the first time, reset the server state.
@@ -125,7 +132,12 @@ module.exports = {
     }
 
     return service
-      .compile(src, contents, await getClangRequestSettings(src), defaultFlags)
+      .compile(
+        src,
+        contents,
+        await getClangRequestSettings(src),
+        defaultSettings,
+      )
       .refCount()
       .toPromise();
   },
@@ -144,7 +156,7 @@ module.exports = {
     const column = cursor.getBufferColumn();
     const tokenStartColumn = column - prefix.length;
 
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
     const service = getClangServiceByNuclideUri(src);
 
     return service.getCompletions(
@@ -155,7 +167,7 @@ module.exports = {
       tokenStartColumn,
       prefix,
       await getClangRequestSettings(src),
-      defaultFlags,
+      defaultSettings,
     );
   },
 
@@ -172,7 +184,7 @@ module.exports = {
     if (src == null) {
       return null;
     }
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
     const service = getClangServiceByNuclideUri(src);
     return service.getDeclaration(
       src,
@@ -180,7 +192,7 @@ module.exports = {
       line,
       column,
       await getClangRequestSettings(src),
-      defaultFlags,
+      defaultSettings,
     );
   },
 
@@ -193,7 +205,7 @@ module.exports = {
     if (src == null) {
       return Promise.resolve(null);
     }
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
 
     const service = getClangServiceByNuclideUri(src);
     if (service == null) {
@@ -206,7 +218,7 @@ module.exports = {
       line,
       column,
       await getClangRequestSettings(src),
-      defaultFlags,
+      defaultSettings,
     );
   },
 
@@ -215,13 +227,13 @@ module.exports = {
     if (src == null) {
       return Promise.resolve();
     }
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
     const service = getClangServiceByNuclideUri(src);
     return service.getOutline(
       src,
       editor.getText(),
       await getClangRequestSettings(src),
-      defaultFlags,
+      defaultSettings,
     );
   },
 
@@ -234,7 +246,7 @@ module.exports = {
     if (src == null) {
       return Promise.resolve(null);
     }
-    const defaultFlags = getDefaultFlags();
+    const defaultSettings = getServerSettings();
 
     const service = getClangServiceByNuclideUri(src);
     if (service == null) {
@@ -247,7 +259,7 @@ module.exports = {
       line,
       column,
       await getClangRequestSettings(src),
-      defaultFlags,
+      defaultSettings,
     );
   },
 

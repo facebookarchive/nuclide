@@ -16,10 +16,12 @@ import ClangServerManager from '../lib/ClangServerManager';
 describe('ClangServerManager', () => {
   let serverManager;
   let emptyRequestSettings;
+  let emptyServerSettings;
   let getFlagsSpy;
   beforeEach(() => {
     serverManager = new ClangServerManager();
     emptyRequestSettings = {compilationDatabase: null, projectRoot: null};
+    emptyServerSettings = {libclangPath: null, defaultFlags: []};
     getFlagsSpy = spyOn(
       serverManager._flagsManager,
       'getFlagsForSrc',
@@ -38,6 +40,7 @@ describe('ClangServerManager', () => {
       const flagsResult = await serverManager._getFlags(
         'test.cpp',
         emptyRequestSettings,
+        emptyServerSettings,
       );
       expect(flagsResult).toEqual({flags: ['a'], usesDefaultFlags: false});
     });
@@ -45,10 +48,11 @@ describe('ClangServerManager', () => {
 
   it('falls back to default flags with null database', () => {
     waitsForPromise(async () => {
+      const serverSettings = {defaultFlags: ['b'], libclangPath: null};
       const flagsResult = await serverManager._getFlags(
         'test.cpp',
         emptyRequestSettings,
-        ['b'],
+        serverSettings,
       );
       expect(flagsResult).toEqual({
         flags: ['b'],
@@ -60,6 +64,7 @@ describe('ClangServerManager', () => {
 
   it('falls back to default flags with only flags file without flags', () => {
     waitsForPromise(async () => {
+      const serverSettings = {defaultFlags: ['b'], libclangPath: null};
       // sometimes providers give us a flags file (e.g. TARGETS) without flags.
       getFlagsSpy.andCallFake(() =>
         Promise.resolve({flags: [], directory: '.', flagsFile: 'TARGET'}),
@@ -67,7 +72,7 @@ describe('ClangServerManager', () => {
       const flagsResult = await serverManager._getFlags(
         'test.cpp',
         emptyRequestSettings,
-        ['b'],
+        serverSettings,
       );
       expect(flagsResult).toEqual({
         flags: ['b'],
@@ -92,14 +97,14 @@ describe('ClangServerManager', () => {
         TEST_FILE,
         '',
         null,
-        [],
+        emptyServerSettings,
         true,
       );
       const server2 = serverManager.getClangServer(
         TEST_FILE,
         '',
         null,
-        [],
+        emptyServerSettings,
         true,
       );
       expect(server2).toBe(server);
@@ -109,7 +114,7 @@ describe('ClangServerManager', () => {
         TEST_FILE,
         '',
         null,
-        [],
+        emptyServerSettings,
         true,
       );
       expect(server3).not.toBe(server);
@@ -123,7 +128,12 @@ describe('ClangServerManager', () => {
       for (let i = 0; i < 21; i++) {
         // eslint-disable-next-line no-await-in-loop
         servers.push(
-          serverManager.getClangServer(`test${i}.cpp`, '', null, []),
+          serverManager.getClangServer(
+            `test${i}.cpp`,
+            '',
+            null,
+            emptyServerSettings,
+          ),
         );
       }
       invariant(servers[0]);
@@ -158,10 +168,20 @@ describe('ClangServerManager', () => {
 
     runs(() => {
       serverManager.setMemoryLimit(0);
-      server = serverManager.getClangServer('test.cpp', '', null, []);
+      server = serverManager.getClangServer(
+        'test.cpp',
+        '',
+        null,
+        emptyServerSettings,
+      );
 
       // We're still over the limit, but keep the last one alive.
-      server2 = serverManager.getClangServer('test2.cpp', '', null, []);
+      server2 = serverManager.getClangServer(
+        'test2.cpp',
+        '',
+        null,
+        emptyServerSettings,
+      );
     });
 
     waitsFor(() => server2.isReady(), 'server2 to become ready');
@@ -172,7 +192,12 @@ describe('ClangServerManager', () => {
       expect(server2.isDisposed()).toBe(false);
 
       // It should be disposed once the next server gets created.
-      server3 = serverManager.getClangServer('test3.cpp', '', null, []);
+      server3 = serverManager.getClangServer(
+        'test3.cpp',
+        '',
+        null,
+        emptyServerSettings,
+      );
     });
 
     waitsFor(() => server3.isReady(), 'server3 to become ready');

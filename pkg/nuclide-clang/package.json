@@ -19,7 +19,7 @@
         "title": "libclang Library Path",
         "type": "string",
         "default": "",
-        "description": "Path to libclang.{so, dylib, dll} on your system. (Local projects only)"
+        "description": "Path to libclang.{so, dylib, dll} on your system."
       },
       "enableDefaultFlags": {
         "title": "Enable Default Compilation Flags",

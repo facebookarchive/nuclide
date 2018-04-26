@@ -116,6 +116,11 @@ export type ClangRequestSettings = {|
   projectRoot: ?NuclideUri,
 |};
 
+export type ClangServerSettings = {|
+  defaultFlags: ?Array<string>,
+  libclangPath: ?string,
+|};
+
 export type ClangCompilationDatabase = {|
   file: ?NuclideUri,
   flagsFile: ?NuclideUri,
