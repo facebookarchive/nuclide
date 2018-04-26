@@ -50,8 +50,8 @@ export function activateExperimentalPackage(
   Object.keys(consumedServices).forEach(key => {
     const {socket, client} = consumedServices[key];
     // $FlowIgnore
-    const clientFactory = require(client).default;
-    clients[key] = clientFactory(messageRouter.createConnection(socket));
+    const clientClass = require(client).default;
+    clients[key] = new clientClass(messageRouter.createConnection(socket));
   });
 
   // $FlowIgnore

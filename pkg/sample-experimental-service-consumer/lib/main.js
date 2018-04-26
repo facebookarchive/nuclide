@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {SimpleConsoleClient} from '../../sample-experimental-console-service/lib/SimpleConsoleClient';
-import type {WindowServiceClient} from '../../sample-experimental-window-service/lib/WindowServiceClient';
+import type SimpleConsoleClient from '../../sample-experimental-console-service/lib/SimpleConsoleClient';
+import type WindowServiceClient from '../../sample-experimental-window-service/lib/WindowServiceClient';
 
 import {getLogger} from 'log4js';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

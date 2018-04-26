@@ -11,16 +11,14 @@
 
 import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
 
-export type SimpleConsoleClient = {
-  log(message: string): void,
-};
+export default class SimpleConsoleClient {
+  _connection: ServiceConnection;
 
-export default function createClient(
-  connection: ServiceConnection,
-): SimpleConsoleClient {
-  return {
-    log(message: string): void {
-      connection.sendNotification('message', {message});
-    },
-  };
+  constructor(connection: ServiceConnection) {
+    this._connection = connection;
+  }
+
+  log(message: string): void {
+    this._connection.sendNotification('message', {message});
+  }
 }
