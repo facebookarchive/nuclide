@@ -35,11 +35,7 @@ export async function isEligibleForDirectory(
     isNfs(rootDirectory),
     isFuse(rootDirectory),
   ]);
-  if (checks.some(x => x)) {
-    return false;
-  }
-
-  return true;
+  return !checks.some(x => x);
 }
 
 /**

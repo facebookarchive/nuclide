@@ -21,9 +21,9 @@
  * 'null' will always be emitted if no results are found.
  */
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observeProcess} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {track} from '../../../nuclide-analytics';
+import {codeSearch} from '../../../nuclide-code-search-rpc';
 import {isSourceFile} from '../utils';
 import escapeStringRegExp from 'escape-string-regexp';
 import {findSubArrayIndex} from './common';
@@ -39,6 +39,7 @@ export function findIncludingSourceFile(
 ): Observable<?string> {
   return _findIncludingSourceFile(headerFile, projectRoot)
     .timeout(INCLUDE_SEARCH_TIMEOUT)
+    .take(1)
     .catch(e => {
       track('nuclide-clang-rpc.source-to-header.grep-error', {
         header: headerFile,
@@ -79,72 +80,36 @@ export function getSearchFolder(projectRoot: string, header: string): string {
 function _findIncludingSourceFile(
   header: string,
   projectRoot: string,
-): Observable<?string> {
+): Observable<string> {
   const basename = escapeStringRegExp(nuclideUri.basename(header));
   const relativePath = escapeStringRegExp(
     nuclideUri.relative(projectRoot, header),
   );
-  const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
-  const regex = new RegExp(pattern);
+  const regex = new RegExp(
+    `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`,
+  );
+  const folder = getSearchFolder(projectRoot, header);
   // We need both the file and the match to verify relative includes.
   // Relative includes may not always be correct, so we may have to go through all the results.
-  // TODO(wallace): use rg
-  return observeProcess(
-    'grep',
-    [
-      '-RE', // recursive, extended
-      '--null', // separate file/match with \0
-      pattern,
-      getSearchFolder(projectRoot, header),
-    ],
-    {/* TODO(T17353599) */ isExitError: () => false},
-  )
-    .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-    .flatMap(message => {
-      switch (message.kind) {
-        case 'stdout':
-          const file = processGrepResult(message.data, header, regex);
-          return file == null || !isSourceFile(file)
-            ? Observable.empty()
-            : Observable.of(file);
-        case 'error':
-          throw new Error(String(message.error));
-        case 'exit':
-          return Observable.of(null);
-        default:
-          return Observable.empty();
+  return codeSearch(folder, regex, false, null, 200)
+    .refCount()
+    .filter(result => isSourceFile(result.file))
+    .flatMap(result => {
+      const match = regex.exec(result.line);
+      if (match == null) {
+        return Observable.empty();
       }
+      // Source-relative includes have to be verified.
+      // Relative paths will match the (../)* rule (at index 2).
+      if (match[2] != null) {
+        const includePath = nuclideUri.normalize(
+          nuclideUri.join(nuclideUri.dirname(result.file), match[1]),
+        );
+        if (includePath !== header) {
+          return Observable.empty();
+        }
+      }
+      return Observable.of(result.file);
     })
-    .do(file => logger.info('found source file by grepping', file))
-    .take(1);
-}
-
-function processGrepResult(
-  result: string,
-  headerFile: string,
-  includeRegex: RegExp,
-): ?string {
-  const splitIndex = result.indexOf('\0');
-  if (splitIndex === -1) {
-    return null;
-  }
-  const filename = result.substr(0, splitIndex);
-  if (!isSourceFile(filename)) {
-    return null;
-  }
-  const match = includeRegex.exec(result.substr(splitIndex + 1));
-  if (match == null) {
-    return null;
-  }
-  // Source-relative includes have to be verified.
-  // Relative paths will match the (../)* rule (at index 2).
-  if (match[2] != null) {
-    const includePath = nuclideUri.normalize(
-      nuclideUri.join(nuclideUri.dirname(filename), match[1]),
-    );
-    if (includePath !== headerFile) {
-      return null;
-    }
-  }
-  return filename;
+    .do(file => logger.info('found source file by grepping', file));
 }
