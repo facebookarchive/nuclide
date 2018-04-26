@@ -44,6 +44,8 @@ export class XhrConnectionHeartbeat {
       uri: `${serverUri}/${heartbeatChannel}`,
       method: 'POST',
       timeout: HEARTBEAT_TIMEOUT_MS,
+      // We're trying this to see if it resolves T28442202
+      forever: true,
     };
     if (agentOptions != null) {
       options.agentOptions = agentOptions;
