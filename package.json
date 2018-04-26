@@ -197,6 +197,7 @@
     "jest-util": "22.4.1",
     "lerna": "2.9.0",
     "mock-spawn": "0.2.6",
+    "node-ipc": "9.1.1",
     "nyc": "11.2.1",
     "prettier": "1.12.1",
     "relay-compiler": "1.4.1",
