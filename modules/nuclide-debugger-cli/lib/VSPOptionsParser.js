@@ -11,11 +11,12 @@
  */
 
 import type {
-  StartAction,
   AdapterProperty,
   AdapterPropertyMap,
   AdapterPropertyType,
 } from './VSPOptionsData';
+
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 import idx from 'idx';
 import invariant from 'assert';
@@ -44,7 +45,7 @@ export default class VSPOptionsParser {
 
   showCommandLineHelp(
     type: string,
-    action: StartAction,
+    action: DebuggerConfigAction,
     exclude: Set<string>,
     customArguments: CustomArgumentMap,
   ): void {
@@ -132,7 +133,7 @@ export default class VSPOptionsParser {
 
   parseCommandLine(
     type: string,
-    action: StartAction,
+    action: DebuggerConfigAction,
     exclude: Set<string>,
     includeDefaults: Set<string>,
     customArguments: CustomArgumentMap,

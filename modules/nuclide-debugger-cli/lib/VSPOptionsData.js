@@ -9,13 +9,12 @@
  * @flow
  * @format
  */
+import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
 import idx from 'idx';
 import fs from 'fs';
 import {mapFromObject} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export type StartAction = 'launch' | 'attach';
 
 export type AdapterPropertyType =
   | 'string'
@@ -56,7 +55,7 @@ export type AdapterConfiguration = {
       {
         type: string,
         configurationAttributes: {
-          [StartAction]: AdapterActionSection,
+          [DebuggerConfigAction]: AdapterActionSection,
         },
       },
     ],
@@ -103,7 +102,7 @@ export default class VSPOptionsData {
 
   adapterPropertiesForAction(
     type: string,
-    action: StartAction,
+    action: DebuggerConfigAction,
   ): Map<string, AdapterProperty> {
     const propertyMap = this._propertiesFromConfig(
       this._adapterConfiguration,
@@ -123,7 +122,7 @@ export default class VSPOptionsData {
 
   _propertiesFromConfig(
     config: AdapterConfiguration,
-    action: StartAction,
+    action: DebuggerConfigAction,
     type: string,
   ): AdapterPropertyMap {
     const debuggers = idx(config, _ => _.contributes.debuggers) || null;
