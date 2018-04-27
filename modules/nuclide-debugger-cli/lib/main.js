@@ -21,7 +21,7 @@ import yargs from 'yargs';
 
 function buildLogger(): log4js$Logger {
   const args = yargs.argv;
-  const level = (args.loglevel || 'ERROR').toUpperCase();
+  const level = (args.loglevel || 'FATAL').toUpperCase();
   const validLevels = new Set([
     'TRACE',
     'DEBUG',

@@ -19,6 +19,7 @@ import type {
   BreakpointSetResult,
 } from './DebuggerInterface';
 import * as DebugProtocol from 'vscode-debugprotocol';
+import type {AdapterExitedEvent} from 'nuclide-debugger-common/VsDebugSession';
 
 import BackTraceCommand from './BackTraceCommand';
 import Breakpoint from './Breakpoint';
@@ -576,6 +577,10 @@ export default class Debugger implements DebuggerInterface {
       .subscribe(this._onTerminatedDebugee.bind(this));
 
     session
+      .observeAdapterExitedEvents()
+      .subscribe(this._onAdapterExited.bind(this));
+
+    session
       .observeBreakpointEvents()
       .subscribe(this._onBreakpointEvent.bind(this));
   }
@@ -608,7 +613,7 @@ export default class Debugger implements DebuggerInterface {
 
     if (allThreadsContinued === true) {
       this._threads.markAllThreadsRunning();
-    } else {
+    } else if (threadId != null) {
       this._threads.markThreadRunning(threadId);
     }
 
@@ -714,6 +719,21 @@ export default class Debugger implements DebuggerInterface {
     this._state = 'TERMINATED';
 
     this._console.outputLine('The target has exited.');
+
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    if (adapter.action === 'launch') {
+      this.relaunch();
+      return;
+    }
+
+    process.exit(0);
+  }
+
+  _onAdapterExited(event: AdapterExitedEvent) {
+    this._state = 'TERMINATED';
+    this._console.outputLine('The debug adapter has exited.');
 
     const adapter = this._adapter;
     invariant(adapter != null);

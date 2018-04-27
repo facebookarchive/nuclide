@@ -29,6 +29,7 @@ import {
 } from 'nuclide-debugger-common/debugger-registry';
 import VSPOptionsParser from './VSPOptionsParser';
 
+import HHVMDebugAdapter from './adapters/HHVMDebugAdapter';
 import NativeGdbDebugAdapter from './adapters/NativeGdbDebugAdapter';
 import NodeDebugAdapter from './adapters/NodeDebugAdapter';
 import OCamlDebugAdapter from './adapters/OCamlDebugAdapter';
@@ -51,6 +52,7 @@ export type Arguments = {
 
 export default class DebuggerAdapterFactory {
   _debugAdapters: Array<DebugAdapter> = [
+    new HHVMDebugAdapter(),
     new NativeGdbDebugAdapter(),
     new NodeDebugAdapter(),
     new OCamlDebugAdapter(),

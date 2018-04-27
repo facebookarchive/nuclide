@@ -94,7 +94,7 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
       ? [launchWrapperCommand, config.launchScriptPath]
       : [config.launchScriptPath];
 
-  let hhvmRuntimeArgs = config.hhvmRuntimeArgs;
+  let hhvmRuntimeArgs = config.hhvmRuntimeArgs || [];
   try {
     // $FlowFB
     const fbConfig = require('./fbConfig');
