@@ -11,6 +11,7 @@
 
 import type {
   AtomFileEvent,
+  AtomNotification,
   MultiConnectionAtomCommands,
   ProjectState,
 } from './rpc-types';
@@ -96,6 +97,14 @@ export class RoutingAtomCommands implements MultiConnectionAtomCommands {
     }
     const resolvedProjectStates = await Promise.all(projectStates);
     return [].concat(...resolvedProjectStates);
+  }
+
+  async addNotification(notification: AtomNotification): Promise<void> {
+    const promises = [];
+    for (const connection of this._server.getConnections()) {
+      promises.push(connection.getAtomCommands().addNotification(notification));
+    }
+    await Promise.all(promises);
   }
 
   dispose() {}

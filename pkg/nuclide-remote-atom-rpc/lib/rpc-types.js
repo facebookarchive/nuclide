@@ -23,6 +23,22 @@ export type ProjectState = {
 
 export type AtomFileEvent = 'open' | 'close';
 
+export type AtomNotificationType =
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'error'
+  | 'fatal';
+
+export type AtomNotification = {
+  message: string,
+  type: AtomNotificationType,
+  description?: string,
+  detail?: string,
+  icon?: string,
+  dismissable?: boolean,
+};
+
 /**
  * Collection of client-side actions in Atom that can be invoked from
  * a Nuclide server. Each Atom window will register its own instance
@@ -56,6 +72,8 @@ export interface AtomCommands {
    * connection to this AtomCommands.
    */
   getProjectState(): Promise<ProjectState>;
+
+  addNotification(notification: AtomNotification): Promise<void>;
 
   dispose(): void;
 }
@@ -109,6 +127,11 @@ export interface MultiConnectionAtomCommands {
    * Nuclide server.
    */
   getProjectStates(): Promise<Array<ProjectState>>;
+
+  /**
+   * Sends the specified notification to all connected windows.
+   */
+  addNotification(notification: AtomNotification): Promise<void>;
 
   dispose(): void;
 }

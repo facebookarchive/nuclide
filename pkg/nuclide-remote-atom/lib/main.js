@@ -13,6 +13,7 @@ import typeof * as RemoteCommandServiceType from '../../nuclide-remote-atom-rpc/
 import type {
   AtomCommands,
   AtomFileEvent,
+  AtomNotification,
   ProjectState,
 } from '../../nuclide-remote-atom-rpc/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -100,6 +101,15 @@ class Activation {
           rootFolders: atom.project.getPaths(),
         };
       },
+
+      addNotification(notification: AtomNotification): Promise<void> {
+        const {type, message} = notification;
+        const {description, detail, icon, dismissable} = notification;
+        const options = {description, detail, icon, dismissable};
+        atom.notifications.add(type, message, options);
+        return Promise.resolve();
+      },
+
       dispose(): void {},
     };
 
