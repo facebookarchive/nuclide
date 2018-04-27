@@ -55,7 +55,11 @@ class Activation {
     return aggregator;
   }
 
-  consumeFileFamilyProvider(provider: FileFamilyProvider): IDisposable {
+  consumeFileFamilyProvider(provider: ?FileFamilyProvider): IDisposable {
+    if (provider == null) {
+      return new UniversalDisposable();
+    }
+
     const newProviders = new Set(this._providers.getValue());
     newProviders.add(provider);
     this._providers.next(newProviders);
