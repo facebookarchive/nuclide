@@ -28,6 +28,7 @@ export default class HHVMDebugAdapter implements DebugAdapter {
     'scriptArgs',
     'noDebug',
     'launchScriptPath',
+    'startupDocumentPath',
   ]);
 
   extensions: Set<string> = new Set(['.php']);
@@ -49,16 +50,16 @@ export default class HHVMDebugAdapter implements DebugAdapter {
 
     if (action === 'launch') {
       const launchArgs = args._;
-      const program = launchArgs[0];
+      const program = nuclideUri.resolve(launchArgs[0]);
 
       commandLineArgs.set('scriptArgs', launchArgs.splice(1));
-      commandLineArgs.set('launchScriptPath', nuclideUri.resolve(program));
+      commandLineArgs.set('launchScriptPath', program);
+      commandLineArgs.set('targetUri', program);
       commandLineArgs.set('noDebug', false);
       commandLineArgs.set('cwd', nuclideUri.resolve('.'));
     }
 
     commandLineArgs.set('action', action);
-    commandLineArgs.set('targetUri', 'local');
     commandLineArgs.set(
       'hhvmRuntimeArgs',
       commandLineArgs.get('hhvmRuntimeArgs') || [],
