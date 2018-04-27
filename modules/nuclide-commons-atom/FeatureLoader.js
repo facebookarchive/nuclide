@@ -114,40 +114,27 @@ export default class FeatureLoader {
     //
     this._config = buildConfig(this._features);
 
+    // Load all the features. This needs to be done during Atom's load phase to
+    // make sure that deserializers are registered, etc.
+    // https://github.com/atom/atom/blob/v1.1.0/src/atom-environment.coffee#L625-L631
+    // https://atom.io/docs/api/latest/PackageManager
     this._loadDisposable.add(
-      activateExperimentalPackages(
-        this._features.filter(feature => this.shouldEnable(feature)),
-      ),
-    );
-
-    // Schedule the loading of features.
-    this._loadDisposable.add(this.scheduleFeatureLoading());
-  }
-
-  scheduleFeatureLoading(): IDisposable {
-    // Nesting loads within loads leads to reverse activation order- that is, if
-    // the root package loads feature packages, then the feature package activations will
-    // happen before the root package's. So we wait until the root package is done loading,
-    // but before it activates, to load the features.
-    const initialLoadDisposable = atom.packages.onDidLoadPackage(pack => {
-      if (pack.name !== this._pkgName) {
-        return;
-      }
-
-      // Load all the features. This needs to be done during Atom's load phase to
-      // make sure that deserializers are registered, etc.
-      // https://github.com/atom/atom/blob/v1.1.0/src/atom-environment.coffee#L625-L631
-      // https://atom.io/docs/api/latest/PackageManager
-      this._features.forEach(feature => {
-        if (this.shouldEnable(feature)) {
+      // Nesting loads within loads leads to reverse activation order- that is, if
+      // the root package loads feature packages, then the feature package activations will
+      // happen before the root package's. So we wait until the root package is done loading,
+      // but before it activates, to load the features.
+      whenPackageLoaded(this._pkgName, () => {
+        const featuresToLoad = this._features.filter(feature =>
+          this.shouldEnable(feature),
+        );
+        // Load "regular" feature packages.
+        featuresToLoad.forEach(feature => {
           atom.packages.loadPackage(feature.path);
-        }
-      });
-
-      initialLoadDisposable.dispose();
-    });
-
-    return initialLoadDisposable;
+        });
+        // Load "experimental" format packages.
+        return activateExperimentalPackages(featuresToLoad);
+      }),
+    );
   }
 
   activate(): void {
@@ -505,4 +492,23 @@ function buildConfig(features: Array<Feature>): Object {
     }
   });
   return config;
+}
+
+function whenPackageLoaded(
+  pkgName: string,
+  callback: () => IDisposable,
+): IDisposable {
+  const disposables = new UniversalDisposable();
+  const onDidLoadDisposable = atom.packages.onDidLoadPackage(pack => {
+    if (pack.name !== pkgName) {
+      return;
+    }
+
+    // We only want this to happen once.
+    onDidLoadDisposable.dispose();
+
+    disposables.add(callback());
+  });
+  disposables.add(onDidLoadDisposable);
+  return disposables;
 }
