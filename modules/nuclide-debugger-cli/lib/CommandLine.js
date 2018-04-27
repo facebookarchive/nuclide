@@ -39,10 +39,16 @@ export default class CommandLine implements ConsoleIO {
     return this._onSIGINT.asObservable();
   }
 
-  // $TODO handle
-  // (1) async output that happens while the user is typing at the prompt
-  // (2) paging long output (more) if termcap allows us to know the screen height
+  // $TODO handle paging long output (more) if termcap allows us to know the screen height
   output(text: string): void {
+    if (!this._inputStopped) {
+      if (!text.startsWith('\n')) {
+        process.stdout.write('\n');
+      }
+      process.stdout.write(text);
+      this._cli.prompt(true);
+      return;
+    }
     process.stdout.write(text);
   }
 

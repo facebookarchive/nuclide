@@ -703,6 +703,7 @@ export default class Debugger implements DebuggerInterface {
     invariant(adapter != null);
 
     if (adapter.action === 'launch') {
+      this._console.startInput();
       this.relaunch();
       return;
     }
@@ -724,6 +725,7 @@ export default class Debugger implements DebuggerInterface {
     invariant(adapter != null);
 
     if (adapter.action === 'launch') {
+      this._console.startInput();
       this.relaunch();
       return;
     }
@@ -739,6 +741,7 @@ export default class Debugger implements DebuggerInterface {
     invariant(adapter != null);
 
     if (adapter.action === 'launch') {
+      this._console.startInput();
       this.relaunch();
       return;
     }
