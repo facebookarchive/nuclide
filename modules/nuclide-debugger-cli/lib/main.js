@@ -35,11 +35,34 @@ function buildLogger(): log4js$Logger {
     throw new Error(`${level} is not a valid loglevel.`);
   }
 
-  log4js.getLogger('nuclide-commons/process').setLevel(level);
+  // Send debug level logging to a file. Send a configurable (by default FATAL)
+  // level to the console.
+  const config = {
+    appenders: [
+      {
+        type: 'file',
+        filename: '/tmp/nuclide-cli.log',
+        maxLogSize: 50 * 1024,
+        category: '[all]',
+      },
+      {
+        type: 'logLevelFilter',
+        level,
+        maxLevel: 'FATAL',
+        appender: {
+          type: 'stdout',
+          category: '[all]',
+        },
+      },
+    ],
+    levels: {
+      '[all]': 'DEBUG',
+    },
+  };
 
-  const logger = log4js.getLogger('default');
-  logger.setLevel(level);
-  return logger;
+  log4js.configure(config);
+
+  return log4js.getLogger('default');
 }
 
 const _help: string[] = [
