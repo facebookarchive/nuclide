@@ -84,8 +84,10 @@ export function getEventsFromSocket(
           if (match != null && match.length === 4) {
             // The result is also printed to stdout and converted into build-output there.
             return Observable.empty();
-          } else {
+          } else if (message.message !== '') {
             return log(message.message, convertJavaLevel(message.level.name));
+          } else {
+            return Observable.empty();
           }
         case 'InstallFinished':
           return log('Install finished.', 'info');
