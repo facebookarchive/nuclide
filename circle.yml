@@ -17,7 +17,7 @@ test:
     # Do not run tests for releases.
     - |
       # eslint
-      if [[ "$CIRCLE_BRANCH" != "release-v"* ]]; then
+      if [[ "$CIRCLE_BRANCH" != "release-v"* && -z "$CIRCLE_TAG" ]]; then
         nvm install "$ESLINT_NODE_VERSION"
         node -v
         ./node_modules/.bin/eslint --max-warnings=0 .
@@ -26,7 +26,7 @@ test:
       fi
     - |
       # flow
-      if [[ "$CIRCLE_BRANCH" != "release-v"* ]]; then
+      if [[ "$CIRCLE_BRANCH" != "release-v"* && -z "$CIRCLE_TAG" ]]; then
         sed -i.tmp -e 's/^; \(suppress_comment=.*FlowFB.*\)$/\1/' .flowconfig
         ./node_modules/.bin/flow check --show-all-errors
       fi
@@ -37,6 +37,11 @@ deployment:
     owner: facebook
     commands:
       - ./scripts/oss-publish.sh
+  modules:
+    tag: /modules-v.*/
+    owner: facebook
+    commands:
+      - bash -x ./scripts/modules-publish.sh
 
 experimental:
   notify:
