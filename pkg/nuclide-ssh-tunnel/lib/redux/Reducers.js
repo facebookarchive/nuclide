@@ -58,6 +58,9 @@ export function tunnels(
       }));
 
     case Actions.CLOSE_TUNNEL:
+      if (state.get(action.payload.tunnel) === undefined) {
+        return state;
+      }
       return state.update(action.payload.tunnel, value => ({
         ...value,
         error: action.payload.error,
