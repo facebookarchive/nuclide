@@ -28,7 +28,7 @@
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-debugger-common": "0.7.1-dev",
     "nuclide-node-transpiler": "0.7.1-dev",
-    "nuclide-prebuilt-libs": "0.4.1",
+    "nuclide-prebuilt-libs": "0.4.2",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
     "vscode-debugadapter": "1.24.0",

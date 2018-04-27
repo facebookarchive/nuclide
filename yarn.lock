@@ -5529,9 +5529,9 @@ nuclide-commons@0.5.1:
     vscode-jsonrpc "3.3.0"
     vscode-uri "1.0.1"
 
-nuclide-prebuilt-libs@0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.4.1.tgz#db0b0aa923053288ab13fa1c313b7be0e25320be"
+nuclide-prebuilt-libs@0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.4.2.tgz#5b889f39f0ae451ad3692492b9512a96450affcd"
 
 nullthrows@1.0.0, nullthrows@^1.0.0:
   version "1.0.0"

@@ -16,7 +16,7 @@
     "log4js": "1.1.1",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-debugger-common": "0.7.1-dev",
-    "nuclide-prebuilt-libs": "0.4.1",
+    "nuclide-prebuilt-libs": "0.4.2",
     "nullthrows": "1.0.0",
     "rxjs": "5.5.5",
     "vscode-debugadapter": "1.24.0",
