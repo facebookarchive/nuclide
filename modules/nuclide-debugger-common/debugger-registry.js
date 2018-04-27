@@ -48,7 +48,10 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
           ),
         ],
       },
-      root: resolvePackagePath('atom-ide-debugger-node'),
+      root: nuclideUri.join(
+        resolvePackagePath('atom-ide-debugger-node'),
+        'VendorLib/vscode-node-debug2',
+      ),
     },
   ],
   [
@@ -63,7 +66,10 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
           ),
         ],
       },
-      root: resolvePackagePath('atom-ide-debugger-python'),
+      root: nuclideUri.join(
+        resolvePackagePath('atom-ide-debugger-python'),
+        'VendorLib/vs-py-debugger',
+      ),
     },
   ],
   [
@@ -78,7 +84,10 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
           ),
         ],
       },
-      root: resolvePackagePath('atom-ide-debugger-react-native'),
+      root: nuclideUri.join(
+        resolvePackagePath('atom-ide-debugger-teact-native'),
+        'VendorLib/vscode-react-native',
+      ),
     },
   ],
   [
