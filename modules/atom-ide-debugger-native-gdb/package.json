@@ -2,7 +2,7 @@
   "name": "atom-ide-debugger-native-gdb",
   "version": "0.7.1-dev",
   "main": "./main.js",
-  "description": "NodeJS Debugger for Atom IDE.",
+  "description": "GDB Native Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
@@ -15,7 +15,7 @@
   },
   "providedServices": {
     "debugger.provider": {
-      "description": "NodeJS debugger engine.",
+      "description": "GDB native debugger engine.",
       "versions": {
         "0.0.0": "createDebuggerProvider"
       }

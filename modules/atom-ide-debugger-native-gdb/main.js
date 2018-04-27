@@ -29,6 +29,10 @@ class Activation {
           'Native - GDB (C/C++)',
           connection,
           getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
+          async () => {
+            // GDB not available on Win32.
+            return Promise.resolve(process.platform !== 'win32');
+          },
         );
       },
     };
