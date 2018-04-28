@@ -36,7 +36,11 @@ import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
-import {cacheWhileSubscribed, fastDebounce} from 'nuclide-commons/observable';
+import {
+  cacheWhileSubscribed,
+  fastDebounce,
+  compact,
+} from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
 import {gitDiffContentAgainstFile} from './utils';
 import {
@@ -512,6 +516,17 @@ export class HgRepositoryClient {
 
   observeLockFiles(): Observable<Map<string, boolean>> {
     return this._service.observeLockFilesDidChange().refCount();
+  }
+
+  observeHeadRevision(): Observable<RevisionInfo> {
+    return this.observeRevisionChanges()
+      .map(revisionInfoFetched =>
+        revisionInfoFetched.revisions.find(revision => revision.isHead),
+      )
+      .let(compact)
+      .distinctUntilChanged(
+        (prevRev, nextRev) => prevRev.hash === nextRev.hash,
+      );
   }
 
   /**
