@@ -47,6 +47,10 @@ type FeatureLoaderParams = {
   },
 };
 
+type UseFeatureRules = {
+  [name: string]: 'always' | 'never' | 'default',
+};
+
 const ALWAYS_ENABLED = 'always';
 const NEVER_ENABLED = 'never';
 const DEFAULT = 'default';
@@ -63,7 +67,7 @@ export default class FeatureLoader {
   _featureGroupMap: MultiMap<string, Feature> = new MultiMap();
   _pkgName: string;
   _path: string;
-  _currentPackageState: Set<Feature> = new Set();
+  _currentlyActiveFeatures: Set<Feature> = new Set();
 
   constructor({features, path: _path, featureGroups}: FeatureLoaderParams) {
     this._path = _path;
@@ -99,9 +103,9 @@ export default class FeatureLoader {
 
     featureConfig.setPackageName(this._pkgName);
 
-    // Migrate the current features enabled state (from boolean on/off to enumerated states).
+    // Migrate the current "use" config (from boolean on/off to enumerated states).
     this._features.forEach(feature => {
-      this.migrateFeature(feature);
+      this.migrateUseConfig(feature);
     });
 
     //
@@ -176,8 +180,8 @@ export default class FeatureLoader {
       // removes these uneccessary values from the user's config file.
       // TODO: When enough users have migrated, this should be removed along with the enum migration.
       atom.config.set(
-        this.useKeyPathForFeature(feature),
-        atom.config.get(this.useKeyPathForFeature(feature)),
+        this.getUseKeyPathForFeature(feature),
+        atom.config.get(this.getUseKeyPathForFeature(feature)),
       );
 
       if (this.shouldEnable(feature)) {
@@ -187,10 +191,10 @@ export default class FeatureLoader {
 
     // Watch the config to manage toggling features
     this._activationDisposable = new UniversalDisposable(
-      atom.config.onDidChange(this.useKeyPath(), event =>
+      atom.config.onDidChange(this.getUseKeyPath(), event =>
         this.updateActiveFeatures(),
       ),
-      atom.config.onDidChange(this.useKeyPathForFeatureGroup(), event =>
+      atom.config.onDidChange(this.getEnabledFeatureGroupsKeyPath(), event =>
         this.updateActiveFeatures(),
       ),
     );
@@ -199,29 +203,36 @@ export default class FeatureLoader {
   }
 
   updateActiveFeatures() {
-    const featureState = atom.config.get(this.useKeyPath());
-    const featureGroupState = atom.config.get(this.useKeyPathForFeatureGroup());
+    const useFeatureRules = atom.config.get(this.getUseKeyPath());
+    const enabledFeatureGroups = atom.config.get(
+      this.getEnabledFeatureGroupsKeyPath(),
+    );
 
-    // we know featureGroupState must be ?Array, and featureState must
-    // be ?Object, since it's in our schema. However, flow thinks it's a mixed type,
-    // since it doesn't know about the schema enforcements. $FlowIgnore.
-    const desiredState = this.getDesiredState(featureState, featureGroupState);
+    // we know enabledFeatureGroups must be ?Array, and useFeatureRules must be ?UseFeatureRules,
+    // since it's in our schema. However, flow thinks it's a mixed type, since it doesn't know about
+    // the schema enforcements.
+    const featuresToActivate = this.getEnabledFeatures(
+      // $FlowIgnore.
+      useFeatureRules,
+      // $FlowIgnore.
+      enabledFeatureGroups,
+    );
 
-    // Enable all packages in desiredState but not in currentState.
-    // Disable all packages not in desiredState but in currentState.
-    for (const feature of desiredState) {
-      if (!this._currentPackageState.has(feature)) {
+    // Enable all packages in featuresToActivate but not in currentState.
+    // Disable all packages not in featuresToActivate but in currentState.
+    for (const feature of featuresToActivate) {
+      if (!this._currentlyActiveFeatures.has(feature)) {
         atom.packages.activatePackage(feature.path);
       }
     }
 
-    for (const feature of this._currentPackageState) {
-      if (!desiredState.has(feature)) {
+    for (const feature of this._currentlyActiveFeatures) {
+      if (!featuresToActivate.has(feature)) {
         safeDeactivate(feature);
       }
     }
 
-    this._currentPackageState = desiredState;
+    this._currentlyActiveFeatures = featuresToActivate;
   }
 
   deactivate(): void {
@@ -240,34 +251,31 @@ export default class FeatureLoader {
     this._activationDisposable = null;
   }
 
-  getDesiredState(
-    featureState: Object,
-    featureGroupState: ?Array<string>,
+  getEnabledFeatures(
+    useFeatureRules: UseFeatureRules,
+    enabledFeatureGroups: ?Array<string>,
   ): Set<Feature> {
-    // Figure out which features should be enabled:
-    //  * Add all packages in nuclide.use
-    //  * Remove any feature not in an active featureGroup.
-    let groupedPackages;
-    if (featureGroupState != null) {
-      groupedPackages = setUnion(
-        ...featureGroupState.map(featureGroup =>
+    let featuresInEnabledGroups;
+    if (enabledFeatureGroups != null) {
+      featuresInEnabledGroups = setUnion(
+        ...enabledFeatureGroups.map(featureGroup =>
           this._featureGroupMap.get(featureGroup),
         ),
       );
     } else {
       // If featuregroups is empty or undefined, assume all features should be enabled.
-      groupedPackages = new Set(this._features);
+      featuresInEnabledGroups = new Set(this._features);
     }
 
     // If a feature is "always enabled", it should be on whether or not a feature-group includes it.
     // If a feature is "default", it should be on if and only if a feature-group includes it.
     return new Set(
       this._features.filter(feature => {
-        const state = featureState[packageNameFromPath(feature.path)];
+        const rule = useFeatureRules[packageNameFromPath(feature.path)];
         return (
-          state === ALWAYS_ENABLED ||
-          (groupedPackages.has(feature) && state === DEFAULT) ||
-          state === true
+          rule === ALWAYS_ENABLED ||
+          (featuresInEnabledGroups.has(feature) && rule === DEFAULT) ||
+          rule === true
         );
       }),
     );
@@ -314,21 +322,21 @@ export default class FeatureLoader {
     this._features.forEach(safeSerialize);
   }
 
-  useKeyPathForFeature(feature: Feature): string {
+  getUseKeyPathForFeature(feature: Feature): string {
     return `${this._pkgName}.use.${packageNameFromPath(feature.path)}`;
   }
 
-  useKeyPath(): string {
+  getUseKeyPath(): string {
     return `${this._pkgName}.use`;
   }
 
-  useKeyPathForFeatureGroup(): string {
+  getEnabledFeatureGroupsKeyPath(): string {
     return `${this._pkgName}.enabledFeatureGroups`;
   }
 
   shouldEnable(feature: Feature): boolean {
     const name = packageNameFromPath(feature.path);
-    const currentState = atom.config.get(this.useKeyPathForFeature(feature));
+    const currentState = atom.config.get(this.getUseKeyPathForFeature(feature));
     switch (currentState) {
       // Previously, this setting was a boolean. They should be migrated but handle it just in case.
       case true:
@@ -349,8 +357,8 @@ export default class FeatureLoader {
     }
   }
 
-  migrateFeature(feature: Feature): void {
-    const keyPath = this.useKeyPathForFeature(feature);
+  migrateUseConfig(feature: Feature): void {
+    const keyPath = this.getUseKeyPathForFeature(feature);
     const currentState = atom.config.get(keyPath);
     const setTo = this.getValueForFeatureToEnumMigration(currentState, feature);
     if (setTo !== currentState) {
