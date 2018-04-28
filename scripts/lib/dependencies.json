@@ -15,7 +15,7 @@
       "flow",
       "version"
     ],
-    "version-output": "Flow, a static type checker for JavaScript, version 0.68.0",
+    "version-output": "Flow, a static type checker for JavaScript, version 0.71.0",
     "url": null,
     "shasum": null
   },

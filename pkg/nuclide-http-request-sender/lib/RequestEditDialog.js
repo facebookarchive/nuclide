@@ -165,7 +165,7 @@ export class RequestEditDialog extends React.Component<PropsType, void> {
     );
   }
 
-  _getParameters() {
+  _getParameters(): Array<Parameter> {
     return this.props.parameters.map(
       param => (param == null ? null : {...param}),
     );

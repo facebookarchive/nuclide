@@ -70,7 +70,10 @@ export class DebugBridge {
     throw new Error('Needs to be implemented by subclass!');
   }
 
-  static _parseDevicesCommandOutput(stdout: string, port: number) {
+  static _parseDevicesCommandOutput(
+    stdout: string,
+    port: number,
+  ): Array<DeviceId> {
     return stdout
       .split(/\n+/g)
       .slice(1)
