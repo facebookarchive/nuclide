@@ -126,17 +126,18 @@ class DevicePoller {
   }
 }
 
-const pollers: Map<DBType, DevicePoller> = new Map();
+const pollers: Map<string, DevicePoller> = new Map();
 
 export function observeDevices(
   type: DBType,
   service: DBDeviceListService,
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
-  let poller = pollers.get(type);
+  const pollerKey = `${type}:${host}`;
+  let poller = pollers.get(pollerKey);
   if (poller == null) {
     poller = new DevicePoller(type, service);
-    pollers.set(type, poller);
+    pollers.set(pollerKey, poller);
   }
   return poller.observe(host);
 }
