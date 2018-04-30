@@ -21,6 +21,8 @@ type PlatformProvider = (
   buildTarget: string,
 ) => Observable<?PlatformGroup>;
 
+const PROVIDER_TIMEOUT = 5000; // 5s
+
 export class PlatformService {
   _registeredProviders: Array<PlatformProvider> = [];
   _providersChanged: Subject<void> = new Subject();
@@ -43,6 +45,11 @@ export class PlatformService {
     return this._providersChanged.startWith(undefined).switchMap(() => {
       const observables = this._registeredProviders.map(provider =>
         provider(buckRoot, ruleType, buildTarget)
+          .race(
+            Observable.timer(PROVIDER_TIMEOUT).switchMap(() =>
+              Observable.throw('Timed out'),
+            ),
+          )
           .catch(error => {
             getLogger('nuclide-buck').error(
               `Getting buck platform groups from ${provider.name} failed:`,
