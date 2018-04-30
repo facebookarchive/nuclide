@@ -41,6 +41,9 @@ const logger = getLogger();
 // Whether files that have disabled eslint with a comment should be ignored.
 const IGNORE_ESLINT_DISABLED_FILES = true;
 
+// Large files are slow to parse. Bail after a certain limit.
+const LARGE_FILE_LIMIT = 2000000;
+
 const MAX_CRASHES = 3;
 
 export class AutoImportsManager {
@@ -163,6 +166,9 @@ export class AutoImportsManager {
 }
 
 export function parseFile(code: string): ?Object {
+  if (code.length >= LARGE_FILE_LIMIT) {
+    return null;
+  }
   try {
     return babylon.parse(code, babylonOptions);
   } catch (error) {
