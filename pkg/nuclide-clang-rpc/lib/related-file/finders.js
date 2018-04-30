@@ -12,7 +12,6 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {getFileBasename, isHeaderFile, isSourceFile} from '../utils';
-import {findSourceFileInSameFolderIfBelongsToBuck} from './buck-finder';
 import {searchFileWithBasename, findSubArrayIndex} from './common';
 import {
   getRelatedHeaderForSourceFromFramework,
@@ -100,13 +99,18 @@ export class RelatedFileFinder {
       return source;
     }
 
-    return findSourceFileInSameFolderIfBelongsToBuck(header);
+    try {
+      // $FlowFB
+      return require('./fb/fallback-finder').findIncludingSourceFile(header);
+    } catch (e) {
+      return null;
+    }
   }
 
   _getFBProjectRoots(): string[] {
     try {
       // $FlowFB
-      return require('./fb-project-roots').getFBProjectRoots();
+      return require('./fb/project-roots').getFBProjectRoots();
     } catch (e) {}
     return [];
   }

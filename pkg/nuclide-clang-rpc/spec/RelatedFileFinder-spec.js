@@ -17,20 +17,6 @@ import {RelatedFileFinder} from '../lib/related-file/finders';
 describe('getRelatedSourceForHeader', () => {
   const finder = new RelatedFileFinder();
 
-  it('falls back to a source file when looking for a source in a buck project', () => {
-    waitsForPromise(async () => {
-      const tmpdir = await generateFixture(
-        'clang_rpc',
-        new Map([['a/BUCK', ''], ['a/source.cpp', '']]),
-      );
-      const sourceFile = nuclideUri.join(tmpdir, 'a/source.cpp');
-      const file = await finder.getRelatedSourceForHeader(
-        nuclideUri.join(tmpdir, 'a/header.h'),
-      );
-      expect(file).toBe(sourceFile);
-    });
-  });
-
   it('does not fall back to a source file when looking for a source in a non-buck project', () => {
     waitsForPromise(async () => {
       const tmpdir = await generateFixture(

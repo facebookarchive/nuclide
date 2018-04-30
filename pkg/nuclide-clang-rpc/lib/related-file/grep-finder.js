@@ -53,7 +53,7 @@ export function findIncludingSourceFile(
 function getFBProjectRoots(): string[] {
   try {
     // $FlowFB
-    return require('./fb-project-roots').getFBProjectRoots();
+    return require('./fb/project-roots').getFBProjectRoots();
   } catch (e) {}
   return [];
 }
