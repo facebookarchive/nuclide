@@ -4027,6 +4027,13 @@ declare module 'vscode' {
      * This extension's logger
      */
     logger: Logger;
+
+    /**
+     * Path where an extension can write log files.
+     *
+     * Extensions must create this directory before writing to it. The parent directory will always exist.
+     */
+    +logDirectory: string;
     /* END PROPOSED *********************************************************************************/
   }
 
@@ -5465,9 +5472,20 @@ declare module 'vscode' {
      */
     registerTaskProvider(type: string, provider: TaskProvider): Disposable;
 
-    /* BEGIN PROPOSED *******************************************************************************/
-    registerFileSystemProvider(scheme: string, provider: FileSystemProvider): Disposable;
+    /**
+     * Register a filesystem provider for a given scheme, e.g. `ftp`.
+     *
+     * There can only be one provider per scheme and an error is being thrown when a scheme
+     * has been claimed by another provider or when it is reserved.
+     *
+     * @param scheme The uri-[scheme](#Uri.scheme) the provider registers for.
+     * @param provider The filesystem provider.
+     * @param options Immutable metadata about the provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    registerFileSystemProvider(scheme: string, provider: FileSystemProvider, options: { isCaseSensitive?: boolean }): Disposable;
 
+    /* BEGIN PROPOSED *******************************************************************************/
     registerSearchProvider(scheme: string, provider: SearchProvider): Disposable;
 
     /**
@@ -5511,7 +5529,7 @@ declare module 'vscode' {
      * @return true if the operation was successfully started and false otherwise if arguments were used that would result
      * in invalid workspace folder state (e.g. 2 folders with the same URI).
      */
-    updateWorkspaceFolders(start: number, deleteCount: number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
+    updateWorkspaceFolders(start: number, deleteCount: ?number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
     /* END PROPOSED *********************************************************************************/
   }
 
@@ -5864,11 +5882,6 @@ declare module 'vscode' {
      * @return A [disposable](#Disposable) that unsets this configuration.
      */
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable;
-
-
-    /* BEGIN PROPOSED *******************************************************************************/
-    +resolveInitialRenameValue?: (document: TextDocument, position: Position, token: CancellationToken) => ProviderResult<RenameInitialValue>;
-    /* END PROPOSED *********************************************************************************/
   }
 
   /**
@@ -6252,18 +6265,6 @@ declare module 'vscode' {
   declare export var debug: {
 
     /**
-     * Start debugging by using either a named launch or named compound configuration,
-     * or by directly passing a [DebugConfiguration](#DebugConfiguration).
-     * The named configurations are looked up in '.vscode/launch.json' found in the given folder.
-     * Before debugging starts, all unsaved files are saved and the launch configurations are brought up-to-date.
-     * Folder specific variables used in the configuration (e.g. '${workspaceFolder}') are resolved against the given folder.
-     * @param folder The [workspace folder](#WorkspaceFolder) for looking up named configurations and resolving variables or `undefined` for a non-folder setup.
-     * @param nameOrConfiguration Either the name of a debug or compound configuration or a [DebugConfiguration](#DebugConfiguration) object.
-     * @return A thenable that resolves when debugging could be successfully started.
-     */
-    startDebugging(folder: ?WorkspaceFolder, nameOrConfiguration: string | DebugConfiguration): Thenable<boolean>;
-
-    /**
      * The currently active [debug session](#DebugSession) or `undefined`. The active debug session is the one
      * represented by the debug action floating window or the one currently shown in the drop down menu of the debug action floating window.
      * If no debug session is active, the value is `undefined`.
@@ -6274,6 +6275,11 @@ declare module 'vscode' {
      * The currently active [debug console](#DebugConsole).
      */
     activeDebugConsole: DebugConsole;
+
+    /**
+     * List of breakpoints.
+     */
+    breakpoints: Breakpoint[];
 
     /**
      * An [event](#Event) which fires when the [active debug session](#debug.activeDebugSession)
@@ -6298,6 +6304,11 @@ declare module 'vscode' {
     +onDidTerminateDebugSession: Event<DebugSession>;
 
     /**
+     * An event that is emitted when a breakpoint is added, removed, or changed.
+     */
+    +onDidChangeBreakpoints: Event<BreakpointsChangeEvent>;
+
+    /**
      * Register a [debug configuration provider](#DebugConfigurationProvider) for a specifc debug type.
      * More than one provider can be registered for the same type.
      *
@@ -6307,18 +6318,17 @@ declare module 'vscode' {
      */
     registerDebugConfigurationProvider(debugType: string, provider: DebugConfigurationProvider): Disposable;
 
-    /* BEGIN PROPOSED *******************************************************************************/
     /**
-     * List of breakpoints.
-     *
-     * @readonly
+     * Start debugging by using either a named launch or named compound configuration,
+     * or by directly passing a [DebugConfiguration](#DebugConfiguration).
+     * The named configurations are looked up in '.vscode/launch.json' found in the given folder.
+     * Before debugging starts, all unsaved files are saved and the launch configurations are brought up-to-date.
+     * Folder specific variables used in the configuration (e.g. '${workspaceFolder}') are resolved against the given folder.
+     * @param folder The [workspace folder](#WorkspaceFolder) for looking up named configurations and resolving variables or `undefined` for a non-folder setup.
+     * @param nameOrConfiguration Either the name of a debug or compound configuration or a [DebugConfiguration](#DebugConfiguration) object.
+     * @return A thenable that resolves when debugging could be successfully started.
      */
-    breakpoints: Breakpoint[];
-
-    /**
-     * An event that is emitted when a breakpoint is added, removed, or changed.
-     */
-    +onDidChangeBreakpoints: Event<BreakpointsChangeEvent>;
+    startDebugging(folder: ?WorkspaceFolder, nameOrConfiguration: string | DebugConfiguration): Thenable<boolean>;
 
     /**
      * Add breakpoints.
@@ -6331,7 +6341,6 @@ declare module 'vscode' {
      * @param breakpoints The breakpoints to remove.
      */
     removeBreakpoints(breakpoints: Breakpoint[]): void;
-    /* END PROPOSED *********************************************************************************/
   }
 
   /**
@@ -6390,85 +6399,243 @@ declare module 'vscode' {
     all: Extension<any>[];
   }
 
-
-  /* BEGIN PROPOSED *******************************************************************************/
-  // export enum FileErrorCodes: {
-  //   /**
-  //    * Not owner.
-  //    */
-  //   EPERM = 1,
-  //   /**
-  //    * No such file or directory.
-  //    */
-  //   ENOENT = 2,
-  //   /**
-  //    * I/O error.
-  //    */
-  //   EIO = 5,
-  //   /**
-  //    * Permission denied.
-  //    */
-  //   EACCES = 13,
-  //   /**
-  //    * File exists.
-  //    */
-  //   EEXIST = 17,
-  //   /**
-  //    * Not a directory.
-  //    */
-  //   ENOTDIR = 20,
-  //   /**
-  //    * Is a directory.
-  //    */
-  //   EISDIR = 21,
-  //   /**
-  //    *  File too large.
-  //    */
-  //   EFBIG = 27,
-  //   /**
-  //    * No space left on device.
-  //    */
-  //   ENOSPC = 28,
-  //   /**
-  //    * Directory is not empty.
-  //    */
-  //   ENOTEMPTY = 66,
-  //   /**
-  //    * Invalid file handle.
-  //    */
-  //   ESTALE = 70,
-  //   /**
-  //    * Illegal NFS file handle.
-  //    */
-  //   EBADHANDLE = 10001,
-  // }
-  declare export var FileChangeType: {
-    Updated: 0,
-    Added: 1,
-    Deleted: 2
-  }
-  declare export type FileChangeTypeType = $Values<typeof FileChangeType>;
-
-  declare export interface FileChange {
-    type: FileChangeTypeType;
-    resource: Uri;
-  }
-
+  /**
+   * Enumeration of file types.
+   */
   declare export var FileType: {
-    File: 0,
-    Dir: 1,
-    Symlink: 2
+    /**
+     * The file type is unknown.
+     */
+    Unknown: 0,
+    /**
+     * A regular file.
+     */
+    File: 1,
+    /**
+     * A directory.
+     */
+    Directory: 2,
+    /**
+     * A symbolic link to a file.
+     */
+    SymbolicLink: 64
   }
   declare export type FileTypeType = $Values<typeof FileType>;
 
-  declare export interface FileStat {
-    id: number | string;
-    mtime: number;
-    // atime: number;
-    size: number;
+  /**
+   * The `FileStat`-type represents metadata about a file.
+   */
+  declare export type FileStat = {
+    /**
+     * The type of the file, e.g. is a regular file, a directory, or symbolic link
+     * to a file.
+     */
     type: FileTypeType;
+
+    /**
+     * The creation timestamp in milliseconds.
+     */
+    ctime: number;
+
+    /**
+     * The modification timestamp in milliseconds.
+     */
+    mtime: number;
+
+    /**
+     * The size in bytes.
+     */
+    size: number;
   }
 
+  /**
+   * A type that filesystem providers should use to signal errors.
+   *
+   * This class has factory methods for common error-cases, like `EntryNotFound` when
+   * a file or folder doesn't exist, use them like so: `throw vscode.FileSystemError.EntryNotFound(someUri);`
+   */
+  declare export class FileSystemError extends Error {
+    /**
+     * Create an error to signal that a file or folder wasn't found.
+     * @param messageOrUri Message or uri.
+     */
+    static FileNotFound(messageOrUri?: string | Uri): FileSystemError;
+
+    /**
+     * Create an error to signal that a file or folder already exists, e.g. when
+     * creating but not overwriting a file.
+     * @param messageOrUri Message or uri.
+     */
+    static FileExists(messageOrUri?: string | Uri): FileSystemError;
+
+    /**
+     * Create an error to signal that a file is not a folder.
+     * @param messageOrUri Message or uri.
+     */
+    static FileNotADirectory(messageOrUri?: string | Uri): FileSystemError;
+
+    /**
+     * Create an error to signal that a file is a folder.
+     * @param messageOrUri Message or uri.
+     */
+    static FileIsADirectory(messageOrUri?: string | Uri): FileSystemError;
+
+    /**
+     * Create an error to signal that an operation lacks required permissions.
+     * @param messageOrUri Message or uri.
+     */
+    static NoPermissions(messageOrUri?: string | Uri): FileSystemError;
+
+    /**
+     * Creates a new filesystem error.
+     *
+     * @param messageOrUri Message or uri.
+     */
+    constructor(messageOrUri?: string | Uri) : void;
+  }
+
+  declare export var FileChangeType: {
+    Changed: 1,
+    Created: 2,
+    Deleted: 3
+  }
+  declare export type FileChangeTypeType = $Values<typeof FileChangeType>;
+
+  /**
+   * The event filesystem providers must use to signal a file change.
+   */
+  declare export interface FileChangeEvent {
+    /**
+     * The type of change.
+     */
+    type: FileChangeTypeType;
+
+    /**
+     * The uri of the file that has changed.
+     */
+    uri: Uri;
+  }
+
+  /**
+   * The filesystem provider defines what the editor needs to read, write, discover,
+   * and to manage files and folders. It allows extensions to serve files from remote places,
+   * like ftp-servers, and to seamlessly integrate those into the editor.
+   *
+   * * *Note 1:* The filesystem provider API works with [uris](#Uri) and assumes hierarchical
+   * paths, e.g. `foo:/my/path` is a child of `foo:/my/` and a parent of `foo:/my/path/deeper`.
+   * * *Note 2:* There is an activation event `onFileSystem:<scheme>` that fires when a file
+   * or folder is being accessed.
+   *
+   */
+  declare export interface FileSystemProvider {
+
+    /**
+     * An event to signal that a resource has been created, changed, or deleted. This
+     * event should fire for resources that are being [watched](#FileSystemProvider.watch)
+     * by clients of this provider.
+     */
+    +onDidChangeFile: Event<FileChangeEvent[]>;
+
+    /**
+     * Subscribe to events in the file or folder denoted by `uri`.
+     * @param uri The uri of the file to be watched.
+     * @param options Configures the watch.
+     * @returns A disposable that tells the provider to stop watching this `uri`.
+     */
+    watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable;
+
+    /**
+     * Retrieve metadata about a file.
+     *
+     * @param uri The uri of the file to retrieve meta data about.
+     * @return The file metadata about the file.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+     */
+    stat(uri: Uri): FileStat | Thenable<FileStat>;
+
+    /**
+     * Retrieve the meta data of all entries of a [directory](#FileType.Directory)
+     *
+     * @param uri The uri of the folder.
+     * @return An array of name/type-tuples or a thenable that resolves to such.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+     */
+    readDirectory(uri: Uri): [string, FileTypeType][] | Thenable<[string, FileTypeType][]>;
+
+    /**
+     * Create a new directory. *Note* that new files are created via `write`-calls.
+     *
+     * @param uri The uri of the new folder.
+     * @returns Metadata about the created directory or a thenable that resolves to such.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when the parent of `uri` doesn't exist.
+     * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists.
+     * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+     */
+    createDirectory(uri: Uri): void | Thenable<void>;
+
+    /**
+     * Read the entire contents of a file.
+     *
+     * @param uri The uri of the file.
+     * @return An array of bytes or a thenable that resolves to such.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+     */
+    readFile(uri: Uri): Uint8Array | Thenable<Uint8Array>;
+
+    /**
+     * Write data to a file, replacing its entire contents.
+     *
+     * @param uri The uri of the file.
+     * @param content The new content of the file.
+     * @param options Defines is missing files should or must be created.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist and `create` is not set.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when the parent of `uri` doesn't exist and `create` is set.
+     * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists and `overwrite` is set.
+     * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+     */
+    writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void>;
+
+    /**
+     * Delete a file.
+     *
+     * @param uri The resource that is to be deleted.
+     * @param options Defines if deletion of folders is recursive.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+     * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+     */
+    delete(uri: Uri, options: { recursive: boolean }): void | Thenable<void>;
+
+    /**
+     * Rename a file or folder.
+     *
+     * @param oldUri The existing file or folder.
+     * @param newUri The target location.
+     * @param options Defines if existing files should be overwriten.
+     * @returns Metadata about the renamed file or a thenable that resolves to such.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `oldUri` doesn't exist.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `newUri` doesn't exist
+     * @throws [`FileExists`](#FileSystemError.FileExists) when `newUri` exists and when the `overwrite` option is not `true`.
+     * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+     */
+    rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): void | Thenable<void>;
+
+    /**
+     * Copy files or folders. Implementing this function is optional but it will speedup
+     * the copy operation.
+     *
+     * @param source The existing file or folder.
+     * @param destination The destination location.
+     * @param options Defines if existing files should be overwriten.
+     * @returns Metadata about the copied file or a thenable that resolves to such.
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `source` doesn't exist
+     * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `destination` doesn't exist
+     * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
+     * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+     */
+    +copy?: (source: Uri, destination: Uri, options: { overwrite: boolean }) => void | Thenable<void>;
+  }
+
+  /* BEGIN PROPOSED *******************************************************************************/
   declare export interface TextSearchQuery {
     pattern: string;
     isRegExp?: boolean;
@@ -6490,48 +6657,6 @@ declare module 'vscode' {
   declare export interface SearchProvider {
     +provideFileSearchResults?: (query: string, progress: Progress<Uri>, token: CancellationToken) => Thenable<void>;
     +provideTextSearchResults?: (query: TextSearchQuery, options: TextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken) => Thenable<void>;
-  }
-
-  // todo@joh discover files etc
-  // todo@joh CancellationToken everywhere
-  // todo@joh add open/close calls?
-  declare export interface FileSystemProvider {
-
-    +onDidChange?: Event<FileChange[]>;
-
-    // more...
-    //
-    utimes(resource: Uri, mtime: number, atime: number): Thenable<FileStat>;
-
-    stat(resource: Uri): Thenable<FileStat>;
-
-    read(resource: Uri, offset: number, length: number, progress: Progress<Uint8Array>): Thenable<number>;
-
-    // todo@joh - have an option to create iff not exist
-    // todo@remote
-    // offset - byte offset to start
-    // count - number of bytes to write
-    // Thenable<number> - number of bytes actually written
-    write(resource: Uri, content: Uint8Array): Thenable<void>;
-
-    // todo@remote
-    // Thenable<FileStat>
-    move(resource: Uri, target: Uri): Thenable<FileStat>;
-
-    // todo@remote
-    // helps with performance bigly
-    // copy?(from: Uri, to: Uri): Thenable<void>;
-    // todo@remote
-    // Thenable<FileStat>
-    mkdir(resource: Uri): Thenable<FileStat>;
-
-    readdir(resource: Uri): Thenable<[Uri, FileStat][]>;
-
-    // todo@remote
-    // ? merge both
-    // ? recursive del
-    rmdir(resource: Uri): Thenable<void>;
-    unlink(resource: Uri): Thenable<void>;
   }
 
   /**
