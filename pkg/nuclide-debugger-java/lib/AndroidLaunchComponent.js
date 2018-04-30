@@ -254,9 +254,9 @@ export class AndroidLaunchComponent extends React.Component<Props, State> {
 
   _handleLaunchClick = async (): Promise<void> => {
     const packageName = this.state.launchPackage.trim().replace(/'/g, '');
-    const activity = this.state.launchActivity.trim().replace(/'/g, '');
-    const service = this.state.launchService.trim().replace(/'/g, '');
-    const action = this.state.launchAction.trim().replace(/'/g, '');
+    const activity = this.state.launchActivity.trim().replace(/'/g, '') || null;
+    const service = this.state.launchService.trim().replace(/'/g, '') || null;
+    const action = this.state.launchAction.trim().replace(/'/g, '') || null;
     const adbService = getAdbService(this.props.targetUri);
     const device = this.state.selectedDevice;
     invariant(device != null, 'No device selected.');
