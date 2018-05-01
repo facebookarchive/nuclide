@@ -172,23 +172,21 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       ),
     )
       .filter(provider => provider != null)
-      .subscribe(provider => {
+      .map(provider => {
         invariant(provider != null);
-        const enabledProviders = this.state.enabledProviders.concat(
-          ...provider
-            .getCallbacksForAction(this.props.dialogMode)
-            .getDebuggerTypeNames()
-            .map(debuggerName => {
-              return {
-                provider,
-                debuggerName,
-              };
-            }),
-        );
-
-        this.setState({
-          enabledProviders,
-        });
+        return provider
+          .getCallbacksForAction(this.props.dialogMode)
+          .getDebuggerTypeNames()
+          .map(debuggerName => {
+            return {
+              provider,
+              debuggerName,
+            };
+          });
+      })
+      .scan((arr, provider) => arr.concat(provider), [])
+      .subscribe(enabledProviders => {
+        this.setState({enabledProviders});
       });
   }
 
