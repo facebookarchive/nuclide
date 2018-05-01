@@ -772,13 +772,8 @@ export class HgService {
 
   async _checkConflictChange(): Promise<void> {
     const mergeDirectoryExists = await this._checkMergeDirectoryExists();
-    if (mergeDirectoryExists) {
-      this._isInConflict = true;
-      this._hgConflictStateDidChangeObserver.next(true);
-    } else {
-      this._isInConflict = false;
-      this._hgConflictStateDidChangeObserver.next(false);
-    }
+    this._isInConflict = mergeDirectoryExists;
+    this._hgConflictStateDidChangeObserver.next(mergeDirectoryExists);
   }
 
   async _fetchMergeConflicts(): Promise<?MergeConflicts> {
