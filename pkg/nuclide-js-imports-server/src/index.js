@@ -26,7 +26,7 @@ import {CodeActions} from './CodeActions';
 import {CommandExecutor} from './CommandExecutor';
 
 import initializeLogging from '../logging/initializeLogging';
-import {getEslintEnvs, getConfigFromFlow} from './Config';
+import {getEslintGlobals, getConfigFromFlow} from './Config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from './utils/constantsForClient';
 import {WorkspaceSymbols} from './WorkspaceSymbols';
@@ -77,14 +77,14 @@ let commandExecuter = new CommandExecutor(
 connection.onInitialize((params): InitializeResult => {
   const root = params.rootPath || process.cwd();
   logger.debug('Server initialized.');
-  const envs = getEslintEnvs(root);
+  const eslintGlobals = getEslintGlobals(root);
   const flowConfig = getConfigFromFlow(root);
   shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
   importFormatter = new ImportFormatter(
     flowConfig.moduleDirs,
     shouldUseRequires(params, root),
   );
-  autoImportsManager = new AutoImportsManager(envs);
+  autoImportsManager = new AutoImportsManager(eslintGlobals);
   autoImportsManager.indexAndWatchDirectory(root);
   completion = new Completions(documents, autoImportsManager, importFormatter);
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);

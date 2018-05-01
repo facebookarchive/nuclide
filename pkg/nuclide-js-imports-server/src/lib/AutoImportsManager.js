@@ -53,10 +53,10 @@ export class AutoImportsManager {
   crashes: number;
   worker: ?child_process$ChildProcess;
 
-  constructor(envs: Array<string>) {
+  constructor(globals: Array<string>) {
     this.suggestedImports = new Map();
     this.exportsManager = new ExportManager();
-    this.undefinedSymbolsManager = new UndefinedSymbolManager(envs);
+    this.undefinedSymbolsManager = new UndefinedSymbolManager(globals);
     this.crashes = 0;
   }
 

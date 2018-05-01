@@ -9,8 +9,9 @@
  * @format
  */
 
+import * as globals from 'globals';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getConfigFromFlow} from '../src/Config';
+import {getConfigFromFlow, getEslintGlobals} from '../src/Config';
 
 describe('getConfig', () => {
   it('reads haste configs', () => {
@@ -51,5 +52,52 @@ describe('getConfig', () => {
         nameReducerBlacklist: [],
       },
     });
+  });
+});
+
+describe('getEslintGlobals', () => {
+  it('works on projects with .eslintrc', () => {
+    const root = nuclideUri.join(__dirname, 'fixtures', 'eslintrc');
+    expect(getEslintGlobals(root)).toEqual([
+      'atom',
+      'window',
+      'browser',
+      'chrome',
+      'opr',
+    ]);
+  });
+
+  it('works on projects with .eslintrc.js', () => {
+    const root = nuclideUri.join(__dirname, 'fixtures', 'eslintrcjs');
+    expect(getEslintGlobals(root)).toEqual([
+      'atom',
+      'window',
+      'browser',
+      'chrome',
+      'opr',
+    ]);
+  });
+
+  it('works on projects with an eslintConfig', () => {
+    const root = nuclideUri.join(__dirname, 'fixtures', 'eslintConfig');
+    expect(getEslintGlobals(root)).toEqual([
+      'atom',
+      'window',
+      'browser',
+      'chrome',
+      'opr',
+    ]);
+  });
+
+  it('falls back to getting all environments', () => {
+    const root = nuclideUri.join(__dirname, 'fixtures', 'flowconfig_modules');
+    const allGlobals = new Set();
+    Object.values(globals).forEach((obj: any) => {
+      Object.keys(obj).forEach(x => allGlobals.add(x));
+    });
+    const eslintGlobals = getEslintGlobals(root);
+    expect(eslintGlobals).toContain('window');
+    expect(eslintGlobals).toContain('document');
+    expect(eslintGlobals).toEqual(Array.from(allGlobals));
   });
 });

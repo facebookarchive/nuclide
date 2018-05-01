@@ -203,42 +203,42 @@ describe('UndefinedSymbolManager', () => {
 
   /* False Positive Tests */
   it('Builtins do not trigger diagnostics', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6']);
-    const program = 'new Array();';
+    const manager = new UndefinedSymbolManager(['']);
+    const program = 'new Iterator();';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
-  it('Node builtins do not trigger diagnostics', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+  it('Globals do not trigger diagnostics', () => {
+    const manager = new UndefinedSymbolManager(['process']);
     const program = 'const dir = process.cwd()';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Type identifiers should not trigger diagnostics', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program = 'type MyType = {a: number, b: string}';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Class imports should be treated as types', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program = "import {SomeClass} from 'file'; var instance: SomeClass; ";
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
   it('TypeAliases are not treated as undeclared types', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program = "type MyType = 'string' | 'number' ";
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Keeps track of types declared before', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       "type MyType = 'string' | 'number'; const val: MyType = 10; ";
     const ast = babylon.parse(program, babylonOptions);
@@ -246,7 +246,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Keeps track of types declared after', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       "const val: MyType = 10; type MyType = 'string' | 'number';";
     const ast = babylon.parse(program, babylonOptions);
@@ -254,7 +254,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Works correctly with typeof', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program = 'type X = typeof Y;';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
@@ -263,7 +263,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].type).toBe('value');
   });
   it('Works correctly with type members', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program = 'type X = Immutable.Map.XYZ;';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
@@ -272,7 +272,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].type).toBe('value');
   });
   it('No false positives with generics', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       'class GenericList<A> { returnsA(something: A): A { return something; }}';
     const ast = babylon.parse(program, babylonOptions);
@@ -280,7 +280,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols.length).toBe(0);
   });
   it('No false positives from ObjectTypeIndexers', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       'type log4js$Config = { levels?: {[name: string]: string},}';
     const ast = babylon.parse(program, babylonOptions);
@@ -288,7 +288,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols.length).toBe(0);
   });
   it('No false positives from React elements', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       "import React from 'react'; class Element {render(): React.Element<any> {return (<li></li>);}}";
     const ast = babylon.parse(program, babylonOptions);
@@ -296,7 +296,7 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols.length).toBe(0);
   });
   it('Do not provide undefined symbols for declared flow modules', () => {
-    const manager = new UndefinedSymbolManager(['builtin', 'es6', 'node']);
+    const manager = new UndefinedSymbolManager([]);
     const program =
       "import SomeModule from 'a'; const thing: SomeModule.SomeType = 5;";
     const ast = babylon.parse(program, babylonOptions);

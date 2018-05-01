@@ -10,7 +10,6 @@
  */
 
 import traverse from 'babel-traverse';
-import globalsJSON from 'globals';
 
 // Prevent babel-traverse from yelling about Flow types in the scope.
 // We're not actually relying on this behavior here.
@@ -27,15 +26,8 @@ const JSX_CSX_PRAGMA_REGEX = /\*?\s*@csx/;
 export class UndefinedSymbolManager {
   globals: Set<string>;
 
-  constructor(envs: Array<string>) {
-    this.globals = new Set(BUILT_INS);
-    envs.forEach(env => {
-      if (globalsJSON[env]) {
-        Object.keys(globalsJSON[env]).forEach(globalVar => {
-          this.globals.add(globalVar);
-        });
-      }
-    });
+  constructor(globals: Array<string>) {
+    this.globals = new Set(BUILT_INS.concat(globals));
   }
 
   findUndefined(ast: Object): Array<UndefinedSymbol> {

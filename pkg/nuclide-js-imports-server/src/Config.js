@@ -11,12 +11,13 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
-import globals from 'globals';
+import * as globalsModule from 'globals';
 import {getLogger} from 'log4js';
+import vm from 'vm';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-const ALL_ENVS = Object.keys(globals);
+const ALL_ENVS = Object.keys(globalsModule);
 
 export type ConfigFromFlow = $ReadOnly<{|
   moduleDirs: Array<NuclideUri>,
@@ -56,11 +57,12 @@ export function serializeConfig(config: ConfigFromFlow): string {
   });
 }
 
-export function getEslintEnvs(root: NuclideUri): Array<string> {
-  const eslintFile = nuclideUri.join(root, '.eslintrc');
-  const packageJsonFile = nuclideUri.join(root, 'package.json');
+export function getEslintGlobals(root: NuclideUri): Array<string> {
   return (
-    eslintToEnvs(eslintFile) || packageJsonToEnvs(packageJsonFile) || ALL_ENVS
+    parseEslintrc(nuclideUri.join(root, '.eslintrc')) ||
+    parseEslintrcJs(nuclideUri.join(root, '.eslintrc.js')) ||
+    packageJsonEslintConfig(nuclideUri.join(root, 'package.json')) ||
+    Array.from(getGlobalsForEnvs(ALL_ENVS))
   );
 }
 
@@ -158,26 +160,61 @@ function flowConfigToHasteSettings(
   };
 }
 
-function eslintToEnvs(eslintFile: string): ?Array<string> {
+function parseEslintrc(eslintFile: string): ?Array<string> {
   try {
     const json = JSON.parse(fs.readFileSync(eslintFile, 'utf8'));
-    if (json.env) {
-      return Object.keys(json.env).filter(env => json.env[env]);
+    return parseEslintConfig(json);
+  } catch (err) {}
+  return null;
+}
+
+function parseEslintrcJs(eslintFile: string): ?Array<string> {
+  try {
+    const js = fs.readFileSync(eslintFile, 'utf8');
+    // Hopefully .eslintrc.js doesn't require very much.
+    const sandbox: any = {module: {}, require};
+    const context = vm.createContext(sandbox);
+    vm.runInContext(js, context);
+    if (sandbox.module.exports) {
+      return parseEslintConfig(sandbox.module.exports);
+    } else if (sandbox.exports) {
+      return parseEslintConfig(sandbox.exports);
     }
   } catch (err) {}
   return null;
 }
 
-function packageJsonToEnvs(packageJsonFile: string): ?Array<string> {
+function packageJsonEslintConfig(packageJsonFile: string): ?Array<string> {
   try {
     const json = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
-    if (json.eslintConfig && json.eslintConfig.env) {
-      return Object.keys(json.eslintConfig.env).filter(
-        env => json.eslintConfig.env[env],
-      );
+    if (json.eslintConfig) {
+      return parseEslintConfig(json.eslintConfig);
     }
   } catch (err) {}
   return null;
+}
+
+function parseEslintConfig(config: Object): Array<string> {
+  let globals = new Set();
+  if (config.globals && typeof config.globals === 'object') {
+    globals = new Set(Object.keys(config.globals));
+  }
+  let envs = ALL_ENVS;
+  if (config.env && typeof config.env === 'object') {
+    envs = Object.keys(config.env).filter(key => config.env[key]);
+  }
+  getGlobalsForEnvs(envs).forEach(x => globals.add(x));
+  return Array.from(globals);
+}
+
+function getGlobalsForEnvs(envs: Array<string>): Set<string> {
+  const globals = new Set();
+  envs.forEach(env => {
+    if (globalsModule[env]) {
+      Object.keys(globalsModule[env]).forEach(x => globals.add(x));
+    }
+  });
+  return globals;
 }
 
 function getYarnWorkspaces(root: string): Array<string> {

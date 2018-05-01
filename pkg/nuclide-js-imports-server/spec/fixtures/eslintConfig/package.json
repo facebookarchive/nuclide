@@ -1,0 +1,14 @@
+{
+  "eslintConfig": {
+    "globals": {
+      "atom": true,
+      "window": false
+    },
+    "env": {
+      "webextensions": true,
+      "node": false
+    },
+    "rules": {
+    }
+  }
+}
