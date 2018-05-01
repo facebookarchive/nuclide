@@ -1,89 +1,89 @@
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.Icon = undefined;var _classnames;
+
+
+
+
+
+
+
+
+
+
+
+function _load_classnames() {return _classnames = _interopRequireDefault(require('classnames'));}
+var _react = _interopRequireWildcard(require('react'));function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _objectWithoutProperties(obj, keys) {var target = {};for (var i in obj) {if (keys.indexOf(i) >= 0) continue;if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;target[i] = obj[i];}return target;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * Renders an icon with optional text next to it.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              */
+const Icon = props => {
+  const { icon, children, className } = props,remainingProps = _objectWithoutProperties(props, ['icon', 'children', 'className']);
+  const newClassName = (0, (_classnames || _load_classnames()).default)(
+  className,
+  icon == null ? null : `icon icon-${icon}`);
 
-import classnames from 'classnames';
-import * as React from 'react';
-
-export type Nuclicon =
-  | 'nuclicon-nuclide'
-  | 'nuclicon-react'
-  | 'nuclicon-buck'
-  | 'nuclicon-hhvm'
-  | 'nuclicon-hack'
-  | 'nuclicon-relay'
-  | 'nuclicon-swift'
-  | 'nuclicon-file-directory'
-  | 'nuclicon-file-directory-starred'
-  | 'nuclicon-debugger'
-  | 'nuclicon-arrow-down'
-  | 'nuclicon-bug'
-  | 'nuclicon-graphql'
-  | 'nuclicon-comment-discussion'
-  | 'nuclicon-comment'
-  | 'nuclicon-jest-outline'
-  | 'nuclicon-flow'
-  | 'nuclicon-react-devtools'
-  | 'nuclicon-funnel'
-  | 'nuclicon-error'
-  // Currently, "nuclicon-warning" is the same as Octicon's "alert" but we duplicate it because the
-  // Octicons aren't vertically centered and the fact that this one's frequently shown next to
-  // nuclicon-error makes it wayyyy more obvious.
-  | 'nuclicon-warning'
-  | 'nuclicon-kebab-horizontal'
-  | 'nuclicon-cs'
-  | 'nuclicon-metro'
-  | 'nuclicon-connected'
-  | 'nuclicon-disconnected'
-  | 'nuclicon-eject'
-  | 'nuclicon-all-items'
-  | 'nuclicon-local'
-  | 'nuclicon-remote'
-  | 'nuclicon-config'
-  | 'nuclicon-snapshot'
-  | 'nuclicon-success'
-  | 'nuclicon-time-start'
-  | 'nuclicon-time-end'
-  | 'nuclicon-metro-disabled'
-  | 'nuclicon-metro-waiting'
-  | 'nuclicon-lightbulb-filled'
-  | 'nuclicon-nt'
-  | 'nuclicon-archive'
-  | 'nuclicon-infinity'
-  | 'nuclicon-desktop'
-  | 'nuclicon-mobile'
-  | 'nuclicon-lightning';
-
-export type IconName = Nuclicon | atom$Octicon;
-
-type Props = {
-  /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: IconName,
-  className?: string,
-  /** Optional text content to render next to the icon. */
-  children?: React.Node,
-};
-
-/**
- * Renders an icon with optional text next to it.
- */
-export const Icon = (props: Props) => {
-  const {icon, children, className, ...remainingProps} = props;
-  const newClassName = classnames(
-    className,
-    icon == null ? null : `icon icon-${icon}`,
-  );
   return (
-    <span className={newClassName} {...remainingProps}>
-      {children}
-    </span>
-  );
-};
+    _react.createElement('span', Object.assign({ className: newClassName }, remainingProps),
+      children));
+
+
+};exports.Icon = Icon;

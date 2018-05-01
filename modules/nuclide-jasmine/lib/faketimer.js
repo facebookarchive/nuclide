@@ -1,20 +1,20 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict'; /**
+               * Copyright (c) 2017-present, Facebook, Inc.
+               * All rights reserved.
+               *
+               * This source code is licensed under the BSD-style license found in the
+               * LICENSE file in the root directory of this source tree. An additional grant
+               * of patent rights can be found in the PATENTS file in the same directory.
+               *
+               * 
+               * @format
+               */
 
 /**
- * Port of Atom's timer utils (https://fburl.com/104714454) which is useful for unittest.
- * Use fakeSetTimeout, fakeClearTimeout, fakeSetInterval and fakeClearInterval to mock Node.js's
- * Timer utils, and using advanceClock to advance the fake timer to trigger timed callback.
- */
+                   * Port of Atom's timer utils (https://fburl.com/104714454) which is useful for unittest.
+                   * Use fakeSetTimeout, fakeClearTimeout, fakeSetInterval and fakeClearInterval to mock Node.js's
+                   * Timer utils, and using advanceClock to advance the fake timer to trigger timed callback.
+                   */
 require('jasmine-node'); // eslint-disable-line rulesdir/no-commonjs
 
 let now = 0;
@@ -23,7 +23,7 @@ let intervalCount = 0;
 let timeouts = [];
 let intervalTimeouts = {};
 
-function resetTimeouts(): void {
+function resetTimeouts() {
   now = 0;
   timeoutCount = 0;
   intervalCount = 0;
@@ -31,20 +31,20 @@ function resetTimeouts(): void {
   intervalTimeouts = {};
 }
 
-function fakeSetTimeout(callback: () => ?any, ms: number): number {
+function fakeSetTimeout(callback, ms) {
   const id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
   timeouts.sort(
-    ([, strikeTime0], [, strikeTime1]) => strikeTime0 - strikeTime1,
-  );
+  ([, strikeTime0], [, strikeTime1]) => strikeTime0 - strikeTime1);
+
   return id;
 }
 
-function fakeClearTimeout(idToClear: number): void {
+function fakeClearTimeout(idToClear) {
   timeouts = timeouts.filter(([id]) => id !== idToClear);
 }
 
-function fakeSetInterval(callback: () => ?any, ms: number): number {
+function fakeSetInterval(callback, ms) {
   const id = ++intervalCount;
   const action = () => {
     callback();
@@ -54,11 +54,11 @@ function fakeSetInterval(callback: () => ?any, ms: number): number {
   return id;
 }
 
-function fakeClearInterval(idToClear: number): void {
+function fakeClearInterval(idToClear) {
   fakeClearTimeout(intervalTimeouts[idToClear]);
 }
 
-function advanceClock(deltaMs: number): void {
+function advanceClock(deltaMs) {
   const advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
@@ -71,19 +71,19 @@ function advanceClock(deltaMs: number): void {
 }
 
 /**
- * Allows tests to use the non-fake setTimeout and clearTimeout functions.
- */
-function useRealClock(): void {
+   * Allows tests to use the non-fake setTimeout and clearTimeout functions.
+   */
+function useRealClock() {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
   jasmine.unspy(Date, 'now');
 }
 
 /**
- * Atom does this half-way mock.
- * https://github.com/atom/atom/blob/v1.12.7/spec/spec-helper.coffee#L169-L174
- */
-function useMockClock(): void {
+   * Atom does this half-way mock.
+   * https://github.com/atom/atom/blob/v1.12.7/spec/spec-helper.coffee#L169-L174
+   */
+function useMockClock() {
   spyOn(global, 'setInterval').andCallFake(fakeSetInterval);
   spyOn(global, 'clearInterval').andCallFake(fakeClearInterval);
 }
@@ -98,13 +98,13 @@ global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
 jasmine.useMockClock = useMockClock;
 // $FlowIssue: https://github.com/facebook/flow/issues/285
-Object.defineProperty(global, 'now', {get: () => now});
+Object.defineProperty(global, 'now', { get: () => now });
 
 /**
- * This hook is a the first initialization code that happens before any jasmine test case is
- * executed. This allows to use the fake timing by default and is a direct port from Atom's
- * `spec-helper.coffee`
- */
+                                                           * This hook is a the first initialization code that happens before any jasmine test case is
+                                                           * executed. This allows to use the fake timing by default and is a direct port from Atom's
+                                                           * `spec-helper.coffee`
+                                                           */
 beforeEach(() => {
   resetTimeouts();
   spyOn(Date, 'now').andCallFake(() => now);

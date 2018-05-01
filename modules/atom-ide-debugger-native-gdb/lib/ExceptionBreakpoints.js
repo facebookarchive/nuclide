@@ -1,34 +1,34 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _MIProxy;
 
-import type {MIStoppedEventResult} from './MITypes';
-import type {StopReason} from './MIDebugSession';
 
-import invariant from 'assert';
-import MIProxy from './MIProxy';
-import {breakInsertResult, toCommandError} from './MITypes';
 
-export default class ExceptionBreakpoints {
-  _throwHelper = '__cxa_throw';
-  _client: MIProxy;
-  _throwBreakpoint: ?number;
-  _stopOnSignals: boolean;
 
-  constructor(client: MIProxy) {
-    this._client = client;
-    this._stopOnSignals = false;
+
+
+
+
+
+
+
+
+
+
+
+function _load_MIProxy() {return _MIProxy = _interopRequireDefault(require('./MIProxy'));}var _MITypes;
+function _load_MITypes() {return _MITypes = require('./MITypes');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                 * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                 * All rights reserved.
+                                                                                                                                                                 *
+                                                                                                                                                                 * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                 * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                 * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                 *
+                                                                                                                                                                 * 
+                                                                                                                                                                 * @format
+                                                                                                                                                                 */class ExceptionBreakpoints {constructor(client) {this._throwHelper = '__cxa_throw';this._client = client;this._stopOnSignals = false;
   }
 
-  shouldIgnoreBreakpoint(result: MIStoppedEventResult): boolean {
+  shouldIgnoreBreakpoint(result) {
     if (this._isSignal(result) && !this._stopOnSignals) {
       return true;
     }
@@ -39,29 +39,29 @@ export default class ExceptionBreakpoints {
     return false;
   }
 
-  stopEventReason(result: MIStoppedEventResult): ?StopReason {
+  stopEventReason(result) {
     if (this._isSignal(result)) {
       return {
         reason: 'exception',
-        description: 'Uncaught exception',
-      };
+        description: 'Uncaught exception' };
+
     }
 
     if (this._isOurBreakpoint(result)) {
       return {
         reason: 'exception',
-        description: 'Thrown exception',
-      };
+        description: 'Thrown exception' };
+
     }
 
     return null;
   }
 
-  _isSignal(result: MIStoppedEventResult): boolean {
+  _isSignal(result) {
     return result.reason === 'signal-received';
   }
 
-  _isOurBreakpoint(result: MIStoppedEventResult): boolean {
+  _isOurBreakpoint(result) {
     if (result.reason !== 'breakpoint-hit') {
       return false;
     }
@@ -74,47 +74,46 @@ export default class ExceptionBreakpoints {
     return parseInt(bpt, 10) === this._throwBreakpoint;
   }
 
-  async setExceptionBreakpointFilters(filters: Array<string>): Promise<void> {
-    this._stopOnSignals = filters.includes('uncaught');
-    const enableThrown = filters.includes('thrown');
+  setExceptionBreakpointFilters(filters) {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      _this._stopOnSignals = filters.includes('uncaught');
+      const enableThrown = filters.includes('thrown');
 
-    if (enableThrown && this._throwBreakpoint == null) {
-      return this._setBreakpoint();
-    } else if (!enableThrown && this._throwBreakpoint != null) {
-      return this._clearBreakpoint();
-    }
+      if (enableThrown && _this._throwBreakpoint == null) {
+        return _this._setBreakpoint();
+      } else if (!enableThrown && _this._throwBreakpoint != null) {
+        return _this._clearBreakpoint();
+      }})();
   }
 
-  async _setBreakpoint(): Promise<void> {
-    const result = await this._client.sendCommand(
-      `break-insert -f ${this._throwHelper}`,
-    );
-    if (result.error) {
-      throw new Error(
+  _setBreakpoint() {var _this2 = this;return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this2._client.sendCommand(
+      `break-insert -f ${_this2._throwHelper}`);
+
+      if (result.error) {
+        throw new Error(
         `Error setting thrown exception breakpoint ${
-          toCommandError(result).msg
-        }`,
-      );
-    }
+        (0, (_MITypes || _load_MITypes()).toCommandError)(result).msg
+        }`);
 
-    const bt = breakInsertResult(result);
-    this._throwBreakpoint = parseInt(bt.bkpt[0].number, 10);
+      }
+
+      const bt = (0, (_MITypes || _load_MITypes()).breakInsertResult)(result);
+      _this2._throwBreakpoint = parseInt(bt.bkpt[0].number, 10);})();
   }
 
-  async _clearBreakpoint(): Promise<void> {
-    const breakpointId = this._throwBreakpoint;
-    invariant(breakpointId != null);
+  _clearBreakpoint() {var _this3 = this;return (0, _asyncToGenerator.default)(function* () {
+      const breakpointId = _this3._throwBreakpoint;if (!(
+      breakpointId != null)) {throw new Error('Invariant violation: "breakpointId != null"');}
 
-    const result = await this._client.sendCommand(
-      `break-delete ${breakpointId}`,
-    );
+      const result = yield _this3._client.sendCommand(
+      `break-delete ${breakpointId}`);
 
-    if (result.error) {
-      throw new Error(
+
+      if (result.error) {
+        throw new Error(
         `Error clearing thrown exception breakpoint ${
-          toCommandError(result).msg
-        }`,
-      );
-    }
-  }
-}
+        (0, (_MITypes || _load_MITypes()).toCommandError)(result).msg
+        }`);
+
+      }})();
+  }}exports.default = ExceptionBreakpoints;

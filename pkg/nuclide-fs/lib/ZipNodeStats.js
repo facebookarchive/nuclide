@@ -1,21 +1,21 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.ZipNodeStats = undefined;
 
-import fs from 'fs';
 
-export class ZipNodeStats extends fs.Stats {
-  _isDirectory: boolean;
-  _isSymbolicLink: boolean;
 
-  constructor(outer: fs.Stats, entry: any) {
+
+
+
+
+
+
+
+var _fs = _interopRequireDefault(require('fs'));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+class ZipNodeStats extends _fs.default.Stats {
+
+
+
+  constructor(outer, entry) {
     super();
     const header = entry.header;
 
@@ -37,46 +37,46 @@ export class ZipNodeStats extends fs.Stats {
     this._isSymbolicLink = isSymbolicLinkAttr(header.attr);
   }
 
-  isFile(): boolean {
+  isFile() {
     return !this.isDirectory() && !this.isSymbolicLink();
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return this._isDirectory;
   }
 
-  isBlockDevice(): boolean {
+  isBlockDevice() {
     return false;
   }
 
-  isCharacterDevice(): boolean {
+  isCharacterDevice() {
     return false;
   }
 
-  isSymbolicLink(): boolean {
+  isSymbolicLink() {
     return this._isSymbolicLink;
   }
 
-  isFIFO(): boolean {
+  isFIFO() {
     return false;
   }
 
-  isSocket(): boolean {
+  isSocket() {
     return false;
-  }
-}
-
-function modeFromZipAttr(attr: number): number {
-  // eslint-disable-next-line no-bitwise
-  return attr >>> 16;
-}
-
-// eslint-disable-next-line no-bitwise
-const ATTR_FILETYPE_MASK = 0xf << 28;
-// eslint-disable-next-line no-bitwise
+  }}exports.ZipNodeStats = ZipNodeStats; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */function modeFromZipAttr(attr) {// eslint-disable-next-line no-bitwise
+  return attr >>> 16;} // eslint-disable-next-line no-bitwise
+const ATTR_FILETYPE_MASK = 0xf << 28; // eslint-disable-next-line no-bitwise
 const ATTR_FILETYPE_SYMLINK = 0xa << 28;
-
-function isSymbolicLinkAttr(attr: number): boolean {
+function isSymbolicLinkAttr(attr) {
   // eslint-disable-next-line no-bitwise
   return (attr & ATTR_FILETYPE_MASK) === ATTR_FILETYPE_SYMLINK;
 }

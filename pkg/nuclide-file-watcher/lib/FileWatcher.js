@@ -1,94 +1,94 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _UniversalDisposable;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {trackTiming, track} from '../../nuclide-analytics';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getLogger} from 'log4js';
 
-const logger = getLogger('nuclide-file-watcher');
 
-export default class FileWatcher {
-  _editor: TextEditor;
-  _subscriptions: ?UniversalDisposable;
 
-  constructor(editor: TextEditor) {
-    this._editor = editor;
-    if (this._editor == null) {
-      logger.warn('No editor instance on this._editor');
+
+
+
+
+
+
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _nuclideAnalytics;
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}var _nuclideUri;
+function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}var _nuclideRemoteConnection;
+function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');}var _log4js;
+function _load_log4js() {return _log4js = require('log4js');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-file-watcher'); /**
+                                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                    * All rights reserved.
+                                                                                    *
+                                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                                    * the root directory of this source tree.
+                                                                                    *
+                                                                                    * 
+                                                                                    * @format
+                                                                                    */class FileWatcher {constructor(editor) {this._editor = editor;if (this._editor == null) {logger.warn('No editor instance on this._editor');
       return;
     }
-    const _subscriptions = new UniversalDisposable();
+    const _subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     _subscriptions.add(
-      this._editor.onDidConflict(() => {
-        if (this._shouldPromptToReload()) {
-          logger.info(
-            `Conflict at file: ${this._editor.getPath() || 'File not found'}`,
-          );
-          this._promptReload();
-        }
-      }),
-    );
+    this._editor.onDidConflict(() => {
+      if (this._shouldPromptToReload()) {
+        logger.info(
+        `Conflict at file: ${this._editor.getPath() || 'File not found'}`);
+
+        this._promptReload();
+      }
+    }));
+
     this._subscriptions = _subscriptions;
   }
 
-  _shouldPromptToReload(): boolean {
+  _shouldPromptToReload() {
     return this._editor.getBuffer().isInConflict();
   }
 
-  _promptReload(): Promise<any> {
-    return trackTiming('file-watcher:promptReload', () =>
-      this.__promptReload(),
-    );
+  _promptReload() {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('file-watcher:promptReload', () =>
+    this.__promptReload());
+
   }
 
-  async __promptReload(): Promise<any> {
-    const filePath = this._editor.getPath();
-    if (filePath == null) {
-      return;
-    }
-    const encoding = this._editor.getEncoding();
-    const fileName = nuclideUri.basename(filePath);
-    const choice = atom.confirm({
-      message: fileName + ' has changed on disk.',
-      buttons: ['Reload', 'Compare', 'Ignore'],
-    });
-    if (choice === 2) {
-      track('file-watcher:promptReload-ignoreChosen');
-      return;
-    }
-    if (choice === 0) {
-      track('file-watcher:promptReload-reloadChosen');
-      const buffer = this._editor.getBuffer();
-      if (buffer) {
-        buffer.reload();
+  __promptReload() {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      const filePath = _this._editor.getPath();
+      if (filePath == null) {
+        return;
       }
-      return;
-    }
-    track('file-watcher:promptReload-compareChosen');
+      const encoding = _this._editor.getEncoding();
+      const fileName = (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
+      const choice = atom.confirm({
+        message: fileName + ' has changed on disk.',
+        buttons: ['Reload', 'Compare', 'Ignore'] });
 
-    // Load the file contents locally or remotely.
-    const service = getFileSystemServiceByNuclideUri(filePath);
-    const contents = (await service.readFile(filePath)).toString(encoding);
+      if (choice === 2) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-ignoreChosen');
+        return;
+      }
+      if (choice === 0) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-reloadChosen');
+        const buffer = _this._editor.getBuffer();
+        if (buffer) {
+          buffer.reload();
+        }
+        return;
+      }
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-compareChosen');
 
-    // Open a right split pane to compare the contents.
-    // TODO: We can use the diff-view here when ready.
-    // TODO: Figure out wtf is going on here (why are we passing the empty string as a path) and
-    // consider using goToLocation instead.
-    // eslint-disable-next-line rulesdir/atom-apis
-    const splitEditor = await atom.workspace.open('', {split: 'right'});
+      // Load the file contents locally or remotely.
+      const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileSystemServiceByNuclideUri)(filePath);
+      const contents = (yield service.readFile(filePath)).toString(encoding);
 
-    splitEditor.insertText(contents);
-    splitEditor.setGrammar(this._editor.getGrammar());
+      // Open a right split pane to compare the contents.
+      // TODO: We can use the diff-view here when ready.
+      // TODO: Figure out wtf is going on here (why are we passing the empty string as a path) and
+      // consider using goToLocation instead.
+      // eslint-disable-next-line rulesdir/atom-apis
+      const splitEditor = yield atom.workspace.open('', { split: 'right' });
+
+      splitEditor.insertText(contents);
+      splitEditor.setGrammar(_this._editor.getGrammar());})();
   }
 
   destroy() {
@@ -97,5 +97,4 @@ export default class FileWatcher {
     }
     this._subscriptions.dispose();
     this._subscriptions = null;
-  }
-}
+  }}exports.default = FileWatcher;

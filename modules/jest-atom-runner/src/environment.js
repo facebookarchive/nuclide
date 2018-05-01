@@ -1,24 +1,31 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';var _jestEnvironmentJsdom;
 
-/* eslint-disable rulesdir/no-commonjs */
 
-import JSDom from 'jest-environment-jsdom';
 
-class Atom extends JSDom {
-  constructor(...args: any) {
+
+
+
+
+
+
+
+
+
+
+function _load_jestEnvironmentJsdom() {return _jestEnvironmentJsdom = _interopRequireDefault(require('jest-environment-jsdom'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+class Atom extends (_jestEnvironmentJsdom || _load_jestEnvironmentJsdom()).default {
+  constructor(...args) {
     super(...args);
     this.global.atom = global.atom;
-  }
-}
-
-module.exports = Atom;
+  }} /**
+      * Copyright (c) 2017-present, Facebook, Inc.
+      * All rights reserved.
+      *
+      * This source code is licensed under the BSD-style license found in the
+      * LICENSE file in the root directory of this source tree. An additional grant
+      * of patent rights can be found in the PATENTS file in the same directory.
+      *
+      * 
+      * @format
+      */ /* eslint-disable rulesdir/no-commonjs */module.exports = Atom;

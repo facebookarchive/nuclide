@@ -1,68 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';var _createPackage;
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
-import type {RegisterNux} from '../../nuclide-nux/lib/main';
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {WORKSPACE_VIEW_URI} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/OutlineViewPanel';
-import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
-const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
-const NUX_OUTLINE_VIEW_ID = 4342;
-const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
-class Activation {
-  _disposables: UniversalDisposable;
 
-  constructor() {
-    this._disposables = new UniversalDisposable();
-  }
 
-  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+
+
+
+
+
+
+
+function _load_createPackage() {return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _OutlineViewPanel;
+
+function _load_OutlineViewPanel() {return _OutlineViewPanel = require('atom-ide-ui/pkg/atom-ide-outline-view/lib/OutlineViewPanel');}var _ToolbarUtils;
+function _load_ToolbarUtils() {return _ToolbarUtils = require('nuclide-commons-ui/ToolbarUtils');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux'; /**
+                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                           * All rights reserved.
+                                                           *
+                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                           * the root directory of this source tree.
+                                                           *
+                                                           * 
+                                                           * @format
+                                                           */const NUX_OUTLINE_VIEW_ID = 4342;const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';class Activation {constructor() {this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();}
+
+  consumeToolBar(getToolBar) {
     const toolBar = getToolBar('outline-view');
-    const {element} = toolBar.addButton(
-      makeToolbarButtonSpec({
-        icon: 'list-unordered',
-        callback: 'outline-view:toggle',
-        tooltip: 'Toggle Outline',
-        priority: 200,
-      }),
-    );
+    const { element } = toolBar.addButton(
+    (0, (_ToolbarUtils || _load_ToolbarUtils()).makeToolbarButtonSpec)({
+      icon: 'list-unordered',
+      callback: 'outline-view:toggle',
+      tooltip: 'Toggle Outline',
+      priority: 200 }));
+
+
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
     element.classList.add('outline-view-toolbar-button');
-    const disposable = new UniversalDisposable(() => {
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);
     return disposable;
   }
 
-  _createOutlineViewNuxTourModel(): NuxTourModel {
+  _createOutlineViewNuxTourModel() {
     const outlineViewToolbarIconNux = {
       content: 'Check out the new Outline!',
       selector: '.outline-view-toolbar-button',
       position: 'auto',
       completionPredicate: () =>
-        document.querySelector('div.outline-view') != null,
-    };
+      document.querySelector('div.outline-view') != null };
+
 
     const outlineViewPanelNux = {
       content: 'Click on a symbol to jump to its definition.',
       selector: 'div.outline-view',
-      position: 'left',
-    };
+      position: 'left' };
+
 
     const isValidFileTypeForNux = editor => {
       if (editor == null) {
@@ -76,47 +76,47 @@ class Activation {
     };
 
     const isOutlineViewClosed = () =>
-      document.querySelector('div.outline-view') == null;
+    document.querySelector('div.outline-view') == null;
     const triggerCallback = editor =>
-      isOutlineViewClosed() && isValidFileTypeForNux(editor);
+    isOutlineViewClosed() && isValidFileTypeForNux(editor);
 
     const nuxTriggerModel = {
       triggerType: 'editor',
-      triggerCallback,
-    };
+      triggerCallback };
+
 
     const outlineViewNuxTour = {
       id: NUX_OUTLINE_VIEW_ID,
       name: NUX_OUTLINE_VIEW_TOUR,
       nuxList: [outlineViewToolbarIconNux, outlineViewPanelNux],
       trigger: nuxTriggerModel,
-      gatekeeperID: GK_NUX_OUTLINE_VIEW,
-    };
+      gatekeeperID: GK_NUX_OUTLINE_VIEW };
+
 
     return outlineViewNuxTour;
   }
 
-  consumeRegisterNuxService(addNewNux: RegisterNux): IDisposable {
+  consumeRegisterNuxService(addNewNux) {
     const disposable = addNewNux(this._createOutlineViewNuxTourModel());
     this._disposables.add(disposable);
     return disposable;
   }
 
-  getHomeFragments(): HomeFragments {
+  getHomeFragments() {
     return {
       feature: {
         title: 'Outline',
         icon: 'list-unordered',
         description:
-          'Displays major components of the current file (classes, methods, etc.)',
+        'Displays major components of the current file (classes, methods, etc.)',
         command: () => {
           // eslint-disable-next-line rulesdir/atom-apis
-          atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
-        },
-      },
-      priority: 2.5, // Between diff view and test runner
-    };
-  }
-}
+          atom.workspace.open((_OutlineViewPanel || _load_OutlineViewPanel()).WORKSPACE_VIEW_URI, { searchAllPanes: true });
+        } },
 
-createPackage(module.exports, Activation);
+      priority: 2.5 // Between diff view and test runner
+    };
+  }}
+
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

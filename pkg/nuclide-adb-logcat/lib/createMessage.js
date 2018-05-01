@@ -1,32 +1,32 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.default =
 
-import type {ConsoleLevel, ConsoleMessage} from 'atom-ide-ui';
-import type {LogcatEntry, Priority} from './types';
 
-/**
- * Convert a structured logcat entry into the format that nuclide-console wants.
- */
-export default function createMessage(entry: LogcatEntry): ConsoleMessage {
-  const priority = (entry.metadata && entry.metadata.priority) || 'I';
-  const tag = (entry.metadata && entry.metadata.tag) || null;
-  return {
-    text: entry.message,
-    level: priorityToLevel(priority),
-    tags: tag ? [tag] : null,
-  };
-}
 
-function priorityToLevel(priority: Priority): ConsoleLevel {
-  switch (priority) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+createMessage; /**
+                * Convert a structured logcat entry into the format that nuclide-console wants.
+                */ /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    * @format
+                    */function createMessage(entry) {const priority = entry.metadata && entry.metadata.priority || 'I';const tag = entry.metadata && entry.metadata.tag || null;return { text: entry.message, level: priorityToLevel(priority), tags: tag ? [tag] : null };}function priorityToLevel(priority) {switch (priority) {
     case 'W': // warn
       return 'warning';
     case 'E': // error
@@ -41,6 +41,6 @@ function priorityToLevel(priority: Priority): ConsoleLevel {
       return 'log';
     case 'V': // verbose
     default:
-      return 'info';
-  }
+      return 'info';}
+
 }

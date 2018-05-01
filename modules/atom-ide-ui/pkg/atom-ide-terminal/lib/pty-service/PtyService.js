@@ -1,181 +1,181 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.PtyImplementation = exports.useTitleAsPath = exports.spawn = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator')); /**
+                                                                                                                                                                                                                                          * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                                          * All rights reserved.
+                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                          * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                                          * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                                          * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                          * 
+                                                                                                                                                                                                                                          * @format
+                                                                                                                                                                                                                                          */let spawn = exports.spawn = (() => {var _ref = (0, _asyncToGenerator.default)(
 
-import fs from 'fs';
-import fsPromise from 'nuclide-commons/fsPromise';
-import * as ptyFactory from 'nuclide-prebuilt-libs/pty';
 
-import os from 'os';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {objectFromMap} from 'nuclide-commons/collection';
-import performanceNow from 'nuclide-commons/performanceNow';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from 'nuclide-commons/analytics';
-import {runCommand} from 'nuclide-commons/process';
 
-import {readConfig} from './shellConfig';
 
-import type {Command, Pty, PtyInfo, PtyClient} from './rpc-types';
 
-export async function spawn(info: PtyInfo, client: PtyClient): Promise<Pty> {
-  return new PtyImplementation(
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function* (info, client) {
+    return new PtyImplementation(
     info,
-    client,
-    await getCommand(info, client),
-    await getEnvironment(info),
-  );
-}
+    client, (
+    yield getCommand(info, client)), (
+    yield getEnvironment(info)));
 
-export async function useTitleAsPath(client: PtyClient): Promise<boolean> {
-  try {
-    const config = await readConfig();
-    // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-    if (config != null && config.useTitleAsPath != null) {
-      return config.useTitleAsPath;
+  });return function spawn(_x, _x2) {return _ref.apply(this, arguments);};})();let useTitleAsPath = exports.useTitleAsPath = (() => {var _ref2 = (0, _asyncToGenerator.default)(
+
+  function* (client) {
+    try {
+      const config = yield (0, (_shellConfig || _load_shellConfig()).readConfig)();
+      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
+      if (config != null && config.useTitleAsPath != null) {
+        return config.useTitleAsPath;
+      }
+    } catch (error) {
+      client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
     }
-  } catch (error) {
-    client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
-  }
 
-  return false;
-}
+    return false;
+  });return function useTitleAsPath(_x3) {return _ref2.apply(this, arguments);};})();let getCommand = (() => {var _ref3 = (0, _asyncToGenerator.default)(
 
-async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
-  // Client-specified command is highest precedence.
-  if (info.command != null) {
-    return info.command;
-  }
-
-  // If no command, fall back to shell command specified in local
-  // (server) config file.  This cannot be Atom config/preference,
-  // since the default shell path varies between client and server.
-  try {
-    const config = await readConfig();
-    if (config != null && config.command != null) {
-      return config.command;
+  function* (info, client) {
+    // Client-specified command is highest precedence.
+    if (info.command != null) {
+      return info.command;
     }
-  } catch (error) {
-    client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
-  }
 
-  try {
-    const defaultShellCommand = await getDefaultShellCommand();
-    if (defaultShellCommand != null) {
-      return defaultShellCommand;
+    // If no command, fall back to shell command specified in local
+    // (server) config file.  This cannot be Atom config/preference,
+    // since the default shell path varies between client and server.
+    try {
+      const config = yield (0, (_shellConfig || _load_shellConfig()).readConfig)();
+      if (config != null && config.command != null) {
+        return config.command;
+      }
+    } catch (error) {
+      client.onOutput(`Error reading ~/.nuclide-terminal.json:\r\n${error}\r\n`);
     }
-  } catch (error) {
-    client.onOutput(`Error getting default shell:\r\n${error}\r\n`);
-  }
 
-  // If no command and no local settings, default to /bin/bash
-  return {
-    file: '/bin/bash',
-    args: ['-l'],
-  };
-}
+    try {
+      const defaultShellCommand = yield getDefaultShellCommand();
+      if (defaultShellCommand != null) {
+        return defaultShellCommand;
+      }
+    } catch (error) {
+      client.onOutput(`Error getting default shell:\r\n${error}\r\n`);
+    }
 
-async function getDefaultShellCommand(): Promise<?Command> {
-  if (process.platform === 'win32') {
+    // If no command and no local settings, default to /bin/bash
     return {
-      file: 'cmd.exe',
-      args: [],
-    };
-  }
+      file: '/bin/bash',
+      args: ['-l'] };
 
-  const userInfo = os.userInfo();
-  const username = userInfo.username;
-  let defaultShell = null;
-  if (process.platform === 'darwin') {
-    const homedir = userInfo.homedir;
-    const output = await runCommand('dscl', [
+  });return function getCommand(_x4, _x5) {return _ref3.apply(this, arguments);};})();let getDefaultShellCommand = (() => {var _ref4 = (0, _asyncToGenerator.default)(
+
+  function* () {
+    if (process.platform === 'win32') {
+      return {
+        file: 'cmd.exe',
+        args: [] };
+
+    }
+
+    const userInfo = _os.default.userInfo();
+    const username = userInfo.username;
+    let defaultShell = null;
+    if (process.platform === 'darwin') {
+      const homedir = userInfo.homedir;
+      const output = yield (0, (_process || _load_process()).runCommand)('dscl', [
       '.',
       '-read',
       homedir,
-      'UserShell',
-    ]).toPromise();
-    // Expected output looks like:
-    //   UserShell: /bin/bash
-    const prefix = 'UserShell: ';
-    if (output != null && output.startsWith(prefix)) {
-      defaultShell = output.substring(prefix.length).trim();
+      'UserShell']).
+      toPromise();
+      // Expected output looks like:
+      //   UserShell: /bin/bash
+      const prefix = 'UserShell: ';
+      if (output != null && output.startsWith(prefix)) {
+        defaultShell = output.substring(prefix.length).trim();
+      }
+    } else if (process.platform === 'linux') {
+      const output = yield (0, (_process || _load_process()).runCommand)('getent', ['passwd', username]).toPromise();
+      // Expected output looks like:
+      //   userid:*:1000:1000:Full Name:/home/userid:/bin/bash
+      defaultShell = output.substring(output.lastIndexOf(':') + 1).trim();
     }
-  } else if (process.platform === 'linux') {
-    const output = await runCommand('getent', ['passwd', username]).toPromise();
-    // Expected output looks like:
-    //   userid:*:1000:1000:Full Name:/home/userid:/bin/bash
-    defaultShell = output.substring(output.lastIndexOf(':') + 1).trim();
-  }
-  if (defaultShell == null || defaultShell === '') {
-    return null;
-  }
+    if (defaultShell == null || defaultShell === '') {
+      return null;
+    }
 
-  // Sanity check that the file exists and is executable
-  const stat = await fsPromise.stat(defaultShell);
-  // eslint-disable-next-line no-bitwise
-  if ((stat.mode & fs.constants.S_IXOTH) === 0) {
-    return null;
-  }
+    // Sanity check that the file exists and is executable
+    const stat = yield (_fsPromise || _load_fsPromise()).default.stat(defaultShell);
+    // eslint-disable-next-line no-bitwise
+    if ((stat.mode & _fs.default.constants.S_IXOTH) === 0) {
+      return null;
+    }
 
-  return {
-    file: defaultShell,
-    args: ['-l'],
-  };
-}
+    return {
+      file: defaultShell,
+      args: ['-l'] };
+
+  });return function getDefaultShellCommand() {return _ref4.apply(this, arguments);};})();
 
 // variable defined in the original atom environment we want
 // erased.
-const filteredVariables = ['NODE_ENV', 'NODE_PATH'];
+let getEnvironment = (() => {var _ref5 = (0, _asyncToGenerator.default)(
 
-async function getEnvironment(info: PtyInfo): Promise<Object> {
-  const newEnv = {...(await getOriginalEnvironment())};
-  for (const x of filteredVariables) {
-    delete newEnv[x];
-  }
-  return {
-    ...newEnv,
-    ...(info.environment != null ? objectFromMap(info.environment) : {}),
-    TERM_PROGRAM: 'nuclide',
-  };
-}
+  function* (info) {
+    const newEnv = Object.assign({}, (yield (0, (_process || _load_process()).getOriginalEnvironment)()));
+    for (const x of filteredVariables) {
+      delete newEnv[x];
+    }
+    return Object.assign({},
+    newEnv,
+    info.environment != null ? (0, (_collection || _load_collection()).objectFromMap)(info.environment) : {}, {
+      TERM_PROGRAM: 'nuclide' });
 
-export class PtyImplementation implements Pty {
-  _subscriptions: UniversalDisposable;
-  _pty: Object;
-  _client: PtyClient;
-  _initialization: {command: string, cwd: string};
-  _startTime: number;
-  _bytesIn: number;
-  _bytesOut: number;
+  });return function getEnvironment(_x6) {return _ref5.apply(this, arguments);};})();var _fs = _interopRequireDefault(require('fs'));var _fsPromise;function _load_fsPromise() {return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));}var _pty;function _load_pty() {return _pty = _interopRequireWildcard(require('nuclide-prebuilt-libs/pty'));}var _os = _interopRequireDefault(require('os'));var _process;function _load_process() {return _process = require('nuclide-commons/process');}var _nuclideUri;function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}var _collection;function _load_collection() {return _collection = require('nuclide-commons/collection');}var _performanceNow;function _load_performanceNow() {return _performanceNow = _interopRequireDefault(require('nuclide-commons/performanceNow'));}var _UniversalDisposable;function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _analytics;function _load_analytics() {return _analytics = require('nuclide-commons/analytics');}var _shellConfig;function _load_shellConfig() {return _shellConfig = require('./shellConfig');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}const filteredVariables = ['NODE_ENV', 'NODE_PATH'];
 
-  constructor(info: PtyInfo, client: PtyClient, command: Command, env: Object) {
-    this._startTime = performanceNow();
+class PtyImplementation {
+
+
+
+
+
+
+
+
+  constructor(info, client, command, env) {
+    this._startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     this._bytesIn = 0;
     this._bytesOut = 0;
     this._initialization = {
       command: [command.file, ...command.args].join(' '),
-      cwd: info.cwd != null ? info.cwd : '',
-    };
-    track('nuclide-pty-rpc.spawn', this._initialization);
+      cwd: info.cwd != null ? info.cwd : '' };
 
-    const subscriptions = (this._subscriptions = new UniversalDisposable());
-    const pty = (this._pty = ptyFactory.spawn(command.file, command.args, {
+    (0, (_analytics || _load_analytics()).track)('nuclide-pty-rpc.spawn', this._initialization);
+
+    const subscriptions = this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    const pty = this._pty = (_pty || _load_pty()).spawn(command.file, command.args, {
       name: info.terminalType,
       cwd:
-        info.cwd != null
-          ? nuclideUri.expandHomeDir(info.cwd)
-          : nuclideUri.expandHomeDir('~'),
-      env,
-    }));
+      info.cwd != null ?
+      (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(info.cwd) :
+      (_nuclideUri || _load_nuclideUri()).default.expandHomeDir('~'),
+      env });
+
     subscriptions.add(() => pty.destroy());
     // We need to dispose PtyClient here so that the client can GC the client.
     // (Otherwise, Nuclide's RPC framework will keep it around forever).
@@ -195,37 +195,36 @@ export class PtyImplementation implements Pty {
     subscriptions.add(() => pty.removeListener('exit', onExit));
   }
 
-  _onOutput(data: string): void {
+  _onOutput(data) {
     this._bytesOut += data.length;
     this._client.onOutput(data);
   }
 
-  _onExit(code: number, signal: number): void {
-    track('nuclide-pty-rpc.on-exit', {
-      ...this._initialization,
+  _onExit(code, signal) {
+    (0, (_analytics || _load_analytics()).track)('nuclide-pty-rpc.on-exit', Object.assign({},
+    this._initialization, {
       bytesIn: String(this._bytesIn),
       bytesOut: String(this._bytesOut),
-      duration: String((performanceNow() - this._startTime) / 1000),
+      duration: String(((0, (_performanceNow || _load_performanceNow()).default)() - this._startTime) / 1000),
       exitCode: String(code),
-      signal: String(code),
-    });
+      signal: String(code) }));
+
     this._client.onExit(code, signal);
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 
-  resize(columns: number, rows: number): void {
+  resize(columns, rows) {
     if (this._pty.writable) {
       this._pty.resize(columns, rows);
     }
   }
 
-  writeInput(data: string): void {
+  writeInput(data) {
     if (this._pty.writable) {
       this._bytesIn += data.length;
       this._pty.write(data);
     }
-  }
-}
+  }}exports.PtyImplementation = PtyImplementation;

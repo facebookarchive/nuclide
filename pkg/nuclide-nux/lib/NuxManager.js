@@ -1,57 +1,57 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.NuxManager = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {Emitter} from 'atom';
-import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
-import {arrayCompact} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
-import {maybeToString} from 'nuclide-commons/string';
 
-import {getLogger} from 'log4js';
-import {track} from '../../nuclide-analytics';
 
-import {NuxStore} from './NuxStore';
-import {NuxTour} from './NuxTour';
-import {NuxView} from './NuxView';
 
-import type {NuxTourModel} from './NuxModel';
-import type {SyncCompletedNux} from './main';
+
+
+
+
+
+
+var _atom = require('atom');var _textEditor;
+function _load_textEditor() {return _textEditor = require('nuclide-commons-atom/text-editor');}var _collection;
+function _load_collection() {return _collection = require('nuclide-commons/collection');}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _passesGK;
+function _load_passesGK() {return _passesGK = require('../../commons-node/passesGK');}var _string;
+function _load_string() {return _string = require('nuclide-commons/string');}var _log4js;
+
+function _load_log4js() {return _log4js = require('log4js');}var _nuclideAnalytics;
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}var _NuxStore;
+
+function _load_NuxStore() {return _NuxStore = require('./NuxStore');}var _NuxTour;
+function _load_NuxTour() {return _NuxTour = require('./NuxTour');}var _NuxView;
+function _load_NuxView() {return _NuxView = require('./NuxView');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+
+
 
 // Limits the number of NUXes displayed every session
-const NUX_PER_SESSION_LIMIT = 3;
-const NEW_TOUR_EVENT = 'nuxTourNew';
-const READY_TOUR_EVENT = 'nuxTourReady';
+const NUX_PER_SESSION_LIMIT = 3; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  * @format
+                                  */const NEW_TOUR_EVENT = 'nuxTourNew';const READY_TOUR_EVENT = 'nuxTourReady';const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-nux');class NuxManager {
 
-const logger = getLogger('nuclide-nux');
-
-export class NuxManager {
-  _nuxStore: NuxStore;
-  _disposables: UniversalDisposable;
-  _emitter: atom$Emitter;
-  _activeNuxTour: ?NuxTour;
   // Maps a NUX's unique ID to its corresponding NuxTour
   // Registered NUXes that are waiting to be triggered
-  _pendingNuxes: Map<number, NuxTour>;
-  // Triggered NUXes that are waiting to be displayed
-  _readyToDisplayNuxes: Array<NuxTour>;
-  _numNuxesDisplayed: number;
-  _syncCompletedNux: SyncCompletedNux;
 
-  constructor(nuxStore: NuxStore, syncCompletedNux: SyncCompletedNux): void {
+
+
+
+
+
+  constructor(nuxStore, syncCompletedNux) {
     this._nuxStore = nuxStore;
     this._syncCompletedNux = syncCompletedNux;
 
-    this._emitter = new Emitter();
-    this._disposables = new UniversalDisposable();
+    this._emitter = new _atom.Emitter();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
     this._pendingNuxes = new Map();
     this._readyToDisplayNuxes = [];
@@ -62,27 +62,27 @@ export class NuxManager {
     this._emitter.on(READY_TOUR_EVENT, this._handleReadyTour.bind(this));
 
     this._disposables.add(
-      this._nuxStore.onNewNux(this._handleNewNux.bind(this)),
-    );
+    this._nuxStore.onNewNux(this._handleNewNux.bind(this)));
+
     this._disposables.add(
-      atom.workspace.onDidStopChangingActivePaneItem(
-        this._handleActivePaneItemChanged.bind(this),
-      ),
-    );
+    atom.workspace.onDidStopChangingActivePaneItem(
+    this._handleActivePaneItemChanged.bind(this)));
+
+
 
     this._nuxStore.initialize();
   }
 
   // Routes new NUX through the NuxStore so that the store can deal with
   // registering of previously completed or existing NUXes.
-  addNewNux(nux: NuxTourModel): IDisposable {
-    this._nuxStore.addNewNux(nux);
-    return new UniversalDisposable(() => {
+  // Triggered NUXes that are waiting to be displayed
+  addNewNux(nux) {this._nuxStore.addNewNux(nux);
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._removeNux(nux.id);
     });
   }
 
-  _removeNux(id: number): void {
+  _removeNux(id) {
     if (this._activeNuxTour != null && this._activeNuxTour.getID() === id) {
       this._activeNuxTour.forceEnd();
       return;
@@ -91,7 +91,7 @@ export class NuxManager {
     this._removeNuxFromList(this._readyToDisplayNuxes, id);
   }
 
-  _removeNuxFromList(list: Array<NuxTour>, id: number): void {
+  _removeNuxFromList(list, id) {
     for (let i = 0; i < list.length; i++) {
       if (list[i].getID() === id) {
         list.splice(i--, 1);
@@ -101,51 +101,51 @@ export class NuxManager {
   }
 
   // Handles new NUXes emitted from the store
-  _handleNewNux(nuxTourModel: NuxTourModel): void {
-    const nuxViews = arrayCompact(
-      nuxTourModel.nuxList.map((model, index, arr) => {
-        try {
-          return new NuxView(
-            nuxTourModel.id,
-            model.selector,
-            model.selectorFunction,
-            model.position,
-            model.content,
-            model.completionPredicate,
-            index,
-            arr.length, // Number of NuxViewModels in the NuxTourModel
-          );
-        } catch (err) {
-          const error = `NuxView #${index} for "${
-            nuxTourModel.id
-          }" failed to instantiate.`;
-          logger.error(`ERROR: ${error}`, err);
-          this._track(
-            nuxTourModel.id,
-            nuxTourModel.name,
-            `NuxView #${index + 1} failed to instantiate.`,
-            err.toString(),
-          );
-          return null;
-        }
-      }),
-    );
+  _handleNewNux(nuxTourModel) {
+    const nuxViews = (0, (_collection || _load_collection()).arrayCompact)(
+    nuxTourModel.nuxList.map((model, index, arr) => {
+      try {
+        return new (_NuxView || _load_NuxView()).NuxView(
+        nuxTourModel.id,
+        model.selector,
+        model.selectorFunction,
+        model.position,
+        model.content,
+        model.completionPredicate,
+        index,
+        arr.length);
 
-    const nuxTour = new NuxTour(
-      nuxTourModel.id,
-      nuxTourModel.name,
-      nuxViews,
-      nuxTourModel.trigger,
-      nuxTourModel.gatekeeperID,
-    );
+      } catch (err) {
+        const error = `NuxView #${index} for "${
+        nuxTourModel.id
+        }" failed to instantiate.`;
+        logger.error(`ERROR: ${error}`, err);
+        this._track(
+        nuxTourModel.id,
+        nuxTourModel.name,
+        `NuxView #${index + 1} failed to instantiate.`,
+        err.toString());
+
+        return null;
+      }
+    }));
+
+
+    const nuxTour = new (_NuxTour || _load_NuxTour()).NuxTour(
+    nuxTourModel.id,
+    nuxTourModel.name,
+    nuxViews,
+    nuxTourModel.trigger,
+    nuxTourModel.gatekeeperID);
+
 
     this._emitter.emit(NEW_TOUR_EVENT, {
       nuxTour,
-      nuxTourModel,
-    });
+      nuxTourModel });
+
   }
 
-  _handleNuxCompleted(nuxTourModel: NuxTourModel): void {
+  _handleNuxCompleted(nuxTourModel) {
     this._activeNuxTour = null;
     this._nuxStore.onNuxCompleted(nuxTourModel);
     this._syncCompletedNux(nuxTourModel.id);
@@ -157,22 +157,22 @@ export class NuxManager {
   }
 
   // Handles NUX registry
-  _handleNewTour(value: any) {
-    const {nuxTour, nuxTourModel} = value;
+  _handleNewTour(value) {
+    const { nuxTour, nuxTourModel } = value;
 
     nuxTour.setNuxCompleteCallback(
-      this._handleNuxCompleted.bind(this, nuxTourModel),
-    );
+    this._handleNuxCompleted.bind(this, nuxTourModel));
+
 
     this._pendingNuxes.set(nuxTour.getID(), nuxTour);
   }
 
   // Handles triggered NUXes that are ready to be displayed
-  _handleReadyTour(nuxTour: NuxTour): void {
+  _handleReadyTour(nuxTour) {
     if (
-      this._activeNuxTour == null &&
-      this._numNuxesDisplayed < NUX_PER_SESSION_LIMIT
-    ) {
+    this._activeNuxTour == null &&
+    this._numNuxesDisplayed < NUX_PER_SESSION_LIMIT)
+    {
       this._numNuxesDisplayed++;
       this._activeNuxTour = nuxTour;
       nuxTour.begin();
@@ -183,89 +183,89 @@ export class NuxManager {
   }
 
   /*
-   * An internal function that tries to trigger a NUX if its trigger type is
-   * 'editor' and its `isReady` function returns to `true`.
-   * Called every time the active pane item changes.
-   */
-  async _handleActivePaneItemChanged(paneItem: ?mixed): Promise<void> {
-    // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
-    // Atom's API, but usually is.  We return if the type is not `TextEditor`
-    // since `NuxTour.isReady` expects a `TextEditor` as its argument.
-    if (!isValidTextEditor(paneItem)) {
-      return;
-    }
-    // Flow doesn't understand the refinement done above.
-    const textEditor: atom$TextEditor = (paneItem: any);
-
-    for (const [id: string, nux: NuxTour] of this._pendingNuxes.entries()) {
-      if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
-        continue;
-      }
-      // Remove NUX from pending list.
-      this._pendingNuxes.delete(id);
-      // We do the above regardless of whether the following GK checks pass/fail
-      // to avoid repeating the checks again.
-      const gkID = nux.getGatekeeperID();
-      try {
-        // Disable the linter suggestion to use `Promise.all` as we want to trigger NUXes
-        // as soon as each promise resolves rather than waiting for them all to.
-        // eslint-disable-next-line no-await-in-loop
-        if (await this._canTriggerNux(gkID)) {
-          this._emitter.emit(READY_TOUR_EVENT, nux);
-        }
-      } catch (err) {
-        // Errors if the NuxManager was disposed while awaiting the result
-        // so we don't search the rest of the list.
+     * An internal function that tries to trigger a NUX if its trigger type is
+     * 'editor' and its `isReady` function returns to `true`.
+     * Called every time the active pane item changes.
+     */
+  _handleActivePaneItemChanged(paneItem) {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
+      // Atom's API, but usually is.  We return if the type is not `TextEditor`
+      // since `NuxTour.isReady` expects a `TextEditor` as its argument.
+      if (!(0, (_textEditor || _load_textEditor()).isValidTextEditor)(paneItem)) {
         return;
       }
-    }
+      // Flow doesn't understand the refinement done above.
+      const textEditor = paneItem;
+
+      for (const [id, nux] of _this._pendingNuxes.entries()) {
+        if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
+          continue;
+        }
+        // Remove NUX from pending list.
+        _this._pendingNuxes.delete(id);
+        // We do the above regardless of whether the following GK checks pass/fail
+        // to avoid repeating the checks again.
+        const gkID = nux.getGatekeeperID();
+        try {
+          // Disable the linter suggestion to use `Promise.all` as we want to trigger NUXes
+          // as soon as each promise resolves rather than waiting for them all to.
+          // eslint-disable-next-line no-await-in-loop
+          if (yield _this._canTriggerNux(gkID)) {
+            _this._emitter.emit(READY_TOUR_EVENT, nux);
+          }
+        } catch (err) {
+          // Errors if the NuxManager was disposed while awaiting the result
+          // so we don't search the rest of the list.
+          return;
+        }
+      }})();
   }
 
   /*
-   * A function exposed externally via a service that tries to trigger a NUX.
-   */
-  async tryTriggerNux(id: number): Promise<void> {
-    const nuxToTrigger = this._pendingNuxes.get(id);
-    // Silently fail if the NUX is not found. This isn't an "error" to log, since the NUX
-    // may be triggered again even after it has been seen, but should only be shown once.
-    if (nuxToTrigger == null) {
-      return;
-    }
-
-    // Remove NUX from pending list.
-    this._pendingNuxes.delete(id);
-    // We do the above regardless of whether the following GK checks pass/fail
-    // to avoid repeating the checks again.
-    const gkID = nuxToTrigger.getGatekeeperID();
-    try {
-      if (await this._canTriggerNux(gkID)) {
-        this._emitter.emit(READY_TOUR_EVENT, nuxToTrigger);
+     * A function exposed externally via a service that tries to trigger a NUX.
+     */
+  tryTriggerNux(id) {var _this2 = this;return (0, _asyncToGenerator.default)(function* () {
+      const nuxToTrigger = _this2._pendingNuxes.get(id);
+      // Silently fail if the NUX is not found. This isn't an "error" to log, since the NUX
+      // may be triggered again even after it has been seen, but should only be shown once.
+      if (nuxToTrigger == null) {
+        return;
       }
-    } catch (err) {}
+
+      // Remove NUX from pending list.
+      _this2._pendingNuxes.delete(id);
+      // We do the above regardless of whether the following GK checks pass/fail
+      // to avoid repeating the checks again.
+      const gkID = nuxToTrigger.getGatekeeperID();
+      try {
+        if (yield _this2._canTriggerNux(gkID)) {
+          _this2._emitter.emit(READY_TOUR_EVENT, nuxToTrigger);
+        }
+      } catch (err) {}})();
   }
 
   /*
-   * Given a NUX-specific GK, determines whether the NUX can be displayed to the user.
-   *
-   * @return {Promise<boolean>} A promise that rejects if the manager disposes when waiting
-   *  on GKs, or resolves a boolean describing whether or not the NUX should be displayed.
-   */
-  _canTriggerNux(gkID: ?string): Promise<boolean> {
+     * Given a NUX-specific GK, determines whether the NUX can be displayed to the user.
+     *
+     * @return {Promise<boolean>} A promise that rejects if the manager disposes when waiting
+     *  on GKs, or resolves a boolean describing whether or not the NUX should be displayed.
+     */
+  _canTriggerNux(gkID) {
     return new Promise((resolve, reject) => {
-      const cleanupDisposable = new UniversalDisposable(() => {
+      const cleanupDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
         gkDisposable.dispose();
         reject(new Error('NuxManager was disposed while waiting on GKs.'));
       });
-      const gkDisposable = onceGkInitialized(() => {
+      const gkDisposable = (0, (_passesGK || _load_passesGK()).onceGkInitialized)(() => {
         // Only show the NUX if
         //  a) the user is an OSS user OR
         //  b) the user is an internal user and passes the `nuclide_all_nuxes` GK AND
         //     i) either there is no NUX-specific GK OR
         //    ii) there is a NUX-specific GK and the user passes it
-        const shouldShowNuxes = isGkEnabled('cpe_nuclide')
-          ? isGkEnabled('nuclide_all_nuxes') &&
-            (gkID == null || isGkEnabled(gkID))
-          : true;
+        const shouldShowNuxes = (0, (_passesGK || _load_passesGK()).isGkEnabled)('cpe_nuclide') ?
+        (0, (_passesGK || _load_passesGK()).isGkEnabled)('nuclide_all_nuxes') && (
+        gkID == null || (0, (_passesGK || _load_passesGK()).isGkEnabled)(gkID)) :
+        true;
 
         // No longer need to cleanup
         this._disposables.remove(cleanupDisposable);
@@ -278,21 +278,20 @@ export class NuxManager {
     });
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
   _track(
-    tourId: number,
-    tourName: string,
-    message: string,
-    error: ?string = null,
-  ): void {
-    track('nux-manager-action', {
+  tourId,
+  tourName,
+  message,
+  error = null)
+  {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nux-manager-action', {
       tourId,
       tourName,
       message: `${message}`,
-      error: maybeToString(error),
-    });
-  }
-}
+      error: (0, (_string || _load_string()).maybeToString)(error) });
+
+  }}exports.NuxManager = NuxManager;

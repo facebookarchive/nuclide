@@ -1,39 +1,39 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });
 
-import type Immutable from 'immutable';
 
-export class LazyTreeNode {
-  // Protected
-  __isContainer: boolean;
-  __item: any;
-  __key: ?string;
-  __parent: ?LazyTreeNode;
 
-  // Private
-  _children: ?Immutable.List<LazyTreeNode>;
-  _fetchChildren: (node: LazyTreeNode) => Promise<Immutable.List<LazyTreeNode>>;
-  _isCacheValid: boolean;
-  _pendingFetch: ?Promise<any>;
+
+
+
+
+
+
+
+
+
+class LazyTreeNode {
+
+
+
+
+
+
+
+
+
+
+
 
   /**
-   * @param fetchChildren returns a Promise that resolves to an Immutable.List
-   *     of LazyTreeNode objects.
-   */
-  constructor(
-    item: any,
-    parent: ?LazyTreeNode,
-    isContainer: boolean,
-    fetchChildren: (node: LazyTreeNode) => Promise<any>,
-  ) {
+                     * @param fetchChildren returns a Promise that resolves to an Immutable.List
+                     *     of LazyTreeNode objects.
+                     */ // Private
+  // Protected
+  constructor(item,
+  parent,
+  isContainer,
+  fetchChildren)
+  {
     this.__item = item;
     this.__parent = parent;
     this.__isContainer = isContainer;
@@ -44,24 +44,24 @@ export class LazyTreeNode {
     this.__key = null;
   }
 
-  isRoot(): boolean {
+  isRoot() {
     // eslint-disable-next-line eqeqeq
     return this.__parent === null;
   }
 
-  getParent(): ?LazyTreeNode {
+  getParent() {
     return this.__parent;
   }
 
-  getItem(): any {
+  getItem() {
     return this.__item;
   }
 
-  getCachedChildren(): ?Immutable.List<LazyTreeNode> {
+  getCachedChildren() {
     return this._children;
   }
 
-  fetchChildren(): Promise<Immutable.List<LazyTreeNode>> {
+  fetchChildren() {
     let pendingFetch = this._pendingFetch;
     if (!pendingFetch) {
       pendingFetch = this._fetchChildren(this).then(children => {
@@ -83,10 +83,10 @@ export class LazyTreeNode {
   }
 
   /**
-   * Each node should have a key that uniquely identifies it among the
-   * LazyTreeNodes that make up the tree.
-   */
-  getKey(): string {
+     * Each node should have a key that uniquely identifies it among the
+     * LazyTreeNodes that make up the tree.
+     */
+  getKey() {
     let key = this.__key;
     // flowlint-next-line sketchy-null-string:off
     if (!key) {
@@ -100,28 +100,36 @@ export class LazyTreeNode {
   }
 
   /**
-   * @return the string that the tree UI should display for the node
-   */
-  getLabel(): string {
+     * @return the string that the tree UI should display for the node
+     */
+  getLabel() {
     throw new Error('subclasses must override this method');
   }
 
   /**
-   * This can return a richer element for a node and will be used instead of the label if present.
-   */
-  getLabelElement(): ?React$Element<any> {
+     * This can return a richer element for a node and will be used instead of the label if present.
+     */
+  getLabelElement() {
     return null;
   }
 
-  isContainer(): boolean {
+  isContainer() {
     return this.__isContainer;
   }
 
-  isCacheValid(): boolean {
+  isCacheValid() {
     return this._isCacheValid;
   }
 
-  invalidateCache(): void {
+  invalidateCache() {
     this._isCacheValid = false;
-  }
-}
+  }}exports.LazyTreeNode = LazyTreeNode; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */

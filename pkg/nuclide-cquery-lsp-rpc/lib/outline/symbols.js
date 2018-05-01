@@ -1,20 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import type {SymbolInformation} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-import {SymbolKind} from '../../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-export function isFunction(symbol: SymbolInformation): boolean {
-  return (
-    symbol.kind === SymbolKind.Function || symbol.kind === SymbolKind.Method
-  );
-}
+
+
+
+
+
+
+
+
+
+
+
+isFunction = isFunction;var _protocol;function _load_protocol() {return _protocol = require('../../../nuclide-vscode-language-service-rpc/lib/protocol');} /**
+                                                                                                                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                            * All rights reserved.
+                                                                                                                                                            *
+                                                                                                                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                            * the root directory of this source tree.
+                                                                                                                                                            *
+                                                                                                                                                            * 
+                                                                                                                                                            * @format
+                                                                                                                                                            */function isFunction(symbol) {return symbol.kind === (_protocol || _load_protocol()).SymbolKind.Function || symbol.kind === (_protocol || _load_protocol()).SymbolKind.Method;}
