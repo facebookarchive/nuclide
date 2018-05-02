@@ -63,6 +63,7 @@ class Activation {
   createDebuggerConfigurator(): DebuggerConfigurationProvider {
     return {
       resolveConfiguration,
+      adapterType: VsAdapterTypes.REACT_NATIVE,
     };
   }
 }
@@ -177,14 +178,12 @@ function getReactNativeConfig(): AutoGenConfig {
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  const {adapterType, config} = configuration;
-  if (adapterType === VsAdapterTypes.REACT_NATIVE) {
-    if (config.outDir == null) {
-      config.outDir = _deriveOutDirFromWorkspace(config.workspace);
-    }
-    config.program = _deriveProgramFromWorkspace(config.workspace);
-    delete config.workspace;
+  const {config} = configuration;
+  if (config.outDir == null) {
+    config.outDir = _deriveOutDirFromWorkspace(config.workspace);
   }
+  config.program = _deriveProgramFromWorkspace(config.workspace);
+  delete config.workspace;
   return configuration;
 }
 

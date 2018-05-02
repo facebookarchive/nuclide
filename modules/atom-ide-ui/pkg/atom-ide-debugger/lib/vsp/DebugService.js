@@ -1199,7 +1199,7 @@ export default class DebugService implements IDebugService {
 
     const session = await this._createVsDebugSession(
       configuration,
-      adapterExecutable,
+      configuration.adapterExecutable || adapterExecutable,
       sessionId,
     );
     try {
@@ -1227,6 +1227,24 @@ export default class DebugService implements IDebugService {
       // We're not awaiting launch/attach to finish because some debug adapters
       // need to do custom work for launch/attach to work (e.g. mobilejs)
       this._launchOrAttachTarget(session, configuration).catch(errorHandler);
+
+      // make sure to add the configuration.customDisposable to dispose on
+      //   session end
+      const customDisposable = configuration.customDisposable;
+      if (customDisposable != null) {
+        customDisposable.add(
+          this.viewModel.onDidFocusProcess(() => {
+            if (
+              !this.getModel()
+                .getProcesses()
+                .includes(process)
+            ) {
+              customDisposable.dispose();
+            }
+          }),
+        );
+      }
+
       return process;
     } catch (error) {
       errorHandler(error);

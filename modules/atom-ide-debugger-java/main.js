@@ -16,6 +16,7 @@ import type {
 } from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {getJavaConfig, setRpcService, resolveConfiguration} from './utils';
 
@@ -39,6 +40,7 @@ class Activation {
   createDebuggerConfigurator(): DebuggerConfigurationProvider {
     return {
       resolveConfiguration,
+      adapterType: VsAdapterTypes.JAVA,
     };
   }
 

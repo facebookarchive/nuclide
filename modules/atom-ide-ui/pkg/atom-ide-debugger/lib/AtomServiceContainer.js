@@ -19,6 +19,7 @@ import type {
 import type {
   DebuggerConfigurationProvider,
   IProcessConfig,
+  VsAdapterType,
 } from 'nuclide-debugger-common';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -36,7 +37,10 @@ let _datatipService: ?DatatipService = null;
 let _createConsole: ?ConsoleService = null;
 let _terminalService: ?TerminalApi = null;
 let _rpcService: ?nuclide$RpcService = null;
-let _configurationProviders: Array<DebuggerConfigurationProvider> = [];
+const _configurationProviders: Map<
+  VsAdapterType,
+  DebuggerConfigurationProvider,
+> = new Map();
 
 export function setConsoleService(createConsole: ConsoleService): IDisposable {
   _createConsole = createConsole;
@@ -108,23 +112,26 @@ export function isNuclideEnvironment(): boolean {
 export function addDebugConfigurationProvider(
   provider: DebuggerConfigurationProvider,
 ): IDisposable {
-  _configurationProviders.push(provider);
-  return new UniversalDisposable(() => {
-    _configurationProviders = _configurationProviders.filter(
-      p => p !== provider,
+  const existingProvider = _configurationProviders.get(provider.adapterType);
+  if (existingProvider != null) {
+    throw new Error(
+      'Debug Configuration Provider already exists for adapter type: ' +
+        provider.adapterType,
     );
+  }
+  _configurationProviders.set(provider.adapterType, provider);
+  return new UniversalDisposable(() => {
+    _configurationProviders.delete(provider.adapterType);
   });
 }
 
 export async function resolveDebugConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  let resolvedConfiguration = configuration;
-  for (const provider of _configurationProviders) {
-    // eslint-disable-next-line no-await-in-loop
-    resolvedConfiguration = await provider.resolveConfiguration(
-      resolvedConfiguration,
-    );
-  }
-  return resolvedConfiguration;
+  const existingProvider = _configurationProviders.get(
+    configuration.adapterType,
+  );
+  return existingProvider != null
+    ? existingProvider.resolveConfiguration(configuration)
+    : configuration;
 }

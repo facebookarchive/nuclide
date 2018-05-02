@@ -91,10 +91,13 @@ export async function resolveConfiguration(
   const {adapterExecutable, targetUri} = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
-  } else if (adapterExecutable.command === 'lldb-vscode') {
-    adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
   }
-  return configuration;
+
+  adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
+  return {
+    ...configuration,
+    adapterExecutable,
+  };
 }
 
 export function getNativeAutoGenConfig(

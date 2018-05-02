@@ -70,17 +70,18 @@ export function getJavaConfig(): AutoGenConfig {
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  const {adapterExecutable, targetUri, adapterType} = configuration;
+  const {adapterExecutable, targetUri} = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
-  } else if (adapterType === VsAdapterTypes.JAVA) {
-    const javaAdapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
-      targetUri,
-    ).getJavaVSAdapterExecutableInfo(false);
-    adapterExecutable.command = javaAdapterExecutable.command;
-    adapterExecutable.args = javaAdapterExecutable.args;
   }
-  return configuration;
+
+  const javaAdapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
+    targetUri,
+  ).getJavaVSAdapterExecutableInfo(false);
+  return {
+    ...configuration,
+    adapterExecutable: javaAdapterExecutable,
+  };
 }
 
 export function setRpcService(rpcService: nuclide$RpcService): IDisposable {

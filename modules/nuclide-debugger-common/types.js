@@ -10,6 +10,7 @@
  * @format
  */
 
+import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {Observable, ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -87,6 +88,7 @@ export type IProcessConfig = {|
   +config: Object,
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
+  +customDisposable?: UniversalDisposable,
 |};
 
 export interface IVsAdapterSpawner {
@@ -162,4 +164,5 @@ export type LaunchAttachProviderIsEnabled = (
 
 export interface DebuggerConfigurationProvider {
   resolveConfiguration(configuration: IProcessConfig): Promise<IProcessConfig>;
+  adapterType: VsAdapterType;
 }

@@ -449,6 +449,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         customControlButtons: [],
         threadsComponentTitle: 'Threads',
       },
+      customDisposable: new UniversalDisposable(),
     });
 
     serializeDebuggerConfig(...this._getSerializationArgs(this.props), {
