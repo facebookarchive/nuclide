@@ -65,8 +65,7 @@ export default class FeatureLoader {
 
   _config: ?Object;
   _features: Array<Feature>;
-  _featureGroups: {[string]: Array<string>};
-  _featureGroupMap: MultiMap<string, Feature> = new MultiMap();
+  _featureGroups: MultiMap<string, Feature>;
   _pkgName: string;
   _path: string;
   _currentlyActiveFeatures: Set<Feature> = new Set();
@@ -76,10 +75,10 @@ export default class FeatureLoader {
     this._features = reorderFeatures(features);
     this._loadDisposable = new UniversalDisposable();
     this._pkgName = packageNameFromPath(this._path);
-    this._featureGroups = featureGroups == null ? {} : featureGroups;
-
-    // Constructs the map from feature groups to features.
-    this.constructFeatureGroupMap();
+    this._featureGroups = groupFeatures(
+      this._features,
+      featureGroups == null ? {} : featureGroups,
+    );
   }
 
   // Build the config. Should occur with root package's load
@@ -237,7 +236,7 @@ export default class FeatureLoader {
     if (enabledFeatureGroups != null) {
       featuresInEnabledGroups = setUnion(
         ...enabledFeatureGroups.map(featureGroup =>
-          this._featureGroupMap.get(featureGroup),
+          this._featureGroups.get(featureGroup),
         ),
       );
     } else {
@@ -246,7 +245,7 @@ export default class FeatureLoader {
     }
 
     const requiredFeatures =
-      this._featureGroupMap.get(REQUIRED_FEATURE_GROUP) || new Set();
+      this._featureGroups.get(REQUIRED_FEATURE_GROUP) || new Set();
 
     // If a feature is "always enabled", it should be on whether or not a feature-group includes it.
     // If a feature is "default", it should be on if and only if a feature-group includes it.
@@ -261,33 +260,6 @@ export default class FeatureLoader {
         );
       }),
     );
-  }
-
-  constructFeatureGroupMap() {
-    /*
-     * Construct a map from feature name to feature. The _featureGroupMap
-     * must contain the true feature objects, but featureGroups.cson only has
-     * the feature names.
-     */
-    const featureMap = new Map();
-    this._features.forEach(feature => {
-      featureMap.set(path.basename(feature.path), feature);
-    });
-
-    for (const key of Object.keys(this._featureGroups)) {
-      if (Array.isArray(this._featureGroups[key])) {
-        const featuresForKey = this._featureGroups[key]
-          .map(featureName => featureMap.get(featureName))
-          .filter(Boolean);
-        if (featuresForKey != null) {
-          this._featureGroupMap.set(key, featuresForKey);
-        }
-      }
-    }
-  }
-
-  getFeatureGroups(): MultiMap<string, Feature> {
-    return this._featureGroupMap;
   }
 
   getConfig(): Object {
@@ -502,4 +474,33 @@ function reorderFeatures(features_: Array<Feature>): Array<Feature> {
     return aIndex - bIndex;
   });
   return features;
+}
+
+/**
+ * Construct a map whose keys are feature group names and values are sets of features belonging to
+ * the group.
+ */
+function groupFeatures(
+  features: Array<Feature>,
+  rawFeatureGroups: {
+    [string]: Array<string>,
+  },
+): MultiMap<string, Feature> {
+  const namesToFeatures = new Map();
+  features.forEach(feature => {
+    namesToFeatures.set(path.basename(feature.path), feature);
+  });
+
+  const featureGroups = new MultiMap();
+  for (const key of Object.keys(rawFeatureGroups)) {
+    if (Array.isArray(rawFeatureGroups[key])) {
+      const featuresForKey = rawFeatureGroups[key]
+        .map(featureName => namesToFeatures.get(featureName))
+        .filter(Boolean);
+      if (featuresForKey != null) {
+        featureGroups.set(key, featuresForKey);
+      }
+    }
+  }
+  return featureGroups;
 }
