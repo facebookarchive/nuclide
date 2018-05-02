@@ -116,7 +116,10 @@ export class AutocompleteProvider<T: LanguageService> {
       '0.0.0',
       new AutocompleteProvider(
         name,
-        grammars.map(grammar => '.' + grammar).join(', '),
+        // tree-sitter grammars won't include the ".".
+        grammars
+          .map(grammar => (grammar.includes('.') ? '.' + grammar : grammar))
+          .join(', '),
         config.inclusionPriority,
         config.suggestionPriority,
         config.disableForSelector,

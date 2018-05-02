@@ -9,6 +9,6 @@
  * @format
  */
 
-export const GRAMMARS = ['source.python'];
+export const GRAMMARS = ['source.python', 'python'];
 export const GRAMMAR_SET: Set<string> = new Set(GRAMMARS);
 export const PACKAGE_NAME = 'nuclide-python';
