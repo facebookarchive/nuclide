@@ -9,16 +9,16 @@
  * @format
  */
 
-import type {CancellationToken, JsonRpcConnection} from './jsonrpc';
+import type {CancellationToken, MessageConnection} from 'vscode-jsonrpc';
 
 import * as p from './protocol';
 
-// This is a strongly typed encapsulation over an underlying JsonRpcConnection
+// This is a strongly typed encapsulation over an underlying MessageConnection
 // transport, which exposes only the LSP methods.
 export class LspConnection {
-  _jsonRpcConnection: JsonRpcConnection;
+  _jsonRpcConnection: MessageConnection;
 
-  constructor(jsonRpcConnection: JsonRpcConnection) {
+  constructor(jsonRpcConnection: MessageConnection) {
     this._jsonRpcConnection = jsonRpcConnection;
   }
 

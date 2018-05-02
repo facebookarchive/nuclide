@@ -10,8 +10,9 @@
  * @format
  */
 
-import type {JsonRpcConnection} from '../../pkg/nuclide-vscode-language-service-rpc/lib/jsonrpc';
+import type {MessageConnection} from 'vscode-jsonrpc';
 
+import {getLogger} from 'log4js';
 import {DefaultMap} from 'nuclide-commons/collection';
 import {Observable, Subject} from 'rxjs';
 import * as jsonrpc from 'vscode-jsonrpc';
@@ -23,7 +24,7 @@ import {AbstractMessageWriter} from 'vscode-jsonrpc/lib/messageWriter';
 // eslint-disable-next-line
 export opaque type Socket = number;
 
-export type ServiceConnection = JsonRpcConnection & {|config: Object|};
+export type ServiceConnection = MessageConnection & {config: Object};
 
 // Each JSON-RPC message comes from a socket.
 // Include the socket as a field in the message.
@@ -108,14 +109,15 @@ export default class ExperimentalMessageRouter {
   }
 
   createConnection(socket: Socket, config: ?Object): ServiceConnection {
-    const connection = jsonrpc.createMessageConnection(
+    const connection: ServiceConnection = (jsonrpc.createMessageConnection(
       // Messages intended for socket actually come through -socket.
       new SimpleReader(cb =>
         this.getMessages(this.reverseSocket(socket)).subscribe(cb),
       ),
       // Tag each message with the socket it originated from.
       new SimpleWriter(msg => this.send({...msg, socket})),
-    );
+      getLogger('ExperimentalMessageRouter-jsonrpc'),
+    ): any);
     connection.config = config || {};
     connection.listen();
     return connection;

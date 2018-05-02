@@ -9,9 +9,13 @@
  * @format
  */
 
-import type {JsonRpcConnection} from '../../nuclide-vscode-language-service-rpc/lib/jsonrpc';
+import type {MessageConnection} from 'vscode-jsonrpc';
 import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
-import type {OpenParams, UpdateParams} from './WindowServiceClient';
+import type {
+  OpenParams,
+  UpdateParams,
+  DestroyParams,
+} from './WindowServiceClient';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
@@ -28,7 +32,7 @@ let windowCount = 1;
 const windowManagers: Map<number, WindowManager> = new Map();
 const windowManagersToConnections: WeakMap<
   WindowManager,
-  JsonRpcConnection,
+  MessageConnection,
 > = new WeakMap();
 
 // TODO: Actually get this information from package.json files.
@@ -56,10 +60,10 @@ export default function connectClient(
   connection: ServiceConnection,
 ): IDisposable {
   const disposables = new UniversalDisposable();
-  connection.onRequest({method: 'open'}, async (params: OpenParams<*>) => {
+  connection.onRequest({method: 'open'}, (params: OpenParams<*>): number => {
     logger.info('got create request:', params);
     if (disposables.disposed) {
-      return;
+      throw Error('attempted to open after dispose');
     }
     const windowId = windowCount++;
     const windowManager = new WindowManager({
@@ -84,7 +88,7 @@ export default function connectClient(
     const windowManager = nullthrows(windowManagers.get(params.id));
     windowManager.update(params.update);
   });
-  connection.onNotification({method: 'destroy'}, params => {
+  connection.onNotification({method: 'destroy'}, (params: DestroyParams) => {
     logger.info('got destroy request:', params.id);
     disposables.dispose();
   });

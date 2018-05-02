@@ -32,6 +32,10 @@ export type UpdateParams<U> = {
   update: U,
 };
 
+export type DestroyParams = {
+  id: number,
+};
+
 type View<T, U> = {
   componentId: string,
   render(): T,
@@ -80,11 +84,14 @@ export default class WindowServiceClient {
         this._connection.sendNotification('update', params);
       });
     if (view.handleAction != null) {
-      this._connection.onNotification({method: 'dispatch'}, ({action}) => {
-        logger.info(`client receiving action: ${JSON.stringify(action)}`);
-        invariant(view.handleAction != null);
-        view.handleAction(action);
-      });
+      this._connection.onNotification(
+        {method: 'dispatch'},
+        ({action}: Object) => {
+          logger.info(`client receiving action: ${JSON.stringify(action)}`);
+          invariant(view.handleAction != null);
+          view.handleAction(action);
+        },
+      );
     }
     return {
       destroy(): void {
@@ -93,7 +100,7 @@ export default class WindowServiceClient {
           view.dispose();
         }
         idPromise.then(id => {
-          this._connection.sendNotification('destroy', {id});
+          this._connection.sendNotification('destroy', ({id}: DestroyParams));
         });
       },
     };

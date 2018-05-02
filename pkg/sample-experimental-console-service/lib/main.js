@@ -27,9 +27,12 @@ function connectClient(connection: ServiceConnection): void {
     return;
   }
 
-  connection.onNotification({method: 'message'}, params => {
-    logger.info(`got message from ${sourceName}`, params);
-  });
+  connection.onNotification(
+    {method: 'message'},
+    (params: {message: string}) => {
+      logger.info(`got message from ${sourceName}`, params);
+    },
+  );
 }
 
 export default class Package {

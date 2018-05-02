@@ -12,6 +12,7 @@
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {Message} from './PanelView';
 
+import {getLogger} from 'log4js';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
 import {splitOnce} from 'nuclide-commons/string';
@@ -122,7 +123,13 @@ export class LspTester {
         .do(process => {
           this._writer = new rpc.StreamMessageWriter(process.stdin);
           const reader = new SafeStreamMessageReader(process.stdout);
-          rpc.createMessageConnection(reader, this._writer).listen();
+          rpc
+            .createMessageConnection(
+              reader,
+              this._writer,
+              getLogger('LspTester-jsonrpc'),
+            )
+            .listen();
         })
         .flatMap(proc =>
           getOutputStream(proc, {

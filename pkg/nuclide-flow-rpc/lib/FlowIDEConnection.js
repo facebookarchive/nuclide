@@ -95,6 +95,7 @@ export class FlowIDEConnection {
     this._connection = rpc.createMessageConnection(
       new SafeStreamMessageReader(this._ideProcess.stdout),
       new rpc.StreamMessageWriter(this._ideProcess.stdin),
+      getLogger('FlowIDEConnection-jsonrpc'),
     );
     this._connection.listen();
 

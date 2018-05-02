@@ -66,11 +66,6 @@ import type {
   ApplyWorkspaceEditResponse,
   Command,
 } from './protocol';
-import type {
-  JsonRpcConnection,
-  CancellationToken,
-  CancellationTokenSource,
-} from './jsonrpc';
 
 import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 import invariant from 'assert';
@@ -99,7 +94,6 @@ import {
   ensureInvalidations,
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
-import {JsonRpcTrace} from './jsonrpc';
 import {mapAtomLanguageIdToVsCode} from './languageIdMap';
 import {LspConnection} from './LspConnection';
 import {
@@ -173,11 +167,11 @@ export class LspLanguageService {
   // only one request of these types would be active at a time. Note that the
   // language server is free to ignore any cancellation request, so we could
   // still potentially have multiple outstanding requests of the same type.
-  _hoverCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
-  _highlightCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
-  _definitionCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
-  _autocompleteCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
-  _outlineCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
+  _hoverCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
+  _highlightCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
+  _definitionCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
+  _autocompleteCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
+  _outlineCancellation: rpc.CancellationTokenSource = new rpc.CancellationTokenSource();
 
   constructor(
     logger: log4js$Logger,
@@ -427,13 +421,13 @@ export class LspLanguageService {
         childProcess.stderr.pipe(through(data => accumulate('stderr', data)));
       }
 
-      const jsonRpcConnection: JsonRpcConnection = rpc.createMessageConnection(
+      const jsonRpcConnection: rpc.MessageConnection = rpc.createMessageConnection(
         new SafeStreamMessageReader(childProcess.stdout),
         new rpc.StreamMessageWriter(childProcess.stdin),
         new JsonRpcLogger(this._logger),
       );
       jsonRpcConnection.trace(
-        JsonRpcTrace.Verbose,
+        rpc.Trace.Verbose,
         new JsonRpcTraceLogger(this._logger),
       );
 
@@ -933,7 +927,7 @@ export class LspLanguageService {
     this._logger.error(msg);
   }
 
-  _handleError(data: [Error, ?Object, ?number]): void {
+  _handleError(data: [Error, Object, number]): void {
     this._logger.trace('Lsp._handleError');
     if (this._state === 'Stopping' || this._state === 'Stopped') {
       return;
@@ -1086,7 +1080,7 @@ export class LspLanguageService {
 
   async _handleApplyEditRequest(
     params: ApplyWorkspaceEditParams,
-    token: CancellationToken,
+    token: rpc.CancellationToken,
   ): Promise<ApplyWorkspaceEditResponse> {
     const applyEdits = async editsMap => {
       const applied = await this._host.applyTextEditsForMultipleFiles(editsMap);
@@ -1133,7 +1127,7 @@ export class LspLanguageService {
 
   async _handleShowMessageRequest(
     params: ShowMessageRequestParams,
-    token: CancellationToken,
+    token: rpc.CancellationToken,
   ): Promise<any> {
     // CARE! This method may be called before initialization has finished.
 
