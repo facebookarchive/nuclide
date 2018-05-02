@@ -145,6 +145,7 @@ class HHVMDebuggerWrapper {
           // gone. Rather than failing to reconnect, wait a moment and try
           // again to provide a better user experience.
           setTimeout(() => {
+            attachMessage.arguments = attachArgs;
             this._attachTarget(attachMessage, retries + 1);
           }, 2000);
         }
