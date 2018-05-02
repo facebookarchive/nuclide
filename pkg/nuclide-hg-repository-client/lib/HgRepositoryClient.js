@@ -510,10 +510,6 @@ export class HgRepositoryClient {
     return this._emitter.on(DID_CHANGE_CONFLICT_STATE, callback);
   }
 
-  onDidChangeInteractiveMode(callback: boolean => mixed): IDisposable {
-    return this._emitter.on('did-change-interactive-mode', callback);
-  }
-
   observeLockFiles(): Observable<Map<string, boolean>> {
     return this._service.observeLockFilesDidChange().refCount();
   }
@@ -951,10 +947,6 @@ export class HgRepositoryClient {
       .do(headId => (this._currentHeadId = headId));
   }
 
-  _updateInteractiveMode(isInteractiveMode: boolean) {
-    this._emitter.emit('did-change-interactive-mode', isInteractiveMode);
-  }
-
   fetchMergeConflicts(): Observable<?MergeConflicts> {
     return this._service.fetchMergeConflicts().refCount();
   }
@@ -1244,15 +1236,6 @@ export class HgRepositoryClient {
     message: string,
   ): Observable<LegacyProcessMessage> {
     return this._service.editCommitMessage(revision, message).refCount();
-  }
-
-  splitRevision(): Observable<LegacyProcessMessage> {
-    // TODO(T17463635)
-    this._updateInteractiveMode(true);
-    return this._service
-      .splitRevision()
-      .refCount()
-      .finally(this._updateInteractiveMode.bind(this, false));
   }
 
   _clearOnSuccessExit(

@@ -46,14 +46,12 @@ import {
 } from './hg-revision-state-helpers';
 import {
   formatCommitMessage,
-  getInteractiveCommitEditorConfig,
   hgAsyncExecute,
   hgObserveExecution,
   hgRunCommand,
 } from './hg-utils';
 import fsPromise from 'nuclide-commons/fsPromise';
 import debounce from 'nuclide-commons/debounce';
-import invariant from 'assert';
 
 import {fetchActiveBookmark, fetchBookmarks} from './hg-bookmark-helpers';
 import {getLogger} from 'log4js';
@@ -1272,28 +1270,6 @@ export class HgService {
       cwd: this._workingDirectory,
     };
     return this._hgObserveExecution(args, execOptions).publish();
-  }
-
-  splitRevision(): ConnectableObservable<LegacyProcessMessage> {
-    // TODO(T17463635)
-    let editMergeConfigs;
-    return Observable.fromPromise(
-      (async () => {
-        editMergeConfigs = await getInteractiveCommitEditorConfig();
-      })(),
-    )
-      .switchMap(() => {
-        invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
-        const execOptions = {
-          cwd: this._workingDirectory,
-          HGEDITOR: editMergeConfigs.hgEditor,
-        };
-        return this._hgObserveExecution(
-          [...editMergeConfigs.args, 'split'],
-          execOptions,
-        );
-      })
-      .publish();
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision: ?string): Promise<void> {
