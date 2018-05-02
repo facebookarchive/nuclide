@@ -24,8 +24,6 @@ const FEATURE_PACKAGE_PATH = path.join(
 );
 
 const ALWAYS_ENABLED = 'always';
-const NEVER_ENABLED = 'never';
-const DEFAULT = 'default';
 
 const featurePkg = JSON.parse(
   fs.readFileSync(path.join(FEATURE_PACKAGE_PATH, 'package.json')).toString(),
@@ -86,65 +84,6 @@ describe('FeatureLoader', () => {
           FEATURE_PACKAGE_PATH,
         );
       });
-    });
-  });
-
-  describe('enum migration', () => {
-    let samplefeature;
-    let normalfeature;
-
-    beforeEach(() => {
-      samplefeature = {
-        path: 'bar/sample-feature',
-        pkg: featurePkg,
-      };
-
-      normalfeature = {
-        path: 'bar/normal-feature',
-        pkg: featurePkg,
-      };
-    });
-    it("handles when sample- feature' current state is undefined", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        undefined,
-        samplefeature,
-      );
-      expect(newValue).toBe(NEVER_ENABLED);
-    });
-    it("handles when sample- feature's current state is true", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        true,
-        samplefeature,
-      );
-      expect(newValue).toBe(ALWAYS_ENABLED);
-    });
-    it("handles when sample- feature's current state is false", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        false,
-        samplefeature,
-      );
-      expect(newValue).toBe(DEFAULT);
-    });
-    it("handles when normal feature's current state is undefined", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        undefined,
-        normalfeature,
-      );
-      expect(newValue).toBe(DEFAULT);
-    });
-    it("handles when normal feature's current state is true", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        true,
-        normalfeature,
-      );
-      expect(newValue).toBe(DEFAULT);
-    });
-    it("handles when normal feature's current state is false", () => {
-      const newValue = loader.getValueForFeatureToEnumMigration(
-        false,
-        normalfeature,
-      );
-      expect(newValue).toBe(NEVER_ENABLED);
     });
   });
 

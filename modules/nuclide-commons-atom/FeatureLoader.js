@@ -104,11 +104,6 @@ export default class FeatureLoader {
 
     featureConfig.setPackageName(this._pkgName);
 
-    // Migrate the current "use" config (from boolean on/off to enumerated states).
-    this._features.forEach(feature => {
-      this.migrateUseConfig(feature);
-    });
-
     //
     // Build the "config" object. This determines the config defaults and
     // it's what is shown by the Settings view. It includes:
@@ -151,18 +146,6 @@ export default class FeatureLoader {
     localStorage.removeItem(
       rootPackage.getCanDeferMainModuleRequireStorageKey(),
     );
-
-    this._features.forEach(feature => {
-      // Since the migration from bool to enum occurs before the config defaults
-      // are changed, the user's config gets filled with every Nuclide feature.
-      // Since these values are already the default, this `config.set`
-      // removes these uneccessary values from the user's config file.
-      // TODO: When enough users have migrated, this should be removed along with the enum migration.
-      atom.config.set(
-        this.getUseKeyPathForFeature(feature),
-        atom.config.get(this.getUseKeyPathForFeature(feature)),
-      );
-    });
 
     // Watch the config to manage toggling features
     this._activationDisposable = new UniversalDisposable(
@@ -225,7 +208,7 @@ export default class FeatureLoader {
     // we know enabledFeatureGroups must be ?Array, and useFeatureRules must be ?UseFeatureRules,
     // since it's in our schema. However, flow thinks it's a mixed type, since it doesn't know about
     // the schema enforcements.
-    const useFeatureRules: UseFeatureRules = (atom.config.get(
+    const useFeatureRules: ?UseFeatureRules = (atom.config.get(
       this.getUseKeyPath(),
     ): any);
     const enabledFeatureGroups: ?Array<string> = (atom.config.get(
@@ -251,7 +234,10 @@ export default class FeatureLoader {
     // If a feature is "default", it should be on if and only if a feature-group includes it.
     return new Set(
       this._features.filter(feature => {
-        const rule = useFeatureRules[packageNameFromPath(feature.path)];
+        const featureName = packageNameFromPath(feature.path);
+        const rawRule = idx(useFeatureRules, _ => _[featureName]);
+        const rule =
+          rawRule == null ? getFeatureDefaultValue(feature) : rawRule;
         return (
           rule === ALWAYS_ENABLED ||
           rule === true ||
@@ -276,46 +262,12 @@ export default class FeatureLoader {
     this._features.forEach(safeSerialize);
   }
 
-  getUseKeyPathForFeature(feature: Feature): string {
-    return `${this._pkgName}.use.${packageNameFromPath(feature.path)}`;
-  }
-
   getUseKeyPath(): string {
     return `${this._pkgName}.use`;
   }
 
   getEnabledFeatureGroupsKeyPath(): string {
     return `${this._pkgName}.enabledFeatureGroups`;
-  }
-
-  migrateUseConfig(feature: Feature): void {
-    const keyPath = this.getUseKeyPathForFeature(feature);
-    const currentState = atom.config.get(keyPath);
-    const setTo = this.getValueForFeatureToEnumMigration(currentState, feature);
-    if (setTo !== currentState) {
-      atom.config.set(keyPath, setTo);
-    }
-  }
-
-  getValueForFeatureToEnumMigration(
-    currentState: mixed,
-    feature: Feature,
-  ): string {
-    const name = packageNameFromPath(feature.path);
-
-    switch (currentState) {
-      case true:
-        return name.startsWith('sample-') ? ALWAYS_ENABLED : DEFAULT;
-      case false:
-        return name.startsWith('sample-') ? DEFAULT : NEVER_ENABLED;
-      case ALWAYS_ENABLED:
-      case NEVER_ENABLED:
-      case DEFAULT:
-        invariant(typeof currentState === 'string');
-        return currentState;
-      default:
-        return getFeatureDefaultValue(feature);
-    }
   }
 }
 
