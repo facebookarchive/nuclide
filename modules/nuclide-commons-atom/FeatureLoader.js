@@ -57,6 +57,8 @@ const DEFAULT = 'default';
 
 const {devMode} = atom.getLoadSettings();
 
+export const REQUIRED_FEATURE_GROUP = 'nuclide-required';
+
 export default class FeatureLoader {
   _activationDisposable: ?UniversalDisposable;
   _loadDisposable: UniversalDisposable;
@@ -243,6 +245,9 @@ export default class FeatureLoader {
       featuresInEnabledGroups = new Set(this._features);
     }
 
+    const requiredFeatures =
+      this._featureGroupMap.get(REQUIRED_FEATURE_GROUP) || new Set();
+
     // If a feature is "always enabled", it should be on whether or not a feature-group includes it.
     // If a feature is "default", it should be on if and only if a feature-group includes it.
     return new Set(
@@ -250,8 +255,9 @@ export default class FeatureLoader {
         const rule = useFeatureRules[packageNameFromPath(feature.path)];
         return (
           rule === ALWAYS_ENABLED ||
+          rule === true ||
           (featuresInEnabledGroups.has(feature) && rule === DEFAULT) ||
-          rule === true
+          requiredFeatures.has(feature)
         );
       }),
     );
