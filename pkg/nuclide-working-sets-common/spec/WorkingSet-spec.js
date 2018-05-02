@@ -47,20 +47,6 @@ describe('WorkingSet', () => {
       expect(root.containsDir('/aaa')).toBe(true);
       expect(root.containsDir('/aaa/bbbb')).toBe(true);
     });
-
-    it('does not contain any remote file', () => {
-      const root = new WorkingSet(['/']);
-      expect(root.containsFile('nuclide://aaa.bbb/')).toBe(false);
-      expect(root.containsFile('nuclide://aaa.bbb/aaa')).toBe(false);
-      expect(root.containsFile('nuclide://aaa.bbb/aaa/bbb')).toBe(false);
-    });
-
-    it('does not contain any remote dir', () => {
-      const root = new WorkingSet(['/']);
-      expect(root.containsDir('nuclide://aaa.bbb/')).toBe(false);
-      expect(root.containsDir('nuclide://aaa.bbb/aaa')).toBe(false);
-      expect(root.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(false);
-    });
   });
 
   describe('- Remote root set', () => {
@@ -76,20 +62,6 @@ describe('WorkingSet', () => {
       expect(root.containsDir('nuclide://aaa.bbb/')).toBe(true);
       expect(root.containsDir('nuclide://aaa.bbb/aaa')).toBe(true);
       expect(root.containsDir('nuclide://aaa.bbb/aaa/bbb')).toBe(true);
-    });
-
-    it('does not contain any local file', () => {
-      const root = new WorkingSet(['nuclide://aaa.bbb/']);
-      expect(root.containsFile('/')).toBe(false);
-      expect(root.containsFile('/aaa')).toBe(false);
-      expect(root.containsFile('/aaa/bbbb')).toBe(false);
-    });
-
-    it('does not contain any local dir', () => {
-      const root = new WorkingSet(['nuclide://aaa.bbb/']);
-      expect(root.containsDir('/')).toBe(false);
-      expect(root.containsDir('/aaa')).toBe(false);
-      expect(root.containsDir('/aaa/bbbb')).toBe(false);
     });
   });
 
@@ -110,43 +82,45 @@ describe('WorkingSet', () => {
     expect(ws.containsDir('/eee')).toBe(false);
   });
 
-  it('differentiate between similar local and remote paths', () => {
+  it('shares across similar local and remote paths', () => {
     const local = new WorkingSet(['/aaa/bbb', '/aaa/ccc']);
     expect(local.containsFile('nuclide://some.host/')).toBe(false);
     expect(local.containsFile('nuclide://some.host/aaa')).toBe(false);
-    expect(local.containsFile('nuclide://some.host/aaa/bbb')).toBe(false);
+
+    expect(local.containsFile('nuclide://some.host/aaa/bbb')).toBe(true);
     expect(local.containsFile('nuclide://some.host/aaa/bbb/file.test')).toBe(
-      false,
+      true,
     );
     expect(local.containsFile('nuclide://some.host/aaa/ccc/file.test')).toBe(
-      false,
+      true,
     );
 
-    expect(local.containsDir('nuclide://some.host/')).toBe(false);
-    expect(local.containsDir('nuclide://some.host/aaa')).toBe(false);
-    expect(local.containsDir('nuclide://some.host/aaa/bbb')).toBe(false);
-    expect(local.containsDir('nuclide://some.host/aaa/bbb/ccc')).toBe(false);
+    expect(local.containsDir('nuclide://some.host/')).toBe(true);
+    expect(local.containsDir('nuclide://some.host/aaa')).toBe(true);
+    expect(local.containsDir('nuclide://some.host/aaa/bbb')).toBe(true);
+    expect(local.containsDir('nuclide://some.host/aaa/bbb/ccc')).toBe(true);
   });
 
-  it('differentiate between different hosts', () => {
-    const local = new WorkingSet([
+  it('shares across similar different hosts', () => {
+    const remote = new WorkingSet([
       'nuclide://some.host/aaa/bbb',
       'nuclide://some.host/aaa/ccc',
     ]);
-    expect(local.containsFile('nuclide://other.host/')).toBe(false);
-    expect(local.containsFile('nuclide://other.host/aaa')).toBe(false);
-    expect(local.containsFile('nuclide://other.host/aaa/bbb')).toBe(false);
-    expect(local.containsFile('nuclide://other.host/aaa/bbb/file.test')).toBe(
-      false,
+    expect(remote.containsFile('nuclide://other.host/')).toBe(false);
+    expect(remote.containsFile('nuclide://other.host/aaa')).toBe(false);
+
+    expect(remote.containsFile('nuclide://other.host/aaa/bbb')).toBe(true);
+    expect(remote.containsFile('nuclide://other.host/aaa/bbb/file.test')).toBe(
+      true,
     );
-    expect(local.containsFile('nuclide://other.host/aaa/ccc/file.test')).toBe(
-      false,
+    expect(remote.containsFile('nuclide://other.host/aaa/ccc/file.test')).toBe(
+      true,
     );
 
-    expect(local.containsDir('nuclide://other.host/')).toBe(false);
-    expect(local.containsDir('nuclide://other.host/aaa')).toBe(false);
-    expect(local.containsDir('nuclide://other.host/aaa/bbb')).toBe(false);
-    expect(local.containsDir('nuclide://other.host/aaa/bbb/ccc')).toBe(false);
+    expect(remote.containsDir('nuclide://other.host/')).toBe(true);
+    expect(remote.containsDir('nuclide://other.host/aaa')).toBe(true);
+    expect(remote.containsDir('nuclide://other.host/aaa/bbb')).toBe(true);
+    expect(remote.containsDir('nuclide://other.host/aaa/bbb/ccc')).toBe(true);
   });
 
   it('handles removal of one of the URIs', () => {

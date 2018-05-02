@@ -51,8 +51,9 @@ export class WorkingSet {
 
   constructor(uris: Array<NuclideUri> = []) {
     try {
+      const uriPaths = uris.map(nuclideUri.getPath);
       this._uris = dedupeUris(
-        uris.filter(uri => !nuclideUri.isBrokenDeserializedUri(uri)),
+        uriPaths.filter(uri => !nuclideUri.isBrokenDeserializedUri(uri)),
       );
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
@@ -85,7 +86,8 @@ export class WorkingSet {
       return true;
     }
 
-    return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
+    const uriTokens = tokens.map(nuclideUri.getPath);
+    return this._containsPathFor(uriTokens, /* mustHaveLeaf */ true);
   }
 
   containsDir(uri: NuclideUri): boolean {
@@ -106,7 +108,8 @@ export class WorkingSet {
       return true;
     }
 
-    return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
+    const uriTokens = tokens.map(nuclideUri.getPath);
+    return this._containsPathFor(uriTokens, /* mustHaveLeaf */ false);
   }
 
   isEmpty(): boolean {
@@ -123,7 +126,8 @@ export class WorkingSet {
 
   remove(rootUri: NuclideUri): WorkingSet {
     try {
-      const uris = this._uris.filter(uri => !nuclideUri.contains(rootUri, uri));
+      const uriPath = nuclideUri.getPath(rootUri);
+      const uris = this._uris.filter(uri => !nuclideUri.contains(uriPath, uri));
       return new WorkingSet(uris);
     } catch (e) {
       logger.error(e);
