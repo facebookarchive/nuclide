@@ -205,9 +205,13 @@ export class AtomInput extends React.Component<Props, State> {
       // text, and this includes maintaining the correct cursor position.
       this.setState({value});
       const editor = this.getTextEditor();
-      const cursorPosition = editor.getCursorBufferPosition();
-      this.setText(value);
-      editor.setCursorBufferPosition(cursorPosition);
+      // Calling setText if the value did not change will redundantly call any
+      // onDidChange listeners with the same input.
+      if (editor.getText() !== value) {
+        const cursorPosition = editor.getCursorBufferPosition();
+        this.setText(value);
+        editor.setCursorBufferPosition(cursorPosition);
+      }
     }
 
     if (placeholderText !== this.props.placeholderText) {
