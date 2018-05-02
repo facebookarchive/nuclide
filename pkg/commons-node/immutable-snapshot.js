@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {RecordFactory, RecordOf} from 'immutable';
+
 import invariant from 'assert';
 import Immutable from 'immutable';
 
@@ -44,6 +46,26 @@ type DeltaSnapshotImmutableObject =
       type: 'list',
       id: number,
       value: Array<DeltaSnapshotObject>,
+    |}
+  // Immutable.Map
+  | {|
+      type: 'map',
+      id: number,
+      // (key, value) pairs
+      value: Array<[DeltaSnapshotObject, DeltaSnapshotObject]>,
+    |}
+  // Immutable.OrderedMap
+  | {|
+      type: 'orderedmap',
+      id: number,
+      // (key, value) pairs
+      value: Array<[DeltaSnapshotObject, DeltaSnapshotObject]>,
+    |}
+  // Immutable.RecordOf
+  | {|
+      type: 'record',
+      id: number,
+      value: Array<[string, DeltaSnapshotObject]>,
     |};
 
 // A more general representation of an object that can be either immutable or non-immutable.
@@ -90,7 +112,11 @@ const UNWRAPPED_METHODS = new Set([
 ]);
 
 // A union of all Immutable collections that are currently supported.
-export type DeltaSnapshotCollection = Immutable.List<any>;
+export type DeltaSnapshotCollection =
+  | Immutable.List<any>
+  | Immutable.Map<any, any>
+  | Immutable.OrderedMap<any, any>
+  | RecordOf<any>;
 
 /**
  * immutable-snapshot exports custom versions of Immutable collections that can record
@@ -160,6 +186,35 @@ export function List<T>(value?: Iterable<T>): Immutable.List<T> {
 List.prototype = Object.create(Immutable.List.prototype);
 List.of = (...args) => List(args);
 _overrideMethods(List, Immutable.List);
+
+function SnapshotMap<K, V>(
+  value?: Iterable<[K, V]> | {[key: K]: V},
+): Immutable.Map<K, V> {
+  return _wrap(Immutable.Map(value), SnapshotMap);
+}
+
+SnapshotMap.prototype = Object.create(Immutable.Map.prototype);
+// $FlowIssue: Map.of is missing
+SnapshotMap.of = (...args) => SnapshotMap(Immutable.Map.of(...args));
+_overrideMethods(SnapshotMap, Immutable.Map);
+export {SnapshotMap as Map};
+
+export function OrderedMap<K, V>(
+  value?: Iterable<[K, V]> | {[key: K]: V},
+): Immutable.OrderedMap<K, V> {
+  return _wrap(Immutable.OrderedMap(value), OrderedMap);
+}
+
+OrderedMap.prototype = Object.create(Immutable.OrderedMap.prototype);
+_overrideMethods(OrderedMap, Immutable.OrderedMap);
+
+// Immutable.Record actually returns a RecordFactory which then produces RecordInstances.
+export function Record<T: Object>(value: T): RecordFactory<T> {
+  const OriginalRecord = Immutable.Record(value);
+  class DiffableRecord extends OriginalRecord {}
+  _overrideMethods(DiffableRecord, OriginalRecord);
+  return DiffableRecord;
+}
 
 // Immutable.JS does not correctly support inheritance :(
 // We often need to manually re-wrap the objects.
@@ -267,6 +322,33 @@ function _snapshotImpl(
         _snapshotImpl(x, snapshotObjects, previousSnapshotObjects),
       ),
     });
+  } else if (object instanceof Immutable.OrderedMap) {
+    const value = [];
+    for (const [k, v] of object.entries()) {
+      value.push([
+        _snapshotImpl(k, snapshotObjects, previousSnapshotObjects),
+        _snapshotImpl(v, snapshotObjects, previousSnapshotObjects),
+      ]);
+    }
+    return (snapshotObjects[id] = {type: 'orderedmap', id, value});
+  } else if (object instanceof Immutable.Map) {
+    const value = [];
+    for (const [k, v] of object.entries()) {
+      value.push([
+        _snapshotImpl(k, snapshotObjects, previousSnapshotObjects),
+        _snapshotImpl(v, snapshotObjects, previousSnapshotObjects),
+      ]);
+    }
+    return (snapshotObjects[id] = {type: 'map', id, value});
+  } else if (object instanceof Immutable.Record) {
+    const value = [];
+    for (const [k, v] of object.entries()) {
+      value.push([
+        k,
+        _snapshotImpl(v, snapshotObjects, previousSnapshotObjects),
+      ]);
+    }
+    return (snapshotObjects[id] = {type: 'record', id, value});
   } else {
     throw Error(
       `Serialization for ${object.constructor.name} is not implemented yet.`,
@@ -296,6 +378,11 @@ function _overrideMethods(wrapped: Function, original: Function): void {
     const proto = Object.getPrototypeOf(object);
     if (proto === originalPrototype) {
       return _wrap(object, wrapped);
+      // $FlowIssue: OrderedMap.prototype should exist
+    } else if (proto === Immutable.OrderedMap.prototype) {
+      // Immutable.Map.sort returns an OrderedMap.
+      // This won't be recorded as a mutation, but continue wrapping it.
+      return _wrap(object, OrderedMap);
     }
     return object;
   }
@@ -493,6 +580,37 @@ export class ImmutableSnapshotReader {
         );
         deserializedObjects.set(object.id, list);
         return list;
+      case 'map':
+        const map = Immutable.Map(
+          object.value.map(([k, v]) => [
+            this._deserializeObject(k, snapshotObjects, deserializedObjects),
+            this._deserializeObject(v, snapshotObjects, deserializedObjects),
+          ]),
+        );
+        deserializedObjects.set(object.id, map);
+        return map;
+      case 'orderedmap':
+        const orderedMap = Immutable.OrderedMap(
+          object.value.map(([k, v]) => [
+            this._deserializeObject(k, snapshotObjects, deserializedObjects),
+            this._deserializeObject(v, snapshotObjects, deserializedObjects),
+          ]),
+        );
+        deserializedObjects.set(object.id, orderedMap);
+        return orderedMap;
+      case 'record':
+        const record = {};
+        object.value.forEach(([k, v]) => {
+          record[k] = this._deserializeObject(
+            v,
+            snapshotObjects,
+            deserializedObjects,
+          );
+        });
+        class _Record extends Immutable.Record(record) {}
+        const rec = new _Record(record);
+        deserializedObjects.set(object.id, rec);
+        return rec;
       default:
         (object.type: empty);
         throw Error(`Unexpected type ${object.type}`);
