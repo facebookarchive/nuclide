@@ -155,6 +155,12 @@ export async function activityExists(
   return new Adb(device).activityExists(packageName, activity);
 }
 
+export async function getAllAvailablePackages(
+  device: DeviceId,
+): Promise<Array<string>> {
+  return new Adb(device).getAllAvailablePackages();
+}
+
 export function getJavaProcesses(
   device: DeviceId,
 ): ConnectableObservable<Array<AndroidJavaProcess>> {

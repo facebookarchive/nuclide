@@ -296,10 +296,20 @@ export class Adb extends DebugBridge {
     return this.runShortCommand(...args).toPromise();
   }
 
+  _dumpsysPackage(): Observable<string> {
+    return this.runShortCommand('shell', 'dumpsys', 'package');
+  }
+
   activityExists(packageName: string, activity: string): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
-    return this.runShortCommand('shell', 'dumpsys', 'package')
+    return this._dumpsysPackage()
       .map(stdout => stdout.includes(packageActivityString))
+      .toPromise();
+  }
+
+  getAllAvailablePackages(): Promise<Array<string>> {
+    return this._dumpsysPackage()
+      .map(stdout => stdout.split('\n').map(line => line.trim()))
       .toPromise();
   }
 

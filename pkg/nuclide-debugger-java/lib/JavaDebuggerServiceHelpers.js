@@ -81,8 +81,19 @@ export async function launchAndroidServiceOrActivityAndGetPid(
     );
 
     if (!activityExists) {
-      throw Error(
-        `Activity ${activity || ''} does not exist in package ` + packageName,
+      const packages = await adbService.getAllAvailablePackages(device);
+      const availableActivities = new Set(
+        packages.filter(line => line.includes(packageName + '/')),
+      );
+      atom.notifications.addError(
+        `Activity ${activity || ''} does not exist in package ` +
+          packageName +
+          '\n' +
+          'Did you mean one of these activities: ' +
+          '\n' +
+          Array.from(availableActivities)
+            .map(activityLine => activityLine.split('/')[1])
+            .join('\n'),
       );
     }
 
