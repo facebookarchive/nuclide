@@ -71,7 +71,7 @@ export default class FeatureLoader {
 
   constructor({features, path: _path, featureGroups}: FeatureLoaderParams) {
     this._path = _path;
-    this._features = features;
+    this._features = reorderFeatures(features);
     this._loadDisposable = new UniversalDisposable();
     this._pkgName = packageNameFromPath(this._path);
     this._featureGroups = featureGroups == null ? {} : featureGroups;
@@ -118,7 +118,7 @@ export default class FeatureLoader {
     //
     this._config = buildConfig(this._features);
 
-    // Load all the features. This needs to be done during Atom's load phase to
+    // Load enabled features. This needs to be done during Atom's load phase to
     // make sure that deserializers are registered, etc.
     // https://github.com/atom/atom/blob/v1.1.0/src/atom-environment.coffee#L625-L631
     // https://atom.io/docs/api/latest/PackageManager
@@ -128,15 +128,13 @@ export default class FeatureLoader {
       // happen before the root package's. So we wait until the root package is done loading,
       // but before it activates, to load the features.
       whenPackageLoaded(this._pkgName, () => {
-        const featuresToLoad = this._features.filter(feature =>
-          this.shouldEnable(feature),
-        );
+        const featuresToLoad = this.getEnabledFeatures();
         // Load "regular" feature packages.
         featuresToLoad.forEach(feature => {
           atom.packages.loadPackage(feature.path);
         });
         // Load "experimental" format packages.
-        return activateExperimentalPackages(featuresToLoad);
+        return activateExperimentalPackages([...featuresToLoad]);
       }),
     );
   }
@@ -153,26 +151,6 @@ export default class FeatureLoader {
       rootPackage.getCanDeferMainModuleRequireStorageKey(),
     );
 
-    // Hack time!! Atom's repository APIs are synchronous. Any package that tries to use them before
-    // we've had a chance to provide our implementation are going to get wrong answers. The correct
-    // thing to do would be to always go through an async API that awaits until
-    // `atom.packages.onDidActivateInitialPackages()` completes. However, we have some legacy sync
-    // codepaths that make that difficult. As a temporary (I hope) workaround, we prioritize
-    // activation of the features that provide this service.
-    const originalOrder = new Map(
-      this._features.map((feature, i) => [feature, i]),
-    );
-    this._features.sort((a, b) => {
-      const aIsRepoProvider = packageIsRepositoryProvider(a.pkg);
-      const bIsRepoProvider = packageIsRepositoryProvider(b.pkg);
-      if (aIsRepoProvider !== bIsRepoProvider) {
-        return aIsRepoProvider ? -1 : 1;
-      }
-      const aIndex = nullthrows(originalOrder.get(a));
-      const bIndex = nullthrows(originalOrder.get(b));
-      return aIndex - bIndex;
-    });
-
     this._features.forEach(feature => {
       // Since the migration from bool to enum occurs before the config defaults
       // are changed, the user's config gets filled with every Nuclide feature.
@@ -183,10 +161,6 @@ export default class FeatureLoader {
         this.getUseKeyPathForFeature(feature),
         atom.config.get(this.getUseKeyPathForFeature(feature)),
       );
-
-      if (this.shouldEnable(feature)) {
-        atom.packages.activatePackage(feature.path);
-      }
     });
 
     // Watch the config to manage toggling features
@@ -202,21 +176,11 @@ export default class FeatureLoader {
     this.updateActiveFeatures();
   }
 
+  /**
+   * Enable and disable the correct features according to the current configuration.
+   */
   updateActiveFeatures() {
-    const useFeatureRules = atom.config.get(this.getUseKeyPath());
-    const enabledFeatureGroups = atom.config.get(
-      this.getEnabledFeatureGroupsKeyPath(),
-    );
-
-    // we know enabledFeatureGroups must be ?Array, and useFeatureRules must be ?UseFeatureRules,
-    // since it's in our schema. However, flow thinks it's a mixed type, since it doesn't know about
-    // the schema enforcements.
-    const featuresToActivate = this.getEnabledFeatures(
-      // $FlowIgnore.
-      useFeatureRules,
-      // $FlowIgnore.
-      enabledFeatureGroups,
-    );
+    const featuresToActivate = this.getEnabledFeatures();
 
     // Enable all packages in featuresToActivate but not in currentState.
     // Disable all packages not in featuresToActivate but in currentState.
@@ -240,21 +204,33 @@ export default class FeatureLoader {
       this._activationDisposable && !this._activationDisposable.disposed,
     );
 
-    this._features.forEach(feature => {
+    this._currentlyActiveFeatures.forEach(feature => {
       // Deactivate the package, but don't serialize. That needs to be done in a separate phase so that
       // we don't end up disconnecting a service and then serializing the disconnected state.
       safeDeactivate(feature, true);
     });
+    this._currentlyActiveFeatures = new Set();
 
     invariant(this._activationDisposable); // reasserting for flow
     this._activationDisposable.dispose();
     this._activationDisposable = null;
   }
 
-  getEnabledFeatures(
-    useFeatureRules: UseFeatureRules,
-    enabledFeatureGroups: ?Array<string>,
-  ): Set<Feature> {
+  /**
+   * Determine which features are enabled based on the current state of the configuration. This set
+   * is then used to load and activate the features.
+   */
+  getEnabledFeatures(): Set<Feature> {
+    // we know enabledFeatureGroups must be ?Array, and useFeatureRules must be ?UseFeatureRules,
+    // since it's in our schema. However, flow thinks it's a mixed type, since it doesn't know about
+    // the schema enforcements.
+    const useFeatureRules: UseFeatureRules = (atom.config.get(
+      this.getUseKeyPath(),
+    ): any);
+    const enabledFeatureGroups: ?Array<string> = (atom.config.get(
+      this.getEnabledFeatureGroupsKeyPath(),
+    ): any);
+
     let featuresInEnabledGroups;
     if (enabledFeatureGroups != null) {
       featuresInEnabledGroups = setUnion(
@@ -332,29 +308,6 @@ export default class FeatureLoader {
 
   getEnabledFeatureGroupsKeyPath(): string {
     return `${this._pkgName}.enabledFeatureGroups`;
-  }
-
-  shouldEnable(feature: Feature): boolean {
-    const name = packageNameFromPath(feature.path);
-    const currentState = atom.config.get(this.getUseKeyPathForFeature(feature));
-    switch (currentState) {
-      // Previously, this setting was a boolean. They should be migrated but handle it just in case.
-      case true:
-      case false:
-        return currentState;
-      case ALWAYS_ENABLED:
-        return true;
-      case NEVER_ENABLED:
-        return false;
-      case DEFAULT:
-        // TODO: This will become dependent on project configuration.
-        return true;
-      default:
-        // This default will trigger if the user explicitly
-        // sets a package's state to undefined or to a non-enum value.
-        // If this is the case, set to false if it begins with sample- and true otherwise.
-        return !name.startsWith('sample-');
-    }
   }
 
   migrateUseConfig(feature: Feature): void {
@@ -519,4 +472,28 @@ function whenPackageLoaded(
   });
   disposables.add(onDidLoadDisposable);
   return disposables;
+}
+
+/**
+ * Hack time!! Atom's repository APIs are synchronous. Any package that tries to use them before
+ * we've had a chance to provide our implementation are going to get wrong answers. The correct
+ * thing to do would be to always go through an async API that awaits until
+ * `atom.packages.onDidActivateInitialPackages()` completes. However, we have some legacy sync
+ * codepaths that make that difficult. As a temporary (I hope) workaround, we prioritize
+ * activation of the features that provide this service.
+ */
+function reorderFeatures(features_: Array<Feature>): Array<Feature> {
+  const features = features_.slice();
+  const originalOrder = new Map(features.map((feature, i) => [feature, i]));
+  features.sort((a, b) => {
+    const aIsRepoProvider = packageIsRepositoryProvider(a.pkg);
+    const bIsRepoProvider = packageIsRepositoryProvider(b.pkg);
+    if (aIsRepoProvider !== bIsRepoProvider) {
+      return aIsRepoProvider ? -1 : 1;
+    }
+    const aIndex = nullthrows(originalOrder.get(a));
+    const bIndex = nullthrows(originalOrder.get(b));
+    return aIndex - bIndex;
+  });
+  return features;
 }
