@@ -52,7 +52,7 @@ export function getJavaConfig(): AutoGenConfig {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.JAVA,
-      threads: false,
+      threads: true,
       properties: [entryPointClass, classPath],
       cwdPropertyName: 'cwd',
       header: null,
@@ -60,7 +60,7 @@ export function getJavaConfig(): AutoGenConfig {
     attach: {
       launch: false,
       vsAdapterType: VsAdapterTypes.JAVA,
-      threads: false,
+      threads: true,
       properties: [javaJdwpPort],
       header: null,
     },
