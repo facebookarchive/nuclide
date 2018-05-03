@@ -47,6 +47,7 @@ export async function createMultiLspLanguageService(
     logCategory: string,
     logLevel: LogLevel,
     additionalLogFilesRetentionPeriod?: number,
+    waitForDiagnostics?: boolean,
   |},
 ): Promise<?LanguageService> {
   const logger = getLogger(params.logCategory);
@@ -77,7 +78,9 @@ export async function createMultiLspLanguageService(
   //   that don't require an LspConnection).
 
   const languageServiceFactory = async (projectDir: string) => {
-    await result.hasObservedDiagnostics();
+    if (params.waitForDiagnostics !== false) {
+      await result.hasObservedDiagnostics();
+    }
     // We're awaiting until AtomLanguageService has observed diagnostics (to
     // prevent race condition: see below).
 
