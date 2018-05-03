@@ -16,6 +16,7 @@ import type {
   ServerStatusUpdate,
   FlowSettings,
 } from '../../nuclide-flow-rpc';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {BusySignalService} from 'atom-ide-ui';
@@ -27,17 +28,21 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
 import passesGK from '../../commons-node/passesGK';
-import {onceGkInitialized} from '../../commons-node/passesGK';
+import {onceGkInitialized, isGkEnabled} from '../../commons-node/passesGK';
+import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {
   AtomLanguageService,
   getHostServices,
+  updateAutocompleteResults,
+  updateAutocompleteFirstResults,
 } from '../../nuclide-language-service';
 import {getLogger} from 'log4js';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {
   ConnectionCache,
   getServiceByConnection,
+  getVSCodeLanguageServiceByConnection,
 } from '../../nuclide-remote-connection';
 import {completingSwitchMap} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -59,7 +64,9 @@ class Activation {
     if (this._disposed) {
       return;
     }
-    this._activationPromise = activateLegacy();
+    this._activationPromise = isGkEnabled('nuclide_flow_lsp')
+      ? activateLsp()
+      : activateLegacy();
   }
 
   dispose(): void {
@@ -72,6 +79,89 @@ class Activation {
 }
 
 createPackage(module.exports, Activation);
+
+/* ---------------------------------------------------------
+ * LSP Flow IDE connection
+ * ---------------------------------------------------------
+ */
+
+async function activateLsp(): Promise<UniversalDisposable> {
+  const atomConfig: AtomLanguageServiceConfig = {
+    name: 'Flow',
+    grammars: JS_GRAMMARS,
+    typeHint: {
+      version: '0.0.0',
+      priority: 1,
+      analyticsEventName: 'nuclide-flow.typeHint',
+    },
+    diagnostics: {
+      version: '0.2.0',
+      analyticsEventName: 'flow.receive-push-diagnostics',
+    },
+    definition: {
+      version: '0.1.0',
+      priority: 20,
+      definitionEventName: 'flow.get-definition',
+    },
+    autocomplete: {
+      inclusionPriority: 1,
+      suggestionPriority: 3,
+      disableForSelector: null,
+      excludeLowerPriority: false,
+      analytics: {
+        eventName: 'nuclide-flow',
+        shouldLogInsertedSuggestion: false,
+      },
+      autocompleteCacherConfig: {
+        updateResults: updateAutocompleteResults,
+        updateFirstResults: updateAutocompleteFirstResults,
+      },
+      supportsResolve: false,
+    },
+  };
+
+  const languageServiceFactory: (
+    ?ServerConnection,
+  ) => Promise<LanguageService> = async connection => {
+    const [fileNotifier, host] = await Promise.all([
+      getNotifierByConnection(connection),
+      getHostServices(),
+    ]);
+    const service = getVSCodeLanguageServiceByConnection(connection);
+    const pathToFlow = ((featureConfig.get(
+      'nuclide-flow.pathToFlow',
+    ): any): string);
+    const lspService = await service.createMultiLspLanguageService(
+      'flow',
+      pathToFlow,
+      ['lsp', '--from', 'nuclide'],
+      {
+        fileNotifier,
+        host,
+        projectFileNames: ['.flowconfig'],
+        fileExtensions: ['.js'],
+        logCategory: 'flow-language-server',
+        logLevel: 'ALL',
+      },
+    );
+    // TODO(ljw):
+    // stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
+    // '--lazy-mode ide': Boolean(featureConfig.get('nuclide-flow.lazyServer'))
+    //   and passesGK('nuclide_flow_lazy_mode_ide')
+    // canUseFlowBin: canUseFlowBin: Boolean(featureConfig.get('nuclide-flow.canUseFlowBin')),
+    return lspService || new NullLanguageService();
+  };
+
+  const atomLanguageService = new AtomLanguageService(
+    languageServiceFactory,
+    atomConfig,
+    null,
+    getLogger('nuclide-flow'),
+  );
+  atomLanguageService.activate();
+
+  return new UniversalDisposable(atomLanguageService);
+}
 
 /* ---------------------------------------------------------
  * Legacy Flow language services
