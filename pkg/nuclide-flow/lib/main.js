@@ -23,9 +23,11 @@ import type {BusySignalService} from 'atom-ide-ui';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
+import createPackage from 'nuclide-commons-atom/createPackage';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
 import passesGK from '../../commons-node/passesGK';
+import {onceGkInitialized} from '../../commons-node/passesGK';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {
   AtomLanguageService,
@@ -45,7 +47,37 @@ import {FlowServiceWatcher} from './FlowServiceWatcher';
 
 import {JS_GRAMMARS} from './constants';
 
-let disposables;
+class Activation {
+  _disposed: boolean;
+  _activationPromise: ?Promise<UniversalDisposable>;
+
+  constructor() {
+    onceGkInitialized(this._onGKInitialized.bind(this));
+  }
+
+  _onGKInitialized(): void {
+    if (this._disposed) {
+      return;
+    }
+    this._activationPromise = activateLegacy();
+  }
+
+  dispose(): void {
+    this._disposed = true;
+    if (this._activationPromise != null) {
+      this._activationPromise.then(activation => activation.dispose());
+    }
+    this._activationPromise = null;
+  }
+}
+
+createPackage(module.exports, Activation);
+
+/* ---------------------------------------------------------
+ * Legacy Flow language services
+ * ---------------------------------------------------------
+ */
+
 let connectionCache: ?ConnectionCache<FlowLanguageServiceType> = null;
 
 function getConnectionCache(): ConnectionCache<FlowLanguageServiceType> {
@@ -53,36 +85,46 @@ function getConnectionCache(): ConnectionCache<FlowLanguageServiceType> {
   return connectionCache;
 }
 
-export async function activate() {
-  if (!disposables) {
-    connectionCache = new ConnectionCache(connectionToFlowService);
+async function activateLegacy(): Promise<UniversalDisposable> {
+  connectionCache = new ConnectionCache(connectionToFlowService);
 
-    disposables = new UniversalDisposable(
-      connectionCache,
-      () => {
-        connectionCache = null;
+  const disposables = new UniversalDisposable(
+    connectionCache,
+    () => {
+      connectionCache = null;
+    },
+    new FlowServiceWatcher(connectionCache),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-flow:restart-flow-server',
+      allowFlowServerRestart,
+    ),
+    Observable.fromPromise(getLanguageServiceConfig()).subscribe(lsConfig => {
+      const flowLanguageService = new AtomLanguageService(
+        connection => getConnectionCache().get(connection),
+        lsConfig,
+      );
+      flowLanguageService.activate();
+      // `disposables` is always disposed before it is set to null. If it has been disposed,
+      // this subscription will have been disposed as well and we will not enter this callback.
+      invariant(disposables != null);
+      disposables.add(flowLanguageService);
+    }),
+    atom.packages.serviceHub.consume(
+      'atom-ide-busy-signal',
+      '0.1.0',
+      // When the package becomes available to us, it invokes this callback:
+      (service: BusySignalService) => {
+        const disposableForBusyService = consumeBusySignal(service);
+        // When the package becomes no longer available to us, it disposes this object:
+        return disposableForBusyService;
       },
-      new FlowServiceWatcher(connectionCache),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-flow:restart-flow-server',
-        allowFlowServerRestart,
-      ),
-      Observable.fromPromise(getLanguageServiceConfig()).subscribe(lsConfig => {
-        const flowLanguageService = new AtomLanguageService(
-          connection => getConnectionCache().get(connection),
-          lsConfig,
-        );
-        flowLanguageService.activate();
-        // `disposables` is always disposed before it is set to null. If it has been disposed,
-        // this subscription will have been disposed as well and we will not enter this callback.
-        invariant(disposables != null);
-        disposables.add(flowLanguageService);
-      }),
-    );
+    ),
+  );
 
-    registerGrammar('source.ini', ['.flowconfig']);
-  }
+  registerGrammar('source.ini', ['.flowconfig']);
+
+  return disposables;
 }
 
 async function connectionToFlowService(
@@ -160,7 +202,7 @@ export function serverStatusUpdatesToBusyMessages(
     .subscribe();
 }
 
-export function consumeBusySignal(service: BusySignalService): IDisposable {
+function consumeBusySignal(service: BusySignalService): IDisposable {
   const serverStatusUpdates = getConnectionCache()
     .observeValues()
     // mergeAll loses type info
@@ -176,13 +218,6 @@ export function consumeBusySignal(service: BusySignalService): IDisposable {
   return new UniversalDisposable(() => {
     subscription.unsubscribe();
   });
-}
-
-export function deactivate() {
-  if (disposables != null) {
-    disposables.dispose();
-    disposables = null;
-  }
 }
 
 async function allowFlowServerRestart(): Promise<void> {
