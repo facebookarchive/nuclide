@@ -23,4 +23,9 @@ export const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
 
 export const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
-  'Build this file with Buck, create a compile_commands.json file, or try "Clean and Rebuild".';
+  'Build this file with Buck, create a compile_commands.json file, then try "Clean and Rebuild".';
+
+export const HEADER_DEFAULT_FLAGS_WARNING =
+  'Diagnostics are disabled due to lack of compilation flags. ' +
+  'Note that header files only have compilation flags if a source file nearby has the same name or includes it. ' +
+  'Include this file from a source file built by Buck, or create a compile_commands.json file, then try "Clean and Rebuild".';
