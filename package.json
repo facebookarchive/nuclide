@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.301.0",
+  "version": "0.301.1",
   "description": "A unified developer experience for web and mobile development, built as a suite of features on top of Atom to provide hackability and the support of an active community.",
   "keywords": [
     "arcanist",
@@ -74,7 +74,6 @@
     "event-target-shim": "3.0.1",
     "fb-watchman": "2.0.0",
     "flatten-source-map": "0.0.2",
-    "flow-language-server": "0.4.3",
     "fs-extra": "4.0.3",
     "fs-plus": "2.9.3",
     "fuzzaldrin-plus": "0.4.1",
