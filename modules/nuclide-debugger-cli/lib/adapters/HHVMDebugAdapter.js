@@ -57,6 +57,8 @@ export default class HHVMDebugAdapter implements DebugAdapter {
       commandLineArgs.set('targetUri', program);
       commandLineArgs.set('noDebug', false);
       commandLineArgs.set('cwd', nuclideUri.resolve('.'));
+    } else {
+      commandLineArgs.set('targetUri', nuclideUri.resolve('.'));
     }
 
     commandLineArgs.set('action', action);

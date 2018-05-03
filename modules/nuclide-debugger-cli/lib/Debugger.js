@@ -63,6 +63,7 @@ export default class Debugger implements DebuggerInterface {
   _state: SessionState = 'INITIALIZING';
   _breakpoints: BreakpointCollection = new BreakpointCollection();
   _adapter: ?ParsedVSAdapter;
+  _attachMode: boolean = false;
 
   constructor(logger: log4js$Logger, con: ConsoleIO) {
     this._logger = logger;
@@ -107,18 +108,15 @@ export default class Debugger implements DebuggerInterface {
     await this.closeSession();
     await this.createSession(adapter);
 
-    switch (adapter.action) {
-      case 'attach':
-        const attachArgs = adapter.attachArgs;
-        invariant(attachArgs != null);
-        await this._ensureDebugSession(true).attach(attachArgs);
-        break;
+    invariant(adapter.action === 'attach' || adapter.action === 'launch');
+    this._attachMode = adapter.action === 'attach';
 
-      case 'launch':
-        const launchArgs = adapter.launchArgs;
-        invariant(launchArgs != null);
-        await this._ensureDebugSession(true).launch(launchArgs);
-        break;
+    const session = this._ensureDebugSession(true);
+
+    if (this._attachMode) {
+      await session.attach(nullthrows(adapter.attachArgs));
+    } else {
+      await session.launch(nullthrows(adapter.launchArgs));
     }
   }
 
@@ -127,15 +125,6 @@ export default class Debugger implements DebuggerInterface {
     invariant(adapter != null);
 
     this._state = 'CONFIGURING';
-
-    // if we are attaching, then the process is already running, so
-    // just proceed to configurationDone
-    if (adapter.action === 'attach') {
-      return this._configurationDone();
-    }
-
-    // for launching, we now open up the command prompt so the user can set
-    // breakpoints
     this._console.startInput();
   }
 
@@ -148,8 +137,7 @@ export default class Debugger implements DebuggerInterface {
     // this needs to be sent last for adapters that don't support configurationDone
     await session.setExceptionBreakpoints({filters: []});
 
-    invariant(this._capabilities != null);
-    if (this._capabilities.supportsConfigurationDoneRequest) {
+    if (nullthrows(this._capabilities).supportsConfigurationDoneRequest) {
       await session.configurationDone();
     }
 
@@ -158,16 +146,12 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async run(): Promise<void> {
-    const adapter = this._adapter;
+    if (this._attachMode) {
+      throw new Error('Cannot run an attached process; already attached.');
+    }
 
-    if (
-      this._state !== 'CONFIGURING' ||
-      adapter == null ||
-      adapter.action !== 'launch'
-    ) {
-      throw new Error(
-        'There is nothing to run, or already attached to a process.',
-      );
+    if (this._state !== 'CONFIGURING') {
+      throw new Error('There is nothing to run.');
     }
 
     return this._configurationDone();
@@ -245,9 +229,30 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async continue(): Promise<void> {
-    await this._ensureDebugSession().continue({
-      threadId: this.getActiveThread().id(),
-    });
+    const session = this._ensureDebugSession(true);
+
+    // if we are attaching and still in configuration, this is where we'll
+    // send configuration done.
+    if (this._state === 'CONFIGURING') {
+      if (this._attachMode) {
+        return this._configurationDone();
+      }
+      throw new Error('There is not yet a running process to continue.');
+    }
+
+    if (this._state === 'STOPPED') {
+      await session.continue({
+        threadId: this.getActiveThread().id(),
+      });
+
+      return;
+    }
+
+    if (this._state === 'TERMINATED') {
+      throw new Error('Cannot continue; process is terminated.');
+    }
+
+    throw new Error(`Continue called from unexpected state ${this._state}`);
   }
 
   async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
@@ -644,10 +649,7 @@ export default class Debugger implements DebuggerInterface {
       ).clearSelectedStackFrame();
     } else {
       // the call didn't actually contain information about anything stopping.
-      this._console.outputLine(
-        'stop event with no thread information ignored.',
-      );
-      return;
+      this._console.outputLine('stop event with no thread information.');
     }
 
     // for now, set the focus thread to the first thread that stopped
@@ -670,6 +672,7 @@ export default class Debugger implements DebuggerInterface {
         );
       }
 
+      this._state = 'STOPPED';
       this._console.startInput();
     }
   }
@@ -702,7 +705,7 @@ export default class Debugger implements DebuggerInterface {
     const adapter = this._adapter;
     invariant(adapter != null);
 
-    if (adapter.action === 'launch') {
+    if (!this._attachMode) {
       this._console.startInput();
       this.relaunch();
       return;
@@ -724,7 +727,7 @@ export default class Debugger implements DebuggerInterface {
     const adapter = this._adapter;
     invariant(adapter != null);
 
-    if (adapter.action === 'launch') {
+    if (!this._attachMode) {
       this._console.startInput();
       this.relaunch();
       return;
@@ -740,7 +743,7 @@ export default class Debugger implements DebuggerInterface {
     const adapter = this._adapter;
     invariant(adapter != null);
 
-    if (adapter.action === 'launch') {
+    if (!this._attachMode) {
       this._console.startInput();
       this.relaunch();
       return;
