@@ -12,6 +12,7 @@
 
 import CommandLine from './CommandLine';
 import CommandDispatcher from './CommandDispatcher';
+import ConfigFile from './ConfigFile';
 import Debugger from './Debugger';
 import DebuggerAdapterFactory from './DebuggerAdapterFactory';
 import HelpCommand from './HelpCommand';
@@ -77,6 +78,8 @@ const _help: string[] = [
   '  Show this help.',
   '--attach:',
   '  Attach the debugger to a running process.',
+  '--preset:',
+  '  Load default arguments for a session type preset',
   '--type python|node:',
   '  Specify the type of program to debug. Required with --attach',
   '',
@@ -85,8 +88,18 @@ const _help: string[] = [
   '',
 ];
 
-function showHelp(): void {
+function showHelp(configFile: ConfigFile): void {
   _help.forEach(_ => process.stdout.write(_ + '\n'));
+
+  const presets = configFile.presets();
+  if (presets.length === 0) {
+    process.stdout.write('No presets found.\n');
+  } else {
+    process.stdout.write('Presets:\n');
+    presets.forEach(preset => {
+      process.stdout.write(`${preset.name}:\n  ${preset.description}\n`);
+    });
+  }
 }
 
 async function main(): Promise<void> {
@@ -98,11 +111,16 @@ async function main(): Promise<void> {
 
   try {
     // see if there's session information on the command line
-    const args = yargs.boolean('attach').boolean('help').argv;
     const debuggerAdapterFactory = new DebuggerAdapterFactory();
+    const configFile = new ConfigFile();
+
+    const cmdLine = configFile.applyPresets();
+    const args = yargs(cmdLine)
+      .boolean('attach')
+      .boolean('help').argv;
 
     if (args.help) {
-      showHelp();
+      showHelp(configFile);
       await debuggerAdapterFactory.showContextSensitiveHelp(args);
       process.exit(0);
     }
@@ -114,7 +132,7 @@ async function main(): Promise<void> {
     } catch (error) {
       cli.outputLine(error.message);
       cli.outputLine();
-      showHelp();
+      showHelp(configFile);
       process.exit(0);
     }
 
