@@ -443,6 +443,19 @@ export async function buildRuleTypeFor(
   }
 }
 
+export async function clean(rootPath: NuclideUri): Promise<void> {
+  await BuckServiceImpl.runBuckCommandFromProjectRoot(rootPath, ['clean']);
+}
+
+export async function kill(rootPath: NuclideUri): Promise<void> {
+  await BuckServiceImpl.runBuckCommandFromProjectRoot(
+    rootPath,
+    ['kill'],
+    {},
+    false,
+  );
+}
+
 export async function _buildRuleTypeFor(
   rootPath: NuclideUri,
   aliasOrTarget: string,
