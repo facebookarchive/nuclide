@@ -25,30 +25,75 @@ import {
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
 
+export type LspLanguageServiceParams = {|
+  /* Required Parameters */
+
+  // Pass this in from getNotifierByConnection() on the client.
+  // This enables syncing of open files and directories.
+  fileNotifier: FileNotifier,
+  // Pass this in from getHostServices() on the client.
+  // This enables the LSP server to trigger things like Atom notifications.
+  host: HostServices,
+  // LSP servers will be multiplexed based on a list of "project" files.
+  // For every open file and directory, Nuclide will look upwards in parent directories for
+  // any file in `projectFileNames` and then start a LSP server with `rootUri` set to the
+  // directory containing the project file.
+  // This makes it possible to have several different LSP servers for different open files,
+  // even if the user hasn't mounted each of the project roots as directories in Atom.
+  // The exact choice of file may be influenced by `projectFileSearchStrategy` below.
+  // Example: Hack uses ['.hhconfig'] and Flow uses ['.flowconfig'].
+  projectFileNames: Array<string>,
+  // Language services will only be enabled for files with extensions in `fileExtensions`.
+  // Example: ['.php', '.hhi'] etc. for Hack.
+  fileExtensions: Array<string>,
+  // A log4js category for LSP-related logging.
+  // This will appear beside each message in Nuclide's log files.
+  logCategory: string,
+  // A log4js level for LSP-related logging.
+  // Setting this to TRACE will enable logging of all messages over the LSP connection.
+  logLevel: LogLevel,
+
+  /* Optional Parameters */
+
+  // Additional options to be passed to spawn().
+  // See: SpawnProcessOptions from nuclide-commons/process
+  spawnOptions?: Object,
+  // `initializationOptions` will be included in the LSP 'initialize' request.
+  // See: https://microsoft.github.io/language-server-protocol/specification#initialize
+  initializationOptions?: Object,
+  // If multiple `projectFileNames` are found in parent directories, this specifies
+  // the strategy to determine which one to use as the LSP `rootUri`.
+  // nearest: Uses the matching project file in the closest parent directory possible.
+  // furthest: Uses the matching project file in the furthest parent directory possible.
+  // priority: Takes the first match in `projectFileNames` that exists in a parent directory,
+  //           and then takes the 'nearest' strategy for that file.
+  // Default: 'nearest'.
+  projectFileSearchStrategy?: SearchStrategy,
+  // When spawning the LSP process, use the user's original shell environment
+  // (rather than the sanitized Nuclide environment).
+  // Default: false.
+  useOriginalEnvironment?: boolean,
+  // If provided, keeps an in-memory log of all LSP connection messages for the last
+  // `additionalLogFilesRetentionPeriod` milliseconds.
+  // These logs will be included with Nuclide's bug reports.
+  // Default: 0.
+  additionalLogFilesRetentionPeriod?: number,
+  // Waits for the client to start observing diagnostics before starting the LSP server.
+  // It's important to disable this if you don't plan to show diagnostics from the LSP server.
+  // Otherwise, this should always be enabled.
+  // Default: true.
+  waitForDiagnostics?: boolean,
+|};
+
 /**
  * Creates a language service capable of connecting to an LSP server.
  * Note that spawnOptions and initializationOptions must both be RPC-able.
- *
- * TODO: Document all of the fields below.
  */
 export async function createMultiLspLanguageService(
   languageServerName: string,
   command: string,
   args: Array<string>,
-  params: {|
-    spawnOptions?: Object,
-    initializationOptions?: Object,
-    fileNotifier: FileNotifier,
-    host: HostServices,
-    projectFileNames: Array<string>,
-    projectFileSearchStrategy?: SearchStrategy,
-    useOriginalEnvironment?: boolean,
-    fileExtensions: Array<string>,
-    logCategory: string,
-    logLevel: LogLevel,
-    additionalLogFilesRetentionPeriod?: number,
-    waitForDiagnostics?: boolean,
-  |},
+  params: LspLanguageServiceParams,
 ): Promise<?LanguageService> {
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
