@@ -1,35 +1,35 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.WebSocketTransport = undefined;
 
-import type WS from 'ws';
-import type {Observable} from 'rxjs';
 
-import {Subject} from 'rxjs';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import {Emitter} from 'event-kit';
-import {compress, decompress} from './compression';
 
-const logger = getLogger('nuclide-server');
-// Do not synchronously compress large payloads (risks blocking the event loop)
+
+
+
+
+
+
+
+
+
+
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _log4js;
+
+function _load_log4js() {return _log4js = require('log4js');}var _eventKit;
+function _load_eventKit() {return _eventKit = require('event-kit');}var _compression;
+function _load_compression() {return _compression = require('./compression');} /**
+                                                                                * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                * All rights reserved.
+                                                                                *
+                                                                                * This source code is licensed under the BSD-style license found in the
+                                                                                * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                *
+                                                                                * 
+                                                                                * @format
+                                                                                */const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-server'); // Do not synchronously compress large payloads (risks blocking the event loop)
 const MAX_SYNC_COMPRESS_LENGTH = 100000;
 
-type Options = {
-  // The built-in WebSocket compression implementation can have poor performance characteristics:
-  // in particular, decompression takes a full event tick client-side.
-  // This option enables our own custom compression format that allows us to use custom
-  // decompression client-side.
-  syncCompression?: boolean,
-};
 
 // An unreliable transport for sending JSON formatted messages
 // over a WebSocket
@@ -38,44 +38,44 @@ type Options = {
 // onMessage handlers are guaranteed to not be called after onClose has been called.
 // send(data) yields false if the message failed to send, true on success.
 // onClose handlers will be called before close() returns.
-export class WebSocketTransport {
-  id: string;
-  _socket: ?WS;
-  _emitter: Emitter;
-  _messages: Subject<string>;
-  _syncCompression: boolean;
+class WebSocketTransport {
 
-  constructor(clientId: string, socket: WS, options?: Options) {
+
+
+
+
+
+  constructor(clientId, socket, options) {
     this.id = clientId;
-    this._emitter = new Emitter();
+    this._emitter = new (_eventKit || _load_eventKit()).Emitter();
     this._socket = socket;
-    this._messages = new Subject();
+    this._messages = new _rxjsBundlesRxMinJs.Subject();
     this._syncCompression =
-      options == null || options.syncCompression !== false;
+    options == null || options.syncCompression !== false;
 
     logger.info('Client #%s connecting with a new socket!', this.id);
     socket.on('message', data => {
       let message = data;
       // Only compressed data will be sent as binary buffers.
       if (typeof data !== 'string') {
-        message = decompress(data);
+        message = (0, (_compression || _load_compression()).decompress)(data);
       }
       this._onSocketMessage(message);
     });
 
     socket.on('close', () => {
-      if (this._socket != null) {
-        invariant(this._socket === socket);
+      if (this._socket != null) {if (!(
+        this._socket === socket)) {throw new Error('Invariant violation: "this._socket === socket"');}
         logger.info(
-          'Client #%s socket close received on open socket!',
-          this.id,
-        );
+        'Client #%s socket close received on open socket!',
+        this.id);
+
         this._setClosed();
       } else {
         logger.info(
-          'Client #%s received socket close on already closed socket!',
-          this.id,
-        );
+        'Client #%s received socket close on already closed socket!',
+        this.id);
+
       }
     });
 
@@ -98,7 +98,7 @@ export class WebSocketTransport {
     });
   }
 
-  _onSocketMessage(message: string): void {
+  _onSocketMessage(message) {
     if (this._socket == null) {
       logger.warn('Received socket message after connection closed');
       return;
@@ -106,25 +106,25 @@ export class WebSocketTransport {
     this._messages.next(message);
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     return this._messages;
   }
 
-  onClose(callback: () => mixed): IDisposable {
+  onClose(callback) {
     return this._emitter.on('close', callback);
   }
 
-  onError(callback: (error: Error) => mixed): IDisposable {
+  onError(callback) {
     return this._emitter.on('error', callback);
   }
 
-  send(message: string): Promise<boolean> {
+  send(message) {
     const socket = this._socket;
     if (socket == null) {
       logger.error(
-        'Attempt to send socket message after connection closed',
-        new Error(),
-      );
+      'Attempt to send socket message after connection closed',
+      new Error());
+
       return Promise.resolve(false);
     }
 
@@ -132,10 +132,10 @@ export class WebSocketTransport {
       let data = message;
       let compressed = false;
       if (this._syncCompression && message.length < MAX_SYNC_COMPRESS_LENGTH) {
-        data = compress(message);
+        data = (0, (_compression || _load_compression()).compress)(message);
         compressed = true;
       }
-      socket.send(data, {compress: !compressed}, err => {
+      socket.send(data, { compress: !compressed }, err => {
         if (err != null) {
           logger.warn(`Failed sending to client:${this.id} message:${message}`);
           resolve(false);
@@ -147,7 +147,7 @@ export class WebSocketTransport {
   }
 
   // The WS socket automatically responds to pings with pongs.
-  ping(data: ?string): void {
+  ping(data) {
     if (this._socket != null) {
       this._socket.ping(data);
     } else {
@@ -155,11 +155,11 @@ export class WebSocketTransport {
     }
   }
 
-  onPong(callback: (data: ?string) => void): IDisposable {
+  onPong(callback) {
     return this._emitter.on('pong', callback);
   }
 
-  close(): void {
+  close() {
     if (this._socket != null) {
       // The call to socket.close may or may not cause our handler to be called
       this._socket.close();
@@ -167,16 +167,15 @@ export class WebSocketTransport {
     }
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._socket == null;
   }
 
-  _setClosed(): void {
+  _setClosed() {
     if (this._socket != null) {
       // In certain (Error) conditions socket.close may not emit the on close
       // event synchronously.
       this._socket = null;
       this._emitter.emit('close');
     }
-  }
-}
+  }}exports.WebSocketTransport = WebSocketTransport;

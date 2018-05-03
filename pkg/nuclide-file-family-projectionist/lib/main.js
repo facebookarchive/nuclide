@@ -1,42 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';var _nullthrows;
 
-import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {FileFamilyProvider} from '../../nuclide-file-family/lib/types';
 
-import nullthrows from 'nullthrows';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {BehaviorSubject} from 'rxjs';
-import ProjectionistFileFamilyProvider from './ProjectionistFileFamilyProvider';
 
-class Activation {
-  _cwdApis: BehaviorSubject<?CwdApi> = new BehaviorSubject(null);
-  _subscriptions: ?UniversalDisposable;
+
+
+
+
+
+
+
+
+
+
+function _load_nullthrows() {return _nullthrows = _interopRequireDefault(require('nullthrows'));}var _createPackage;
+function _load_createPackage() {return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _ProjectionistFileFamilyProvider;
+function _load_ProjectionistFileFamilyProvider() {return _ProjectionistFileFamilyProvider = _interopRequireDefault(require('./ProjectionistFileFamilyProvider'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+class Activation {constructor() {this.
+    _cwdApis = new _rxjsBundlesRxMinJs.BehaviorSubject(null);}
+
 
   activate() {
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   dispose() {
-    nullthrows(this._subscriptions).dispose();
+    (0, (_nullthrows || _load_nullthrows()).default)(this._subscriptions).dispose();
   }
 
-  consumeCwdApi(cwdApi: CwdApi): void {
+  consumeCwdApi(cwdApi) {
     this._cwdApis.next(cwdApi);
   }
 
-  provideFileFamilyService(): FileFamilyProvider {
-    return new ProjectionistFileFamilyProvider(this._cwdApis.asObservable());
-  }
-}
-
-createPackage(module.exports, Activation);
+  provideFileFamilyService() {
+    return new (_ProjectionistFileFamilyProvider || _load_ProjectionistFileFamilyProvider()).default(this._cwdApis.asObservable());
+  }} /**
+      * Copyright (c) 2015-present, Facebook, Inc.
+      * All rights reserved.
+      *
+      * This source code is licensed under the license found in the LICENSE file in
+      * the root directory of this source tree.
+      *
+      * 
+      * @format
+      */(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

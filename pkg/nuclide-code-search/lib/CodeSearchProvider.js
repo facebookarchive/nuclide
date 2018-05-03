@@ -1,91 +1,91 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.CodeSearchProvider = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _HighlightedText;
 
-import type {Provider, FileResult} from '../../nuclide-quick-open/lib/types';
 
-import HighlightedText from 'nuclide-commons-ui/HighlightedText';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getMatchRanges} from 'nuclide-commons/string';
-import {getCodeSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {Observable} from 'rxjs';
-import * as React from 'react';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
-import {Subject} from 'rxjs';
-import escapeRegExp from 'escape-string-regexp';
-import {pickConfigByUri} from './utils';
 
-type CodeSearchFileResult = {|
-  path: string,
-  query: string,
-  line: number,
-  column: number,
-  context: string,
-  displayPath: string,
-  isFirstResultForPath: boolean,
-  resultType: 'FILE',
-|};
 
-const directoriesObs: Subject<atom$Directory> = new Subject();
 
-const SEARCH_TIMEOUT = 10000;
 
-export const CodeSearchProvider: Provider<FileResult> = {
-  name: 'CodeSearchProvider',
-  providerType: 'DIRECTORY',
-  debounceDelay: 250,
-  display: {
-    action: 'nuclide-code-search:toggle-provider',
+
+
+
+
+
+
+function _load_HighlightedText() {return _HighlightedText = _interopRequireDefault(require('nuclide-commons-ui/HighlightedText'));}var _nuclideUri;
+function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));}var _string;
+function _load_string() {return _string = require('nuclide-commons/string');}var _nuclideRemoteConnection;
+function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');}
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+var _react = _interopRequireWildcard(require('react'));var _PathWithFileIcon;
+function _load_PathWithFileIcon() {return _PathWithFileIcon = _interopRequireDefault(require('../../nuclide-ui/PathWithFileIcon'));}var _escapeStringRegexp;
+
+function _load_escapeStringRegexp() {return _escapeStringRegexp = _interopRequireDefault(require('escape-string-regexp'));}var _utils;
+function _load_utils() {return _utils = require('./utils');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+
+
+
+
+
+
+
+
+
+
+
+const directoriesObs = new _rxjsBundlesRxMinJs.Subject(); /**
+                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                           * All rights reserved.
+                                                           *
+                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                           * the root directory of this source tree.
+                                                           *
+                                                           * 
+                                                           * @format
+                                                           */const SEARCH_TIMEOUT = 10000;const CodeSearchProvider = exports.CodeSearchProvider = { name: 'CodeSearchProvider', providerType: 'DIRECTORY', debounceDelay: 250, display: { action: 'nuclide-code-search:toggle-provider',
     prompt:
-      'Search code using tools like rg or ack. Configure using the Nuclide config...',
-    title: 'Code Search',
-  },
-  async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    try {
-      const {
-        isAvailableForPath,
-        // $FlowFB
-      } = require('../../commons-atom/fb-biggrep-query');
-      if (await isAvailableForPath(directory.getPath())) {
-        return false;
-      }
-    } catch (err) {}
-    const projectRoot = directory.getPath();
-    return getCodeSearchServiceByNuclideUri(projectRoot).isEligibleForDirectory(
-      projectRoot,
-    );
-  },
-  async executeQuery(
-    query: string,
-    directory: atom$Directory,
-  ): Promise<FileResult[]> {
-    directoriesObs.next(directory);
-    if (query.length === 0) {
-      return [];
-    }
-    const projectRoot = directory.getPath();
-    let lastPath = null;
-    const config = pickConfigByUri(projectRoot);
-    const regexp = new RegExp(escapeRegExp(query), 'i');
+    'Search code using tools like rg or ack. Configure using the Nuclide config...',
+    title: 'Code Search' },
 
-    return (
-      getCodeSearchServiceByNuclideUri(projectRoot)
-        .codeSearch(
-          projectRoot,
-          regexp,
-          config.useVcsSearch,
-          config.tool.length === 0 ? null : config.tool,
-          config.maxResults,
-        )
-        .refCount()
-        .map(match => {
+  isEligibleForDirectory(directory) {return (0, _asyncToGenerator.default)(function* () {
+      try {
+        const {
+          isAvailableForPath
+          // $FlowFB
+        } = require('../../commons-atom/fb-biggrep-query');
+        if (yield isAvailableForPath(directory.getPath())) {
+          return false;
+        }
+      } catch (err) {}
+      const projectRoot = directory.getPath();
+      return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getCodeSearchServiceByNuclideUri)(projectRoot).isEligibleForDirectory(
+      projectRoot);})();
+
+  },
+  executeQuery(
+  query,
+  directory)
+  {return (0, _asyncToGenerator.default)(function* () {
+      directoriesObs.next(directory);
+      if (query.length === 0) {
+        return [];
+      }
+      const projectRoot = directory.getPath();
+      let lastPath = null;
+      const config = (0, (_utils || _load_utils()).pickConfigByUri)(projectRoot);
+      const regexp = new RegExp((0, (_escapeStringRegexp || _load_escapeStringRegexp()).default)(query), 'i');
+
+      return (
+        (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getCodeSearchServiceByNuclideUri)(projectRoot).
+        codeSearch(
+        projectRoot,
+        regexp,
+        config.useVcsSearch,
+        config.tool.length === 0 ? null : config.tool,
+        config.maxResults).
+
+        refCount().
+        map(function (match) {
           const result = {
             isFirstResultForPath: match.file !== lastPath,
             path: match.file,
@@ -93,50 +93,49 @@ export const CodeSearchProvider: Provider<FileResult> = {
             line: match.row,
             column: match.column,
             context: match.line,
-            displayPath: `./${nuclideUri
-              .relative(projectRoot, match.file)
-              .replace(/\\/g, '/')}`,
-            resultType: 'FILE',
-          };
+            displayPath: `./${(_nuclideUri || _load_nuclideUri()).default.
+            relative(projectRoot, match.file).
+            replace(/\\/g, '/')}`,
+            resultType: 'FILE' };
+
           lastPath = match.file;
           return result;
-        })
-        .timeout(SEARCH_TIMEOUT)
-        .catch(() => Observable.empty())
-        .toArray()
-        .takeUntil(directoriesObs.filter(dir => dir.getPath() === projectRoot))
-        .toPromise()
+        }).
+        timeout(SEARCH_TIMEOUT).
+        catch(function () {return _rxjsBundlesRxMinJs.Observable.empty();}).
+        toArray().
+        takeUntil(directoriesObs.filter(function (dir) {return dir.getPath() === projectRoot;})).
+        toPromise()
         // toPromise yields undefined if it was interrupted.
-        .then(result => result || [])
-    );
+        .then(function (result) {return result || [];}));})();
+
   },
-  getComponentForItem(_item: FileResult): React.Element<any> {
-    const item = ((_item: any): CodeSearchFileResult);
+  getComponentForItem(_item) {
+    const item = _item;
     return (
-      <div
-        className={
-          item.isFirstResultForPath
-            ? 'code-search-provider-result-first-result-for-path'
-            : null
-        }>
-        {item.isFirstResultForPath && (
-          <PathWithFileIcon
-            className="code-search-provider-result-path"
-            path={item.path}>
-            {item.displayPath}
-          </PathWithFileIcon>
-        )}
-        <div className="code-search-provider-result-context">
-          <HighlightedText
-            highlightedRanges={getMatchRanges(
-              // The search is case-insensitive.
-              item.context.toLowerCase(),
-              item.query.toLowerCase(),
-            )}
-            text={item.context}
-          />
-        </div>
-      </div>
-    );
-  },
-};
+      _react.createElement('div', {
+          className:
+          item.isFirstResultForPath ?
+          'code-search-provider-result-first-result-for-path' :
+          null },
+
+        item.isFirstResultForPath &&
+        _react.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, {
+            className: 'code-search-provider-result-path',
+            path: item.path },
+          item.displayPath),
+
+
+        _react.createElement('div', { className: 'code-search-provider-result-context' },
+          _react.createElement((_HighlightedText || _load_HighlightedText()).default, {
+            highlightedRanges: (0, (_string || _load_string()).getMatchRanges)(
+            // The search is case-insensitive.
+            item.context.toLowerCase(),
+            item.query.toLowerCase()),
+
+            text: item.context }))));
+
+
+
+
+  } };
