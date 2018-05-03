@@ -62,7 +62,7 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
           : parameters.targetUri;
 
       const service = parameters.service != null ? parameters.service : null;
-      const adbService = getAdbService(targetUri);
+      const adbService = getAdbService(adbServiceUri);
       const {pid} = await launchAndroidServiceOrActivityAndGetPid(
         parameters.pid,
         adbService,

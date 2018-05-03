@@ -168,24 +168,31 @@ export async function getAdbAttachPortTargetInfo(
   });
 
   const attachPort = await new Promise(async (resolve, reject) => {
-    if (!tunnelRequired) {
-      resolve(adbPort);
-      return;
+    try {
+      if (!tunnelRequired) {
+        resolve(adbPort);
+        return;
+      }
+      invariant(tunnelService);
+      const debuggerPort = await tunnelService.getAvailableServerPort(
+        targetUri,
+      );
+      const tunnel = {
+        description: 'Java debugger',
+        from: {
+          host: nuclideUri.getHostname(targetUri),
+          port: debuggerPort,
+          family: 4,
+        },
+        to: {host: 'localhost', port: adbPort, family: 4},
+      };
+      const openTunnel = tunnelService.openTunnels([tunnel]).share();
+      subscriptions.add(openTunnel.subscribe());
+      await openTunnel.take(1).toPromise();
+      resolve(debuggerPort);
+    } catch (e) {
+      reject(e);
     }
-    invariant(tunnelService);
-    const debuggerPort = await tunnelService.getAvailableServerPort(targetUri);
-    const tunnel = {
-      description: 'Java debugger',
-      from: {
-        host: nuclideUri.getHostname(targetUri),
-        port: debuggerPort,
-        family: 4,
-      },
-      to: {host: 'localhost', port: adbPort, family: 4},
-    };
-    const openTunnel = tunnelService.openTunnels([tunnel]).share();
-    subscriptions.add(openTunnel.subscribe());
-    await openTunnel.take(1).toPromise();
   });
   return {
     debugMode: 'attach',
@@ -326,7 +333,6 @@ export async function debugAndroidDebuggerService(
   adbServiceUri: NuclideUri,
   targetUri: NuclideUri,
 ): Promise<void> {
-  const subscriptions = new UniversalDisposable();
   const {pid, attach} = await launchAndroidServiceOrActivityAndGetPid(
     providedPid,
     adbService,
@@ -337,32 +343,43 @@ export async function debugAndroidDebuggerService(
     packageName,
   );
 
-  const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
-    device,
-    adbService,
-    adbServiceUri,
-    targetUri,
-    pid,
-    subscriptions,
-  );
+  let subscriptions = new UniversalDisposable();
+  try {
+    const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
+      device,
+      adbService,
+      adbServiceUri,
+      targetUri,
+      pid,
+      subscriptions,
+    );
 
-  await debugJavaDebuggerService(
-    targetUri,
-    attachPortTargetConfig,
-    subscriptions,
-    false /* do not track because we will */,
-  );
+    await debugJavaDebuggerService(
+      targetUri,
+      attachPortTargetConfig,
+      subscriptions,
+      false /* do not track because we will */,
+    );
 
-  track('fb-java-debugger-start', {
-    startType: attach ? 'android-attach' : 'android-launch',
-    target: packageName,
-    targetType: 'android',
-    port: attachPortTargetConfig.port,
-    deviceName: device.name,
-    activity,
-    action,
-    pid,
-  });
+    // Subscriptions is now owned by the debugger service, and will
+    // be disposed when debugging stops.
+    subscriptions = null;
+
+    track('fb-java-debugger-start', {
+      startType: attach ? 'android-attach' : 'android-launch',
+      target: packageName,
+      targetType: 'android',
+      port: attachPortTargetConfig.port,
+      deviceName: device.name,
+      activity,
+      action,
+      pid,
+    });
+  } finally {
+    if (subscriptions != null) {
+      subscriptions.dispose();
+    }
+  }
 }
 
 export async function debugJavaDebuggerService(
