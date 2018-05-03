@@ -2367,7 +2367,7 @@ class DerivedServerCapabilities {
       this.completionTriggerCharacters = new Set();
     } else {
       const lspChars = capabilities.completionProvider.triggerCharacters || [];
-      const intrinsicChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(
+      const intrinsicChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_'.split(
         '',
       );
       this.completionTriggerCharacters = new Set(
