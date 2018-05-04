@@ -9,9 +9,9 @@
   "private": true,
   "devDependencies": {
     "async-to-generator": "1.1.0",
-    "jest-cli": "22.4.2",
-    "jest-mock": "22.2.0",
-    "jest-util": "22.4.1",
+    "jest-cli": "23.0.0-charlie.1",
+    "jest-mock": "23.0.0-charlie.1",
+    "jest-util": "23.0.0-charlie.1",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",
     "nullthrows": "1.0.0",
