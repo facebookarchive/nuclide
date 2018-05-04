@@ -1,2 +1,12 @@
 Build/*
-spec/fixtures/java/*.class
+*.class
+.api_description
+.options
+ECLIPSE_.RSA
+ECLIPSE_.SF
+MANIFEST.MF
+about.html
+dependency-reduced-pom.xml
+*.jar
+plugin.xml
+pom.properties
