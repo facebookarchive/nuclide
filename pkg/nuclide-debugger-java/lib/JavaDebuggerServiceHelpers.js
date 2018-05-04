@@ -14,6 +14,7 @@ import type {
   ControlButtonSpecification,
   IProcessConfig,
   VSAdapterExecutableInfo,
+  IVspInstance,
 } from 'nuclide-debugger-common';
 import type {
   JavaTargetConfig,
@@ -253,12 +254,12 @@ export async function createJavaVspProcessInfo(
   config: JavaTargetConfig,
   clickEvents: rxjs$Subject<void>,
 ): Promise<VspProcessInfo> {
-  const processConfig = await createJavaVspIProcessConfig(
+  const processConfig = await _createJavaVspIProcessConfig(
     targetUri,
     config,
     clickEvents,
   );
-  return new VspProcessInfo(
+  const info = new VspProcessInfo(
     processConfig.targetUri,
     processConfig.debugMode,
     processConfig.adapterType,
@@ -270,6 +271,13 @@ export async function createJavaVspProcessInfo(
       threadsComponentTitle: 'Threads',
     },
   );
+
+  const subscriptions = new UniversalDisposable();
+  subscriptions.add(
+    ..._getSourcePathClickSubscriptions(targetUri, info, clickEvents),
+  );
+  info.addCustomDisposable(subscriptions);
+  return info;
 }
 
 async function getJavaVSAdapterExecutableInfo(
@@ -280,7 +288,7 @@ async function getJavaVSAdapterExecutableInfo(
   ).getJavaVSAdapterExecutableInfo(await passesGK(NUCLIDE_DEBUGGER_DEV_GK));
 }
 
-export async function createJavaVspIProcessConfig(
+async function _createJavaVspIProcessConfig(
   targetUri: NuclideUri,
   config: JavaTargetConfig,
   clickEvents: rxjs$Subject<void>,
@@ -382,6 +390,24 @@ export async function debugAndroidDebuggerService(
   }
 }
 
+function _getSourcePathClickSubscriptions(
+  targetUri: NuclideUri,
+  vspInstance: IVspInstance,
+  clickEvents: Subject<any>,
+): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
+  const defaultValues = getDefaultSourceSearchPaths(targetUri);
+  return [
+    getDialogValues(clickEvents)
+      .startWith(getSavedPathsFromConfig())
+      .subscribe(userValues => {
+        vspInstance.customRequest('setSourcePath', {
+          sourcePath: getSourcePathString(defaultValues.concat(userValues)),
+        });
+      }),
+    clickEvents,
+  ];
+}
+
 export async function debugJavaDebuggerService(
   targetUri: NuclideUri,
   config: JavaTargetConfig,
@@ -389,12 +415,11 @@ export async function debugJavaDebuggerService(
   trackDebug: boolean = true,
 ): Promise<void> {
   const clickEvents = new Subject();
-  const processConfig = await createJavaVspIProcessConfig(
+  const processConfig = await _createJavaVspIProcessConfig(
     targetUri,
     config,
     clickEvents,
   );
-  const defaultValues = getDefaultSourceSearchPaths(targetUri);
 
   const debuggerService = await getDebuggerService();
   const vspInstance = await debuggerService.startVspDebugging(processConfig);
@@ -406,14 +431,7 @@ export async function debugJavaDebuggerService(
   //    disposable on componentWillUnmount which has already occurred
 
   subscriptions.add(
-    getDialogValues(clickEvents)
-      .startWith(getSavedPathsFromConfig())
-      .subscribe(userValues => {
-        vspInstance.customRequest('setSourcePath', {
-          sourcePath: getSourcePathString(defaultValues.concat(userValues)),
-        });
-      }),
-    clickEvents,
+    ..._getSourcePathClickSubscriptions(targetUri, vspInstance, clickEvents),
   );
   vspInstance.addCustomDisposable(subscriptions);
 
