@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-css-lsp-client-rpc",
+  "main": "./lib/CSSLSPService.js",
+  "version": "0.0.0",
+  "description": "A service for CSS symbols, diagnostics, and datatips",
+  "author": "NEEDS OWNER",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

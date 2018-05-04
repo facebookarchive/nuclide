@@ -68,6 +68,10 @@
     "name": "JavaDebuggerHelpersService"
   },
   {
+    "implementation": "../nuclide-css-lsp-client-rpc/lib/CSSLSPService.js",
+    "name": "CSSLSPService"
+  },
+  {
     "implementation": "../nuclide-js-imports-client-rpc/lib/JsImportsService.js",
     "name": "JSAutoImportsService"
   },
