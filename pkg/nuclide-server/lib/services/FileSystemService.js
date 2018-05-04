@@ -356,3 +356,8 @@ export async function getFreeSpace(path: NuclideUri): Promise<?number> {
     .toPromise()
     .catch(() => null);
 }
+
+// Wrapper around fsPromise.tempdir()
+export async function tempdir(prefix: string = ''): Promise<string> {
+  return fsPromise.tempdir(prefix);
+}
