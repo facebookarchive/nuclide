@@ -18,10 +18,8 @@
   */
 /* eslint-disable no-console */
 
-// eslint-disable-next-line rulesdir/no-unresolved
 const jestCLI = require('jest-cli');
 const config = require('../jest.config.js');
-// eslint-disable-next-line rulesdir/no-unresolved
 const yargs = require('yargs');
 const {options} = require('jest-cli/build/cli/args');
 

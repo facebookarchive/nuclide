@@ -33,8 +33,7 @@ module.exports = function(context) {
       !id.includes('/') &&
       !ATOM_BUILTIN_PACKAGES.has(id) &&
       !pkgJson.dependencies.hasOwnProperty(id) &&
-      (!filename.includes('/spec/') ||
-        !pkgJson.devDependencies.hasOwnProperty(id)) &&
+      !filename.includes('/spec/') &&
       !filename.includes('/scripts/') &&
       !filename.includes('.eslintrc.js') &&
       resolvedPath !== id &&

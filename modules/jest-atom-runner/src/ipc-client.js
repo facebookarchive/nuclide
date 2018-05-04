@@ -17,7 +17,6 @@ export type IPCWorker = {
   send(message: string): void,
 };
 
-// eslint-disable-next-line rulesdir/no-unresolved
 import ipc from 'node-ipc';
 import {makeMessage, MESSAGE_TYPES} from './utils';
 

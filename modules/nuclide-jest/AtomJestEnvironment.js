@@ -19,9 +19,7 @@
 // Slightly derived from https://github.com/nhunzaker/jest-electron-environment
 // which is licensed MIT.
 
-// eslint-disable-next-line rulesdir/no-unresolved
 const mock = require('jest-mock');
-// eslint-disable-next-line rulesdir/no-unresolved
 const {FakeTimers, installCommonGlobals} = require('jest-util');
 
 class AtomJestEnvironment {

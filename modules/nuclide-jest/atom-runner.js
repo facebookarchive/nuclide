@@ -19,7 +19,6 @@
 const {Console} = require('console');
 const electron = require('electron');
 const invariant = require('assert');
-// eslint-disable-next-line rulesdir/no-unresolved
 const jestCLI = require('jest-cli');
 const fs = require('fs');
 const os = require('os');

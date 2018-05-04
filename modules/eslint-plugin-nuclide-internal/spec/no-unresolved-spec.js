@@ -33,7 +33,7 @@ ruleTester.run('no-unresolved', rule, {
       parserOptions: {sourceType: 'module'},
     },
     {
-      code: 'import eslint from "eslint"',
+      code: 'import asdfasdf from "asdfasdf"',
       filename: '/a/spec/test.js',
       parserOptions: {sourceType: 'module'},
     },
@@ -44,14 +44,6 @@ ruleTester.run('no-unresolved', rule, {
       errors: [{
         message: '"unresolvable" must be a dependency in the root package.json',
         type: 'VariableDeclarator',
-      }],
-    },
-    {
-      code: 'import eslint from "eslint"',
-      parserOptions: {sourceType: 'module'},
-      errors: [{
-        message: '"eslint" must be a dependency in the root package.json',
-        type: 'ImportDeclaration',
       }],
     },
   ],

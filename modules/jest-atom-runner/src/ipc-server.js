@@ -21,7 +21,6 @@ export type IPCServer = {
   emit: (Socket, WorkerID, message: string) => void,
 };
 
-// eslint-disable-next-line rulesdir/no-unresolved
 import ipc from 'node-ipc';
 
 let started = false;

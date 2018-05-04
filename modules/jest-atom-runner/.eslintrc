@@ -1,5 +1,6 @@
 {
   "rules": {
-    "rulesdir/modules-dependencies": [1, {"allowDevDependencies": true}]
+    "rulesdir/modules-dependencies": [1, {"allowDevDependencies": true}],
+    "rulesdir/no-unresolved": 0
   }
 }
