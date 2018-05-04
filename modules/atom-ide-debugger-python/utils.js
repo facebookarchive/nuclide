@@ -26,6 +26,7 @@ import {VspProcessInfo, VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import {track} from 'nuclide-commons/analytics';
 import * as RemoteDebuggerCommandServiceLocal from './RemoteDebuggerCommandService';
+import nullthrows from 'nullthrows';
 
 let _rpcService: ?nuclide$RpcService = null;
 
@@ -171,12 +172,12 @@ function findDuplicateAttachTargetIds(
 export function getRemoteDebuggerCommandServiceByNuclideUri(
   uri: NuclideUri,
 ): RemoteDebuggerCommandService {
-  if (_rpcService != null) {
-    return _rpcService.getServiceByNuclideUri(
-      'RemoteDebuggerCommandService',
-      uri,
-    );
-  } else {
+  if (!nuclideUri.isRemote(uri)) {
     return RemoteDebuggerCommandServiceLocal;
   }
+
+  return nullthrows(_rpcService).getServiceByNuclideUri(
+    'RemoteDebuggerCommandService',
+    uri,
+  );
 }

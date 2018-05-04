@@ -12,10 +12,12 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import typeof * as AdbService from './AdbService';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as AdbServiceLocal from './AdbService';
+import nullthrows from 'nullthrows';
 
 let _rpcService: ?nuclide$RpcService = null;
 
@@ -27,9 +29,9 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 }
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
-  if (_rpcService != null) {
-    return _rpcService.getServiceByNuclideUri('AdbService', uri);
-  } else {
+  if (!nuclideUri.isRemote(uri)) {
     return AdbServiceLocal;
   }
+
+  return nullthrows(_rpcService).getServiceByNuclideUri('AdbService', uri);
 }

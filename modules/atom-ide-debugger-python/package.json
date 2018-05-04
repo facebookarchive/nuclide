@@ -6,7 +6,8 @@
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
-  "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-python",
+  "repository":
+    "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-python",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec",
@@ -43,6 +44,7 @@
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-debugger-common": "0.7.1-dev",
+    "nullthrows": "1.0.0",
     "react": "16.2.0",
     "reflect-metadata": "0.1.12",
     "rxjs": "5.5.5",
@@ -57,7 +59,5 @@
     "vscode-nls": "2.0.2",
     "xml2js": "0.4.17"
   },
-  "package-deps": [
-    "atom-ide-ui"
-  ]
+  "package-deps": ["atom-ide-ui"]
 }

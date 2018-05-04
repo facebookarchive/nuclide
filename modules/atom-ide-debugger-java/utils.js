@@ -16,11 +16,13 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import typeof * as JavaDebuggerHelpersService from './JavaDebuggerHelpersService';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import * as JavaDebuggerHelpersServiceLocal from './JavaDebuggerHelpersService';
+import nullthrows from 'nullthrows';
 
 let _rpcService: ?nuclide$RpcService = null;
 
@@ -94,12 +96,12 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 export function getJavaDebuggerHelpersServiceByNuclideUri(
   uri: NuclideUri,
 ): JavaDebuggerHelpersService {
-  if (_rpcService != null) {
-    return _rpcService.getServiceByNuclideUri(
-      'JavaDebuggerHelpersService',
-      uri,
-    );
-  } else {
+  if (!nuclideUri.isRemote(uri)) {
     return JavaDebuggerHelpersServiceLocal;
   }
+
+  return nullthrows(_rpcService).getServiceByNuclideUri(
+    'JavaDebuggerHelpersService',
+    uri,
+  );
 }
