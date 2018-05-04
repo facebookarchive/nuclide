@@ -54,6 +54,7 @@ import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisib
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
 import {getLogger} from 'log4js';
+import nullthrows from 'nullthrows';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 const REVISION_DEBOUNCE_DELAY = 300;
@@ -77,7 +78,7 @@ type HgRepositoryOptions = {
   workingDirectory: atom$Directory | RemoteDirectory,
 
   /** The root directory that is opened in Atom, which this Repository serves. */
-  projectRootDirectory: atom$Directory,
+  projectRootDirectory?: atom$Directory,
 };
 
 /**
@@ -147,7 +148,7 @@ export type HgStatusChanges = {
 export class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
-  _projectDirectory: atom$Directory;
+  _projectDirectory: ?atom$Directory;
   _initializationPromise: Promise<void>;
   _originURL: ?string;
   _service: HgService;
@@ -234,7 +235,7 @@ export class HgRepositoryClient {
             if (
               filePath == null ||
               filePath.length === 0 ||
-              !this.isPathRelevant(filePath)
+              !this.isPathRelevantToRepository(filePath)
             ) {
               return Observable.empty();
             }
@@ -546,7 +547,12 @@ export class HgRepositoryClient {
   // @return The path of the root project folder in Atom that this
   // HgRepositoryClient provides information about.
   getProjectDirectory(): string {
-    return this._projectDirectory.getPath();
+    return this.getInternalProjectDirectory().getPath();
+  }
+
+  // This function exists to be shadowed
+  getInternalProjectDirectory(): atom$Directory {
+    return nullthrows(this._projectDirectory);
   }
 
   // TODO This is a stub.
@@ -728,8 +734,15 @@ export class HgRepositoryClient {
    */
   isPathRelevant(filePath: NuclideUri): boolean {
     return (
-      this._projectDirectory.contains(filePath) ||
-      this._projectDirectory.getPath() === filePath
+      this.getInternalProjectDirectory().contains(filePath) ||
+      this.getInternalProjectDirectory().getPath() === filePath
+    );
+  }
+
+  isPathRelevantToRepository(filePath: NuclideUri): boolean {
+    return (
+      this._workingDirectory.contains(filePath) ||
+      this._workingDirectory.getPath() === filePath
     );
   }
 
@@ -848,7 +861,7 @@ export class HgRepositoryClient {
   ): Observable<?Map<NuclideUri, DiffInfo>> {
     const pathsToFetch = filePaths.filter(aPath => {
       // Don't try to fetch information for this path if it's not in the repo.
-      if (!this.isPathRelevant(aPath)) {
+      if (!this.isPathRelevantToRepository(aPath)) {
         return false;
       }
       // Don't do another update for this path if we are in the middle of running an update.
