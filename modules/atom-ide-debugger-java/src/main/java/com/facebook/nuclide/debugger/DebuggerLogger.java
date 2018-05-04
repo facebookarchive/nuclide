@@ -35,11 +35,6 @@ public class DebuggerLogger {
     _logger = Logger.getLogger("JavaDebugServer");
     _logger.setUseParentHandlers(false);
     try {
-      ConsoleHandler console = new ConsoleHandler();
-      console.setFormatter(new SimpleFormatter());
-      console.setLevel(logLevel);
-      _logger.addHandler(console);
-
       File tempDir = new File(System.getProperty("java.io.tmpdir"));
       String user = System.getProperty("user.name");
       String logDirName = String.format("nuclide-%s-logs", user);
