@@ -41,6 +41,7 @@ export async function initializeLsp(
       fileExtensions,
       initializationOptions,
       spawnOptions: {env: {...process.env, ELECTRON_RUN_AS_NODE: '1'}},
+      waitForDiagnostics: false,
     },
   );
 }
