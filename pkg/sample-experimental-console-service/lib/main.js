@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
+import type {ServiceConnection} from 'nuclide-commons-atom/experimental-packages/types';
 
 import {getLogger} from 'log4js';
 import {initializeLogging} from '../../nuclide-logging';

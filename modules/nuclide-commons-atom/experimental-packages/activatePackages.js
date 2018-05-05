@@ -10,18 +10,18 @@
  * @format
  */
 
-import type {Feature} from './FeatureLoader';
-import type {PackageParams} from './ExperimentalPackage';
-import type {Socket} from './ExperimentalMessageRouter';
+import type {Feature} from '../FeatureLoader';
+import type {
+  ExperimentalPackageDefinition,
+  PackageParams,
+  Socket,
+} from './types';
 
 import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
-import {
-  AtomPackageRunner,
-  ProcessPackageRunner,
-} from './ExperimentalPackageRunner';
-import ExperimentalMessageRouter from './ExperimentalMessageRouter';
+import {AtomPackageRunner, ProcessPackageRunner} from './PackageRunners';
+import MessageRouter from './MessageRouter';
 
 type ExperimentalServiceTable = {
   [serviceName: string]: {
@@ -32,66 +32,10 @@ type ExperimentalServiceTable = {
   },
 };
 
-function getExperimentalFeatures(features: Array<Feature>): Array<Feature> {
-  return features.filter(
-    // $FlowIgnore
-    feature => idx(feature.pkg, _ => _.experimental.main) != null,
-  );
-}
-
-function aggregateExperimentalServices(
-  features: Array<Feature>,
-): ExperimentalServiceTable {
-  // Build a table of provided services.
-  const table: ExperimentalServiceTable = createObject();
-  features.forEach(feature => {
-    const experimentalSection: ExperimentalPackageDefinition = (feature.pkg: any)
-      .experimental;
-    const {providedServices} = experimentalSection;
-    if (providedServices != null) {
-      Object.keys(providedServices).forEach(alias => {
-        const {client, name, version} = providedServices[alias];
-        const row = table[name] || (table[name] = {});
-        const clientPath = path.join(feature.path, client);
-        row[version] = {client: clientPath, rawConsumerConnections: []};
-      });
-    }
-  });
-  return table;
-}
-
-export type ExperimentalPackageDefinition = {
-  main: string,
-  // Allows the package to run in the Atom renderer process.
-  // Should only be used when absolutely necessary!
-  runInAtom_UNSAFE?: boolean,
-  consumedServices?: {
-    [alias: string]: {|
-      name: string,
-      version: string,
-      config?: Object,
-    |},
-  },
-  providedServices?: {
-    [alias: string]: {|
-      name: string,
-      version: string,
-      // The `client` specifies a path to a module that exports a single function which accepts a
-      // JsonRpcConnection and returns the object that's provided to packages that consume the
-      // service.
-      client: string,
-      // In the future, we may allow for a server to be specified here as well. If it is, it will be
-      // used to wrap the array of connections passed to the package and that will be passed
-      // instead. There isn't a *huge* benefit to this, but it would provide a typed interface and
-      // could be generated.
-    |},
-  },
-};
-
-export function activateExperimentalPackages(
+export default function activateExperimentalPackages(
   features: Array<Feature>,
 ): IDisposable {
-  const messageRouter = new ExperimentalMessageRouter();
+  const messageRouter = new MessageRouter();
   const experimentalFeatures = getExperimentalFeatures(features);
   const availableServices = aggregateExperimentalServices(experimentalFeatures);
 
@@ -189,6 +133,34 @@ export function activateExperimentalPackages(
   });
 
   return disposables;
+}
+
+function getExperimentalFeatures(features: Array<Feature>): Array<Feature> {
+  return features.filter(
+    // $FlowIgnore
+    feature => idx(feature.pkg, _ => _.experimental.main) != null,
+  );
+}
+
+function aggregateExperimentalServices(
+  features: Array<Feature>,
+): ExperimentalServiceTable {
+  // Build a table of provided services.
+  const table: ExperimentalServiceTable = createObject();
+  features.forEach(feature => {
+    const experimentalSection: ExperimentalPackageDefinition = (feature.pkg: any)
+      .experimental;
+    const {providedServices} = experimentalSection;
+    if (providedServices != null) {
+      Object.keys(providedServices).forEach(alias => {
+        const {client, name, version} = providedServices[alias];
+        const row = table[name] || (table[name] = {});
+        const clientPath = path.join(feature.path, client);
+        row[version] = {client: clientPath, rawConsumerConnections: []};
+      });
+    }
+  });
+  return table;
 }
 
 // An object that may safely be used as a map.

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {MessageConnection} from 'vscode-jsonrpc';
+import type {PipedMessage, ServiceConnection} from './types';
 
 import {getLogger} from 'log4js';
 import {DefaultMap} from 'nuclide-commons/collection';
@@ -24,48 +24,14 @@ import {AbstractMessageWriter} from 'vscode-jsonrpc/lib/messageWriter';
 // eslint-disable-next-line
 export opaque type Socket = number;
 
-export type ServiceConnection = MessageConnection & {config: Object};
-
-// Each JSON-RPC message comes from a socket.
-// Include the socket as a field in the message.
-export type PipedMessage = {
-  socket: Socket,
-};
-
 type DataCallback = (data: PipedMessage) => mixed;
-
-class SimpleReader extends AbstractMessageReader {
-  _subscribe: (callback: DataCallback) => mixed;
-
-  constructor(subscribe: (callback: DataCallback) => mixed): void {
-    super();
-    this._subscribe = subscribe;
-  }
-
-  listen(callback: (data: PipedMessage) => mixed): void {
-    this._subscribe(callback);
-  }
-}
-
-class SimpleWriter extends AbstractMessageWriter {
-  _write: (message: PipedMessage) => mixed;
-
-  constructor(write: (message: PipedMessage) => mixed) {
-    super();
-    this._write = write;
-  }
-
-  write(message: PipedMessage): void {
-    this._write(message);
-  }
-}
 
 /**
  * In the new package model, communication between packages will be modeled as sockets.
  * For each producer <-> consumer pair, we will create a socket:
  * the consumer gets one end of the socket, while the producer gets the other end.
  */
-export default class ExperimentalMessageRouter {
+export default class MessageRouter {
   _curSocketID = 1;
   _sockets: Map<Socket, Subject<PipedMessage>> = new Map();
 
@@ -121,5 +87,31 @@ export default class ExperimentalMessageRouter {
     connection.config = config || {};
     connection.listen();
     return connection;
+  }
+}
+
+class SimpleReader extends AbstractMessageReader {
+  _subscribe: (callback: DataCallback) => mixed;
+
+  constructor(subscribe: (callback: DataCallback) => mixed): void {
+    super();
+    this._subscribe = subscribe;
+  }
+
+  listen(callback: (data: PipedMessage) => mixed): void {
+    this._subscribe(callback);
+  }
+}
+
+class SimpleWriter extends AbstractMessageWriter {
+  _write: (message: PipedMessage) => mixed;
+
+  constructor(write: (message: PipedMessage) => mixed) {
+    super();
+    this._write = write;
+  }
+
+  write(message: PipedMessage): void {
+    this._write(message);
   }
 }

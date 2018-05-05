@@ -16,7 +16,7 @@ import invariant from 'assert';
 import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
-import {activateExperimentalPackages} from './experimental-packages';
+import activateExperimentalPackages from './experimental-packages/activatePackages';
 import featureConfig from './feature-config';
 import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
 import {MultiMap, setUnion} from 'nuclide-commons/collection';

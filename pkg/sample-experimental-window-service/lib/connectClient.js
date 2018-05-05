@@ -10,7 +10,7 @@
  */
 
 import type {MessageConnection} from 'vscode-jsonrpc';
-import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
+import type {ServiceConnection} from 'nuclide-commons-atom/experimental-packages/types';
 import type {
   OpenParams,
   UpdateParams,

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
+import type {ServiceConnection} from 'nuclide-commons-atom/experimental-packages/types';
 
 export default class SimpleConsoleClient {
   _connection: ServiceConnection;

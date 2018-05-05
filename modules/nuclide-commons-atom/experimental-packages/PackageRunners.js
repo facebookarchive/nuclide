@@ -12,55 +12,27 @@
 
 import type {ProcessMessage} from 'nuclide-commons/process';
 import type {ConnectableObservable} from 'rxjs';
-import type {Socket} from './ExperimentalMessageRouter';
-import type {PackageParams} from './ExperimentalPackage';
-import type {InitializeMessage} from './run-package';
+import type {
+  InitializeMessage,
+  PackageParams,
+  PackageRunner,
+  Socket,
+} from './types';
 
 import {fork, getOutputStream} from 'nuclide-commons/process';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ReplaySubject} from 'rxjs';
-import ExperimentalMessageRouter from './ExperimentalMessageRouter';
-import {activateExperimentalPackage} from './ExperimentalPackage';
+import MessageRouter from './MessageRouter';
+import activatePackage from './activatePackage';
 
-export interface ExperimentalPackageRunner {
-  activate(): void;
-  dispose(): void;
-
-  onDidError(callback: (error: Error) => mixed): IDisposable;
-}
-
-function getExposedSockets(
-  packages: Array<PackageParams>,
-  messageRouter: ExperimentalMessageRouter,
-): Array<Socket> {
-  // Exposed sockets are those that are either:
-  // 1) provided here but not consumed
-  // 2) consumed here but not provided.
-  const allSockets = new Set();
-  packages.forEach(pkg => {
-    Object.keys(pkg.consumedServices).forEach(key => {
-      const {socket} = pkg.consumedServices[key];
-      allSockets.add(socket);
-    });
-    Object.keys(pkg.providedServices).forEach(key => {
-      pkg.providedServices[key].rawConnections.forEach(({socket}) => {
-        allSockets.add(socket);
-      });
-    });
-  });
-  return Array.from(allSockets).filter(
-    socket => !allSockets.has(messageRouter.reverseSocket(socket)),
-  );
-}
-
-export class ProcessPackageRunner implements ExperimentalPackageRunner {
+export class ProcessPackageRunner implements PackageRunner {
   _processStream: ConnectableObservable<child_process$ChildProcess>;
   _outputStream: ConnectableObservable<ProcessMessage>;
   _disposed = new ReplaySubject(1);
 
   constructor(
     packages: Array<PackageParams>,
-    messageRouter: ExperimentalMessageRouter,
+    messageRouter: MessageRouter,
   ): void {
     this._processStream = fork(require.resolve('./run-package-entry.js'), [], {
       silent: true,
@@ -110,14 +82,14 @@ export class ProcessPackageRunner implements ExperimentalPackageRunner {
 }
 
 // Atom packages have to run in the same process.
-export class AtomPackageRunner implements ExperimentalPackageRunner {
+export class AtomPackageRunner implements PackageRunner {
   _packages: Array<PackageParams>;
-  _messageRouter: ExperimentalMessageRouter;
+  _messageRouter: MessageRouter;
   _disposables: UniversalDisposable;
 
   constructor(
     packages: Array<PackageParams>,
-    messageRouter: ExperimentalMessageRouter,
+    messageRouter: MessageRouter,
   ): void {
     this._packages = packages;
     this._messageRouter = messageRouter;
@@ -127,7 +99,7 @@ export class AtomPackageRunner implements ExperimentalPackageRunner {
   activate(): void {
     this._disposables.add(
       ...this._packages.map(params => {
-        const pkg = activateExperimentalPackage(params, this._messageRouter);
+        const pkg = activatePackage(params, this._messageRouter);
         return () => {
           if (pkg.dispose != null) {
             pkg.dispose();
@@ -144,4 +116,28 @@ export class AtomPackageRunner implements ExperimentalPackageRunner {
   onDidError(callback: (error: Error) => mixed): IDisposable {
     return new UniversalDisposable();
   }
+}
+
+function getExposedSockets(
+  packages: Array<PackageParams>,
+  messageRouter: MessageRouter,
+): Array<Socket> {
+  // Exposed sockets are those that are either:
+  // 1) provided here but not consumed
+  // 2) consumed here but not provided.
+  const allSockets = new Set();
+  packages.forEach(pkg => {
+    Object.keys(pkg.consumedServices).forEach(key => {
+      const {socket} = pkg.consumedServices[key];
+      allSockets.add(socket);
+    });
+    Object.keys(pkg.providedServices).forEach(key => {
+      pkg.providedServices[key].rawConnections.forEach(({socket}) => {
+        allSockets.add(socket);
+      });
+    });
+  });
+  return Array.from(allSockets).filter(
+    socket => !allSockets.has(messageRouter.reverseSocket(socket)),
+  );
 }

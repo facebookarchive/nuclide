@@ -10,18 +10,12 @@
  * @format
  */
 
-import type {PackageParams} from './ExperimentalPackage';
-import type {Socket, PipedMessage} from './ExperimentalMessageRouter';
+import type {InitializeMessage, PipedMessage} from './types';
 
 import invariant from 'assert';
 import log4js from 'log4js';
-import ExperimentalMessageRouter from './ExperimentalMessageRouter';
-import {activateExperimentalPackage} from './ExperimentalPackage';
-
-export type InitializeMessage = {|
-  packages: Array<PackageParams>,
-  exposedSockets: Array<Socket>,
-|};
+import MessageRouter from './MessageRouter';
+import activatePackage from './activatePackage';
 
 // Send log4js errors to stderr for visibility from the main process.
 log4js.configure({
@@ -44,7 +38,7 @@ process.on('disconnect', () => {
 });
 
 process.once('message', ({packages, exposedSockets}: InitializeMessage) => {
-  const messageRouter = new ExperimentalMessageRouter();
+  const messageRouter = new MessageRouter();
 
   // Route incoming IPC messages into the message router.
   process.on('message', (message: PipedMessage) => {
@@ -68,7 +62,7 @@ process.once('message', ({packages, exposedSockets}: InitializeMessage) => {
 
   // Create connections for each provided service.
   const activatedPackages = packages.map(pkg => {
-    return activateExperimentalPackage(pkg, messageRouter);
+    return activatePackage(pkg, messageRouter);
     // ??? Maybe there should be an explicit signal or shutdown message via IPC.
   });
 

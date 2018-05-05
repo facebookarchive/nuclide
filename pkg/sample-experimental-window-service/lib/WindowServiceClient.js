@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ServiceConnection} from 'nuclide-commons-atom/ExperimentalMessageRouter';
+import type {ServiceConnection} from 'nuclide-commons-atom/experimental-packages/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';

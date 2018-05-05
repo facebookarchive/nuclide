@@ -10,32 +10,12 @@
  * @format
  */
 
-import type {Socket} from './ExperimentalMessageRouter';
-import type ExperimentalMessageRouter from './ExperimentalMessageRouter';
+import type {PackageParams} from './types';
+import type MessageRouter from './MessageRouter';
 
-export type PackageParams = {|
-  main: string,
-  providedServices: ProvidedServices,
-  consumedServices: ConsumedServices,
-|};
-
-type ProvidedServices = {
-  [key: string]: {|
-    rawConnections: Array<{|socket: Socket, config: Object|}>,
-  |},
-};
-
-type ConsumedServices = {
-  [key: string]: {|
-    socket: Socket,
-    // Path to JS module that creates the client object.
-    client: string,
-  |},
-};
-
-export function activateExperimentalPackage(
+export default function activatePackage(
   {main, providedServices, consumedServices}: PackageParams,
-  messageRouter: ExperimentalMessageRouter,
+  messageRouter: MessageRouter,
 ): IDisposable {
   const connections = Object.create(null);
   Object.keys(providedServices).forEach(key => {
