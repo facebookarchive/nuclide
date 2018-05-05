@@ -46,6 +46,12 @@ export default class InputArea extends React.Component<Props, State> {
     };
   }
 
+  focus = (): void => {
+    if (this._textEditorModel != null) {
+      this._textEditorModel.getElement().focus();
+    }
+  };
+
   _submit = (): void => {
     // Clear the text and trigger the `onSubmit` callback
     const editor = this._textEditorModel;

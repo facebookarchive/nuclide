@@ -75,6 +75,7 @@ export default class ConsoleView extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
   _isScrolledNearBottom: boolean;
   _id: number;
+  _inputArea: ?InputArea;
 
   // Used when _scrollToBottom is called. The console optimizes message loading
   // so scrolling to the bottom once doesn't always scroll to the bottom since
@@ -110,6 +111,14 @@ export default class ConsoleView extends React.Component<Props, State> {
           this._scrollingThrottle.unsubscribe();
         }
       },
+      atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line rulesdir/atom-apis
+        'atom-ide-console:focus-console-prompt': () => {
+          if (this._inputArea != null) {
+            this._inputArea.focus();
+          }
+        },
+      }),
     );
   }
 
@@ -286,6 +295,7 @@ export default class ConsoleView extends React.Component<Props, State> {
       <div className="console-prompt">
         {this._renderPromptButton()}
         <InputArea
+          ref={(component: ?InputArea) => (this._inputArea = component)}
           scopeName={currentExecutor.scopeName}
           onSubmit={this._executePrompt}
           history={this.props.history}

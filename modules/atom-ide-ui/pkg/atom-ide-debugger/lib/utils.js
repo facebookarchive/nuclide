@@ -62,6 +62,13 @@ export async function openSourceLocation(
   });
   editor.scrollToBufferPosition([line, 0]);
   editor.setCursorBufferPosition([line, 0]);
+
+  // Put the focus back in the console prompt.
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'atom-ide-console:focus-console-prompt',
+  );
+
   return editor;
 }
 
