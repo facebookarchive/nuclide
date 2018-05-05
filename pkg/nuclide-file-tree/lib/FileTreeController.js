@@ -100,11 +100,9 @@ export default class FileTreeController {
     this._disposables.add(
       atom.project.onDidChangePaths(() => this._updateRootDirectories()),
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree:reveal-active-file': this._revealFile.bind(this),
-        'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(
-          this,
-        ),
-        'nuclide-file-tree:add-file-relative': () => {
+        'tree-view:reveal-active-file': this._revealFile.bind(this),
+        'tree-view:recursive-collapse-all': this._collapseAll.bind(this),
+        'tree-view:add-file-relative': () => {
           FileSystemActions.openAddFileDialogRelative(
             this._openAndRevealFilePath.bind(this),
           );
@@ -112,10 +110,8 @@ export default class FileTreeController {
       }),
     );
     const letterKeyBindings = {
-      'nuclide-file-tree:remove-letter': this._handleRemoveLetterKeypress.bind(
-        this,
-      ),
-      'nuclide-file-tree:clear-filter': this._handleClearFilter.bind(this),
+      'tree-view:remove-letter': this._handleRemoveLetterKeypress.bind(this),
+      'tree-view:clear-filter': this._handleClearFilter.bind(this),
     };
     for (
       let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
@@ -124,7 +120,7 @@ export default class FileTreeController {
     ) {
       const char = String.fromCharCode(c);
       letterKeyBindings[
-        `nuclide-file-tree:go-to-letter-${char}`
+        `tree-view:go-to-letter-${char}`
       ] = this._handlePrefixKeypress.bind(this, char);
     }
     this._disposables.add(
@@ -135,68 +131,61 @@ export default class FileTreeController {
         'core:move-to-bottom': this._moveToBottom.bind(this),
         'core:select-up': this._rangeSelectUp.bind(this),
         'core:select-down': this._rangeSelectDown.bind(this),
-        'nuclide-file-tree:add-file': () => {
+        'tree-view:add-file': () => {
           FileSystemActions.openAddFileDialog(
             this._openAndRevealFilePath.bind(this),
           );
         },
-        'nuclide-file-tree:add-folder': () => {
+        'tree-view:add-folder': () => {
           FileSystemActions.openAddFolderDialog(
             this._openAndRevealDirectoryPath.bind(this),
           );
         },
-        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(
+        'tree-view:collapse-directory': this._collapseSelection.bind(
           this,
           /* deep */ false,
         ),
-        'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(
+        'tree-view:recursive-collapse-directory': this._collapseSelection.bind(
           this,
           true,
         ),
-        'nuclide-file-tree:expand-directory': this._expandSelection.bind(
+        'tree-view:expand-directory': this._expandSelection.bind(
           this,
           /* deep */ false,
         ),
-        'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(
+        'tree-view:recursive-expand-directory': this._expandSelection.bind(
           this,
           true,
         ),
-        'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(
+        'tree-view:open-selected-entry': this._openSelectedEntry.bind(this),
+        'tree-view:open-selected-entry-up': this._openSelectedEntrySplitUp.bind(
           this,
         ),
-        'nuclide-file-tree:open-selected-entry-up': this._openSelectedEntrySplitUp.bind(
+        'tree-view:open-selected-entry-down': this._openSelectedEntrySplitDown.bind(
           this,
         ),
-        'nuclide-file-tree:open-selected-entry-down': this._openSelectedEntrySplitDown.bind(
+        'tree-view:open-selected-entry-left': this._openSelectedEntrySplitLeft.bind(
           this,
         ),
-        'nuclide-file-tree:open-selected-entry-left': this._openSelectedEntrySplitLeft.bind(
+        'tree-view:open-selected-entry-right': this._openSelectedEntrySplitRight.bind(
           this,
         ),
-        'nuclide-file-tree:open-selected-entry-right': this._openSelectedEntrySplitRight.bind(
-          this,
-        ),
-        'nuclide-file-tree:remove': this._deleteSelection.bind(this),
+        'tree-view:remove': this._deleteSelection.bind(this),
         'core:delete': this._deleteSelection.bind(this),
-        'nuclide-file-tree:remove-project-folder-selection': this._removeRootFolderSelection.bind(
+        'tree-view:remove-project-folder-selection': this._removeRootFolderSelection.bind(
           this,
         ),
-        'nuclide-file-tree:rename-selection': () =>
+        'tree-view:rename-selection': () =>
           FileSystemActions.openRenameDialog(),
-        'nuclide-file-tree:duplicate-selection': () => {
+        'tree-view:duplicate-selection': () => {
           FileSystemActions.openDuplicateDialog(
             this._openAndRevealFilePaths.bind(this),
           );
         },
-        'nuclide-file-tree:copy-selection': this._copyFilenamesWithDir.bind(
-          this,
-        ),
-        'nuclide-file-tree:paste-selection': () =>
-          FileSystemActions.openPasteDialog(),
-        'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(
-          this,
-        ),
-        'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(
+        'tree-view:copy-selection': this._copyFilenamesWithDir.bind(this),
+        'tree-view:paste-selection': () => FileSystemActions.openPasteDialog(),
+        'tree-view:search-in-directory': this._searchInDirectory.bind(this),
+        'tree-view:set-current-working-root': this._setCwdToSelection.bind(
           this,
         ),
         ...letterKeyBindings,

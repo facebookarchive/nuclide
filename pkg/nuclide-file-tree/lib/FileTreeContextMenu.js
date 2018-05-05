@@ -175,7 +175,7 @@ export default class FileTreeContextMenu {
       [
         {
           label: 'Set to Current Working Root',
-          command: 'nuclide-file-tree:set-current-working-root',
+          command: 'tree-view:set-current-working-root',
           shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
         },
       ],
@@ -197,12 +197,9 @@ export default class FileTreeContextMenu {
         return this._store.getSingleSelectedNode() != null;
       },
     });
+    this._newMenu.addItem({label: 'File', command: 'tree-view:add-file'}, 0);
     this._newMenu.addItem(
-      {label: 'File', command: 'nuclide-file-tree:add-file'},
-      0,
-    );
-    this._newMenu.addItem(
-      {label: 'Folder', command: 'nuclide-file-tree:add-folder'},
+      {label: 'Folder', command: 'tree-view:add-folder'},
       1,
     );
     this._contextMenu.addSubmenu(this._newMenu, NEW_MENU_PRIORITY);
@@ -221,7 +218,7 @@ export default class FileTreeContextMenu {
         },
         {
           label: 'Remove Folder',
-          command: 'nuclide-file-tree:remove-project-folder-selection',
+          command: 'tree-view:remove-project-folder-selection',
           shouldDisplay: () => {
             const node = this.getSingleSelectedNode();
             return node != null && node.isRoot;
@@ -270,7 +267,7 @@ export default class FileTreeContextMenu {
     const fileSystemItems = [
       {
         label: 'Rename',
-        command: 'nuclide-file-tree:rename-selection',
+        command: 'tree-view:rename-selection',
         shouldDisplay: () => {
           const node = this._store.getSingleSelectedNode();
           // For now, rename does not apply to root nodes.
@@ -279,7 +276,7 @@ export default class FileTreeContextMenu {
       },
       {
         label: 'Duplicate',
-        command: 'nuclide-file-tree:duplicate-selection',
+        command: 'tree-view:duplicate-selection',
         shouldDisplay: () => {
           const nodes = this.getSelectedNodes();
           return (
@@ -290,7 +287,7 @@ export default class FileTreeContextMenu {
       },
       {
         label: 'Copy',
-        command: 'nuclide-file-tree:copy-selection',
+        command: 'tree-view:copy-selection',
         shouldDisplay: () => {
           const nodes = this.getSelectedNodes();
           if (nodes.isEmpty()) {
@@ -306,7 +303,7 @@ export default class FileTreeContextMenu {
       },
       {
         label: 'Paste',
-        command: 'nuclide-file-tree:paste-selection',
+        command: 'tree-view:paste-selection',
         shouldDisplay: () => {
           const cbMeta = atom.clipboard.readWithMetadata().metadata;
           if (
@@ -329,7 +326,7 @@ export default class FileTreeContextMenu {
       },
       {
         label: 'Delete',
-        command: 'nuclide-file-tree:remove',
+        command: 'tree-view:remove',
         shouldDisplay: () => {
           const nodes = this.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
@@ -361,19 +358,19 @@ export default class FileTreeContextMenu {
         submenu: [
           {
             label: 'Up',
-            command: 'nuclide-file-tree:open-selected-entry-up',
+            command: 'tree-view:open-selected-entry-up',
           },
           {
             label: 'Down',
-            command: 'nuclide-file-tree:open-selected-entry-down',
+            command: 'tree-view:open-selected-entry-down',
           },
           {
             label: 'Left',
-            command: 'nuclide-file-tree:open-selected-entry-left',
+            command: 'tree-view:open-selected-entry-left',
           },
           {
             label: 'Right',
-            command: 'nuclide-file-tree:open-selected-entry-right',
+            command: 'tree-view:open-selected-entry-right',
           },
         ],
       },
@@ -415,7 +412,7 @@ export default class FileTreeContextMenu {
       // $FlowFixMe (v0.54.1 <)
       {
         label: 'Search in Directory',
-        command: 'nuclide-file-tree:search-in-directory',
+        command: 'tree-view:search-in-directory',
         shouldDisplay: () => {
           const nodes = this.getSelectedNodes();
           return nodes.size > 0 && nodes.every(node => node.isContainer);
@@ -618,7 +615,7 @@ function generateNextInternalCommand(itemLabel: string): string {
     itemLabel.toLowerCase().replace(/[^\w]+/g, '-') +
     '-' +
     nextInternalCommandId++;
-  return `nuclide-file-tree:${cmdName}`;
+  return `tree-view:${cmdName}`;
 }
 
 function getFileManagerName(): string {

@@ -49,7 +49,7 @@ export function runTest(context: TestContext) {
       invariant(elem != null);
       store.clearFilter();
 
-      atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
+      atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
       expect(store.getFilter()).toEqual('a');
     });
 
@@ -60,7 +60,7 @@ export function runTest(context: TestContext) {
     runs(() => {
       expect(store.getFilter()).toEqual('');
       invariant(elem != null);
-      atom.commands.dispatch(elem, 'nuclide-file-tree:go-to-letter-a');
+      atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
       expect(store.getFilter()).toEqual('a');
     });
   });

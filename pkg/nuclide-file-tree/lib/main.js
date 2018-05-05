@@ -163,26 +163,22 @@ class Activation {
         focusEditorOnFileSelection,
         this._setFocusEditorOnFileSelection.bind(this),
       ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-file-tree:toggle-focus',
-        () => {
-          const component = this._fileTreeComponent;
-          if (component == null) {
-            return;
-          }
-          if (component.isFocused()) {
-            // Focus the center.
-            const center = atom.workspace.getCenter
-              ? atom.workspace.getCenter()
-              : atom.workspace;
-            center.getActivePane().activate();
-          } else {
-            // Focus the file tree.
-            component.focus();
-          }
-        },
-      ),
+      atom.commands.add('atom-workspace', 'tree-view:toggle-focus', () => {
+        const component = this._fileTreeComponent;
+        if (component == null) {
+          return;
+        }
+        if (component.isFocused()) {
+          // Focus the center.
+          const center = atom.workspace.getCenter
+            ? atom.workspace.getCenter()
+            : atom.workspace;
+          center.getActivePane().activate();
+        } else {
+          // Focus the file tree.
+          component.focus();
+        }
+      }),
       this._registerCommandAndOpener(),
     );
   }
@@ -441,7 +437,7 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof FileTreeSidebarComponent),
-      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle', () => {
+      atom.commands.add('atom-workspace', 'tree-view:toggle', () => {
         atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
