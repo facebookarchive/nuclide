@@ -37,7 +37,7 @@ export async function getDebuggerArgs(
       const attachConfig: HHVMAttachConfig = (config: any);
       return _getAttachArgs(attachConfig);
     default:
-      throw new Error('Invalid launch/attach action');
+      throw new Error('Invalid launch/attach action:' + JSON.stringify(config));
   }
 }
 
@@ -62,16 +62,10 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
         )
       : null;
 
-  // Launch the script with cwd set to the directory the launch wrapper
-  // command is in, if a wrapper is specified. Otherwise try to use the
-  // cwd provided by the front-end, and finally fall back to the directory
-  // of the target uri.
   const cwd =
-    launchWrapperCommand != null
-      ? nuclideUri.dirname(launchWrapperCommand)
-      : config.cwd != null && config.cwd.trim() !== ''
-        ? config.cwd
-        : nuclideUri.dirname(config.targetUri);
+    config.cwd != null && config.cwd.trim() !== ''
+      ? config.cwd
+      : nuclideUri.dirname(config.targetUri);
 
   // Expand paths in the launch config from the front end.
   if (config.hhvmRuntimePath != null) {
