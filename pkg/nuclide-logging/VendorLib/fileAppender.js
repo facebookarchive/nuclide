@@ -124,7 +124,7 @@ module.exports.configure = configure;
  */
 
 const {layouts} = require('log4js');
-const appenders = [];
+let appenders = [];
 
 module.exports.shutdown = function shutdown(cb) {
   var completed = 0;
@@ -142,6 +142,7 @@ module.exports.shutdown = function shutdown(cb) {
   appenders.forEach(function(app) {
     app.shutdown(complete);
   });
+  appenders = [];
 };
 
 module.exports.appender = fileAppender;
