@@ -471,7 +471,7 @@ class Activation {
   }
 
   deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
-    return this._createView();
+    return this._fileTreeComponent || this._createView();
   }
 }
 
