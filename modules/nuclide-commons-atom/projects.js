@@ -18,7 +18,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {diffSets} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 
-function getValidProjectPaths(): Array<string> {
+export function getValidProjectPaths(): Array<string> {
   return atom.project
     .getDirectories()
     .filter(directory => {
