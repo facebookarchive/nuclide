@@ -42,6 +42,7 @@ class HHVMDebuggerWrapper {
   _nonLoaderBreakSeen: boolean;
   _initializeArgs: DebugProtocol.InitializeRequestArguments;
   _runInTerminalRequest: ?Deferred<void>;
+  _asyncBreakPending: boolean;
 
   constructor() {
     this._sequenceNumber = 0;
@@ -53,6 +54,7 @@ class HHVMDebuggerWrapper {
     this._debuggerWriteCallback = null;
     this._nonLoaderBreakSeen = false;
     this._initializeArgs = {adapterID: 'hhvm'};
+    this._asyncBreakPending = false;
   }
 
   debug() {
@@ -388,6 +390,10 @@ class HHVMDebuggerWrapper {
             }
           }
           return true;
+        case 'pause': {
+          this._asyncBreakPending = true;
+          return false;
+        }
         default:
           break;
       }
@@ -569,21 +575,21 @@ class HHVMDebuggerWrapper {
       message.body.breakpoint.column = 1;
     }
 
-    if (
-      !this._nonLoaderBreakSeen &&
-      message.type === 'event' &&
-      message.event === 'stopped'
-    ) {
-      if (
-        message.body != null &&
-        message.body.description !== 'execution paused'
-      ) {
-        // This is the first real (non-loader-break) stopped event.
-        this._nonLoaderBreakSeen = true;
-      } else {
-        // Hide the loader break from Nuclide.
-        return;
+    if (message.type === 'event' && message.event === 'stopped') {
+      if (!this._nonLoaderBreakSeen) {
+        if (
+          message.body != null &&
+          message.body.description !== 'execution paused'
+        ) {
+          // This is the first real (non-loader-break) stopped event.
+          this._nonLoaderBreakSeen = true;
+        } else if (!this._asyncBreakPending) {
+          // Hide the loader break from Nuclide.
+          return;
+        }
       }
+
+      this._asyncBreakPending = false;
     }
 
     // Skip forwarding non-focused thread stop events to VSCode's UI
