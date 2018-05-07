@@ -16,7 +16,6 @@ import type {
   OutputProvider,
   RecordHeightChangeHandler,
   Source,
-  WatchEditorFunction,
 } from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
@@ -42,7 +41,7 @@ type Props = {
   history: Array<string>,
   clearRecords: () => void,
   createPaste: ?() => Promise<void>,
-  watchEditor: ?WatchEditorFunction,
+  watchEditor: ?atom$AutocompleteWatchEditor,
   execute: (code: string) => void,
   currentExecutor: ?Executor,
   executors: Map<string, Executor>,

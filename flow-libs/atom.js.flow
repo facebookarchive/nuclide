@@ -2104,6 +2104,12 @@ type atom$SuggestionInsertedRequest = {
   +suggestion: atom$AutocompleteSuggestion,
 };
 
+// https://github.com/atom/autocomplete-plus/blob/master/README.md#the-watcheditor-api
+type atom$AutocompleteWatchEditor = (
+  editor: atom$TextEditor,
+  labels?: Array<string>,
+) => IDisposable;
+
 // Undocumented API.
 declare class atom$Token {
   value: string,

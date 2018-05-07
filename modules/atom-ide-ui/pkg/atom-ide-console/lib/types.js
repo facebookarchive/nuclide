@@ -215,11 +215,6 @@ export type Executor = {
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;
 
-export type WatchEditorFunction = (
-  editor: atom$TextEditor,
-  labels?: Array<string>,
-) => IDisposable;
-
 export type PasteOptions = {
   language?: ?string,
   title?: ?string,
@@ -291,7 +286,7 @@ export type Action =
   | {
       type: 'SET_WATCH_EDITOR_FUNCTION',
       payload: {
-        watchEditor: ?WatchEditorFunction,
+        watchEditor: ?atom$AutocompleteWatchEditor,
       },
     }
   | {

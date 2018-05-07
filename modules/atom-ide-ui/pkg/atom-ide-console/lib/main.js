@@ -21,7 +21,6 @@ import type {
   OutputService,
   Record,
   RegisterExecutorFunction,
-  WatchEditorFunction,
   Store,
 } from './types';
 import type {CreatePasteFunction} from './types';
@@ -143,7 +142,7 @@ class Activation {
     });
   }
 
-  consumeWatchEditor(watchEditor: WatchEditorFunction): IDisposable {
+  consumeWatchEditor(watchEditor: atom$AutocompleteWatchEditor): IDisposable {
     this._getStore().dispatch(Actions.setWatchEditor(watchEditor));
     return new UniversalDisposable(() => {
       // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)

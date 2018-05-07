@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {WatchEditorFunction} from '../types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -21,7 +20,7 @@ type Props = {
   onSubmit: (value: string) => mixed,
   scopeName: ?string,
   history: Array<string>,
-  watchEditor: ?WatchEditorFunction,
+  watchEditor: ?atom$AutocompleteWatchEditor,
   onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
 };
 

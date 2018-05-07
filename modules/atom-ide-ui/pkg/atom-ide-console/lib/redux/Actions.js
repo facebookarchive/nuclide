@@ -18,7 +18,6 @@ import type {
   Record,
   RecordProvider,
   SourceInfo,
-  WatchEditorFunction,
 } from '../types';
 
 import type {CreatePasteFunction} from '../types';
@@ -156,7 +155,9 @@ export function setCreatePasteFunction(
   };
 }
 
-export function setWatchEditor(watchEditor: ?WatchEditorFunction): Action {
+export function setWatchEditor(
+  watchEditor: ?atom$AutocompleteWatchEditor,
+): Action {
   return {
     type: SET_WATCH_EDITOR_FUNCTION,
     payload: {watchEditor},
