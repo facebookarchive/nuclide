@@ -31,6 +31,7 @@ import {infoFromUri, uriFromInfo} from './nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from 'nuclide-commons/analytics';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 import {removePrefixSink, patternCounterSink} from './sink';
 
@@ -180,7 +181,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
     this._subscriptions.add(() => terminal.destroy());
-    registerLinkHandlers(terminal);
+    registerLinkHandlers(terminal, this._cwd);
 
     if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
       const docsUrl = 'https://nuclide.io/docs/features/terminal';
@@ -666,7 +667,7 @@ export function deserializeTerminalView(
   return new TerminalView(paneUri);
 }
 
-function registerLinkHandlers(terminal: Terminal): void {
+function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
   const diffPattern = toString(
     featureConfig.get('atom-ide-console.diffUrlPattern'),
   );
@@ -701,6 +702,12 @@ function registerLinkHandlers(terminal: Terminal): void {
       matchIndex: 2,
       urlPattern: taskPattern,
     },
+    {
+      // An absolute file path
+      regex: /(\/[^<>:"\\|?*[\]\s]+)\s+/,
+      matchIndex: 1,
+      urlPattern: 'open-file-object://%s',
+    },
   ];
 
   for (const {regex, matchIndex, urlPattern} of bindings) {
@@ -709,12 +716,33 @@ function registerLinkHandlers(terminal: Terminal): void {
       (event, match) => {
         const replacedUrl = urlPattern.replace('%s', match);
         if (replacedUrl !== '') {
-          shell.openExternal(replacedUrl);
+          if (!tryOpenInAtom(replacedUrl, cwd)) {
+            shell.openExternal(replacedUrl);
+          }
         }
       },
       {matchIndex},
     );
   }
+}
+
+function tryOpenInAtom(link: string, cwd: ?NuclideUri): boolean {
+  const parsed = url.parse(link);
+
+  if (parsed.protocol === 'open-file-object:') {
+    let path = parsed.path;
+    if (path != null) {
+      if (cwd != null && nuclideUri.isRemote(cwd)) {
+        const terminalLocation = nuclideUri.parseRemoteUri(cwd);
+        path = nuclideUri.createRemoteUri(terminalLocation.hostname, path);
+      }
+
+      goToLocation(path);
+    }
+    return true;
+  }
+
+  return false;
 }
 
 function openLink(event: Event, link: string): void {
