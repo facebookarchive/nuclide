@@ -51,7 +51,6 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
 import {getLogger} from 'log4js';
 import nullthrows from 'nullthrows';
@@ -221,48 +220,48 @@ export class HgRepositoryClient {
         }
 
         return observableFromSubscribeFunction(
-          atom.workspace.observePaneItems.bind(atom.workspace),
-        ).flatMap(paneItem => {
-          const item = ((paneItem: any): Object);
-          return this._observePaneItemVisibility(item).switchMap(visible => {
-            if (!visible || !isValidTextEditor(item)) {
-              return Observable.empty();
-            }
+          atom.workspace.observeTextEditors.bind(atom.workspace),
+        ).flatMap(textEditor => {
+          return this._observePaneItemVisibility(textEditor).switchMap(
+            visible => {
+              if (!visible) {
+                return Observable.empty();
+              }
 
-            const textEditor = (item: atom$TextEditor);
-            const buffer = textEditor.getBuffer();
-            const filePath = buffer.getPath();
-            if (
-              filePath == null ||
-              filePath.length === 0 ||
-              !this.isPathRelevantToRepository(filePath)
-            ) {
-              return Observable.empty();
-            }
-            return Observable.combineLatest(
-              observableFromSubscribeFunction(
-                buffer.onDidSave.bind(buffer),
-              ).startWith(''),
-              this._hgUncommittedStatusChanges.statusChanges,
-            )
-              .filter(([_, statusChanges]) => {
-                return (
-                  statusChanges.has(filePath) &&
-                  this.isStatusModified(statusChanges.get(filePath))
+              const buffer = textEditor.getBuffer();
+              const filePath = buffer.getPath();
+              if (
+                filePath == null ||
+                filePath.length === 0 ||
+                !this.isPathRelevantToRepository(filePath)
+              ) {
+                return Observable.empty();
+              }
+              return Observable.combineLatest(
+                observableFromSubscribeFunction(
+                  buffer.onDidSave.bind(buffer),
+                ).startWith(''),
+                this._hgUncommittedStatusChanges.statusChanges,
+              )
+                .filter(([_, statusChanges]) => {
+                  return (
+                    statusChanges.has(filePath) &&
+                    this.isStatusModified(statusChanges.get(filePath))
+                  );
+                })
+                .map(() => filePath)
+                .takeUntil(
+                  Observable.merge(
+                    observeBufferCloseOrRename(buffer),
+                    this._observePaneItemVisibility(textEditor).filter(v => !v),
+                  ).do(() => {
+                    // TODO(most): rewrite to be simpler and avoid side effects.
+                    // Remove the file from the diff stats cache when the buffer is closed.
+                    this._hgDiffCacheFilesToClear.add(filePath);
+                  }),
                 );
-              })
-              .map(() => filePath)
-              .takeUntil(
-                Observable.merge(
-                  observeBufferCloseOrRename(buffer),
-                  this._observePaneItemVisibility(item).filter(v => !v),
-                ).do(() => {
-                  // TODO(most): rewrite to be simpler and avoid side effects.
-                  // Remove the file from the diff stats cache when the buffer is closed.
-                  this._hgDiffCacheFilesToClear.add(filePath);
-                }),
-              );
-          });
+            },
+          );
         });
       })
       .flatMap(filePath => this._updateDiffInfo([filePath]))

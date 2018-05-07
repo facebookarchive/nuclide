@@ -13,6 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
+import {TextEditor} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import semver from 'semver';
@@ -188,9 +189,11 @@ export function enforceSoftWrap(
 
 /**
  * Checks if an object (typically an Atom pane) is a TextEditor.
+ * Could be replaced with atom.workspace.isValidTextEditor,
+ * but Flow doesn't support %checks in methods yet.
  */
-export function isValidTextEditor(item: mixed): boolean {
-  return atom.workspace.isTextEditor(item);
+export function isValidTextEditor(item: mixed): boolean %checks {
+  return item instanceof TextEditor;
 }
 
 export function centerScrollToBufferLine(

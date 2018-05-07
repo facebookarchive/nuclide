@@ -99,9 +99,7 @@ function getActiveEditorRegistryEventSources() {
     activeEditors: observeActivePaneItemDebounced()
       .switchMap(item => {
         if (isValidTextEditor(item)) {
-          // Flow cannot understand the type refinement provided by the isValidTextEditor function,
-          // so we have to cast.
-          return Observable.of(((item: any): atom$TextEditor));
+          return Observable.of(item);
         } else if (item instanceof OutlineViewPanelState) {
           // Ignore switching to the outline view.
           return Observable.empty();

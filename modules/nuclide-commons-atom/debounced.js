@@ -45,12 +45,7 @@ export function observeActiveEditorsDebounced(
   debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): Observable<?atom$TextEditor> {
   return observeActivePaneItemDebounced(debounceInterval).map(paneItem => {
-    if (isValidTextEditor(paneItem)) {
-      // Flow cannot understand the type refinement provided by the isValidTextEditor function,
-      // so we have to cast.
-      return ((paneItem: any): atom$TextEditor);
-    }
-    return null;
+    return isValidTextEditor(paneItem) ? paneItem : null;
   });
 }
 

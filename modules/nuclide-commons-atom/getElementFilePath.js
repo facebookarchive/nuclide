@@ -27,7 +27,7 @@ export default function getElementFilePath(
     if (typeof el.getModel === 'function') {
       const model = el.getModel();
       if (isValidTextEditor(model)) {
-        const path = ((model: any): atom$TextEditor).getPath();
+        const path = model.getPath();
         if (path != null) {
           return path;
         }
@@ -37,7 +37,7 @@ export default function getElementFilePath(
   }
   if (fallbackToActiveTextEditor) {
     const editor = atom.workspace.getActiveTextEditor();
-    if (editor != null && isValidTextEditor(editor)) {
+    if (editor != null) {
       return editor.getPath();
     }
   }

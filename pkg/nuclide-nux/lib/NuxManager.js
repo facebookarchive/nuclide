@@ -187,15 +187,13 @@ export class NuxManager {
    * 'editor' and its `isReady` function returns to `true`.
    * Called every time the active pane item changes.
    */
-  async _handleActivePaneItemChanged(paneItem: ?mixed): Promise<void> {
+  async _handleActivePaneItemChanged(textEditor: ?mixed): Promise<void> {
     // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
     // Atom's API, but usually is.  We return if the type is not `TextEditor`
     // since `NuxTour.isReady` expects a `TextEditor` as its argument.
-    if (!isValidTextEditor(paneItem)) {
+    if (!isValidTextEditor(textEditor)) {
       return;
     }
-    // Flow doesn't understand the refinement done above.
-    const textEditor: atom$TextEditor = (paneItem: any);
 
     for (const [id: string, nux: NuxTour] of this._pendingNuxes.entries()) {
       if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
