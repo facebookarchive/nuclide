@@ -34,7 +34,12 @@ export function patchErrorsOfLoggingEvent(
 
   loggingEventCopy.data = loggingEventCopy.data.map(item => {
     if (item instanceof Error) {
-      const stackTrace = StackTrace.parse(item).map(callsite => ({
+      // Atom already parses stack traces and stores them as rawStack -
+      // so no need to manually parse things in that case.
+      const rawStack = Array.isArray(item.rawStack)
+        ? item.rawStack
+        : StackTrace.parse(item);
+      const stackTrace = rawStack.map(callsite => ({
         functionName: callsite.getFunctionName(),
         methodName: callsite.getMethodName(),
         fileName: callsite.getFileName(),
