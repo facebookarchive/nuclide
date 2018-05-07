@@ -71,7 +71,7 @@ async function main(argv): Promise<number> {
     // Counterintuitively, by setting dismissable to true, it makes it sticky
     // because in Atom, "dismissable" means "has a close box", which means
     // it does not go away until the user clicks on the X.
-    dismissable: true,
+    dismissable: argv.sticky,
   };
   await commands.addNotification(notification);
 
@@ -93,6 +93,11 @@ async function run(): Promise<void> {
       describe:
         'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
       type: 'string',
+    })
+    .option('s', {
+      alias: 'sticky',
+      describe: 'Requires user to explicitly dismiss the notification.',
+      type: 'boolean',
     })
 
     // Note that we do not support 'fatal' from the CLI because that tells
