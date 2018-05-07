@@ -198,10 +198,20 @@ export class RemoteConnection {
       };
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
+      // Returning null from this method signals that we should
+      // should restart the handshake process with same config.
+      // But there are some errors for which we don't want to do that
+      // (like if the connection fails because the directory doesn't exist).
+      if (e.code === 'ENOENT') {
+        e.sshHandshakeErrorType = 'DIRECTORY_NOT_FOUND';
+        throw e;
+      }
+
       const log =
         e.name === 'VersionMismatchError'
           ? logger.warn.bind(logger)
           : logger.error.bind(logger);
+
       log(`Failed to reuse connectionConfiguration for ${host}`, e);
       return null;
     }

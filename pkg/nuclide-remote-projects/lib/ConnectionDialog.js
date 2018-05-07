@@ -479,6 +479,14 @@ export default class ConnectionDialog extends React.Component<Props, State> {
           return () => sshHandshake.cancel();
         });
       })
-      .subscribe();
+      .subscribe(
+        next => {},
+        err =>
+          this._delegate.onError(
+            err.sshHandshakeErrorType || 'UNKNOWN',
+            err,
+            connectionConfig,
+          ),
+      );
   }
 }

@@ -630,8 +630,9 @@ export function decorateSshConnectionDelegateWithTracking(
       error: Error,
       config: SshConnectionConfiguration,
     ) => {
-      invariant(connectionTracker);
-      connectionTracker.trackFailure(errorType, error);
+      if (connectionTracker != null) {
+        connectionTracker.trackFailure(errorType, error);
+      }
       delegate.onError(errorType, error, config);
     },
   };
