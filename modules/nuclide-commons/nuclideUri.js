@@ -56,14 +56,6 @@ function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
 }
 
-// When restoring Atom state on load, Atom mangles our remote URIs by
-// removing one of the '/'s. These TextBuffers/TextEditors live for a short time
-// and are destroyed during Nuclide startup.
-// On Windows, we further mangle the colon into an underscore to avoid an invalid drive prefix.
-function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
-  return uri != null && uri.match(/nuclide[:_][\\/][^/]/) != null;
-}
-
 // Atom often puts its URIs in places where we'd expect to see Nuclide URIs (or plain paths)
 function isAtomUri(uri: NuclideUri): boolean {
   return uri.startsWith('atom://');
@@ -834,7 +826,6 @@ export default {
   extname,
   stripExtension,
   isRemote,
-  isBrokenDeserializedUri,
   isLocal,
   createRemoteUri,
   isInArchive,

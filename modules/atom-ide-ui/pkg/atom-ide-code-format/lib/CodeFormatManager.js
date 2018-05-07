@@ -25,10 +25,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {completingSwitchMap, microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {
-  observeEditorDestroy,
-  observeTextEditors,
-} from 'nuclide-commons-atom/text-editor';
+import {observeEditorDestroy} from 'nuclide-commons-atom/text-editor';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {getFormatOnSave, getFormatOnType} from './config';
 import {getLogger} from 'log4js';
@@ -86,8 +83,8 @@ export default class CodeFormatManager {
     });
 
     // Events from editor actions (saving, typing).
-    const editorEvents = observableFromSubscribeFunction(
-      observeTextEditors,
+    const editorEvents = observableFromSubscribeFunction(cb =>
+      atom.workspace.observeTextEditors(cb),
     ).mergeMap(editor => this._getEditorEventStream(editor));
 
     return (

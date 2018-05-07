@@ -14,7 +14,6 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import debounce from 'nuclide-commons/debounce';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {observeTextEditors} from './text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type EventCallback = (editor: TextEditor) => mixed;
@@ -261,7 +260,7 @@ export class TextEventDispatcher {
     );
 
     this._getEditorListenerDisposable().add(
-      observeTextEditors(editor => {
+      atom.workspace.observeTextEditors(editor => {
         const buffer = editor.getBuffer();
         const makeDispatch = (event: Event) => {
           return () => {

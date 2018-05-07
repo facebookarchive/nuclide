@@ -15,10 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
-import {
-  enforceReadOnlyEditor,
-  observeTextEditors,
-} from 'nuclide-commons-atom/text-editor';
+import {enforceReadOnlyEditor} from 'nuclide-commons-atom/text-editor';
 import {
   loadBufferForUri,
   bufferForUri,
@@ -493,7 +490,7 @@ export function activate(
   );
 
   subscriptions.add(
-    observeTextEditors(editor => {
+    atom.workspace.observeTextEditors(editor => {
       const uri = editor.getURI();
       if (uri != null && nuclideUri.isInArchive(uri)) {
         enforceReadOnlyEditor(editor);

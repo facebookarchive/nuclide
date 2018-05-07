@@ -386,69 +386,6 @@ describe('nuclide-open-files', () => {
         ]);
       });
     });
-
-    it('broken deserialized URIs dont create events', () => {
-      let brokenBuffer1;
-      let brokenBuffer2;
-      let buffer3;
-      let waiting = true;
-      runs(() => {
-        brokenBuffer1 = new TextBuffer({
-          filePath: 'nuclide:/f1',
-          text: 'contents1',
-        });
-        brokenBuffer2 = new TextBuffer({
-          filePath: 'nuclide:\\f1',
-          text: 'contents1',
-        });
-        atom.project.addBuffer(brokenBuffer1);
-        atom.project.addBuffer(brokenBuffer2);
-
-        // Wait one turn before destroying the text buffers, which calls `setText('')`.
-        setImmediate(() => {
-          waiting = false;
-        });
-      });
-      waitsFor(() => waiting === false);
-      runs(() => {
-        // close
-        brokenBuffer1.destroy();
-        brokenBuffer2.destroy();
-
-        // simulates an open
-        buffer3 = new TextBuffer({filePath: 'f1', text: 'contents1'});
-        atom.project.addBuffer(buffer3);
-
-        waiting = true;
-        // Wait one turn before destroying the text buffer, which calls `setText('')`.
-        setImmediate(() => {
-          waiting = false;
-        });
-      });
-      waitsFor(() => waiting === false);
-      runs(() => {
-        // close
-        buffer3.destroy();
-      });
-      waitsFor(() => eventCount >= 2);
-
-      waitsForPromise(async () => {
-        expect(await finishEvents()).toEqual([
-          {
-            kind: 'open',
-            filePath: 'f1',
-            changeCount: 1,
-            contents: 'contents1',
-            languageId: 'text.plain.null-grammar',
-          },
-          {
-            kind: 'close',
-            filePath: 'f1',
-            changeCount: 1,
-          },
-        ]);
-      });
-    });
   });
 
   describe('observeDirectoryEvents', () => {

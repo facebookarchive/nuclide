@@ -30,12 +30,6 @@ const WORKSPACE_VIEW_LOOKUP_ERROR = 'Prefer the string "atom-workspace" to calli
 
 const DISALLOWED_WORKSPACE_METHODS = {
   open: 'Prefer goToLocation (commons-atom/go-to-location) to atom.workspace.open',
-  observeTextEditors: 'Use observeTextEditors from commons-atom/text-editor instead of ' +
-    'atom.workspace.observeTextEditors. It ignores broken nuclide:/path ' +
-    'URIs, which appear briefly when reloading Atom with remote projects.',
-  isTextEditor: 'Use isValidTextEditor from commons-atom/text-editor instead of ' +
-    'atom.workspace.isTextEditor. It additionally blocks editors with broken nuclide:/path ' +
-    'URIs, which appear briefly when reloading Atom with remote projects.',
 };
 
 // Commands with these prefixes will be whitelisted.

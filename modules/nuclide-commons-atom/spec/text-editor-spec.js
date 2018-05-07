@@ -10,11 +10,7 @@
  * @format
  */
 
-import {
-  enforceReadOnlyEditor,
-  existingEditorForUri,
-  observeTextEditors,
-} from '../text-editor';
+import {enforceReadOnlyEditor, existingEditorForUri} from '../text-editor';
 
 import {Point, Range} from 'atom';
 
@@ -46,21 +42,6 @@ describe('existingEditorForUri', () => {
 
   it('should return null if no editor exists', () => {
     expect(existingEditorForUri(file3)).toBeNull();
-  });
-});
-
-describe('observeTextEditors', () => {
-  it('should ignore broken remote paths', () => {
-    waitsForPromise(async () => {
-      const paths = [];
-      observeTextEditors(editor => paths.push(editor.getPath()));
-
-      await atom.workspace.open('nuclide:/test');
-      await atom.workspace.open('');
-      await atom.workspace.open('/tmp/test');
-
-      expect(paths).toEqual([undefined, '/tmp/test']);
-    });
   });
 });
 

@@ -10,7 +10,6 @@
  */
 
 import {Emitter} from 'atom';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const GRAMMAR_CHANGE_EVENT = 'grammar-change';
@@ -27,7 +26,7 @@ class GrammarForTextEditorsListener {
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
       this._emitter,
-      observeTextEditors(textEditor => {
+      atom.workspace.observeTextEditors(textEditor => {
         const grammarSubscription = textEditor.observeGrammar(grammar => {
           this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
         });

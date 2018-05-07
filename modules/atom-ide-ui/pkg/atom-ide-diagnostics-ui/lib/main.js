@@ -34,7 +34,6 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
@@ -123,7 +122,7 @@ class Activation {
     this._subscriptions.add(atomCommandsDisposable);
     this._subscriptions.add(
       // Track diagnostics for all active editors.
-      observeTextEditors((editor: TextEditor) => {
+      atom.workspace.observeTextEditors((editor: TextEditor) => {
         this._fileDiagnostics.set(editor, []);
         // TODO: this is actually inefficient - this filters all file events
         // by their path, so this is actually O(N^2) in the number of editors.
@@ -358,7 +357,7 @@ function gutterConsumeDiagnosticUpdates(
 ): IDisposable {
   const subscriptions = new UniversalDisposable();
   subscriptions.add(
-    observeTextEditors((editor: TextEditor) => {
+    atom.workspace.observeTextEditors((editor: TextEditor) => {
       const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater)
         .finally(() => {
           subscriptions.remove(subscription);

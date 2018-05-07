@@ -17,7 +17,6 @@ import type {
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {nextTick} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
@@ -130,7 +129,7 @@ export function observeForCodeLens(
 ): IDisposable {
   const disposable = new UniversalDisposable();
   disposable.add(
-    observeTextEditors(async editor => {
+    atom.workspace.observeTextEditors(async editor => {
       let isFirstUpdate = true;
       const editorDisposable = new UniversalDisposable();
       editorDisposable.add(

@@ -10,7 +10,6 @@
  */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import FileWatcher from './FileWatcher';
 
 let subscriptions: ?UniversalDisposable = null;
@@ -21,7 +20,7 @@ export function activate(state: ?Object): void {
   const _watchers = new Map();
 
   _subscriptions.add(
-    observeTextEditors(editor => {
+    atom.workspace.observeTextEditors(editor => {
       if (_watchers.has(editor)) {
         return;
       }

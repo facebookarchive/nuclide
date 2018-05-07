@@ -18,7 +18,6 @@ import {Observable} from 'rxjs';
 import semver from 'semver';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple
@@ -188,32 +187,10 @@ export function enforceSoftWrap(
 }
 
 /**
- * Small wrapper around `atom.workspace.observeTextEditors` that filters out
- * uninitialized remote editors. Most callers should use this one instead.
- */
-export function observeTextEditors(
-  callback: (editor: atom$TextEditor) => mixed,
-): IDisposable {
-  // The one place where atom.workspace.observeTextEditors needs to be used.
-  // eslint-disable-next-line rulesdir/atom-apis
-  return atom.workspace.observeTextEditors(editor => {
-    if (isValidTextEditor(editor)) {
-      callback(editor);
-    }
-  });
-}
-
-/**
- * Checks if an object (typically an Atom pane) is a TextEditor with a non-broken path.
+ * Checks if an object (typically an Atom pane) is a TextEditor.
  */
 export function isValidTextEditor(item: mixed): boolean {
-  // eslint-disable-next-line rulesdir/atom-apis
-  if (atom.workspace.isTextEditor(item)) {
-    return !nuclideUri.isBrokenDeserializedUri(
-      ((item: any): atom$TextEditor).getPath(),
-    );
-  }
-  return false;
+  return atom.workspace.isTextEditor(item);
 }
 
 export function centerScrollToBufferLine(

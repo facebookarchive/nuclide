@@ -34,7 +34,6 @@ import performanceNow from 'nuclide-commons/performanceNow';
 import {Observable} from 'rxjs';
 import {getLogger} from 'log4js';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {
   getModifierKeysFromMouseEvent,
   getModifierKeyFromKeyboardEvent,
@@ -784,7 +783,7 @@ export class DatatipManager {
     this._modifierDatatipProviders = new ProviderRegistry();
 
     this._subscriptions.add(
-      observeTextEditors(editor => {
+      atom.workspace.observeTextEditors(editor => {
         const manager = new DatatipManagerForEditor(
           editor,
           this._datatipProviders,

@@ -34,7 +34,6 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
@@ -230,10 +229,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     // Once we provide all diagnostics, instead of just the current file, we can
     // probably remove the activeTextEditor parameter.
     const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (
-      activeTextEditor &&
-      !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())
-    ) {
+    if (activeTextEditor) {
       if (
         this._providerBase
           .getGrammarScopes()
@@ -408,7 +404,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
     // a file belonging to the connection is open.
     // Monitor open text editors and trigger a connection for each one, if needed.
     this._subscriptions = new UniversalDisposable(
-      observeTextEditors(editor => {
+      atom.workspace.observeTextEditors(editor => {
         const path = editor.getPath();
         if (
           path != null &&

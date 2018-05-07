@@ -19,10 +19,7 @@ import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {
-  isValidTextEditor,
-  observeTextEditors,
-} from 'nuclide-commons-atom/text-editor';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import BlameToggle from './BlameToggle';
 
@@ -81,7 +78,7 @@ class Activation {
     );
 
     this._packageDisposables.add(
-      observeTextEditors(editor => {
+      atom.workspace.observeTextEditors(editor => {
         const button = new BlameToggle(
           editor,
           this._hasProviderForEditor.bind(this),

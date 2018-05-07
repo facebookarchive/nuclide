@@ -28,7 +28,6 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import disablePackage from '../../commons-atom/disablePackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {
   compact,
   macrotask,
@@ -289,17 +288,17 @@ class Activation {
       observableFromSubscribeFunction(
         atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
       ),
-      observableFromSubscribeFunction(observeTextEditors).flatMap(
-        textEditor => {
-          return observableFromSubscribeFunction(
-            textEditor.onDidChangePath.bind(textEditor),
-          ).takeUntil(
-            observableFromSubscribeFunction(
-              textEditor.onDidDestroy.bind(textEditor),
-            ),
-          );
-        },
-      ),
+      observableFromSubscribeFunction(cb =>
+        atom.workspace.observeTextEditors(cb),
+      ).flatMap(textEditor => {
+        return observableFromSubscribeFunction(
+          textEditor.onDidChangePath.bind(textEditor),
+        ).takeUntil(
+          observableFromSubscribeFunction(
+            textEditor.onDidDestroy.bind(textEditor),
+          ),
+        );
+      }),
     ).let(fastDebounce(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS));
 
     this._disposables.add(

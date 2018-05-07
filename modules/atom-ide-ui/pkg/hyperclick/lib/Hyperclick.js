@@ -18,7 +18,6 @@ import SuggestionList from './SuggestionList';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 
 /**
@@ -36,7 +35,7 @@ export default class Hyperclick {
 
     this._suggestionList = new SuggestionList();
     this._hyperclickForTextEditors = new Set();
-    this._textEditorSubscription = observeTextEditors(
+    this._textEditorSubscription = atom.workspace.observeTextEditors(
       this.observeTextEditor.bind(this),
     );
   }
