@@ -15,6 +15,12 @@ import {runCommand} from 'nuclide-commons/process';
 
 let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
 
+export type PartialClangServerArgs = {
+  libClangLibraryFile?: string,
+  pythonExecutable?: string,
+  pythonPathEnv?: string,
+};
+
 export type ClangServerArgs = {
   libClangLibraryFile: ?string,
   pythonExecutable: string,
