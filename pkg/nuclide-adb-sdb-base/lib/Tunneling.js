@@ -9,6 +9,8 @@
  * @format
  */
 
+/* eslint-disable no-param-reassign */
+
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
@@ -21,7 +23,10 @@ import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 
-export function startTunnelingAdb(uri: NuclideUri): Observable<'ready'> {
+export function startTunnelingAdb(
+  uri: NuclideUri,
+  retries?: number = 0,
+): Observable<'ready'> {
   if (!nuclideUri.isRemote(uri)) {
     return Observable.of('ready').concat(Observable.never());
   }
@@ -30,6 +35,14 @@ export function startTunnelingAdb(uri: NuclideUri): Observable<'ready'> {
     const adbService = getAdbServiceByNuclideUri(serviceUri);
     const observable = Observable.defer(() => adbService.killServer())
       .switchMap(() => openTunnels(serviceUri))
+      .retryWhen(errors => {
+        return errors.do(error => {
+          // $FlowIgnore - ignore retries reassignment
+          if (retries-- <= 0) {
+            throw error;
+          }
+        });
+      })
       .catch(e => {
         stopTunnelingAdb(uri);
         throw e;
