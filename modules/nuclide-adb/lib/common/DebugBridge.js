@@ -121,4 +121,17 @@ export class DebugBridge {
       .mapTo(undefined)
       .toPromise();
   }
+
+  static getVersion(): Promise<string> {
+    return this.configObs
+      .switchMap(config => runCommand(config.path, ['version']))
+      .map(versionString => {
+        const version = versionString.match(/version (\d+.\d+.\d+)/);
+        if (version) {
+          return version[1];
+        }
+        throw new Error(`No version found with "${versionString}"`);
+      })
+      .toPromise();
+  }
 }

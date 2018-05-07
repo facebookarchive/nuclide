@@ -238,3 +238,7 @@ export async function getApkManifest(
   const aaptBinary = await getAaptBinary(buildToolsVersion);
   return runCommand(aaptBinary, ['dump', 'badging', apkPath]).toPromise();
 }
+
+export async function getVersion(): Promise<string> {
+  return Adb.getVersion();
+}
