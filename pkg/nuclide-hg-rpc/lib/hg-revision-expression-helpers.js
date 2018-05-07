@@ -294,20 +294,19 @@ export function successorInfoToDisplay(
   if (successorInfo == null) {
     return '';
   }
-  const shorthash = successorInfo.hash.slice(0, 6);
   switch (successorInfo.type) {
     case 'public':
-      return `Landed as ${shorthash}`;
+      return 'Landed as a newer commit';
     case 'amend':
-      return `Amended as ${shorthash}`;
+      return 'Amended as a newer commit';
     case 'rebase':
-      return `Rebased as ${shorthash}`;
+      return 'Rebased as a newer commit';
     case 'split':
-      return `Split as ${shorthash}`;
+      return 'Split as a newer commit';
     case 'fold':
-      return `Folded as ${shorthash}`;
+      return 'Folded as a newer commit';
     case 'histedit':
-      return `Histedited as ${shorthash}`;
+      return 'Histedited as a newer commit';
     default:
       return '';
   }
