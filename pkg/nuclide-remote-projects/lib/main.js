@@ -43,6 +43,7 @@ import {
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {sleep} from 'nuclide-commons/promise';
 import RemoteDirectorySearcher from './RemoteDirectorySearcher';
 import RemoteDirectoryProvider from './RemoteDirectoryProvider';
 import RemoteProjectsController from './RemoteProjectsController';
@@ -546,7 +547,7 @@ export function serialize(): {
   };
 }
 
-export function deactivate(): void {
+export function deactivate(): Promise<void> {
   if (packageSubscriptions) {
     packageSubscriptions.dispose();
     packageSubscriptions = null;
@@ -564,7 +565,17 @@ export function deactivate(): void {
 
   // Gracefully shutdown all server connections and leave servers running.
   const shutdown = false;
-  ServerConnection.closeAll(shutdown);
+  const shutdownTimeout = 1000;
+  // This tells Atom to wait for the close request to be acknowledged -
+  // but don't wait too long.
+  return Promise.race([
+    ServerConnection.closeAll(shutdown).catch(err => {
+      // log4js is potentially also being shut down during deactivation.
+      // eslint-disable-next-line no-console
+      console.error('Error closing server connections in deactivate', err);
+    }),
+    sleep(shutdownTimeout),
+  ]);
 }
 
 export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
