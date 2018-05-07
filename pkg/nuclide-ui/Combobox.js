@@ -173,9 +173,8 @@ export class Combobox extends React.Component<Props, State> {
     return nullthrows(this._freeformInput).getText();
   }
 
-  focus(showOptions: boolean): void {
+  focus(): void {
     nullthrows(this._freeformInput).focus();
-    this.setState({optionsVisible: showOptions});
   }
 
   _getFilteredOptions(
