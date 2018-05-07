@@ -176,4 +176,27 @@ describe('SignatureHelpManager', () => {
       expect(signatureSpy.calls[0].args).toEqual([editor, new Point(0, 1)]);
     });
   });
+
+  it('can be dynamically toggled via config', () => {
+    waitsForPromise(async () => {
+      atom.config.set('atom-ide-signature-help.enable', false);
+
+      editor.setText('test');
+      advanceClock(1); // debounce
+      const signatureSpy = testProvider.getSignatureHelp;
+      expect(signatureSpy.callCount).toBe(0);
+
+      editor.insertText('(');
+      expect(editor.getText()).toBe('test(');
+      advanceClock(1); // debounce
+      expect(signatureSpy.callCount).toBe(0);
+
+      atom.config.set('atom-ide-signature-help.enable', true);
+
+      editor.insertText('(');
+      expect(editor.getText()).toBe('test((');
+      advanceClock(1); // debounce
+      expect(signatureSpy.callCount).toBe(1);
+    });
+  });
 });

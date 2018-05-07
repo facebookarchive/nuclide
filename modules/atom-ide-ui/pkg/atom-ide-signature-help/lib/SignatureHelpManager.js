@@ -15,6 +15,7 @@ import type {SignatureHelp, SignatureHelpProvider} from './types';
 
 import {getLogger} from 'log4js';
 import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -73,12 +74,23 @@ export default class SignatureHelpManager {
         if (editor == null) {
           return Observable.of({editor, signatureHelp: null});
         }
-        return this._signatureHelpTriggers(editor)
-          .exhaustMap(() => this._getSignatureStream(editor))
-          .takeUntil(
-            observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-          )
-          .map(signatureHelp => ({editor, signatureHelp}));
+        return featureConfig
+          .observeAsStream('atom-ide-signature-help.enable', {
+            scope: editor.getRootScopeDescriptor(),
+          })
+          .switchMap(enabled => {
+            if (enabled === false) {
+              return Observable.empty();
+            }
+            return this._signatureHelpTriggers(editor)
+              .exhaustMap(() => this._getSignatureStream(editor))
+              .takeUntil(
+                observableFromSubscribeFunction(
+                  editor.onDidDestroy.bind(editor),
+                ),
+              )
+              .map(signatureHelp => ({editor, signatureHelp}));
+          });
       })
       .switchMap(({editor, signatureHelp}) => {
         if (editor != null && signatureHelp != null) {

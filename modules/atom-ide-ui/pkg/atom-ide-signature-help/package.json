@@ -6,6 +6,21 @@
   "description": "Displays signature help as datatips.",
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
+  "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Signature Help"
+      ]
+    }
+  },
+  "atomConfig": {
+    "enable": {
+      "title": "Enable signature help",
+      "type": "boolean",
+      "default": true
+    }
+  },
   "consumedServices": {
     "datatip": {
       "versions": {
