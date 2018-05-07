@@ -294,7 +294,7 @@ declare module 'vscode-debugprotocol' {
   /** Arguments for 'attach' request.
     The attach request has no standardized attributes.
   */
-  declare type AttachRequestArguments = {};
+  declare interface AttachRequestArguments {}
 
   /** Response to 'attach' request. Extending the capabilities is allowed here. */
   declare interface AttachResponse extends base$Response {
