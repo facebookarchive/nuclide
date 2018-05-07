@@ -167,7 +167,7 @@ export class BuckTaskRunner {
   }
 
   getBuildTarget(): ?string {
-    this._getStore().getState().buildTarget;
+    return this._getStore().getState().buildTarget;
   }
 
   getCompletedTasks(): rxjs$Observable<TaskInfo> {
