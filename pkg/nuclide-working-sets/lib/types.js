@@ -15,4 +15,5 @@ export type WorkingSetDefinition = {
   name: string,
   active: boolean,
   uris: Array<string>,
+  originURLs?: Array<string>,
 };

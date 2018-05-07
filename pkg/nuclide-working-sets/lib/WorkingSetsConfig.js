@@ -22,11 +22,7 @@ export class WorkingSetsConfig {
     const wrapped = (definitions: any) => {
       // Got to create a deep copy, otherwise atom.config invariants might break
       const copiedDefinitions = definitions.map(def => {
-        return {
-          name: def.name,
-          active: def.active,
-          uris: def.uris.slice(),
-        };
+        return {...def};
       });
 
       callback(copiedDefinitions);

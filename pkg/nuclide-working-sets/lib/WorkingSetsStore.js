@@ -160,29 +160,44 @@ export class WorkingSetsStore {
       }
     });
 
+    const repos = atom.project.getRepositories().filter(Boolean);
+    const originURLs = repos
+      .map(repo => {
+        const originURL = repo.getOriginURL();
+        if (originURL == null) {
+          return null;
+        }
+        const dir = repo.getProjectDirectory();
+        return workingSet.containsDir(dir) ? originURL : null;
+      })
+      .filter(Boolean);
+
     let newDefinitions;
     if (nameIndex < 0) {
       track('working-sets-create', {
         name,
         uris: workingSet.getUris().join(','),
+        originURLs: originURLs.join(','),
       });
 
       newDefinitions = definitions.concat({
         name,
         uris: workingSet.getUris(),
         active: false,
+        originURLs,
       });
     } else {
       track('working-sets-update', {
         oldName: name,
         name: newName,
         uris: workingSet.getUris().join(','),
+        originURLs: originURLs.join(','),
       });
 
       const active = definitions[nameIndex].active;
       newDefinitions = [].concat(
         definitions.slice(0, nameIndex),
-        {name: newName, uris: workingSet.getUris(), active},
+        {name: newName, uris: workingSet.getUris(), active, originURLs},
         definitions.slice(nameIndex + 1),
       );
     }
@@ -255,6 +270,19 @@ function sortOutApplicability(
 }
 
 function isApplicable(definition: WorkingSetDefinition): boolean {
+  const originURLs = definition.originURLs;
+  if (originURLs != null) {
+    const mountedOriginURLs = atom.project
+      .getRepositories()
+      .filter(Boolean)
+      .map(repo => repo.getOriginURL());
+    originURLs.forEach(originURL => {
+      if (mountedOriginURLs.some(url => url === originURL)) {
+        return true;
+      }
+    });
+  }
+
   const workingSet = new WorkingSet(definition.uris);
   const dirs = atom.project.getDirectories().filter(dir => {
     // Apparently sometimes Atom supplies an invalid directory, or a directory with an

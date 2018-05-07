@@ -2015,6 +2015,7 @@ declare class atom$Repository {
   getType: () => string,
   getPath: () => string,
   getWorkingDirectory: () => string,
+  getProjectDirectory: () => string,
   isProjectAtRoot: () => boolean,
   relativize: (aPath: string) => string,
   getOriginURL: (aPath: ?string) => ?string,
