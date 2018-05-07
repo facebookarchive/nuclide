@@ -150,14 +150,20 @@ declare class atom$Config {
   // Config Subscription
   observe(
     keyPath: string,
-    optionsOrCallback?: Object | (value: any) => void,
-    callback?: (value: any) => void
+    optionsOrCallback?:
+      | {scope?: atom$ScopeDescriptorLike}
+      | (value: mixed) => void,
+    callback?: (value: mixed) => mixed,
   ): IDisposable,
 
   onDidChange(
-    keyPathOrCallback: string | (event: Object) => void,
-    optionsOrCallback?: Object | (event: Object) => void,
-    callback?: (event: Object) => void
+    keyPathOrCallback:
+      | string
+      | (event: {oldValue: mixed, newValue: mixed}) => mixed,
+    optionsOrCallback?:
+      | {scope?: atom$ScopeDescriptorLike}
+      | (event: {oldValue: mixed, newValue: mixed}) => mixed,
+    callback?: (event: {oldValue: mixed, newValue: mixed}) => mixed
   ): IDisposable,
 
   // Managing Settings
@@ -166,7 +172,7 @@ declare class atom$Config {
     options?: {
       excludeSources?: Array<string>,
       sources?: Array<string>,
-      scope?: Object,
+      scope?: atom$ScopeDescriptorLike,
     }
   ): mixed,
 
@@ -642,6 +648,8 @@ declare class atom$ScopeDescriptor {
   constructor(object: {scopes: Array<string>}): void,
   getScopesArray(): Array<string>,
 }
+
+type atom$ScopeDescriptorLike = atom$ScopeDescriptor | Array<string>;
 
 /**
  * This API is defined at https://github.com/atom/status-bar.

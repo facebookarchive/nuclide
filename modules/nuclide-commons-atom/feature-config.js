@@ -57,7 +57,7 @@ function get(
   options?: {
     excludeSources?: Array<string>,
     sources?: Array<string>,
-    scope?: Object,
+    scope?: atom$ScopeDescriptorLike,
   },
 ): mixed {
   // atom.config.get will crash if the second arg is present and undefined.
@@ -74,7 +74,7 @@ function getWithDefaults<T>(
   options?: {
     excludeSources?: Array<string>,
     sources?: Array<string>,
-    scope?: Object,
+    scope?: atom$ScopeDescriptorLike,
   },
 ): T {
   const current: any = get(keyPath, options);
@@ -96,18 +96,27 @@ function getSchema(keyPath: string): atom$ConfigSchema {
  */
 function observe(
   keyPath: string,
-  callback: (value: any) => mixed,
+  optionsOrCallback?:
+    | {scope?: atom$ScopeDescriptorLike}
+    | ((value: any) => mixed),
+  callback?: (value: any) => mixed,
 ): IDisposable {
-  return atom.config.observe(formatKeyPath(keyPath), callback);
+  return atom.config.observe(
+    formatKeyPath(keyPath),
+    ...Array.prototype.slice.call(arguments, 1),
+  );
 }
 
 /*
  * Behaves similarly to the `observe` function, but returns a stream of values, rather
  * then receiving a callback.
  */
-function observeAsStream(keyPath: string): Observable<mixed> {
+function observeAsStream(
+  keyPath: string,
+  options?: {scope?: atom$ScopeDescriptorLike} = {},
+): Observable<mixed> {
   return Observable.create(observer => {
-    const disposable = observe(keyPath, observer.next.bind(observer));
+    const disposable = observe(keyPath, options, observer.next.bind(observer));
     return disposable.dispose.bind(disposable);
   });
 }
@@ -118,8 +127,10 @@ function observeAsStream(keyPath: string): Observable<mixed> {
  */
 function onDidChange(
   keyPath: string,
-  optionsOrCallback: Object | ((event: Object) => void),
-  callback?: (event: Object) => void,
+  optionsOrCallback?:
+    | {scope?: atom$ScopeDescriptorLike}
+    | ((event: {oldValue: mixed, newValue: mixed}) => mixed),
+  callback?: (event: {oldValue: mixed, newValue: mixed}) => mixed,
 ): IDisposable {
   return atom.config.onDidChange(
     formatKeyPath(keyPath),

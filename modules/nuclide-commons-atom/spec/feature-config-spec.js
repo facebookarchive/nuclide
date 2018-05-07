@@ -30,6 +30,20 @@ describe('main', () => {
     expect(spy).toHaveBeenCalled();
   });
 
+  it('can observeAsStream', () => {
+    const spy = jasmine.createSpy('spy');
+    featureConfig.observeAsStream('animal').subscribe(spy);
+    featureConfig.set('animal', 'yup');
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('passes options to observe', () => {
+    const spy = jasmine.createSpy('spy');
+    featureConfig.observe('animal', {scope: []}, spy);
+    featureConfig.set('animal', 'yup');
+    expect(spy).toHaveBeenCalled();
+  });
+
   it('calls callbacks passed to `onDidChange`', () => {
     const spy = jasmine.createSpy('willis');
     featureConfig.onDidChange('mars.attacks', spy);
