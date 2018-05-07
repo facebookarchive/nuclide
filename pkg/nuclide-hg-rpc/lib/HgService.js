@@ -1376,7 +1376,7 @@ export class HgService {
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
    */
   strip(revision: string): Promise<void> {
-    return this._runSimpleInWorkingDirectory('strip', [revision]);
+    return this._runSimpleInWorkingDirectory('hide', [revision]);
   }
 
   /**
