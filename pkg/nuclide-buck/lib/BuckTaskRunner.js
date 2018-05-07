@@ -257,6 +257,7 @@ export class BuckTaskRunner {
         buildTarget: this._serializedState.buildTarget || '',
         buildRuleType: null,
         selectedDeploymentTarget: null,
+        userSelectedDeploymentTarget: null,
         taskSettings: this._serializedState.taskSettings || {},
         platformProviderUi: null,
         lastSessionPlatformGroupName: this._serializedState

@@ -44,6 +44,7 @@ export type AppState = {
   buildTarget: string,
   buildRuleType: ?ResolvedRuleType,
   selectedDeploymentTarget: ?DeploymentTarget,
+  userSelectedDeploymentTarget: ?DeploymentTarget,
   taskSettings: TaskSettings,
   platformProviderUi: ?PlatformProviderUi,
 

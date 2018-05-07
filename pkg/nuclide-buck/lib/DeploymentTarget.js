@@ -29,7 +29,8 @@ type PreferredNames = {
 };
 
 export function getDeploymentTargetPreference(state: AppState): PreferredNames {
-  const target = state.selectedDeploymentTarget;
+  const target =
+    state.userSelectedDeploymentTarget || state.selectedDeploymentTarget;
   // If a deployment target exists, that's our first choice, otherwise look at the last session
   if (target != null) {
     return {

@@ -85,6 +85,7 @@ export default function accumulateState(
       return {
         ...state,
         selectedDeploymentTarget: action.deploymentTarget,
+        userSelectedDeploymentTarget: action.deploymentTarget,
         platformProviderUi: getPlatformProviderUiForDeploymentTarget(
           action.deploymentTarget,
         ),
