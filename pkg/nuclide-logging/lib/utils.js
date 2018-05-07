@@ -13,6 +13,7 @@ import log4js from 'log4js';
 import StackTrace from 'stack-trace';
 
 import type {LoggingEvent} from './types';
+import safeStringify from 'json-stringify-safe';
 
 /**
  * JSON.stringify can't stringify instance of Error. To solve this problem, we
@@ -63,7 +64,7 @@ export function patchErrorsOfLoggingEvent(
  * Takes a loggingEvent object, returns string representation of it.
  */
 export function serializeLoggingEvent(loggingEvent: mixed): string {
-  return JSON.stringify(loggingEvent);
+  return safeStringify(loggingEvent);
 }
 
 /**
