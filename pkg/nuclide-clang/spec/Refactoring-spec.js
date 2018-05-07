@@ -26,7 +26,7 @@ const fakeEditor: any = {
 
 describe('Refactoring', () => {
   beforeEach(() => {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 15000}, async () => {
       // Ensure that the file is compiled.
       await getDiagnostics(fakeEditor);
     });
