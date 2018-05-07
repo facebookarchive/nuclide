@@ -8,19 +8,11 @@
 
 package com.facebook.nuclide.debugger;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.ArrayType;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.event.ClassPrepareEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Providing breakpoint management functionality. Threading: access from both request and event
@@ -35,84 +27,18 @@ public class BreakpointManager {
   // Breakpoint location -> List of breakpoints corresponding to that location.
   private final HashMap<Location, ArrayList<BreakpointSpec>> _breakpointsByFilename =
       new HashMap<Location, ArrayList<BreakpointSpec>>();
-  private Map<String, Set<ReferenceType>> nameToClass = null;
-  private Map<String, Set<ReferenceType>> sourceNameToClasses = null;
 
   BreakpointManager(ContextManager contextManager) {
     _contextManager = contextManager;
   }
 
-  public synchronized void addAllClasses(List<ReferenceType> allClasses) {
-    // To understand this method, look up the Java Docs for Collectors.groupingBy:
-    // https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html#groupingBy-java.util.function.Function-java.util.stream.Collector-
-    nameToClass =
-        allClasses
-            .parallelStream()
-            .filter(ReferenceType::isPrepared)
-            .collect(
-                Collectors.groupingBy(
-                    ReferenceType::name,
-                    Collectors.mapping(Function.identity(), Collectors.toSet())));
-
-    sourceNameToClasses =
-        allClasses
-            .parallelStream()
-            .filter(ReferenceType::isPrepared)
-            .filter(clazz -> !(clazz instanceof ArrayType))
-            .collect(
-                Collectors.groupingBy(
-                    clazz -> {
-                      try {
-                        return clazz.sourceName();
-                      } catch (AbsentInformationException ex) {
-                        // throw away the value by placing it in the empty string className
-                        return "";
-                      }
-                    },
-                    Collectors.mapping(Function.identity(), Collectors.toSet())));
-  }
-
-  public synchronized void addToMatchableClasses(ReferenceType clazz) {
-    if (clazz.isPrepared()) {
-      // for ClassLineBreakpointSpec:
-      String className = clazz.name();
-      nameToClass.putIfAbsent(className, new HashSet<ReferenceType>());
-      nameToClass.get(className).add(clazz);
-
-      // for FileLineBreakpointSpec:
-      if (clazz instanceof ArrayType) {
-        return;
-      }
-      try {
-        String sourceName = clazz.sourceName();
-        sourceNameToClasses.putIfAbsent(sourceName, new HashSet<ReferenceType>());
-        sourceNameToClasses.get(sourceName).add(clazz);
-      } catch (AbsentInformationException ex) {
-        // don't add to map
-      }
-    }
-  }
-
-  public synchronized Set<ReferenceType> getClassesFromName(String className) {
-    return nameToClass.getOrDefault(className, new HashSet<ReferenceType>());
-  }
-
-  public synchronized Set<ReferenceType> getClassesFromSourceName(String sourceName) {
-    return sourceNameToClasses.getOrDefault(sourceName, new HashSet<ReferenceType>());
-  }
-
-  /** Threading: called by event thread. */
-  public void handleClassPrepareEvent(ClassPrepareEvent classPrepareEvent) {
-    handleClassPrepareEvent(classPrepareEvent, null);
-  }
-
   public void handleClassPrepareEvent(
       ClassPrepareEvent classPrepareEvent, JavaDebuggerServer javaDebuggerServer) {
     ReferenceType loadClass = classPrepareEvent.referenceType();
-    addToMatchableClasses(loadClass);
+    String className = loadClass.name();
     synchronized (_breakpointMapLock) {
       for (BreakpointSpec breakpoint : _breakpointMap.values()) {
-        breakpoint.resolve(loadClass, javaDebuggerServer);
+        breakpoint.resolve(loadClass, className, javaDebuggerServer);
       }
     }
   }
@@ -129,13 +55,6 @@ public class BreakpointManager {
             _contextManager,
             new FileLineBreakpointRequestInfo(filePath, line, packageHint),
             condition);
-    return addNewBreakpoint(breakpoint);
-  }
-
-  public String setClassLineBreakpoint(String className, int line) {
-    BreakpointSpec breakpoint =
-        new ClassLineBreakpointSpec(
-            _contextManager, new ClassLineBreakpointRequestInfo(className, line));
     return addNewBreakpoint(breakpoint);
   }
 

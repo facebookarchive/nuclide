@@ -46,14 +46,6 @@ public class DebuggerDomain extends DomainHandlerBase {
                   params.optString("condition"));
           break;
 
-        case "setBreakpoint":
-          result =
-              setClassLineBreakpoint(
-                  params.getString("scriptId"),
-                  params.getInt("lineNumber") + 1 // Chrome line number is 0-based.
-                  );
-          break;
-
         case "removeBreakpoint":
           removeBreakpoint(params.getString("breakpointId"));
           break;
@@ -210,14 +202,6 @@ public class DebuggerDomain extends DomainHandlerBase {
         getContextManager()
             .getBreakpointManager()
             .setFileLineBreakpoint(filePath, line, packageHint, condition);
-    BreakpointSpec breakpoint =
-        getContextManager().getBreakpointManager().getBreakpointFromId(breakpointId);
-    return getBreakpointJson(breakpoint);
-  }
-
-  private JSONObject setClassLineBreakpoint(String fullClassName, int line) {
-    String breakpointId =
-        getContextManager().getBreakpointManager().setClassLineBreakpoint(fullClassName, line);
     BreakpointSpec breakpoint =
         getContextManager().getBreakpointManager().getBreakpointFromId(breakpointId);
     return getBreakpointJson(breakpoint);

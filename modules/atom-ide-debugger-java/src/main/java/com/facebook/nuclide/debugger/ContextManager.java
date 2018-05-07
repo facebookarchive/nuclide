@@ -148,7 +148,7 @@ public class ContextManager {
       JavaDebuggerServer javaDebuggerServer = (JavaDebuggerServer) getInterpreter();
       getBreakpointManager().handleClassPrepareEvent(event, javaDebuggerServer);
     } else {
-      getBreakpointManager().handleClassPrepareEvent(event);
+      getBreakpointManager().handleClassPrepareEvent(event, null);
     }
   }
 

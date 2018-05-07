@@ -8,6 +8,10 @@
 
 package com.facebook.nuclide.debugger;
 
+import com.github.javaparser.*;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
@@ -15,32 +19,60 @@ import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import java.util.Optional;
-import java.util.Set;
+import java.io.FileInputStream;
+import java.io.IOException;
 import org.json.JSONObject;
 
 /** Source line breakpoint spec. Threading: access from both request and event threads. */
 public class FileLineBreakpointSpec extends BreakpointSpec {
   private final FileLineBreakpointRequestInfo _requestInfo;
-  private final String _fileName;
   private volatile Optional<ClassPrepareRequest> _classPrepareRequest = Optional.empty();
+  private String _className;
 
   public FileLineBreakpointSpec(
       ContextManager contextManager, FileLineBreakpointRequestInfo locationInfo, String condition) {
     super(contextManager, condition);
-    _fileName = Utils.getFileNameFromPath(locationInfo.getFilePath());
+
+    String filePath = locationInfo.getFilePath();
     _requestInfo = locationInfo;
+    _className = getClassNameForBreakpoint(filePath);
+  }
+
+  private String getClassNameForBreakpoint(String filePath) {
+    int targetLine = _requestInfo.getLine();
+
+    // Find the type declaration that contains the breakpoint line.
+    try (FileInputStream stream = new FileInputStream(filePath)) {
+      CompilationUnit unit = JavaParser.parse(stream);
+      for (TypeDeclaration decl : unit.getTypes()) {
+        Optional<Range> r = decl.getRange();
+        if (!r.isPresent()) {
+          continue;
+        }
+
+        String packagePrefix =
+            unit.getPackageDeclaration().isPresent()
+                ? (unit.getPackageDeclaration().get().getName().toString() + ".")
+                : "";
+        Position begin = r.get().begin;
+        Position end = r.get().end;
+        if (begin.line <= targetLine && end.line >= targetLine) {
+          return packagePrefix + decl.getName().toString();
+        }
+      }
+    } catch (IOException e) {
+      // TODO log
+    }
+
+    return "";
   }
 
   @Override
   public void enable() {
-    resolveImmediate();
-    if (isResolved()) {
-      // Breakpoint is already resolved to a physical location, no need to watch for
-      // further class prepare.
-      // TODO: is there any case one source line binds to multiple physical locations?
-      return;
+    resolveImmediate(_className);
+    if (!isResolved()) {
+      watchForClassPrepare();
     }
-    watchForClassPrepare();
   }
 
   @Override
@@ -65,20 +97,16 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
 
   /** Watch for future class prepare/load if not resolved yet. */
   private void watchForClassPrepare() {
-    // TODO: deal with breakpoints set before VM started.
     EventRequestManager em = getContextManager().getVirtualMachine().eventRequestManager();
     _classPrepareRequest = Optional.of(em.createClassPrepareRequest());
-    /**
-     * Ideally we want to use addSourceNameFilter() to filter; unfortunately, I always got
-     * UnsupportedOperationException while targeting android JVM. Workaround using packageHint
-     * instead.
-     */
-    String packageHint = _requestInfo.getPackageHint();
-    if (!packageHint.isEmpty()) {
-      _classPrepareRequest.get().addClassFilter(packageHint + "*");
-    }
+    _classPrepareRequest.get().addClassFilter(_className);
     _classPrepareRequest.get().setSuspendPolicy(EventRequest.SUSPEND_ALL);
     _classPrepareRequest.get().enable();
+  }
+
+  @Override
+  protected boolean doesClassMatchBreakpoint(String className) {
+    return className.equals(_className);
   }
 
   @Override
@@ -104,10 +132,5 @@ public class FileLineBreakpointSpec extends BreakpointSpec {
       // This type does not have line info, ignore it.
       return Optional.empty();
     }
-  }
-
-  @Override
-  protected Set<ReferenceType> getMatchingClasses() {
-    return getContextManager().getBreakpointManager().getClassesFromSourceName(_fileName);
   }
 }

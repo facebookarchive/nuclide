@@ -20,11 +20,7 @@ public class JavaDbg {
   }
 
   private void start() {
-    if (_args.length > 0 && _args[0].equals("--vsp")) {
-      (new JavaDebuggerServer()).start();
-    } else {
-      (new ConsoleCommandInterpreter()).start();
-    }
+    (new JavaDebuggerServer()).start();
   }
 
   /** Entry point for the whole program. */

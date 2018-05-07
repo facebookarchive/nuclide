@@ -117,9 +117,6 @@ public class BootstrapDomain extends DomainHandlerBase {
     cm.setEventThread(eventThread);
     eventThread.start();
 
-    // then populate prepared classes
-    cm.getBreakpointManager().addAllClasses(vm.allClasses());
-
     // send appropriate thread events
     vm.allThreads().forEach(cm::handleThreadStart);
   }

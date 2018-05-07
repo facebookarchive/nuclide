@@ -8,15 +8,14 @@
 
 package com.facebook.nuclide.debugger;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.json.JSONObject;
 
 /**
@@ -94,16 +93,17 @@ public abstract class BreakpointSpec {
   }
 
   /** Resolve the breakpoint immediately in current loaded classes list. */
-  protected void resolveImmediate() {
-    if (getContextManager().getVirtualMachine() == null) {
+  protected void resolveImmediate(String className) {
+    VirtualMachine vm = getContextManager().getVirtualMachine();
+    if (vm == null) {
       // Haven't start debugging yet.
       return;
     }
 
-    getMatchingClasses()
-        .parallelStream()
-        .filter(clazz -> resolveForClass(clazz, false /* sendNotification */))
-        .findAny();
+    List<ReferenceType> matchClasses = vm.classesByName(className);
+    for (ReferenceType type : matchClasses) {
+      resolveForClass(type, false, null);
+    }
   }
 
   private boolean resolveForClass(
@@ -136,10 +136,6 @@ public abstract class BreakpointSpec {
     return true;
   }
 
-  private boolean resolveForClass(ReferenceType clazz, boolean sendNotification) {
-    return resolveForClass(clazz, sendNotification, null);
-  }
-
   /** Notify debugger UI this breakpoint is resolved to certain location. */
   private void sendBreakpointResolvedNotification() {
     JSONObject params = new JSONObject();
@@ -154,36 +150,12 @@ public abstract class BreakpointSpec {
   }
 
   /** Resolve the breakpoint for input class if possible. Threading: called by event thread. */
-  public void resolve(ReferenceType clazz, JavaDebuggerServer javaDebuggerServer) {
-    // printClassBreakpointCheckInfo(clazz)
-    if (doesClassMatchBreakpoint(clazz)) {
+  public void resolve(
+      ReferenceType clazz, String className, JavaDebuggerServer javaDebuggerServer) {
+    if (doesClassMatchBreakpoint(className)) {
       // TODO: guard it into a debug switch
       resolveForClass(clazz, true /*sendNotification*/, javaDebuggerServer);
     }
-  }
-
-  /** Debug helper(test only). */
-  public void printClassBreakpointCheckInfo(ReferenceType clazz) {
-    try {
-      Utils.logVerbose(
-          String.format(
-              "BreakpointSpec.resolve(%d) for : (%s, %s, %s)",
-              clazz.name(),
-              clazz.sourceName(),
-              clazz.sourcePaths(clazz.virtualMachine().getDefaultStratum())));
-    } catch (AbsentInformationException e) {
-      Utils.logException("Failed to get breakpoint class info", e);
-    }
-  }
-
-  /** Check whether the input class matches the breakpoint or not. */
-  protected boolean doesClassMatchBreakpoint(ReferenceType clazz) {
-    return getMatchingClasses()
-        .parallelStream()
-        .filter(matchingClass -> matchingClass.equals(clazz))
-        .findAny()
-        .map(c -> true)
-        .orElse(false);
   }
 
   /** Enable this breakpoint. */
@@ -191,9 +163,6 @@ public abstract class BreakpointSpec {
 
   /** Returns resolved breakpoint physical location for input class. */
   protected abstract Optional<Location> getMatchLocationFromClass(ReferenceType clazz);
-
-  /** Returns a set of all classes that match this breakpoint */
-  protected abstract Set<ReferenceType> getMatchingClasses();
 
   /** Called when this breakpoint is resolved. */
   protected void handleBreakpointResolved() {}
@@ -203,4 +172,7 @@ public abstract class BreakpointSpec {
 
   /** Get breakpoint line. */
   public abstract int getLine();
+
+  /** Determines if the specified class matches this breakpoint */
+  protected abstract boolean doesClassMatchBreakpoint(String className);
 }
