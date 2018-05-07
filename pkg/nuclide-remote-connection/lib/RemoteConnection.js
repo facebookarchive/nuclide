@@ -69,64 +69,61 @@ export class RemoteConnection {
     config: RemoteConnectionConfiguration,
   ): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
-    return RemoteConnection.findOrCreateFromConnection(
-      serverConnection,
-      config.cwd,
-      config.displayTitle,
-      config.promptReconnectOnFailure,
-    );
-  }
-
-  static async findOrCreateFromConnection(
-    serverConnection: ServerConnection,
-    cwd: NuclideUri,
-    displayTitle: string,
-    promptReconnectOnFailure: boolean = true,
-  ): Promise<RemoteConnection> {
-    const fsService: FileSystemServiceType = serverConnection.getService(
-      FILE_SYSTEM_SERVICE,
-    );
-
-    const realPath = await fsService.resolveRealPath(cwd);
-
-    // realPath may actually be a project file.
-    const contents = hasAtomProjectFormat(realPath)
-      ? await fsService.readFile(realPath).catch(() => null)
-      : null;
-
+    const {cwd, displayTitle, promptReconnectOnFailure} = config;
     const directories = [];
 
-    // If the file is not a project file, initialize the connection.
-    if (contents == null) {
-      // Now that we know the real path, it's possible this collides with an existing connection.
-      if (realPath !== cwd && nuclideUri.isRemote(cwd)) {
-        const existingConnection = this.getByHostnameAndPath(
-          nuclideUri.getHostname(cwd),
-          realPath,
-        );
-        if (existingConnection != null) {
-          return existingConnection;
+    try {
+      const fsService: FileSystemServiceType = serverConnection.getService(
+        FILE_SYSTEM_SERVICE,
+      );
+
+      const realPath = await fsService.resolveRealPath(cwd);
+
+      // realPath may actually be a project file.
+      const contents = hasAtomProjectFormat(realPath)
+        ? await fsService.readFile(realPath).catch(() => null)
+        : null;
+
+      // If the file is not a project file, initialize the connection.
+      if (contents == null) {
+        // Now that we know the real path, it's possible this collides with an existing connection.
+        if (realPath !== cwd && nuclideUri.isRemote(cwd)) {
+          const existingConnection = this.getByHostnameAndPath(
+            nuclideUri.getHostname(cwd),
+            realPath,
+          );
+          if (existingConnection != null) {
+            return existingConnection;
+          }
+        }
+        directories.push(realPath);
+      } else {
+        const projectContents = parseProject(contents.toString());
+        const dirname = nuclideUri.dirname(realPath);
+
+        const projectPaths = projectContents.paths;
+        if (projectPaths != null && Array.isArray(projectPaths)) {
+          directories.push(
+            ...projectPaths.map(path => nuclideUri.resolve(dirname, path)),
+          );
+        } else {
+          directories.push(dirname);
+        }
+
+        if (atom.project.replace != null) {
+          projectContents.paths = directories;
+          projectContents.originPath = realPath;
+          atom.project.replace(projectContents);
         }
       }
-      directories.push(realPath);
-    } else {
-      const projectContents = parseProject(contents.toString());
-      const dirname = nuclideUri.dirname(realPath);
-
-      const projectPaths = projectContents.paths;
-      if (projectPaths != null && Array.isArray(projectPaths)) {
-        directories.push(
-          ...projectPaths.map(path => nuclideUri.resolve(dirname, path)),
-        );
-      } else {
-        directories.push(dirname);
+    } catch (err) {
+      // Don't leave server connections hanging:
+      // if we created a server connection from getOrCreate but failed above
+      // then we need to make sure the connection gets closed.
+      if (serverConnection.getConnections().length === 0) {
+        serverConnection.close();
       }
-
-      if (atom.project.replace != null) {
-        projectContents.paths = directories;
-        projectContents.originPath = realPath;
-        atom.project.replace(projectContents);
-      }
+      throw err;
     }
     const connections = await Promise.all(
       directories.map((dir, i) => {
@@ -134,7 +131,7 @@ export class RemoteConnection {
           serverConnection,
           dir,
           i === 0 ? displayTitle : '',
-          promptReconnectOnFailure,
+          promptReconnectOnFailure !== false, // default: true
         );
         return connection._initialize();
       }),
