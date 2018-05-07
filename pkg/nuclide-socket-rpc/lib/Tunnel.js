@@ -106,6 +106,7 @@ export function createTunnel(
     });
 
     listener.on('error', err => {
+      trace(`Tunnel: error listening on port ${port}): ${err}`);
       observer.error(err);
     });
 
