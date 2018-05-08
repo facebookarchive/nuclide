@@ -20,11 +20,20 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   isAdbTunneled,
-  startTunnelingAdb,
+  startTunnelingAdb as plainStartTunnelingAdb,
   stopTunnelingAdb,
 } from '../../../nuclide-adb-sdb-base/lib/Tunneling';
 import {AdbTunnelButton} from '../ui/AdbTunnelButton';
 import * as React from 'react';
+
+let startTunnelingAdb = plainStartTunnelingAdb;
+try {
+  const {
+    fbStartTunnelingAdb,
+    // $eslint-disable-next-line $FlowFB
+  } = require('../../../nuclide-adb-sdb-base/lib/fb-Tunneling');
+  startTunnelingAdb = fbStartTunnelingAdb;
+} catch (e) {}
 
 export class AdbTunnelingProvider implements DeviceTypeComponentProvider {
   getType = (): string => {
