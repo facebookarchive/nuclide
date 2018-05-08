@@ -56,6 +56,7 @@ export class AdbTunnelingProvider implements DeviceTypeComponentProvider {
                     if (!noMoreNotifications) {
                       atom.notifications.addError(e);
                     }
+                    stopTunnelingAdb(host);
                   },
                 });
             },

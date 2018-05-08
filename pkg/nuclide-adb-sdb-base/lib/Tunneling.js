@@ -9,8 +9,6 @@
  * @format
  */
 
-/* eslint-disable no-param-reassign */
-
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
 import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
@@ -23,28 +21,52 @@ import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 
+export type AdbTunnelingOptions = {
+  retries?: number,
+  adbMismatchErrorMessage?: string,
+};
+
 export function startTunnelingAdb(
   uri: NuclideUri,
-  retries?: number = 0,
+  options?: AdbTunnelingOptions = {},
 ): Observable<'ready'> {
   if (!nuclideUri.isRemote(uri)) {
     return Observable.of('ready').concat(Observable.never());
   }
+  let retries = options.retries || 0;
+  let isTunnelOpen = false;
   const {tunnels} = activeTunnels.getOrCreate(uri, (_, serviceUri) => {
     invariant(typeof serviceUri === 'string');
     const adbService = getAdbServiceByNuclideUri(serviceUri);
-    const observable = Observable.defer(() => adbService.killServer())
-      .switchMap(() => openTunnels(serviceUri))
+    const localAdbService = getAdbServiceByNuclideUri('');
+
+    const observable = Observable.defer(async () => {
+      const [adbVersion, localAdbVersion] = await Promise.all([
+        adbService.getVersion(),
+        localAdbService.getVersion(),
+      ]);
+      if (adbVersion !== localAdbVersion) {
+        // eslint-disable-next-line no-throw-literal
+        throw `Your remote adb version differs from the local one: ${adbVersion}(remote) != ${localAdbVersion}(local).\n\n${options.adbMismatchErrorMessage ||
+          ''}`;
+      }
+      return adbService.killServer();
+    })
+      .timeout(5000)
+      .switchMap(() => {
+        return openTunnels(serviceUri).do(() => (isTunnelOpen = true));
+      })
       .retryWhen(errors => {
         return errors.do(error => {
-          // $FlowIgnore - ignore retries reassignment
           if (retries-- <= 0) {
             throw error;
           }
         });
       })
       .catch(e => {
-        stopTunnelingAdb(uri);
+        if (isTunnelOpen) {
+          stopTunnelingAdb(uri);
+        }
         throw e;
       })
       .publishReplay(1);
