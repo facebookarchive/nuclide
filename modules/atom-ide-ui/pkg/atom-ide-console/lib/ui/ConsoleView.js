@@ -21,7 +21,6 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {macrotask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import FilteredMessagesReminder from './FilteredMessagesReminder';
@@ -90,7 +89,6 @@ export default class ConsoleView extends React.Component<Props, State> {
     this._disposables = new UniversalDisposable();
     this._isScrolledNearBottom = true;
     this._continuouslyScrollToBottom = false;
-    (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
     this._id = count++;
   }
 
@@ -314,16 +312,11 @@ export default class ConsoleView extends React.Component<Props, State> {
       scrollTop,
     );
 
-    if (this._continuouslyScrollToBottom && !isScrolledToBottom) {
-      this._scrollToBottom();
-    } else {
-      this._isScrolledNearBottom = isScrolledToBottom;
-      this._stopScrollToBottom();
-      this.setState({
-        unseenMessages:
-          this.state.unseenMessages && !this._isScrolledNearBottom,
-      });
-    }
+    this._isScrolledNearBottom = isScrolledToBottom;
+    this._stopScrollToBottom();
+    this.setState({
+      unseenMessages: this.state.unseenMessages && !this._isScrolledNearBottom,
+    });
   }
 
   _handleOutputTable = (ref: OutputTable): void => {
