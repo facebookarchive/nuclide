@@ -31,12 +31,46 @@
   min-width: 100%;
 }
 
-.outline-view-trees .list-item {
+// No padding on the root node.
+.outline-view-trees.list-tree {
+  padding-left: 0px;
+}
+
+// Special case for unexpandable children of the root node.
+.outline-view-trees > .list-item {
   padding: 0 @component-padding / 2;
 }
 
-.outline-view-trees.has-collapsable-children .list-nested-item > .list-tree > .list-item {
-  padding-left: @component-padding * 4;
+.outline-view-trees .list-nested-item {
+  padding: 0 @component-padding / 2;
+}
+
+// Atom.less (from https://github.com/atom/atom-ui/blob/master/styles/lists.less)
+// has a rule:
+// .list-tree.has-collapsable-children .has-flat-children li.list-item {
+//   margin-left: 0px;
+// }
+// which is not what we want.
+//
+// We really want the rule for:
+// .list-tree.has-collapsable-children li.list-item {
+//   margin-left: @component-icon-size;
+// }
+// to win here, so repeat it with a more specific selector.
+.outline-view-trees .has-flat-children li.list-item.outline-view-item {
+  margin-left: @component-icon-size;
+}
+
+// Same issue of overriding default Atom styles as the previous rule.
+// The presence of expandable children should not impact layout.
+.outline-view-trees li.list-item.outline-view-item {
+  margin-left: @component-icon-size;
+}
+
+// This selector identifies just the children of a node with children.
+// We want all children indented the same amount, regardless of what they contain.
+.outline-view-trees .list-tree {
+  padding-left: @component-padding;
 }
 
 .panel-heading .outline-view-close-button {
