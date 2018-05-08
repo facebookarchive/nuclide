@@ -22,6 +22,8 @@ import net from 'net';
 const LOG_DELTA = 500000; // log for every half megabyte of transferred data
 const DEBUG_VERBOSE = false;
 
+const activeTunnels = new Map();
+
 export function createTunnel(
   t: ResolvedTunnel,
   cf: ConnectionFactory,
@@ -29,6 +31,21 @@ export function createTunnel(
   const logStatsIfNecessary = getStatLogger(LOG_DELTA);
   let bytesReceived: number = 0;
   let bytesWritten: number = 0;
+
+  // We check if a tunnel already exists listening to the same port, if it
+  // does we stop it so this one can take precedence. The onus on managing
+  // this (not creating a tunnel if there's already one on this port) should be
+  // on the consumer of this service.
+  const tunnelKey = `${shortenHostname(t.from.host)}:${t.from.port}`;
+  const existingTunnel = activeTunnels.get(tunnelKey);
+  if (existingTunnel) {
+    trace(
+      `Tunnel: Stopping existing tunnel -- ${tunnelDescription(
+        existingTunnel.tunnel,
+      )}`,
+    );
+    existingTunnel.dispose();
+  }
 
   return Observable.create(observer => {
     const tunnel = t;
@@ -115,7 +132,7 @@ export function createTunnel(
       observer.next({type: 'server_started'});
     });
 
-    return () => {
+    const dispose = () => {
       trace(`Tunnel: shutting down tunnel ${tunnelDescription(tunnel)}`);
       connections.forEach(connectionPromise =>
         connectionPromise.then(conn => {
@@ -125,7 +142,12 @@ export function createTunnel(
       connections.clear();
       cf.dispose();
       listener.close();
+      activeTunnels.delete(tunnelKey);
     };
+
+    activeTunnels.set(tunnelKey, {dispose, tunnel});
+
+    return dispose;
   }).publish();
 }
 

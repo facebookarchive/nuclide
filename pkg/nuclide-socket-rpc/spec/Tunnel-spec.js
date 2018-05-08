@@ -138,19 +138,26 @@ describe('createTunnel', () => {
     });
   });
 
-  it('should error if the port is already bound', done => {
+  it('should re-tunnel if the port is already bound on a tunnel', done => {
     let subscription = null;
     waitsForPromise(async () => {
       await new Promise(resolve => {
         subscription = Tunnel.createTunnel(td, cf)
           .refCount()
-          .subscribe({next: resolve});
+          .subscribe({
+            next: resolve,
+          });
       });
     });
 
-    waitsForPromise({shouldReject: true}, async () => {
-      const failing = Tunnel.createTunnel(td, cf).refCount();
-      await failing.toPromise();
+    waitsForPromise(async () => {
+      await new Promise(resolve => {
+        subscription = Tunnel.createTunnel(td, cf)
+          .refCount()
+          .subscribe({
+            next: resolve,
+          });
+      });
     });
 
     runs(() => {
