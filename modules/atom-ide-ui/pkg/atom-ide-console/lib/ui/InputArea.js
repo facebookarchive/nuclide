@@ -22,6 +22,7 @@ type Props = {
   history: Array<string>,
   watchEditor: ?atom$AutocompleteWatchEditor,
   onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
+  placeholderText?: string,
 };
 
 type State = {
@@ -168,6 +169,7 @@ export default class InputArea extends React.Component<Props, State> {
           onConfirm={this._submit}
           onInitialized={this._attachLabel}
           onDidTextBufferChange={this.props.onDidTextBufferChange}
+          placeholderText={this.props.placeholderText}
         />
       </div>
     );

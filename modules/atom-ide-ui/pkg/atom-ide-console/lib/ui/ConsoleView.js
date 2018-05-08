@@ -34,7 +34,6 @@ import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 import recordsChanged from '../recordsChanged';
 import StyleSheet from 'nuclide-commons-ui/StyleSheet';
-import classnames from 'classnames';
 
 type Props = {
   displayableRecords: Array<DisplayableRecord>,
@@ -62,7 +61,6 @@ type Props = {
 
 type State = {
   unseenMessages: boolean,
-  promptBufferChanged: boolean,
 };
 
 // Maximum time (ms) for the console to try scrolling to the bottom.
@@ -88,7 +86,6 @@ export default class ConsoleView extends React.Component<Props, State> {
     super(props);
     this.state = {
       unseenMessages: false,
-      promptBufferChanged: false,
     };
     this._disposables = new UniversalDisposable();
     this._isScrolledNearBottom = true;
@@ -252,37 +249,24 @@ export default class ConsoleView extends React.Component<Props, State> {
             />
           </div>
           {this._renderPrompt()}
-          {this._renderMultilineTip()}
         </div>
       </div>
     );
   }
 
-  _renderMultilineTip(): ?React.Element<any> {
+  _getMultiLineTip(): string {
     const {currentExecutor} = this.props;
     if (currentExecutor == null) {
-      return;
+      return '';
     }
     const keyCombo =
-      process.platform === 'darwin' ? (
-        // Option + Enter on Mac
-        <span>&#8997; + &#9166;</span>
-      ) : (
-        // Shift + Enter on Windows and Linux.
-        <span>Shift + Enter</span>
-      );
+      process.platform === 'darwin'
+        ? // Option + Enter on Mac
+          '\u2325  + \u23CE'
+        : // Shift + Enter on Windows and Linux.
+          'Shift + Enter';
 
-    return (
-      <div
-        className={classnames(
-          'console-multiline-tip',
-          this.state.promptBufferChanged
-            ? 'console-multiline-tip-dim'
-            : 'console-multiline-tip-not-dim',
-        )}>
-        Tip: {keyCombo} to insert a newline
-      </div>
-    );
+    return `Tip: ${keyCombo} to insert a newline`;
   }
 
   _renderPrompt(): ?React.Element<any> {
@@ -299,9 +283,7 @@ export default class ConsoleView extends React.Component<Props, State> {
           onSubmit={this._executePrompt}
           history={this.props.history}
           watchEditor={this.props.watchEditor}
-          onDidTextBufferChange={() => {
-            this.setState({promptBufferChanged: true});
-          }}
+          placeholderText={this._getMultiLineTip()}
         />
       </div>
     );
