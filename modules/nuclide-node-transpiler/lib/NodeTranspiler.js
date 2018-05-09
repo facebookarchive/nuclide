@@ -45,7 +45,11 @@ const BABEL_OPTIONS = {
   },
   plugins: [
     [require.resolve('./inline-invariant-tr')],
-    [require.resolve('./use-minified-libs-tr')],
+    [require.resolve('babel-plugin-module-resolver'), {
+      alias: {
+        rxjs: 'rxjs/bundles/Rx.min.js',
+      },
+    }],
     [require.resolve('babel-plugin-idx')],
     [require.resolve('babel-plugin-lodash'), {
       // The babel plugin looks for lodash relative to the CWD.

@@ -13,8 +13,6 @@
 /* eslint-env browser */
 /* global IntersectionObserver, PerformanceObserver, ResizeObserver, DOMRect */
 
-import type {Subscriber} from 'rxjs/Subscriber';
-
 import invariant from 'assert';
 import os from 'os';
 import {Observable, Subscription} from 'rxjs';
@@ -164,7 +162,7 @@ class DOMObserverObservable<
     });
   }
 
-  _subscribe(subscriber: Subscriber<TNext>): rxjs$Subscription {
+  _subscribe(subscriber: rxjs$Subscriber<TNext>): rxjs$Subscription {
     if (this._refs === 0) {
       invariant(this._domObserver == null);
       this._domObserver = new this._DOMObserverCtor(records => {
