@@ -41,5 +41,13 @@ untyped-type-import=error
 sketchy-null=error
 sketchy-null-bool=off
 
+[strict]
+nonstrict-import
+sketchy-null
+unclear-type
+unsafe-getters-setters
+untyped-import
+untyped-type-import
+
 [version]
 0.71.0
