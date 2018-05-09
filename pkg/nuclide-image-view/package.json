@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-image-view",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "View images (even remote ones!) in Atom",
+  "author": "Nuclide : Core UI",
+  "atomTestRunner": "../../modules/nuclide-jest/atom-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  }
+}
