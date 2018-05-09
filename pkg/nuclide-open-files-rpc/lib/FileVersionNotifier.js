@@ -1,65 +1,65 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.FileVersionNotifier = undefined;var _constants;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LocalFileEvent, FileVersion} from './rpc-types';
 
-import {FileEventKind} from './constants';
-import {Deferred} from 'nuclide-commons/promise';
-import {MultiMap} from 'nuclide-commons/collection';
 
-export class FileVersionNotifier {
-  _versions: Map<NuclideUri, number>;
-  _requests: MultiMap<NuclideUri, Request>;
+
+
+
+
+
+
+
+
+
+
+function _load_constants() {return _constants = require('./constants');}var _promise;
+function _load_promise() {return _promise = require('nuclide-commons/promise');}var _collection;
+function _load_collection() {return _collection = require('nuclide-commons/collection');}
+
+class FileVersionNotifier {
+
+
 
   constructor() {
     this._versions = new Map();
-    this._requests = new MultiMap();
+    this._requests = new (_collection || _load_collection()).MultiMap();
   }
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onEvent(event: LocalFileEvent): void {
+  onEvent(event) {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     switch (event.kind) {
-      case FileEventKind.OPEN:
+      case (_constants || _load_constants()).FileEventKind.OPEN:
         this._versions.set(filePath, changeCount);
         break;
-      case FileEventKind.CLOSE:
+      case (_constants || _load_constants()).FileEventKind.CLOSE:
         this._versions.delete(filePath);
         break;
-      case FileEventKind.EDIT:
+      case (_constants || _load_constants()).FileEventKind.EDIT:
         this._versions.set(filePath, changeCount);
         break;
-      case FileEventKind.SAVE:
+      case (_constants || _load_constants()).FileEventKind.SAVE:
         break;
       default:
-        (event.kind: empty);
-        throw new Error(`Unexpected LocalFileEvent.kind: ${event.kind}`);
-    }
+        event.kind;
+        throw new Error(`Unexpected LocalFileEvent.kind: ${event.kind}`);}
+
     this._checkRequests(filePath);
   }
 
-  dispose(): void {
+  dispose() {
     for (const request of this._requests.values()) {
       request.reject(createRejectError());
     }
   }
 
-  getVersion(filePath: NuclideUri): ?number {
+  getVersion(filePath) {
     return this._versions.get(filePath);
   }
 
-  isBufferAtVersion(fileVersion: FileVersion): boolean {
+  isBufferAtVersion(fileVersion) {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
     const currentVersion = this._versions.get(filePath);
@@ -86,7 +86,7 @@ export class FileVersionNotifier {
   // (4) Network goes back up
   // (5) User types to version N+2 which invokes onEvent for N+2
   // At step 5 we know we will never be able to deliver buffer at version N+1, so we return false.
-  waitForBufferAtVersion(fileVersion: FileVersion): Promise<boolean> {
+  waitForBufferAtVersion(fileVersion) {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;
     const currentVersion = this._versions.get(filePath);
@@ -100,7 +100,7 @@ export class FileVersionNotifier {
     return request.promise;
   }
 
-  _checkRequests(filePath: NuclideUri): void {
+  _checkRequests(filePath) {
     const currentVersion = this._versions.get(filePath);
     if (currentVersion == null) {
       return;
@@ -108,33 +108,32 @@ export class FileVersionNotifier {
 
     const requests = Array.from(this._requests.get(filePath));
     const resolves = requests.filter(
-      request => request.changeCount === currentVersion,
-    );
+    request => request.changeCount === currentVersion);
+
     const rejects = requests.filter(
-      request => request.changeCount < currentVersion,
-    );
+    request => request.changeCount < currentVersion);
+
     const remaining = requests.filter(
-      request => request.changeCount > currentVersion,
-    );
+    request => request.changeCount > currentVersion);
+
     this._requests.set(filePath, remaining);
 
     resolves.forEach(request => request.resolve(true));
     rejects.forEach(request => request.resolve(false));
-  }
-}
+  }}exports.FileVersionNotifier = FileVersionNotifier; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        * @format
+                                                        */function createRejectError() {return new Error('File modified past requested change');}class Request extends (_promise || _load_promise()).Deferred {
 
-function createRejectError(): Error {
-  return new Error('File modified past requested change');
-}
-
-class Request extends Deferred<boolean> {
-  filePath: NuclideUri;
-  changeCount: number;
-
-  constructor(filePath: NuclideUri, changeCount: number) {
+  constructor(filePath, changeCount) {
     super();
 
     this.filePath = filePath;
     this.changeCount = changeCount;
-  }
-}
+  }}

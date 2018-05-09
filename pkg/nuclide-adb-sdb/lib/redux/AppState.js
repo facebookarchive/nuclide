@@ -1,43 +1,43 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import type {AppState} from '../types';
 
-import {objectEntries, objectFromMap} from 'nuclide-commons/collection';
 
-export function createEmptyAppState(): AppState {
-  return {
-    customAdbPaths: new Map(),
-    customSdbPaths: new Map(),
-    adbPorts: new Map(),
-  };
-}
 
-export function serialize(state: AppState): Object {
-  return {
-    customAdbPaths: objectFromMap(state.customAdbPaths),
-    customSdbPaths: objectFromMap(state.customSdbPaths),
-    adbPorts: objectFromMap(state.adbPorts),
-  };
-}
 
-export function deserialize(rawState: ?Object): ?Object {
-  if (rawState != null) {
-    ['customAdbPaths', 'customSdbPaths', 'adbPorts'].forEach(objectProp => {
-      if (rawState.hasOwnProperty(objectProp)) {
-        rawState[objectProp] = new Map(
-          objectEntries(rawState[objectProp] || {}),
-        );
-      }
-    });
-  }
+
+
+
+
+
+
+
+
+
+createEmptyAppState = createEmptyAppState;exports.
+
+
+
+
+
+
+
+serialize = serialize;exports.
+
+
+
+
+
+
+
+deserialize = deserialize;var _collection;function _load_collection() {return _collection = require('nuclide-commons/collection');} /**
+                                                                                                                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                     * All rights reserved.
+                                                                                                                                     *
+                                                                                                                                     * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                     * the root directory of this source tree.
+                                                                                                                                     *
+                                                                                                                                     * 
+                                                                                                                                     * @format
+                                                                                                                                     */function createEmptyAppState() {return { customAdbPaths: new Map(), customSdbPaths: new Map(), adbPorts: new Map() };}function serialize(state) {return { customAdbPaths: (0, (_collection || _load_collection()).objectFromMap)(state.customAdbPaths), customSdbPaths: (0, (_collection || _load_collection()).objectFromMap)(state.customSdbPaths), adbPorts: (0, (_collection || _load_collection()).objectFromMap)(state.adbPorts) };}function deserialize(rawState) {if (rawState != null) {['customAdbPaths', 'customSdbPaths', 'adbPorts'].forEach(objectProp => {if (rawState.hasOwnProperty(objectProp)) {rawState[objectProp] = new Map((0, (_collection || _load_collection()).objectEntries)(rawState[objectProp] || {}));}});}
   return rawState;
 }

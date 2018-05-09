@@ -1,42 +1,42 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));var _HandleMap;
 
-import HandleMap from './HandleMap';
-import MIProxy from './MIProxy';
-import {StackFrame} from 'vscode-debugadapter';
-import {
-  stackInfoDepthResult,
-  stackListFramesResult,
-  toCommandError,
-} from './MITypes';
 
-export type CachedStackFrame = {
-  threadId: number,
-  frameIndex: number,
-};
 
-type StackTraceResponseBody = {
-  stackFrames: Array<StackFrame>,
-  totalFrames?: number,
-};
 
-export default class StackFrames {
-  _client: MIProxy;
-  _frames: HandleMap<CachedStackFrame>;
-  _frameIdsByThreadAndLevel: Map<number, Map<number, number>>;
 
-  constructor(client: MIProxy) {
+
+
+
+
+
+
+function _load_HandleMap() {return _HandleMap = _interopRequireDefault(require('./HandleMap'));}var _MIProxy;
+function _load_MIProxy() {return _MIProxy = _interopRequireDefault(require('./MIProxy'));}var _vscodeDebugadapter;
+function _load_vscodeDebugadapter() {return _vscodeDebugadapter = require('vscode-debugadapter');}var _MITypes;
+function _load_MITypes() {return _MITypes = require('./MITypes');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                 * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                 * All rights reserved.
+                                                                                                                                                                 *
+                                                                                                                                                                 * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                 * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                 * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                 *
+                                                                                                                                                                 * 
+                                                                                                                                                                 * @format
+                                                                                                                                                                 */
+
+
+
+
+
+class StackFrames {
+
+
+
+
+  constructor(client) {
     this._client = client;
-    this._frames = new HandleMap();
+    this._frames = new (_HandleMap || _load_HandleMap()).default();
     this._frameIdsByThreadAndLevel = new Map();
   }
 
@@ -45,71 +45,71 @@ export default class StackFrames {
     this._frameIdsByThreadAndLevel.clear();
   }
 
-  stackFrameByHandle(handle: number): ?CachedStackFrame {
+  stackFrameByHandle(handle) {
     return this._frames.getObjectByHandle(handle);
   }
 
-  async stackFramesForThread(
-    threadId: number,
-    startFrame: ?number,
-    levels: ?number,
-  ): Promise<StackTraceResponseBody> {
-    const depthResult = await this._client.sendCommand(
-      `stack-info-depth --thread ${threadId}`,
-    );
-    if (!depthResult.done) {
-      throw new Error(
+  stackFramesForThread(
+  threadId,
+  startFrame,
+  levels)
+  {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      const depthResult = yield _this._client.sendCommand(
+      `stack-info-depth --thread ${threadId}`);
+
+      if (!depthResult.done) {
+        throw new Error(
         `Protocol error retrieving stack depth (${
-          toCommandError(depthResult).msg
-        })`,
-      );
-    }
+        (0, (_MITypes || _load_MITypes()).toCommandError)(depthResult).msg
+        })`);
 
-    const depth = parseInt(stackInfoDepthResult(depthResult).depth, 10);
+      }
 
-    const lowFrame = startFrame == null ? 0 : startFrame;
-    const highFrame =
+      const depth = parseInt((0, (_MITypes || _load_MITypes()).stackInfoDepthResult)(depthResult).depth, 10);
+
+      const lowFrame = startFrame == null ? 0 : startFrame;
+      const highFrame =
       (levels == null ? lowFrame + depth : lowFrame + levels) - 1;
-    const command = `stack-list-frames --thread ${threadId} --no-frame-filters ${lowFrame} ${highFrame}`;
-    const frameResult = await this._client.sendCommand(command);
-    if (!frameResult.done) {
-      throw new Error(
+      const command = `stack-list-frames --thread ${threadId} --no-frame-filters ${lowFrame} ${highFrame}`;
+      const frameResult = yield _this._client.sendCommand(command);
+      if (!frameResult.done) {
+        throw new Error(
         `Protocol error retrieving stack frames (${
-          toCommandError(frameResult).msg
-        })`,
-      );
-    }
+        (0, (_MITypes || _load_MITypes()).toCommandError)(frameResult).msg
+        })`);
 
-    const frames = stackListFramesResult(frameResult);
+      }
 
-    return {
-      totalFrames: depth,
-      stackFrames: frames.stack.map(_ => {
-        const level = parseInt(_.frame.level, 10);
-        return {
-          id: this._handleForFrame(threadId, level),
-          name:
-            _.frame.func != null
-              ? _.frame.func
-              : _.frame.from != null
-                ? _.frame.from
-                : _.frame.addr,
-          source:
-            _.frame.file == null && _.frame.fullname == null
-              ? undefined
-              : {
-                  name: _.frame.file,
-                  path: _.frame.fullname,
-                },
-          line: _.frame.line == null ? 0 : parseInt(_.frame.line, 10),
-          column: 0,
-          addr: _.frame.addr,
-        };
-      }),
-    };
+      const frames = (0, (_MITypes || _load_MITypes()).stackListFramesResult)(frameResult);
+
+      return {
+        totalFrames: depth,
+        stackFrames: frames.stack.map(function (_) {
+          const level = parseInt(_.frame.level, 10);
+          return {
+            id: _this._handleForFrame(threadId, level),
+            name:
+            _.frame.func != null ?
+            _.frame.func :
+            _.frame.from != null ?
+            _.frame.from :
+            _.frame.addr,
+            source:
+            _.frame.file == null && _.frame.fullname == null ?
+            undefined :
+            {
+              name: _.frame.file,
+              path: _.frame.fullname },
+
+            line: _.frame.line == null ? 0 : parseInt(_.frame.line, 10),
+            column: 0,
+            addr: _.frame.addr };
+
+        }) };})();
+
   }
 
-  _handleForFrame(threadId: number, frameIndex: number): number {
+  _handleForFrame(threadId, frameIndex) {
     let mapForThread = this._frameIdsByThreadAndLevel.get(threadId);
     if (mapForThread == null) {
       mapForThread = new Map();
@@ -120,12 +120,11 @@ export default class StackFrames {
     if (frame == null) {
       const cachedFrame = {
         threadId,
-        frameIndex,
-      };
+        frameIndex };
+
       frame = this._frames.put(cachedFrame);
       mapForThread.set(frameIndex, frame);
     }
 
     return frame;
-  }
-}
+  }}exports.default = StackFrames;

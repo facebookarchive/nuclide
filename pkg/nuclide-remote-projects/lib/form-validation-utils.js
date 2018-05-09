@@ -1,53 +1,53 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import {SshHandshake} from '../../nuclide-remote-connection';
 
-import type {
-  NuclideRemoteConnectionParamsWithPassword,
-  NuclideRemoteConnectionProfile,
-} from './connection-types';
 
-export type NuclideNewConnectionProfileValidationResult =
-  | {|errorMessage: string|}
-  | {|
-      validatedProfile: NuclideRemoteConnectionProfile,
-      warningMessage?: string,
-    |};
 
-/*
- * This function checks that the required inputs to a connection profile are non-empty
- * (i.e. required strings are at least length 1). It also removes the password
- * if provided, and only retains the remote server command if it is not the default.
- * @param profileName The profile name to validate.
- * @param connectionDetails The connection details to validate.
- * @param defaultRemoteServerCommand The default remote server command. If the user's
- *   input matches this string (meaning the user hasn't changed it), the user's
- *   input will not be saved as part of the profile.
- * @return If the validation fails: an error object. If validation succeeds:
- * an object containing a valid profile to save.
- */
-export function validateFormInputs(
-  profileName: string,
-  connectionDetails: NuclideRemoteConnectionParamsWithPassword,
-  defaultRemoteServerCommand: string,
-): NuclideNewConnectionProfileValidationResult {
-  // Validate the form inputs. The form must be fully filled-out.
-  const missingFields = [];
-  const profileParams = {};
 
-  if (!profileName) {
-    missingFields.push('Profile Name');
-  } else {
-    profileParams.displayTitle = profileName;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+validateFormInputs = validateFormInputs;var _nuclideRemoteConnection;function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');} /*
+                                                                                                                                                                                               * This function checks that the required inputs to a connection profile are non-empty
+                                                                                                                                                                                               * (i.e. required strings are at least length 1). It also removes the password
+                                                                                                                                                                                               * if provided, and only retains the remote server command if it is not the default.
+                                                                                                                                                                                               * @param profileName The profile name to validate.
+                                                                                                                                                                                               * @param connectionDetails The connection details to validate.
+                                                                                                                                                                                               * @param defaultRemoteServerCommand The default remote server command. If the user's
+                                                                                                                                                                                               *   input matches this string (meaning the user hasn't changed it), the user's
+                                                                                                                                                                                               *   input will not be saved as part of the profile.
+                                                                                                                                                                                               * @return If the validation fails: an error object. If validation succeeds:
+                                                                                                                                                                                               * an object containing a valid profile to save.
+                                                                                                                                                                                               */function validateFormInputs(profileName, connectionDetails, defaultRemoteServerCommand) {// Validate the form inputs. The form must be fully filled-out.
+  const missingFields = [];const profileParams = {};if (!profileName) {missingFields.push('Profile Name');} else {profileParams.displayTitle = profileName;
   }
   if (!connectionDetails.username) {
     missingFields.push('Username');
@@ -77,12 +77,12 @@ export function validateFormInputs(
     profileParams.authMethod = authMethod;
   }
   if (
-    authMethod === SshHandshake.SupportedMethods.PRIVATE_KEY &&
-    !connectionDetails.pathToPrivateKey
-  ) {
+  authMethod === (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).SshHandshake.SupportedMethods.PRIVATE_KEY &&
+  !connectionDetails.pathToPrivateKey)
+  {
     missingFields.push(
-      'Private Key File (required for the authentication method you selected)',
-    );
+    'Private Key File (required for the authentication method you selected)');
+
   } else {
     profileParams.pathToPrivateKey = connectionDetails.pathToPrivateKey;
   }
@@ -91,7 +91,7 @@ export function validateFormInputs(
   if (missingFields.length) {
     const missingFieldsString = missingFields.join(', ');
     const errorMessage = `You must fill out all fields. Currently missing:\n${missingFieldsString}`;
-    return {errorMessage};
+    return { errorMessage };
   }
 
   // If all the fields are filled out, there are some additional checks we
@@ -100,19 +100,19 @@ export function validateFormInputs(
 
   // 1. If a password is provided, all parts of the profile will be save except the password.
   if (
-    authMethod === SshHandshake.SupportedMethods.PASSWORD &&
-    connectionDetails.password
-  ) {
+  authMethod === (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).SshHandshake.SupportedMethods.PASSWORD &&
+  connectionDetails.password)
+  {
     warningMessage +=
-      '* You provided a password for this profile. ' +
-      'For security, Nuclide will save the other parts of this profile, ' +
-      'but not the password.\n';
+    '* You provided a password for this profile. ' +
+    'For security, Nuclide will save the other parts of this profile, ' +
+    'but not the password.\n';
   }
   // 2. Save the remote server command only if it is changed.
   if (
-    connectionDetails.remoteServerCommand &&
-    connectionDetails.remoteServerCommand !== defaultRemoteServerCommand
-  ) {
+  connectionDetails.remoteServerCommand &&
+  connectionDetails.remoteServerCommand !== defaultRemoteServerCommand)
+  {
     profileParams.remoteServerCommand = connectionDetails.remoteServerCommand;
   } else {
     profileParams.remoteServerCommand = '';
@@ -121,14 +121,23 @@ export function validateFormInputs(
     deletable: true,
     displayTitle: profileName,
     params: profileParams,
-    saveable: true,
-  };
+    saveable: true };
+
   const validationResult =
-    warningMessage.length > 0
-      ? {
-          validatedProfile,
-          warningMessage,
-        }
-      : {validatedProfile};
+  warningMessage.length > 0 ?
+  {
+    validatedProfile,
+    warningMessage } :
+
+  { validatedProfile };
   return validationResult;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

@@ -1,54 +1,54 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';var _log4js;
 
-import {getLogger} from 'log4js';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
-import updateKeymap from './updateKeymap';
+
+
+
+
+
+
+
+
+
+function _load_log4js() {return _log4js = require('log4js');}var _createPackage;
+function _load_createPackage() {return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));}var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));}var _nuclideAnalytics;
+function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}var _updateKeymap;
+function _load_updateKeymap() {return _updateKeymap = _interopRequireDefault(require('./updateKeymap'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
 
 /**
- * Put deprecated commands with their new equivalents here.
- * This will:
- * - automatically warn and forward direct dispatches of the old command
- * - prompt to automatically update the user keybindings
- */
+                                                                                                                                                                                                        * Put deprecated commands with their new equivalents here.
+                                                                                                                                                                                                        * This will:
+                                                                                                                                                                                                        * - automatically warn and forward direct dispatches of the old command
+                                                                                                                                                                                                        * - prompt to automatically update the user keybindings
+                                                                                                                                                                                                        */
 const DEPRECATED_CONSOLE_COMMANDS = {
   'nuclide-console:toggle': 'console:toggle',
   'nuclide-console:clear': 'console:clear',
-  'nuclide-console:copy-message': 'console:copy-message',
-};
-
-const DEPRECATED_DEBUGGER_COMMANDS = {
-  'nuclide-debugger:toggle': 'debugger:toggle',
-  'nuclide-debugger:show': 'debugger:show',
-  'nuclide-debugger:hide': 'debugger:hide',
-  'nuclide-debugger:restart-debugging': 'debugger:restart-debugging',
-  'nuclide-debugger:continue-debugging': 'debugger:continue-debugging',
-  'nuclide-debugger:stop-debugging': 'debugger:stop-debugging',
+  'nuclide-console:copy-message': 'console:copy-message' }; /**
+                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                             * All rights reserved.
+                                                             *
+                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                             * the root directory of this source tree.
+                                                             *
+                                                             * 
+                                                             * @format
+                                                             */const DEPRECATED_DEBUGGER_COMMANDS = { 'nuclide-debugger:toggle': 'debugger:toggle', 'nuclide-debugger:show': 'debugger:show', 'nuclide-debugger:hide': 'debugger:hide', 'nuclide-debugger:restart-debugging': 'debugger:restart-debugging', 'nuclide-debugger:continue-debugging': 'debugger:continue-debugging', 'nuclide-debugger:stop-debugging': 'debugger:stop-debugging',
   'nuclide-debugger:step-over': 'debugger:step-over',
   'nuclide-debugger:step-into': 'debugger:step-into',
   'nuclide-debugger:step-out': 'debugger:step-out',
   'nuclide-debugger:run-to-location': 'debugger:run-to-location',
-  'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint',
-};
+  'nuclide-debugger:toggle-breakpoint': 'debugger:toggle-breakpoint' };
+
 
 const DEPRECATED_FILE_TREE_COMMANDS = {
   'nuclide-file-tree:set-current-working-root':
-    'tree-view:set-current-working-root',
+  'tree-view:set-current-working-root',
   'nuclide-file-tree:add-file': 'tree-view:add-file',
   'nuclide-file-tree:add-file-relative': 'tree-view:add-file-relative',
   'nuclide-file-tree:add-folder': 'tree-view:add-folder',
   'nuclide-file-tree:remove-project-folder-selection':
-    'tree-view:remove-project-folder-selection',
+  'tree-view:remove-project-folder-selection',
   'nuclide-file-tree:toggle': 'tree-view:toggle',
   'nuclide-file-tree:toggle-focus': 'tree-view:toggle-focus',
   'nuclide-file-tree:reveal-active-file': 'tree-view:reveal-active-file',
@@ -59,20 +59,20 @@ const DEPRECATED_FILE_TREE_COMMANDS = {
   'nuclide-file-tree:expand-directory': 'tree-view:expand-directory',
   'nuclide-file-tree:collapse-directory': 'tree-view:collapse-directory',
   'nuclide-file-tree:recursive-expand-directory':
-    'tree-view:recursive-expand-directory',
+  'tree-view:recursive-expand-directory',
   'nuclide-file-tree:recursive-collapse-directory':
-    'tree-view:recursive-collapse-directory',
+  'tree-view:recursive-collapse-directory',
   'nuclide-file-tree:recursive-collapse-all':
-    'tree-view:recursive-collapse-all',
+  'tree-view:recursive-collapse-all',
   'nuclide-file-tree:open-selected-entry': 'tree-view:open-selected-entry',
   'nuclide-file-tree:open-selected-entry-right':
-    'tree-view:open-selected-entry-right',
+  'tree-view:open-selected-entry-right',
   'nuclide-file-tree:open-selected-entry-left':
-    'tree-view:open-selected-entry-left',
+  'tree-view:open-selected-entry-left',
   'nuclide-file-tree:open-selected-entry-up':
-    'tree-view:open-selected-entry-up',
+  'tree-view:open-selected-entry-up',
   'nuclide-file-tree:open-selected-entry-down':
-    'tree-view:open-selected-entry-down',
+  'tree-view:open-selected-entry-down',
   'nuclide-file-tree:search-in-directory': 'tree-view:search-in-directory',
   'nuclide-file-tree:remove': 'tree-view:remove',
   'nuclide-file-tree:remove-letter': 'tree-view:remove-letter',
@@ -149,72 +149,72 @@ const DEPRECATED_FILE_TREE_COMMANDS = {
   'nuclide-file-tree:go-to-letter-x': 'tree-view:go-to-letter-x',
   'nuclide-file-tree:go-to-letter-y': 'tree-view:go-to-letter-y',
   'nuclide-file-tree:go-to-letter-z': 'tree-view:go-to-letter-z',
-  'nuclide-file-tree:go-to-letter-~': 'tree-view:go-to-letter-~',
-};
+  'nuclide-file-tree:go-to-letter-~': 'tree-view:go-to-letter-~' };
+
 
 const DEPRECATED_TERMINAL_COMMANDS = {
   'nuclide-terminal:new-terminal': 'atom-ide-terminal:new-terminal',
   'nuclide-terminal:toggle-terminal-focus':
-    'atom-ide-terminal:toggle-terminal-focus',
+  'atom-ide-terminal:toggle-terminal-focus',
   'nuclide-terminal:add-escape-prefix': 'atom-ide-terminal:add-escape-prefix',
   'nuclide-terminal:create-paste': 'atom-ide-terminal:create-paste',
-  'nuclide-terminal:clear': 'atom-ide-terminal:clear',
-};
+  'nuclide-terminal:clear': 'atom-ide-terminal:clear' };
 
-const DEPRECATED_COMMANDS = {
-  ...DEPRECATED_CONSOLE_COMMANDS,
-  ...DEPRECATED_DEBUGGER_COMMANDS,
-  ...DEPRECATED_FILE_TREE_COMMANDS,
-  ...DEPRECATED_TERMINAL_COMMANDS,
-};
+
+const DEPRECATED_COMMANDS = Object.assign({},
+DEPRECATED_CONSOLE_COMMANDS,
+DEPRECATED_DEBUGGER_COMMANDS,
+DEPRECATED_FILE_TREE_COMMANDS,
+DEPRECATED_TERMINAL_COMMANDS);
+
 
 class Activation {
-  _disposables: UniversalDisposable;
-  _warnedCommands: Set<string>;
+
+
 
   constructor() {
     this._warnedCommands = new Set();
-    this._disposables = new UniversalDisposable(this._deprecateCommands());
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._deprecateCommands());
 
     // $FlowIgnore: private API
     const keymapPath = atom.keymaps.getUserKeymapPath();
-    updateKeymap(keymapPath, DEPRECATED_COMMANDS).catch(err => {
+    (0, (_updateKeymap || _load_updateKeymap()).default)(keymapPath, DEPRECATED_COMMANDS).catch(err => {
       // Nonexistent keymaps are normal.
       if (err.code !== 'ENOENT') {
-        getLogger('nuclide-deprecation-cop').error(
-          'Error updating user keymap:',
-          err,
-        );
+        (0, (_log4js || _load_log4js()).getLogger)('nuclide-deprecation-cop').error(
+        'Error updating user keymap:',
+        err);
+
       }
     });
   }
 
-  _deprecateCommands(): IDisposable {
+  _deprecateCommands() {
     // Catch any direct invocations of the commands (context menu, dispatch).
-    return atom.commands.onWillDispatch((event: any) => {
+    return atom.commands.onWillDispatch(event => {
       const command = event.type;
       if (!DEPRECATED_COMMANDS.hasOwnProperty(command)) {
         return;
       }
       const newCommand = DEPRECATED_COMMANDS[command];
       if (!this._warnedCommands.has(command)) {
-        track('deprecated-command-dispatched', {command});
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('deprecated-command-dispatched', { command });
         atom.notifications.addWarning('Nuclide: Deprecated Command', {
           icon: 'nuclicon-nuclide',
           description:
-            `The command \`${command}\` has been deprecated.\n` +
-            `Please use the new command \`${newCommand}\`.`,
-          dismissable: true,
-        });
+          `The command \`${command}\` has been deprecated.\n` +
+          `Please use the new command \`${newCommand}\`.`,
+          dismissable: true });
+
         this._warnedCommands.add(command);
       }
       atom.commands.dispatch(event.target, newCommand, event.detail);
     });
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
-  }
-}
+  }}
 
-createPackage(module.exports, Activation);
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

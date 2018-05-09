@@ -1,55 +1,24 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.loadServicesConfig = exports.RpcProcess = exports.SocketServer = exports.SocketTransport = exports.StreamTransport = exports.LoopbackTransports = exports.RpcTimeoutError = exports.RpcConnection = exports.ServiceRegistry = undefined;var _ServiceRegistry;function _load_ServiceRegistry() {return _ServiceRegistry = require('./ServiceRegistry');}Object.defineProperty(exports, 'ServiceRegistry', { enumerable: true, get: function () {return (_ServiceRegistry || _load_ServiceRegistry()).
 
-import type {Observable} from 'rxjs';
-import type {ObjectRegistry} from './ObjectRegistry';
 
-export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection, RpcTimeoutError} from './RpcConnection';
-export {LoopbackTransports} from './LoopbackTransports';
-export {StreamTransport} from './StreamTransport';
-export {SocketTransport} from './SocketTransport';
-export {SocketServer} from './SocketServer';
-export {RpcProcess} from './RpcProcess';
 
-import loadServicesConfig from './loadServicesConfig';
-export {loadServicesConfig};
 
-export type MessageLogger = (
-  direction: 'send' | 'receive',
-  message: string,
-) => void;
 
-export type ConfigEntry = {
-  name: string,
-  definition: string,
-  implementation: string,
-  // When true, doesn't mangle in the service name into the method names for functions.
-  preserveFunctionNames?: boolean,
-};
 
-export type NamedTransformer = (
-  value: any,
-  context: ObjectRegistry,
-) => any | Promise<any>;
 
-export type PredefinedTransformer = {
-  typeName: string,
-  marshaller: NamedTransformer,
-  unmarshaller: NamedTransformer,
-};
 
-export type Transport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-  close(): void,
-  isClosed(): boolean,
-};
+
+
+
+
+
+    ServiceRegistry;} });var _RpcConnection;function _load_RpcConnection() {return _RpcConnection = require('./RpcConnection');}Object.defineProperty(exports, 'RpcConnection', { enumerable: true, get: function () {return (_RpcConnection || _load_RpcConnection()).
+    RpcConnection;} });Object.defineProperty(exports, 'RpcTimeoutError', { enumerable: true, get: function () {return (_RpcConnection || _load_RpcConnection()).RpcTimeoutError;} });var _LoopbackTransports;function _load_LoopbackTransports() {return _LoopbackTransports = require('./LoopbackTransports');}Object.defineProperty(exports, 'LoopbackTransports', { enumerable: true, get: function () {return (_LoopbackTransports || _load_LoopbackTransports()).
+    LoopbackTransports;} });var _StreamTransport;function _load_StreamTransport() {return _StreamTransport = require('./StreamTransport');}Object.defineProperty(exports, 'StreamTransport', { enumerable: true, get: function () {return (_StreamTransport || _load_StreamTransport()).
+    StreamTransport;} });var _SocketTransport;function _load_SocketTransport() {return _SocketTransport = require('./SocketTransport');}Object.defineProperty(exports, 'SocketTransport', { enumerable: true, get: function () {return (_SocketTransport || _load_SocketTransport()).
+    SocketTransport;} });var _SocketServer;function _load_SocketServer() {return _SocketServer = require('./SocketServer');}Object.defineProperty(exports, 'SocketServer', { enumerable: true, get: function () {return (_SocketServer || _load_SocketServer()).
+    SocketServer;} });var _RpcProcess;function _load_RpcProcess() {return _RpcProcess = require('./RpcProcess');}Object.defineProperty(exports, 'RpcProcess', { enumerable: true, get: function () {return (_RpcProcess || _load_RpcProcess()).
+    RpcProcess;} });var _loadServicesConfig;
+
+function _load_loadServicesConfig() {return _loadServicesConfig = _interopRequireDefault(require('./loadServicesConfig'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}exports.
+loadServicesConfig = (_loadServicesConfig || _load_loadServicesConfig()).default;
