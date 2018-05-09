@@ -69,11 +69,7 @@ function createLocalRpcClient(): RpcConnection<Transport> {
                 require.resolve('../../commons-node/load-transpiler'),
                 require.resolve('./LocalRpcServer'),
               ],
-              {
-                ...spawnOptions,
-                // Enable the source-maps hook in nuclide-node-transpiler.
-                env: {...env, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS: '1'},
-              },
+              spawnOptions,
             ),
           )
       : fork(

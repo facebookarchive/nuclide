@@ -84,7 +84,7 @@ fi
 git checkout "$(git rev-parse HEAD)"
 
 "$THIS_DIR/../scripts/release-generate-proxies.js" --save
-npm run release-transpile -- --overwrite
+NUCLIDE_TRANSPILE_ENV=production npm run release-transpile -- --overwrite
 "$THIS_DIR/../scripts/prepare-apm-release.js"
 
 git ls-files --ignored --exclude-standard -z | xargs -0 git rm --cached

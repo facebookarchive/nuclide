@@ -69,11 +69,11 @@ try:
 except ImportError as _:
     pass
 
-def run(name, cmd, cwd=NUCLIDE_PATH):
+def run(name, cmd, cwd=NUCLIDE_PATH, env=None):
     try:
         start = datetime.now()
         logging.info('Running %s...', name)
-        subprocess.check_call(cmd, cwd=cwd)
+        subprocess.check_call(cmd, cwd=cwd, env=env)
     except subprocess.CalledProcessError as err:
         logging.info('FAILED: %s', name)
         sys.exit(err.returncode)
@@ -104,7 +104,8 @@ def run_compile_steps(destructive_compile=False):
         run('generate_proxies',
             ['scripts/release-generate-proxies.js', '--save'])
         run('transpile',
-            ['npm', 'run', 'release-transpile', '--', '--overwrite'])
+            ['npm', 'run', 'release-transpile', '--', '--overwrite'],
+            env=dict(os.environ, NUCLIDE_TRANSPILE_ENV='production'))
     else:
         # This only warms up the transpile cache.
         run('transpile', ['npm', 'run', 'release-transpile'])

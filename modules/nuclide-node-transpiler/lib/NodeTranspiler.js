@@ -32,7 +32,6 @@ const path = require('path');
 const os = require('os');
 
 const docblock = require('./docblock');
-const {__DEV__} = require('./env');
 
 const BABEL_OPTIONS = {
   retainLines: true,
@@ -88,15 +87,15 @@ const BABEL_OPTIONS = {
   ],
 };
 
-const {COVERAGE_DIR, NUCLIDE_TRANSPILE_WITH_SOURCEMAPS} = process.env;
+const {COVERAGE_DIR, NUCLIDE_TRANSPILE_ENV} = process.env;
 if (COVERAGE_DIR) {
   BABEL_OPTIONS.plugins.push(
     [require.resolve('babel-plugin-istanbul')]
   );
-  BABEL_OPTIONS.sourceMap = 'inline';
-} else if ((__DEV__ && global.atom) || NUCLIDE_TRANSPILE_WITH_SOURCEMAPS) {
-  // If running in Atom & is in active development,
-  // We'd inline source maps to be used when debugging.
+}
+if (NUCLIDE_TRANSPILE_ENV !== 'production') {
+  // Inline source maps should not be used in production.
+  // TODO: Create .map files in production builds.
   BABEL_OPTIONS.sourceMap = 'inline';
 }
 

@@ -23,7 +23,5 @@ module.exports = {
   nodeBin: path.resolve(__dirname, '../third-party/node/bin/node'),
   rootDir: __dirname,
   testRegex: '__tests__\\/.*\\.js$',
-  env: {
-    NUCLIDE_TRANSPILE_WITH_SOURCEMAPS: 1,
-  },
+  env: {},
 };
