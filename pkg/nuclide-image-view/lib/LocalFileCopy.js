@@ -12,12 +12,16 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {File} from 'atom';
+import crypto from 'crypto';
 import {getLogger} from 'log4js';
 import {getFileForPath} from 'nuclide-commons-atom/projects';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {writeToStream} from 'nuclide-commons/stream';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
+import os from 'os';
 import {BehaviorSubject, Observable, ReplaySubject} from 'rxjs';
 import temp from 'temp';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -127,23 +131,57 @@ export default class LocalFileCopy {
 }
 
 function copyToLocalTempFile(remotePath: string): Observable<File> {
-  return Observable.defer(() => {
+  return Observable.defer(async () => {
     const fsService = getFileSystemServiceByNuclideUri(remotePath);
-    return fsService
-      .createReadStream(remotePath)
-      .refCount()
-      .let(writeToTempFile);
+    const {mtime} = await fsService.stat(remotePath);
+    return {fsService, mtime};
+  }).switchMap(({fsService, mtime}) => {
+    const cacheDir = nuclideUri.join(os.tmpdir(), 'nuclide-remote-images');
+    // Create a unique filename based on the path and mtime. We use a hash so we don't run into
+    // filename length restrictions.
+    const hash = crypto
+      .createHash('md5')
+      .update(remotePath)
+      .digest('hex')
+      .slice(0, 7);
+    const extname = nuclideUri.extname(remotePath);
+    const basename = nuclideUri.basename(remotePath);
+    const name = basename.slice(0, basename.length - extname.length);
+    const tmpFilePath = nuclideUri.join(
+      cacheDir,
+      `${name}-${hash}-${mtime.getTime()}${extname}`,
+    );
+    return Observable.fromPromise(fsPromise.exists(tmpFilePath)).switchMap(
+      exists => {
+        if (exists) {
+          return Observable.of(new File(tmpFilePath));
+        }
+        return fsService
+          .createReadStream(remotePath)
+          .refCount()
+          .let(writeToTempFile(tmpFilePath));
+      },
+    );
   });
 }
 
-function writeToTempFile(source: Observable<Buffer>): Observable<File> {
+const writeToTempFile = (targetPath: string) => (
+  source: Observable<Buffer>,
+): Observable<File> => {
   return Observable.defer(() => {
     const writeStream = temp.createWriteStream();
     return writeToStream(source, writeStream)
       .ignoreElements()
-      .concat(Observable.of(new File(writeStream.path)));
+      .concat(
+        Observable.defer(async () => {
+          // Move the file to the final destination.
+          await fsPromise.mkdirp(nuclideUri.dirname(targetPath));
+          await fsPromise.mv(writeStream.path, targetPath);
+          return new File(targetPath);
+        }),
+      );
   });
-}
+};
 
 // We have to wait for so much.
 function getRemoteFile(path: string): Observable<?File> {
