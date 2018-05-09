@@ -65,7 +65,7 @@ export class SplitButtonDropdown extends React.Component<Props> {
           size={size == null ? undefined : size}
           disabled={confirmDisabled === true}
           icon={selectedOption.icon || undefined}
-          onClick={onConfirm}>
+          onClick={onConfirm.bind(null, value)}>
           {// flowlint-next-line sketchy-null-mixed:off, sketchy-null-string:off
           selectedOption.selectedLabel || selectedOption.label || ''}
         </ButtonComponent>
