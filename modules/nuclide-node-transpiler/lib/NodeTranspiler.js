@@ -23,6 +23,11 @@
 //  * Nuclide specific configuration, that must be shared among several
 //    independent transpile systems.
 //  * Lazy-loading of expensive libs like babel.
+//  * It can be configured via environment variables:
+//     * COVERAGE_DIR enables the "istanbul" transform to track coverage
+//     * NUCLIDE_TRANSPILE_ENV should be null | production | production-modules:
+//        * inline sourcemaps are disabled in both production environments
+//        * "modules/" paths are not rewritten with "production-modules"
 //------------------------------------------------------------------------------
 
 const assert = require('assert');
@@ -32,6 +37,13 @@ const path = require('path');
 const os = require('os');
 
 const docblock = require('./docblock');
+
+const NUCLIDE_ROOT = path.join(__dirname, '..', '..', '..');
+
+const MODULE_ALIASES = {
+  redux: 'redux/dist/redux.min.js',
+  rxjs: 'rxjs/bundles/Rx.min.js',
+};
 
 const BABEL_OPTIONS = {
   retainLines: true,
@@ -46,16 +58,14 @@ const BABEL_OPTIONS = {
   plugins: [
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('babel-plugin-module-resolver'), {
-      alias: {
-        redux: 'redux/dist/redux.min.js',
-        rxjs: 'rxjs/bundles/Rx.min.js',
-      },
+      alias: MODULE_ALIASES,
+      cwd: NUCLIDE_ROOT,
     }],
     [require.resolve('babel-plugin-idx')],
     [require.resolve('babel-plugin-lodash'), {
       // The babel plugin looks for lodash relative to the CWD.
       // This must be the path to the root package.json.
-      cwd: path.join(__dirname, '..', '..', '..'),
+      cwd: NUCLIDE_ROOT,
     }],
 
     [require.resolve('babel-plugin-transform-async-to-module-method'), {
@@ -98,10 +108,52 @@ if (COVERAGE_DIR) {
     [require.resolve('babel-plugin-istanbul')]
   );
 }
-if (NUCLIDE_TRANSPILE_ENV !== 'production') {
-  // Inline source maps should not be used in production.
-  // TODO: Create .map files in production builds.
-  BABEL_OPTIONS.sourceMap = 'inline';
+switch (NUCLIDE_TRANSPILE_ENV) {
+  case 'production':
+    addYarnWorkspacesCompat();
+    break;
+  case 'production-modules':
+    break;
+  default:
+    // Inline source maps should not be used in production.
+    // TODO: Create .map files in production builds.
+    BABEL_OPTIONS.sourceMap = 'inline';
+    // While Yarn workspaces work fine in development mode,
+    // it doesn't hurt to be closer to the final production state.
+    addYarnWorkspacesCompat();
+    break;
+}
+
+/**
+ * Nuclide / atom-ide-ui use Yarn workspaces, which is fine for dev mode -
+ * but not so much when they're installed via `apm install` (which calls `npm install`).
+ * To avoid having to publish all the modules every time, we can instead
+ * use the module resolver transform to rewrite them (except when publishing modules.)
+ */
+function addYarnWorkspacesCompat() {
+  try {
+    const rootPkgJson = JSON.parse(
+      fs.readFileSync(path.join(NUCLIDE_ROOT, 'package.json'))
+    );
+    if (Array.isArray(rootPkgJson.workspaces)) {
+      const glob = require('glob');
+      rootPkgJson.workspaces.forEach(workspace => {
+        const folders = glob.sync(workspace, {cwd: NUCLIDE_ROOT});
+        folders.forEach(folder => {
+          if (fs.existsSync(path.join(folder, 'package.json'))) {
+            const moduleName = path.basename(folder);
+            // Needs to be a relative path to the root CWD above.
+            MODULE_ALIASES[moduleName] = './' + folder;
+          }
+        });
+      });
+    }
+  } catch (err) {
+    // It's OK if something doesn't exist above.
+    if (err.code !== 'ENOENT') {
+      throw err;
+    }
+  }
 }
 
 function getVersion(start) {
@@ -169,13 +221,9 @@ class NodeTranspiler {
     const hash = crypto
       .createHash('sha1')
       // Buffers are fast, but strings work too.
-      .update(src, Buffer.isBuffer(src) ? undefined : 'utf8');
-    if (BABEL_OPTIONS.sourceMap) {
-      // Sourcemaps encode the filename.
-      hash
-        .update('\0', 'utf8')
-        .update(filename, 'utf8');
-    }
+      .update(src, Buffer.isBuffer(src) ? undefined : 'utf8')
+      .update('\0', 'utf8')
+      .update(filename, 'utf8');
     const fileDigest = hash.digest('hex');
     return fileDigest;
   }
@@ -187,9 +235,7 @@ class NodeTranspiler {
     }
     try {
       const input = Buffer.isBuffer(src) ? src.toString() : src;
-      const opts = BABEL_OPTIONS.sourceMap
-        ? Object.assign({filename}, BABEL_OPTIONS)
-        : BABEL_OPTIONS;
+      const opts = Object.assign({filename}, BABEL_OPTIONS);
       const output = this._babel.transform(input, opts).code;
       return output;
     } catch (err) {

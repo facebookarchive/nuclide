@@ -17,6 +17,6 @@ find "$CALLING_DIR" \
   -not -path '*/spec*' -exec cp -n {} {}.flow \;
 
 echo "Module prepublish: compiling source (2 / 2) ..."
-NUCLIDE_TRANSPILE_ENV=production\
+NUCLIDE_TRANSPILE_ENV=production-modules\
   "$OWN_DIR/../nuclide-node-transpiler/bin/release-transpile.js" --overwrite "$CALLING_DIR"
 rm -f DEVELOPMENT
