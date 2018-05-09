@@ -145,6 +145,7 @@ class NuclideServer(object):
             output['server_cert_path'] = server_cert
             output['server_key_path'] = server_key
             output['hostname'] = NuclideCertificatesGenerator.get_common_name(server_cert)
+            output['protocol_version'] = 1
         return output
 
     # The Nuclide server is healthy and running.

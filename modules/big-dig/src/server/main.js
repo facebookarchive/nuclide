@@ -135,8 +135,12 @@ export async function generateCertificatesAndStartServer({
       hostname: serverCommonName,
       port: childPort,
       ca: ca.toString(),
+      ca_path: paths.caCert,
+      server_cert_path: paths.serverCert,
+      server_key_path: paths.serverKey,
       cert: await fs.readFileAsString(paths.clientCert),
       key: await fs.readFileAsString(paths.clientKey),
+      protocol_version: 2,
       success: true,
     },
   );
