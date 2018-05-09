@@ -73,6 +73,16 @@ ruleTester.run('modules-dependencies', rule, {
       ],
     },
     {
+      code: 'require.resolve("test1234");',
+      filename: TEST_PATH,
+      errors: [
+        {
+          message: `Dependency "test1234" must be declared in the package.json of module "${PKG_NAME}".`,
+          type: 'CallExpression',
+        },
+      ],
+    },
+    {
       code: 'import {test} from "test1234/test"',
       filename: TEST_PATH,
       errors: [

@@ -20,7 +20,12 @@ const idx = require('idx');
 const path = require('path');
 const resolveFrom = require('resolve-from');
 
-const {ATOM_BUILTIN_PACKAGES, getPackage, isRequire} = require('./utils');
+const {
+  ATOM_BUILTIN_PACKAGES,
+  getPackage,
+  isRequire,
+  isRequireResolve,
+} = require('./utils');
 
 const MODULES_DIR = path.join(__dirname, '..', '..', 'modules');
 const ASYNC_TO_GENERATOR = 'async-to-generator';
@@ -97,7 +102,7 @@ module.exports = function(context) {
   return {
     ArrowFunctionExpression: checkAsyncToGenerator,
     CallExpression(node) {
-      if (!isRequire(node)) {
+      if (!isRequire(node) && !isRequireResolve(node)) {
         return;
       }
       // require("…")

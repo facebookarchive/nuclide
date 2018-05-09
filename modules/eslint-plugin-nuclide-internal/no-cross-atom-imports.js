@@ -19,7 +19,12 @@
 const path = require('path');
 const resolveFrom = require('resolve-from');
 
-const {ATOM_BUILTIN_PACKAGES, getPackage, isRequire} = require('./utils');
+const {
+  ATOM_BUILTIN_PACKAGES,
+  getPackage,
+  isRequire,
+  isRequireResolve,
+} = require('./utils');
 
 const ATOM_IDE_PACKAGES = new Set([
   'atom-ide-ui',
@@ -119,7 +124,7 @@ module.exports = function(context) {
 
   return {
     CallExpression(node) {
-      if (!isRequire(node)) {
+      if (!isRequire(node) && !isRequireResolve(node)) {
         return;
       }
       // require("…")
