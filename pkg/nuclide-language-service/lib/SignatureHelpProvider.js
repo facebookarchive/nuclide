@@ -24,6 +24,7 @@ export type SignatureHelpConfig = {|
   // to resolve this asynchronously to support servers with dynamic trigger characters.
   // However, we don't have any clear use cases for this yet.
   triggerCharacters?: Set<string>,
+  showDocBlock?: boolean,
   analyticsEventName: string,
 |};
 
@@ -31,6 +32,7 @@ export class SignatureHelpProvider<T: LanguageService> {
   grammarScopes: Array<string>;
   priority: number;
   triggerCharacters: Set<string> | void;
+  showDocBlock: boolean;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
@@ -41,6 +43,8 @@ export class SignatureHelpProvider<T: LanguageService> {
   ) {
     this.grammarScopes = grammarScopes;
     this.triggerCharacters = config.triggerCharacters;
+    this.showDocBlock =
+      config.showDocBlock != null ? config.showDocBlock : true;
     this._analyticsEventName = config.analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
@@ -76,7 +80,7 @@ export class SignatureHelpProvider<T: LanguageService> {
     position: atom$Point,
   ): Promise<?SignatureHelp> {
     return trackTiming(this._analyticsEventName, async () => {
-      const languageService = await this._connectionToLanguageService.getForUri(
+      const languageService: ?LanguageService = await this._connectionToLanguageService.getForUri(
         editor.getPath(),
       );
       if (languageService == null) {
@@ -86,7 +90,22 @@ export class SignatureHelpProvider<T: LanguageService> {
       if (fileVersion == null) {
         return null;
       }
-      return languageService.signatureHelp(fileVersion, position);
+      const signatureHelp = await languageService.signatureHelp(
+        fileVersion,
+        position,
+      );
+
+      if (
+        !this.showDocBlock &&
+        signatureHelp != null &&
+        signatureHelp.signatures != null
+      ) {
+        for (const signature of signatureHelp.signatures) {
+          delete signature.documentation;
+        }
+      }
+
+      return signatureHelp;
     });
   }
 }

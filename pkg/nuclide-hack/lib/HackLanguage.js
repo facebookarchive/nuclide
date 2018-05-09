@@ -176,6 +176,7 @@ async function createLanguageService(): Promise<
           version: '0.1.0',
           priority: 1,
           triggerCharacters: new Set(['(', ',']),
+          showDocBlock: false,
           analyticsEventName: 'hack.signatureHelp',
         }
       : undefined,
