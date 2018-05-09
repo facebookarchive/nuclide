@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {Capabilities} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
 import type {ParsedVSAdapter} from './DebuggerAdapterFactory';
 import type {
@@ -20,6 +19,10 @@ import type {
 } from './DebuggerInterface';
 import * as DebugProtocol from 'vscode-debugprotocol';
 import type {AdapterExitedEvent} from 'nuclide-debugger-common/VsDebugSession';
+import type {
+  SourceBreakpoint,
+  FunctionBreakpoint,
+} from './BreakpointCollection';
 
 import BackTraceCommand from './BackTraceCommand';
 import Breakpoint from './Breakpoint';
@@ -53,7 +56,7 @@ type SessionState =
   | 'TERMINATED'; // program is gone and not coming back
 
 export default class Debugger implements DebuggerInterface {
-  _capabilities: ?Capabilities;
+  _capabilities: DebugProtocol.Capabilities = {};
   _console: ConsoleIO;
   _debugSession: ?VsDebugSession;
   _logger: log4js$Logger;
@@ -137,7 +140,7 @@ export default class Debugger implements DebuggerInterface {
     // this needs to be sent last for adapters that don't support configurationDone
     await session.setExceptionBreakpoints({filters: []});
 
-    if (nullthrows(this._capabilities).supportsConfigurationDoneRequest) {
+    if (this._capabilities.supportsConfigurationDoneRequest) {
       await session.configurationDone();
     }
 
@@ -334,54 +337,79 @@ export default class Debugger implements DebuggerInterface {
   async _setSourceBreakpointsForPath(
     session: VsDebugSession,
     path: string,
-    indexOfInterest: number,
+    indexOfInterest: ?number,
   ): Promise<?DebugProtocol.Breakpoint> {
-    const debuggerBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
+    const localBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
       path,
     );
 
     const request = {
       source: {path},
-      breakpoints: debuggerBreakpoints.map(x => ({line: x.line})),
+      breakpoints: localBreakpoints.map(x => ({line: x.line})),
     };
 
     const {
       body: {breakpoints: adapterBreakpoints},
     } = await session.setBreakpoints(request);
 
-    const paired = debuggerBreakpoints.map((_, i) => [
-      _,
-      adapterBreakpoints[i],
-    ]);
+    const paired = localBreakpoints.map((_, i) => [_, adapterBreakpoints[i]]);
 
     for (const [debuggerBreakpoint, adapterBreakpoint] of paired) {
-      // NB the id field of the protocol Breakpoint type is optional and
-      // not all adapters send it (or the breakpoint event). For these
-      // adapters we won't know when an unverified breakpoint becomes
-      // verified, so just assume all breakpoints are verfied, and
-      // send back an explanatory message if the adapter doesn't.
-      const id = adapterBreakpoint.id;
-      if (id != null) {
-        debuggerBreakpoint.setId(id);
-        const verified = adapterBreakpoint.verified;
-        if (verified != null) {
-          debuggerBreakpoint.setVerified(verified);
-        }
-      } else {
-        debuggerBreakpoint.setVerified(true);
-        if (
-          !adapterBreakpoint.verified &&
-          (adapterBreakpoint.message == null ||
-            adapterBreakpoint.message === '')
-        ) {
-          adapterBreakpoint.message =
-            'Could not set this breakpoint. The module may not have been loaded yet.';
-        }
-      }
+      this._updateBreakpoint(debuggerBreakpoint, adapterBreakpoint);
     }
 
     const breakpoint = paired.find(_ => _[0].index === indexOfInterest);
+    return breakpoint == null ? null : breakpoint[1];
+  }
 
+  async setFunctionBreakpoint(func: string): Promise<BreakpointSetResult> {
+    if (!this._capabilities.supportsFunctionBreakpoints) {
+      throw new Error(
+        `The ${
+          nullthrows(this._adapter).type
+        } debugger does not support function breakpoints.`,
+      );
+    }
+
+    // NB this call is allowed before the program is launched
+    const session = this._ensureDebugSession(true);
+    const index = this._breakpoints.addFunctionBreakpoint(func);
+
+    let message = 'Breakpoint pending until program starts.';
+
+    if (this._state !== 'CONFIGURING') {
+      const breakpoint = await this._setFunctionBreakpoints(session, index);
+      message = breakpoint == null ? null : breakpoint.message;
+    }
+
+    return {index, message};
+  }
+
+  async _setFunctionBreakpoints(
+    session: VsDebugSession,
+    indexOfInterest: number,
+  ): Promise<?DebugProtocol.Breakpoint> {
+    const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
+
+    const request = {
+      breakpoints: funcBreakpoints.map(bpt => ({
+        name: bpt.func,
+      })),
+    };
+
+    const response = await session.setFunctionBreakpoints(request);
+
+    const {
+      body: {breakpoints: adapterBreakpoints},
+    } = response;
+
+    const paired = funcBreakpoints.map((_, i) => [_, adapterBreakpoints[i]]);
+
+    for (const [debuggerBreakpoint, adapterBreakpoint] of paired) {
+      this._updateBreakpoint(debuggerBreakpoint, adapterBreakpoint);
+    }
+
+    const breakpoint = paired.find(_ => _[0].index === indexOfInterest);
     return breakpoint == null ? null : breakpoint[1];
   }
 
@@ -506,7 +534,7 @@ export default class Debugger implements DebuggerInterface {
       columnsStartAt1: true,
     });
 
-    this._capabilities = body;
+    this._capabilities = body || {};
   }
 
   async _resetAllBreakpoints(): Promise<void> {
@@ -514,15 +542,10 @@ export default class Debugger implements DebuggerInterface {
 
     const sourceBreakpoints = this._breakpoints.getAllEnabledBreakpointsByPath();
 
-    await Promise.all(
-      Array.from(sourceBreakpoints).map(async ([path, breakpointLines]) => {
+    const sourceBreakpointSets = Array.from(sourceBreakpoints).map(
+      async ([path, breakpointLines]) => {
         const lines: DebugProtocol.SourceBreakpoint[] = breakpointLines.map(
-          _ => {
-            return {
-              verified: false,
-              line: _.line,
-            };
-          },
+          _ => ({line: _.line}),
         );
 
         const source: DebugProtocol.Source = {
@@ -536,15 +559,79 @@ export default class Debugger implements DebuggerInterface {
           breakpoints: lines,
         });
 
-        for (const breakpointOut of breakpointsOut) {
-          const {verified, line} = breakpointOut;
-          const breakpoint = breakpointLines.find(_ => _.line === line);
-          if (breakpoint != null) {
-            breakpoint.setVerified(verified);
-          }
-        }
-      }),
+        breakpointLines.forEach((local, i) => {
+          this._updateBreakpoint(local, breakpointsOut[i]);
+        });
+      },
     );
+
+    await Promise.all(
+      sourceBreakpointSets.concat(this._resetAllFunctionBreakpoints()),
+    );
+  }
+
+  async _resetAllFunctionBreakpoints(): Promise<void> {
+    const session = this._ensureDebugSession();
+    const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
+
+    if (
+      !this._capabilities.supportsFunctionBreakpoints ||
+      funcBreakpoints.length === 0
+    ) {
+      return;
+    }
+
+    const {
+      body: {breakpoints: funcBreakpointsOut},
+    } = await session.setFunctionBreakpoints({
+      breakpoints: funcBreakpoints.map(bpt => ({
+        name: bpt.func,
+      })),
+    });
+
+    funcBreakpoints.forEach((local, i) => {
+      this._updateBreakpoint(local, funcBreakpointsOut[i]);
+    });
+  }
+
+  _updateBreakpoint(
+    local: SourceBreakpoint | FunctionBreakpoint,
+    remote: DebugProtocol.Breakpoint,
+  ) {
+    const index = local.index;
+
+    const id = remote.id;
+    if (id != null) {
+      this._breakpoints.setBreakpointId(index, id);
+
+      const verified = remote.verified;
+      if (verified != null) {
+        this._breakpoints.setBreakpointVerified(index, verified);
+      }
+    } else {
+      // if we didn't get an id back from the adapter, we can't match
+      // breakpoint events, so we'll never get to mark anything verified.
+      // just assume it's verified.
+      this._breakpoints.setBreakpointVerified(index, true);
+    }
+
+    // If it's a function breakpoint and we got back a source location,
+    // save it
+    if (local.func != null && remote.source) {
+      const path = remote.source.path;
+      const line = remote.line;
+
+      if (path != null && line != null) {
+        this._breakpoints.setPathAndFile(index, path, line);
+      }
+    }
+
+    // If we failed to set the breakpoint, and we didn't get a message why,
+    // concot one.
+    if (!remote.verified && (remote.message == null || remote.message === '')) {
+      remote.message =
+        'Could not set this breakpoint. The module may not have been loaded yet.';
+    }
   }
 
   _initializeObservers(): void {

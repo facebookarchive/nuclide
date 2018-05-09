@@ -10,8 +10,7 @@
  * @format
  */
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-import invariant from 'assert';
+import nullthrows from 'nullthrows';
 
 export default class Breakpoint {
   // index is the name of the breakpoint we show externally in the UI
@@ -26,6 +25,18 @@ export default class Breakpoint {
 
   // enabled tracks if the breakpoint has been enabled or disabled by the user.
   _enabled: boolean;
+
+  // The source file of the breakpoint (which may be undefined if we have an
+  // unresolved function breakpoint.)
+  _path: ?string;
+
+  // The line number of the breakpoint (which may be undefined if we have an
+  // unresolved function breakpoint.)
+  _line: ?number;
+
+  // The function name of the breakpoint (only defined if the breakpoint is
+  // a function breakpoint.)
+  _func: ?string;
 
   constructor(index: number) {
     this._index = index;
@@ -61,22 +72,40 @@ export default class Breakpoint {
     return this._enabled;
   }
 
-  get path(): ?string {
-    return null;
+  setPath(path: string) {
+    this._path = path;
   }
 
-  get line(): number {
-    return -1;
+  get path(): ?string {
+    return this._path;
+  }
+
+  setLine(line: number) {
+    this._line = line;
+  }
+
+  get line(): ?number {
+    return this._line;
+  }
+
+  setFunc(func: string) {
+    this._func = func;
+  }
+
+  get func(): ?string {
+    return this._func;
   }
 
   toString(): string {
-    invariant(false, 'Breakpoint subclasses must implement toString()');
-  }
+    const func = this._func;
 
-  toProtocolBreakpoint(): DebugProtocol.SourceBreakpoint {
-    return {
-      verified: this._verified,
-      line: this.line,
-    };
+    if (func != null) {
+      if (this._path == null || this._line == null) {
+        return `${func}()`;
+      }
+      return `${func}() [${this._path}:${this._line}]`;
+    }
+
+    return `${nullthrows(this._path)}:${nullthrows(this._line)}`;
   }
 }

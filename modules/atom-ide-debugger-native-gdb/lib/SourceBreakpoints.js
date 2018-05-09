@@ -249,13 +249,17 @@ export default class SourceBreakpoints {
     invariant(handle != null, 'Could not find source breakpoint handle');
     invariant(bkpt.line != null);
 
-    return {
+    const bptRet = {
       id: handle,
       verified: bkpt.verified,
       source: {
-        source: bkpt.source,
+        sourceReference: 0,
       },
       line: bkpt.line,
     };
+    if (bkpt.source != null) {
+      bptRet.source = {...bptRet.source, path: bkpt.source};
+    }
+    return bptRet;
   }
 }

@@ -228,8 +228,11 @@ export default class FunctionBreakpoints {
     let bkpt = {
       id: handle,
       verified: breakpoint.verified,
-      source: {source: breakpoint.source, sourceReference: 0},
+      source: {sourceReference: 0},
     };
+    if (breakpoint.source != null) {
+      bkpt.source = {...bkpt.source, path: breakpoint.source};
+    }
     if (breakpoint.line != null) {
       bkpt = {...bkpt, line: breakpoint.line};
     }

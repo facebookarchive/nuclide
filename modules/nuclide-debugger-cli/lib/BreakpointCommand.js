@@ -29,7 +29,7 @@ export default class BreakpointCommand implements Command {
   helpText = 'Sets a breakpoint on the target.';
 
   detailedHelpText = `
-breakpoint [subcommand | [source-file:]line]
+breakpoint [subcommand | [source-file:]line] | function-name()
 
 Sets a breakpoint, or operates on existing breakpoints.
 
@@ -78,38 +78,43 @@ The breakpoint command has several subcommands:
   }
 
   async execute(args: string[]): Promise<void> {
-    let result: ?BreakpointSetResult;
-
-    const breakpointSpec = args[0];
-    if (breakpointSpec == null) {
-      result = await this._setBreakpointHere();
-    } else {
-      const linePattern = /^(\d+)$/;
-      const lineMatch = breakpointSpec.match(linePattern);
-      if (lineMatch != null) {
-        result = await this._setBreakpointHere(parseInt(lineMatch[1], 10));
-      } else {
-        const sourceBreakPattern = /^(.+):(\d+)$/;
-        const sourceMatch = breakpointSpec.match(sourceBreakPattern);
-        if (sourceMatch != null) {
-          const [, path, line] = sourceMatch;
-          result = await this._debugger.setSourceBreakpoint(
-            path,
-            parseInt(line, 10),
-          );
-        }
-      }
-    }
-
+    const result = await this._trySettingBreakpoint(args);
     if (result != null) {
       this._displayBreakpointResult(result);
       return;
     }
 
-    // $TODO function breakpoints - not implementing yet because none of the
-    // supported adapters support them
-
     await this._dispatcher.executeTokenizedLine(args);
+  }
+
+  async _trySettingBreakpoint(
+    args: Array<string>,
+  ): Promise<?BreakpointSetResult> {
+    const breakpointSpec = args[0];
+    if (breakpointSpec == null) {
+      return this._setBreakpointHere();
+    }
+
+    const linePattern = /^(\d+)$/;
+    const lineMatch = breakpointSpec.match(linePattern);
+    if (lineMatch != null) {
+      return this._setBreakpointHere(parseInt(lineMatch[1], 10));
+    }
+
+    const sourceBreakPattern = /^(.+):(\d+)$/;
+    const sourceMatch = breakpointSpec.match(sourceBreakPattern);
+    if (sourceMatch != null) {
+      const [, path, line] = sourceMatch;
+      return this._debugger.setSourceBreakpoint(path, parseInt(line, 10));
+    }
+
+    const functionBreakpointPattern = /^(.+)\(\)/;
+    const functionMatch = breakpointSpec.match(functionBreakpointPattern);
+    if (functionMatch != null) {
+      return this._debugger.setFunctionBreakpoint(functionMatch[1]);
+    }
+
+    return null;
   }
 
   _displayBreakpointResult(result: BreakpointSetResult): void {
