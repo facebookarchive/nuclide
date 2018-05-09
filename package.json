@@ -70,6 +70,7 @@
     "escape-carriage": "1.2.0",
     "escape-html": "1.0.3",
     "escape-string-regexp": "1.0.5",
+    "etch": "0.14.0",
     "event-kit": "2.2.0",
     "event-target-shim": "3.0.1",
     "fb-watchman": "2.0.0",

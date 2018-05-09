@@ -9,15 +9,25 @@
  * @format
  */
 
+import disablePackage from '../../commons-atom/disablePackage';
 import createPackage from 'nuclide-commons-atom/createPackage';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import ImageEditor from './ImageEditor';
 
 class Activation {
-  _disposables: UniversalDisposable;
+  _disposables: IDisposable;
 
   constructor(state: ?mixed) {
-    // TODO(matthewwithanm): Add activation code here.
-    this._disposables = new UniversalDisposable();
+    this._disposables = new UniversalDisposable(
+      atom.workspace.addOpener(openUri),
+      // If you enable this package, we need to disable image-view.
+      disablePackage('image-view'),
+    );
+  }
+
+  deserializeImageEditor(state): ImageEditor {
+    return new ImageEditor(state.filePath);
   }
 
   dispose(): void {
@@ -26,3 +36,17 @@ class Activation {
 }
 
 createPackage(module.exports, Activation);
+
+const imageExtensions = new Set([
+  '.bmp',
+  '.gif',
+  '.ico',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.webp',
+]);
+function openUri(uri: string): ?ImageEditor {
+  const ext = nuclideUri.extname(uri).toLowerCase();
+  return imageExtensions.has(ext) ? new ImageEditor(uri) : null;
+}

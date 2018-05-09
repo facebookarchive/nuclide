@@ -9,6 +9,8 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
+  "activationCommands": {},
+  "deserializers": {
+    "ImageEditor": "deserializeImageEditor"
   }
 }

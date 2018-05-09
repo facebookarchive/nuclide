@@ -2329,6 +2329,10 @@ esutils@^2.0.0, esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
+etch@0.14.0:
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/etch/-/etch-0.14.0.tgz#c446db1a619f96b011987b214d1bf2d907cf57d0"
+
 event-kit@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/event-kit/-/event-kit-2.2.0.tgz#29df50deae3d6d4c1c62451b10925f28641e928b"
