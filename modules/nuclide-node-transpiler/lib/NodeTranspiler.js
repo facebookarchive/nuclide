@@ -47,6 +47,7 @@ const BABEL_OPTIONS = {
     [require.resolve('./inline-invariant-tr')],
     [require.resolve('babel-plugin-module-resolver'), {
       alias: {
+        redux: 'redux/dist/redux.min.js',
         rxjs: 'rxjs/bundles/Rx.min.js',
       },
     }],
