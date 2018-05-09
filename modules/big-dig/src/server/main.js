@@ -130,7 +130,7 @@ export async function generateCertificatesAndStartServer({
   const json = JSON.stringify(
     // These properties are the ones currently written by nuclide-server.
     {
-      pid: process.pid,
+      pid: child.pid,
       version,
       hostname: serverCommonName,
       port: childPort,
