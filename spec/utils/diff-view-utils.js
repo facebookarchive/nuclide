@@ -24,5 +24,5 @@ function hgRepositoryForPath(filePath: string): HgRepositoryClient {
 }
 
 export function waitsForRepositoryReady(filePath: string): Promise<void> {
-  return hgRepositoryForPath(filePath)._initializationPromise;
+  return hgRepositoryForPath(filePath)._sharedMembers.initializationPromise;
 }

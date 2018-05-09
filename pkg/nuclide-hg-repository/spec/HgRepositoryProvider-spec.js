@@ -44,23 +44,24 @@ describe('HgRepositoryProvider', () => {
 
       // compare private members to guarantee they have the same underlying HgRepositoryClient
       // arbitrarily chose _emitter
-      expect(baseRepo._emitter).toBe(folderRepo._emitter);
+      expect(baseRepo._sharedMembers).toBe(folderRepo._sharedMembers);
 
       folderRepo.destroy();
-      expect(folderRepo._isDestroyed).toBe(false);
-      expect(baseRepo._isDestroyed).toBe(false);
+      expect(folderRepo._sharedMembers.isDestroyed).toBe(false);
+      expect(baseRepo._sharedMembers.isDestroyed).toBe(false);
 
       const folderRepo2 = provider.repositoryForDirectorySync(folderDirectory);
       invariant(folderRepo2 != null);
-      expect(baseRepo._emitter).toBe(folderRepo2._emitter);
+      expect(baseRepo._sharedMembers).toBe(folderRepo2._sharedMembers);
 
       folderRepo2.destroy();
       baseRepo.destroy();
       // refCount should hit 0 and remove the original underlying HgRepositoryClient
+      expect(baseRepo._sharedMembers.isDestroyed).toBe(true);
 
       const baseRepo2 = provider.repositoryForDirectorySync(baseDirectory);
       invariant(baseRepo2 != null);
-      expect(baseRepo._emitter).not.toBe(baseRepo2._emitter);
+      expect(baseRepo._sharedMembers).not.toBe(baseRepo2._sharedMembers);
       expect(baseRepo.getProjectDirectory()).toBe(
         baseRepo2.getProjectDirectory(),
       );

@@ -341,7 +341,7 @@ export function repositoryContainsPath(
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
     const hgRepository = ((repository: any): HgRepositoryClient);
-    return hgRepository._workingDirectory.contains(filePath);
+    return hgRepository._sharedMembers.workingDirectory.contains(filePath);
   }
   throw new Error(
     'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.',

@@ -79,7 +79,9 @@ describe('HgRepositoryClient', () => {
   describe('::isPathIgnored', () => {
     it('returns true if the path is marked ignored in the cache.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = new Map([[PATH_1, StatusCodeNumber.IGNORED]]);
+      repo._sharedMembers.hgStatusCache = new Map([
+        [PATH_1, StatusCodeNumber.IGNORED],
+      ]);
       expect(repo.isPathIgnored(PATH_1)).toBe(true);
     });
 
@@ -100,7 +102,7 @@ describe('HgRepositoryClient', () => {
         ' names.',
       () => {
         // Force the state of the cache.
-        repo._hgStatusCache = new Map([
+        repo._sharedMembers.hgStatusCache = new Map([
           [PATH_CALLED_NULL, StatusCodeNumber.IGNORED],
           [PATH_CALLED_UNDEFINED, StatusCodeNumber.IGNORED],
         ]);
@@ -118,7 +120,7 @@ describe('HgRepositoryClient', () => {
         ' names.',
       () => {
         // Force the state of the cache.
-        repo._hgStatusCache = new Map([
+        repo._sharedMembers.hgStatusCache = new Map([
           [PATH_CALLED_NULL, StatusCodeNumber.ADDED],
           [PATH_CALLED_UNDEFINED, StatusCodeNumber.ADDED],
         ]);
@@ -136,7 +138,7 @@ describe('HgRepositoryClient', () => {
         ' names.',
       () => {
         // Force the state of the cache.
-        repo._hgStatusCache = new Map([
+        repo._sharedMembers.hgStatusCache = new Map([
           [PATH_CALLED_NULL, StatusCodeNumber.MODIFIED],
           [PATH_CALLED_UNDEFINED, StatusCodeNumber.MODIFIED],
         ]);
@@ -154,7 +156,7 @@ describe('HgRepositoryClient', () => {
         ' names.',
       () => {
         // Force the state of the cache.
-        repo._hgStatusCache = new Map([
+        repo._sharedMembers.hgStatusCache = new Map([
           [PATH_CALLED_NULL, StatusCodeNumber.ADDED],
           [PATH_CALLED_UNDEFINED, StatusCodeNumber.ADDED],
           [PATH_1, StatusCodeNumber.ADDED],
@@ -186,7 +188,7 @@ describe('HgRepositoryClient', () => {
         ' names.',
       () => {
         // Force the state of the cache.
-        repo._hgStatusCache = new Map([
+        repo._sharedMembers.hgStatusCache = new Map([
           [PATH_CALLED_NULL, StatusCodeNumber.UNTRACKED],
           [PATH_CALLED_UNDEFINED, StatusCodeNumber.UNTRACKED],
           [PATH_1, StatusCodeNumber.UNTRACKED],
@@ -214,7 +216,7 @@ describe('HgRepositoryClient', () => {
 
   describe('::getCachedPathStatus', () => {
     beforeEach(() => {
-      repo._hgStatusCache = new Map([
+      repo._sharedMembers.hgStatusCache = new Map([
         [PATH_1, StatusCodeNumber.MODIFIED],
         [PATH_2, StatusCodeNumber.IGNORED],
       ]);
@@ -307,15 +309,17 @@ describe('HgRepositoryClient', () => {
         ' project.',
       () => {
         const file = temp.openSync({dir: projectDirectory.getPath()});
-        repo._hgUncommittedStatusChanges.statusChanges = Observable.of(
+        repo._sharedMembers.hgUncommittedStatusChanges.statusChanges = Observable.of(
           new Map().set(file.path, 1),
         );
         waitsForPromise(async () => {
           const editor = await atom.workspace.open(file.path);
-          expect(repo._hgDiffCacheFilesToClear.size).toBe(0);
+          expect(repo._sharedMembers.hgDiffCacheFilesToClear.size).toBe(0);
           editor.destroy();
           const expectedSet = new Set([editor.getPath()]);
-          expect(repo._hgDiffCacheFilesToClear).toEqual(expectedSet);
+          expect(repo._sharedMembers.hgDiffCacheFilesToClear).toEqual(
+            expectedSet,
+          );
         });
       },
     );
@@ -337,11 +341,12 @@ describe('HgRepositoryClient', () => {
 
     beforeEach(() => {
       spyOn(repo, '_getCurrentHeadId').andReturn(Observable.of('test'));
-      spyOn(repo._service, 'fetchFileContentAtRevision').andCallFake(
-        filePath => {
-          return new Observable.of('test').publish();
-        },
-      );
+      spyOn(
+        repo._sharedMembers.service,
+        'fetchFileContentAtRevision',
+      ).andCallFake(filePath => {
+        return new Observable.of('test').publish();
+      });
       spyOn(repo, '_getFileDiffs').andCallFake(pathsToFetch => {
         const diffs = [];
         for (const filePath of pathsToFetch) {
@@ -356,9 +361,11 @@ describe('HgRepositoryClient', () => {
 
     it('updates the cache when the path to update is not already being updated.', () => {
       waitsForPromise(async () => {
-        expect(repo._hgDiffCache.get(PATH_1)).toBeUndefined();
+        expect(repo._sharedMembers.hgDiffCache.get(PATH_1)).toBeUndefined();
         await repo._updateDiffInfo([PATH_1]).toPromise();
-        expect(repo._hgDiffCache.get(PATH_1)).toEqual(mockDiffInfo);
+        expect(repo._sharedMembers.hgDiffCache.get(PATH_1)).toEqual(
+          mockDiffInfo,
+        );
       });
     });
 
@@ -367,18 +374,22 @@ describe('HgRepositoryClient', () => {
       // the other is going to be attempted to be updated. Both should be removed.
       const testPathToRemove1 = PATH_1;
       const testPathToRemove2 = PATH_2;
-      repo._hgDiffCache.set(testPathToRemove1, {
+      repo._sharedMembers.hgDiffCache.set(testPathToRemove1, {
         added: 0,
         deleted: 0,
         lineDiffs: [],
       });
-      repo._hgDiffCacheFilesToClear.add(testPathToRemove1);
-      repo._hgDiffCacheFilesToClear.add(testPathToRemove2);
+      repo._sharedMembers.hgDiffCacheFilesToClear.add(testPathToRemove1);
+      repo._sharedMembers.hgDiffCacheFilesToClear.add(testPathToRemove2);
 
       waitsForPromise(async () => {
         await repo._updateDiffInfo([testPathToRemove2]).toPromise();
-        expect(repo._hgDiffCache.get(testPathToRemove1)).not.toBeDefined();
-        expect(repo._hgDiffCache.get(testPathToRemove2)).not.toBeDefined();
+        expect(
+          repo._sharedMembers.hgDiffCache.get(testPathToRemove1),
+        ).not.toBeDefined();
+        expect(
+          repo._sharedMembers.hgDiffCache.get(testPathToRemove2),
+        ).not.toBeDefined();
       });
     });
   });
@@ -386,7 +397,7 @@ describe('HgRepositoryClient', () => {
   describe('::getCachedPathStatus/::getPathStatus', () => {
     it('handles a null or undefined input "path" but handles paths with those names.', () => {
       // Force the state of the cache.
-      repo._hgStatusCache = new Map([
+      repo._sharedMembers.hgStatusCache = new Map([
         [PATH_CALLED_NULL, StatusCodeNumber.MODIFIED],
         [PATH_CALLED_UNDEFINED, StatusCodeNumber.MODIFIED],
       ]);
@@ -433,7 +444,7 @@ describe('HgRepositoryClient', () => {
           ],
         };
         // Force the state of the cache.
-        repo._hgDiffCache = new Map([
+        repo._sharedMembers.hgDiffCache = new Map([
           [PATH_CALLED_NULL, mockDiffInfo],
           [PATH_CALLED_UNDEFINED, mockDiffInfo],
         ]);
@@ -469,7 +480,7 @@ describe('HgRepositoryClient', () => {
           ],
         };
         // Force the state of the cache.
-        repo._hgDiffCache = new Map([
+        repo._sharedMembers.hgDiffCache = new Map([
           [PATH_CALLED_NULL, mockDiffInfo],
           [PATH_CALLED_UNDEFINED, mockDiffInfo],
         ]);
