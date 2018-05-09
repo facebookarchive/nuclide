@@ -15,6 +15,7 @@ import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
+import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import shallowEqual from 'shallowequal';
@@ -56,8 +57,14 @@ class DevicePoller {
           fetching = true;
           return this.fetch(host)
             .map(devices => Expect.value(devices))
-            .catch(() =>
-              Observable.of(
+            .catch(err => {
+              const logger = getLogger('nuclide-adb-sdb-base');
+              if (err.stack.startsWith('TimeoutError')) {
+                logger.debug(`Error polling for devices: ${err.message}`);
+              } else {
+                logger.warn(`Error polling for devices: ${err.message}`);
+              }
+              return Observable.of(
                 Expect.error(
                   new Error(
                     `Can't fetch ${this._getPlatform()} devices. Make sure that ${
@@ -65,8 +72,8 @@ class DevicePoller {
                     } is in your $PATH and that it works properly.`,
                   ),
                 ),
-              ),
-            )
+              );
+            })
             .do(() => {
               fetching = false;
             });
