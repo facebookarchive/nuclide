@@ -12,6 +12,7 @@
 /resources/benchmarker
 /resources/nuclicons
 /scripts
+DEVELOPMENT
 spec
 
 # Ignore "BUCK" files, but not "buck/" directories.

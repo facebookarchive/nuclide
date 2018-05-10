@@ -18,8 +18,10 @@
 
 // Have to make sure to use the transpiler or else we'll crash as soon as we try
 // to `import` from within OcamlDebugger.js.
-const {__DEV__} = require('nuclide-node-transpiler/lib/env');
-if (__DEV__) {
+const fs = require('fs');
+const path = require('path');
+if (fs.existsSync(path.join(__dirname, '../DEVELOPMENT'))) {
+  // eslint-disable-next-line rulesdir/modules-dependencies
   require('nuclide-node-transpiler');
 }
 require('./OCamlDebugger');

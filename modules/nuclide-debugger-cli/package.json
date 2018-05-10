@@ -18,7 +18,6 @@
     "log4js": "1.1.1",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-debugger-common": "0.7.1-dev",
-    "nuclide-node-transpiler": "0.7.1-dev",
     "nullthrows": "1.0.0",
     "rxjs": "5.5.5",
     "v8-compile-cache": "1.1.0",
@@ -29,6 +28,7 @@
     "babel-plugin-idx": "1.4.0",
     "dedent": "0.6.0",
     "invariant": "2.2.2",
+    "nuclide-node-transpiler": "0.7.1-dev",
     "simple-text-buffer": "9.2.11"
   },
   "bin": {

@@ -27,13 +27,15 @@
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-debugger-common": "0.7.1-dev",
-    "nuclide-node-transpiler": "0.7.1-dev",
     "nuclide-prebuilt-libs": "0.4.2",
     "nullthrows": "1.0.0",
     "react": "16.2.0",
     "vscode-debugadapter": "1.24.0",
     "vscode-debugprotocol": "1.24.0",
     "yargs": "3.32.0"
+  },
+  "devDependencies": {
+    "nuclide-node-transpiler": "0.7.1-dev"
   },
   "package-deps": [
     "atom-ide-ui"

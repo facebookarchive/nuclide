@@ -14,17 +14,9 @@
    rulesdir/no-commonjs: 0,
    */
 
+const fs = require('fs');
 const path = require('path');
-const modules = path.join(
-  path.dirname(require.main.filename || ''),
-  '..',
-  '..',
-);
-require.main.paths.push(modules);
-
-// eslint-disable-next-line rulesdir/modules-dependencies
-const {__DEV__} = require('nuclide-node-transpiler/lib/env');
-if (__DEV__) {
+if (fs.existsSync(path.join(__dirname, '../DEVELOPMENT'))) {
   // eslint-disable-next-line rulesdir/modules-dependencies
   require('nuclide-node-transpiler');
 }
