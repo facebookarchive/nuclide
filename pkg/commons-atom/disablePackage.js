@@ -9,17 +9,28 @@
  * @format
  */
 
+import idx from 'idx';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-function deactivateAndUnloadPackage(name) {
+export const DisabledReason = Object.freeze({
+  INCOMPATIBLE: 'incompatible',
+  REIMPLEMENTED: 'reimplemented',
+});
+type DisabledReasonType = $Values<typeof DisabledReason>;
+
+function deactivateAndUnloadPackage(
+  name: string,
+  options: {|warn: boolean, reason: DisabledReasonType|},
+): void {
   if (atom.packages.initialPackagesActivated === true) {
-    const packageName = featureConfig.getPackageName();
-    atom.notifications.addWarning(`Incompatible Package: ${name}`, {
-      description:
-        `${name} can't be enabled because it's incompatible with ${packageName}. ` +
-        `If you need to use this package, you must first disable ${packageName}.`,
-    });
+    if (options.warn) {
+      const packageName = featureConfig.getPackageName();
+      atom.notifications.addWarning(`Incompatible Package: ${name}`, {
+        description: getWarningMessage(name, packageName, options.reason),
+        dismissable: true,
+      });
+    }
   }
 
   const deactivationPromise =
@@ -35,21 +46,24 @@ function deactivateAndUnloadPackage(name) {
   delete atom.packages.preloadedPackages[name];
 }
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
-module.exports = function(name: string) {
+export default function disablePackage(
+  name: string,
+  options?: {|reason?: DisabledReasonType|},
+): IDisposable {
   const initiallyDisabled = atom.packages.isPackageDisabled(name);
+  const reason = idx(options, _ => _.reason) || DisabledReason.INCOMPATIBLE;
   if (!initiallyDisabled) {
     // If it wasn't activated yet, maybe we can prevent the activation altogether
     atom.packages.disablePackage(name);
   }
 
   if (atom.packages.isPackageActive(name)) {
-    deactivateAndUnloadPackage(name);
+    deactivateAndUnloadPackage(name, {warn: false, reason});
   }
 
   const activationMonitor = atom.packages.onDidActivatePackage(pack => {
     if (pack.name === name) {
-      deactivateAndUnloadPackage(name);
+      deactivateAndUnloadPackage(name, {warn: true, reason});
     }
   });
 
@@ -62,4 +76,27 @@ module.exports = function(name: string) {
   };
 
   return new UniversalDisposable(activationMonitor, stateRestorer);
-};
+}
+
+function getWarningMessage(
+  disabledFeature: string,
+  packageName: string,
+  reason: DisabledReasonType,
+): string {
+  switch (reason) {
+    case 'incompatible':
+      return (
+        `${disabledFeature} can't be enabled because it's incompatible with ${packageName}.` +
+        ` If you need to use this package, you must first disable ${packageName}.`
+      );
+    case 'reimplemented':
+      return (
+        `${disabledFeature} can't be enabled because it's incompatible with ${packageName},` +
+        ` however ${packageName} provides similar functionality. If you need to use` +
+        ` ${disabledFeature} anyway, you must first disable ${packageName}.`
+      );
+    default:
+      (reason: empty);
+      throw new Error(`Invalid reason: ${reason}`);
+  }
+}

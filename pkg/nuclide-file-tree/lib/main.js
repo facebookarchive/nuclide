@@ -26,7 +26,9 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import disablePackage from '../../commons-atom/disablePackage';
+import disablePackage, {
+  DisabledReason,
+} from '../../commons-atom/disablePackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   compact,
@@ -77,7 +79,7 @@ class Activation {
     }
 
     this._disposables = new UniversalDisposable(
-      disablePackage('tree-view'),
+      disablePackage('tree-view', {reason: DisabledReason.REIMPLEMENTED}),
       // This is a horrible hack to work around the fact that the tree view doesn't properly clean
       // up after its views when disabled as soon as it's activated. See atom/tree-view#1136
       observableFromSubscribeFunction(

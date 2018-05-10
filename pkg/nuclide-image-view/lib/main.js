@@ -9,7 +9,9 @@
  * @format
  */
 
-import disablePackage from '../../commons-atom/disablePackage';
+import disablePackage, {
+  DisabledReason,
+} from '../../commons-atom/disablePackage';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -22,7 +24,7 @@ class Activation {
     this._disposables = new UniversalDisposable(
       atom.workspace.addOpener(openUri),
       // If you enable this package, we need to disable image-view.
-      disablePackage('image-view'),
+      disablePackage('image-view', {reason: DisabledReason.REIMPLEMENTED}),
     );
   }
 
