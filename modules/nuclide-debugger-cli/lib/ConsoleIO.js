@@ -20,6 +20,6 @@ export interface ConsoleIO {
   prompt(): void;
   stopInput(): void;
   startInput(): void;
-  +observeInterrupts: Observable<void>;
-  +observeLines: Observable<string>;
+  observeInterrupts(): Observable<void>;
+  observeLines(): Observable<string>;
 }

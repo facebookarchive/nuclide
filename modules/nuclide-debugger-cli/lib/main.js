@@ -103,18 +103,16 @@ function showHelp(configFile: ConfigFile): void {
 }
 
 async function main(): Promise<void> {
-  const dispatcher = new CommandDispatcher();
-  const cli = new CommandLine(dispatcher);
-
-  dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
-  dispatcher.registerCommand(new QuitCommand(() => cli.close()));
-
   try {
     // see if there's session information on the command line
     const debuggerAdapterFactory = new DebuggerAdapterFactory();
     const configFile = new ConfigFile();
 
-    const cmdLine = configFile.applyPresets();
+    const preset = configFile.getPresetFromArguments();
+    const cmdLine =
+      preset == null
+        ? process.argv.splice(2)
+        : configFile.applyPresetToArguments(preset);
     const args = yargs(cmdLine)
       .boolean('attach')
       .boolean('help').argv;
@@ -124,6 +122,13 @@ async function main(): Promise<void> {
       await debuggerAdapterFactory.showContextSensitiveHelp(args);
       process.exit(0);
     }
+
+    const aliases = configFile.resolveAliasesForPreset(preset);
+    const dispatcher = new CommandDispatcher(aliases);
+    const cli = new CommandLine(dispatcher);
+
+    dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
+    dispatcher.registerCommand(new QuitCommand(() => cli.close()));
 
     let adapter;
 
@@ -137,7 +142,7 @@ async function main(): Promise<void> {
     }
 
     const logger = buildLogger();
-    const debuggerInstance = new Debugger(logger, cli);
+    const debuggerInstance = new Debugger(logger, cli, preset);
 
     if (adapter != null) {
       await debuggerInstance.launch(adapter);
@@ -145,11 +150,11 @@ async function main(): Promise<void> {
 
     debuggerInstance.registerCommands(dispatcher);
 
-    cli.observeInterrupts.subscribe(_ => {
+    cli.observeInterrupts().subscribe(_ => {
       debuggerInstance.breakInto();
     });
 
-    cli.observeLines.subscribe(
+    cli.observeLines().subscribe(
       _ => {},
       _ => {},
       _ => {
@@ -160,7 +165,7 @@ async function main(): Promise<void> {
       },
     );
   } catch (x) {
-    cli.outputLine(x.message);
+    process.stderr.write(`${x.message}\n`);
     process.exit(1);
   }
 }

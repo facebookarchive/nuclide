@@ -23,6 +23,7 @@ import type {
   SourceBreakpoint,
   FunctionBreakpoint,
 } from './BreakpointCollection';
+import type {Preset} from './ConfigFile';
 
 import BackTraceCommand from './BackTraceCommand';
 import Breakpoint from './Breakpoint';
@@ -68,13 +69,15 @@ export default class Debugger implements DebuggerInterface {
   _breakpoints: BreakpointCollection = new BreakpointCollection();
   _adapter: ?ParsedVSAdapter;
   _attachMode: boolean = false;
+  _preset: ?Preset;
 
-  constructor(logger: log4js$Logger, con: ConsoleIO) {
+  constructor(logger: log4js$Logger, con: ConsoleIO, preset: ?Preset) {
     this._logger = logger;
     this._console = con;
     this._sourceFiles = new SourceFileCache(
       this._getSourceByReference.bind(this),
     );
+    this._preset = preset;
   }
 
   registerCommands(dispatcher: CommandDispatcher): void {

@@ -14,19 +14,24 @@ import type {Command} from './Command';
 import type {DispatcherInterface} from './DispatcherInterface';
 
 export default class CommandDispatcher implements DispatcherInterface {
-  commands: Command[] = [];
+  _commands: Command[] = [];
+  _aliases: Map<string, string>;
+
+  constructor(aliases: Map<string, string>) {
+    this._aliases = aliases;
+  }
 
   registerCommand(command: Command): void {
-    this.commands.push(command);
+    this._commands.push(command);
   }
 
   getCommands(): Command[] {
-    return this.commands;
+    return this._commands;
   }
 
   getCommandsMatching(prefix: string): Command[] {
     const re = new RegExp(`^${prefix}`);
-    return this.commands.filter(x => x.name.match(re));
+    return this._commands.filter(x => x.name.match(re));
   }
 
   commandListToString(commands: Command[]): string {
@@ -65,6 +70,13 @@ export default class CommandDispatcher implements DispatcherInterface {
 
     // Get all commands of which the given command is a prefix
     const cmd = tokens[0];
+
+    // resolve aliases
+    const alias = this.resolveAlias(tokens);
+    if (alias != null) {
+      return this.execute(alias);
+    }
+
     const matches = this.getCommandsMatching(cmd);
 
     if (matches.length === 0) {
@@ -81,5 +93,23 @@ export default class CommandDispatcher implements DispatcherInterface {
         .execute(tokens.slice(1))
         .then(_ => resolve(null), _ => resolve(_));
     });
+  }
+
+  resolveAlias(tokens: string[]): ?string {
+    const alias = this._aliases.get(tokens[0]);
+    if (alias != null) {
+      return `${alias} ${tokens.splice(1).join(' ')}`;
+    }
+
+    const match = tokens[0].match(/^([^a-zA-Z0-9]+)(.*)$/);
+    if (match != null) {
+      const [, prefix, tail] = match;
+      const puncAlias = this._aliases.get(prefix);
+      if (puncAlias != null) {
+        return `${puncAlias} ${tail} ${tokens.splice(1).join(' ')}`;
+      }
+    }
+
+    return null;
   }
 }

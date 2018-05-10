@@ -77,11 +77,11 @@ export default class CommandLine implements ConsoleIO {
     this._subscriptions.forEach(_ => _.unsubscribe());
   }
 
-  get observeInterrupts(): Observable<void> {
+  observeInterrupts(): Observable<void> {
     return this._interrupts;
   }
 
-  get observeLines(): Observable<string> {
+  observeLines(): Observable<string> {
     return this._lines;
   }
 

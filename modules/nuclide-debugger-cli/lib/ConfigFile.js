@@ -14,10 +14,12 @@ import fs from 'fs';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import yargs from 'yargs';
+import {mapFromObject} from 'nuclide-commons/collection';
 
-type Preset = {
+export type Preset = {
   description: string,
   args: Array<string>,
+  aliases: {[string]: string},
 };
 
 type PresetSummary = {
@@ -26,13 +28,14 @@ type PresetSummary = {
 };
 
 type ConfigFileContents = {
+  aliases?: {[string]: string},
   presets: {
     [string]: Preset,
   },
 };
 
 export default class ConfigFile {
-  _presets: ConfigFileContents;
+  _config: ConfigFileContents;
 
   constructor() {
     const configFiles = [
@@ -40,7 +43,7 @@ export default class ConfigFile {
       nuclideUri.join(os.homedir(), '.fbdbg', 'config.json'),
     ];
     // $FlowFixMe Flow doesn't understand Object.assign
-    this._presets = configFiles
+    this._config = configFiles
       .filter(fname => fs.existsSync(fname))
       .reduce((agg, fname) => {
         try {
@@ -55,19 +58,21 @@ export default class ConfigFile {
       }, {});
   }
 
-  applyPresets(): Array<string> {
+  getPresetFromArguments(): ?Preset {
     const name = yargs.argv.preset;
-    if (name == null) {
-      return process.argv.splice(2);
+    if (name != null) {
+      const preset = this._config.presets[name];
+      if (preset == null) {
+        throw new Error(`Preset '${name}' not found -- check config files.`);
+      }
+
+      return preset;
     }
 
-    const preset = this._presets.presets[name];
-    if (preset == null) {
-      throw new Error(
-        `Preset '${name}' not found -- check ./fbdbg/config.json.`,
-      );
-    }
+    return null;
+  }
 
+  applyPresetToArguments(preset: Preset): Array<string> {
     // we want to put the args from the preset first, so the user can override
     // them on the command line.
     // for now, only replace $USER instead of doing a global environment check
@@ -77,13 +82,21 @@ export default class ConfigFile {
     return args.concat(process.argv.splice(2));
   }
 
+  resolveAliasesForPreset(preset: ?Preset): Map<string, string> {
+    const aliases = this._config.aliases || {};
+    const presetAliases = (preset && preset.aliases) || {};
+    const resolved = Object.assign(aliases, aliases, presetAliases);
+
+    return mapFromObject(resolved);
+  }
+
   presets(): Array<PresetSummary> {
-    const keys = Object.keys(this._presets.presets);
+    const keys = Object.keys(this._config.presets);
     keys.sort();
 
     return keys.map(name => ({
       name,
-      description: this._presets.presets[name].description,
+      description: this._config.presets[name].description,
     }));
   }
 }

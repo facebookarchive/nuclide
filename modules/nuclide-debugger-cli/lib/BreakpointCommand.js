@@ -68,7 +68,7 @@ The breakpoint command has several subcommands:
   constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
-    this._dispatcher = new CommandDispatcher();
+    this._dispatcher = new CommandDispatcher(new Map());
 
     this._dispatcher.registerCommand(new BreakpointDeleteCommand(debug));
     this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));

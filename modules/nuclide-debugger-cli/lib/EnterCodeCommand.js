@@ -52,12 +52,12 @@ export default class EnterCode implements Command {
 
     this._console.prompt();
     this._subscription = Observable.merge(
-      this._console.observeInterrupts.switchMap(_ =>
-        Observable.from([{type: 'interrupt'}]),
-      ),
-      this._console.observeLines.switchMap(line =>
-        Observable.from([{type: 'line', line}]),
-      ),
+      this._console
+        .observeInterrupts()
+        .switchMap(_ => Observable.from([{type: 'interrupt'}])),
+      this._console
+        .observeLines()
+        .switchMap(line => Observable.from([{type: 'line', line}])),
     )
       .switchMap((event: Event) => {
         switch (event.type) {
