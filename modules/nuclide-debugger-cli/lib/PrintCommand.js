@@ -10,8 +10,6 @@
  * @format
  */
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 
@@ -55,8 +53,7 @@ in complex ways.
       } = await this._debugger.evaluateExpression(expr);
       this._console.outputLine(result);
     } catch (err) {
-      const failure: DebugProtocol.base$Response = JSON.parse(err.message);
-      this._console.outputLine(failure.message);
+      this._console.outputLine(err.message);
     }
   }
 }
