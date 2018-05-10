@@ -155,13 +155,19 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
     const filePaths = Array.from(fileStatuses.keys()).slice(0, filesToShow);
     const displayPaths = computeDisplayPaths(filePaths);
-    const sizeLimitedFileChanges = filePaths.map((filePath, index) => {
-      return {
-        filePath,
-        displayPath: displayPaths[index],
-        fileStatus: nullthrows(fileStatuses.get(filePath)),
-      };
-    });
+    const sizeLimitedFileChanges = filePaths
+      .map((filePath, index) => {
+        return {
+          filePath,
+          displayPath: displayPaths[index],
+          fileStatus: nullthrows(fileStatuses.get(filePath)),
+        };
+      })
+      .sort((change1, change2) =>
+        nuclideUri
+          .basename(change1.filePath)
+          .localeCompare(nuclideUri.basename(change2.filePath)),
+      );
 
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,

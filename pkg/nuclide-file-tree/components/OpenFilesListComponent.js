@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 import classnames from 'classnames';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
@@ -149,12 +150,17 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     const entries = this.props.uris.map((uri, index) => {
       const isModified = this.props.modifiedUris.indexOf(uri) >= 0;
       const isSelected = uri === this.props.activeUri;
-      return {uri, name: displayPaths[index], isModified, isSelected};
+      return {
+        uri,
+        name: displayPaths[index],
+        isModified,
+        isSelected,
+      };
     });
 
-    // Sort by uri and not display name to keep order stable.
+    // Sort by file name (see https://fb.facebook.com/groups/nuclideintfeedback/permalink/1883372318378041/)
     entries.sort((e1, e2) =>
-      e1.uri.toLowerCase().localeCompare(e2.uri.toLowerCase()),
+      nuclideUri.basename(e1.uri).localeCompare(nuclideUri.basename(e2.uri)),
     );
     return entries;
   }
