@@ -716,9 +716,10 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
       (event, match) => {
         const replacedUrl = urlPattern.replace('%s', match);
         if (replacedUrl !== '') {
-          if (!tryOpenInAtom(replacedUrl, cwd)) {
-            shell.openExternal(replacedUrl);
+          if (event.shiftKey && tryOpenInAtom(replacedUrl, cwd)) {
+            return;
           }
+          shell.openExternal(replacedUrl);
         }
       },
       {matchIndex},
