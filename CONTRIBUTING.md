@@ -20,11 +20,11 @@ project.
 Follow this guide to start developing on Nuclide:
 https://nuclide.io/docs/advanced-topics/building-from-source/
 
-## `atom-ide-ui`
+## atom-ide-ui
 
-The development process for `atom-ide-ui` is similar, since it's a subset
-of the Nuclide repository. Please see the separate
-[CONTRIBUTING.md](modules/atom-ide-ui/CONTRIBUTING.md) file for details.
+atom-ide-ui should be developed in its own repository - see the [CONTRIBUTING.md](
+https://github.com/facebook-atom/atom-ide-ui/blob/master/CONTRIBUTING.md)
+guide in https://github.com/facebook-atom/atom-ide-ui.
 
 ## Pull Requests
 
