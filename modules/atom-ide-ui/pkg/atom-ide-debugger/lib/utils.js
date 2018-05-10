@@ -60,6 +60,11 @@ export async function openSourceLocation(
     searchAllPanes: true,
     pending: true,
   });
+  if (editor == null) {
+    // Failed to open file. Return an empty text editor.
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    return atom.workspace.open();
+  }
   editor.scrollToBufferPosition([line, 0]);
   editor.setCursorBufferPosition([line, 0]);
 
