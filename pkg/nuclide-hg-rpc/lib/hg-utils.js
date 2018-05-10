@@ -176,6 +176,7 @@ async function getHgExecParams(
   const options = {
     ...options_,
     env: {
+      LANG: 'en_US.utf-8', // make sure hg uses unicode if user hasn't set LANG themselves
       ...(await getOriginalEnvironment()),
       ATOM_BACKUP_EDITOR: 'false',
     },
