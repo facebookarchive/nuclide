@@ -28,6 +28,8 @@
     "nuclide-fuzzy-filename-provider",
     "nuclide-health",
     "nuclide-hg-repository",
+    "nuclide-home",
+    "nuclide-image-view",
     "nuclide-infer-al",
     "nuclide-json",
     "nuclide-key-binding-hint-status",
@@ -48,7 +50,6 @@
     "nuclide-ssh-tunnel",
     "nuclide-syntactic-selection",
     "nuclide-task-runner",
-    "nuclide-terminal",
     "atom-ide-terminal",
     "nuclide-test-runner",
     "nuclide-type-coverage",
@@ -62,6 +63,9 @@
     "sample-datatip",
     "sample-diagnostics-tester",
     "sample-executor",
+    "sample-experimental-console-service",
+    "sample-experimental-window-service",
+    "sample-experimental-service-consumer",
     "sample-logging-console",
     "sample-lsp-tester",
     "sample-nuclide-contributors",
@@ -89,6 +93,7 @@
   "flow": ["nuclide-flow"],
   "graphql": ["nuclide-graphql"],
   "hack": [
+    "nuclide-css-lsp-client",
     "nuclide-debugger-php",
     "nuclide-hack",
     "nuclide-http-request-sender",
@@ -106,7 +111,11 @@
     "nuclide-ios-simulator-logs",
     "nuclide-swift"
   ],
-  "java": ["nuclide-buck", "nuclide-buck-base"],
+  "java": [
+    "nuclide-buck",
+    "nuclide-buck-base",
+    "nuclide-debugger-java"
+  ],
   "javascript": [
     "nuclide-buck",
     "nuclide-buck-base",
