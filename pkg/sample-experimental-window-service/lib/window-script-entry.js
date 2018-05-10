@@ -16,11 +16,5 @@
   */
 'use strict';
 
-// eslint-disable-next-line rulesdir/modules-dependencies
-const {__DEV__} = require('../../../modules/nuclide-node-transpiler/lib/env');
-if (__DEV__) {
-  // eslint-disable-next-line rulesdir/modules-dependencies
-  require('nuclide-node-transpiler');
-}
-
+require('../../commons-node/load-transpiler');
 require('./window-script');

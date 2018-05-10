@@ -25,9 +25,8 @@
  * Tests will have to mock out Atom configs if they rely on these.
  */
 
-// TODO(#21523621): Use a regular require once Yarn workspaces are enforced
 // eslint-disable-next-line rulesdir/modules-dependencies
-require('../nuclide-node-transpiler');
+require('nuclide-node-transpiler');
 
 // Patch `console` to output through the main process.
 const {Console} = require('console');

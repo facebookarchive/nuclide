@@ -20,9 +20,7 @@
 
 // jasmine-node test runner with Atom test globals and babel transpiling support.
 
-// TODO(#21523621): Use a regular require once Yarn workspaces are enforced
-// eslint-disable-next-line rulesdir/modules-dependencies
-require('../../nuclide-node-transpiler');
+require('nuclide-node-transpiler');
 
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.
