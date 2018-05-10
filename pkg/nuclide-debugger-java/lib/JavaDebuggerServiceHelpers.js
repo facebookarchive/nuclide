@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -393,7 +393,7 @@ export async function debugAndroidDebuggerService(
 function _getSourcePathClickSubscriptions(
   targetUri: NuclideUri,
   vspInstance: IVspInstance,
-  clickEvents: Subject<any>,
+  clickEvents: rxjs$Subject<void>,
 ): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
   const defaultValues = getDefaultSourceSearchPaths(targetUri);
   return [
