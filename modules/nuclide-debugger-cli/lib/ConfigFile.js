@@ -35,15 +35,24 @@ export default class ConfigFile {
   _presets: ConfigFileContents;
 
   constructor() {
-    const configFile = nuclideUri.join(os.homedir(), '.fbdbg', 'config.json');
-    try {
-      const contents = fs.readFileSync(configFile, 'utf8');
-      this._presets = JSON.parse(contents);
-    } catch (ex) {
-      this._presets = {
-        presets: {},
-      };
-    }
+    const configFiles = [
+      '/usr/local/share/fbdbg/config.json',
+      nuclideUri.join(os.homedir(), '.fbdbg', 'config.json'),
+    ];
+    // $FlowFixMe Flow doesn't understand Object.assign
+    this._presets = configFiles
+      .filter(fname => fs.existsSync(fname))
+      .reduce((agg, fname) => {
+        try {
+          const contents = fs.readFileSync(fname, 'utf8');
+          const presets = JSON.parse(contents);
+          const combined = {presets: {}};
+          Object.assign(combined, agg, presets);
+          return combined;
+        } catch (_) {
+          throw new Error(`Invalid JSON in config file ${fname}.`);
+        }
+      }, {});
   }
 
   applyPresets(): Array<string> {
