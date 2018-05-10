@@ -27,7 +27,7 @@ import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {Observable} from 'rxjs';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   isDebugTask,
   getBuckSubcommandForTaskType,
@@ -36,7 +36,7 @@ import logger from './utils';
 import {getConfig} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   getNativeVSPLaunchProcessInfo,
   getNativeVSPAttachProcessInfo,

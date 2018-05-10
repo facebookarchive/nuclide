@@ -1,5 +1,5 @@
 {
   "rules": {
-    "rulesdir/prefer-nuclide-uri": 0
+    "nuclide-internal/prefer-nuclide-uri": 0
   }
 }

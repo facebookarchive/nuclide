@@ -35,7 +35,7 @@ export default class StatusBarTile extends React.Component<Props> {
       <span
         className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
         onClick={this._onStatusBarTileClicked}
-        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={addTooltip({title: 'Click for connection details.'})}
       />
     );

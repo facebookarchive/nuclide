@@ -171,7 +171,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       fileStatuses.size > filesToShow ? (
         <div
           className="icon icon-ellipsis"
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             title: 'Show more files with uncommitted changes',
             delay: 300,

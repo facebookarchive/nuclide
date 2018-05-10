@@ -11,7 +11,7 @@
  */
 
 /* eslint-disable no-console */
-/* eslint-disable rulesdir/no-commonjs */
+/* eslint-disable nuclide-internal/no-commonjs */
 
 /*
  * This file will be injected into an Atom process. It will start an IPC

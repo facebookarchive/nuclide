@@ -53,5 +53,5 @@ const OpenFileListProvider: Provider<FileResult> = {
   },
 };
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = OpenFileListProvider;

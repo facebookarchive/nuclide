@@ -140,7 +140,7 @@ const LockFilesList: Array<string> = [
   LockFiles.WLOCK,
 ];
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   AmendMode,
   CommitPhase,

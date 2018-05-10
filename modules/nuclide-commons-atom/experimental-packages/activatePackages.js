@@ -19,7 +19,7 @@ import type {
 
 import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
+import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 import {AtomPackageRunner, ProcessPackageRunner} from './PackageRunners';
 import MessageRouter from './MessageRouter';
 

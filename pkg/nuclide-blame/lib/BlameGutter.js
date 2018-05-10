@@ -18,7 +18,7 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {shell} from 'electron';
 import escapeHTML from 'escape-html';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -339,7 +339,7 @@ class GutterElement extends React.Component<Props> {
       return (
         <div
           className="nuclide-blame-row nuclide-blame-content"
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip(tooltip)}>
           {!isLastLine ? (
             <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />

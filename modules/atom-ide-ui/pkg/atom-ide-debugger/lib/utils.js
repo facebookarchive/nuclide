@@ -55,7 +55,7 @@ export async function openSourceLocation(
   path: string,
   line: number,
 ): Promise<atom$TextEditor> {
-  // eslint-disable-next-line rulesdir/atom-apis
+  // eslint-disable-next-line nuclide-internal/atom-apis
   const editor = await atom.workspace.open(path, {
     searchAllPanes: true,
     pending: true,

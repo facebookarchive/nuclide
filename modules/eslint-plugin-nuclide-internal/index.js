@@ -13,7 +13,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
+  nuclide-internal/no-commonjs: 0,
   */
 
 module.exports = {
@@ -34,6 +34,7 @@ module.exports = {
     'no-unresolved': require('./no-unresolved'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
     'react-virtualized-import': require('./react-virtualized-import'),
+    'require-universal-disposable': require('./require-universal-disposable'),
     'use-nuclide-ui-components': require('./use-nuclide-ui-components'),
   },
   rulesConfig: {
@@ -52,6 +53,7 @@ module.exports = {
     'no-unresolved': 0,
     'prefer-nuclide-uri': 0,
     'react-virtualized-import': 0,
+    'require-universal-disposable': 0,
     'use-nuclide-ui-components': 0,
   },
 };

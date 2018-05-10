@@ -39,5 +39,5 @@ function humanizeEventName(eventName: string): string {
   return `${namespaceDoc}: ${eventDoc}`;
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = humanizeEventName;

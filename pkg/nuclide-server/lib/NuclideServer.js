@@ -31,11 +31,11 @@ import {track} from '../../nuclide-analytics';
 
 export const HEARTBEAT_CHANNEL = 'heartbeat';
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 const connect: connect$module = require('connect');
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 const http: http$fixed = (require('http'): any);
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 const https: https$fixed = (require('https'): any);
 
 const logger = getLogger('nuclide-server');

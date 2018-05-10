@@ -53,5 +53,5 @@ function launch(launcherParams: LauncherParameters): Promise<void> {
   return Promise.resolve();
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = (launch: LauncherType);

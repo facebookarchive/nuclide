@@ -15,7 +15,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 import * as React from 'react';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';

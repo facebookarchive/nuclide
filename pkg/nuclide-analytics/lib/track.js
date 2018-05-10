@@ -9,7 +9,7 @@
  * @format
  */
 
-/* eslint-disable rulesdir/no-commonjs */
+/* eslint-disable nuclide-internal/no-commonjs */
 
 // This extra module enables adding spies during testing.
 try {

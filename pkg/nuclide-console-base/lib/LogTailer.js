@@ -212,7 +212,7 @@ export class LogTailer {
   }
 
   _start(trackCall: boolean): void {
-    // eslint-disable-next-line rulesdir/atom-apis
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
     const currentStatus = this._statuses.getValue();

@@ -49,7 +49,7 @@ export type GoToLocationOptions = {|
  *
  * In these cases, you may disable the lint rule against `atom.workspace.open` by adding the
  * following comment above its use:
- * // eslint-disable-next-line rulesdir/atom-apis
+ * // eslint-disable-next-line nuclide-internal/atom-apis
  */
 export async function goToLocation(
   file: string,
@@ -87,7 +87,7 @@ export async function goToLocation(
     return currentEditor;
   } else {
     // Obviously, calling goToLocation isn't a viable alternative here :P
-    // eslint-disable-next-line rulesdir/atom-apis
+    // eslint-disable-next-line nuclide-internal/atom-apis
     const editor = await atom.workspace.open(file, {
       initialLine: line,
       initialColumn: column,

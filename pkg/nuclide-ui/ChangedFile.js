@@ -88,7 +88,7 @@ export default class ChangedFile extends React.Component<Props> {
         className="nuclide-changed-file-action"
         key={key}
         onClick={onClick}
-        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={addTooltip({
           delay: 300,
           placement: 'top',

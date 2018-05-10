@@ -11,9 +11,9 @@
  */
 
 /* eslint
-   rulesdir/no-commonjs: 0,
+   nuclide-internal/no-commonjs: 0,
    */
 
-// eslint-disable-next-line rulesdir/modules-dependencies
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 require('nuclide-node-transpiler');
 require('./MockMIServer');

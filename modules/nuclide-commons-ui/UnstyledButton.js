@@ -31,7 +31,7 @@ export default class UnstyledButton extends React.Component<Props> {
   render(): React$Element<any> {
     const {className, ...props} = this.props;
     const classes = classnames('nuclide-ui-unstyled-button', className);
-    // eslint-disable-next-line rulesdir/use-nuclide-ui-components
+    // eslint-disable-next-line nuclide-internal/use-nuclide-ui-components
     return <button className={classes} ref={this._setRef} {...props} />;
   }
 }

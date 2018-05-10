@@ -139,7 +139,7 @@ export default class ConsoleHeader extends React.Component<Props> {
           className="inline-block"
           size={ButtonSizes.SMALL}
           onClick={this._handleCreatePasteButtonClick}
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             title: 'Creates a Paste from the current contents of the console',
           })}>

@@ -244,7 +244,7 @@ export default class ConnectionDetailsForm extends React.Component<
           className={
             'icon icon-info pull-right nuclide-remote-projects-tooltip-warning'
           }
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip

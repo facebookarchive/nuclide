@@ -86,7 +86,7 @@ export class LoadingSpinner extends React.Component<
     return (
       <div
         className={newClassName}
-        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={ref}
       />
     );

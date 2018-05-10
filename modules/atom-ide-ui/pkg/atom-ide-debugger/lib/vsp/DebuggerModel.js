@@ -125,7 +125,7 @@ export class Source implements ISource {
   }
 
   openInEditor(): Promise<atom$TextEditor> {
-    // eslint-disable-next-line rulesdir/atom-apis
+    // eslint-disable-next-line nuclide-internal/atom-apis
     return atom.workspace.open(this.uri, {
       searchAllPanes: true,
       pending: true,

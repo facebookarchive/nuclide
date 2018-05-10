@@ -95,7 +95,7 @@ export class TestRunnerController {
   async runTests(path?: string): Promise<void> {
     this._runningTest = true;
 
-    // eslint-disable-next-line rulesdir/atom-apis
+    // eslint-disable-next-line nuclide-internal/atom-apis
     atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
 
     // Get selected test runner when Flow knows `this._testRunnerPanel` is defined.

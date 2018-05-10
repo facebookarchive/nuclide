@@ -23,7 +23,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {startAttachProcessInfo} from '../../nuclide-debugger-vsp/lib/HhvmLaunchAttachProvider';
 import HhvmBuildSystem from './HhvmBuildSystem';
 

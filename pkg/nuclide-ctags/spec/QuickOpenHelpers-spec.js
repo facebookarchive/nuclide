@@ -14,7 +14,7 @@ import type {CtagsResult} from '../../nuclide-ctags-rpc';
 import invariant from 'assert';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as hackService from '../../nuclide-hack/lib/HackLanguage';
 import QuickOpenHelpers from '../lib/QuickOpenHelpers';
 
@@ -26,7 +26,7 @@ describe('QuickOpenHelpers', () => {
   }: any);
 
   beforeEach(() => {
-    // eslint-disable-next-line rulesdir/no-cross-atom-imports
+    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
     spyOn(require('../../nuclide-hack/lib/config'), 'getConfig').andReturn({
       hhClientPath: 'hh_client',
       logLevel: 'OFF',

@@ -14,7 +14,7 @@
  * 'runner': 'path/to/this/file'
  */
 
-/* eslint-disable rulesdir/no-commonjs */
+/* eslint-disable nuclide-internal/no-commonjs */
 
 import type {GlobalConfig, Test, TestResult, Watcher} from './types';
 

@@ -10,7 +10,7 @@
  * @format
  */
 
-/* eslint-disable rulesdir/prefer-nuclide-uri */
+/* eslint-disable nuclide-internal/prefer-nuclide-uri */
 
 import type {TestResult} from './types';
 export opaque type IPCID = string; // server id and worker id merged into one string

@@ -235,7 +235,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
               onDoubleClick={this.props.onConfirm}>
               <span
                 className="icon icon-info pull-right connection-details-icon-info"
-                // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+                // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
                 ref={addTooltip({
                   // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
                   // context to the Tooltip instance.
@@ -288,7 +288,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
         <span
           style={{paddingLeft: 10}}
           className="icon icon-info pull-right nuclide-remote-projects-tooltip-warning"
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip

@@ -13,14 +13,14 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
+  nuclide-internal/no-commonjs: 0,
   */
 
-// eslint-disable-next-line rulesdir/modules-dependencies
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 const NodeTranspiler = require('nuclide-node-transpiler/lib/NodeTranspiler');
 const transpiler = new NodeTranspiler();
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   process(src, path) {
     if (NodeTranspiler.shouldCompile(src)) {

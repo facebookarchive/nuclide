@@ -11,7 +11,7 @@
  */
 
 import type {MessageConnection} from 'vscode-jsonrpc';
-import type {Socket as Socket_} from './MessageRouter'; // eslint-disable-line rulesdir/import-type-style
+import type {Socket as Socket_} from './MessageRouter'; // eslint-disable-line nuclide-internal/import-type-style
 
 export type Socket = Socket_;
 

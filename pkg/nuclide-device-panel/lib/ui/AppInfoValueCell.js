@@ -86,7 +86,7 @@ export class AppInfoValueCell extends React.PureComponent<Props, State> {
     return (
       <span
         className="icon icon-alert"
-        // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
         ref={addTooltip({
           title: this._prepareErrorMessage(error),
           delay: 0,

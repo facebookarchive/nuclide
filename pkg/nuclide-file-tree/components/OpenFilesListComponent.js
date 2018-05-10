@@ -68,7 +68,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     ) {
       // Our lint rule isn't smart enough to recognize that this is a custom method and not the one
       // on HTMLElements, so we just have to squelch the error.
-      // eslint-disable-next-line rulesdir/dom-apis
+      // eslint-disable-next-line nuclide-internal/dom-apis
       selectedRow.scrollIntoView();
     }
   }
@@ -189,7 +189,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     onMouseDown={this._onMouseDown.bind(this, e)}
                     path={e.uri}
                     name={e.name}
-                    // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+                    // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
                     ref={e.isSelected ? this._handleSelectedRow : null}>
                     <span
                       className={classnames('icon', {

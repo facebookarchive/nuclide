@@ -46,7 +46,7 @@ function constructNotificationOptions(
     {
       text: 'Show in console',
       onDidClick: () => {
-        // eslint-disable-next-line rulesdir/atom-apis
+        // eslint-disable-next-line nuclide-internal/atom-apis
         atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
         if (clickCallback) {
           clickCallback();

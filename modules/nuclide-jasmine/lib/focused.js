@@ -17,7 +17,7 @@
 
 import invariant from 'assert';
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 require('jasmine-node');
 
 // These are undocumented APIs. The type of jasmine is redefined here, so that

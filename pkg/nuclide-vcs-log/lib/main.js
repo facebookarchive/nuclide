@@ -183,7 +183,7 @@ function openLogPaneForURI(uri: string) {
       [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri,
     });
   // Not a file URI
-  // eslint-disable-next-line rulesdir/atom-apis
+  // eslint-disable-next-line nuclide-internal/atom-apis
   atom.workspace.open(openerURI);
 }
 

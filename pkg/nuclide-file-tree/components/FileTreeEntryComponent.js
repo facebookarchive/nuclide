@@ -221,7 +221,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         data-path={node.uri}>
         <div
           className={listItemClassName}
-          // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={el => {
             this._arrowContainer = el;
             store.updateMaxComponentWidth(this.props.node.name.length);
@@ -234,7 +234,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
             })}
             isFolder={node.isContainer}
             path={node.uri}
-            // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+            // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
             ref={elem => {
               // $FlowFixMe(>=0.53.0) Flow suppress
               this._pathContainer = elem;

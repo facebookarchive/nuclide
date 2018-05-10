@@ -22,7 +22,7 @@ import {getLogger} from 'log4js';
 import {remote} from 'electron';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
-import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
+import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
 const logger = getLogger('sample-experimental-window-service.connectClient');
 

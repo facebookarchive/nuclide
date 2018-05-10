@@ -15,7 +15,7 @@ import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   getClangRequestSettings,
   getServerSettings,

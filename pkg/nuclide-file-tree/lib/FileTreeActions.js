@@ -281,7 +281,7 @@ export default class FileTreeActions {
     } else {
       track('file-tree-open-file', {uri: nodeKey});
       // goToLocation doesn't support pending panes
-      // eslint-disable-next-line rulesdir/atom-apis
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
         activatePane:
           (pending && node.conf.focusEditorOnFileSelection) || !pending,

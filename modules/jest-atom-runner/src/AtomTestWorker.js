@@ -13,14 +13,14 @@
 /* This is a Jest worker. An abstraction class that knows how to start up
   * an Atom process and communicate with it */
 
-/* eslint-disable rulesdir/prefer-nuclide-uri */
+/* eslint-disable nuclide-internal/prefer-nuclide-uri */
 
-/* eslint-disable-next-line rulesdir/consistent-import-name */
+/* eslint-disable-next-line nuclide-internal/consistent-import-name */
 import type {IPCServer, Socket} from './ipc-server';
 import type {ServerID, WorkerID, MessageType} from './utils';
 import type {Test, GlobalConfig, TestResult} from './types';
 
-// eslint-disable-next-line rulesdir/consistent-import-name
+// eslint-disable-next-line nuclide-internal/consistent-import-name
 import {spawn} from 'child_process';
 import mkdirp from 'mkdirp';
 import path from 'path';

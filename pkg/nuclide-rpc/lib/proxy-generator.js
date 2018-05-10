@@ -18,7 +18,7 @@
 
 import typeof * as babelTypes from 'babel-types';
 // This is in devDependencies. This file is only reachable in dev mode.
-// eslint-disable-next-line rulesdir/no-unresolved
+// eslint-disable-next-line nuclide-internal/no-unresolved
 import typeof * as babelGenerator from 'babel-generator';
 
 import type {

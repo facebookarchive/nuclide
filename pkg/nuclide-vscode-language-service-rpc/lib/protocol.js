@@ -138,7 +138,7 @@ export const ErrorCodes = {
   serverErrorEnd: -32000,
   ServerNotInitialized: -32002,
   UnknownErrorCode: -32001,
-  // eslint-disable-next-line rulesdir/api-spelling
+  // eslint-disable-next-line nuclide-internal/api-spelling
   RequestCancelled: -32800,
 };
 

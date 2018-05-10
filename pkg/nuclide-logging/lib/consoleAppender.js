@@ -59,7 +59,7 @@ function consoleAppender(config: Object): (loggingEvent: any) => void {
   };
 }
 
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   appender: consoleAppender,
   configure: consoleAppender,

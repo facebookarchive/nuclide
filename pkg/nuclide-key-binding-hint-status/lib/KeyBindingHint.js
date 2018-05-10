@@ -72,7 +72,7 @@ export default class KeyBindingHint extends React.Component<any, State> {
     });
 
     return (
-      // eslint-disable-next-line rulesdir/jsx-simple-callback-refs
+      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
       <div ref={tooltip}>
         <Icon icon="keyboard">
           <span style={{paddingLeft: '5px'}}>{firstBinding}</span>

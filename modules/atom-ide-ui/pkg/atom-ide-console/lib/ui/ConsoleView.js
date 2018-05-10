@@ -106,7 +106,7 @@ export default class ConsoleView extends React.Component<Props, State> {
         }
       },
       atom.commands.add('atom-workspace', {
-        // eslint-disable-next-line rulesdir/atom-apis
+        // eslint-disable-next-line nuclide-internal/atom-apis
         'atom-ide-console:focus-console-prompt': () => {
           if (this._inputArea != null) {
             this._inputArea.focus();

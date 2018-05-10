@@ -23,7 +23,7 @@ import HhvmLaunchAttachProvider from './HhvmLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getPrepackAutoGenConfig, resolveConfiguration} from './utils';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 
 class Activation {

@@ -12,7 +12,7 @@
 /* eslint-disable no-console */
 
 import * as t from 'babel-types';
-// eslint-disable-next-line rulesdir/no-unresolved
+// eslint-disable-next-line nuclide-internal/no-unresolved
 import generate from 'babel-generator';
 import yargs from 'yargs';
 import fs from 'fs';

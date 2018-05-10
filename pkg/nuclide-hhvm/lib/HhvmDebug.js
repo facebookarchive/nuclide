@@ -12,9 +12,9 @@
 import type {DebugMode} from './types';
 
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import invariant from 'assert';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   getLaunchProcessInfo,
   startAttachProcessInfo,

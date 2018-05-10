@@ -22,7 +22,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 import type {IosDeployable} from './types';
 
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   isDebugTask,
   getBuckSubcommandForTaskType,

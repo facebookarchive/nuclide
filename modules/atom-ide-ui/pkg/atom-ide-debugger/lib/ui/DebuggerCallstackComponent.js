@@ -20,7 +20,7 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {Observable} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
 import nullthrows from 'nullthrows';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import * as path from 'path';
 import classnames from 'classnames';
 import idx from 'idx';

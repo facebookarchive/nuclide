@@ -21,7 +21,7 @@ import {
   updateAutocompleteResultRanges,
 } from '../lib/AutocompleteProvider';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
+import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
 describe('AutocompleteProvider', () => {
   let editor: atom$TextEditor;

@@ -444,7 +444,7 @@ class Activation {
       openConnectMenu => {
         if (!this._restored) {
           if (!openConnectMenu) {
-            // eslint-disable-next-line rulesdir/atom-apis
+            // eslint-disable-next-line nuclide-internal/atom-apis
             atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
           } else {
             observableFromSubscribeFunction(
@@ -456,7 +456,7 @@ class Activation {
               .take(1)
               .subscribe(([oldLength, newLength]) => {
                 if (oldLength === 0 && newLength === 1) {
-                  // eslint-disable-next-line rulesdir/atom-apis
+                  // eslint-disable-next-line nuclide-internal/atom-apis
                   atom.workspace.open(WORKSPACE_VIEW_URI, {
                     searchAllPanes: true,
                   });

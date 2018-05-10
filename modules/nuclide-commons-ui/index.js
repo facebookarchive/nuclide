@@ -18,7 +18,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import dedent from 'dedent';
 import fs from 'fs';
 import nullthrows from 'nullthrows';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 
 const ttfUri = nuclideUri.nuclideUriToUri(
@@ -46,4 +46,4 @@ const styleDisposables = new UniversalDisposable(
   () => newStyle.remove(),
 );
 
-module.exports = styleDisposables; // eslint-disable-line rulesdir/no-commonjs
+module.exports = styleDisposables; // eslint-disable-line nuclide-internal/no-commonjs

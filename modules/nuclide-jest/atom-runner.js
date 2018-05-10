@@ -13,7 +13,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
+  nuclide-internal/no-commonjs: 0,
   */
 
 const {Console} = require('console');
@@ -65,7 +65,7 @@ module.exports = function(params) {
     );
   } else {
     try {
-      // eslint-disable-next-line rulesdir/modules-dependencies
+      // eslint-disable-next-line nuclide-internal/modules-dependencies
       require('nuclide-node-transpiler');
     } catch (e) {}
   }

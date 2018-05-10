@@ -12,7 +12,7 @@
 import type {ProjectionistRules, Projection} from './types';
 
 import micromatch from 'micromatch';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 import {
   arrayFlatten,

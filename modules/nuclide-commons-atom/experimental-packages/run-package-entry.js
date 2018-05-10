@@ -13,13 +13,13 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
+  nuclide-internal/no-commonjs: 0,
   */
 
-// eslint-disable-next-line rulesdir/modules-dependencies
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
 if (__DEV__) {
-  // eslint-disable-next-line rulesdir/modules-dependencies
+  // eslint-disable-next-line nuclide-internal/modules-dependencies
   require('nuclide-node-transpiler');
 }
 

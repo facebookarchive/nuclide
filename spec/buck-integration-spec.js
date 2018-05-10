@@ -10,7 +10,7 @@
  */
 
 import {sleep} from 'nuclide-commons/promise';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,

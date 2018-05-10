@@ -26,7 +26,7 @@ nullthrows(document.body).appendChild(div);
 type GlobalConfig = Object;
 
 // Jest seems to be particular about this being a commonjs export
-// eslint-disable-next-line rulesdir/no-commonjs
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = class AtomReporter {
   _modelSubscription: UniversalDisposable;
   _globalConfig: Object;

@@ -35,7 +35,7 @@ class Activation {
     this._subscriptions = this._registerCommandAndOpener();
     this._considerDisplayingHome();
     this._subscriptions.add(
-      // eslint-disable-next-line rulesdir/atom-apis
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.commands.add('atom-workspace', 'nuclide-home:open-docs', e => {
         const url = createUtmUrl('https://nuclide.io/docs', 'help');
         shell.openExternal(url);
@@ -63,7 +63,7 @@ class Activation {
     const showHome = featureConfig.get('nuclide-home.showHome');
     // flowlint-next-line sketchy-null-mixed:off
     if (showHome) {
-      // eslint-disable-next-line rulesdir/atom-apis
+      // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
     }
   }

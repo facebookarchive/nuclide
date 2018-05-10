@@ -16,7 +16,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import Module from 'module';
-import path from 'path'; // eslint-disable-line rulesdir/prefer-nuclide-uri
+import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
 import NuclidePackageReloadDashProvider from './NuclidePackageReloadDashProvider';
 

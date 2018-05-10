@@ -911,7 +911,7 @@ export class LspLanguageService {
     if (
       // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       e.code != null &&
-      // eslint-disable-next-line rulesdir/api-spelling
+      // eslint-disable-next-line nuclide-internal/api-spelling
       Number(e.code) === ErrorCodes.RequestCancelled &&
       this._state === 'Running'
     ) {

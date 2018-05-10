@@ -12,7 +12,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  rulesdir/no-commonjs: 0,
+  nuclide-internal/no-commonjs: 0,
   */
 /* eslint-disable max-len */
 
@@ -358,24 +358,24 @@ module.exports = {
     'jasmine/valid-expect': 0,
 
     // nuclide-internal (https://github.com/facebook/nuclide/tree/master/modules/eslint-plugin-nuclide-internal)
-    'rulesdir/api-spelling': 1,
-    'rulesdir/atom-apis': 1,
-    'rulesdir/consistent-import-name': 1,
-    'rulesdir/disallowed-modules': 1,
-    'rulesdir/dom-apis': 1,
-    'rulesdir/flow-fb-oss': 1,
-    'rulesdir/import-type-style': 1,
-    'rulesdir/jsx-simple-callback-refs': 1,
-    'rulesdir/license-header': 1,
-    'rulesdir/modules-dependencies': 1,
-    'rulesdir/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
-    'rulesdir/no-unnecessary-disposable-wrapping': 1,
-    'rulesdir/no-unresolved': 1,
-    'rulesdir/prefer-nuclide-uri': 1,
-    'rulesdir/react-virtualized-import': 1,
-    'rulesdir/require-universal-disposable': 1,
-    'rulesdir/use-nuclide-ui-components': 1,
-    'rulesdir/no-commonjs': 1,
+    'nuclide-internal/api-spelling': 1,
+    'nuclide-internal/atom-apis': 1,
+    'nuclide-internal/consistent-import-name': 1,
+    'nuclide-internal/disallowed-modules': 1,
+    'nuclide-internal/dom-apis': 1,
+    'nuclide-internal/flow-fb-oss': 1,
+    'nuclide-internal/import-type-style': 1,
+    'nuclide-internal/jsx-simple-callback-refs': 1,
+    'nuclide-internal/license-header': 1,
+    'nuclide-internal/modules-dependencies': 1,
+    'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
+    'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
+    'nuclide-internal/no-unresolved': 1,
+    'nuclide-internal/prefer-nuclide-uri': 1,
+    'nuclide-internal/react-virtualized-import': 1,
+    'nuclide-internal/require-universal-disposable': 1,
+    'nuclide-internal/use-nuclide-ui-components': 1,
+    'nuclide-internal/no-commonjs': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
@@ -547,10 +547,6 @@ module.exports = {
     'prefer-object-spread',
     'prettier',
     'react',
-    'rulesdir',
+    'nuclide-internal',
   ],
 };
-
-// TODO(#21523621): Remove rulesdir when Yarn workspaces is enforced.
-const rulesDirPlugin = require('eslint-plugin-rulesdir');
-rulesDirPlugin.RULES_DIR = 'modules/eslint-plugin-nuclide-internal';

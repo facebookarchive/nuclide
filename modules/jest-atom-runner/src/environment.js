@@ -10,7 +10,7 @@
  * @format
  */
 
-/* eslint-disable rulesdir/no-commonjs */
+/* eslint-disable nuclide-internal/no-commonjs */
 
 import JSDom from 'jest-environment-jsdom';
 

@@ -1,5 +1,5 @@
 {
   "rules": {
-    "rulesdir/license-header": [1, {"useBSDLicense": true}]
+    "nuclide-internal/license-header": [1, {"useBSDLicense": true}]
   }
 }
