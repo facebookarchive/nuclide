@@ -16,6 +16,8 @@ import readline from 'readline';
 import CommandDispatcher from './CommandDispatcher';
 import {Observable, Subject} from 'rxjs';
 
+const PROMPT = 'fbdbg> ';
+
 export default class CommandLine implements ConsoleIO {
   _dispatcher: CommandDispatcher;
   _cli: readline$Interface;
@@ -23,7 +25,10 @@ export default class CommandLine implements ConsoleIO {
   _shouldPrompt = false;
   _lastLine = '';
 
-  _onSIGINT: Subject<void> = new Subject();
+  _interrupts: Subject<void>;
+  _lines: Subject<string>;
+
+  _subscriptions: Array<rxjs$ISubscription> = [];
 
   constructor(dispatcher: CommandDispatcher) {
     this._dispatcher = dispatcher;
@@ -32,11 +37,56 @@ export default class CommandLine implements ConsoleIO {
       output: process.stdout,
     });
 
-    this._cli.setPrompt('fbdbg> ');
+    this.setPrompt();
+
+    this._interrupts = new Subject();
+    this._subscriptions.push(
+      Observable.fromEvent(this._cli, 'SIGINT').subscribe(this._interrupts),
+    );
+
+    this._lines = new Subject();
+    this._subscriptions.push(
+      Observable.fromEvent(this._cli, 'line')
+        .takeUntil(Observable.fromEvent(this._cli, 'close'))
+        .subscribe(this._lines),
+    );
+
+    this._subscriptions.push(
+      this._lines
+        .filter(_ => !this._inputStopped)
+        .switchMap(_ => {
+          this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
+          return this._dispatcher.execute(this._lastLine);
+        })
+        .subscribe(_ => {
+          if (_ != null) {
+            this.outputLine(_.message);
+          }
+          if (!this._inputStopped) {
+            this._cli.prompt();
+          } else {
+            this._shouldPrompt = true;
+          }
+        }),
+    );
+
+    this._shouldPrompt = true;
   }
 
-  observerSIGINT(): Observable<void> {
-    return this._onSIGINT.asObservable();
+  dispose() {
+    this._subscriptions.forEach(_ => _.unsubscribe());
+  }
+
+  get observeInterrupts(): Observable<void> {
+    return this._interrupts;
+  }
+
+  get observeLines(): Observable<string> {
+    return this._lines;
+  }
+
+  setPrompt(prompt: ?string): void {
+    this._cli.setPrompt(prompt == null ? PROMPT : prompt);
   }
 
   // $TODO handle paging long output (more) if termcap allows us to know the screen height
@@ -56,6 +106,10 @@ export default class CommandLine implements ConsoleIO {
     process.stdout.write(`${line}\n`);
   }
 
+  prompt(): void {
+    this._cli.prompt();
+  }
+
   stopInput(): void {
     this._inputStopped = true;
   }
@@ -68,38 +122,7 @@ export default class CommandLine implements ConsoleIO {
     }
   }
 
-  run(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this._inputStopped) {
-        this._cli.prompt();
-      } else {
-        this._shouldPrompt = true;
-      }
-      this._cli
-        .on('line', this._executeCommand.bind(this))
-        .on('SIGINT', _ => this._onSIGINT.next())
-        .on('close', resolve);
-    });
-  }
-
   close(): void {
     this._cli.close();
-  }
-
-  async _executeCommand(line: string): Promise<void> {
-    if (line !== '') {
-      this._lastLine = line;
-    }
-    try {
-      await this._dispatcher.execute(this._lastLine);
-    } catch (x) {
-      this.outputLine(x.message);
-    } finally {
-      if (!this._inputStopped) {
-        this._cli.prompt();
-      } else {
-        this._shouldPrompt = true;
-      }
-    }
   }
 }

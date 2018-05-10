@@ -34,7 +34,7 @@ export default class CommandDispatcher implements DispatcherInterface {
     return `"${names.join('", "')}"`;
   }
 
-  async execute(line: string): Promise<void> {
+  async execute(line: string): Promise<?Error> {
     let tail = line;
     const tokens: string[] = [];
 
@@ -58,7 +58,7 @@ export default class CommandDispatcher implements DispatcherInterface {
     return this.executeTokenizedLine(tokens);
   }
 
-  async executeTokenizedLine(tokens: string[]): Promise<void> {
+  async executeTokenizedLine(tokens: string[]): Promise<?Error> {
     if (tokens.length === 0 || !tokens[0]) {
       return;
     }
@@ -68,14 +68,18 @@ export default class CommandDispatcher implements DispatcherInterface {
     const matches = this.getCommandsMatching(cmd);
 
     if (matches.length === 0) {
-      throw new Error(`No command matches "${cmd}".`);
+      return new Error(`No command matches "${cmd}".`);
     }
 
     if (matches.length > 1) {
       const list = this.commandListToString(matches);
-      throw new Error(`Multiple commands match "${cmd}": ${list}`);
+      return new Error(`Multiple commands match "${cmd}": ${list}`);
     }
 
-    return matches[0].execute(tokens.slice(1));
+    return new Promise((resolve, reject) => {
+      matches[0]
+        .execute(tokens.slice(1))
+        .then(_ => resolve(null), _ => resolve(_));
+    });
   }
 }

@@ -145,15 +145,20 @@ async function main(): Promise<void> {
 
     debuggerInstance.registerCommands(dispatcher);
 
-    cli.observerSIGINT().subscribe(_ => {
+    cli.observeInterrupts.subscribe(_ => {
       debuggerInstance.breakInto();
     });
 
-    await cli.run();
-    await debuggerInstance.closeSession();
-    cli.outputLine();
-
-    process.exit(0);
+    cli.observeLines.subscribe(
+      _ => {},
+      _ => {},
+      _ => {
+        debuggerInstance.closeSession().then(x => {
+          cli.outputLine();
+          process.exit(0);
+        });
+      },
+    );
   } catch (x) {
     cli.outputLine(x.message);
     process.exit(1);

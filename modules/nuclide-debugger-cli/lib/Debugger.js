@@ -30,6 +30,7 @@ import BreakpointCollection from './BreakpointCollection';
 import BreakpointCommand from './BreakpointCommand';
 import CommandDispatcher from './CommandDispatcher';
 import ContinueCommand from './ContinueCommand';
+import EnterCodeCommand from './EnterCodeCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -88,6 +89,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new RestartCommand(this));
     dispatcher.registerCommand(new PrintCommand(this._console, this));
     dispatcher.registerCommand(new RunCommand(this));
+    dispatcher.registerCommand(new EnterCodeCommand(this._console, this));
   }
 
   // launch is for launching a process from scratch when we need a new
