@@ -505,13 +505,15 @@ export default class Debugger implements DebuggerInterface {
   async evaluateExpression(
     expression: string,
   ): Promise<DebugProtocol.EvaluateResponse> {
-    const session = this._ensureDebugSession();
+    const session = this._ensureDebugSession(true);
 
     let args = {expression, context: 'repl'};
 
-    const frame = await this.getCurrentStackFrame();
-    if (frame != null) {
-      args = {...args, frameId: frame.id};
+    if (this._state === 'RUNNING') {
+      const frame = await this.getCurrentStackFrame();
+      if (frame != null) {
+        args = {...args, frameId: frame.id};
+      }
     }
 
     return session.evaluate(args);
