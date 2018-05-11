@@ -4,13 +4,14 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from collections import defaultdict
 import logging
 import os
-
 import utils
 
 NUCLIDE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
 PACKAGES_PATH = os.path.join(NUCLIDE_PATH, 'pkg')
+ATOM_IDE_UI_PACKAGES_PATH = os.path.join(NUCLIDE_PATH, 'modules', 'atom-ide-ui', 'pkg')
 
 
 class PackageManager(object):
@@ -53,6 +54,32 @@ def load_package_configs(package_dir=PACKAGES_PATH):
                 package_map[package_name] = config
 
     return package_map
+
+
+def load_feature_groups():
+    '''Returns a map where keys are feature groups and values are features.'''
+    result = {}
+
+    feature_groups_path = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), '../../lib/featureGroups.json'))
+    result[feature_groups_path] = utils.json_load(feature_groups_path)
+
+    fb_feature_groups_path = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), '../../lib/fb-featureGroups.json'))
+    try:
+        result[fb_feature_groups_path] = utils.json_load(fb_feature_groups_path)
+    except IOError:
+        pass
+
+    return result
+
+
+def merge_feature_groups(groups):
+    merged = defaultdict(set)
+    for group in groups:
+        for group_name, features in group.items():
+            merged[group_name].update(features)
+    return dict(merged)
 
 
 def create_config_for_package(path):

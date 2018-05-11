@@ -24,9 +24,12 @@ DEFAULT_AUTHOR = 'Replace this with the name of the team responsible for maintai
 #  - missing/incorrect version
 #  - missing/incorrect scripts/test property
 class PackageLinter(object):
-    def __init__(self, package_map):
+    def __init__(self, package_map, feature_groups, atom_ide_ui=False):
+        self._atom_ide_ui = atom_ide_ui
         self._had_error = False
         self._package_map = package_map
+        self._feature_groups = feature_groups
+        self._features_in_groups = set().union(*feature_groups.values())
         self._current_file_being_linted = None
 
     def validate_packages(self):
@@ -55,12 +58,13 @@ class PackageLinter(object):
         self.verify_main_property(package_name, package)
         self.verify_author_property(package_name, package)
 
-        self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
-        self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
-        if package['testRunner'] == 'npm':
-            self.verify_npm_package(package)
-        else:
-            self.verify_apm_package(package)
+        if not self._atom_ide_ui:
+            self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
+            self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
+            if package['testRunner'] == 'npm':
+                self.verify_npm_package(package)
+            else:
+                self.verify_apm_package(package)
 
         if 'description' not in package:
             self.report_error('Missing "description" for %s', package_name)
@@ -68,27 +72,30 @@ class PackageLinter(object):
             self.report_error('Empty "description" for %s', package_name)
         self.expect_field(package_name, package, 'version', '0.0.0')
 
-        if package.get('repository', None) is not None:
+        if not self._atom_ide_ui and package.get('repository', None) is not None:
             self.report_error(
                 'Package should not contain a "repository" field. See D6510438 for explanation.'
             )
 
         package_name = package['name']
-        has_valid_prefix = False
-        prefixes = self.get_valid_package_prefixes()
-        for prefix in prefixes:
-            if package_name.startswith(prefix):
-                has_valid_prefix = True
-                break
-        if not has_valid_prefix:
-            self.report_error('Package name %s must start with one of %s', package_name, prefixes)
+        if not self._atom_ide_ui:
+            has_valid_prefix = False
+            prefixes = self.get_valid_package_prefixes()
+            for prefix in prefixes:
+                if package_name.startswith(prefix):
+                    has_valid_prefix = True
+                    break
+            if not has_valid_prefix:
+                self.report_error('Package name %s must start with one of %s',
+                                  package_name, prefixes)
 
-        if not package['isNodePackage']:
+        if not self._atom_ide_ui and not package['isNodePackage']:
             self.expect_field(package_name, package, 'testRunner', 'apm')
             self.validate_json_extras(package)
         self.validate_dependencies(package)
         self.validate_babelrc(package)
-        self.validate_provided_services(package)
+        if not self._atom_ide_ui:
+            self.validate_provided_services(package)
 
         if self.is_internal_name(package_name):
             self.expect_field(package_name, package, 'private', True)
@@ -116,6 +123,13 @@ class PackageLinter(object):
             self.report_error(
                 'Expected package name %s found %s',
                 expected_package_name, package_name)
+        if (
+            (self._atom_ide_ui or package['packageType'] == 'Atom') and
+            package_name not in self._features_in_groups
+        ):
+            self.report_error(
+                'Package %s not included in any feature groups. Update featureGroups.json.',
+                package_name)
 
     def verify_main_property(self, package_name, package):
         if package['main'] is None:
@@ -202,7 +216,7 @@ class PackageLinter(object):
                 ('Package %s should not have a custom scripts/test section ' +
                     'because it will use apm as its test runner.'),
                 package_name)
-        if package['atomTestRunner'] is None:
+        if not self._atom_ide_ui and package['atomTestRunner'] is None:
             self.report_error(
                 'Package %s should have an "atomTestRunner" field', package_name)
         atom_test_runner_path = os.path.join(package['packageRootAbsolutePath'],

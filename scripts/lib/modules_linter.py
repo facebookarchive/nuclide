@@ -14,8 +14,8 @@ MODULES_LICENSE = 'BSD-3-Clause'
 
 
 class ModulesLinter(PackageLinter):
-    def __init__(self, package_map):
-        PackageLinter.__init__(self, package_map)
+    def __init__(self, package_map, feature_groups):
+        PackageLinter.__init__(self, package_map, feature_groups)
 
         root_package = create_config_for_package(
             os.path.join(os.path.dirname(__file__), '../../package.json'))
