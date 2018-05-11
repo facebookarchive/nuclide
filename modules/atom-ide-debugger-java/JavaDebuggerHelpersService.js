@@ -56,15 +56,10 @@ export async function getPortForJavaDebugger(): Promise<number> {
 export async function getJavaVSAdapterExecutableInfo(
   debug: boolean,
 ): Promise<VSAdapterExecutableInfo> {
-  try {
-    return {
-      command: JAVA,
-      args: await _getJavaArgs(debug),
-    };
-  } catch (e) {
-    atom.notifications.addError(e.message);
-    throw e;
-  }
+  return {
+    command: JAVA,
+    args: await _getJavaArgs(debug),
+  };
 }
 
 export async function prepareForTerminalLaunch(

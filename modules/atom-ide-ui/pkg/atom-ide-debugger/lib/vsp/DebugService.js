@@ -1161,6 +1161,9 @@ export default class DebugService implements IDebugService {
     rawConfiguration: IProcessConfig,
     sessionId: string,
   ): Promise<?IProcess> {
+    let process: ?IProcess;
+    let session: ?VsDebugSession;
+
     const errorHandler = (error: Error) => {
       if (this._timer != null) {
         this._timer.onError(error);
@@ -1173,7 +1176,7 @@ export default class DebugService implements IDebugService {
       );
       this._consoleDisposables.dispose();
       this._updateModeAndEmit(DebuggerMode.STOPPED);
-      if (!session.isDisconnected()) {
+      if (session != null && !session.isDisconnected()) {
         this._onSessionEnd();
         session.disconnect().catch(onUnexpectedError);
       }
@@ -1182,27 +1185,26 @@ export default class DebugService implements IDebugService {
       }
     };
 
-    let process: ?IProcess;
-
-    const adapterExecutable = await this._resolveAdapterExecutable(
-      rawConfiguration,
-    );
-    const configuration = await resolveDebugConfiguration({
-      ...rawConfiguration,
-      adapterExecutable,
-    });
-
-    track(AnalyticsEvents.DEBUGGER_START, {
-      serviceName: configuration.adapterType,
-      clientType: 'VSP',
-    });
-
-    const session = await this._createVsDebugSession(
-      configuration,
-      configuration.adapterExecutable || adapterExecutable,
-      sessionId,
-    );
     try {
+      const adapterExecutable = await this._resolveAdapterExecutable(
+        rawConfiguration,
+      );
+      const configuration = await resolveDebugConfiguration({
+        ...rawConfiguration,
+        adapterExecutable,
+      });
+
+      track(AnalyticsEvents.DEBUGGER_START, {
+        serviceName: configuration.adapterType,
+        clientType: 'VSP',
+      });
+
+      session = await this._createVsDebugSession(
+        configuration,
+        configuration.adapterExecutable || adapterExecutable,
+        sessionId,
+      );
+
       process = this._model.addProcess(configuration, session);
       this.focusStackFrame(null, null, process);
       this._registerSessionListeners(process, session);
