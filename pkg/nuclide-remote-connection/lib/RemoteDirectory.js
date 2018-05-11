@@ -302,6 +302,7 @@ export class RemoteDirectory {
   async getEntries(
     callback: (
       error: ?atom$GetEntriesError,
+      // $FlowFixMe(>=0.72.0) Flow suppress (T29189893)
       entries: ?Array<RemoteDirectory | RemoteFile>,
     ) => any,
   ): Promise<void> {
