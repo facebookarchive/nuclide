@@ -12,6 +12,7 @@
     "babel-cli": "6.26.0",
     "babel-plugin-transform-es2015-modules-commonjs": "6.26.0",
     "babel-preset-flow": "6.23.0",
+    "jest-environment-jsdom": "22.4.3",
     "jest-haste-map": "23.0.0-charlie.1",
     "jest-message-util": "23.0.0-charlie.1",
     "jest-runner": "23.0.0-charlie.1",
@@ -21,8 +22,5 @@
   },
   "scripts": {
     "watch": "babel src --out-dir build --watch"
-  },
-  "dependencies": {
-    "jest-environment-jsdom": "22.4.3"
   }
 }
