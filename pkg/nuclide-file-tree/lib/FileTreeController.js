@@ -293,8 +293,11 @@ export default class FileTreeController {
     let path = getElementFilePath(((event.target: any): HTMLElement));
 
     if (path == null) {
-      const editor = atom.workspace.getActiveTextEditor();
-      path = editor != null ? editor.getPath() : null;
+      const paneItem = atom.workspace.getActivePaneItem();
+      // hacky, but covers at LEAST atom's TextEditor and ImageEditor
+      if (paneItem != null && typeof paneItem.getPath === 'function') {
+        path = paneItem.getPath();
+      }
       if (path == null) {
         return;
       }
