@@ -70,6 +70,7 @@ declare class atom$Package {
   path: string,
   activateTime: number,
   mainModule: any,
+  mainModulePath: string,
   metadata: Object,
   name: string,
   loadTime: number,
@@ -1867,6 +1868,7 @@ declare class atom$Notification {
   getMessage(): string,
   getOptions(): Object,
   dismiss(): void,
+  isDismissed(): boolean,
 }
 
 type atom$NotificationButton = {
@@ -1880,6 +1882,7 @@ type atom$NotificationOptions = {
   dismissable?: boolean,
   description?: string,
   icon?: string,
+  stack?: string,
   buttons?: Array<atom$NotificationButton>,
 };
 
