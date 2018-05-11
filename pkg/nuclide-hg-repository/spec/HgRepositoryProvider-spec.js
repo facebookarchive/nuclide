@@ -44,24 +44,37 @@ describe('HgRepositoryProvider', () => {
 
       // compare private members to guarantee they have the same underlying HgRepositoryClient
       // arbitrarily chose _emitter
-      expect(baseRepo._sharedMembers).toBe(folderRepo._sharedMembers);
+      expect(baseRepo.getRootRepoClient()).toBe(folderRepo.getRootRepoClient());
 
+      let folderRepoDestroyed = false;
+      let folderRepoRootDestroyed = false;
+      folderRepo.onDidDestroy(() => {
+        folderRepoDestroyed = true;
+      });
+      folderRepo.getRootRepoClient().onDidDestroy(() => {
+        folderRepoRootDestroyed = true;
+      });
       folderRepo.destroy();
-      expect(folderRepo._sharedMembers.isDestroyed).toBe(false);
-      expect(baseRepo._sharedMembers.isDestroyed).toBe(false);
+      expect(folderRepoDestroyed).toBe(true);
+      expect(folderRepoRootDestroyed).toBe(false);
 
       const folderRepo2 = provider.repositoryForDirectorySync(folderDirectory);
       invariant(folderRepo2 != null);
-      expect(baseRepo._sharedMembers).toBe(folderRepo2._sharedMembers);
+      expect(baseRepo.getRootRepoClient()).toBe(
+        folderRepo2.getRootRepoClient(),
+      );
 
       folderRepo2.destroy();
       baseRepo.destroy();
       // refCount should hit 0 and remove the original underlying HgRepositoryClient
-      expect(baseRepo._sharedMembers.isDestroyed).toBe(true);
+      // thus triggering the onDidDestroy for the underlying repo
+      expect(folderRepoRootDestroyed).toBe(true);
 
       const baseRepo2 = provider.repositoryForDirectorySync(baseDirectory);
       invariant(baseRepo2 != null);
-      expect(baseRepo._sharedMembers).not.toBe(baseRepo2._sharedMembers);
+      expect(baseRepo.getRootRepoClient()).not.toBe(
+        baseRepo2.getRootRepoClient(),
+      );
       expect(baseRepo.getProjectDirectory()).toBe(
         baseRepo2.getProjectDirectory(),
       );

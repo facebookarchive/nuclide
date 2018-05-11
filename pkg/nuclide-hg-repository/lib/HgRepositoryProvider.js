@@ -10,6 +10,7 @@
  */
 
 import {Directory} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {trackTiming} from '../../nuclide-analytics';
 import {
   RemoteDirectory,
@@ -133,18 +134,34 @@ export default class HgRepositoryProvider {
 
         let destroyed = false;
 
+        const localDisposables = new UniversalDisposable();
+
         /* eslint-disable no-inner-declarations */
         function ProjectHgRepositoryClient() {
           this.getInternalProjectDirectory = function(): atom$Directory {
             return directory;
           };
-          this.destroy = (): void => {
+
+          this.destroy = function(): void {
             invariant(activeRepoClientInfo != null);
             if (!destroyed && --activeRepoClientInfo.refCount === 0) {
               destroyed = true;
               activeRepoClientInfo.repo.destroy();
               activeRepositoryClients.delete(repoPath);
             }
+            localDisposables.dispose();
+          };
+
+          // Allow consumers to use `onDidDestroy` for the ProjectRepos.
+          // `getRootRepo()` can be used to add an onDidDestroy for the base
+          // repo
+          this.onDidDestroy = function(callback: () => mixed): IDisposable {
+            localDisposables.add(callback);
+            return {
+              dispose() {
+                localDisposables.remove(callback);
+              },
+            };
           };
         }
 

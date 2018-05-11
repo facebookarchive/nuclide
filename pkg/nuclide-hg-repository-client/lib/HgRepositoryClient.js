@@ -159,6 +159,7 @@ export class HgRepositoryClient {
   // instance in the first place.
   // Do not reassign this object.
   _sharedMembers: {
+    rootRepo: HgRepositoryClient,
     path: string,
     workingDirectory: atom$Directory | RemoteDirectory,
     projectDirectory: ?atom$Directory,
@@ -199,6 +200,7 @@ export class HgRepositoryClient {
     // $FlowFixMe - by the end of the constructor, all the members should be initialized
     this._sharedMembers = {};
 
+    this._sharedMembers.rootRepo = this;
     this._sharedMembers.path = repoPath;
     this._sharedMembers.workingDirectory = options.workingDirectory;
     this._sharedMembers.projectDirectory = options.projectRootDirectory;
@@ -384,6 +386,12 @@ export class HgRepositoryClient {
         this._sharedMembers.hgDiffCache = new Map();
       }),
     );
+  }
+
+  // A single root HgRepositoryClient can back multiple HgRepositoryClients
+  // via differential inheritance. This gets the 'original' HgRepositoryClient
+  getRootRepoClient(): HgRepositoryClient {
+    return this._sharedMembers.rootRepo;
   }
 
   async getAdditionalLogFiles(
