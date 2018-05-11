@@ -16,6 +16,9 @@ import type {
 
 import {SshHandshake} from '../../nuclide-remote-connection';
 
+import {shell} from 'electron';
+import child_process from 'child_process';
+
 export function notifySshHandshakeError(
   errorType: SshHandshakeErrorType,
   error: Error,
@@ -23,6 +26,7 @@ export function notifySshHandshakeError(
 ): void {
   let message = '';
   let detail = '';
+  let buttons = [];
   const originalErrorDetail = `Original error message:\n ${error.message}`;
   const createTimeoutDetail = () =>
     'Troubleshooting:\n' +
@@ -136,6 +140,13 @@ export function notifySshHandshakeError(
         'Your system clock is behind - unable to authenticate.\n' +
         'Please check your date and time settings to continue.\n\n' +
         originalErrorDetail;
+      buttons = [
+        {
+          className: 'icon icon-watch',
+          text: 'Sync System Clock with Time Server',
+          onDidClick: () => handleSyncDateTime(notification),
+        },
+      ];
       break;
     case 'UNKNOWN':
       message = `Unexpected error occurred: ${error.message}.`;
@@ -145,5 +156,34 @@ export function notifySshHandshakeError(
       (errorType: empty);
       detail = originalErrorDetail;
   }
-  atom.notifications.addError(message, {detail, dismissable: true});
+
+  const notification = atom.notifications.addError(message, {
+    detail,
+    dismissable: true,
+    buttons,
+  });
+}
+
+function handleSyncDateTime(notification) {
+  switch (process.platform) {
+    case 'darwin':
+      shell.openItem('/System/Library/PreferencePanes/DateAndTime.prefPane');
+      notification.dismiss();
+      break;
+    case 'win32':
+      child_process.spawn('powershell', [
+        '-Command',
+        'Start-Process cmd.exe -Verb RunAs -ArgumentList {/c w32tm /resync}',
+      ]);
+      notification.onDidDismiss(() => {
+        atom.notifications.addSuccess('System Time Synced', {
+          detail:
+            'Your system time has been automatically synced with the time server.',
+        });
+      });
+      notification.dismiss();
+      break;
+    default:
+      notification.dismiss();
+  }
 }
