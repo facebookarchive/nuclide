@@ -99,7 +99,8 @@ const observeActiveItems = memoizeUntilChanged(_cacheKey => {
       // avoid doing extra work, we debounce and use the rAF scheduler.
       .debounceTime(0, Scheduler.animationFrame)
       .map(map => new Set(map.values()))
-      .share()
+      // $FlowIgnore: this is just not listed in the flow-typed defs
+      .shareReplay(1)
   );
 });
 
