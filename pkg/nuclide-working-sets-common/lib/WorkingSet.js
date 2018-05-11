@@ -47,12 +47,13 @@ type TreeNode = InnerNode | LeafNode;
  */
 export class WorkingSet {
   _uris: Array<string>;
+  _absoluteUris: Array<string>;
   _root: ?InnerNode;
 
   constructor(uris: Array<NuclideUri> = []) {
     try {
-      const uriPaths = uris.map(nuclideUri.getPath);
-      this._uris = dedupeUris(uriPaths);
+      this._absoluteUris = dedupeUris(uris);
+      this._uris = this._absoluteUris.map(nuclideUri.getPath);
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
       logger.error(
@@ -116,6 +117,10 @@ export class WorkingSet {
 
   getUris(): Array<string> {
     return this._uris;
+  }
+
+  getAbsoluteUris(): Array<string> {
+    return this._absoluteUris;
   }
 
   append(...uris: Array<NuclideUri>): WorkingSet {

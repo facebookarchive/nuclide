@@ -460,7 +460,9 @@ All the changes across your entire stacked diff.
 
   _processExternalUpdate = (): void => {
     const shouldRenderToolbar = !this._store.roots.isEmpty();
-    const openFilesUris = this._store.getOpenFilesWorkingSet().getUris();
+    const openFilesUris = this._store
+      .getOpenFilesWorkingSet()
+      .getAbsoluteUris();
     const uncommittedFileChanges = this._store.getFileChanges();
     const isCalculatingChanges = this._store.getIsCalculatingChanges();
     const title = this.getTitle();
