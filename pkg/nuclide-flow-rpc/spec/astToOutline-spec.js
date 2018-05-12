@@ -25,6 +25,7 @@ import toplevelASTOld from './fixtures/toplevel-ast-old.json';
 import toplevelAST34 from './fixtures/toplevel-ast-v0.34.json';
 import exportsASTOld from './fixtures/exports-ast-old.json';
 import exportsAST34 from './fixtures/exports-ast-v0.34.json';
+import exportsClassAST from './fixtures/exports-class-ast.json';
 import exportDefaultArrowFuncAST34 from './fixtures/export-default-arrow-func-v0.34.json';
 import exportDefaultAnonymousFuncAST34 from './fixtures/export-default-anonymous-func-v0.34.json';
 import typesASTOld from './fixtures/types-ast-old.json';
@@ -296,6 +297,46 @@ const expectedJasmineOutline: Array<OutlineTree> = [
         representativeName: 'should work with a normal function',
         startPosition: new Point(20, 2),
         endPosition: new Point(21, 5),
+        children: [],
+      },
+    ],
+  },
+];
+
+const expectedExportsClassOutline: Array<OutlineTree> = [
+  {
+    kind: 'class',
+    tokenizedText: [
+      {value: 'class', kind: 'keyword'},
+      {value: ' ', kind: 'whitespace'},
+      {value: 'Test', kind: 'class-name'},
+    ],
+    representativeName: 'Test',
+    startPosition: new Point(13, 17),
+    endPosition: new Point(16, 1),
+    children: [
+      {
+        kind: 'property',
+        tokenizedText: [
+          {value: '_testProp', kind: 'method'},
+          {value: '=', kind: 'plain'},
+        ],
+        representativeName: '_testProp',
+        startPosition: new Point(14, 2),
+        endPosition: new Point(14, 20),
+        children: [],
+      },
+      {
+        kind: 'method',
+        tokenizedText: [
+          {value: 'testMethod', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        representativeName: 'testMethod',
+        startPosition: new Point(15, 2),
+        endPosition: new Point(15, 20),
         children: [],
       },
     ],
@@ -775,6 +816,12 @@ describe('astToOutline', () => {
     );
     expect(astToOutline(exportsAST34).outlineTrees).diffJson(
       expectedExportsOutline,
+    );
+  });
+
+  it('should provide an outline for module.exports class expression assignments', () => {
+    expect(astToOutline(exportsClassAST).outlineTrees).diffJson(
+      expectedExportsClassOutline,
     );
   });
 

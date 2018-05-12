@@ -265,16 +265,21 @@ function moduleExportsOutline(assignmentStatement: any): ?OutlineTree {
   }
 
   const right = assignmentStatement.right;
-  if (right.type !== 'ObjectExpression') {
-    return null;
+
+  switch (right.type) {
+    case 'ClassExpression':
+      return itemToTree(right);
+    case 'ObjectExpression':
+      const properties: Array<Object> = right.properties;
+      return {
+        kind: 'module',
+        tokenizedText: [plain('module.exports')],
+        children: arrayCompact(properties.map(moduleExportsPropertyOutline)),
+        ...getExtent(assignmentStatement),
+      };
+    default:
+      return null;
   }
-  const properties: Array<Object> = right.properties;
-  return {
-    kind: 'module',
-    tokenizedText: [plain('module.exports')],
-    children: arrayCompact(properties.map(moduleExportsPropertyOutline)),
-    ...getExtent(assignmentStatement),
-  };
 }
 
 function isModuleExports(left: Object): boolean {
