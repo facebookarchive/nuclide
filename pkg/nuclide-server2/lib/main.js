@@ -22,7 +22,7 @@ require('v8-compile-cache');
 require('../../commons-node/load-transpiler');
 
 // Load the big-dig entry point.
-const {parseArgsAndRunMain} = require('big-dig/src/server/cli');
+const {parseArgsAndRunMain} = require('../../../modules/big-dig/src/server/cli');
 
 // .. and tell it to load the Nuclide server.
 const absolutePathToServerMain = require.resolve('./server');
