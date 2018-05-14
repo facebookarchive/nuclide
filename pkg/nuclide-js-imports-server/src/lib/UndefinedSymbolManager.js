@@ -44,6 +44,22 @@ function traverseTreeForUndefined(
   const undefinedSymbols = [];
   const definedTypes = new Set();
   const definedValues = new Set();
+
+  ast.comments.forEach(({type, value}) => {
+    // Parses out /* global a, b, c: true, d: false */
+    if (type === 'CommentBlock') {
+      const trimmed = value.trim();
+      if (trimmed.startsWith('global ') || trimmed.startsWith('globals ')) {
+        const vars = trimmed.substr(7).trimLeft();
+        vars.split(',').forEach(varString => {
+          const varName = varString.split(':')[0].trim();
+          definedTypes.add(varName);
+          definedValues.add(varName);
+        });
+      }
+    }
+  });
+
   let csx = false;
   traverse(ast, {
     ImportDeclaration: path => {
@@ -54,6 +70,18 @@ function traverseTreeForUndefined(
     },
     DeclareClass: path => {
       save(path, definedTypes);
+    },
+    DeclareFunction: path => {
+      save(path, definedValues);
+      return true;
+    },
+    DeclareTypeAlias: path => {
+      save(path, definedTypes);
+      return true;
+    },
+    DeclareVariable: path => {
+      save(path, definedValues);
+      return true;
     },
     ClassDeclaration: path => {
       save(path, definedTypes);
@@ -91,6 +119,11 @@ function traverseTreeForUndefined(
         path.parent.comments.some(({value}) =>
           JSX_CSX_PRAGMA_REGEX.test(value),
         );
+    },
+    JSXFragment(path) {
+      if (!csx) {
+        findUndefinedReact(path, undefinedSymbols, globals);
+      }
     },
     JSXIdentifier(path) {
       if (!csx && path.parent.type === 'JSXOpeningElement') {
@@ -136,7 +169,7 @@ function findUndefinedValues(
 
   undefinedSymbols.push({
     id: node.name,
-    type: 'value',
+    type: path.parent.type === 'QualifiedTypeIdentifier' ? 'type' : 'value',
     location: {
       start: {line: node.loc.start.line, col: node.loc.start.column},
       end: {line: node.loc.end.line, col: node.loc.end.column},

@@ -51,6 +51,16 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols[0].id).toBe('React');
     expect(undefinedSymbols[0].type).toBe('value');
   });
+  it('Should find undefined React in JSX fragment', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const x = <>test</>;';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('React');
+    expect(undefinedSymbols[0].type).toBe('value');
+  });
   it('Should not find undefined React in JSX component with @csx tag', () => {
     const manager = new UndefinedSymbolManager([]);
     const program = '/**@csx*/ const x = <Component />;';
@@ -132,6 +142,18 @@ describe('UndefinedSymbolManager', () => {
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols).toBeDefined();
     expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should handle /* global */ comments', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = `
+      /* global Test, Test2: false, Test3 */
+      const x = Test + Test2 + Test3 + Test4;
+    `;
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(1);
+    expect(undefinedSymbols[0].id).toBe('Test4');
   });
 
   /* Type Tests */
@@ -270,7 +292,7 @@ describe('UndefinedSymbolManager', () => {
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(1);
     expect(undefinedSymbols[0].id).toBe('Immutable');
-    expect(undefinedSymbols[0].type).toBe('value');
+    expect(undefinedSymbols[0].type).toBe('type');
   });
   it('No false positives with generics', () => {
     const manager = new UndefinedSymbolManager([]);
@@ -300,6 +322,17 @@ describe('UndefinedSymbolManager', () => {
     const manager = new UndefinedSymbolManager([]);
     const program =
       "import SomeModule from 'a'; const thing: SomeModule.SomeType = 5;";
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should work with declare type', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = `
+      declare type Options = {};
+      declare function f(options: Options): void;
+      declare var Variable: string;
+    `;
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols.length).toBe(0);

@@ -19,7 +19,7 @@ import DiskCache from '../../../commons-node/DiskCache';
 import {serializeConfig} from '../Config';
 
 const CACHE_DIR = nuclideUri.join(os.tmpdir(), 'nuclide-js-imports-cache');
-const CACHE_VERSION = 1; // Bump this for any breaking changes.
+const CACHE_VERSION = 2; // Bump this for any breaking changes.
 
 export type CacheParams = {
   root: string,
