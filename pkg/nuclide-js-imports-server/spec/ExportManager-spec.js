@@ -14,7 +14,13 @@ import * as babylon from 'babylon';
 
 const babylonOptions = {
   sourceType: 'module',
-  plugins: ['jsx', 'flow', 'exportExtensions', 'objectRestSpread'],
+  plugins: [
+    'jsx',
+    'flow',
+    'exportExtensions',
+    'exportNamespaceFrom',
+    'objectRestSpread',
+  ],
 };
 
 describe('ExportManager', () => {

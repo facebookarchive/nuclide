@@ -200,7 +200,14 @@ class FileParser {
   parse(source: string): void {
     const babylonOptions = {
       sourceType: 'module',
-      plugins: ['*', 'jsx', 'flow'],
+      plugins: [
+        'jsx',
+        'flow',
+        'exportExtensions',
+        'objectRestSpread',
+        'classProperties',
+        'optionalChaining',
+      ],
     };
     const program = memoizedBabylonParse(source, babylonOptions);
     invariant(
@@ -746,7 +753,7 @@ class FileParser {
         return {kind: 'boolean'};
       case 'StringLiteralTypeAnnotation':
         return {kind: 'string-literal', value: typeAnnotation.value};
-      case 'NumericLiteralTypeAnnotation':
+      case 'NumberLiteralTypeAnnotation':
         return {kind: 'number-literal', value: typeAnnotation.value};
       case 'BooleanLiteralTypeAnnotation':
         return {kind: 'boolean-literal', value: typeAnnotation.value};

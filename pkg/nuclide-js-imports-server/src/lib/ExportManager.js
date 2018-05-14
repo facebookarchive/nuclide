@@ -193,7 +193,7 @@ function expressionToExports(
     // Index each property of the object
     const propertyExports = arrayCompact(
       expression.properties.map(property => {
-        if (property.type === 'SpreadProperty' || property.computed) {
+        if (property.type === 'SpreadElement' || property.computed) {
           return null;
         }
         return {

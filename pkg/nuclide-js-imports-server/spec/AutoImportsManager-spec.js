@@ -13,7 +13,7 @@ import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 
 describe('AutoImportsManager', () => {
   it('Can provide a basic missing value import', () => {
-    const file1 = 'export function Foo(){return 1;}';
+    const file1 = 'export function Foo(){return x?.y;}';
     const file2 = 'Foo();';
     const autoImportsManager = new AutoImportsManager([]);
     autoImportsManager.indexFile('file1.js', file1);

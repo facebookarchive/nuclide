@@ -33,6 +33,7 @@ export const babylonOptions = {
     'exportExtensions',
     'objectRestSpread',
     'classProperties',
+    'optionalChaining',
   ],
 };
 
