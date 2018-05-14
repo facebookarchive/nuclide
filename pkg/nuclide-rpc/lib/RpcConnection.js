@@ -217,7 +217,21 @@ export class RpcConnection<TransportType: Transport> {
     this._objectRegistry = new ObjectRegistry(
       kind,
       this._serviceRegistry,
-      this,
+      // TODO: removed in the following diff.
+      {
+        callRemoteFunction: (functionName, returnType, args) =>
+          this.callRemoteFunction(functionName, returnType, args),
+        callRemoteMethod: (objectId, methodName, returnType, args) =>
+          this.callRemoteMethod(objectId, methodName, returnType, args),
+        disposeRemoteObject: object => this.disposeRemoteObject(object),
+        marshal: (value, type) => Promise.resolve(this.marshal(value, type)),
+        unmarshal: (value, type) =>
+          Promise.resolve(this.unmarshal(value, type)),
+        marshalArguments: (args, argTypes) =>
+          Promise.resolve(this.marshalArguments(args, argTypes)),
+        unmarshalArguments: (args, argTypes) =>
+          Promise.resolve(this.unmarshalArguments(args, argTypes)),
+      },
     );
     this._transport.onMessage().subscribe(message => {
       this._handleMessage(message);
@@ -315,41 +329,27 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   // Delegate marshalling to the type registry.
-  marshal(value: any, type: Type): Promise<any> {
-    return Promise.resolve(
-      this._getTypeRegistry().marshal(this._objectRegistry, value, type),
+  marshal(value: any, type: Type): any {
+    return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
+  }
+
+  unmarshal(value: any, type: Type): any {
+    return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
+  }
+
+  marshalArguments(args: Array<any>, argTypes: Array<Parameter>): Object {
+    return this._getTypeRegistry().marshalArguments(
+      this._objectRegistry,
+      args,
+      argTypes,
     );
   }
 
-  unmarshal(value: any, type: Type): Promise<any> {
-    return Promise.resolve(
-      this._getTypeRegistry().unmarshal(this._objectRegistry, value, type),
-    );
-  }
-
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>,
-  ): Promise<Object> {
-    return Promise.resolve(
-      this._getTypeRegistry().marshalArguments(
-        this._objectRegistry,
-        args,
-        argTypes,
-      ),
-    );
-  }
-
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>,
-  ): Promise<Array<any>> {
-    return Promise.resolve(
-      this._getTypeRegistry().unmarshalArguments(
-        this._objectRegistry,
-        args,
-        argTypes,
-      ),
+  unmarshalArguments(args: Object, argTypes: Array<Parameter>): Array<any> {
+    return this._getTypeRegistry().unmarshalArguments(
+      this._objectRegistry,
+      args,
+      argTypes,
     );
   }
 
@@ -405,13 +405,13 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   /**
-   * Dispose a remote object. This makes it's proxies unsuable, and calls the `dispose` method on
+   * Dispose a remote object. This makes it's proxies unusable, and calls the `dispose` method on
    * the remote object.
    * @param object - The remote object.
    * @returns A Promise that resolves when the object disposal has completed.
    */
   async disposeRemoteObject(object: Object): Promise<void> {
-    const objectId = await this._objectRegistry.disposeProxy(object);
+    const objectId = this._objectRegistry.disposeProxy(object);
     if (objectId == null) {
       logger.info('Duplicate dispose call on remote proxy');
     } else if (this._transport.isClosed()) {
@@ -452,7 +452,6 @@ export class RpcConnection<TransportType: Transport> {
         // just queue up the message on the reliable transport; timeout errors
         // are solely intended to help clients behave nicer.
         const promise = new Promise((resolve, reject) => {
-          this._transport.send(JSON.stringify(message));
           this._calls.set(
             message.id,
             new Call(
@@ -465,6 +464,7 @@ export class RpcConnection<TransportType: Transport> {
               },
             ),
           );
+          this._transport.send(JSON.stringify(message));
         });
         const {trackSampleRate} = this._options;
         // flowlint-next-line sketchy-null-number:off
@@ -538,10 +538,6 @@ export class RpcConnection<TransportType: Transport> {
       );
     }
 
-    // Marshal the result, to send over the network.
-    invariant(returnVal != null);
-    returnVal = returnVal.then(value => this.marshal(value, type));
-
     // Send the result of the promise across the socket.
     returnVal.then(
       result => {
@@ -551,7 +547,7 @@ export class RpcConnection<TransportType: Transport> {
               this._getProtocol(),
               id,
               this._generateResponseId(),
-              result,
+              this.marshal(result, type),
             ),
           ),
         );
@@ -584,9 +580,7 @@ export class RpcConnection<TransportType: Transport> {
       result = returnVal;
     }
 
-    // Marshal the result, to send over the network.
     result
-      .concatMap(value => this.marshal(value, elementType))
       // Send the next, error, and completion events of the observable across the socket.
       .subscribe(
         data => {
@@ -596,7 +590,7 @@ export class RpcConnection<TransportType: Transport> {
                 this._getProtocol(),
                 id,
                 this._generateResponseId(),
-                data,
+                this.marshal(data, elementType),
               ),
             ),
           );
@@ -647,11 +641,11 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  async _callFunction(id: number, call: CallMessage): Promise<void> {
+  _callFunction(id: number, call: CallMessage): void {
     const {getLocalImplementation, type} = this._getFunctionImplemention(
       call.method,
     );
-    const marshalledArgs = await this.unmarshalArguments(
+    const marshalledArgs = this.unmarshalArguments(
       call.args,
       type.argumentTypes,
     );
@@ -663,7 +657,7 @@ export class RpcConnection<TransportType: Transport> {
     );
   }
 
-  async _callMethod(id: number, call: CallObjectMessage): Promise<void> {
+  _callMethod(id: number, call: CallObjectMessage): void {
     const object = this._objectRegistry.unmarshal(call.objectId);
     invariant(object != null);
 
@@ -671,7 +665,7 @@ export class RpcConnection<TransportType: Transport> {
     const {definition} = this._getClassDefinition(interfaceName);
     const type = definition.instanceMethods[call.method];
 
-    const marshalledArgs = await this.unmarshalArguments(
+    const marshalledArgs = this.unmarshalArguments(
       call.args,
       type.argumentTypes,
     );
@@ -835,7 +829,7 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  async _handleRequestMessage(message: RequestMessage): Promise<void> {
+  _handleRequestMessage(message: RequestMessage): void {
     const id = message.id;
 
     if (
@@ -868,14 +862,17 @@ export class RpcConnection<TransportType: Transport> {
     try {
       switch (message.type) {
         case 'call':
-          await this._callFunction(id, message);
+          this._callFunction(id, message);
           break;
         case 'call-object':
-          await this._callMethod(id, message);
+          this._callMethod(id, message);
           break;
         case 'dispose':
-          await this._objectRegistry.disposeObject(message.objectId);
-          this._returnPromise(id, Promise.resolve(), voidType);
+          this._returnPromise(
+            id,
+            this._objectRegistry.disposeObject(message.objectId),
+            voidType,
+          );
           break;
         case 'unsubscribe':
           this._objectRegistry.disposeSubscription(id);
