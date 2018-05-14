@@ -47,7 +47,7 @@ export class ObjectRegistry {
   // These members handle remote objects.
   _proxiesById: Map<number, ObjectRegistration>;
   // null means the proxy has been disposed.
-  _idsByProxy: Map<Object, ?Promise<number>>;
+  _idsByProxy: Map<Object, ?number>;
   // Maps service name to proxy
   _serviceRegistry: ServiceRegistry;
   _services: Map<string, Object>;
@@ -127,7 +127,7 @@ export class ObjectRegistry {
     // Generate the proxy by manually setting the prototype of the proxy to be the
     // prototype of the remote proxy constructor.
     const newProxy = Object.create(proxyClass.prototype);
-    this.addProxy(newProxy, interfaceName, Promise.resolve(remoteId));
+    this._addProxy(newProxy, interfaceName, remoteId);
     return newProxy;
   }
 
@@ -163,7 +163,7 @@ export class ObjectRegistry {
   }
 
   // Put the object in the registry.
-  marshal(interfaceName: string, object: Object): Promise<number> | number {
+  marshal(interfaceName: string, object: Object): number {
     if (this._isRemoteObject(object)) {
       return this._marshalRemoteObject(object);
     } else {
@@ -171,7 +171,7 @@ export class ObjectRegistry {
     }
   }
 
-  _marshalRemoteObject(proxy: Object): Promise<number> {
+  _marshalRemoteObject(proxy: Object): number {
     const result = this._idsByProxy.get(proxy);
     invariant(result != null);
     return result;
@@ -239,8 +239,7 @@ export class ObjectRegistry {
   }
 
   // Returns null if the object is already disposed.
-  async disposeProxy(proxy: Object): Promise<?number> {
-    invariant(this._idsByProxy.has(proxy));
+  disposeProxy(proxy: Object): ?number {
     const objectId = this._idsByProxy.get(proxy);
     if (objectId != null) {
       this._idsByProxy.set(proxy, null);
@@ -250,15 +249,10 @@ export class ObjectRegistry {
     }
   }
 
-  async addProxy(
-    proxy: Object,
-    interfaceName: string,
-    idPromise: Promise<number>,
-  ): Promise<void> {
+  _addProxy(proxy: Object, interfaceName: string, id: number): void {
     invariant(!this._idsByProxy.has(proxy));
-    this._idsByProxy.set(proxy, idPromise);
+    this._idsByProxy.set(proxy, id);
 
-    const id = await idPromise;
     invariant(!this._proxiesById.has(id));
     this._emitter.emit('register-remote', id);
     this._proxiesById.set(id, {
