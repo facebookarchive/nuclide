@@ -4211,12 +4211,6 @@ jest-docblock@^22.4.0:
   dependencies:
     detect-newline "^2.1.0"
 
-jest-editor-support@19.0.2:
-  version "19.0.2"
-  resolved "https://registry.yarnpkg.com/jest-editor-support/-/jest-editor-support-19.0.2.tgz#b63a1f8aea0a29fb149dc90ac85cf2e811f596af"
-  dependencies:
-    babylon "^6.13.0"
-
 jest-environment-jsdom@22.4.3:
   version "22.4.3"
   resolved "https://registry.yarnpkg.com/jest-environment-jsdom/-/jest-environment-jsdom-22.4.3.tgz#d67daa4155e33516aecdd35afd82d4abf0fa8a1e"

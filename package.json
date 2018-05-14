@@ -91,7 +91,6 @@
     "invariant": "2.2.2",
     "inversify": "4.11.1",
     "jest": "23.0.0-charlie.1",
-    "jest-editor-support": "19.0.2",
     "js-yaml": "3.9.1",
     "json-stringify-safe": "5.0.1",
     "line-by-line": "0.1.5",
