@@ -1,12 +1,10 @@
 "use strict";
 
-let Observable;
-
 module.exports = _client => {
   const remoteModule = {};
 
   remoteModule.LiteralFunc = function (arg0, arg1, arg2) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("LiteralTypes/LiteralFunc", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "s",
       type: {
         kind: "string-literal",
@@ -24,19 +22,12 @@ module.exports = _client => {
         kind: "boolean-literal",
         value: true
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("LiteralTypes/LiteralFunc", "void", args);
-    });
+    }]));
   };
 
   return remoteModule;
 };
 
-Object.defineProperty(module.exports, "inject", {
-  value: function () {
-    Observable = arguments[0];
-  }
-});
 Object.defineProperty(module.exports, "defs", {
   value: {
     Object: {

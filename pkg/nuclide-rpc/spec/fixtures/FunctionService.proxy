@@ -1,12 +1,10 @@
 "use strict";
 
-let Observable;
-
 module.exports = _client => {
   const remoteModule = {};
 
   remoteModule.TestFunctionA = function (arg0, arg1) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("FunctionService/TestFunctionA", "promise", _client.marshalArguments(Array.from(arguments), [{
       name: "arg1",
       type: {
         kind: "string"
@@ -16,9 +14,7 @@ module.exports = _client => {
       type: {
         kind: "boolean"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("FunctionService/TestFunctionA", "promise", args);
-    }).then(value => {
+    }])).then(value => {
       return _client.unmarshal(value, {
         kind: "array",
         type: {
@@ -29,9 +25,7 @@ module.exports = _client => {
   };
 
   remoteModule.TestFunctionB = function () {
-    return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), [])).switchMap(args => {
-      return _client.callRemoteFunction("FunctionService/TestFunctionB", "observable", args);
-    }).concatMap(value => {
+    return _client.callRemoteFunction("FunctionService/TestFunctionB", "observable", _client.marshalArguments(Array.from(arguments), [])).map(value => {
       return _client.unmarshal(value, {
         kind: "number"
       });
@@ -39,13 +33,11 @@ module.exports = _client => {
   };
 
   remoteModule.TestFunctionC = function () {
-    return _client.marshalArguments(Array.from(arguments), []).then(args => {
-      return _client.callRemoteFunction("FunctionService/TestFunctionC", "void", args);
-    });
+    return _client.callRemoteFunction("FunctionService/TestFunctionC", "void", _client.marshalArguments(Array.from(arguments), []));
   };
 
   remoteModule.TestFunctionD = function (arg0, arg1) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("FunctionService/TestFunctionD", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "p1",
       type: {
         kind: "nullable",
@@ -63,15 +55,11 @@ module.exports = _client => {
           name: "Object"
         }
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("FunctionService/TestFunctionD", "void", args);
-    });
+    }]));
   };
 
   remoteModule.ReturnAlias = function () {
-    return _client.marshalArguments(Array.from(arguments), []).then(args => {
-      return _client.callRemoteFunction("FunctionService/ReturnAlias", "promise", args);
-    }).then(value => {
+    return _client.callRemoteFunction("FunctionService/ReturnAlias", "promise", _client.marshalArguments(Array.from(arguments), [])).then(value => {
       return _client.unmarshal(value, {
         kind: "number"
       });
@@ -81,11 +69,6 @@ module.exports = _client => {
   return remoteModule;
 };
 
-Object.defineProperty(module.exports, "inject", {
-  value: function () {
-    Observable = arguments[0];
-  }
-});
 Object.defineProperty(module.exports, "defs", {
   value: {
     Object: {

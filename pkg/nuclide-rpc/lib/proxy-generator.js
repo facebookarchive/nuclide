@@ -35,9 +35,6 @@ export default function createProxyGenerator(
 ) {
   const thenIdent = t.identifier('then');
 
-  const observableIdentifier = t.identifier('Observable');
-  const idIdentifier = t.identifier('id');
-
   const moduleDotExportsExpression = t.memberExpression(
     t.identifier('module'),
     t.identifier('exports'),
@@ -115,36 +112,6 @@ export default function createProxyGenerator(
       ],
     );
 
-  const dependenciesNodes = names => {
-    return {
-      // let name0, ... nameN;
-      declaration: t.variableDeclaration(
-        'let',
-        names.map(name => t.variableDeclarator(t.identifier(name))),
-      ),
-      // function() { name0 = arguments[0]; ... nameN = arguments[N]; }
-      injectionCall: t.functionExpression(
-        null,
-        [],
-        t.blockStatement(
-          names.map((name, i) =>
-            t.expressionStatement(
-              t.assignmentExpression(
-                '=',
-                t.identifier(name),
-                t.memberExpression(
-                  t.identifier('arguments'),
-                  t.numericLiteral(i),
-                  /* computed: */ true,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    };
-  };
-
   /**
    * Given the parsed result of a definition file, generate a remote proxy module
    * that exports the definition's API, but internally calls RPC functions. The function
@@ -208,12 +175,6 @@ export default function createProxyGenerator(
     // Return the remote module.
     statements.push(t.returnStatement(remoteModule));
 
-    // Node module dependencies are added via the `inject` function, instead of
-    // requiring them. This eliminates having to worry about module resolution.
-    // In turn, that makes colocating the definition and the constructed proxy
-    // easier for internal and external services.
-    const deps = dependenciesNodes(['Observable']);
-
     // Wrap the remoteModule construction in a function that takes a RpcConnection
     // object as an argument.
     const func = t.arrowFunctionExpression(
@@ -228,11 +189,7 @@ export default function createProxyGenerator(
     const program = t.program([
       // !!!This module is not transpiled!!!
       t.expressionStatement(t.stringLiteral('use strict')),
-      deps.declaration,
       t.expressionStatement(assignment),
-      t.expressionStatement(
-        objectDefinePropertyCall('inject', deps.injectionCall),
-      ),
       t.expressionStatement(
         objectDefinePropertyCall('defs', objectToLiteral(defs)),
       ),
@@ -253,20 +210,10 @@ export default function createProxyGenerator(
     const callExpression = t.callExpression(callRemoteFunctionExpression, [
       t.stringLiteral(name),
       t.stringLiteral(funcType.returnType.kind),
-      t.identifier('args'),
+      marshalArgsCall(funcType.argumentTypes),
     ]);
 
-    // Promise.all(...).then(args => { return ...)
-    const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
-
-    const result = generateUnmarshalResult(
-      funcType.returnType,
-      argumentsPromise,
-      t.arrowFunctionExpression(
-        [t.identifier('args')],
-        t.blockStatement([t.returnStatement(callExpression)]),
-      ),
-    );
+    const result = generateUnmarshalResult(funcType.returnType, callExpression);
 
     // function(arg0, ... argN) { return ... }
     const args = funcType.argumentTypes.map((arg, i) =>
@@ -368,34 +315,18 @@ export default function createProxyGenerator(
     thisType: NamedType,
     funcType: FunctionType,
   ) {
-    // _client.callRemoteMethod(this, methodName, returnType, args)
-    const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
-      idIdentifier,
+    // _client.callRemoteMethod(id, methodName, returnType, args)
+    const callRemoteMethod = t.callExpression(callRemoteMethodExpression, [
+      generateTransformStatement(t.thisExpression(), thisType, true),
       t.stringLiteral(methodName),
       t.stringLiteral(funcType.returnType.kind),
-      t.identifier('args'),
+      marshalArgsCall(funcType.argumentTypes),
     ]);
 
-    // Promise.all([argumentsPromise, idPromise])
-    const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
-    const promiseAll = t.callExpression(
-      t.memberExpression(t.identifier('Promise'), t.identifier('all')),
-      [
-        t.arrayExpression([
-          argumentsPromise,
-          generateTransformStatement(t.thisExpression(), thisType, true),
-        ]),
-      ],
-    );
-
-    // ... .then(([args, id]) => callRemoteMethod)
+    // ... .then(value => _client.unmarshal(...))
     const result = generateUnmarshalResult(
       funcType.returnType,
-      promiseAll,
-      t.arrowFunctionExpression(
-        [t.arrayPattern([t.identifier('args'), idIdentifier])],
-        remoteMethodCall,
-      ),
+      callRemoteMethod,
     );
 
     // methodName(arg0, ... argN) { return ... }
@@ -410,40 +341,19 @@ export default function createProxyGenerator(
     );
   }
 
-  function generateUnmarshalResult(
-    returnType: Type,
-    argsExpression,
-    callExpression,
-  ) {
+  function generateUnmarshalResult(returnType: Type, valueExpression) {
     switch (returnType.kind) {
       case 'void':
-        return thenPromise(argsExpression, callExpression);
+        return valueExpression;
       case 'promise':
         const promiseTransformer = generateValueTransformer(returnType.type);
-        return thenPromise(
-          thenPromise(argsExpression, callExpression),
-          promiseTransformer,
-        );
+        return thenPromise(valueExpression, promiseTransformer);
       case 'observable':
-        // Observable.fromPromise(argsExpression)
-        const argsObservable = t.callExpression(
-          t.memberExpression(observableIdentifier, t.identifier('fromPromise')),
-          [argsExpression],
-        );
-        // ... .switchMap(callExpression)
-        const callObservable = t.callExpression(
-          t.memberExpression(argsObservable, t.identifier('switchMap')),
-          [callExpression],
-        );
-
-        // Map the events through the appropriate marshaller. We use concatMap instead of
-        // flatMap to ensure that the order doesn't change, in case one event takes especially long
-        // to marshal.
-        //
-        // ... .concatMap(value => _client.unmarshal(value, returnType))
+        // Map the events through the appropriate marshaller.
+        // ... .map(value => _client.unmarshal(value, returnType))
         const observableTransformer = generateValueTransformer(returnType.type);
         const unmarshalledObservable = t.callExpression(
-          t.memberExpression(callObservable, t.identifier('concatMap')),
+          t.memberExpression(valueExpression, t.identifier('map')),
           [observableTransformer],
         );
 

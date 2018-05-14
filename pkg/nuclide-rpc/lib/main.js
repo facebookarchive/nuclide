@@ -19,9 +19,6 @@ import os from 'os';
 import memoizeWithDisk from '../../commons-node/memoizeWithDisk';
 import {parseServiceDefinition} from './service-parser';
 
-// Proxy dependencies
-import {Observable} from 'rxjs';
-
 import type {ReturnKind, Type, Parameter} from './types';
 
 export type RpcContext = {
@@ -39,14 +36,8 @@ export type RpcContext = {
   disposeRemoteObject(object: Object): Promise<void>,
   marshal(value: any, type: Type): any,
   unmarshal(value: any, type: Type): any,
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>,
-  ): Promise<Object>,
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>,
-  ): Promise<Array<any>>,
+  marshalArguments(args: Array<any>, argTypes: Array<Parameter>): Object,
+  unmarshalArguments(args: Object, argTypes: Array<Parameter>): Array<any>,
 };
 
 export type ProxyFactory = (context: RpcContext) => Object;
@@ -91,8 +82,6 @@ export function createProxyFactory(
     }
 
     const m = loadCodeAsModule(code, filename);
-    m.exports.inject(Observable);
-
     proxiesCache.set(definitionPath, m.exports);
   }
 

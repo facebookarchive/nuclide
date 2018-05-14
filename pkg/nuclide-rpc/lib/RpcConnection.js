@@ -217,21 +217,7 @@ export class RpcConnection<TransportType: Transport> {
     this._objectRegistry = new ObjectRegistry(
       kind,
       this._serviceRegistry,
-      // TODO: removed in the following diff.
-      {
-        callRemoteFunction: (functionName, returnType, args) =>
-          this.callRemoteFunction(functionName, returnType, args),
-        callRemoteMethod: (objectId, methodName, returnType, args) =>
-          this.callRemoteMethod(objectId, methodName, returnType, args),
-        disposeRemoteObject: object => this.disposeRemoteObject(object),
-        marshal: (value, type) => Promise.resolve(this.marshal(value, type)),
-        unmarshal: (value, type) =>
-          Promise.resolve(this.unmarshal(value, type)),
-        marshalArguments: (args, argTypes) =>
-          Promise.resolve(this.marshalArguments(args, argTypes)),
-        unmarshalArguments: (args, argTypes) =>
-          Promise.resolve(this.unmarshalArguments(args, argTypes)),
-      },
+      this,
     );
     this._transport.onMessage().subscribe(message => {
       this._handleMessage(message);

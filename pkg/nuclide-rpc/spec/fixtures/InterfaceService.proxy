@@ -1,12 +1,10 @@
 "use strict";
 
-let Observable;
-
 module.exports = _client => {
   const remoteModule = {};
   remoteModule.Vector2 = class {
     static distance(arg0, arg1) {
-      return _client.marshalArguments(Array.from(arguments), [{
+      return _client.callRemoteFunction("Vector2/distance", "promise", _client.marshalArguments(Array.from(arguments), [{
         name: "a",
         type: {
           kind: "named",
@@ -18,9 +16,7 @@ module.exports = _client => {
           kind: "named",
           name: "Vector2"
         }
-      }]).then(args => {
-        return _client.callRemoteFunction("Vector2/distance", "promise", args);
-      }).then(value => {
+      }])).then(value => {
         return _client.unmarshal(value, {
           kind: "number"
         });
@@ -32,7 +28,7 @@ module.exports = _client => {
     }
 
     len() {
-      return Promise.all([_client.marshalArguments(Array.from(arguments), []), _client.marshal(this, {
+      return _client.callRemoteMethod(_client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -40,7 +36,7 @@ module.exports = _client => {
           line: 1
         },
         name: "Vector2"
-      })]).then(([args, id]) => _client.callRemoteMethod(id, "len", "promise", args)).then(value => {
+      }), "len", "promise", _client.marshalArguments(Array.from(arguments), [])).then(value => {
         return _client.unmarshal(value, {
           kind: "number"
         });
@@ -48,7 +44,7 @@ module.exports = _client => {
     }
 
     watchChanges() {
-      return Observable.fromPromise(Promise.all([_client.marshalArguments(Array.from(arguments), []), _client.marshal(this, {
+      return _client.callRemoteMethod(_client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -56,7 +52,7 @@ module.exports = _client => {
           line: 1
         },
         name: "Vector2"
-      })])).switchMap(([args, id]) => _client.callRemoteMethod(id, "watchChanges", "observable", args)).concatMap(value => {
+      }), "watchChanges", "observable", _client.marshalArguments(Array.from(arguments), [])).map(value => {
         return _client.unmarshal(value, {
           kind: "number"
         });
@@ -70,9 +66,7 @@ module.exports = _client => {
   };
 
   remoteModule.getCurrentDirection = function () {
-    return _client.marshalArguments(Array.from(arguments), []).then(args => {
-      return _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args);
-    }).then(value => {
+    return _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", _client.marshalArguments(Array.from(arguments), [])).then(value => {
       return _client.unmarshal(value, {
         kind: "named",
         name: "Vector2"
@@ -86,12 +80,7 @@ module.exports = _client => {
     }
 
     p(arg0) {
-      return Promise.all([_client.marshalArguments(Array.from(arguments), [{
-        name: "a",
-        type: {
-          kind: "number"
-        }
-      }]), _client.marshal(this, {
+      return _client.callRemoteMethod(_client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -99,7 +88,12 @@ module.exports = _client => {
           line: 30
         },
         name: "Iface"
-      })]).then(([args, id]) => _client.callRemoteMethod(id, "p", "promise", args)).then(value => {
+      }), "p", "promise", _client.marshalArguments(Array.from(arguments), [{
+        name: "a",
+        type: {
+          kind: "number"
+        }
+      }])).then(value => {
         return _client.unmarshal(value, {
           kind: "number"
         });
@@ -107,7 +101,7 @@ module.exports = _client => {
     }
 
     f() {
-      return Promise.all([_client.marshalArguments(Array.from(arguments), []), _client.marshal(this, {
+      return _client.callRemoteMethod(_client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -115,11 +109,11 @@ module.exports = _client => {
           line: 30
         },
         name: "Iface"
-      })]).then(([args, id]) => _client.callRemoteMethod(id, "f", "void", args));
+      }), "f", "void", _client.marshalArguments(Array.from(arguments), []));
     }
 
     o() {
-      return Observable.fromPromise(Promise.all([_client.marshalArguments(Array.from(arguments), []), _client.marshal(this, {
+      return _client.callRemoteMethod(_client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -127,7 +121,7 @@ module.exports = _client => {
           line: 30
         },
         name: "Iface"
-      })])).switchMap(([args, id]) => _client.callRemoteMethod(id, "o", "observable", args)).concatMap(value => {
+      }), "o", "observable", _client.marshalArguments(Array.from(arguments), [])).map(value => {
         return _client.unmarshal(value, {
           kind: "string"
         });
@@ -142,11 +136,6 @@ module.exports = _client => {
   return remoteModule;
 };
 
-Object.defineProperty(module.exports, "inject", {
-  value: function () {
-    Observable = arguments[0];
-  }
-});
 Object.defineProperty(module.exports, "defs", {
   value: {
     Object: {

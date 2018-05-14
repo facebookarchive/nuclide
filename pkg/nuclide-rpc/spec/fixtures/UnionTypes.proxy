@@ -1,12 +1,10 @@
 "use strict";
 
-let Observable;
-
 module.exports = _client => {
   const remoteModule = {};
 
   remoteModule.UnionFunc = function (arg0, arg1) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("UnionTypes/UnionFunc", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "s",
       type: {
         kind: "named",
@@ -18,55 +16,42 @@ module.exports = _client => {
         kind: "named",
         name: "MixedUnion"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("UnionTypes/UnionFunc", "void", args);
-    });
+    }]));
   };
 
   remoteModule.ObjectUnionFunc = function (arg0) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("UnionTypes/ObjectUnionFunc", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "loc",
       type: {
         kind: "named",
         name: "Location"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("UnionTypes/ObjectUnionFunc", "void", args);
-    });
+    }]));
   };
 
   remoteModule.TypeFunc = function (arg0) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("UnionTypes/TypeFunc", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "type",
       type: {
         kind: "named",
         name: "Type"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("UnionTypes/TypeFunc", "void", args);
-    });
+    }]));
   };
 
   remoteModule.MDUFunc = function (arg0) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("UnionTypes/MDUFunc", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "mdu",
       type: {
         kind: "named",
         name: "MultipleDiscriminantUnion"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("UnionTypes/MDUFunc", "void", args);
-    });
+    }]));
   };
 
   return remoteModule;
 };
 
-Object.defineProperty(module.exports, "inject", {
-  value: function () {
-    Observable = arguments[0];
-  }
-});
 Object.defineProperty(module.exports, "defs", {
   value: {
     Object: {

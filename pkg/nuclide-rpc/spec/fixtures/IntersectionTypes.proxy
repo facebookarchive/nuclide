@@ -1,30 +1,21 @@
 "use strict";
 
-let Observable;
-
 module.exports = _client => {
   const remoteModule = {};
 
   remoteModule.intersectionFunction = function (arg0) {
-    return _client.marshalArguments(Array.from(arguments), [{
+    return _client.callRemoteFunction("IntersectionTypes/intersectionFunction", "void", _client.marshalArguments(Array.from(arguments), [{
       name: "baz",
       type: {
         kind: "named",
         name: "Baz"
       }
-    }]).then(args => {
-      return _client.callRemoteFunction("IntersectionTypes/intersectionFunction", "void", args);
-    });
+    }]));
   };
 
   return remoteModule;
 };
 
-Object.defineProperty(module.exports, "inject", {
-  value: function () {
-    Observable = arguments[0];
-  }
-});
 Object.defineProperty(module.exports, "defs", {
   value: {
     Object: {
