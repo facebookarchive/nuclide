@@ -13,7 +13,6 @@
 import invariant from 'assert';
 import classnames from 'classnames';
 import * as React from 'react';
-import semver from 'semver';
 import {TextBuffer} from 'atom';
 import {
   enforceReadOnlyEditor,
@@ -22,7 +21,6 @@ import {
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const doNothing = () => {};
-const ATOM_VERSION_CHECK_FOR_SET_GRAMMAR = '1.24.0-beta0';
 
 type TextEditorSetup = {
   disposables: IDisposable,
@@ -53,9 +51,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
   disposables.add(() => textEditor.destroy());
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
-  } else if (
-    semver.gte(atom.getVersion(), ATOM_VERSION_CHECK_FOR_SET_GRAMMAR)
-  ) {
+  } else {
     atom.grammars.autoAssignLanguageMode(textBuffer);
   }
   disposables.add(enforceSoftWrap(textEditor, props.softWrapped));

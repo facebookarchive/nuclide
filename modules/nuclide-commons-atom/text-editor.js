@@ -16,7 +16,6 @@ import invariant from 'assert';
 import {TextEditor} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
-import semver from 'semver';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
@@ -219,20 +218,4 @@ export function centerScrollToBufferLine(
   textEditor.setCursorBufferPosition([bufferLineNumber, 0], {
     autoscroll: false,
   });
-}
-
-export function getNonWordCharacters(
-  editor: atom$TextEditor,
-  position?: atom$PointLike,
-): string {
-  if (semver.gte(atom.getVersion(), '1.24.0-beta0')) {
-    return editor.getNonWordCharacters(position);
-  } else {
-    // This used to take a scope descriptor.
-    const scope =
-      position == null
-        ? null
-        : editor.scopeDescriptorForBufferPosition(position);
-    return editor.getNonWordCharacters((scope: any));
-  }
 }
