@@ -16,10 +16,10 @@
  * to minimize the impact on reload times.
  */
 
-import typeof * as babelTypes from 'babel-types';
+import typeof * as babelTypes from '@babel/types';
 // This is in devDependencies. This file is only reachable in dev mode.
 // eslint-disable-next-line nuclide-internal/no-unresolved
-import typeof * as babelGenerator from 'babel-generator';
+import typeof * as babelGenerator from '@babel/generator';
 
 import type {
   Definitions,

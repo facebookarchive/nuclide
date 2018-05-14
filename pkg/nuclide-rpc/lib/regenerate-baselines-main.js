@@ -11,9 +11,9 @@
 
 // Regenerates the .proxy baseline files in the spec/fixtures directory.
 
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 // eslint-disable-next-line nuclide-internal/no-unresolved
-import generate from 'babel-generator';
+import generate from '@babel/generator';
 import {parseServiceDefinition} from './service-parser';
 import createProxyGenerator from './proxy-generator';
 import {stripLocationsFileName} from './location';

@@ -10,8 +10,8 @@
  */
 
 import fs from 'fs';
-import * as t from 'babel-types';
-import generate from 'babel-generator';
+import * as t from '@babel/types';
+import generate from '@babel/generator';
 import createProxyGenerator from '../lib/proxy-generator';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';

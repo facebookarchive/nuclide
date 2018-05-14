@@ -11,9 +11,9 @@
 
 /* eslint-disable no-console */
 
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 // eslint-disable-next-line nuclide-internal/no-unresolved
-import generate from 'babel-generator';
+import generate from '@babel/generator';
 import yargs from 'yargs';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';

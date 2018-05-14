@@ -116,8 +116,8 @@ const memoizedGenerateProxy = memoizeWithDisk(
   function generateProxy(serviceName, preserveFunctionNames, defs) {
     // External dependencies: ensure that they're included in the key below.
     const createProxyGenerator = require('./proxy-generator').default;
-    const generate = require('babel-generator').default;
-    const t = require('babel-types');
+    const generate = require('@babel/generator').default;
+    const t = require('@babel/types');
     return createProxyGenerator(t, generate).generateProxy(
       serviceName,
       preserveFunctionNames,
@@ -129,8 +129,8 @@ const memoizedGenerateProxy = memoizeWithDisk(
     preserveFunctionNames,
     defs,
     memoizedReadFile(require.resolve('./proxy-generator')),
-    require('babel-generator/package.json').version,
-    require('babel-types/package.json').version,
+    require('@babel/generator/package.json').version,
+    require('@babel/types/package.json').version,
   ],
   nuclideUri.join(os.tmpdir(), 'nuclide-rpc-cache'),
 );

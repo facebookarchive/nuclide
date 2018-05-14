@@ -9,7 +9,7 @@
  * @format
  */
 
-import * as t from 'babel-types';
+import * as t from '@babel/types';
 import {ExportIndex} from './ExportIndex';
 import {getLogger} from 'log4js';
 import {arrayCompact} from 'nuclide-commons/collection';

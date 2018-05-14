@@ -9,12 +9,7 @@
  * @format
  */
 
-import traverse from 'babel-traverse';
-
-// Prevent babel-traverse from yelling about Flow types in the scope.
-// We're not actually relying on this behavior here.
-// (Can be removed with babel-traverse 6.8+)
-traverse.Scope.prototype.warnOnFlowBinding = x => x;
+import traverse from '@babel/traverse';
 
 import type {UndefinedSymbol} from './types';
 
@@ -223,6 +218,7 @@ function isTypeIdentifier(node: Object) {
     node === 'ObjectTypeProperty' ||
     node === 'InterfaceDeclaration' ||
     node === 'DeclareClass' ||
-    node === 'InterfaceExtends'
+    node === 'InterfaceExtends' ||
+    node === 'ClassImplements'
   );
 }

@@ -44,14 +44,14 @@
     "modules/*"
   ],
   "dependencies": {
+    "@babel/traverse": "7.0.0-beta.44",
+    "@babel/types": "7.0.0-beta.44",
     "adm-zip": "0.4.7",
     "anser": "1.4.6",
     "ansi-to-react": "2.0.6",
     "arch": "2.1.0",
     "async-to-generator": "1.1.0",
     "atom-package-deps": "4.6.0",
-    "babel-traverse": "6.26.0",
-    "babel-types": "6.26.0",
     "babylon": "7.0.0-beta.44",
     "big-integer": "1.6.17",
     "bplist-parser": "0.1.1",
@@ -165,10 +165,10 @@
     "yargs": "3.32.0"
   },
   "devDependencies": {
+    "@babel/generator": "7.0.0-beta.44",
     "atom-grammar-test": "0.6.3",
     "babel-core": "6.26.0",
     "babel-eslint": "7.2.3",
-    "babel-generator": "6.26.0",
     "babel-plugin-idx": "1.4.0",
     "babel-plugin-istanbul": "4.1.5",
     "babel-plugin-lodash": "3.2.11",

@@ -90,7 +90,8 @@ describe('UndefinedSymbolManager', () => {
   });
   it('Should not declare as undefined if declared after', () => {
     const manager = new UndefinedSymbolManager([]);
-    const program = 'export type Y = { f(x: X): void }; class X extends Y {}';
+    const program =
+      'export type Y = { f(x: X): void }; class X implements Y {}';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols).toBeDefined();
