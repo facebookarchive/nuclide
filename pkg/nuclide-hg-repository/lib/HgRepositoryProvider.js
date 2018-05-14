@@ -46,7 +46,6 @@ function getRepositoryDescription(
   originURL: ?string,
   repoPath: string,
   workingDirectory: atom$Directory | RemoteDirectory,
-  workingDirectoryLocalPath: string,
 } {
   if (directory instanceof RemoteDirectory) {
     const repositoryDescription = directory.getHgRepositoryDescription();
@@ -80,7 +79,6 @@ function getRepositoryDescription(
       originURL,
       repoPath,
       workingDirectory: new Directory(workingDirectoryPath),
-      workingDirectoryLocalPath: workingDirectoryPath,
     };
   }
 }
@@ -102,12 +100,7 @@ export default class HgRepositoryProvider {
           return null;
         }
 
-        const {
-          originURL,
-          repoPath,
-          workingDirectory,
-          workingDirectoryLocalPath,
-        } = repositoryDescription;
+        const {originURL, repoPath, workingDirectory} = repositoryDescription;
 
         // extend the underlying instance of HgRepositoryClient to prevent
         // having multiple clients for multiple project roots inside the same
@@ -118,8 +111,7 @@ export default class HgRepositoryProvider {
         if (activeRepoClientInfo != null) {
           activeRepoClientInfo.refCount++;
         } else {
-          const service = getHgServiceByNuclideUri(directory.getPath());
-          const hgService = new service.HgService(workingDirectoryLocalPath);
+          const hgService = getHgServiceByNuclideUri(directory.getPath());
           const activeRepoClient = new HgRepositoryClient(repoPath, hgService, {
             workingDirectory,
             originURL,

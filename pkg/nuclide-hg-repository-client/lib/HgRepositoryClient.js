@@ -10,12 +10,12 @@
  */
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
+import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import type {
   AmendModeValue,
   BookmarkInfo,
   CheckoutOptions,
   HgRepositorySubscriptions,
-  HgService,
   DiffInfo,
   LineDiff,
   OperationProgress,
@@ -163,6 +163,7 @@ export class HgRepositoryClient {
     rootRepo: HgRepositoryClient,
     path: string,
     workingDirectory: atom$Directory | RemoteDirectory,
+    workingDirectoryPath: string,
     projectDirectory: ?atom$Directory,
     repoSubscriptions: Promise<?HgRepositorySubscriptions>,
     originURL: ?string,
@@ -204,12 +205,15 @@ export class HgRepositoryClient {
     this._sharedMembers.rootRepo = this;
     this._sharedMembers.path = repoPath;
     this._sharedMembers.workingDirectory = options.workingDirectory;
+    this._sharedMembers.workingDirectoryPath = options.workingDirectory.getPath();
     this._sharedMembers.projectDirectory = options.projectRootDirectory;
     this._sharedMembers.originURL = options.originURL;
     this._sharedMembers.service = hgService;
     this._sharedMembers.isInConflict = false;
     this._sharedMembers.isDestroyed = false;
-    this._sharedMembers.revisionsCache = new RevisionsCache(hgService);
+    this._sharedMembers.revisionsCache = new RevisionsCache(
+      this._sharedMembers.workingDirectoryPath,
+    );
     this._sharedMembers.revisionStatusCache = getRevisionStatusCache(
       this._sharedMembers.revisionsCache,
       this._sharedMembers.workingDirectory.getPath(),
@@ -221,7 +225,6 @@ export class HgRepositoryClient {
     this._sharedMembers.emitter = new Emitter();
     this._sharedMembers.subscriptions = new UniversalDisposable(
       this._sharedMembers.emitter,
-      this._sharedMembers.service,
     );
     this._sharedMembers.isFetchingPathStatuses = new Subject();
     this._sharedMembers.manualStatusRefreshRequests = new Subject();
@@ -296,13 +299,15 @@ export class HgRepositoryClient {
     this._sharedMembers.subscriptions.add(diffStatsSubscription);
 
     this._sharedMembers.repoSubscriptions = this._sharedMembers.service
-      .createRepositorySubscriptions()
+      .createRepositorySubscriptions(this._sharedMembers.workingDirectoryPath)
       .catch(error => {
         atom.notifications.addWarning(
           'Mercurial: failed to subscribe to watchman!',
         );
         getLogger('nuclide-hg-repository-client').error(
-          `Failed to subscribe to watchman in ${this._sharedMembers.workingDirectory.getPath()}`,
+          `Failed to subscribe to watchman in ${
+            this._sharedMembers.workingDirectoryPath
+          }`,
           error,
         );
         return null;
@@ -330,19 +335,28 @@ export class HgRepositoryClient {
     this._sharedMembers.hgUncommittedStatusChanges = this._observeStatus(
       fileChanges,
       repoStateChanges,
-      () => this._sharedMembers.service.fetchStatuses(),
+      () =>
+        this._sharedMembers.service.fetchStatuses(
+          this._sharedMembers.workingDirectoryPath,
+        ),
     );
 
     this._sharedMembers.hgStackStatusChanges = this._observeStatus(
       fileChanges,
       repoStateChanges,
-      () => this._sharedMembers.service.fetchStackStatuses(),
+      () =>
+        this._sharedMembers.service.fetchStackStatuses(
+          this._sharedMembers.workingDirectoryPath,
+        ),
     );
 
     this._sharedMembers.hgHeadStatusChanges = this._observeStatus(
       fileChanges,
       repoStateChanges,
-      () => this._sharedMembers.service.fetchHeadStatuses(),
+      () =>
+        this._sharedMembers.service.fetchHeadStatuses(
+          this._sharedMembers.workingDirectoryPath,
+        ),
     );
 
     const statusChangesSubscription = this._sharedMembers.hgUncommittedStatusChanges.statusChanges.subscribe(
@@ -367,7 +381,9 @@ export class HgRepositoryClient {
       .switchMap(() =>
         Observable.defer(() => {
           return Observable.fromPromise(
-            this._sharedMembers.service.fetchBookmarks(),
+            this._sharedMembers.service.fetchBookmarks(
+              this._sharedMembers.workingDirectoryPath,
+            ),
           ).timeout(FETCH_BOOKMARKS_TIMEOUT);
         })
           .retry(2)
@@ -424,7 +440,10 @@ export class HgRepositoryClient {
       : '';
     const results = await timeoutAfterDeadline(
       deadline,
-      this._sharedMembers.service.getAdditionalLogFiles(deadline - 1000),
+      this._sharedMembers.service.getAdditionalLogFiles(
+        this._sharedMembers.workingDirectoryPath,
+        deadline - 1000,
+      ),
     ).catch(e => [{title: `${path}:hg`, data: stringifyError(e)}]);
     return results.map(log => ({...log, title: prefix + log.title}));
   }
@@ -984,7 +1003,11 @@ export class HgRepositoryClient {
       let contentObservable;
       if (cachedContent == null) {
         contentObservable = this._sharedMembers.service
-          .fetchFileContentAtRevision(filePath, revision)
+          .fetchFileContentAtRevision(
+            this._sharedMembers.workingDirectoryPath,
+            filePath,
+            revision,
+          )
           .refCount()
           .map(contents => {
             this._sharedMembers.fileContentsAtHead.set(filePath, contents);
@@ -1020,13 +1043,15 @@ export class HgRepositoryClient {
       return Observable.of(this._sharedMembers.currentHeadId);
     }
     return this._sharedMembers.service
-      .getHeadId()
+      .getHeadId(this._sharedMembers.workingDirectoryPath)
       .refCount()
       .do(headId => (this._sharedMembers.currentHeadId = headId));
   }
 
   fetchMergeConflicts(): Observable<?MergeConflicts> {
-    return this._sharedMembers.service.fetchMergeConflicts().refCount();
+    return this._sharedMembers.service
+      .fetchMergeConflicts(this._sharedMembers.workingDirectoryPath)
+      .refCount();
   }
 
   markConflictedFile(
@@ -1035,7 +1060,11 @@ export class HgRepositoryClient {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._sharedMembers.service
-      .markConflictedFile(filePath, resolved)
+      .markConflictedFile(
+        this._sharedMembers.workingDirectoryPath,
+        filePath,
+        resolved,
+      )
       .refCount();
   }
 
@@ -1053,7 +1082,10 @@ export class HgRepositoryClient {
     const filePaths = Array.isArray(filePathsArg)
       ? filePathsArg
       : [filePathsArg];
-    return this._sharedMembers.service.revert(filePaths);
+    return this._sharedMembers.service.revert(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+    );
   }
 
   checkoutReference(
@@ -1063,12 +1095,19 @@ export class HgRepositoryClient {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._sharedMembers.service
-      .checkout(reference, create, options)
+      .checkout(
+        this._sharedMembers.workingDirectoryPath,
+        reference,
+        create,
+        options,
+      )
       .refCount();
   }
 
   show(revision: number): Observable<RevisionShowInfo> {
-    return this._sharedMembers.service.show(revision).refCount();
+    return this._sharedMembers.service
+      .show(this._sharedMembers.workingDirectoryPath, revision)
+      .refCount();
   }
 
   diff(
@@ -1086,24 +1125,40 @@ export class HgRepositoryClient {
   ): Observable<string> {
     const {unified, diffCommitted, noPrefix, noDates} = options;
     return this._sharedMembers.service
-      .diff(String(revision), unified, diffCommitted, noPrefix, noDates)
+      .diff(
+        this._sharedMembers.workingDirectoryPath,
+        String(revision),
+        unified,
+        diffCommitted,
+        noPrefix,
+        noDates,
+      )
       .refCount();
   }
 
   purge(): Promise<void> {
-    return this._sharedMembers.service.purge();
+    return this._sharedMembers.service.purge(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   stripReference(reference: string): Promise<void> {
-    return this._sharedMembers.service.strip(reference);
+    return this._sharedMembers.service.strip(
+      this._sharedMembers.workingDirectoryPath,
+      reference,
+    );
   }
 
   uncommit(): Promise<void> {
-    return this._sharedMembers.service.uncommit();
+    return this._sharedMembers.service.uncommit(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   checkoutForkBase(): Promise<void> {
-    return this._sharedMembers.service.checkoutForkBase();
+    return this._sharedMembers.service.checkoutForkBase(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   /**
@@ -1112,15 +1167,26 @@ export class HgRepositoryClient {
    *
    */
   createBookmark(name: string, revision: ?string): Promise<void> {
-    return this._sharedMembers.service.createBookmark(name, revision);
+    return this._sharedMembers.service.createBookmark(
+      this._sharedMembers.workingDirectoryPath,
+      name,
+      revision,
+    );
   }
 
   deleteBookmark(name: string): Promise<void> {
-    return this._sharedMembers.service.deleteBookmark(name);
+    return this._sharedMembers.service.deleteBookmark(
+      this._sharedMembers.workingDirectoryPath,
+      name,
+    );
   }
 
   renameBookmark(name: string, nextName: string): Promise<void> {
-    return this._sharedMembers.service.renameBookmark(name, nextName);
+    return this._sharedMembers.service.renameBookmark(
+      this._sharedMembers.workingDirectoryPath,
+      name,
+      nextName,
+    );
   }
 
   /**
@@ -1153,7 +1219,11 @@ export class HgRepositoryClient {
       return Observable.of(committedContents);
     } else {
       return this._sharedMembers.service
-        .fetchFileContentAtRevision(filePath, revision)
+        .fetchFileContentAtRevision(
+          this._sharedMembers.workingDirectoryPath,
+          filePath,
+          revision,
+        )
         .refCount()
         .do(contents => fileContentsAtRevision.set(filePath, contents));
     }
@@ -1167,7 +1237,10 @@ export class HgRepositoryClient {
       return Observable.of(changes);
     } else {
       return this._sharedMembers.service
-        .fetchFilesChangedAtRevision(revision)
+        .fetchFilesChangedAtRevision(
+          this._sharedMembers.workingDirectoryPath,
+          revision,
+        )
         .refCount()
         .do(fetchedChanges =>
           this._sharedMembers.revisionIdToFileChanges.set(
@@ -1182,7 +1255,7 @@ export class HgRepositoryClient {
     revision: string,
   ): Observable<Map<NuclideUri, StatusCodeNumberValue>> {
     return this._sharedMembers.service
-      .fetchStatuses(revision)
+      .fetchStatuses(this._sharedMembers.workingDirectoryPath, revision)
       .refCount()
       .map(fileStatuses => {
         const statusesWithCodeIds = new Map();
@@ -1194,11 +1267,15 @@ export class HgRepositoryClient {
   }
 
   fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {
-    return this._sharedMembers.service.fetchRevisionInfoBetweenHeadAndBase();
+    return this._sharedMembers.service.fetchRevisionInfoBetweenHeadAndBase(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
-    return this._sharedMembers.service.fetchSmartlogRevisions().refCount();
+    return this._sharedMembers.service
+      .fetchSmartlogRevisions(this._sharedMembers.workingDirectoryPath)
+      .refCount();
   }
 
   refreshRevisions(): void {
@@ -1219,20 +1296,29 @@ export class HgRepositoryClient {
 
   // See HgService.getBaseRevision.
   getBaseRevision(): Promise<RevisionInfo> {
-    return this._sharedMembers.service.getBaseRevision();
+    return this._sharedMembers.service.getBaseRevision(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   // See HgService.getBlameAtHead.
   getBlameAtHead(filePath: NuclideUri): Promise<Array<?RevisionInfo>> {
-    return this._sharedMembers.service.getBlameAtHead(filePath);
+    return this._sharedMembers.service.getBlameAtHead(
+      this._sharedMembers.workingDirectoryPath,
+      filePath,
+    );
   }
 
   getTemplateCommitMessage(): Promise<?string> {
-    return this._sharedMembers.service.getTemplateCommitMessage();
+    return this._sharedMembers.service.getTemplateCommitMessage(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   getHeadCommitMessage(): Promise<?string> {
-    return this._sharedMembers.service.getHeadCommitMessage();
+    return this._sharedMembers.service.getHeadCommitMessage(
+      this._sharedMembers.workingDirectoryPath,
+    );
   }
 
   /**
@@ -1250,18 +1336,26 @@ export class HgRepositoryClient {
   }
 
   getConfigValueAsync(key: string, path: ?string): Promise<?string> {
-    return this._sharedMembers.service.getConfigValueAsync(key);
+    return this._sharedMembers.service.getConfigValueAsync(
+      this._sharedMembers.workingDirectoryPath,
+      key,
+    );
   }
 
   // See HgService.getDifferentialRevisionForChangeSetId.
   getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
     return this._sharedMembers.service.getDifferentialRevisionForChangeSetId(
+      this._sharedMembers.workingDirectoryPath,
       changeSetId,
     );
   }
 
   getSmartlog(ttyOutput: boolean, concise: boolean): Promise<Object> {
-    return this._sharedMembers.service.getSmartlog(ttyOutput, concise);
+    return this._sharedMembers.service.getSmartlog(
+      this._sharedMembers.workingDirectoryPath,
+      ttyOutput,
+      concise,
+    );
   }
 
   copy(
@@ -1269,7 +1363,12 @@ export class HgRepositoryClient {
     destPath: NuclideUri,
     after: boolean = false,
   ): Promise<void> {
-    return this._sharedMembers.service.copy(filePaths, destPath, after);
+    return this._sharedMembers.service.copy(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+      destPath,
+      after,
+    );
   }
 
   rename(
@@ -1277,19 +1376,34 @@ export class HgRepositoryClient {
     destPath: NuclideUri,
     after: boolean = false,
   ): Promise<void> {
-    return this._sharedMembers.service.rename(filePaths, destPath, after);
+    return this._sharedMembers.service.rename(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+      destPath,
+      after,
+    );
   }
 
   remove(filePaths: Array<NuclideUri>, after: boolean = false): Promise<void> {
-    return this._sharedMembers.service.remove(filePaths, after);
+    return this._sharedMembers.service.remove(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+      after,
+    );
   }
 
   forget(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._sharedMembers.service.forget(filePaths);
+    return this._sharedMembers.service.forget(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+    );
   }
 
   addAll(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._sharedMembers.service.add(filePaths);
+    return this._sharedMembers.service.add(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+    );
   }
 
   commit(
@@ -1298,7 +1412,7 @@ export class HgRepositoryClient {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._sharedMembers.service
-      .commit(message, filePaths)
+      .commit(this._sharedMembers.workingDirectoryPath, message, filePaths)
       .refCount()
       .do(processMessage =>
         this._clearOnSuccessExit(processMessage, filePaths),
@@ -1312,7 +1426,12 @@ export class HgRepositoryClient {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._sharedMembers.service
-      .amend(message, amendMode, filePaths)
+      .amend(
+        this._sharedMembers.workingDirectoryPath,
+        message,
+        amendMode,
+        filePaths,
+      )
       .refCount()
       .do(processMessage =>
         this._clearOnSuccessExit(processMessage, filePaths),
@@ -1320,7 +1439,9 @@ export class HgRepositoryClient {
   }
 
   restack(): Observable<LegacyProcessMessage> {
-    return this._sharedMembers.service.restack().refCount();
+    return this._sharedMembers.service
+      .restack(this._sharedMembers.workingDirectoryPath)
+      .refCount();
   }
 
   editCommitMessage(
@@ -1328,7 +1449,11 @@ export class HgRepositoryClient {
     message: string,
   ): Observable<LegacyProcessMessage> {
     return this._sharedMembers.service
-      .editCommitMessage(revision, message)
+      .editCommitMessage(
+        this._sharedMembers.workingDirectoryPath,
+        revision,
+        message,
+      )
       .refCount();
   }
 
@@ -1342,18 +1467,29 @@ export class HgRepositoryClient {
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision?: ?string): Promise<void> {
-    return this._sharedMembers.service.revert(filePaths, toRevision);
+    return this._sharedMembers.service.revert(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+      toRevision,
+    );
   }
 
   log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse> {
     // TODO(mbolin): Return an Observable so that results appear faster.
     // Unfortunately, `hg log -Tjson` is not Observable-friendly because it will
     // not parse as JSON until all of the data has been printed to stdout.
-    return this._sharedMembers.service.log(filePaths, limit);
+    return this._sharedMembers.service.log(
+      this._sharedMembers.workingDirectoryPath,
+      filePaths,
+      limit,
+    );
   }
 
   getFullHashForRevision(rev: string): Promise<?string> {
-    return this._sharedMembers.service.getFullHashForRevision(rev);
+    return this._sharedMembers.service.getFullHashForRevision(
+      this._sharedMembers.workingDirectoryPath,
+      rev,
+    );
   }
 
   continueOperation(
@@ -1361,18 +1497,26 @@ export class HgRepositoryClient {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._sharedMembers.service
-      .continueOperation(commandWithOptions)
+      .continueOperation(
+        this._sharedMembers.workingDirectoryPath,
+        commandWithOptions,
+      )
       .refCount();
   }
 
   abortOperation(commandWithOptions: Array<string>): Observable<string> {
     return this._sharedMembers.service
-      .abortOperation(commandWithOptions)
+      .abortOperation(
+        this._sharedMembers.workingDirectoryPath,
+        commandWithOptions,
+      )
       .refCount();
   }
 
   resolveAllFiles(): Observable<LegacyProcessMessage> {
-    return this._sharedMembers.service.resolveAllFiles().refCount();
+    return this._sharedMembers.service
+      .resolveAllFiles(this._sharedMembers.workingDirectoryPath)
+      .refCount();
   }
 
   rebase(
@@ -1380,22 +1524,31 @@ export class HgRepositoryClient {
     source?: string,
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._sharedMembers.service.rebase(destination, source).refCount();
+    return this._sharedMembers.service
+      .rebase(this._sharedMembers.workingDirectoryPath, destination, source)
+      .refCount();
   }
 
   reorderWithinStack(orderedRevisions: Array<string>): Observable<string> {
     return this._sharedMembers.service
-      .reorderWithinStack(orderedRevisions)
+      .reorderWithinStack(
+        this._sharedMembers.workingDirectoryPath,
+        orderedRevisions,
+      )
       .refCount();
   }
 
   pull(options?: Array<string> = []): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._sharedMembers.service.pull(options).refCount();
+    return this._sharedMembers.service
+      .pull(this._sharedMembers.workingDirectoryPath, options)
+      .refCount();
   }
 
   fold(from: string, to: string, message: string): Observable<string> {
-    return this._sharedMembers.service.fold(from, to, message).refCount();
+    return this._sharedMembers.service
+      .fold(this._sharedMembers.workingDirectoryPath, from, to, message)
+      .refCount();
   }
 
   _clearClientCache(filePaths: Array<NuclideUri>): void {
@@ -1423,10 +1576,14 @@ export class HgRepositoryClient {
   }
 
   runCommand(args: Array<string>): Observable<string> {
-    return this._sharedMembers.service.runCommand(args).refCount();
+    return this._sharedMembers.service
+      .runCommand(this._sharedMembers.workingDirectoryPath, args)
+      .refCount();
   }
 
   observeExecution(args: Array<string>): Observable<LegacyProcessMessage> {
-    return this._sharedMembers.service.observeExecution(args).refCount();
+    return this._sharedMembers.service
+      .observeExecution(this._sharedMembers.workingDirectoryPath, args)
+      .refCount();
   }
 }

@@ -10,7 +10,8 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {HgService, HgRepositorySubscriptions} from '../lib/HgService';
+import * as HgService from '../lib/HgService';
+import * as hgUtils from '../lib/hg-utils';
 import {
   AmendMode,
   StatusCodeId,
@@ -84,15 +85,8 @@ const mockOutput = `
 }
 ]`;
 
-class TestHgService extends HgService {
-  // These tests target the non-watchman-dependent features of LocalHgService.
-  _subscribeToWatchman(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
 describe('HgService', () => {
-  let hgService;
+  const hgService = HgService;
   const TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
   const PATH_1 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test1.js');
   const PATH_2 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test2.js');
@@ -100,19 +94,15 @@ describe('HgService', () => {
     return nuclideUri.relative(TEST_WORKING_DIRECTORY, filePath);
   }
 
-  beforeEach(() => {
-    hgService = new TestHgService(TEST_WORKING_DIRECTORY);
-  });
-
   describe('::createBookmark', () => {
     const BOOKMARK_NAME = 'fakey456';
     const BASE_REVISION = 'fakey123';
 
     it('calls the appropriate `hg` command to add', () => {
       waitsForPromise(async () => {
-        spyOn(hgService, '_hgAsyncExecute');
-        await hgService.createBookmark(BOOKMARK_NAME);
-        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+        spyOn(hgUtils, 'hgAsyncExecute');
+        await hgService.createBookmark(TEST_WORKING_DIRECTORY, BOOKMARK_NAME);
+        expect(hgUtils.hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmark', BOOKMARK_NAME],
           {cwd: TEST_WORKING_DIRECTORY},
         );
@@ -121,9 +111,13 @@ describe('HgService', () => {
 
     it('calls the appropriate `hg` command to add with base revision', () => {
       waitsForPromise(async () => {
-        spyOn(hgService, '_hgAsyncExecute');
-        await hgService.createBookmark(BOOKMARK_NAME, BASE_REVISION);
-        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+        spyOn(hgUtils, 'hgAsyncExecute');
+        await hgService.createBookmark(
+          TEST_WORKING_DIRECTORY,
+          BOOKMARK_NAME,
+          BASE_REVISION,
+        );
+        expect(hgUtils.hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmark', '--rev', BASE_REVISION, BOOKMARK_NAME],
           {cwd: TEST_WORKING_DIRECTORY},
         );
@@ -136,9 +130,9 @@ describe('HgService', () => {
 
     it('calls the appropriate `hg` command to delete', () => {
       waitsForPromise(async () => {
-        spyOn(hgService, '_hgAsyncExecute');
-        await hgService.deleteBookmark(BOOKMARK_NAME);
-        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+        spyOn(hgUtils, 'hgAsyncExecute');
+        await hgService.deleteBookmark(TEST_WORKING_DIRECTORY, BOOKMARK_NAME);
+        expect(hgUtils.hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmarks', '--delete', BOOKMARK_NAME],
           {cwd: TEST_WORKING_DIRECTORY},
         );
@@ -151,9 +145,13 @@ describe('HgService', () => {
 
     it('calls the appropriate `hg` command to rename', () => {
       waitsForPromise(async () => {
-        spyOn(hgService, '_hgAsyncExecute');
-        await hgService.renameBookmark(BOOKMARK_NAME, 'fried-chicken');
-        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+        spyOn(hgUtils, 'hgAsyncExecute');
+        await hgService.renameBookmark(
+          TEST_WORKING_DIRECTORY,
+          BOOKMARK_NAME,
+          'fried-chicken',
+        );
+        expect(hgUtils.hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmarks', '--rename', BOOKMARK_NAME, 'fried-chicken'],
           {cwd: TEST_WORKING_DIRECTORY},
         );
@@ -186,14 +184,17 @@ describe('HgService', () => {
     it('fetches the unified diff output for the given path.', () => {
       // Test set up: mock out dependency on hg.
       invariant(hgService);
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgAsyncExecute').andCallFake((args, options) => {
         expect(args.pop()).toBe(PATH_1);
         return Promise.resolve({stdout: mockHgDiffOutput});
       });
 
       waitsForPromise(async () => {
         invariant(hgService);
-        const pathToDiffInfo = await hgService.fetchDiffInfo([PATH_1]);
+        const pathToDiffInfo = await hgService.fetchDiffInfo(
+          TEST_WORKING_DIRECTORY,
+          [PATH_1],
+        );
         invariant(pathToDiffInfo);
         expect(pathToDiffInfo.size).toBe(1);
         expect(pathToDiffInfo.get(PATH_1)).toEqual(expectedDiffInfo);
@@ -203,22 +204,24 @@ describe('HgService', () => {
 
   describe('::getConfigValueAsync', () => {
     it('calls `hg config` with the passed key', () => {
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgAsyncExecute').andCallFake((args, options) => {
         expect(args).toEqual(['config', 'committemplate.emptymsg']);
         // Return the Object shape expected by `HgServiceBase`.
         return {stdout: ''};
       });
       waitsForPromise(async () => {
-        await hgService.getConfigValueAsync('committemplate.emptymsg');
+        await hgService.getConfigValueAsync(
+          TEST_WORKING_DIRECTORY,
+          'committemplate.emptymsg',
+        );
       });
     });
 
     it('returns `null` on errors', () => {
-      spyOn(hgService, '_hgAsyncExecute').andThrow(
-        new Error('Something failed'),
-      );
+      spyOn(hgUtils, 'hgAsyncExecute').andThrow(new Error('Something failed'));
       waitsForPromise(async () => {
         const config = await hgService.getConfigValueAsync(
+          TEST_WORKING_DIRECTORY,
           'non.existent.config',
         );
         expect(config).toBeNull();
@@ -229,7 +232,7 @@ describe('HgService', () => {
   describe('::rename', () => {
     it('can rename files', () => {
       let wasCalled = false;
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgAsyncExecute').andCallFake((args, options) => {
         expect(args.length).toBe(3);
         expect(args.pop()).toBe('file_2.txt');
         expect(args.pop()).toBe('file_1.txt');
@@ -237,7 +240,11 @@ describe('HgService', () => {
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.rename(['file_1.txt'], 'file_2.txt');
+        await hgService.rename(
+          TEST_WORKING_DIRECTORY,
+          ['file_1.txt'],
+          'file_2.txt',
+        );
         expect(wasCalled).toBeTruthy();
       });
     });
@@ -246,7 +253,7 @@ describe('HgService', () => {
   describe('::remove', () => {
     it('can remove files', () => {
       let wasCalled = false;
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgAsyncExecute').andCallFake((args, options) => {
         expect(args.length).toBe(3);
         expect(args.pop()).toBe('file.txt');
         expect(args.pop()).toBe('-f');
@@ -254,7 +261,7 @@ describe('HgService', () => {
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.remove(['file.txt']);
+        await hgService.remove(TEST_WORKING_DIRECTORY, ['file.txt']);
         expect(wasCalled).toBeTruthy();
       });
     });
@@ -263,14 +270,14 @@ describe('HgService', () => {
   describe('::add', () => {
     it('can add files', () => {
       let wasCalled = false;
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgAsyncExecute').andCallFake((args, options) => {
         expect(args.length).toBe(2);
         expect(args.pop()).toBe('file.txt');
         expect(args.pop()).toBe('add');
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.add(['file.txt']);
+        await hgService.add(TEST_WORKING_DIRECTORY, ['file.txt']);
         expect(wasCalled).toBeTruthy();
       });
     });
@@ -287,7 +294,7 @@ describe('HgService', () => {
     beforeEach(() => {
       expectedArgs = null;
       committedToHg = false;
-      spyOn(hgService, '_hgObserveExecution').andCallFake((_args, options) => {
+      spyOn(hgUtils, 'hgObserveExecution').andCallFake((_args, options) => {
         const args = _args;
         expect(expectedArgs).not.toBeNull();
         // eslint-disable-next-line eqeqeq
@@ -310,7 +317,7 @@ describe('HgService', () => {
         expectedArgs = ['commit', '-m', commitMessage];
         waitsForPromise(async () => {
           await hgService
-            .commit(commitMessage)
+            .commit(TEST_WORKING_DIRECTORY, commitMessage)
             .refCount()
             .toArray()
             .toPromise();
@@ -324,7 +331,7 @@ describe('HgService', () => {
         expectedArgs = ['amend', '-m', commitMessage];
         waitsForPromise(async () => {
           await hgService
-            .amend(commitMessage, AmendMode.CLEAN)
+            .amend(TEST_WORKING_DIRECTORY, commitMessage, AmendMode.CLEAN)
             .refCount()
             .toArray()
             .toPromise();
@@ -336,7 +343,7 @@ describe('HgService', () => {
         expectedArgs = ['amend'];
         waitsForPromise(async () => {
           await hgService
-            .amend(null, AmendMode.CLEAN)
+            .amend(TEST_WORKING_DIRECTORY, null, AmendMode.CLEAN)
             .refCount()
             .toArray()
             .toPromise();
@@ -348,7 +355,7 @@ describe('HgService', () => {
         expectedArgs = ['amend', '--rebase', '-m', commitMessage];
         waitsForPromise(async () => {
           await hgService
-            .amend(commitMessage, AmendMode.REBASE)
+            .amend(TEST_WORKING_DIRECTORY, commitMessage, AmendMode.REBASE)
             .refCount()
             .toArray()
             .toPromise();
@@ -360,7 +367,7 @@ describe('HgService', () => {
         expectedArgs = ['amend', '--fixup'];
         waitsForPromise(async () => {
           await hgService
-            .amend(null, AmendMode.FIXUP)
+            .amend(TEST_WORKING_DIRECTORY, null, AmendMode.FIXUP)
             .refCount()
             .toArray()
             .toPromise();
@@ -373,13 +380,13 @@ describe('HgService', () => {
   describe('::fetchMergeConflicts', () => {
     it('fetches rich merge conflict data', () => {
       let wasCalled = false;
-      spyOn(hgService, '_hgRunCommand').andCallFake((args, options) => {
+      spyOn(hgUtils, 'hgRunCommand').andCallFake((args, options) => {
         wasCalled = true;
         return Observable.of(mockOutput);
       });
       waitsForPromise(async () => {
         const mergeConflictsEnriched = await hgService
-          .fetchMergeConflicts()
+          .fetchMergeConflicts(TEST_WORKING_DIRECTORY)
           .refCount()
           .toPromise();
         expect(wasCalled).toBeTruthy();
@@ -398,7 +405,7 @@ describe('HgService', () => {
     const relativePath2 = relativize(PATH_2);
 
     beforeEach(() => {
-      spyOn(hgService, '_hgRunCommand').andReturn({
+      spyOn(hgUtils, 'hgRunCommand').andReturn({
         stdout: JSON.stringify([
           {path: relativePath1, status: StatusCodeId.UNRESOLVED},
           {path: relativePath2, status: StatusCodeId.UNRESOLVED},
@@ -410,7 +417,7 @@ describe('HgService', () => {
 
   describe('::resolveConflictedFile()', () => {
     beforeEach(() => {
-      spyOn(hgService, '_hgObserveExecution').andCallFake(path => {
+      spyOn(hgUtils, 'hgObserveExecution').andCallFake(path => {
         return Observable.empty();
       });
     });
@@ -418,11 +425,15 @@ describe('HgService', () => {
     it('calls hg resolve', () => {
       waitsForPromise(async () => {
         await hgService
-          .markConflictedFile(PATH_1, /* resolved */ true)
+          .markConflictedFile(
+            TEST_WORKING_DIRECTORY,
+            PATH_1,
+            /* resolved */ true,
+          )
           .refCount()
           .toArray()
           .toPromise();
-        expect(hgService._hgObserveExecution).toHaveBeenCalledWith(
+        expect(hgUtils.hgObserveExecution).toHaveBeenCalledWith(
           ['resolve', '-m', PATH_1],
           {cwd: TEST_WORKING_DIRECTORY},
         );
@@ -435,7 +446,7 @@ describe('HgService', () => {
     let hgRepoSubscriptions;
 
     beforeEach(() => {
-      hgRepoSubscriptions = new HgRepositorySubscriptions(
+      hgRepoSubscriptions = new HgService.HgRepositorySubscriptions(
         TEST_WORKING_DIRECTORY,
       );
       mergeDirectoryExists = false;
@@ -483,17 +494,11 @@ describe('HgService', () => {
     });
   });
 
-  describe('::destroy', () => {
-    it('should do cleanup without throwing an exception.', () => {
-      hgService && hgService.dispose();
-    });
-  });
-
   describe('::_disposeObserver', () => {
     it('should end published observables when disposed', () => {
       waitsForPromise({timeout: 1000}, async () => {
         const subject: Subject<Map<string, boolean>> = new Subject();
-        const repoSubscriptions = new HgRepositorySubscriptions(
+        const repoSubscriptions = new HgService.HgRepositorySubscriptions(
           TEST_WORKING_DIRECTORY,
         );
         repoSubscriptions._lockFilesDidChange = subject;

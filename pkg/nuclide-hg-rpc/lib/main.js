@@ -10,4 +10,3 @@
  */
 
 export {default as hgConstants} from './hg-constants';
-export {HgService} from './HgService';
