@@ -16,7 +16,6 @@
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "event-kit": "2.2.0",
     "fb-watchman": "2.0.0",
     "log4js": "1.1.1",

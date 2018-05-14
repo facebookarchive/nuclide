@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "arch": "2.1.0",
-    "async-to-generator": "1.1.0",
     "fs-extra": "4.0.3",
     "inversify": "4.11.1",
     "line-by-line": "0.1.5",

@@ -28,7 +28,6 @@ const {
 } = require('./utils');
 
 const MODULES_DIR = path.join(__dirname, '..', '..', 'modules');
-const ASYNC_TO_GENERATOR = 'async-to-generator';
 
 function isType(kind) {
   return kind === 'type' || kind === 'typeof';
@@ -93,14 +92,7 @@ module.exports = function(context) {
     }
   }
 
-  function checkAsyncToGenerator(node) {
-    if (node.async) {
-      checkDependency(node, ASYNC_TO_GENERATOR);
-    }
-  }
-
   return {
-    ArrowFunctionExpression: checkAsyncToGenerator,
     CallExpression(node) {
       if (!isRequire(node) && !isRequireResolve(node)) {
         return;
@@ -120,8 +112,6 @@ module.exports = function(context) {
         checkDependency(node, node.source.value);
       }
     },
-    FunctionDeclaration: checkAsyncToGenerator,
-    FunctionExpression: checkAsyncToGenerator,
     ImportDeclaration(node) {
       if (!isType(node.importKind)) {
         // import foo from "…"

@@ -12,7 +12,6 @@
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "idx": "1.2.0",
     "line-by-line": "0.1.5",
     "log4js": "1.1.1",

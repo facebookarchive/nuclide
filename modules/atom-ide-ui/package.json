@@ -16,7 +16,6 @@
     "atom": ">= 1.17.0"
   },
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "classnames": "2.2.5",
     "dompurify": "1.0.3",
     "fuzzaldrin-plus": "0.4.1",

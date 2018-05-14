@@ -8,7 +8,6 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/jest-atom-runner",
   "private": true,
   "devDependencies": {
-    "async-to-generator": "1.1.0",
     "babel-cli": "6.26.0",
     "babel-plugin-transform-es2015-modules-commonjs": "6.26.0",
     "babel-preset-flow": "6.23.0",

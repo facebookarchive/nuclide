@@ -11,7 +11,6 @@
     "test": "scripts/test.js"
   },
   "dependencies": {
-    "async-to-generator": "1.0.0",
     "classnames": "2.2.5",
     "log4js": "1.1.1",
     "nuclide-commons": "0.1.0",

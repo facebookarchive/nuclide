@@ -10,7 +10,6 @@
     "test": "node ../nuclide-jest/bin/jest-node.js"
   },
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "double-ended-queue": "2.1.0-0",
     "event-kit": "2.2.0",
     "log4js": "1.1.1",

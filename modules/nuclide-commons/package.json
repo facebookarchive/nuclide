@@ -11,7 +11,6 @@
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "domexception": "1.0.1",
     "event-kit": "2.2.0",
     "event-target-shim": "3.0.1",

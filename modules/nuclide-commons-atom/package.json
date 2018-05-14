@@ -12,7 +12,6 @@
   },
   "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {
-    "async-to-generator": "1.1.0",
     "escape-string-regexp": "1.0.5",
     "idx": "1.2.0",
     "log4js": "1.1.1",
