@@ -46,7 +46,6 @@ const MODULE_ALIASES = {
 };
 
 const BABEL_OPTIONS = {
-  retainLines: true,
   parserOpts: {
     plugins: [
       'classProperties',
@@ -68,16 +67,8 @@ const BABEL_OPTIONS = {
       cwd: NUCLIDE_ROOT,
     }],
 
-    [require.resolve('babel-plugin-transform-async-to-module-method'), {
-      module: 'async-to-generator',
-      method: 'default',
-    }],
-    // babel-plugin-transform-async-super is used to workaround a bug in Babel
-    // 6. Remove this once we upgrade to Babel 7.
-    [require.resolve('babel-plugin-transform-async-super')],
     [require.resolve('babel-plugin-transform-class-properties')],
     [require.resolve('babel-plugin-transform-object-rest-spread'), {useBuiltIns: true}],
-    [require.resolve('babel-plugin-transform-strict-mode')],
 
     // babel-preset-react:
     [require.resolve('babel-plugin-transform-react-jsx'), {useBuiltIns: true}],
@@ -90,7 +81,6 @@ const BABEL_OPTIONS = {
     // [require.resolve('babel-plugin-transform-es2015-modules-commonjs')],
     [require.resolve('babel-plugin-transform-inline-imports-commonjs'), {
       excludeModules: [
-        'async-to-generator',
         'atom',
         'electron',
         'react',
