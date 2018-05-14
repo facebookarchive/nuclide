@@ -36,10 +36,7 @@ export type ConfigEntry = {
   preserveFunctionNames?: boolean,
 };
 
-export type NamedTransformer = (
-  value: any,
-  context: ObjectRegistry,
-) => any | Promise<any>;
+export type NamedTransformer = (value: any, context: ObjectRegistry) => any;
 
 export type PredefinedTransformer = {
   typeName: string,

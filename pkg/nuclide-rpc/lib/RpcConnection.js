@@ -315,22 +315,28 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   // Delegate marshalling to the type registry.
-  marshal(value: any, type: Type): any {
-    return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
+  marshal(value: any, type: Type): Promise<any> {
+    return Promise.resolve(
+      this._getTypeRegistry().marshal(this._objectRegistry, value, type),
+    );
   }
 
-  unmarshal(value: any, type: Type): any {
-    return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
+  unmarshal(value: any, type: Type): Promise<any> {
+    return Promise.resolve(
+      this._getTypeRegistry().unmarshal(this._objectRegistry, value, type),
+    );
   }
 
   marshalArguments(
     args: Array<any>,
     argTypes: Array<Parameter>,
   ): Promise<Object> {
-    return this._getTypeRegistry().marshalArguments(
-      this._objectRegistry,
-      args,
-      argTypes,
+    return Promise.resolve(
+      this._getTypeRegistry().marshalArguments(
+        this._objectRegistry,
+        args,
+        argTypes,
+      ),
     );
   }
 
@@ -338,10 +344,12 @@ export class RpcConnection<TransportType: Transport> {
     args: Object,
     argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
-    return this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry,
-      args,
-      argTypes,
+    return Promise.resolve(
+      this._getTypeRegistry().unmarshalArguments(
+        this._objectRegistry,
+        args,
+        argTypes,
+      ),
     );
   }
 
@@ -532,9 +540,7 @@ export class RpcConnection<TransportType: Transport> {
 
     // Marshal the result, to send over the network.
     invariant(returnVal != null);
-    returnVal = returnVal.then(value =>
-      this._getTypeRegistry().marshal(this._objectRegistry, value, type),
-    );
+    returnVal = returnVal.then(value => this.marshal(value, type));
 
     // Send the result of the promise across the socket.
     returnVal.then(
@@ -580,13 +586,7 @@ export class RpcConnection<TransportType: Transport> {
 
     // Marshal the result, to send over the network.
     result
-      .concatMap(value =>
-        this._getTypeRegistry().marshal(
-          this._objectRegistry,
-          value,
-          elementType,
-        ),
-      )
+      .concatMap(value => this.marshal(value, elementType))
       // Send the next, error, and completion events of the observable across the socket.
       .subscribe(
         data => {
@@ -651,8 +651,7 @@ export class RpcConnection<TransportType: Transport> {
     const {getLocalImplementation, type} = this._getFunctionImplemention(
       call.method,
     );
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry,
+    const marshalledArgs = await this.unmarshalArguments(
       call.args,
       type.argumentTypes,
     );
@@ -672,8 +671,7 @@ export class RpcConnection<TransportType: Transport> {
     const {definition} = this._getClassDefinition(interfaceName);
     const type = definition.instanceMethods[call.method];
 
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry,
+    const marshalledArgs = await this.unmarshalArguments(
       call.args,
       type.argumentTypes,
     );
