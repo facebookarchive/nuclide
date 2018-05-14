@@ -47,7 +47,6 @@ export type Arguments = {
   _: string[],
   type?: string,
   attach: boolean,
-  usenode?: string,
 };
 
 export default class DebuggerAdapterFactory {
@@ -60,19 +59,12 @@ export default class DebuggerAdapterFactory {
   ];
 
   adapterFromArguments(args: Arguments): ?ParsedVSAdapter {
-    const node: string = args.usenode == null ? 'node' : (args.usenode: string);
     let adapter;
 
     if (args.attach) {
       adapter = this._parseAttachArguments(args);
     } else {
       adapter = this._parseLaunchArguments(args);
-    }
-
-    if (adapter != null) {
-      if (adapter.adapterInfo.command === 'node') {
-        adapter.adapterInfo.command = node;
-      }
     }
 
     return adapter;

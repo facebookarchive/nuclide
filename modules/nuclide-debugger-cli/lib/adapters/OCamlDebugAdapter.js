@@ -50,10 +50,6 @@ export default class OCamlDebugAdapter implements DebugAdapter {
       commandLineArgs.set('program', nuclideUri.resolve(program));
       commandLineArgs.set('noDebug', false);
       commandLineArgs.set('cwd', nuclideUri.resolve('.'));
-
-      if (args.usenode != null) {
-        commandLineArgs.set('runtimeExecutable', args.usenode);
-      }
     }
 
     return commandLineArgs;
