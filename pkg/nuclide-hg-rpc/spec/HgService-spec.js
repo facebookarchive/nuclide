@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {HgService} from '../lib/HgService';
+import {HgService, HgRepositorySubscriptions} from '../lib/HgService';
 import {
   AmendMode,
   StatusCodeId,
@@ -431,21 +431,18 @@ describe('HgService', () => {
   });
 
   describe('::_checkConflictChange', () => {
-    let mergeConflicts;
     let mergeDirectoryExists;
     let hgRepoSubscriptions;
 
     beforeEach(() => {
-      hgRepoSubscriptions = hgService._repoSubscriptions;
+      hgRepoSubscriptions = new HgRepositorySubscriptions(
+        TEST_WORKING_DIRECTORY,
+      );
       mergeDirectoryExists = false;
-      mergeConflicts = null;
       spyOn(hgRepoSubscriptions, '_checkMergeDirectoryExists').andCallFake(
         () => {
           return mergeDirectoryExists;
         },
-      );
-      spyOn(hgService, '_fetchMergeConflicts').andCallFake(
-        () => mergeConflicts,
       );
     });
 
@@ -468,7 +465,6 @@ describe('HgService', () => {
 
     it('reports conflicts when merge directory exists + conflicts found', () => {
       mergeDirectoryExists = true;
-      mergeConflicts = mockOutput;
       waitsForPromise(async () => {
         await hgRepoSubscriptions._checkConflictChange();
         expect(hgRepoSubscriptions._isInConflict).toBeTruthy();
@@ -477,7 +473,6 @@ describe('HgService', () => {
 
     it('exits of conflict state when the merge directory is removed', () => {
       mergeDirectoryExists = true;
-      mergeConflicts = mockOutput;
       waitsForPromise(async () => {
         await hgRepoSubscriptions._checkConflictChange();
         expect(hgRepoSubscriptions._isInConflict).toBeTruthy();
@@ -498,9 +493,12 @@ describe('HgService', () => {
     it('should end published observables when disposed', () => {
       waitsForPromise({timeout: 1000}, async () => {
         const subject: Subject<Map<string, boolean>> = new Subject();
-        hgService._repoSubscriptions._lockFilesDidChange = subject;
+        const repoSubscriptions = new HgRepositorySubscriptions(
+          TEST_WORKING_DIRECTORY,
+        );
+        repoSubscriptions._lockFilesDidChange = subject;
 
-        const locksObservable = hgService
+        const locksObservable = repoSubscriptions
           .observeLockFilesDidChange()
           .refCount()
           .toArray()
@@ -509,7 +507,7 @@ describe('HgService', () => {
         const m2 = new Map([['goodbye', false]]);
         subject.next(m1);
         subject.next(m2);
-        hgService.dispose();
+        repoSubscriptions.dispose();
         // after disposing, we shouldn't see any more emitted events
         subject.next(m1);
         subject.next(m2);

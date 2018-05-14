@@ -13,19 +13,7 @@ import {ConnectableObservable, Observable, Subject} from 'rxjs';
 import type {DiffInfo, StatusCodeIdValue, BookmarkInfo} from '../lib/HgService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-// This class is meant to be stubbed out.
-export default class MockHgService {
-  waitForWatchmanSubscriptions(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  fetchStatuses(
-    filePaths: Array<NuclideUri>,
-    options: ?any,
-  ): ConnectableObservable<Map<string, StatusCodeIdValue>> {
-    return new Subject().publish();
-  }
-
+class MockHgRepositorySubscriptions {
   observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
     return new Subject().publish();
   }
@@ -42,16 +30,38 @@ export default class MockHgService {
     return new Subject().publish();
   }
 
+  observeHgConflictStateDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
+  }
+
+  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
+  }
+
+  observeBookmarksDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
+  }
+}
+
+// This class is meant to be stubbed out.
+export default class MockHgService {
+  createRepositorySubscriptions(): Promise<MockHgRepositorySubscriptions> {
+    return Promise.resolve(new MockHgRepositorySubscriptions());
+  }
+
+  fetchStatuses(
+    filePaths: Array<NuclideUri>,
+    options: ?any,
+  ): ConnectableObservable<Map<string, StatusCodeIdValue>> {
+    return new Subject().publish();
+  }
+
   deleteBookmark(name: string): Promise<void> {
     return Promise.resolve();
   }
 
   renameBookmark(name: string, nextName: string): Promise<void> {
     return Promise.resolve();
-  }
-
-  observeHgConflictStateDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
   }
 
   fetchDiffInfo(
@@ -66,14 +76,6 @@ export default class MockHgService {
 
   fetchBookmarks(): Promise<Array<BookmarkInfo>> {
     return Promise.resolve([]);
-  }
-
-  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeBookmarksDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
   }
 
   dispose(): Promise<void> {

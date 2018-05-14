@@ -13,6 +13,7 @@ import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
 
+import {waitsForRepositoryReady} from './diff-view-utils';
 import {
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
@@ -28,13 +29,15 @@ export function runTest(context: TestContext) {
       // Add this directory as an atom project.
       await context.setProject(projectPath);
 
-      const textEditor = await atom.workspace.open(
-        context.getProjectRelativePath('test.txt'),
-      );
+      const path = context.getProjectRelativePath('test.txt');
+      const textEditor = await atom.workspace.open(path);
       invariant(textEditor);
       const textEditorView = atom.views.getView(textEditor);
 
       textEditor.insertText('abcdef');
+
+      // Make sure Watchman subscriptions are ready before saving.
+      await waitsForRepositoryReady(path);
 
       atom.commands.dispatch(textEditorView, 'core:save');
 

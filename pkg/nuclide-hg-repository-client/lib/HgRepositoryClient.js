@@ -14,6 +14,7 @@ import type {
   AmendModeValue,
   BookmarkInfo,
   CheckoutOptions,
+  HgRepositorySubscriptions,
   HgService,
   DiffInfo,
   LineDiff,
@@ -163,7 +164,7 @@ export class HgRepositoryClient {
     path: string,
     workingDirectory: atom$Directory | RemoteDirectory,
     projectDirectory: ?atom$Directory,
-    initializationPromise: Promise<void>,
+    repoSubscriptions: Promise<?HgRepositorySubscriptions>,
     originURL: ?string,
     service: HgService,
     emitter: Emitter,
@@ -294,32 +295,37 @@ export class HgRepositoryClient {
       .subscribe();
     this._sharedMembers.subscriptions.add(diffStatsSubscription);
 
-    this._sharedMembers.initializationPromise = this._sharedMembers.service.waitForWatchmanSubscriptions();
-    this._sharedMembers.initializationPromise.catch(error => {
-      atom.notifications.addWarning(
-        'Mercurial: failed to subscribe to watchman!',
-      );
-    });
-    // Get updates that tell the HgRepositoryClient when to clear its caches.
-    const fileChanges = this._sharedMembers.service
-      .observeFilesDidChange()
-      .refCount();
+    this._sharedMembers.repoSubscriptions = this._sharedMembers.service
+      .createRepositorySubscriptions()
+      .catch(error => {
+        atom.notifications.addWarning(
+          'Mercurial: failed to subscribe to watchman!',
+        );
+        getLogger('nuclide-hg-repository-client').error(
+          `Failed to subscribe to watchman in ${this._sharedMembers.workingDirectory.getPath()}`,
+          error,
+        );
+        return null;
+      });
+    const fileChanges = this._tryObserve(s =>
+      s.observeFilesDidChange().refCount(),
+    );
     const repoStateChanges = Observable.merge(
-      this._sharedMembers.service.observeHgRepoStateDidChange().refCount(),
+      this._tryObserve(s => s.observeHgRepoStateDidChange().refCount()),
       this._sharedMembers.manualStatusRefreshRequests,
     );
-    const activeBookmarkChanges = this._sharedMembers.service
-      .observeActiveBookmarkDidChange()
-      .refCount();
-    const allBookmarkChanges = this._sharedMembers.service
-      .observeBookmarksDidChange()
-      .refCount();
-    const conflictStateChanges = this._sharedMembers.service
-      .observeHgConflictStateDidChange()
-      .refCount();
-    const commitChanges = this._sharedMembers.service
-      .observeHgCommitsDidChange()
-      .refCount();
+    const activeBookmarkChanges = this._tryObserve(s =>
+      s.observeActiveBookmarkDidChange().refCount(),
+    );
+    const allBookmarkChanges = this._tryObserve(s =>
+      s.observeBookmarksDidChange().refCount(),
+    );
+    const conflictStateChanges = this._tryObserve(s =>
+      s.observeHgConflictStateDidChange().refCount(),
+    );
+    const commitChanges = this._tryObserve(s =>
+      s.observeHgCommitsDidChange().refCount(),
+    );
 
     this._sharedMembers.hgUncommittedStatusChanges = this._observeStatus(
       fileChanges,
@@ -394,6 +400,21 @@ export class HgRepositoryClient {
     return this._sharedMembers.rootRepo;
   }
 
+  // this._repoSubscriptions can potentially fail if Watchman fails.
+  // The current behavior is to behave as if no changes ever occur.
+  _tryObserve<T>(
+    observe: (s: HgRepositorySubscriptions) => Observable<T>,
+  ): Observable<T> {
+    return Observable.fromPromise(
+      this._sharedMembers.repoSubscriptions,
+    ).switchMap(repoSubscriptions => {
+      if (repoSubscriptions == null) {
+        return Observable.never();
+      }
+      return observe(repoSubscriptions);
+    });
+  }
+
   async getAdditionalLogFiles(
     deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
@@ -465,6 +486,11 @@ export class HgRepositoryClient {
     this._sharedMembers.subscriptions.dispose();
     this._sharedMembers.revisionIdToFileChanges.reset();
     this._sharedMembers.fileContentsAtRevisionIds.reset();
+    this._sharedMembers.repoSubscriptions.then(repoSubscriptions => {
+      if (repoSubscriptions != null) {
+        repoSubscriptions.dispose();
+      }
+    });
   }
 
   isDestroyed(): boolean {
@@ -535,9 +561,9 @@ export class HgRepositoryClient {
   }
 
   observeOperationProgressChanges(): Observable<OperationProgress> {
-    return this._sharedMembers.service
-      .observeHgOperationProgressDidChange()
-      .refCount();
+    return this._tryObserve(s =>
+      s.observeHgOperationProgressDidChange().refCount(),
+    );
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
@@ -549,7 +575,7 @@ export class HgRepositoryClient {
   }
 
   observeLockFiles(): Observable<Map<string, boolean>> {
-    return this._sharedMembers.service.observeLockFilesDidChange().refCount();
+    return this._tryObserve(s => s.observeLockFilesDidChange().refCount());
   }
 
   observeHeadRevision(): Observable<RevisionInfo> {

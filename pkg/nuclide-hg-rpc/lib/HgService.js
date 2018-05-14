@@ -342,7 +342,7 @@ async function findStoreDirectory(workingDirectory: string): Promise<string> {
   return nuclideUri.join(hgFolderWithStore, 'store');
 }
 
-class HgRepositorySubscriptions {
+export class HgRepositorySubscriptions {
   _isInConflict: boolean;
   _watchmanClient: ?WatchmanClient;
   _origBackupPath: ?string;
@@ -354,13 +354,21 @@ class HgRepositorySubscriptions {
   _hgBookmarksDidChangeObserver: Subject<any>;
   _hgRepoStateDidChangeObserver: Subject<any>;
   _hgRepoCommitsDidChangeObserver: Subject<void>;
-  _watchmanSubscriptionPromise: Promise<void>;
   _hgConflictStateDidChangeObserver: Subject<boolean>;
   _hgOperationProgressDidChangeObserver: Subject<void>;
   _debouncedCheckConflictChange: () => void;
   _hgStoreDirWatcher: ?fs.FSWatcher;
   _disposeObserver: Subject<void>; // used to limit lifespan of other observables
 
+  static async create(
+    workingDirectory: string,
+  ): Promise<HgRepositorySubscriptions> {
+    const repoSubscriptions = new HgRepositorySubscriptions(workingDirectory);
+    await repoSubscriptions._subscribeToWatchman();
+    return repoSubscriptions;
+  }
+
+  // DO NOT USE DIRECTLY: Use the static `create` instead.
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
     this._filesDidChangeObserver = new Subject();
@@ -376,11 +384,6 @@ class HgRepositorySubscriptions {
       this._checkConflictChange();
     }, CHECK_CONFLICT_DELAY_MS);
     this._disposeObserver = new ReplaySubject();
-    this._watchmanSubscriptionPromise = this._subscribeToWatchman();
-  }
-
-  waitForWatchmanSubscriptions(): Promise<void> {
-    return this._watchmanSubscriptionPromise;
   }
 
   async dispose(): Promise<void> {
@@ -726,19 +729,15 @@ class HgRepositorySubscriptions {
 
 export class HgService {
   _workingDirectory: string;
-  _repoSubscriptions: HgRepositorySubscriptions;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
-    this._repoSubscriptions = new HgRepositorySubscriptions(workingDirectory);
   }
 
-  async dispose(): Promise<void> {
-    await this._repoSubscriptions.dispose();
-  }
+  dispose(): void {}
 
-  waitForWatchmanSubscriptions(): Promise<void> {
-    return this._repoSubscriptions.waitForWatchmanSubscriptions();
+  createRepositorySubscriptions(): Promise<HgRepositorySubscriptions> {
+    return HgRepositorySubscriptions.create(this._workingDirectory);
   }
 
   // Wrapper to help mocking during tests.
@@ -905,26 +904,6 @@ export class HgService {
       .toPromise();
   }
 
-  observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
-    return this._repoSubscriptions.observeFilesDidChange();
-  }
-
-  observeHgCommitsDidChange(): ConnectableObservable<void> {
-    return this._repoSubscriptions.observeHgCommitsDidChange();
-  }
-
-  observeHgRepoStateDidChange(): ConnectableObservable<void> {
-    return this._repoSubscriptions.observeHgRepoStateDidChange();
-  }
-
-  observeHgConflictStateDidChange(): ConnectableObservable<boolean> {
-    return this._repoSubscriptions.observeHgConflictStateDidChange();
-  }
-
-  observeHgOperationProgressDidChange(): ConnectableObservable<any> {
-    return this._repoSubscriptions.observeHgOperationProgressDidChange();
-  }
-
   /**
    * Shells out to `hg diff` to retrieve line diff information for the paths.
    * @param An Array of NuclideUri (absolute paths) for which to fetch diff info.
@@ -1007,18 +986,6 @@ export class HgService {
    */
   fetchBookmarks(): Promise<Array<BookmarkInfo>> {
     return fetchBookmarks(nuclideUri.join(this._workingDirectory, '.hg'));
-  }
-
-  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
-    return this._repoSubscriptions.observeActiveBookmarkDidChange();
-  }
-
-  observeLockFilesDidChange(): ConnectableObservable<Map<string, boolean>> {
-    return this._repoSubscriptions.observeLockFilesDidChange();
-  }
-
-  observeBookmarksDidChange(): ConnectableObservable<void> {
-    return this._repoSubscriptions.observeBookmarksDidChange();
   }
 
   /**
