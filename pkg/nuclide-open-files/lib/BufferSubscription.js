@@ -21,14 +21,11 @@ import type {NotifiersByConnection} from './NotifiersByConnection';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
-import semver from 'semver';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
 
 const logger = getLogger('nuclide-open-files');
 
 const RESYNC_TIMEOUT_MS = 2000;
-
-const ATOM_VERSION_CHECK_FOR_LANGUAGE_ID = '1.24.0-beta0';
 
 // Watches a TextBuffer for change/rename/destroy events and then sends
 // those events to the FileNotifier or NotifiersByConnection as appropriate.
@@ -142,10 +139,14 @@ export class BufferSubscription {
     // TODO: Could watch onDidReload() which will catch the case where an empty file is opened
     // after startup, leaving the only failure the reopening of empty files at startup.
     if (this._buffer.getText() !== '' && this._notifier != null) {
-      this._notifier.then(notifier =>
-        this._sendOpenByNotifier(notifier, this._changeCount),
-      );
+      this._sendOpen(this._changeCount);
     }
+  }
+
+  async _sendOpen(version: number): Promise<void> {
+    invariant(this._notifier != null);
+    const notifier = await this._notifier;
+    this._sendOpenByNotifier(notifier, version);
   }
 
   _sendOpenByNotifier(notifier: FileNotifier, version: number): void {
@@ -167,13 +168,8 @@ export class BufferSubscription {
     });
   }
 
-  /** TODO(hansonw): remove version check after Atom 1.24 drops. */
   _getLanguageId(filePath: string, contents: string): string {
-    if (semver.gte(atom.getVersion(), ATOM_VERSION_CHECK_FOR_LANGUAGE_ID)) {
-      return this._buffer.getLanguageMode().getLanguageId();
-    }
-
-    return atom.grammars.selectGrammar(filePath, contents).scopeName;
+    return this._buffer.getLanguageMode().getLanguageId();
   }
 
   getVersion(): number {

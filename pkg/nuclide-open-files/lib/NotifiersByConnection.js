@@ -21,20 +21,15 @@ import {
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
-import os from 'os';
 import {getLogger} from 'log4js';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable, Subscription} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {areSetsEqual} from 'nuclide-commons/collection';
-import {track} from '../../nuclide-analytics';
 
 const logger = getLogger('nuclide-open-files');
 
 const RESYNC_TIMEOUT_MS = 2000;
-const TEN_MINUTES = 10 * 60 * 1000;
-const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
   return getServiceByConnection(OPEN_FILES_SERVICE, connection);
@@ -59,7 +54,6 @@ function uriMatchesConnection(
 export class NotifiersByConnection {
   _notifiers: ConnectionCache<FileNotifier>;
   _subscriptions: ConnectionCache<IDisposable>;
-  _bufferTracking: Subscription;
   _getService: (connection: ?ServerConnection) => OpenFilesService;
 
   constructor(
@@ -72,10 +66,15 @@ export class NotifiersByConnection {
       new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
     this._notifiers = new ConnectionCache(connection => {
       const result = this._getService(connection).initialize();
-      result.then(notifier => {
+      // NOTE: It's important to use `await` here rather than .then.
+      // v8's native async/await implementation treats .then and await differently.
+      // See: https://stackoverflow.com/questions/46254408/promise-resolution-order-and-await
+      async function onDirectoriesChanged() {
+        const notifier = await result;
         const dirs = filterByConnection(connection, atom.project.getPaths());
         notifier.onDirectoriesChanged(dirs);
-      });
+      }
+      onDirectoriesChanged();
       return result;
     });
     this._subscriptions = new ConnectionCache(connection => {
@@ -84,32 +83,19 @@ export class NotifiersByConnection {
       )
         .map(dirs => filterByConnection(connection, dirs))
         .distinctUntilChanged(areSetsEqual)
-        .subscribe(dirs => {
-          this._notifiers.get(connection).then(notifier => {
-            notifier.onDirectoriesChanged(dirs);
-          });
+        .subscribe(async dirs => {
+          const notifier = await this._notifiers.get(connection);
+          notifier.onDirectoriesChanged(dirs);
         });
       return Promise.resolve(
         new UniversalDisposable(() => subscription.unsubscribe()),
       );
     });
-    const user = os.userInfo().username;
-    this._bufferTracking = Observable.timer(TEN_MINUTES, TWO_HOURS)
-      .switchMap(() => this._notifiers.observeEntries())
-      .subscribe(([sc, notifier]) => {
-        const host = sc == null ? 'local' : sc.getRemoteHostname();
-        notifier
-          .then(n => n.getTotalBufferSize())
-          .then(bufferSize =>
-            track('open-file-buffer-usage', {bufferSize, user, host}),
-          );
-      });
   }
 
   dispose() {
     this._notifiers.dispose();
     this._subscriptions.dispose();
-    this._bufferTracking.unsubscribe();
   }
 
   // Returns null for a buffer to a file on a closed remote connection
