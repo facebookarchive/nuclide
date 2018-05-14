@@ -1272,7 +1272,7 @@ export default class DebugService implements IDebugService {
   ): Promise<VsDebugSession> {
     const {targetUri} = configuration;
     const service = getVSCodeDebuggerAdapterServiceByNuclideUri(targetUri);
-    const spawner = new service.VsRawAdapterSpawnerService();
+    const spawner = await service.createVsRawAdapterSpawnerService();
 
     const clientPreprocessors: Array<MessageProcessor> = [];
     const adapterPreprocessors: Array<MessageProcessor> = [];

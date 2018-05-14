@@ -34,6 +34,12 @@ export class VsRawAdapterSpawnerService extends VsAdapterSpawner {
   }
 }
 
+export async function createVsRawAdapterSpawnerService(): Promise<
+  VsRawAdapterSpawnerService,
+> {
+  return new VsRawAdapterSpawnerService();
+}
+
 export async function getProcessTree(): Promise<Array<ProcessInfo>> {
   return psTree();
 }
