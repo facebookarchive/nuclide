@@ -394,6 +394,20 @@ class HHVMDebuggerWrapper {
           this._asyncBreakPending = true;
           return false;
         }
+        case 'evaluate': {
+          // TODO: Ericblue remove this. Added mitigation for bug (T29274303)
+          // in HHVM causing segfault on silent evaluations. Strip off
+          // hover and watch from the command to avoid hitting this bug,
+          // which would crash the entire webserver.
+          if (
+            requestMsg.arguments != null &&
+            (requestMsg.arguments.context === 'watch' ||
+              requestMsg.arguments.context === 'hover')
+          ) {
+            delete requestMsg.arguments.context;
+          }
+          return false;
+        }
         default:
           break;
       }
