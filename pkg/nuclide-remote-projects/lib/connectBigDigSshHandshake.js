@@ -75,7 +75,9 @@ export default function connectBigDigSshHandshake(
         },
         err => {
           delegate.onError(
-            NuclideSshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
+            err.code === 'CERT_NOT_YET_VALID'
+              ? NuclideSshHandshake.ErrorType.CERT_NOT_YET_VALID
+              : NuclideSshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
             err,
             connectionConfig,
           );
