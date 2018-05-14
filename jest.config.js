@@ -14,22 +14,18 @@
   prefer-object-spread/prefer-object-spread: 0,
   nuclide-internal/no-commonjs: 0,
   */
-'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
+const path = require('path');
 
 module.exports = {
-  rootDir: __dirname,
+  rootDir: path.resolve(__dirname, '../../'),
+  roots: ['<rootDir>/xplat/nuclide'],
   testMatch: ['**/__tests__/**/*.js?(x)'],
   transform: {
-    '\\.js$': '<rootDir>/modules/nuclide-jest/jestTransformer.js',
+    '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
   },
   testFailureExitCode: 0,
-  setupFiles: ['<rootDir>/jest/setup.js'],
+  setupFiles: ['<rootDir>/xplat/nuclide/jest/setup.js'],
   forceExit: true,
   testPathIgnorePatterns: ['/node_modules/'],
 };
