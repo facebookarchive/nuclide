@@ -15,14 +15,12 @@ import type {
 } from '../../nuclide-deep-link/lib/types';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import querystring from 'querystring';
-import * as React from 'react';
-import url from 'url';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
+import openSettingsView from './openSettingsView';
 
 let subscriptions: UniversalDisposable = (null: any);
 
@@ -37,21 +35,7 @@ export function deactivate(): void {
 
 function registerCommandAndOpener(): UniversalDisposable {
   return new UniversalDisposable(
-    atom.workspace.addOpener(uri => {
-      if (uri.startsWith(WORKSPACE_VIEW_URI)) {
-        let initialFilter = '';
-        const {query} = url.parse(uri);
-        if (query != null) {
-          const params = querystring.parse(query);
-          if (typeof params.filter === 'string') {
-            initialFilter = params.filter;
-          }
-        }
-        return viewableFromReactElement(
-          <SettingsPaneItem initialFilter={initialFilter} />,
-        );
-      }
-    }),
+    atom.workspace.addOpener(openSettingsView),
     () => destroyItemWhere(item => item instanceof SettingsPaneItem),
     atom.commands.add('atom-workspace', 'nuclide-settings:toggle', () => {
       atom.workspace.toggle(WORKSPACE_VIEW_URI);

@@ -11,7 +11,9 @@
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import * as React from 'react';
+import {Observable, Scheduler} from 'rxjs';
 import SettingsCategory from './SettingsCategory';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -27,11 +29,9 @@ type State = {
   filter: string,
 };
 
-export default class NuclideSettingsPaneItem extends React.Component<
-  Props,
-  State,
-> {
+export default class SettingsPaneItem extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
+  _filterInput: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -42,12 +42,6 @@ export default class NuclideSettingsPaneItem extends React.Component<
   }
 
   _getConfigData(): Object {
-    // Only need to add config listeners once.
-    let disposables = null;
-    if (!this._disposables) {
-      this._disposables = disposables = new UniversalDisposable();
-    }
-
     const configData = {};
     const nuclidePackages = atom.packages
       .getLoadedPackages()
@@ -56,7 +50,7 @@ export default class NuclideSettingsPaneItem extends React.Component<
     // Config data is organized as a series of nested objects. First, by category
     // and then by packages in each category. Each package contains a title and an
     // object for each setting in that package. Each setting also contains an
-    // onChange callback for components. We also listen for atom.config.onDidChange.
+    // onChange callback for components.
     //
     // ```
     // configData = {
@@ -121,14 +115,6 @@ export default class NuclideSettingsPaneItem extends React.Component<
               value: featureConfig.get(keyPath),
             };
           }
-
-          if (disposables) {
-            const disposable = featureConfig.onDidChange(
-              keyPath,
-              this._handleConfigChange,
-            );
-            this._disposables.add(disposable);
-          }
         });
 
         if (Object.keys(settings).length !== 0) {
@@ -142,16 +128,55 @@ export default class NuclideSettingsPaneItem extends React.Component<
     return configData;
   }
 
-  _handleConfigChange = (event: Object) => {
-    // Workaround: Defer this._getConfigData() as it registers new config.onDidChange() callbacks
-    // The issue is that Atom invokes these new callbacks for the current onDidChange event,
-    // instead of only for *future* events.
-    setTimeout(() => this.setState(this._getConfigData()));
-  };
-
   _handleComponentChange = (keyPath: string, value: any): void => {
     featureConfig.set(keyPath, value);
   };
+
+  _getSettingsKeyPaths(): Array<string> {
+    const keyPaths = [];
+    const nuclidePackages = atom.packages
+      .getLoadedPackages()
+      .filter(pkg => pkg.metadata && pkg.metadata.nuclide);
+
+    nuclidePackages.forEach(pkg => {
+      const pkgName = pkg.name;
+      const {nuclide} = pkg.metadata;
+      const config = pkg.metadata.atomConfig || nuclide.config;
+
+      if (config != null) {
+        Object.keys(config).forEach(settingName =>
+          keyPaths.push(pkgName + '.' + settingName),
+        );
+      }
+    });
+
+    return keyPaths;
+  }
+
+  componentDidMount(): void {
+    const settingsKeyPaths = this._getSettingsKeyPaths();
+    const changedSettings = settingsKeyPaths.map(keyPath =>
+      featureConfig.observeAsStream(keyPath),
+    );
+
+    this._disposables = new UniversalDisposable(
+      observePaneItemVisibility(this)
+        .filter(Boolean)
+        .delay(0, Scheduler.animationFrame)
+        .subscribe(() => {
+          if (this._filterInput != null) {
+            this._filterInput.focus();
+          }
+        }),
+      Observable.merge(...changedSettings)
+        // throttle to prevent rerendering for each change if changes occur in
+        // rapid succession
+        .throttleTime(50)
+        .subscribe(() => {
+          this.setState(this._getConfigData());
+        }),
+    );
+  }
 
   render(): React.Node {
     const elements = [];
@@ -180,6 +205,9 @@ export default class NuclideSettingsPaneItem extends React.Component<
               <section className="section">
                 <Section headline="Filter" collapsable={true}>
                   <AtomInput
+                    ref={component => {
+                      this._filterInput = component;
+                    }}
                     size="lg"
                     placeholderText="Filter by setting title or description"
                     initialValue={this.props.initialFilter}
@@ -193,6 +221,12 @@ export default class NuclideSettingsPaneItem extends React.Component<
         </div>
       </div>
     );
+  }
+
+  componentWillUnmount() {
+    if (this._disposables != null) {
+      this._disposables.dispose();
+    }
   }
 
   _onFilterTextChanged = (filterText: string): void => {
