@@ -50,6 +50,7 @@ type NuclideServerOptions = {
 
 export default class NuclideServer {
   static _theServer: ?NuclideServer;
+  static _shutdownCallbacks: Set<() => void> = new Set();
 
   _webServer: http$fixed$Server;
   _webSocketServer: WS.Server;
@@ -191,6 +192,13 @@ export default class NuclideServer {
 
   static shutdown(): void {
     logger.info('Shutting down the server');
+    for (const callback of NuclideServer._shutdownCallbacks) {
+      try {
+        callback();
+      } catch (e) {
+        logger.error('Error when executing shutdown callback:', e);
+      }
+    }
     try {
       if (NuclideServer._theServer != null) {
         NuclideServer._theServer.close();
@@ -200,6 +208,11 @@ export default class NuclideServer {
     } finally {
       flushLogsAndExit(0);
     }
+  }
+
+  static registerShutdownCallback(callback: () => void): IDisposable {
+    NuclideServer._shutdownCallbacks.add(callback);
+    return {dispose: () => NuclideServer._shutdownCallbacks.delete(callback)};
   }
 
   static closeConnection(client: RpcConnection<QueuedAckTransport>): void {
