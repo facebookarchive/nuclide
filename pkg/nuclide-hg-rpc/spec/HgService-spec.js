@@ -433,13 +433,17 @@ describe('HgService', () => {
   describe('::_checkConflictChange', () => {
     let mergeConflicts;
     let mergeDirectoryExists;
+    let hgRepoSubscriptions;
 
     beforeEach(() => {
+      hgRepoSubscriptions = hgService._repoSubscriptions;
       mergeDirectoryExists = false;
       mergeConflicts = null;
-      spyOn(hgService, '_checkMergeDirectoryExists').andCallFake(() => {
-        return mergeDirectoryExists;
-      });
+      spyOn(hgRepoSubscriptions, '_checkMergeDirectoryExists').andCallFake(
+        () => {
+          return mergeDirectoryExists;
+        },
+      );
       spyOn(hgService, '_fetchMergeConflicts').andCallFake(
         () => mergeConflicts,
       );
@@ -448,8 +452,8 @@ describe('HgService', () => {
     it("reports no conflicts when the merge directory isn't there", () => {
       waitsForPromise(async () => {
         mergeDirectoryExists = false;
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeFalsy();
+        await hgRepoSubscriptions._checkConflictChange();
+        expect(hgRepoSubscriptions._isInConflict).toBeFalsy();
       });
     });
 
@@ -457,8 +461,8 @@ describe('HgService', () => {
     it('reports in conflict state even if no files have merge conflicts', () => {
       mergeDirectoryExists = true;
       waitsForPromise(async () => {
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeTruthy();
+        await hgRepoSubscriptions._checkConflictChange();
+        expect(hgRepoSubscriptions._isInConflict).toBeTruthy();
       });
     });
 
@@ -466,8 +470,8 @@ describe('HgService', () => {
       mergeDirectoryExists = true;
       mergeConflicts = mockOutput;
       waitsForPromise(async () => {
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeTruthy();
+        await hgRepoSubscriptions._checkConflictChange();
+        expect(hgRepoSubscriptions._isInConflict).toBeTruthy();
       });
     });
 
@@ -475,11 +479,11 @@ describe('HgService', () => {
       mergeDirectoryExists = true;
       mergeConflicts = mockOutput;
       waitsForPromise(async () => {
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeTruthy();
+        await hgRepoSubscriptions._checkConflictChange();
+        expect(hgRepoSubscriptions._isInConflict).toBeTruthy();
         mergeDirectoryExists = false;
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeFalsy();
+        await hgRepoSubscriptions._checkConflictChange();
+        expect(hgRepoSubscriptions._isInConflict).toBeFalsy();
       });
     });
   });
@@ -494,7 +498,7 @@ describe('HgService', () => {
     it('should end published observables when disposed', () => {
       waitsForPromise({timeout: 1000}, async () => {
         const subject: Subject<Map<string, boolean>> = new Subject();
-        hgService._lockFilesDidChange = subject;
+        hgService._repoSubscriptions._lockFilesDidChange = subject;
 
         const locksObservable = hgService
           .observeLockFilesDidChange()

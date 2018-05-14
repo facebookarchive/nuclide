@@ -342,7 +342,7 @@ async function findStoreDirectory(workingDirectory: string): Promise<string> {
   return nuclideUri.join(hgFolderWithStore, 'store');
 }
 
-export class HgService {
+class HgRepositorySubscriptions {
   _isInConflict: boolean;
   _watchmanClient: ?WatchmanClient;
   _origBackupPath: ?string;
@@ -396,164 +396,6 @@ export class HgService {
       this._hgStoreDirWatcher = null;
     }
     await this._cleanUpWatchman();
-  }
-
-  // Wrapper to help mocking during tests.
-  _hgAsyncExecute(args: Array<string>, options: HgExecOptions): Promise<any> {
-    return hgAsyncExecute(args, options);
-  }
-
-  _hgObserveExecution(
-    args: Array<string>,
-    options: HgExecOptions,
-  ): Observable<LegacyProcessMessage> {
-    // TODO(T17463635)
-    return hgObserveExecution(args, options);
-  }
-
-  _hgRunCommand(
-    args: Array<string>,
-    options: HgExecOptions,
-  ): Observable<string> {
-    return hgRunCommand(args, options);
-  }
-
-  /**
-   * Section: File and Repository Status
-   */
-
-  /**
-   * Shells out of the `hg status` to get the statuses of the paths.
-   */
-  fetchStatuses(
-    toRevision?: string,
-  ): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
-    const execOptions = {
-      cwd: this._workingDirectory,
-    };
-    const args = ['status', '-Tjson'];
-    if (toRevision != null) {
-      args.push('--rev', toRevision);
-    }
-
-    return hgRunCommand(args, execOptions)
-      .map(stdout => {
-        const statusMap = new Map();
-        const statuses = JSON.parse(stdout);
-        for (const status of takeIterable(statuses, NUM_FETCH_STATUSES_LIMIT)) {
-          statusMap.set(
-            nuclideUri.join(this._workingDirectory, status.path),
-            status.status,
-          );
-        }
-        return statusMap;
-      })
-      .publish();
-  }
-
-  /**
-   * Like fetchStatuses, but first calculates the root of the current
-   * stack and fetches changes since that revision.
-   */
-  fetchStackStatuses(): ConnectableObservable<
-    Map<NuclideUri, StatusCodeIdValue>,
-  > {
-    // Note: an alternative which doesn't depend upon reading .arcconfig in getForkBaseName is:
-    //   return this.fetchStatuses('ancestor(ancestor((not public()) and (:: .))^ or .)')
-    // Both the code below and the alternative above have identical performance.
-
-    return Observable.fromPromise(getForkBaseName(this._workingDirectory)) // e.g. "master"
-      .switchMap(forkBaseName => {
-        const root = expressionForCommonAncestor(forkBaseName); // e.g. "ancestor(master, .)"
-        return this.fetchStatuses(root).refCount();
-      })
-      .publish();
-  }
-
-  /**
-   * Like fetchStatuses, but first checks whether the head is public. If so, returns
-   * changes *since* the head. If not, returns changes *including* the head.
-   */
-  fetchHeadStatuses(): ConnectableObservable<
-    Map<NuclideUri, StatusCodeIdValue>,
-  > {
-    return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
-  }
-
-  async getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
-    const options = {cwd: this._workingDirectory};
-    const base = await timeoutAfterDeadline(
-      deadline,
-      getForkBaseName(this._workingDirectory),
-    ); // e.g. master
-    const root = expressionForCommonAncestor(base); // ancestor(master, .)
-
-    // The ID of the root
-    const getId = async () => {
-      try {
-        const args = ['id', '--rev', root];
-        const output = await this._hgAsyncExecute(args, options);
-        return output.stdout ? output.stdout.trim() : '<id unknown>';
-      } catch (e) {
-        return `<id error: ${e.stderr}`;
-      }
-    };
-
-    // Diff from base to current working directory
-    const getDiff = async () => {
-      try {
-        const args = ['diff', '--unified', '0', '-r', root];
-        const output = await this._hgAsyncExecute(args, options);
-        return output.stdout ? output.stdout.trim() : '<diff unknown>';
-      } catch (e) {
-        return `<diff error: ${e.stderr}>`;
-      }
-    };
-
-    // Summary of changes from base to current working directory
-    const getStatus = async () => {
-      const statuses = await this.fetchStatuses(root)
-        .refCount()
-        .toPromise();
-      let result = '';
-      for (const [filepath, status] of statuses) {
-        result += `${status} ${filepath}\n`;
-      }
-      return result;
-    };
-
-    const [id, diff, status] = await Promise.all([
-      timeoutAfterDeadline(deadline, getId()).catch(
-        e => `id ${e.message}\n${e.stack}`,
-      ),
-      timeoutAfterDeadline(deadline, getDiff()).catch(
-        e => 'diff ' + stringifyError(e),
-      ),
-      timeoutAfterDeadline(deadline, getStatus()).catch(
-        e => 'status ' + stringifyError(e),
-      ),
-    ]);
-
-    const results: Array<AdditionalLogFile> = [];
-
-    // If the user is on a public revision, there's no need to provide hgdiff.
-    results.push({
-      title: `${this._workingDirectory}:hg`,
-      data:
-        `hg update -r ${id}\n` +
-        (status === '' ? '' : 'hg import --no-commit hgdiff\n') +
-        `\n${status}`,
-    });
-    if (status !== '') {
-      results.push({
-        title: `${this._workingDirectory}:hgdiff`,
-        data: diff,
-      });
-    }
-
-    return results;
   }
 
   async _subscribeToWatchman(): Promise<void> {
@@ -774,12 +616,6 @@ export class HgService {
     this._hgConflictStateDidChangeObserver.next(mergeDirectoryExists);
   }
 
-  async _fetchMergeConflicts(): Promise<?MergeConflicts> {
-    return this.fetchMergeConflicts()
-      .refCount()
-      .toPromise();
-  }
-
   _emitHgRepoStateChanged(): void {
     this._hgRepoStateDidChangeObserver.next();
   }
@@ -838,7 +674,6 @@ export class HgService {
   /**
    * Observes when the Mercurial operation progress has changed
    */
-
   observeHgOperationProgressDidChange(): ConnectableObservable<any> {
     return this._hgOperationProgressDidChangeObserver
       .let(fastDebounce(50))
@@ -865,6 +700,229 @@ export class HgService {
           }),
       )
       .publish();
+  }
+
+  /**
+   * Observes that the active Mercurial bookmark has changed.
+   */
+  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
+    return this._hgActiveBookmarkDidChangeObserver.publish();
+  }
+
+  /**
+   * Observes that the Mercurial working directory lock has changed.
+   */
+  observeLockFilesDidChange(): ConnectableObservable<Map<string, boolean>> {
+    return this._lockFilesDidChange.takeUntil(this._disposeObserver).publish();
+  }
+
+  /**
+   * Observes that Mercurial bookmarks have changed.
+   */
+  observeBookmarksDidChange(): ConnectableObservable<void> {
+    return this._hgBookmarksDidChangeObserver.publish();
+  }
+}
+
+export class HgService {
+  _workingDirectory: string;
+  _repoSubscriptions: HgRepositorySubscriptions;
+
+  constructor(workingDirectory: string) {
+    this._workingDirectory = workingDirectory;
+    this._repoSubscriptions = new HgRepositorySubscriptions(workingDirectory);
+  }
+
+  async dispose(): Promise<void> {
+    await this._repoSubscriptions.dispose();
+  }
+
+  waitForWatchmanSubscriptions(): Promise<void> {
+    return this._repoSubscriptions.waitForWatchmanSubscriptions();
+  }
+
+  // Wrapper to help mocking during tests.
+  _hgAsyncExecute(args: Array<string>, options: HgExecOptions): Promise<any> {
+    return hgAsyncExecute(args, options);
+  }
+
+  _hgObserveExecution(
+    args: Array<string>,
+    options: HgExecOptions,
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
+    return hgObserveExecution(args, options);
+  }
+
+  _hgRunCommand(
+    args: Array<string>,
+    options: HgExecOptions,
+  ): Observable<string> {
+    return hgRunCommand(args, options);
+  }
+
+  /**
+   * Section: File and Repository Status
+   */
+
+  /**
+   * Shells out of the `hg status` to get the statuses of the paths.
+   */
+  fetchStatuses(
+    toRevision?: string,
+  ): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    const args = ['status', '-Tjson'];
+    if (toRevision != null) {
+      args.push('--rev', toRevision);
+    }
+
+    return hgRunCommand(args, execOptions)
+      .map(stdout => {
+        const statusMap = new Map();
+        const statuses = JSON.parse(stdout);
+        for (const status of takeIterable(statuses, NUM_FETCH_STATUSES_LIMIT)) {
+          statusMap.set(
+            nuclideUri.join(this._workingDirectory, status.path),
+            status.status,
+          );
+        }
+        return statusMap;
+      })
+      .publish();
+  }
+
+  /**
+   * Like fetchStatuses, but first calculates the root of the current
+   * stack and fetches changes since that revision.
+   */
+  fetchStackStatuses(): ConnectableObservable<
+    Map<NuclideUri, StatusCodeIdValue>,
+  > {
+    // Note: an alternative which doesn't depend upon reading .arcconfig in getForkBaseName is:
+    //   return this.fetchStatuses('ancestor(ancestor((not public()) and (:: .))^ or .)')
+    // Both the code below and the alternative above have identical performance.
+
+    return Observable.fromPromise(getForkBaseName(this._workingDirectory)) // e.g. "master"
+      .switchMap(forkBaseName => {
+        const root = expressionForCommonAncestor(forkBaseName); // e.g. "ancestor(master, .)"
+        return this.fetchStatuses(root).refCount();
+      })
+      .publish();
+  }
+
+  /**
+   * Like fetchStatuses, but first checks whether the head is public. If so, returns
+   * changes *since* the head. If not, returns changes *including* the head.
+   */
+  fetchHeadStatuses(): ConnectableObservable<
+    Map<NuclideUri, StatusCodeIdValue>,
+  > {
+    return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
+  }
+
+  async getAdditionalLogFiles(
+    deadline: DeadlineRequest,
+  ): Promise<Array<AdditionalLogFile>> {
+    const options = {cwd: this._workingDirectory};
+    const base = await timeoutAfterDeadline(
+      deadline,
+      getForkBaseName(this._workingDirectory),
+    ); // e.g. master
+    const root = expressionForCommonAncestor(base); // ancestor(master, .)
+
+    // The ID of the root
+    const getId = async () => {
+      try {
+        const args = ['id', '--rev', root];
+        const output = await this._hgAsyncExecute(args, options);
+        return output.stdout ? output.stdout.trim() : '<id unknown>';
+      } catch (e) {
+        return `<id error: ${e.stderr}`;
+      }
+    };
+
+    // Diff from base to current working directory
+    const getDiff = async () => {
+      try {
+        const args = ['diff', '--unified', '0', '-r', root];
+        const output = await this._hgAsyncExecute(args, options);
+        return output.stdout ? output.stdout.trim() : '<diff unknown>';
+      } catch (e) {
+        return `<diff error: ${e.stderr}>`;
+      }
+    };
+
+    // Summary of changes from base to current working directory
+    const getStatus = async () => {
+      const statuses = await this.fetchStatuses(root)
+        .refCount()
+        .toPromise();
+      let result = '';
+      for (const [filepath, status] of statuses) {
+        result += `${status} ${filepath}\n`;
+      }
+      return result;
+    };
+
+    const [id, diff, status] = await Promise.all([
+      timeoutAfterDeadline(deadline, getId()).catch(
+        e => `id ${e.message}\n${e.stack}`,
+      ),
+      timeoutAfterDeadline(deadline, getDiff()).catch(
+        e => 'diff ' + stringifyError(e),
+      ),
+      timeoutAfterDeadline(deadline, getStatus()).catch(
+        e => 'status ' + stringifyError(e),
+      ),
+    ]);
+
+    const results: Array<AdditionalLogFile> = [];
+
+    // If the user is on a public revision, there's no need to provide hgdiff.
+    results.push({
+      title: `${this._workingDirectory}:hg`,
+      data:
+        `hg update -r ${id}\n` +
+        (status === '' ? '' : 'hg import --no-commit hgdiff\n') +
+        `\n${status}`,
+    });
+    if (status !== '') {
+      results.push({
+        title: `${this._workingDirectory}:hgdiff`,
+        data: diff,
+      });
+    }
+
+    return results;
+  }
+
+  async _fetchMergeConflicts(): Promise<?MergeConflicts> {
+    return this.fetchMergeConflicts()
+      .refCount()
+      .toPromise();
+  }
+
+  observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
+    return this._repoSubscriptions.observeFilesDidChange();
+  }
+
+  observeHgCommitsDidChange(): ConnectableObservable<void> {
+    return this._repoSubscriptions.observeHgCommitsDidChange();
+  }
+
+  observeHgRepoStateDidChange(): ConnectableObservable<void> {
+    return this._repoSubscriptions.observeHgRepoStateDidChange();
+  }
+
+  observeHgConflictStateDidChange(): ConnectableObservable<boolean> {
+    return this._repoSubscriptions.observeHgConflictStateDidChange();
+  }
+
+  observeHgOperationProgressDidChange(): ConnectableObservable<any> {
+    return this._repoSubscriptions.observeHgOperationProgressDidChange();
   }
 
   /**
@@ -951,25 +1009,16 @@ export class HgService {
     return fetchBookmarks(nuclideUri.join(this._workingDirectory, '.hg'));
   }
 
-  /**
-   * Observes that the active Mercurial bookmark has changed.
-   */
   observeActiveBookmarkDidChange(): ConnectableObservable<void> {
-    return this._hgActiveBookmarkDidChangeObserver.publish();
+    return this._repoSubscriptions.observeActiveBookmarkDidChange();
   }
 
-  /**
-   * Observes that the Mercurial working directory lock has changed.
-   */
   observeLockFilesDidChange(): ConnectableObservable<Map<string, boolean>> {
-    return this._lockFilesDidChange.takeUntil(this._disposeObserver).publish();
+    return this._repoSubscriptions.observeLockFilesDidChange();
   }
 
-  /**
-   * Observes that Mercurial bookmarks have changed.
-   */
   observeBookmarksDidChange(): ConnectableObservable<void> {
-    return this._hgBookmarksDidChangeObserver.publish();
+    return this._repoSubscriptions.observeBookmarksDidChange();
   }
 
   /**
