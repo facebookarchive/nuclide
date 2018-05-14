@@ -224,5 +224,20 @@ describe('EchoServer', () => {
     });
   });
 
+  it('Throws when attempting to construct a remotable object', () => {
+    let err;
+    try {
+      // eslint-disable-next-line no-new
+      new service.RemotableObject();
+    } catch (_err) {
+      err = _err;
+    }
+    expect(err).toBeTruthy();
+    invariant(err != null);
+    expect(err.message).toBe(
+      'constructors are not supported for remote objects',
+    );
+  });
+
   afterEach(() => testHelper.stop());
 });

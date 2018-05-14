@@ -42,23 +42,6 @@
             "fileName": "InterfaceService.def",
             "line": 1
         },
-        "constructorArgs": [
-            {
-                "name": "x",
-                "type": {
-                    "kind": "number"
-                }
-            },
-            {
-                "name": "y",
-                "type": {
-                    "kind": "nullable",
-                    "type": {
-                        "kind": "number"
-                    }
-                }
-            }
-        ],
         "staticMethods": {
             "distance": {
                 "location": {
@@ -169,7 +152,6 @@
             "fileName": "InterfaceService.def",
             "line": 30
         },
-        "constructorArgs": null,
         "staticMethods": {},
         "instanceMethods": {
             "p": {

@@ -27,7 +27,6 @@ import type {
   NamedType,
   Type,
   InterfaceDefinition,
-  Parameter,
 } from './types';
 
 export default function createProxyGenerator(
@@ -53,10 +52,6 @@ export default function createProxyGenerator(
   const callRemoteMethodExpression = t.memberExpression(
     clientIdentifier,
     t.identifier('callRemoteMethod'),
-  );
-  const createRemoteObjectExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('createRemoteObject'),
   );
   const disposeRemoteObjectExpression = t.memberExpression(
     clientIdentifier,
@@ -311,12 +306,8 @@ export default function createProxyGenerator(
       );
     });
 
-    // Generate constructor proxy.
-    if (def.constructorArgs != null) {
-      methodDefinitions.push(
-        generateRemoteConstructor(def.name, def.constructorArgs),
-      );
-    }
+    // Generate a constructor stub.
+    methodDefinitions.push(generateRemoteConstructor());
 
     // Generate proxies for instance methods.
     const thisType: NamedType = {
@@ -345,36 +336,24 @@ export default function createProxyGenerator(
   }
 
   /**
-   * Helper function that generates a remote constructor proxy.
-   * @param className - The name of the interface.
-   * @param constructorArgs - The types of the arguments to the constructor.
+   * Helper function that generates a remote constructor stub.
+   * Remote constructors are not supported, so this just throws.
    * @returns A MethodDefinition node that can be added to a ClassBody.
    */
-  function generateRemoteConstructor(
-    className: string,
-    constructorArgs: Array<Parameter>,
-  ) {
-    // arg0, .... argN
-    const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
-    // [arg0, ... argN]
-    const argsArray = t.arrayExpression(args);
-    // [argType0, ... argTypeN]
-    const argTypes = t.arrayExpression(constructorArgs.map(objectToLiteral));
+  function generateRemoteConstructor() {
+    // throw Error(...)
+    const throwStatement = t.throwStatement(
+      t.callExpression(t.identifier('Error'), [
+        t.stringLiteral('constructors are not supported for remote objects'),
+      ]),
+    );
 
-    // client.createRemoteObject(className, this, [arg0, arg1, .... argN], [argType0 ... argTypeN])
-    const rpcCallExpression = t.callExpression(createRemoteObjectExpression, [
-      t.stringLiteral(className),
-      t.thisExpression(),
-      argsArray,
-      argTypes,
-    ]);
-
-    // constructor(arg0, arg1, ..., argN) { ... }
+    // constructor() { ... }
     return t.classMethod(
       'constructor',
       t.identifier('constructor'),
-      args,
-      t.blockStatement([t.expressionStatement(rpcCallExpression)]),
+      [],
+      t.blockStatement([throwStatement]),
     );
   }
 

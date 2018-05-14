@@ -247,12 +247,6 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          if (definition.constructorArgs != null) {
-            contextLocation = definition.location;
-            definition.constructorArgs.forEach(parameter => {
-              validateType(parameter.type);
-            });
-          }
           Object.keys(definition.instanceMethods).forEach(methodName => {
             const method = definition.instanceMethods[methodName];
             contextLocation = method.location;
@@ -720,12 +714,6 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          if (definition.constructorArgs != null) {
-            contextLocation = definition.location;
-            definition.constructorArgs.forEach(parameter => {
-              operation(parameter.type);
-            });
-          }
           Object.keys(definition.instanceMethods).forEach(methodName => {
             const method = definition.instanceMethods[methodName];
             contextLocation = method.location;

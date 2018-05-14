@@ -40,7 +40,6 @@ export type InterfaceDefinition = {
   kind: 'interface',
   name: string,
   location: Location,
-  constructorArgs: ?Array<Parameter>,
   instanceMethods: {[name: string]: FunctionType},
   staticMethods: {[name: string]: FunctionType},
 };

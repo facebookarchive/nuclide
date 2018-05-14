@@ -130,17 +130,6 @@ describe('Nuclide service parser test suite.', () => {
     }).toThrow();
   });
 
-  it('Missing types in ctor args throw', () => {
-    const code = `
-      export class C {
-        constructor(p: MissingType) {}
-        dispose(): void {}
-      }`;
-    expect(() => {
-      parseServiceDefinition('fileName', code, []);
-    }).toThrow();
-  });
-
   it('User defined type conflicting with builtin', () => {
     const code = `
       export class Object {
@@ -155,8 +144,7 @@ describe('Nuclide service parser test suite.', () => {
   it('Promise may only be a return type', () => {
     const code = `
       export class C {
-        constructor(p: Promise<string>) {}
-        dispose(): void {}
+        dispose(p: Promise<string>): void {}
       }`;
     expect(() => {
       parseServiceDefinition('fileName', code, []);
@@ -167,17 +155,6 @@ describe('Nuclide service parser test suite.', () => {
     const code = `
       export class C {
         m(p: Array<ConnectableObservable<number>>): void {}
-        dispose(): void {}
-      }`;
-    expect(() => {
-      parseServiceDefinition('fileName', code, []);
-    }).toThrow();
-  });
-
-  it('Constructors may not have return types', () => {
-    const code = `
-      export class C {
-        constructor(): Promise<void> {}
         dispose(): void {}
       }`;
     expect(() => {

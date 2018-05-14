@@ -27,21 +27,8 @@ module.exports = _client => {
       });
     }
 
-    constructor(arg0, arg1) {
-      _client.createRemoteObject("Vector2", this, [arg0, arg1], [{
-        name: "x",
-        type: {
-          kind: "number"
-        }
-      }, {
-        name: "y",
-        type: {
-          kind: "nullable",
-          type: {
-            kind: "number"
-          }
-        }
-      }]);
+    constructor() {
+      throw Error("constructors are not supported for remote objects");
     }
 
     len() {
@@ -94,6 +81,10 @@ module.exports = _client => {
   };
 
   remoteModule.Iface = class {
+    constructor() {
+      throw Error("constructors are not supported for remote objects");
+    }
+
     p(arg0) {
       return Promise.all([_client.marshalArguments(Array.from(arguments), [{
         name: "a",
@@ -201,20 +192,6 @@ Object.defineProperty(module.exports, "defs", {
         fileName: "InterfaceService.def",
         line: 1
       },
-      constructorArgs: [{
-        name: "x",
-        type: {
-          kind: "number"
-        }
-      }, {
-        name: "y",
-        type: {
-          kind: "nullable",
-          type: {
-            kind: "number"
-          }
-        }
-      }],
       staticMethods: {
         distance: {
           location: {
@@ -322,7 +299,6 @@ Object.defineProperty(module.exports, "defs", {
         fileName: "InterfaceService.def",
         line: 30
       },
-      constructorArgs: null,
       staticMethods: {},
       instanceMethods: {
         p: {

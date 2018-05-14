@@ -448,21 +448,13 @@ class FileParser {
       kind: 'interface',
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
-      constructorArgs: [],
       staticMethods: {},
       instanceMethods: {},
     };
 
     const classBody = declaration.body;
     for (const method of classBody.body) {
-      if (method.kind === 'constructor') {
-        def.constructorArgs = method.params.map(param =>
-          this._parseParameter(serviceParser, param),
-        );
-        if (method.returnType) {
-          throw this._error(method, 'constructors may not have return types');
-        }
-      } else {
+      if (method.kind !== 'constructor') {
         if (!isPrivateMemberName(method.key.name)) {
           const {name, type} = this._parseClassMethod(serviceParser, method);
           const isStatic = Boolean(method.static);
@@ -516,7 +508,6 @@ class FileParser {
       kind: 'interface',
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
-      constructorArgs: null,
       staticMethods: {},
       instanceMethods: {},
     };

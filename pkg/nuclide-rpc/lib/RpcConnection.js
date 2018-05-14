@@ -17,7 +17,6 @@ import type {
   RequestMessage,
   CallMessage,
   CallObjectMessage,
-  NewObjectMessage,
 } from './messages';
 import type {ClassDefinition, FunctionImplementation} from './ServiceRegistry';
 import type {PredefinedTransformer} from './index';
@@ -30,7 +29,6 @@ import {ObjectRegistry} from './ObjectRegistry';
 import {
   createCallMessage,
   createCallObjectMessage,
-  createNewObjectMessage,
   createDisposeMessage,
   createUnsubscribeMessage,
   createPromiseMessage,
@@ -40,7 +38,7 @@ import {
   createObserveErrorMessage,
   decodeError,
 } from './messages';
-import {builtinLocation, voidType} from './builtin-types';
+import {voidType} from './builtin-types';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import {shorten} from 'nuclide-commons/string';
@@ -399,40 +397,6 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   /**
-   * Call a remote constructor, returning an id that eventually resolves to a unique identifier
-   * for the object.
-   * @param interfaceName - The name of the remote class for which to construct an object.
-   * @param thisArg - The newly created proxy object.
-   * @param unmarshalledArgs - Unmarshalled arguments to pass to the remote constructor.
-   * @param argTypes - Types of arguments.
-   */
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>,
-  ): void {
-    const idPromise = (async () => {
-      const marshalledArgs = await this._getTypeRegistry().marshalArguments(
-        this._objectRegistry,
-        unmarshalledArgs,
-        argTypes,
-      );
-      return this._sendMessageAndListenForResult(
-        createNewObjectMessage(
-          this._getProtocol(),
-          interfaceName,
-          this._generateRequestId(),
-          marshalledArgs,
-        ),
-        'promise',
-        `Creating instance of ${interfaceName}`,
-      );
-    })();
-    this._objectRegistry.addProxy(thisArg, interfaceName, idPromise);
-  }
-
-  /**
    * Dispose a remote object. This makes it's proxies unsuable, and calls the `dispose` method on
    * the remote object.
    * @param object - The remote object.
@@ -721,44 +685,6 @@ export class RpcConnection<TransportType: Transport> {
     );
   }
 
-  async _callConstructor(
-    id: number,
-    constructorMessage: NewObjectMessage,
-  ): Promise<void> {
-    const {getLocalImplementation, definition} = this._getClassDefinition(
-      constructorMessage.interface,
-    );
-    const {constructorArgs} = definition;
-    invariant(constructorArgs != null);
-    const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry,
-      constructorMessage.args,
-      constructorArgs,
-    );
-    const localImplementation = getLocalImplementation();
-    // Create a new object and put it in the registry.
-    const newObject = new localImplementation(...marshalledArgs);
-
-    // If we want to use client-assigned IDs in the future, we need to
-    // assign the ID to the object after construction.
-    // Attempting to marshal before construction is complete makes this impossible.
-    if (this._objectRegistry.isRegistered(newObject)) {
-      logger.error(
-        `Object of type ${
-          constructorMessage.interface
-        } was marshalled during the constructor.`,
-      );
-    }
-
-    // Return the object, which will automatically be converted to an id through the
-    // marshalling system.
-    this._returnPromise(id, Promise.resolve(newObject), {
-      kind: 'named',
-      name: constructorMessage.interface,
-      location: builtinLocation,
-    });
-  }
-
   getTransport(): TransportType {
     return this._transport;
   }
@@ -804,7 +730,6 @@ export class RpcConnection<TransportType: Transport> {
         break;
       case 'call':
       case 'call-object':
-      case 'new':
       case 'dispose':
       case 'unsubscribe':
         this._handleRequestMessage(message);
@@ -950,9 +875,6 @@ export class RpcConnection<TransportType: Transport> {
         case 'call-object':
           await this._callMethod(id, message);
           break;
-        case 'new':
-          await this._callConstructor(id, message);
-          break;
         case 'dispose':
           await this._objectRegistry.disposeObject(message.objectId);
           this._returnPromise(id, Promise.resolve(), voidType);
@@ -1039,8 +961,6 @@ function trackingIdOfMessage(
     case 'call-object':
       const callInterface = registry.getInterface(message.objectId);
       return `service-framework:${callInterface}.${message.method}`;
-    case 'new':
-      return `service-framework:new:${message.interface}`;
     case 'dispose':
       const interfaceName = registry.getInterface(message.objectId);
       return `service-framework:dispose:${interfaceName}`;

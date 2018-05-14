@@ -12,7 +12,6 @@
 // Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage =
   | CallMessage
-  | NewObjectMessage
   | CallObjectMessage
   | DisposeMessage
   | UnsubscribeMessage;
@@ -21,14 +20,6 @@ export type CallMessage = {
   protocol: string,
   type: 'call',
   method: string,
-  id: number,
-  args: Object,
-};
-
-export type NewObjectMessage = {
-  protocol: string,
-  type: 'new',
-  interface: string,
   id: number,
   args: Object,
 };
@@ -158,21 +149,6 @@ export function createCallObjectMessage(
     type: 'call-object',
     method: methodName,
     objectId,
-    id,
-    args,
-  };
-}
-
-export function createNewObjectMessage(
-  protocol: string,
-  interfaceName: string,
-  id: number,
-  args: Object,
-): NewObjectMessage {
-  return {
-    protocol,
-    type: 'new',
-    interface: interfaceName,
     id,
     args,
   };

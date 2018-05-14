@@ -36,12 +36,6 @@ export type RpcContext = {
     returnType: ReturnKind,
     args: Object,
   ): any,
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>,
-  ): void,
   disposeRemoteObject(object: Object): Promise<void>,
   marshal(value: any, type: Type): any,
   unmarshal(value: any, type: Type): any,
