@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import type {Observable, ConnectableObservable} from 'rxjs';
@@ -89,6 +90,7 @@ export type IProcessConfig = {|
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
   +customDisposable?: UniversalDisposable,
+  +onInitializeCallback?: (session: ISession) => void,
 |};
 
 export interface IVsAdapterSpawner {

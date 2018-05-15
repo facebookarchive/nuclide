@@ -1223,6 +1223,11 @@ export default class DebugService implements IDebugService {
         supportsRunInTerminalRequest: getTerminalService() != null,
         locale: 'en-us',
       });
+
+      if (configuration.onInitializeCallback != null) {
+        configuration.onInitializeCallback(session);
+      }
+
       this._model.setExceptionBreakpoints(
         session.getCapabilities().exceptionBreakpointFilters || [],
       );
