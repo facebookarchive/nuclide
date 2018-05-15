@@ -11,9 +11,9 @@
  */
 
 import type {AgentOptions} from '../common/types';
-import type {Observable} from 'rxjs';
 import type {ProtocolLogger} from './QueuedAckTransport';
 
+import {Observable} from 'rxjs';
 import url from 'url';
 import WS from 'ws';
 import uuid from 'uuid';
@@ -248,7 +248,14 @@ export class ReliableSocket {
   }
 
   send(message: string): void {
-    invariant(this._transport != null);
+    // "this.isClosed()" but flow understands it
+    if (this._transport == null) {
+      throw new Error(
+        `Sending message to server ${this._serverUri} on closed socket ${
+          this.id
+        }: ${message}`,
+      );
+    }
     this._transport.send(message);
   }
 
@@ -291,6 +298,11 @@ export class ReliableSocket {
   }
 
   onMessage(): Observable<string> {
+    if (this.isClosed()) {
+      return Observable.throw(
+        `Socket ${this.id} to server ${this._serverUri} is closed`,
+      );
+    }
     invariant(this._transport != null);
     return this._transport.onMessage();
   }

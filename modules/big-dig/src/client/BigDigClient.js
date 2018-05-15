@@ -68,7 +68,14 @@ export class BigDigClient {
   }
 
   sendMessage(tag: string, body: string) {
-    this._transport.send(`${tag}\0${body}`);
+    const message = `${tag}\0${body}`;
+    if (this.isClosed()) {
+      this._logger.warn(
+        `Attempting to send message to ${this.getAddress()} on closed BigDigClient: ${message}`,
+      );
+      return;
+    }
+    this._transport.send(message);
   }
 
   onMessage(tag: string): Observable<string> {
