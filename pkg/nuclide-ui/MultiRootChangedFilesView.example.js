@@ -46,7 +46,7 @@ function BasicExample(): React.Element<any> {
       <Block>
         <MultiRootChangedFilesView
           fileStatuses={fileChanges}
-          commandPrefix="sample-ui-playground"
+          commandPrefix="nuclide-ui-playground"
           selectedFile={null}
           onFileChosen={onFileChosen}
           openInDiffViewOption={true}

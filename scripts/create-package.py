@@ -36,7 +36,7 @@ APM = 'apm'
 NODE_PACKAGE = 'node'
 ATOM_PACKAGE = 'atom'
 DEFAULT_PREFIX = 'nuclide'
-PACKAGE_PREFIXES = [DEFAULT_PREFIX, 'fb', 'sample']
+PACKAGE_PREFIXES = [DEFAULT_PREFIX, 'fb', 'sample', 'dev']
 ATOM_TEST_RUNNER_FILE = os.path.join(
     PACKAGES_PATH, '../modules/nuclide-jest/atom-runner.js'
 )

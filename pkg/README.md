@@ -103,7 +103,11 @@ Note that for packages whose test runner is `apm`, this is not necessary.
 
 ## Sample packages
 
-`sample-*` packages aren't loaded as part of Nuclide. They exist to illustrate archetypal architecture and structure for a given feature.
+`sample-*` packages aren't loaded as part of Nuclide. They exist to illustrate archetypal architecture and structure for a given feature, although they can be enabled for testing via the "Enabled Features" Nuclide setting.
+
+## Dev packages
+
+`dev-*` packages exist during development but aren't included in the production version of Nuclide. These contain various features that are useful for developing Nuclide.
 
 ## Flow errors
 

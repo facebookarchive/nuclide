@@ -1,5 +1,5 @@
 {
-  "name": "sample-nuclide-contributors",
+  "name": "dev-nuclide-contributors",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Utilities useful for hacking on Nuclide",

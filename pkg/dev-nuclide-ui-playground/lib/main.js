@@ -36,7 +36,8 @@ function registerCommandAndOpener(): UniversalDisposable {
       }
     }),
     () => destroyItemWhere(item => item instanceof Playground),
-    atom.commands.add('atom-workspace', 'sample-ui-playground:toggle', () => {
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.commands.add('atom-workspace', 'nuclide-ui-playground:toggle', () => {
       atom.workspace.toggle(WORKSPACE_VIEW_URI);
     }),
   );

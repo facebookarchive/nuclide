@@ -287,7 +287,7 @@ class PackageLinter(object):
         return package_name.startswith('fb-')
 
     def get_valid_package_prefixes(self):
-        return ['fb-', 'nuclide-', 'sample-', 'commons-atom', 'commons-node']
+        return ['fb-', 'nuclide-', 'sample-', 'dev-', 'commons-atom', 'commons-node']
 
     def report_error(self, message, *args):
         logging.error('PACKAGE ERROR (' + self._current_file_being_linted + '): ' + message, *args)
