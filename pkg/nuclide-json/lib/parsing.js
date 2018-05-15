@@ -30,7 +30,7 @@ export function parseJSON(json: string): ?Object {
   // This messes up the positions but without it, babel won't parse the text as an expression.
   const jsonWithParens = '(\n' + json + '\n)';
   try {
-    const ast: Object = babylon.parse(jsonWithParens);
+    const ast: Object = babylon.parse(jsonWithParens, {sourceType: 'script'});
     if (ast.type === 'File') {
       invariant(ast.program.body[0].type === 'ExpressionStatement');
       return ast.program.body[0].expression;
