@@ -20,6 +20,7 @@
     "node-ipc": "9.1.1"
   },
   "scripts": {
-    "watch": "babel src --out-dir build --watch"
+    "watch": "babel src --out-dir build --watch",
+    "build": "babel src --out-dir build"
   }
 }

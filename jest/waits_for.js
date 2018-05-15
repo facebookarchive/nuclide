@@ -10,7 +10,7 @@
  */
 
 /*
- * Async implementation of Jasmine's waitsFor
+ * Async implementation of Jasmine's waitsFor()
  */
 export default (async function waitsFor(
   fn: () => boolean,
