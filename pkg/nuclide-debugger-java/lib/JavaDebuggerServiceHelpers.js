@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {DebuggerSourcePathsService} from 'atom-ide-debugger-java/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ControlButtonSpecification,
@@ -46,6 +47,14 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VspProcessInfo} from 'nuclide-debugger-common';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {SourceFilePathsModal} from './SourceFilePathsModal';
+
+let _sourcePathsService: ?DebuggerSourcePathsService;
+
+export function setSourcePathsService(
+  sourcePathsService: DebuggerSourcePathsService,
+) {
+  _sourcePathsService = sourcePathsService;
+}
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before
@@ -493,14 +502,13 @@ export function getDefaultSourceSearchPaths(
       const translatedPath = remote ? nuclideUri.getPath(path) : path;
       searchPaths.push(translatedPath);
 
-      try {
-        // $FlowFB
-        require('./fb-AndroidSourcePathUtils').addKnownSubdirectoryPaths(
+      if (_sourcePathsService != null) {
+        _sourcePathsService.addKnownSubdirectoryPaths(
           remote,
           translatedPath,
           searchPaths,
         );
-      } catch (e) {}
+      }
     }
   });
 

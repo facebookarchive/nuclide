@@ -154,7 +154,6 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
 
   private void handleLaunchRequest(JSONObject arguments, LaunchResponse response) {
     try {
-      Utils.logInfo("arguments: " + arguments.toString(2));
       getContextManager()
           .getBootstrapDomain()
           .launch(

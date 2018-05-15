@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {DebuggerSourcePathsService} from 'atom-ide-debugger-java/types';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
 import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
@@ -34,6 +35,7 @@ import {
   getAdbService,
   launchAndroidServiceOrActivityAndGetPid,
   getAdbAttachPortTargetInfo,
+  setSourcePathsService,
 } from './JavaDebuggerServiceHelpers';
 import {JavaLaunchAttachProvider} from './JavaLaunchAttachProvider';
 import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider';
@@ -203,4 +205,10 @@ export function consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
   api.registerProcessTaskProvider(
     new JavaDebuggerDevicePanelProvider(createJavaDebuggerProvider()),
   );
+}
+
+export function consumeSourcePathsService(
+  sourcePathsService: DebuggerSourcePathsService,
+) {
+  return setSourcePathsService(sourcePathsService);
 }
