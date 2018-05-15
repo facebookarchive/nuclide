@@ -37,16 +37,26 @@ export function setProjectRootForNewTaskRunnerEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
+  return actions.ofType(Actions.REGISTER_TASK_RUNNER).mergeMap(action => {
     invariant(action.type === Actions.REGISTER_TASK_RUNNER);
     const {taskRunner} = action.payload;
+    const unregistered = actions.filter(
+      a =>
+        a.type === Actions.UNREGISTER_TASK_RUNNER &&
+        a.payload.taskRunner === taskRunner,
+    );
     const {projectRoot, initialPackagesActivated} = store.getState();
     if (!initialPackagesActivated || projectRoot == null) {
       return Observable.empty();
     }
-    return getTaskRunnerState(taskRunner, projectRoot).map(result =>
-      Actions.setStateForTaskRunner(result.taskRunner, result.taskRunnerState),
-    );
+    return getTaskRunnerState(taskRunner, projectRoot)
+      .map(result =>
+        Actions.setStateForTaskRunner(
+          result.taskRunner,
+          result.taskRunnerState,
+        ),
+      )
+      .takeUntil(unregistered);
   });
 }
 
