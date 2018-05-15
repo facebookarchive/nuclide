@@ -1,23 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import util from 'util';
 
-function layout(loggingEvent: any): Array<any> {
-  const eventInfo = util.format(
-    '[%s] [%s] %s - ',
-    loggingEvent.startTime.toISOString(),
-    loggingEvent.level,
-    loggingEvent.categoryName,
-  );
+
+
+
+
+
+
+
+
+var _util = _interopRequireDefault(require('util'));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+function layout(loggingEvent) {
+  const eventInfo = _util.default.format(
+  '[%s] [%s] %s - ',
+  loggingEvent.startTime.toISOString(),
+  loggingEvent.level,
+  loggingEvent.categoryName);
+
 
   const data = loggingEvent.data.slice();
 
@@ -44,23 +44,22 @@ function layout(loggingEvent: any): Array<any> {
 }
 
 /**
- * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
- * the object in console logged by this Appender.
- */
-function consoleAppender(config: Object): (loggingEvent: any) => void {
-  return loggingEvent => {
-    if (config.stderr) {
-      // eslint-disable-next-line no-console
-      console.error(...layout(loggingEvent));
-    } else {
-      // eslint-disable-next-line no-console
-      console.log(...layout(loggingEvent));
-    }
-  };
-}
+   * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
+   * the object in console logged by this Appender.
+   */ /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       * @format
+       */function consoleAppender(config) {return loggingEvent => {if (config.stderr) {// eslint-disable-next-line no-console
+      console.error(...layout(loggingEvent));} else {// eslint-disable-next-line no-console
+      console.log(...layout(loggingEvent));}};}
 
 // eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   appender: consoleAppender,
-  configure: consoleAppender,
-};
+  configure: consoleAppender };

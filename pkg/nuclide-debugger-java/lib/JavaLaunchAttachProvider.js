@@ -1,70 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.JavaLaunchAttachProvider = undefined;var _nuclideDebuggerCommon;
 
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
 
-import {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
-import * as React from 'react';
-import {AndroidLaunchComponent} from './AndroidLaunchComponent';
-import {AndroidAttachComponent} from './AndroidAttachComponent';
-import invariant from 'assert';
 
-const JAVA_DEBUG_ANDROID = 'Java (Android)';
 
-export class JavaLaunchAttachProvider extends DebuggerLaunchAttachProvider {
-  getCallbacksForAction(action: DebuggerConfigAction) {
-    return {
+
+
+
+
+
+
+
+
+function _load_nuclideDebuggerCommon() {return _nuclideDebuggerCommon = require('../../../modules/nuclide-debugger-common');}
+var _react = _interopRequireWildcard(require('react'));var _AndroidLaunchComponent;
+function _load_AndroidLaunchComponent() {return _AndroidLaunchComponent = require('./AndroidLaunchComponent');}var _AndroidAttachComponent;
+function _load_AndroidAttachComponent() {return _AndroidAttachComponent = require('./AndroidAttachComponent');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}
+
+
+const JAVA_DEBUG_ANDROID = 'Java (Android)'; /**
+                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                              * All rights reserved.
+                                              *
+                                              * This source code is licensed under the license found in the LICENSE file in
+                                              * the root directory of this source tree.
+                                              *
+                                              * 
+                                              * @format
+                                              */class JavaLaunchAttachProvider extends (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).DebuggerLaunchAttachProvider {getCallbacksForAction(action) {return { /**
+                                                                                                                                                                                                                        * Whether this provider is enabled or not.
+                                                                                                                                                                                                                        */isEnabled: () => {return Promise.resolve(true);},
       /**
-       * Whether this provider is enabled or not.
-       */
-      isEnabled: (): Promise<boolean> => {
-        return Promise.resolve(true);
-      },
-
-      /**
-       * Returns a list of supported debugger types + environments for the specified action.
-       */
+                                                                                                                                                                                                                                                                             * Returns a list of supported debugger types + environments for the specified action.
+                                                                                                                                                                                                                                                                             */
       getDebuggerTypeNames: () => {
         return [JAVA_DEBUG_ANDROID];
       },
 
       /**
-       * Returns the UI component for configuring the specified debugger type and action.
-       */
+          * Returns the UI component for configuring the specified debugger type and action.
+          */
       getComponent: (
-        debuggerTypeName: string,
-        configIsValidChanged: (valid: boolean) => void,
-      ): React.Element<any> => {
+      debuggerTypeName,
+      configIsValidChanged) =>
+      {
         if (action === 'launch') {
           return (
-            <AndroidLaunchComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
-        } else {
-          invariant(
-            action === 'attach',
-            'Unrecognized action: ' + action + ' for component',
-          );
+            _react.createElement((_AndroidLaunchComponent || _load_AndroidLaunchComponent()).AndroidLaunchComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged }));
+
+
+        } else {if (!(
+
+          action === 'attach')) {throw new Error(
+            'Unrecognized action: ' + action + ' for component');}
+
           return (
-            <AndroidAttachComponent
-              targetUri={this.getTargetUri()}
-              configIsValidChanged={configIsValidChanged}
-            />
-          );
+            _react.createElement((_AndroidAttachComponent || _load_AndroidAttachComponent()).AndroidAttachComponent, {
+              targetUri: this.getTargetUri(),
+              configIsValidChanged: configIsValidChanged }));
+
+
         }
-      },
-    };
+      } };
+
   }
 
-  dispose(): void {}
-}
+  dispose() {}}exports.JavaLaunchAttachProvider = JavaLaunchAttachProvider;

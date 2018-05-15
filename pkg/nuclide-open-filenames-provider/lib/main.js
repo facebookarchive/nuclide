@@ -1,18 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
-import OpenFileNameProvider from './OpenFileNameProvider';
 
-export function registerProvider(): Provider<FileResult> {
-  return OpenFileNameProvider;
-}
+
+
+
+
+
+
+
+
+
+
+
+registerProvider = registerProvider;var _OpenFileNameProvider;function _load_OpenFileNameProvider() {return _OpenFileNameProvider = _interopRequireDefault(require('./OpenFileNameProvider'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                                                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                              * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                                                                                              *  strict-local
+                                                                                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                                                                                              */function registerProvider() {return (_OpenFileNameProvider || _load_OpenFileNameProvider()).default;}

@@ -1,68 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });
 
-import type {LineMapper, OffsetMap} from '../commons-node/computeDiff';
 
-import {Range} from 'atom';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import {concatIterators} from 'nuclide-commons/collection';
-import semver from 'semver';
-import {getAtomVersion} from '../commons-node/system-info';
-import {syncBlockDecorations} from './block-decorations';
 
-export type EditorElementsMap = Map<number, React.Element<any>>;
-const ATOM_VERSION_CHECK_FOR_SET_GRAMMAR = '1.24.0-beta0';
 
-function renderLineOffset(
-  lineCount: number,
-  lineHeight: number,
-): React.Element<any> {
-  return (
-    <div
-      className="nuclide-diff-view-block-offset"
-      style={{minHeight: lineCount * lineHeight}}
-    />
-  );
+
+
+
+
+
+
+
+
+var _atom = require('atom');
+var _react = _interopRequireWildcard(require('react'));
+var _reactDom = _interopRequireDefault(require('react-dom'));var _collection;
+function _load_collection() {return _collection = require('../../modules/nuclide-commons/collection');}var _semver;
+function _load_semver() {return _semver = _interopRequireDefault(require('semver'));}var _systemInfo;
+function _load_systemInfo() {return _systemInfo = require('../commons-node/system-info');}var _blockDecorations;
+function _load_blockDecorations() {return _blockDecorations = require('./block-decorations');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             */const ATOM_VERSION_CHECK_FOR_SET_GRAMMAR = '1.24.0-beta0';function renderLineOffset(lineCount, lineHeight) {return (
+    _react.createElement('div', {
+      className: 'nuclide-diff-view-block-offset',
+      style: { minHeight: lineCount * lineHeight } }));
+
+
 }
 
 function renderInlineOffset(
-  offsetElement: React.Element<any>,
-): React.Element<any> {
+offsetElement)
+{
   return (
-    <div style={{position: 'relative', width: '100%'}}>
-      <div
-        className="nuclide-diff-view-block-offset"
-        style={{position: 'absolute', left: 0, right: 0, top: 0, bottom: 0}}
-      />
-      <div style={{visibility: 'hidden', pointerEvents: 'none'}}>
-        {offsetElement}
-      </div>
-    </div>
-  );
+    _react.createElement('div', { style: { position: 'relative', width: '100%' } },
+      _react.createElement('div', {
+        className: 'nuclide-diff-view-block-offset',
+        style: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } }),
+
+      _react.createElement('div', { style: { visibility: 'hidden', pointerEvents: 'none' } },
+        offsetElement)));
+
+
+
 }
 
 /**
- * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
- * and controls its rendering of highlights and offsets.
- */
-export default class DiffViewEditor {
-  _editor: atom$TextEditor;
-  _editorElement: atom$TextEditorElement;
-  _highlightMarkers: Array<atom$Marker>;
-  _offsetMarkers: Array<atom$Marker>;
-  _uiElementsMarkers: Array<atom$Marker>;
-  _offsetUiElementsMarkers: Array<atom$Marker>;
+   * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
+   * and controls its rendering of highlights and offsets.
+   */
+class DiffViewEditor {
 
-  constructor(editorElement: atom$TextEditorElement) {
+
+
+
+
+
+
+  constructor(editorElement) {
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
     this._highlightMarkers = [];
@@ -75,67 +75,67 @@ export default class DiffViewEditor {
 
   // This is now to work around Atom 1.12.x not clearing removed block decorations.
   // TODO(most): Remove this when upgrading to Atom 1.13.x.
-  _cleanupInvisibleDecorations(): void {
+  _cleanupInvisibleDecorations() {
     if (this._editor.isDestroyed()) {
       return;
     }
     const removedElements = Array.from(
-      this._editorElement.getElementsByClassName(
-        'atom--invisible-block-decoration',
-      ),
-    );
+    this._editorElement.getElementsByClassName(
+    'atom--invisible-block-decoration'));
+
+
     for (const element of removedElements) {
-      ReactDOM.unmountComponentAtNode(element);
+      _reactDom.default.unmountComponentAtNode(element);
     }
   }
 
-  setUiElements(elements: EditorElementsMap): void {
+  setUiElements(elements) {
     const diffBlockType = 'inline';
-    this._uiElementsMarkers = syncBlockDecorations(
-      this._editorElement,
-      diffBlockType,
-      elements,
-      (element, customProps) => customProps.element !== element,
-      element => ({
-        element,
-        customProps: {diffBlockType, element},
-      }),
-      /* syncWidth */ true,
-    );
+    this._uiElementsMarkers = (0, (_blockDecorations || _load_blockDecorations()).syncBlockDecorations)(
+    this._editorElement,
+    diffBlockType,
+    elements,
+    (element, customProps) => customProps.element !== element,
+    element => ({
+      element,
+      customProps: { diffBlockType, element } }),
+
+    /* syncWidth */true);
+
   }
 
   setOffsetUiElements(
-    offsetElements: EditorElementsMap,
-    lineMapper: LineMapper,
-  ): void {
+  offsetElements,
+  lineMapper)
+  {
     const mappedOffsetElements = new Map();
     for (const [bufferRow, offsetElement] of offsetElements) {
       mappedOffsetElements.set(lineMapper[bufferRow], offsetElement);
     }
 
     const diffBlockType = 'inline-offset';
-    this._offsetUiElementsMarkers = syncBlockDecorations(
-      this._editorElement,
-      diffBlockType,
-      mappedOffsetElements,
-      (offsetElement, customProps) =>
-        customProps.offsetElement !== offsetElement,
-      offsetElement => ({
-        element: renderInlineOffset(offsetElement),
-        customProps: {diffBlockType, offsetElement},
-      }),
-    );
+    this._offsetUiElementsMarkers = (0, (_blockDecorations || _load_blockDecorations()).syncBlockDecorations)(
+    this._editorElement,
+    diffBlockType,
+    mappedOffsetElements,
+    (offsetElement, customProps) =>
+    customProps.offsetElement !== offsetElement,
+    offsetElement => ({
+      element: renderInlineOffset(offsetElement),
+      customProps: { diffBlockType, offsetElement } }));
+
+
   }
 
-  scrollToScreenLine(screenLine: number): void {
+  scrollToScreenLine(screenLine) {
     this._editor.scrollToScreenPosition(
-      // Markers are ordered in ascending order by line number.
-      [screenLine, 0],
-      {center: true},
-    );
+    // Markers are ordered in ascending order by line number.
+    [screenLine, 0],
+    { center: true });
+
   }
 
-  setFileContents(filePath: string, contents: string): void {
+  setFileContents(filePath, contents) {
     const buffer = this._editor.getBuffer();
     if (buffer.getText() !== contents) {
       // Applies only to the compared read only text buffer.
@@ -143,79 +143,79 @@ export default class DiffViewEditor {
       buffer.setText(contents);
     }
     const grammar = atom.grammars.selectGrammar(filePath, contents);
-    const version = getAtomVersion();
-    if (semver.lt(version, ATOM_VERSION_CHECK_FOR_SET_GRAMMAR)) {
+    const version = (0, (_systemInfo || _load_systemInfo()).getAtomVersion)();
+    if ((_semver || _load_semver()).default.lt(version, ATOM_VERSION_CHECK_FOR_SET_GRAMMAR)) {
       this._editor.setGrammar(grammar);
     } else {
       atom.grammars.assignLanguageMode(buffer, grammar.scopeName);
     }
   }
 
-  getModel(): Object {
+  getModel() {
     return this._editor;
   }
 
-  getText(): string {
+  getText() {
     return this._editor.getText();
   }
 
   /**
-   * @param addedLines An array of buffer line numbers that should be highlighted as added.
-   * @param removedLines An array of buffer line numbers that should be highlighted as removed.
-   */
+     * @param addedLines An array of buffer line numbers that should be highlighted as added.
+     * @param removedLines An array of buffer line numbers that should be highlighted as removed.
+     */
   setHighlightedLines(
-    addedLines: Array<number> = [],
-    removedLines: Array<number> = [],
-  ) {
+  addedLines = [],
+  removedLines = [])
+  {
     for (const marker of this._highlightMarkers) {
       marker.destroy();
     }
-    this._highlightMarkers = addedLines
-      .map(lineNumber => this._createLineMarker(lineNumber, 'insert'))
-      .concat(
-        removedLines.map(lineNumber =>
-          this._createLineMarker(lineNumber, 'delete'),
-        ),
-      );
+    this._highlightMarkers = addedLines.
+    map(lineNumber => this._createLineMarker(lineNumber, 'insert')).
+    concat(
+    removedLines.map(lineNumber =>
+    this._createLineMarker(lineNumber, 'delete')));
+
+
   }
 
   /**
-   * @param lineNumber A buffer line number to be highlighted.
-   * @param type The type of highlight to be applied to the line.
-   *    Could be a value of: ['insert', 'delete'].
-   */
-  _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    const range = new Range([lineNumber, 0], [lineNumber + 1, 0]);
-    const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
+     * @param lineNumber A buffer line number to be highlighted.
+     * @param type The type of highlight to be applied to the line.
+     *    Could be a value of: ['insert', 'delete'].
+     */
+  _createLineMarker(lineNumber, type) {
+    const range = new _atom.Range([lineNumber, 0], [lineNumber + 1, 0]);
+    const marker = this._editor.markBufferRange(range, { invalidate: 'never' });
     this._editor.decorateMarker(marker, {
       type: 'highlight',
-      class: `diff-view-${type}`,
-    });
+      class: `diff-view-${type}` });
+
     return marker;
   }
 
-  setOffsets(lineOffsets: OffsetMap): void {
+  setOffsets(lineOffsets) {
     const lineHeight = this._editor.getLineHeightInPixels();
     const diffBlockType = 'line-offset';
-    this._offsetMarkers = syncBlockDecorations(
-      this._editorElement,
-      diffBlockType,
-      lineOffsets,
-      (lineCount, customProps) => customProps.lineCount !== lineCount,
-      lineCount => ({
-        element: renderLineOffset(lineCount, lineHeight),
-        customProps: {lineCount, diffBlockType},
-      }),
-    );
+    this._offsetMarkers = (0, (_blockDecorations || _load_blockDecorations()).syncBlockDecorations)(
+    this._editorElement,
+    diffBlockType,
+    lineOffsets,
+    (lineCount, customProps) => customProps.lineCount !== lineCount,
+    lineCount => ({
+      element: renderLineOffset(lineCount, lineHeight),
+      customProps: { lineCount, diffBlockType } }));
+
+
   }
 
-  destroyMarkers(): void {
-    const allMarkers = concatIterators(
-      this._highlightMarkers,
-      this._offsetMarkers,
-      this._uiElementsMarkers,
-      this._offsetUiElementsMarkers,
-    );
+  destroyMarkers() {
+    const allMarkers = (0, (_collection || _load_collection()).concatIterators)(
+    this._highlightMarkers,
+    this._offsetMarkers,
+    this._uiElementsMarkers,
+    this._offsetUiElementsMarkers);
+
     for (const marker of allMarkers) {
       marker.destroy();
     }
@@ -226,16 +226,15 @@ export default class DiffViewEditor {
     this._cleanupInvisibleDecorations();
   }
 
-  destroy(): void {
+  destroy() {
     this.destroyMarkers();
     this._editor.destroy();
   }
 
-  getEditor(): atom$TextEditor {
+  getEditor() {
     return this._editor;
   }
 
-  getEditorDomElement(): atom$TextEditorElement {
+  getEditorDomElement() {
     return this._editorElement;
-  }
-}
+  }}exports.default = DiffViewEditor;

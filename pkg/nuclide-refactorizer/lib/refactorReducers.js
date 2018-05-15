@@ -1,41 +1,41 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.default =
 
-import type {AvailableRefactoring, RefactorProvider} from '..';
 
-import type {
-  BackFromDiffPreviewAction,
-  ConfirmAction,
-  DisplayDiffPreviewAction,
-  ExecuteAction,
-  GotRefactoringsAction,
-  LoadDiffPreviewAction,
-  OpenAction,
-  PickedRefactorAction,
-  InlinePickedRefactorAction,
-  ProgressAction,
-  RefactorAction,
-  RefactoringPhase,
-  RefactorState,
-} from './types';
 
-import invariant from 'assert';
 
-export default function refactorReducers(
-  state_: ?RefactorState,
-  action: RefactorAction,
-): RefactorState {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+refactorReducers;function refactorReducers(
+state_,
+action)
+{
   let state = state_;
   if (state == null) {
-    state = {type: 'closed'};
+    state = { type: 'closed' };
   }
 
   // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
@@ -69,30 +69,30 @@ export default function refactorReducers(
     case 'progress':
       return progress(state, action);
     default:
-      return state;
-  }
-}
+      return state;}
 
-function open(state: RefactorState, action: OpenAction): RefactorState {
-  invariant(state.type === 'closed');
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   *  strict-local
+   * @format
+   */function open(state, action) {if (!(state.type === 'closed')) {throw new Error('Invariant violation: "state.type === \'closed\'"');}return { type: 'open', ui: action.ui, phase: { type: 'get-refactorings' } };
 
-  return {
-    type: 'open',
-    ui: action.ui,
-    phase: {
-      type: 'get-refactorings',
-    },
-  };
+
 }
 
 function gotRefactorings(
-  state: RefactorState,
-  action: GotRefactoringsAction,
-): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'get-refactorings');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}if (!(
+  state.phase.type === 'get-refactorings')) {throw new Error('Invariant violation: "state.phase.type === \'get-refactorings\'"');}
 
-  const {editor, originalRange} = action.payload;
+  const { editor, originalRange } = action.payload;
 
   return {
     type: 'open',
@@ -102,69 +102,69 @@ function gotRefactorings(
       provider: action.payload.provider,
       editor,
       originalRange,
-      availableRefactorings: action.payload.availableRefactorings,
-    },
-  };
+      availableRefactorings: action.payload.availableRefactorings } };
+
+
 }
 
-function close(state: RefactorState): RefactorState {
-  invariant(state.type === 'open');
+function close(state) {if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
   return {
-    type: 'closed',
-  };
+    type: 'closed' };
+
 }
 
 function backFromDiffPreview(
-  state: RefactorState,
-  action: BackFromDiffPreviewAction,
-): RefactorState {
-  invariant(state.type === 'open');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
 
-  return {
-    ...state,
-    phase: action.payload.phase,
-  };
+  return Object.assign({},
+  state, {
+    phase: action.payload.phase });
+
 }
 
 function pickedRefactor(
-  state: RefactorState,
-  action: PickedRefactorAction,
-): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'pick');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}if (!(
+  state.phase.type === 'pick')) {throw new Error('Invariant violation: "state.phase.type === \'pick\'"');}
 
-  const {refactoring} = action.payload;
-  const {provider, editor, originalRange} = state.phase;
+  const { refactoring } = action.payload;
+  const { provider, editor, originalRange } = state.phase;
 
   return {
     type: 'open',
     ui: state.ui,
-    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
-  };
+    phase: getRefactoringPhase(refactoring, provider, editor, originalRange) };
+
 }
 
 function inlinePickedRefactor(
-  state: RefactorState,
-  action: InlinePickedRefactorAction,
-): RefactorState {
-  const {provider, editor, originalRange, refactoring} = action.payload;
+state,
+action)
+{
+  const { provider, editor, originalRange, refactoring } = action.payload;if (!(
 
-  invariant(state.type === 'closed');
-  invariant(refactoring.kind === 'freeform');
+  state.type === 'closed')) {throw new Error('Invariant violation: "state.type === \'closed\'"');}if (!(
+  refactoring.kind === 'freeform')) {throw new Error('Invariant violation: "refactoring.kind === \'freeform\'"');}
 
   return {
     type: 'open',
     ui: 'generic',
-    phase: getRefactoringPhase(refactoring, provider, editor, originalRange),
-  };
+    phase: getRefactoringPhase(refactoring, provider, editor, originalRange) };
+
 }
 
 function getRefactoringPhase(
-  refactoring: AvailableRefactoring,
-  provider: RefactorProvider,
-  editor: atom$TextEditor,
-  originalRange: atom$Range,
-): RefactoringPhase {
+refactoring,
+provider,
+editor,
+originalRange)
+{
   switch (refactoring.kind) {
     case 'rename':
       return {
@@ -172,92 +172,92 @@ function getRefactoringPhase(
         provider,
         editor,
         originalPoint: originalRange.start,
-        symbolAtPoint: refactoring.symbolAtPoint,
-      };
+        symbolAtPoint: refactoring.symbolAtPoint };
+
     case 'freeform':
       return {
         type: 'freeform',
         provider,
         editor,
         originalRange,
-        refactoring,
-      };
-    default:
-      invariant(false, `Unexpected refactoring kind ${refactoring.kind}`);
-  }
+        refactoring };
+
+    default:if (!
+      false) {throw new Error(`Unexpected refactoring kind ${refactoring.kind}`);}}
+
 }
 
 function executeRefactor(
-  state: RefactorState,
-  action: ExecuteAction,
-): RefactorState {
-  invariant(state.type === 'open');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
   return {
     type: 'open',
     ui: state.ui,
     phase: {
-      type: 'execute',
-    },
-  };
+      type: 'execute' } };
+
+
 }
 
 function confirmRefactor(
-  state: RefactorState,
-  action: ConfirmAction,
-): RefactorState {
-  invariant(state.type === 'open');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
   return {
     type: 'open',
     ui: state.ui,
     phase: {
       type: 'confirm',
-      response: action.payload.response,
-    },
-  };
+      response: action.payload.response } };
+
+
 }
 
 function loadDiffPreview(
-  state: RefactorState,
-  action: LoadDiffPreviewAction,
-): RefactorState {
-  invariant(state.type === 'open');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
 
-  return {
-    ...state,
+  return Object.assign({},
+  state, {
     phase: {
       type: 'diff-preview',
       loading: true,
       diffs: [],
-      previousPhase: action.payload.previousPhase,
-    },
-  };
+      previousPhase: action.payload.previousPhase } });
+
+
 }
 
 function displayDiffPreview(
-  state: RefactorState,
-  action: DisplayDiffPreviewAction,
-): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'diff-preview');
+state,
+action)
+{if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}if (!(
+  state.phase.type === 'diff-preview')) {throw new Error('Invariant violation: "state.phase.type === \'diff-preview\'"');}
 
-  return {
-    ...state,
-    phase: {
-      ...state.phase,
+  return Object.assign({},
+  state, {
+    phase: Object.assign({},
+    state.phase, {
       loading: false,
-      diffs: action.payload.diffs,
-    },
-  };
+      diffs: action.payload.diffs }) });
+
+
 }
 
-function progress(state: RefactorState, action: ProgressAction): RefactorState {
-  invariant(state.type === 'open');
+function progress(state, action) {if (!(
+  state.type === 'open')) {throw new Error('Invariant violation: "state.type === \'open\'"');}
   return {
     type: 'open',
     ui: state.ui,
-    phase: {
-      type: 'progress',
-      ...action.payload,
-    },
-  };
+    phase: Object.assign({
+      type: 'progress' },
+    action.payload) };
+
+
 }

@@ -1,44 +1,44 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });
 
-import type {
-  ProjectSymbolSearchProvider,
-  ProjectSymbol,
-  // $FlowFB
-} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getHackLanguageForUri} from './HackLanguage';
 
-const DashProjectSymbolProvider: ProjectSymbolSearchProvider = {
-  searchSymbolsForDirectory(
-    query: string,
-    directory: atom$Directory,
-    callback: (Array<ProjectSymbol>) => mixed,
-  ): IDisposable {
-    const directoryPath = directory.getPath();
 
-    const results = Observable.defer(() => getHackLanguageForUri(directoryPath))
-      .switchMap(
-        service =>
-          service == null
-            ? Observable.of([])
-            : service.symbolSearch(query, [directoryPath]),
-      )
-      .map(searchResults => searchResults || [])
-      .catch(() => Observable.of([]));
 
-    return new UniversalDisposable(results.subscribe(callback));
-  },
-};
 
-export default DashProjectSymbolProvider;
+
+
+
+
+
+
+
+
+
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _UniversalDisposable;
+function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));}var _HackLanguage;
+function _load_HackLanguage() {return _HackLanguage = require('./HackLanguage');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                * All rights reserved.
+                                                                                                                                                                                *
+                                                                                                                                                                                * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                * the root directory of this source tree.
+                                                                                                                                                                                *
+                                                                                                                                                                                * 
+                                                                                                                                                                                * @format
+                                                                                                                                                                                */const DashProjectSymbolProvider = { searchSymbolsForDirectory(query, directory, callback) {const directoryPath = directory.getPath();
+    const results = _rxjsBundlesRxMinJs.Observable.defer(() => (0, (_HackLanguage || _load_HackLanguage()).getHackLanguageForUri)(directoryPath)).
+    switchMap(
+    service =>
+    service == null ?
+    _rxjsBundlesRxMinJs.Observable.of([]) :
+    service.symbolSearch(query, [directoryPath])).
+
+    map(searchResults => searchResults || []).
+    catch(() => _rxjsBundlesRxMinJs.Observable.of([]));
+
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(results.subscribe(callback));
+  } };exports.default =
+
+
+DashProjectSymbolProvider;

@@ -1,106 +1,117 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.loadBufferForUri = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));let loadBufferForUri = exports.loadBufferForUri = (() => {var _ref = (0, _asyncToGenerator.default)(
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import invariant from 'assert';
-import {TextBuffer} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
 
-const TEXT_BUFFER_PARAMS = {
-  shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs'),
-};
 
-export async function loadBufferForUri(
-  uri: NuclideUri,
-): Promise<atom$TextBuffer> {
-  const buffer = existingBufferForUri(uri);
-  if (buffer == null) {
-    return loadBufferForUriStatic(uri).then(loadedBuffer => {
-      atom.project.addBuffer(loadedBuffer);
-      return loadedBuffer;
-    });
-  }
-  if (buffer.loaded) {
-    return buffer;
-  }
-  try {
-    await buffer.load();
-    return buffer;
-  } catch (error) {
-    atom.project.removeBuffer(buffer);
-    throw error;
-  }
-}
 
-function loadBufferForUriStatic(uri: NuclideUri): Promise<atom$TextBuffer> {
-  if (nuclideUri.isLocal(uri)) {
-    if (nuclideUri.isInArchive(uri)) {
-      return TextBuffer.load(
-        ROOT_ARCHIVE_FS.newArchiveFile(uri),
-        TEXT_BUFFER_PARAMS,
-      );
-    } else {
-      return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function* (
+  uri)
+  {
+    const buffer = existingBufferForUri(uri);
+    if (buffer == null) {
+      return loadBufferForUriStatic(uri).then(function (loadedBuffer) {
+        atom.project.addBuffer(loadedBuffer);
+        return loadedBuffer;
+      });
     }
-  }
-  const connection = ServerConnection.getForUri(uri);
-  if (connection == null) {
-    throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
-  }
-  return TextBuffer.load(new RemoteFile(connection, uri), TEXT_BUFFER_PARAMS);
-}
-
-/**
- * Returns an existing buffer for that uri, or create one if not existing.
- */
-export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
-  const buffer = existingBufferForUri(uri);
-  if (buffer != null) {
-    return buffer;
-  }
-  return createBufferForUri(uri);
-}
-
-function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
-  let buffer;
-  const params = {
-    ...TEXT_BUFFER_PARAMS,
-    filePath: uri,
-  };
-  if (nuclideUri.isLocal(uri)) {
-    buffer = new TextBuffer(params);
-    if (nuclideUri.isInArchive(uri)) {
-      buffer.setFile(ROOT_ARCHIVE_FS.newArchiveFile(uri));
+    if (buffer.loaded) {
+      return buffer;
     }
-  } else {
-    const connection = ServerConnection.getForUri(uri);
-    if (connection == null) {
-      throw new Error(`ServerConnection cannot be found for uri: ${uri}`);
+    try {
+      yield buffer.load();
+      return buffer;
+    } catch (error) {
+      atom.project.removeBuffer(buffer);
+      throw error;
     }
-    buffer = new TextBuffer(params);
-    buffer.setFile(new RemoteFile(connection, uri));
-  }
-  atom.project.addBuffer(buffer);
-  invariant(buffer);
-  return buffer;
-}
+  });return function loadBufferForUri(_x) {return _ref.apply(this, arguments);};})();exports.
 
-/**
- * Returns an exsting buffer for that uri, or null if not existing.
- */
-export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
-  return atom.project.findBufferForPath(uri);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bufferForUri = bufferForUri;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+existingBufferForUri = existingBufferForUri;var _atom = require('atom');var _nuclideUri;function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));}var _nuclideFsAtom;function _load_nuclideFsAtom() {return _nuclideFsAtom = require('../../nuclide-fs-atom');}var _RemoteFile;function _load_RemoteFile() {return _RemoteFile = require('./RemoteFile');}var _ServerConnection;function _load_ServerConnection() {return _ServerConnection = require('./ServerConnection');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}const TEXT_BUFFER_PARAMS = { shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs') }; /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *  strict-local
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */function loadBufferForUriStatic(uri) {if ((_nuclideUri || _load_nuclideUri()).default.isLocal(uri)) {if ((_nuclideUri || _load_nuclideUri()).default.isInArchive(uri)) {return _atom.TextBuffer.load((_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveFile(uri), TEXT_BUFFER_PARAMS);} else {return _atom.TextBuffer.load(uri, TEXT_BUFFER_PARAMS);}}const connection = (_ServerConnection || _load_ServerConnection()).ServerConnection.getForUri(uri);if (connection == null) {throw new Error(`ServerConnection cannot be found for uri: ${uri}`);}return _atom.TextBuffer.load(new (_RemoteFile || _load_RemoteFile()).RemoteFile(connection, uri), TEXT_BUFFER_PARAMS);} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Returns an existing buffer for that uri, or create one if not existing.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */function bufferForUri(uri) {const buffer = existingBufferForUri(uri);if (buffer != null) {return buffer;}return createBufferForUri(uri);}function createBufferForUri(uri) {let buffer;const params = Object.assign({}, TEXT_BUFFER_PARAMS, { filePath: uri });if ((_nuclideUri || _load_nuclideUri()).default.isLocal(uri)) {buffer = new _atom.TextBuffer(params);if ((_nuclideUri || _load_nuclideUri()).default.isInArchive(uri)) {buffer.setFile((_nuclideFsAtom || _load_nuclideFsAtom()).ROOT_ARCHIVE_FS.newArchiveFile(uri));}} else {const connection = (_ServerConnection || _load_ServerConnection()).ServerConnection.getForUri(uri);if (connection == null) {throw new Error(`ServerConnection cannot be found for uri: ${uri}`);}buffer = new _atom.TextBuffer(params);buffer.setFile(new (_RemoteFile || _load_RemoteFile()).RemoteFile(connection, uri));}atom.project.addBuffer(buffer);if (!buffer) {throw new Error('Invariant violation: "buffer"');}return buffer;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Returns an exsting buffer for that uri, or null if not existing.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */function existingBufferForUri(uri) {return atom.project.findBufferForPath(uri);}

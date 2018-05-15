@@ -1,623 +1,653 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-export function ensureArray<T>(x: Array<T> | T): Array<T> {
-  return Array.isArray(x) ? x : [x];
-}
 
-export function arrayRemove<T>(array: Array<T>, element: T): void {
-  const index = array.indexOf(element);
-  if (index >= 0) {
-    array.splice(index, 1);
-  }
-}
 
-export function arrayEqual<T>(
-  array1: Array<T>,
-  array2: Array<T>,
-  equalComparator?: (a: T, b: T) => boolean,
-): boolean {
-  if (array1 === array2) {
-    return true;
-  }
-  if (array1.length !== array2.length) {
-    return false;
-  }
-  const equalFunction = equalComparator || ((a: T, b: T) => a === b);
-  return array1.every((item1, i) => equalFunction(item1, array2[i]));
-}
 
-/**
- * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
- * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
- */
-export function arrayCompact<T>(array: Array<?T>): Array<T> {
-  const result = [];
-  for (const elem of array) {
-    if (elem != null) {
-      result.push(elem);
-    }
-  }
-  return result;
-}
 
-/**
- * Flattens an Array<Array<T>> into just an Array<T>
- */
-export function arrayFlatten<T>(array: Array<Array<T>>): Array<T> {
-  const result = [];
-  for (const subArray of array) {
-    result.push(...subArray);
-  }
-  return result;
-}
 
-/**
- * Removes duplicates from Array<T>.
- * Uses SameValueZero for equality purposes, which is like '===' except it deems
- * two NaNs equal. http://www.ecma-international.org/ecma-262/6.0/#sec-samevaluezero
- */
-export function arrayUnique<T>(array: Array<T>): Array<T> {
-  return Array.from(new Set(array));
-}
 
-/**
- * Returns the last index in the input array that matches the predicate.
- * Returns -1 if no match is found.
- */
-export function arrayFindLastIndex<T>(
-  array: Array<T>,
-  predicate: (elem: T, index: number, array: Array<T>) => boolean,
-  thisArg?: any,
-): number {
-  for (let i = array.length - 1; i >= 0; i--) {
-    if (predicate.call(thisArg, array[i], i, array)) {
-      return i;
-    }
-  }
-  return -1;
-}
 
-/**
- * Merges a given arguments of maps into one Map, with the latest maps
- * overriding the values of the prior maps.
- */
-export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
-  const unionMap = new Map();
-  for (const map of maps) {
-    for (const [key, value] of map) {
-      unionMap.set(key, value);
-    }
-  }
-  return unionMap;
-}
 
-export function mapCompact<T, X>(map: Map<T, ?X>): Map<T, X> {
-  const selected = new Map();
-  for (const [key, value] of map) {
-    if (value != null) {
-      selected.set(key, value);
-    }
-  }
-  return selected;
-}
 
-export function mapFilter<T, X>(
-  map: Map<T, X>,
-  selector: (key: T, value: X) => boolean,
-): Map<T, X> {
-  const selected = new Map();
-  for (const [key, value] of map) {
-    if (selector(key, value)) {
-      selected.set(key, value);
-    }
-  }
-  return selected;
-}
 
-export function mapTransform<T, V1, V2>(
-  src: Map<T, V1>,
-  transform: (value: V1, key: T) => V2,
-): Map<T, V2> {
-  const result = new Map();
-  for (const [key, value] of src) {
-    result.set(key, transform(value, key));
-  }
-  return result;
-}
+ensureArray = ensureArray;exports.
 
-export function mapEqual<T, X>(
-  map1: Map<T, X>,
-  map2: Map<T, X>,
-  equalComparator?: (val1: X, val2: X, key1?: T, key2?: T) => boolean,
-) {
-  if (map1.size !== map2.size) {
-    return false;
-  }
-  const equalFunction = equalComparator || ((a: X, b: X) => a === b);
-  for (const [key1, value1] of map1) {
-    if (!map2.has(key1) || !equalFunction(value1, (map2.get(key1): any))) {
-      return false;
-    }
-  }
-  return true;
-}
 
-export function mapGetWithDefault<K, V>(
-  map: Map<K, V>,
-  key: K,
-  default_: V,
-): V {
-  if (map.has(key)) {
-    // Cast through `any` since map.get's return is a maybe type. We can't just get the value and
+
+arrayRemove = arrayRemove;exports.
+
+
+
+
+
+
+arrayEqual = arrayEqual;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+arrayCompact = arrayCompact;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+arrayFlatten = arrayFlatten;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+arrayUnique = arrayUnique;exports.
+
+
+
+
+
+
+
+arrayFindLastIndex = arrayFindLastIndex;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mapUnion = mapUnion;exports.
+
+
+
+
+
+
+
+
+
+mapCompact = mapCompact;exports.
+
+
+
+
+
+
+
+
+
+mapFilter = mapFilter;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+mapTransform = mapTransform;exports.
+
+
+
+
+
+
+
+
+
+
+mapEqual = mapEqual;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mapGetWithDefault = mapGetWithDefault;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+areSetsEqual = areSetsEqual;exports.
+
+
+
+
+every = every;exports.
+
+
+
+
+
+
+
+
+
+
+
+setIntersect = setIntersect;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+setUnion = setUnion;exports.
+
+
+
+
+
+
+
+
+
+
+
+setDifference = setDifference;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+setFilter = setFilter;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+isEmpty = isEmpty;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+keyMirror = keyMirror;exports.
+
+
+
+
+
+
+
+
+
+
+
+collect = collect;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+objectFromPairs = objectFromPairs;exports.
+
+
+
+
+
+
+
+
+
+objectMapValues = objectMapValues;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+objectValues = objectValues;exports.
+
+
+
+objectEntries = objectEntries;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+objectFromMap = objectFromMap;exports.
+
+
+
+
+
+
+
+concatIterators = concatIterators;exports.
+
+
+
+
+
+
+
+
+
+someOfIterable = someOfIterable;exports.
+
+
+
+
+
+
+
+
+
+
+
+findInIterable = findInIterable;exports.
+
+
+
+
+
+
+
+
+
+
+
+filterIterable = filterIterable;exports.
+
+
+
+
+
+
+
+
+
+
+mapIterable = mapIterable;exports.
+
+
+
+
+
+
+
+
+takeIterable = takeIterable;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+range = range;exports.
+
+
+
+
+
+
+
+
+
+firstOfIterable = firstOfIterable;exports.
+
+
+
+iterableIsEmpty = iterableIsEmpty;exports.
+
+
+
+
+
+
+
+iterableContains = iterableContains;exports.
+
+
+
+
+
+count = count;exports.
+
+
+
+
+
+
+
+
+isIterable = isIterable;exports.
+
+
+
+
+insideOut = insideOut;exports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mapFromObject = mapFromObject;exports.
+
+
+
+lastFromArray = lastFromArray;exports.
+
+
+
+distinct = distinct; /**
+                      * Copyright (c) 2017-present, Facebook, Inc.
+                      * All rights reserved.
+                      *
+                      * This source code is licensed under the BSD-style license found in the
+                      * LICENSE file in the root directory of this source tree. An additional grant
+                      * of patent rights can be found in the PATENTS file in the same directory.
+                      *
+                      * 
+                      * @format
+                      */function ensureArray(x) {return Array.isArray(x) ? x : [x];}function arrayRemove(array, element) {const index = array.indexOf(element);if (index >= 0) {array.splice(index, 1);}}function arrayEqual(array1, array2, equalComparator) {if (array1 === array2) {return true;}if (array1.length !== array2.length) {return false;}const equalFunction = equalComparator || ((a, b) => a === b);return array1.every((item1, i) => equalFunction(item1, array2[i]));} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           */function arrayCompact(array) {const result = [];for (const elem of array) {if (elem != null) {result.push(elem);}}return result;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Flattens an Array<Array<T>> into just an Array<T>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */function arrayFlatten(array) {const result = [];for (const subArray of array) {result.push(...subArray);}return result;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * Removes duplicates from Array<T>.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * Uses SameValueZero for equality purposes, which is like '===' except it deems
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * two NaNs equal. http://www.ecma-international.org/ecma-262/6.0/#sec-samevaluezero
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */function arrayUnique(array) {return Array.from(new Set(array));} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Returns the last index in the input array that matches the predicate.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Returns -1 if no match is found.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */function arrayFindLastIndex(array, predicate, thisArg) {for (let i = array.length - 1; i >= 0; i--) {if (predicate.call(thisArg, array[i], i, array)) {return i;}}return -1;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * Merges a given arguments of maps into one Map, with the latest maps
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * overriding the values of the prior maps.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */function mapUnion(...maps) {const unionMap = new Map();for (const map of maps) {for (const [key, value] of map) {unionMap.set(key, value);}}return unionMap;}function mapCompact(map) {const selected = new Map();for (const [key, value] of map) {if (value != null) {selected.set(key, value);}}return selected;}function mapFilter(map, selector) {const selected = new Map();for (const [key, value] of map) {if (selector(key, value)) {selected.set(key, value);}}return selected;}function mapTransform(src, transform) {const result = new Map();for (const [key, value] of src) {result.set(key, transform(value, key));}return result;}function mapEqual(map1, map2, equalComparator) {if (map1.size !== map2.size) {return false;}const equalFunction = equalComparator || ((a, b) => a === b);for (const [key1, value1] of map1) {if (!map2.has(key1) || !equalFunction(value1, map2.get(key1))) {return false;}}return true;}function mapGetWithDefault(map, key, default_) {if (map.has(key)) {// Cast through `any` since map.get's return is a maybe type. We can't just get the value and
     // check it against `null`, since null/undefined may inhabit V. We know this is safe since we
     // just checked that the map has the key.
-    return (map.get(key): any);
-  } else {
-    return default_;
-  }
-}
-
-export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  return a.size === b.size && every(a, element => b.has(element));
-}
-
-// Array.every but for any iterable.
-export function every<T>(
-  values: Iterable<T>,
-  predicate: (element: T) => boolean,
-): boolean {
-  for (const element of values) {
-    if (!predicate(element)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return setFilter(a, e => b.has(e));
-}
-
-function setUnionTwo<T>(a: Set<T>, b: Set<T>): Set<T> {
-  // Avoids the extra Array allocations that `new Set([...a, ...b])` would incur. Some quick tests
+    return map.get(key);} else {return default_;}}function areSetsEqual(a, b) {return a.size === b.size && every(a, element => b.has(element));} // Array.every but for any iterable.
+function every(values, predicate) {for (const element of values) {if (!predicate(element)) {return false;}}return true;}function setIntersect(a, b) {return setFilter(a, e => b.has(e));}function setUnionTwo(a, b) {// Avoids the extra Array allocations that `new Set([...a, ...b])` would incur. Some quick tests
   // indicate it would be about 60% slower.
-  const result = new Set(a);
-  b.forEach(x => {
-    result.add(x);
-  });
-  return result;
-}
-
-export function setUnion<T>(...sets: Array<Set<T>>): Set<T> {
-  if (sets.length < 1) {
-    return new Set();
-  }
-
-  const setReducer = (accumulator: Set<T>, current: Set<T>): Set<T> => {
-    return setUnionTwo(accumulator, current);
-  };
-
-  return sets.reduce(setReducer);
-}
-
-export function setDifference<T>(
-  a: Set<T>,
-  b: Set<T>,
-  hash_?: (v: T) => any,
-): Set<T> {
-  if (a.size === 0) {
-    return new Set();
-  } else if (b.size === 0) {
-    return new Set(a);
-  }
-  const result = new Set();
-  const hash = hash_ || (x => x);
-  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
-  a.forEach(value => {
-    if (!bHashes.has(hash(value))) {
-      result.add(value);
-    }
-  });
-  return result;
-}
-
-export function setFilter<T>(
-  set: Set<T>,
-  predicate: (value: T) => boolean,
-): Set<T> {
-  const out = new Set();
-  for (const item of set) {
-    if (predicate(item)) {
-      out.add(item);
-    }
-  }
-
-  return out;
-}
-
-/**
- * O(1)-check if a given object is empty (has no properties, inherited or not)
- */
-export function isEmpty(obj: Object): boolean {
-  for (const key in obj) {
-    return false;
-  }
-  return true;
-}
-
-/**
- * Constructs an enumeration with keys equal to their value.
- * e.g. keyMirror({a: null, b: null}) => {a: 'a', b: 'b'}
- *
- * Based off the equivalent function in www.
- */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
-  const ret = {};
-  Object.keys(obj).forEach(key => {
-    ret[key] = key;
-  });
-  return ret;
-}
-
-/**
- * Given an array of [key, value] pairs, construct a map where the values for
- * each key are collected into an array of values, in order.
- */
-export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
-  const result = new Map();
-  for (const pair of pairs) {
-    const [k, v] = pair;
-    let list = result.get(k);
-    if (list == null) {
-      list = [];
-      result.set(k, list);
-    }
-    list.push(v);
-  }
-  return result;
-}
-
-export function objectFromPairs<T: string, U>(
-  iterable: Iterable<[T, U]>,
-): {[T]: U} {
-  const result = {};
-  for (const [key, value] of iterable) {
-    result[key] = value;
-  }
-  return result;
-}
-
-export function objectMapValues<T, U, V>(
-  object: {[T: string]: U},
-  project: (value: U, key: T) => V,
-): {[T]: V} {
-  const result = {};
-  Object.keys(object).forEach(key => {
-    result[key] = project(object[key], ((key: any): T));
-  });
-  return result;
-}
-
-export class MultiMap<K, V> {
-  // Invariant: no empty sets. They should be removed instead.
-  _map: Map<K, Set<V>>;
-
-  // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
+  const result = new Set(a);b.forEach(x => {result.add(x);});return result;}function setUnion(...sets) {if (sets.length < 1) {return new Set();}const setReducer = (accumulator, current) => {return setUnionTwo(accumulator, current);};return sets.reduce(setReducer);}function setDifference(a, b, hash_) {if (a.size === 0) {return new Set();} else if (b.size === 0) {return new Set(a);}const result = new Set();const hash = hash_ || (x => x);const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));a.forEach(value => {if (!bHashes.has(hash(value))) {result.add(value);}});return result;}function setFilter(set, predicate) {const out = new Set();for (const item of set) {if (predicate(item)) {out.add(item);}}return out;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * O(1)-check if a given object is empty (has no properties, inherited or not)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */function isEmpty(obj) {for (const key in obj) {return false;}return true;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * Constructs an enumeration with keys equal to their value.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * e.g. keyMirror({a: null, b: null}) => {a: 'a', b: 'b'}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * Based off the equivalent function in www.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   */function keyMirror(obj) {const ret = {};Object.keys(obj).forEach(key => {ret[key] = key;});return ret;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * Given an array of [key, value] pairs, construct a map where the values for
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * each key are collected into an array of values, in order.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              */function collect(pairs) {const result = new Map();for (const pair of pairs) {const [k, v] = pair;let list = result.get(k);if (list == null) {list = [];result.set(k, list);}list.push(v);}return result;}function objectFromPairs(iterable) {const result = {};for (const [key, value] of iterable) {result[key] = value;}return result;}function objectMapValues(object, project) {const result = {};Object.keys(object).forEach(key => {result[key] = project(object[key], key);});return result;}class MultiMap {// Invariant: no empty sets. They should be removed instead.
+  constructor() {this._map = new Map();this.size = 0;} /*
+                                                        * Returns the set of values associated with the given key. Do not mutate the given set. Copy it
+                                                        * if you need to store it past the next operation on this MultiMap.
+                                                        */ // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
   // don't mutate this from outside this class.
   //
   // Invariant: equal to the sum of the sizes of all the sets contained in this._map
-  /* The total number of key-value bindings contained */
-  size: number;
-
-  constructor() {
-    this._map = new Map();
-    this.size = 0;
-  }
-
-  /*
-   * Returns the set of values associated with the given key. Do not mutate the given set. Copy it
-   * if you need to store it past the next operation on this MultiMap.
-   */
-  get(key: K): Set<V> {
-    const set = this._map.get(key);
-    if (set == null) {
-      return new Set();
-    }
-    return set;
-  }
-
-  /*
-   * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
-   * implication is that it removes the previous binding.
-   */
-  add(key: K, value: V): MultiMap<K, V> {
-    let set = this._map.get(key);
-    if (set == null) {
-      set = new Set();
-      this._map.set(key, set);
-    }
-    if (!set.has(value)) {
-      set.add(value);
-      this.size++;
-    }
-    return this;
-  }
-
-  /*
-   * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
-   */
-  set(key: K, values: Iterable<V>): void {
-    this.deleteAll(key);
-    const newSet = new Set(values);
-    if (newSet.size !== 0) {
-      this._map.set(key, newSet);
-      this.size += newSet.size;
-    }
-  }
-
-  /*
-   * Deletes a single binding. Returns true iff the binding existed.
-   */
-  delete(key: K, value: V): boolean {
-    const set = this.get(key);
-    const didRemove = set.delete(value);
-    if (set.size === 0) {
-      this._map.delete(key);
-    }
-    if (didRemove) {
-      this.size--;
-    }
-    return didRemove;
-  }
-
-  /*
-   * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
-   */
-  deleteAll(key: K): boolean {
-    const set = this.get(key);
-    this.size -= set.size;
-    return this._map.delete(key);
-  }
-
-  clear(): void {
-    this._map.clear();
-    this.size = 0;
-  }
-
-  has(key: K, value: V): boolean {
-    return this.get(key).has(value);
-  }
-
-  hasAny(key: K): boolean {
-    return this._map.has(key);
-  }
-
-  *values(): Iterable<V> {
-    for (const set of this._map.values()) {
-      yield* set;
-    }
-  }
-
-  forEach(callback: (value: V, key: K, obj: MultiMap<K, V>) => void): void {
-    this._map.forEach((values, key) =>
-      values.forEach(value => callback(value, key, this)),
-    );
-  }
-}
-
-export function objectValues<T>(obj: {[key: string]: T}): Array<T> {
-  return Object.keys(obj).map(key => obj[key]);
-}
-
-export function objectEntries<T>(obj: ?{[key: string]: T}): Array<[string, T]> {
-  if (obj == null) {
-    throw new TypeError();
-  }
-  const entries = [];
-  for (const key in obj) {
-    if (
-      obj.hasOwnProperty(key) &&
-      Object.prototype.propertyIsEnumerable.call(obj, key)
-    ) {
-      entries.push([key, obj[key]]);
-    }
-  }
-  return entries;
-}
-
-export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
-  const obj = {};
-  map.forEach((v, k) => {
-    obj[k] = v;
-  });
-  return obj;
-}
-
-export function* concatIterators<T>(
-  ...iterators: Array<Iterable<T>>
-): Iterator<T> {
-  for (const iterator of iterators) {
-    for (const element of iterator) {
-      yield element;
-    }
-  }
-}
-
-export function someOfIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): boolean {
-  for (const element of iterable) {
-    if (predicate(element)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function findInIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): ?T {
-  for (const element of iterable) {
-    if (predicate(element)) {
-      return element;
-    }
-  }
-  return null;
-}
-
-export function* filterIterable<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): Iterable<T> {
-  for (const element of iterable) {
-    if (predicate(element)) {
-      yield element;
-    }
-  }
-}
-
-export function* mapIterable<T, M>(
-  iterable: Iterable<T>,
-  projectorFn: (element: T) => M,
-): Iterable<M> {
-  for (const element of iterable) {
-    yield projectorFn(element);
-  }
-}
-
-export function* takeIterable<T>(
-  iterable: Iterable<T>,
-  limit: number,
-): Iterable<T> {
-  let i = 0;
-  for (const element of iterable) {
-    if (++i > limit) {
-      break;
-    }
-    yield element;
-  }
-}
-
-// Return an iterable of the numbers start (inclusive) through stop (exclusive)
-export function* range(
-  start: number,
-  stop: number,
-  step?: number = 1,
-): Iterable<number> {
-  for (let i = start; i < stop; i += step) {
-    yield i;
-  }
-}
-
-export function firstOfIterable<T>(iterable: Iterable<T>): ?T {
-  return findInIterable(iterable, () => true);
-}
-
-export function iterableIsEmpty<T>(iterable: Iterable<T>): boolean {
-  // eslint-disable-next-line no-unused-vars
-  for (const element of iterable) {
-    return false;
-  }
-  return true;
-}
-
-export function iterableContains<T>(iterable: Iterable<T>, value: T): boolean {
-  return !iterableIsEmpty(
-    filterIterable(iterable, element => element === value),
-  );
-}
-
-export function count<T>(iterable: Iterable<T>): number {
-  let size = 0;
-  // eslint-disable-next-line no-unused-vars
-  for (const element of iterable) {
-    size++;
-  }
-  return size;
-}
-
-export function isIterable(obj: any): boolean {
-  return typeof obj[Symbol.iterator] === 'function';
-}
-
-// Traverse an array from the inside out, starting at the specified index.
-export function* insideOut<T>(
-  arr: Array<T>,
-  startingIndex?: number,
-): Iterable<[T, number]> {
-  if (arr.length === 0) {
-    return;
-  }
-
-  let i =
-    startingIndex == null
-      ? Math.floor(arr.length / 2)
-      : Math.min(arr.length, Math.max(0, startingIndex));
-  let j = i - 1;
-
-  while (i < arr.length || j >= 0) {
-    if (i < arr.length) {
-      yield [arr[i], i];
-      i++;
-    }
-    if (j >= 0) {
-      yield [arr[j], j];
-      j--;
-    }
-  }
-}
-
-export function mapFromObject<T>(obj: {[key: string]: T}): Map<string, T> {
-  return new Map(objectEntries(obj));
-}
-
-export function lastFromArray<T>(arr: Array<T>): T {
-  return arr[arr.length - 1];
-}
-
-export function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
-  if (keyFn == null) {
-    return Array.from(new Set(array));
-  }
-
-  const seenKeys = new Set();
-  return array.filter(elem => {
-    const key = keyFn(elem);
-    if (seenKeys.has(key)) {
-      return false;
-    }
-    seenKeys.add(key);
-    return true;
-  });
-}
-
-export class DefaultMap<K, V> extends Map<K, V> {
-  _factory: () => V;
-
-  constructor(factory: () => V, iterable: ?Iterable<[K, V]>) {
-    super(iterable);
-    this._factory = factory;
-  }
-
-  get(key: K): V {
-    if (!this.has(key)) {
-      const value = this._factory();
-      this.set(key, value);
-      return value;
-    }
-    // If the key is present we must have a value of type V.
-    return (super.get(key): any);
-  }
-}
+  /* The total number of key-value bindings contained */get(key) {const set = this._map.get(key);if (set == null) {return new Set();}return set;} /*
+                                                                                                                                                   * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
+                                                                                                                                                   * implication is that it removes the previous binding.
+                                                                                                                                                   */add(key, value) {let set = this._map.get(key);if (set == null) {set = new Set();this._map.set(key, set);}if (!set.has(value)) {set.add(value);this.size++;}return this;} /*
+                                                                                                                                                                                                                                                                                                                               * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
+                                                                                                                                                                                                                                                                                                                               */set(key, values) {this.deleteAll(key);const newSet = new Set(values);if (newSet.size !== 0) {this._map.set(key, newSet);this.size += newSet.size;}} /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Deletes a single binding. Returns true iff the binding existed.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */delete(key, value) {const set = this.get(key);const didRemove = set.delete(value);if (set.size === 0) {this._map.delete(key);}if (didRemove) {this.size--;}return didRemove;} /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */deleteAll(key) {const set = this.get(key);this.size -= set.size;return this._map.delete(key);}clear() {this._map.clear();this.size = 0;}has(key, value) {return this.get(key).has(value);}hasAny(key) {return this._map.has(key);}*values() {for (const set of this._map.values()) {yield* set;}}forEach(callback) {this._map.forEach((values, key) => values.forEach(value => callback(value, key, this)));}}exports.MultiMap = MultiMap;function objectValues(obj) {return Object.keys(obj).map(key => obj[key]);}function objectEntries(obj) {if (obj == null) {throw new TypeError();}const entries = [];for (const key in obj) {if (obj.hasOwnProperty(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {entries.push([key, obj[key]]);}}return entries;}function objectFromMap(map) {const obj = {};map.forEach((v, k) => {obj[k] = v;});return obj;}function* concatIterators(...iterators) {for (const iterator of iterators) {for (const element of iterator) {yield element;}}}function someOfIterable(iterable, predicate) {for (const element of iterable) {if (predicate(element)) {return true;}}return false;}function findInIterable(iterable, predicate) {for (const element of iterable) {if (predicate(element)) {return element;}}return null;}function* filterIterable(iterable, predicate) {for (const element of iterable) {if (predicate(element)) {yield element;}}}function* mapIterable(iterable, projectorFn) {for (const element of iterable) {yield projectorFn(element);}}function* takeIterable(iterable, limit) {let i = 0;for (const element of iterable) {if (++i > limit) {break;}yield element;}} // Return an iterable of the numbers start (inclusive) through stop (exclusive)
+function* range(start, stop, step = 1) {for (let i = start; i < stop; i += step) {yield i;}}function firstOfIterable(iterable) {return findInIterable(iterable, () => true);}function iterableIsEmpty(iterable) {// eslint-disable-next-line no-unused-vars
+  for (const element of iterable) {return false;}return true;}function iterableContains(iterable, value) {return !iterableIsEmpty(filterIterable(iterable, element => element === value));}function count(iterable) {let size = 0; // eslint-disable-next-line no-unused-vars
+  for (const element of iterable) {size++;}return size;}function isIterable(obj) {return typeof obj[Symbol.iterator] === 'function';} // Traverse an array from the inside out, starting at the specified index.
+function* insideOut(arr, startingIndex) {if (arr.length === 0) {return;}let i = startingIndex == null ? Math.floor(arr.length / 2) : Math.min(arr.length, Math.max(0, startingIndex));let j = i - 1;while (i < arr.length || j >= 0) {if (i < arr.length) {yield [arr[i], i];i++;}if (j >= 0) {yield [arr[j], j];j--;}}}function mapFromObject(obj) {return new Map(objectEntries(obj));}function lastFromArray(arr) {return arr[arr.length - 1];}function distinct(array, keyFn) {if (keyFn == null) {return Array.from(new Set(array));}const seenKeys = new Set();return array.filter(elem => {const key = keyFn(elem);if (seenKeys.has(key)) {return false;}seenKeys.add(key);return true;});}class DefaultMap extends Map {constructor(factory, iterable) {super(iterable);this._factory = factory;}get(key) {if (!this.has(key)) {const value = this._factory();this.set(key, value);return value;} // If the key is present we must have a value of type V.
+    return super.get(key);}}exports.DefaultMap = DefaultMap;

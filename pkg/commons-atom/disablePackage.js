@@ -1,69 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.DisabledReason = undefined;exports.default =
 
-import idx from 'idx';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-export const DisabledReason = Object.freeze({
-  INCOMPATIBLE: 'incompatible',
-  REIMPLEMENTED: 'reimplemented',
-});
-type DisabledReasonType = $Values<typeof DisabledReason>;
 
-function deactivateAndUnloadPackage(
-  name: string,
-  options: {|warn: boolean, reason: DisabledReasonType|},
-): void {
-  if (atom.packages.initialPackagesActivated === true) {
-    if (options.warn) {
-      const packageName = featureConfig.getPackageName();
-      atom.notifications.addWarning(`Incompatible Package: ${name}`, {
-        description: getWarningMessage(name, packageName, options.reason),
-        dismissable: true,
-      });
-    }
-  }
 
-  const deactivationPromise =
-    atom.packages.deactivatePackage(name) || Promise.resolve();
-  deactivationPromise.then(() => {
-    atom.packages.disablePackage(name);
-    atom.packages.unloadPackage(name);
-  });
 
-  // This is a horrible hack to work around the fact that preloaded packages can sometimes be loaded
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+disablePackage;var _idx;function _load_idx() {return _idx = _interopRequireDefault(require('idx'));}var _featureConfig;function _load_featureConfig() {return _featureConfig = _interopRequireDefault(require('../../modules/nuclide-commons-atom/feature-config'));}var _UniversalDisposable;function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('../../modules/nuclide-commons/UniversalDisposable'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}const DisabledReason = exports.DisabledReason = Object.freeze({ INCOMPATIBLE: 'incompatible', REIMPLEMENTED: 'reimplemented' }); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */function deactivateAndUnloadPackage(name, options) {if (atom.packages.initialPackagesActivated === true) {if (options.warn) {const packageName = (_featureConfig || _load_featureConfig()).default.getPackageName();atom.notifications.addWarning(`Incompatible Package: ${name}`, { description: getWarningMessage(name, packageName, options.reason), dismissable: true });}}const deactivationPromise = atom.packages.deactivatePackage(name) || Promise.resolve();deactivationPromise.then(() => {atom.packages.disablePackage(name);atom.packages.unloadPackage(name);}); // This is a horrible hack to work around the fact that preloaded packages can sometimes be loaded
   // twice. See also atom/atom#14837
   // $FlowIgnore
-  delete atom.packages.preloadedPackages[name];
-}
-
-export default function disablePackage(
-  name: string,
-  options?: {|reason?: DisabledReasonType|},
-): IDisposable {
-  const initiallyDisabled = atom.packages.isPackageDisabled(name);
-  const reason = idx(options, _ => _.reason) || DisabledReason.INCOMPATIBLE;
-  if (!initiallyDisabled) {
-    // If it wasn't activated yet, maybe we can prevent the activation altogether
-    atom.packages.disablePackage(name);
-  }
-
-  if (atom.packages.isPackageActive(name)) {
-    deactivateAndUnloadPackage(name, {warn: false, reason});
-  }
+  delete atom.packages.preloadedPackages[name];}function disablePackage(name, options) {var _ref;const initiallyDisabled = atom.packages.isPackageDisabled(name);const reason = ((_ref = options) != null ? _ref.reason : _ref) || DisabledReason.INCOMPATIBLE;if (!initiallyDisabled) {// If it wasn't activated yet, maybe we can prevent the activation altogether
+    atom.packages.disablePackage(name);}if (atom.packages.isPackageActive(name)) {deactivateAndUnloadPackage(name, { warn: false, reason });}
 
   const activationMonitor = atom.packages.onDidActivatePackage(pack => {
     if (pack.name === name) {
-      deactivateAndUnloadPackage(name, {warn: true, reason});
+      deactivateAndUnloadPackage(name, { warn: true, reason });
     }
   });
 
@@ -75,28 +75,28 @@ export default function disablePackage(
     }
   };
 
-  return new UniversalDisposable(activationMonitor, stateRestorer);
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(activationMonitor, stateRestorer);
 }
 
 function getWarningMessage(
-  disabledFeature: string,
-  packageName: string,
-  reason: DisabledReasonType,
-): string {
+disabledFeature,
+packageName,
+reason)
+{
   switch (reason) {
     case 'incompatible':
       return (
         `${disabledFeature} can't be enabled because it's incompatible with ${packageName}.` +
-        ` If you need to use this package, you must first disable ${packageName}.`
-      );
+        ` If you need to use this package, you must first disable ${packageName}.`);
+
     case 'reimplemented':
       return (
         `${disabledFeature} can't be enabled because it's incompatible with ${packageName},` +
         ` however ${packageName} provides similar functionality. If you need to use` +
-        ` ${disabledFeature} anyway, you must first disable ${packageName}.`
-      );
+        ` ${disabledFeature} anyway, you must first disable ${packageName}.`);
+
     default:
-      (reason: empty);
-      throw new Error(`Invalid reason: ${reason}`);
-  }
+      reason;
+      throw new Error(`Invalid reason: ${reason}`);}
+
 }

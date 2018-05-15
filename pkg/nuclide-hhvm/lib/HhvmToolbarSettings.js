@@ -1,68 +1,67 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.HhvmToolbarSettings = undefined;
 
-import type ProjectStore from './ProjectStore';
 
-import * as React from 'react';
-import {Modal} from 'nuclide-commons-ui/Modal';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 
-type Props = {
-  projectStore: ProjectStore,
-  onDismiss: () => void,
-};
 
-type State = {
-  args: string,
-};
 
-export class HhvmToolbarSettings extends React.Component<Props, State> {
-  constructor(props: Props) {
+
+
+
+
+
+
+
+var _react = _interopRequireWildcard(require('react'));var _Modal;
+function _load_Modal() {return _Modal = require('../../../modules/nuclide-commons-ui/Modal');}var _AtomInput;
+function _load_AtomInput() {return _AtomInput = require('../../../modules/nuclide-commons-ui/AtomInput');}var _Button;
+function _load_Button() {return _Button = require('../../../modules/nuclide-commons-ui/Button');}var _ButtonGroup;
+function _load_ButtonGroup() {return _ButtonGroup = require('../../../modules/nuclide-commons-ui/ButtonGroup');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}} /**
+                                                                                                                                                                                                                                                                                                                                                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                  * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                  *
+                                                                                                                                                                                                                                                                                                                                                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                  * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                  *
+                                                                                                                                                                                                                                                                                                                                                                                  * 
+                                                                                                                                                                                                                                                                                                                                                                                  * @format
+                                                                                                                                                                                                                                                                                                                                                                                  */
+
+class HhvmToolbarSettings extends _react.Component {
+  constructor(props) {
     super(props);
     this.state = {
-      args: this.props.projectStore.getScriptArguments(),
-    };
+      args: this.props.projectStore.getScriptArguments() };
+
   }
 
-  render(): React.Node {
+  render() {
     return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="block">
-          <div className="block">
-            <h1>Script Debug Settings</h1>
-            <label>Script arguments:</label>
-            <AtomInput
-              autofocus={true}
-              value={this.state.args}
-              onDidChange={newValue => this.setState({args: newValue})}
-              size="sm"
-            />
-          </div>
-          <div className="nuclide-hhvm-toolbar-settings">
-            <ButtonGroup>
-              <Button onClick={() => this.props.onDismiss()}>Cancel</Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={() => {
-                  this.props.projectStore.setScriptArguments(this.state.args);
-                  this.props.onDismiss();
-                }}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
-    );
-  }
-}
+      _react.createElement((_Modal || _load_Modal()).Modal, { onDismiss: this.props.onDismiss },
+        _react.createElement('div', { className: 'block' },
+          _react.createElement('div', { className: 'block' },
+            _react.createElement('h1', null, 'Script Debug Settings'),
+            _react.createElement('label', null, 'Script arguments:'),
+            _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+              autofocus: true,
+              value: this.state.args,
+              onDidChange: newValue => this.setState({ args: newValue }),
+              size: 'sm' })),
+
+
+          _react.createElement('div', { className: 'nuclide-hhvm-toolbar-settings' },
+            _react.createElement((_ButtonGroup || _load_ButtonGroup()).ButtonGroup, null,
+              _react.createElement((_Button || _load_Button()).Button, { onClick: () => this.props.onDismiss() }, 'Cancel'),
+              _react.createElement((_Button || _load_Button()).Button, {
+                  buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+                  onClick: () => {
+                    this.props.projectStore.setScriptArguments(this.state.args);
+                    this.props.onDismiss();
+                  } }, 'Save'))))));
+
+
+
+
+
+
+
+  }}exports.HhvmToolbarSettings = HhvmToolbarSettings;

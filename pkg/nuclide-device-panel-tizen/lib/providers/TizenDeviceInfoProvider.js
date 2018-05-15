@@ -1,51 +1,59 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.TizenDeviceInfoProvider = undefined;
 
-import type {DeviceInfoProvider} from '../../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from '../../../nuclide-device-panel/lib/types';
 
-import {Observable} from 'rxjs';
-import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
-export class TizenDeviceInfoProvider implements DeviceInfoProvider {
-  getType(): string {
+
+
+
+
+
+
+
+
+
+
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _nuclideRemoteConnection;
+function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../../nuclide-remote-connection');}
+
+class TizenDeviceInfoProvider {
+  getType() {
     return 'Tizen';
   }
 
-  fetch(host: NuclideUri, device: Device): Observable<Map<string, string>> {
-    return getSdbServiceByNuclideUri(host)
-      .getDeviceInfo(device)
-      .refCount()
-      .map(props => {
-        const infoMap = new Map();
-        for (const [key, value] of props) {
-          let beautifulKey = key.toLowerCase().replace('_', ' ');
-          beautifulKey =
-            beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1);
-          infoMap.set(beautifulKey, value);
-        }
-        return infoMap;
-      });
+  fetch(host, device) {
+    return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host).
+    getDeviceInfo(device).
+    refCount().
+    map(props => {
+      const infoMap = new Map();
+      for (const [key, value] of props) {
+        let beautifulKey = key.toLowerCase().replace('_', ' ');
+        beautifulKey =
+        beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1);
+        infoMap.set(beautifulKey, value);
+      }
+      return infoMap;
+    });
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Device information';
   }
 
-  getPriority(): number {
+  getPriority() {
     return 100;
   }
 
-  isSupported(): Observable<boolean> {
-    return Observable.of(true);
-  }
-}
+  isSupported() {
+    return _rxjsBundlesRxMinJs.Observable.of(true);
+  }}exports.TizenDeviceInfoProvider = TizenDeviceInfoProvider; /**
+                                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                                * All rights reserved.
+                                                                *
+                                                                * This source code is licensed under the license found in the LICENSE file in
+                                                                * the root directory of this source tree.
+                                                                *
+                                                                *  strict-local
+                                                                * @format
+                                                                */

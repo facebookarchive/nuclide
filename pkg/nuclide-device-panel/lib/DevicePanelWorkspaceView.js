@@ -1,32 +1,32 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.DevicePanelWorkspaceView = exports.WORKSPACE_VIEW_URI = undefined;
 
-import type {Props} from './ui/RootPanel';
 
-import type {Store, AppState} from './types';
-import * as React from 'react';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {RootPanel} from './ui/RootPanel';
-import {Observable} from 'rxjs';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import * as Actions from './redux/Actions';
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
-export class DevicePanelWorkspaceView {
-  _store: Store;
 
-  constructor(store: Store) {
-    this._store = store;
-  }
+
+
+
+
+
+
+
+
+var _react = _interopRequireWildcard(require('react'));var _renderReactRoot;
+function _load_renderReactRoot() {return _renderReactRoot = require('../../../modules/nuclide-commons-ui/renderReactRoot');}var _RootPanel;
+function _load_RootPanel() {return _RootPanel = require('./ui/RootPanel');}
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _bindObservableAsProps;
+function _load_bindObservableAsProps() {return _bindObservableAsProps = require('../../../modules/nuclide-commons-ui/bindObservableAsProps');}var _Actions;
+function _load_Actions() {return _Actions = _interopRequireWildcard(require('./redux/Actions'));}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}} /**
+                                                                                                                                                                                                                                                                                                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                   * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                   * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                   *  strict-local
+                                                                                                                                                                                                                                                                                                                                                                   * @format
+                                                                                                                                                                                                                                                                                                                                                                   */const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/devices';class DevicePanelWorkspaceView {constructor(store) {this._store = store;}
 
   getTitle() {
     return 'Devices';
@@ -36,33 +36,33 @@ export class DevicePanelWorkspaceView {
     return 'device-mobile';
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 400;
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  _appStateToProps(state: AppState): Props {
-    const toggleDevicePolling = (isActive: boolean) => {
-      this._store.dispatch(Actions.toggleDevicePolling(isActive));
+  _appStateToProps(state) {
+    const toggleDevicePolling = isActive => {
+      this._store.dispatch((_Actions || _load_Actions()).toggleDevicePolling(isActive));
     };
-    const toggleProcessPolling = (isActive: boolean) => {
-      this._store.dispatch(Actions.toggleProcessPolling(isActive));
+    const toggleProcessPolling = isActive => {
+      this._store.dispatch((_Actions || _load_Actions()).toggleProcessPolling(isActive));
     };
     const setHost = host => {
-      this._store.dispatch(Actions.setHost(host));
+      this._store.dispatch((_Actions || _load_Actions()).setHost(host));
     };
     const setDeviceType = deviceType => {
-      this._store.dispatch(Actions.setDeviceType(deviceType));
+      this._store.dispatch((_Actions || _load_Actions()).setDeviceType(deviceType));
     };
     const setDevice = device => {
-      this._store.dispatch(Actions.setDevice(device));
+      this._store.dispatch((_Actions || _load_Actions()).setDevice(device));
     };
     return {
       devices: state.devices,
@@ -83,25 +83,24 @@ export class DevicePanelWorkspaceView {
       toggleProcessPolling,
       setHost,
       setDeviceType,
-      setDevice,
-    };
+      setDevice };
+
   }
 
-  getElement(): HTMLElement {
-    const PreparedDevicePanel = bindObservableAsProps(
-      // $FlowFixMe: Teach flow about Symbol.observable
-      Observable.from(this._store)
-        .distinctUntilChanged()
-        .map(state => this._appStateToProps(state)),
-      RootPanel,
-    );
+  getElement() {
+    const PreparedDevicePanel = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(
+    // $FlowFixMe: Teach flow about Symbol.observable
+    _rxjsBundlesRxMinJs.Observable.from(this._store).
+    distinctUntilChanged().
+    map(state => this._appStateToProps(state)), (_RootPanel || _load_RootPanel()).RootPanel);
 
-    return renderReactRoot(<PreparedDevicePanel />);
+
+
+    return (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_react.createElement(PreparedDevicePanel, null));
   }
 
-  serialize(): {deserializer: string} {
+  serialize() {
     return {
-      deserializer: 'nuclide.DevicePanelWorkspaceView',
-    };
-  }
-}
+      deserializer: 'nuclide.DevicePanelWorkspaceView' };
+
+  }}exports.DevicePanelWorkspaceView = DevicePanelWorkspaceView;

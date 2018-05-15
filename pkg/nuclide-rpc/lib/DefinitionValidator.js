@@ -1,76 +1,76 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import {locationToString} from './location';
-import invariant from 'assert';
-import {setIntersect} from 'nuclide-commons/collection';
 
-import type {
-  Definitions,
-  Definition,
-  AliasDefinition,
-  InterfaceDefinition,
-  Type,
-  FunctionType,
-  NamedType,
-  UnionType,
-  IntersectionType,
-  ObjectType,
-  ObjectField,
-  LiteralType,
-  Location,
-} from './types';
 
-/**
- * Throws if a named type referenced in an RPC interface is not defined.
- * The error message thrown is suitable for display to a human.
- *
- * NOTE: Will also mutate the incoming definitions in place to make them easier to marshal.
- */
-export function validateDefinitions(definitions: Definitions): void {
-  const namedTypes: Map<
-    string,
-    AliasDefinition | InterfaceDefinition,
-  > = new Map();
-  gatherKnownTypes();
 
-  // Location of the currently visited definition.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+validateDefinitions = validateDefinitions;var _location;function _load_location() {return _location = require('./location');}var _collection;function _load_collection() {return _collection = require('../../../modules/nuclide-commons/collection');} /**
+                                                                                                                                                                                                                                                         * Throws if a named type referenced in an RPC interface is not defined.
+                                                                                                                                                                                                                                                         * The error message thrown is suitable for display to a human.
+                                                                                                                                                                                                                                                         *
+                                                                                                                                                                                                                                                         * NOTE: Will also mutate the incoming definitions in place to make them easier to marshal.
+                                                                                                                                                                                                                                                         */ /**
+                                                                                                                                                                                                                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                             * All rights reserved.
+                                                                                                                                                                                                                                                             *
+                                                                                                                                                                                                                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                             * the root directory of this source tree.
+                                                                                                                                                                                                                                                             *
+                                                                                                                                                                                                                                                             * 
+                                                                                                                                                                                                                                                             * @format
+                                                                                                                                                                                                                                                             */function validateDefinitions(definitions) {const namedTypes = new Map();gatherKnownTypes(); // Location of the currently visited definition.
   // It's too painfulto thread this through everywhere.
-  let contextLocation: ?Location;
-  validate();
-
-  function validate(): void {
-    findMissingTypeNames();
-    findRecursiveAliases();
-    validateReturnTypes();
-    cannonicalize();
+  let contextLocation;validate();function validate() {findMissingTypeNames();findRecursiveAliases();validateReturnTypes();cannonicalize();
   }
 
   function findMissingTypeNames() {
     visitAllTypes(checkTypeForMissingNames);
   }
 
-  function gatherKnownTypes(): void {
+  function gatherKnownTypes() {
     Object.keys(definitions).forEach(name => {
       const definition = definitions[name];
       switch (definition.kind) {
         case 'alias':
         case 'interface':
           namedTypes.set(definition.name, definition);
-          break;
-      }
+          break;}
+
     });
   }
 
-  function checkTypeForMissingNames(type: Type): void {
+  function checkTypeForMissingNames(type) {
     switch (type.kind) {
       case 'any':
       case 'mixed':
@@ -115,8 +115,8 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'function':
         type.argumentTypes.forEach(parameter =>
-          checkTypeForMissingNames(parameter.type),
-        );
+        checkTypeForMissingNames(parameter.type));
+
         checkTypeForMissingNames(type.returnType);
         break;
       case 'named':
@@ -126,9 +126,9 @@ export function validateDefinitions(definitions: Definitions): void {
         }
         break;
       default:
-        (type: empty);
-        throw new Error(JSON.stringify(type));
-    }
+        type;
+        throw new Error(JSON.stringify(type));}
+
   }
 
   function findRecursiveAliases() {
@@ -137,28 +137,28 @@ export function validateDefinitions(definitions: Definitions): void {
       switch (definition.kind) {
         case 'alias':
           checkAliasLayout(definition);
-          break;
-      }
+          break;}
+
     });
   }
 
-  function checkAliasLayout(alias: AliasDefinition): void {
+  function checkAliasLayout(alias) {
     if (alias.definition) {
       validateLayoutRec([alias], alias.definition);
     }
   }
 
   /**
-   * Validates that a type does not directly contain any types which are known to
-   * directly or indirectly contain it.
-   *
-   * If recursion is found the chain of types which recursively contain each other is reported.
-   */
+     * Validates that a type does not directly contain any types which are known to
+     * directly or indirectly contain it.
+     *
+     * If recursion is found the chain of types which recursively contain each other is reported.
+     */
   function validateLayoutRec(
-    containingDefinitions: Array<AliasDefinition>,
-    type: Type,
-  ): void {
-    function validateTypeRec(typeRec: Type): void {
+  containingDefinitions,
+  type)
+  {
+    function validateTypeRec(typeRec) {
       validateLayoutRec(containingDefinitions, typeRec);
     }
 
@@ -186,10 +186,10 @@ export function validateDefinitions(definitions: Definitions): void {
         // Containers break the layout chain as they may be empty.
         break;
       case 'object':
-        type.fields
-          .filter(field => !field.optional)
-          .map(field => field.type)
-          .forEach(validateTypeRec);
+        type.fields.
+        filter(field => !field.optional).
+        map(field => field.type).
+        forEach(validateTypeRec);
         break;
       case 'tuple':
         type.types.forEach(validateTypeRec);
@@ -206,33 +206,33 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'named':
         const name = type.name;
-        const definition:
-          | AliasDefinition
-          // $FlowFixMe(peterhal)
-          | InterfaceDefinition = namedTypes.get(name);
-        if (containingDefinitions.indexOf((definition: any)) !== -1) {
+        const definition =
+
+
+        namedTypes.get(name);
+        if (containingDefinitions.indexOf(definition) !== -1) {
           throw errorDefinitions(
-            (containingDefinitions.slice(
-              containingDefinitions.indexOf((definition: any)),
-            ): any),
-            `Type ${name} contains itself.`,
-          );
+          containingDefinitions.slice(
+          containingDefinitions.indexOf(definition)),
+
+          `Type ${name} contains itself.`);
+
         } else if (
-          definition.kind === 'alias' &&
-          definition.definition != null
-        ) {
-          containingDefinitions.push(definition);
-          invariant(definition.definition);
+        definition.kind === 'alias' &&
+        definition.definition != null)
+        {
+          containingDefinitions.push(definition);if (!
+          definition.definition) {throw new Error('Invariant violation: "definition.definition"');}
           validateLayoutRec(containingDefinitions, definition.definition);
           containingDefinitions.pop();
         }
         break;
       default:
-        throw new Error(JSON.stringify(type));
-    }
+        throw new Error(JSON.stringify(type));}
+
   }
 
-  function validateReturnTypes(): void {
+  function validateReturnTypes() {
     Object.keys(definitions).forEach(defName => {
       const definition = definitions[defName];
       switch (definition.kind) {
@@ -263,14 +263,14 @@ export function validateDefinitions(definitions: Definitions): void {
             contextLocation = method.location;
             validateType(method);
           });
-          break;
-      }
+          break;}
+
     });
   }
 
   // Validates a type which must be a return type.
   // Caller must resolve named types.
-  function validateReturnType(funcType: FunctionType, type: Type): void {
+  function validateReturnType(funcType, type) {
     switch (type.kind) {
       case 'void':
         break;
@@ -282,14 +282,14 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       default:
         throw error(
-          'The return type of a remote function must be of type Void, Promise, or Observable' +
-            `(got ${type.kind})`,
-        );
-    }
+        'The return type of a remote function must be of type Void, Promise, or Observable' +
+        `(got ${type.kind})`);}
+
+
   }
 
   // Aliases may be return types, or non-return types.
-  function validateAliasType(type: Type): void {
+  function validateAliasType(type) {
     switch (type.kind) {
       case 'void':
         break;
@@ -304,38 +304,38 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       default:
         validateType(type);
-        break;
-    }
+        break;}
+
   }
 
-  function isLiteralType(type: Type): boolean {
+  function isLiteralType(type) {
     switch (type.kind) {
       case 'string-literal':
       case 'number-literal':
       case 'boolean-literal':
         return true;
       default:
-        return false;
-    }
+        return false;}
+
   }
 
-  function validateIntersectionType(intersectionType: IntersectionType): void {
+  function validateIntersectionType(intersectionType) {
     const fields = flattenIntersection(intersectionType);
     const fieldNames = new Set();
     for (const field of fields) {
       if (fieldNames.has(field.name)) {
         // TODO allow duplicate field names if they have the same type.
         throw error(
-          `Duplicate field name '${
-            field.name
-          }' in intersection types are not supported.`,
-        );
+        `Duplicate field name '${
+        field.name
+        }' in intersection types are not supported.`);
+
       }
       fieldNames.add(field.name);
     }
   }
 
-  function validateUnionType(type: UnionType): void {
+  function validateUnionType(type) {
     const alternates = flattenUnionAlternates(type.types);
 
     if (isLiteralType(alternates[0])) {
@@ -344,43 +344,43 @@ export function validateDefinitions(definitions: Definitions): void {
       validateObjectUnionType(type, alternates);
     } else {
       throw error(
-        'Union alternates must be either be typed object or literal types. ' +
-          `(got ${alternates[0].kind})`,
-      );
+      'Union alternates must be either be typed object or literal types. ' +
+      `(got ${alternates[0].kind})`);
+
     }
   }
 
   function validateLiteralUnionType(
-    type: UnionType,
-    alternates: Array<Type>,
-  ): void {
+  type,
+  alternates)
+  {
     alternates.reduce((previousAlternates, alternate) => {
       validateType(alternate);
 
       // Ensure a valid alternate
       if (!isLiteralType(alternate)) {
         throw error(
-          'Union alternates may only be literal types. ' +
-            `(got ${alternate.kind})`,
-        );
+        'Union alternates may only be literal types. ' +
+        `(got ${alternate.kind})`);
+
       }
 
       // Ensure no duplicates
-      previousAlternates.forEach(previous => {
-        invariant(
-          previous.kind === 'string-literal' ||
-            previous.kind === 'number-literal' ||
-            previous.kind === 'boolean-literal',
-        );
-        invariant(
-          alternate.kind === 'string-literal' ||
-            alternate.kind === 'number-literal' ||
-            alternate.kind === 'boolean-literal',
-        );
+      previousAlternates.forEach(previous => {if (!(
+
+        previous.kind === 'string-literal' ||
+        previous.kind === 'number-literal' ||
+        previous.kind === 'boolean-literal')) {throw new Error('Invariant violation: "previous.kind === \'string-literal\' ||\\n            previous.kind === \'number-literal\' ||\\n            previous.kind === \'boolean-literal\'"');}if (!(
+
+
+        alternate.kind === 'string-literal' ||
+        alternate.kind === 'number-literal' ||
+        alternate.kind === 'boolean-literal')) {throw new Error('Invariant violation: "alternate.kind === \'string-literal\' ||\\n            alternate.kind === \'number-literal\' ||\\n            alternate.kind === \'boolean-literal\'"');}
+
         if (previous.value === alternate.value) {
           throw error(
-            `Union alternates may not have the same value (${previous.kind}).`,
-          );
+          `Union alternates may not have the same value (${previous.kind}).`);
+
         }
       });
 
@@ -390,58 +390,58 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function validateObjectUnionType(
-    type: UnionType,
-    alternates: Array<Type>,
-  ): void {
+  type,
+  alternates)
+  {
     alternates.forEach(alternate => {
       validateType(alternate);
 
       // Ensure alternates match
       if (alternate.kind !== 'object') {
         throw error(
-          `Union alternates must be of the same type. (mismatch: ${
-            alternate.kind
-          })`,
-        );
+        `Union alternates must be of the same type. (mismatch: ${
+        alternate.kind
+        })`);
+
       }
     });
 
     type.discriminantField = findObjectUnionDiscriminant(
-      type,
-      (alternates: Array<any>),
-    );
+    type,
+    alternates);
+
   }
 
   function findObjectUnionDiscriminant(
-    type: UnionType,
-    alternates: Array<ObjectType>,
-  ): string {
+  type,
+  alternates)
+  {
     // Get set of fields which are literal types in al alternates.
-    invariant(alternates.length > 0);
+    if (!(alternates.length > 0)) {throw new Error('Invariant violation: "alternates.length > 0"');}
     // $FlowFixMe
-    const possibleFields: Set<string> = alternates.reduce(
-      (possibilities: ?Set<string>, alternate: ObjectType) => {
-        const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(
-          alternate,
-        );
-        if (alternatePossibilities.size === 0) {
-          throw error(
-            'Object union alternative has no possible discriminant fields.',
-          );
-        }
-        // Use null to represent the set containing everything.
-        if (possibilities == null) {
-          return alternatePossibilities;
-        } else {
-          return setIntersect(alternatePossibilities, possibilities);
-        }
-      },
-      null,
-    );
+    const possibleFields = alternates.reduce(
+    (possibilities, alternate) => {
+      const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(
+      alternate);
+
+      if (alternatePossibilities.size === 0) {
+        throw error(
+        'Object union alternative has no possible discriminant fields.');
+
+      }
+      // Use null to represent the set containing everything.
+      if (possibilities == null) {
+        return alternatePossibilities;
+      } else {
+        return (0, (_collection || _load_collection()).setIntersect)(alternatePossibilities, possibilities);
+      }
+    },
+    null);
+
 
     const validFields = Array.from(possibleFields).filter(fieldName =>
-      isValidDiscriminantField(alternates, fieldName),
-    );
+    isValidDiscriminantField(alternates, fieldName));
+
     if (validFields.length > 0) {
       // If there are multiple valid discriminant fields, we just pick the first.
       return validFields[0];
@@ -452,15 +452,15 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function isValidDiscriminantField(
-    alternates: Array<ObjectType>,
-    candidateField: string,
-  ): boolean {
+  alternates,
+  candidateField)
+  {
     // $FlowFixMe
-    const fieldTypes: Array<LiteralType> = alternates.map(alternate =>
-      resolvePossiblyNamedType(
-        getObjectFieldByName(alternate, candidateField).type,
-      ),
-    );
+    const fieldTypes = alternates.map(alternate =>
+    resolvePossiblyNamedType(
+    getObjectFieldByName(alternate, candidateField).type));
+
+
 
     // Fields in all alternates must have same type.
     if (!fieldTypes.every(fieldType => fieldType.kind === fieldTypes[0].kind)) {
@@ -471,31 +471,31 @@ export function validateDefinitions(definitions: Definitions): void {
     // All alternates must be unique.
     return (
       new Set(fieldTypes.map(fieldType => fieldType.value)).size ===
-      alternates.length
-    );
+      alternates.length);
+
   }
 
   function getObjectFieldByName(
-    type: ObjectType,
-    fieldName: string,
-  ): ObjectField {
-    const result = type.fields.find(field => field.name === fieldName);
-    invariant(result != null);
+  type,
+  fieldName)
+  {
+    const result = type.fields.find(field => field.name === fieldName);if (!(
+    result != null)) {throw new Error('Invariant violation: "result != null"');}
     return result;
   }
 
   function possibleDiscriminantFieldsOfUnionAlternate(
-    alternate: ObjectType,
-  ): Set<string> {
+  alternate)
+  {
     return new Set(
-      alternate.fields
-        .filter(field => isLiteralType(resolvePossiblyNamedType(field.type)))
-        .map(field => field.name),
-    );
+    alternate.fields.
+    filter(field => isLiteralType(resolvePossiblyNamedType(field.type))).
+    map(field => field.name));
+
   }
 
   // Validates a type which is not directly a return type.
-  function validateType(type: Type): void {
+  function validateType(type) {
     switch (type.kind) {
       case 'any':
       case 'mixed':
@@ -510,8 +510,8 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'promise':
       case 'observable':
         throw error(
-          'Promise and Observable types may only be used as return types',
-        );
+        'Promise and Observable types may only be used as return types');
+
       case 'array':
         validateType(type.type);
         break;
@@ -552,27 +552,27 @@ export function validateDefinitions(definitions: Definitions): void {
           case 'promise':
           case 'observable':
             throw error(
-              'Promise, void and Observable types may only be used as return types',
-            );
-        }
+            'Promise, void and Observable types may only be used as return types');}
+
+
         break;
       default:
-        throw new Error(JSON.stringify(type));
-    }
+        throw new Error(JSON.stringify(type));}
+
   }
 
   // Replaces all uses of type aliases in return types with their definition
   // so that clients need not be aware of aliases.
   // TODO: Should replace all aliases, however that will require rewriting marsalling.
-  function cannonicalize(): void {
+  function cannonicalize() {
     visitAllTypes(cannonicalizeType);
   }
 
-  function cannonicalizeTypeArray(types: Array<Type>): void {
+  function cannonicalizeTypeArray(types) {
     types.forEach(cannonicalizeType);
   }
 
-  function cannonicalizeType(type: Type): void {
+  function cannonicalizeType(type) {
     switch (type.kind) {
       case 'any':
       case 'mixed':
@@ -630,21 +630,21 @@ export function validateDefinitions(definitions: Definitions): void {
         // Note that this does not recurse, so the algorithm will always terminate.
         break;
       default:
-        throw new Error(JSON.stringify(type));
-    }
+        throw new Error(JSON.stringify(type));}
+
   }
 
-  function canonicalizeIntersection(intersectionType: IntersectionType): void {
+  function canonicalizeIntersection(intersectionType) {
     const fields = flattenIntersection(intersectionType);
     intersectionType.flattened = {
       kind: 'object',
-      fields,
-    };
+      fields };
+
   }
 
   function flattenIntersection(
-    intersectionType: IntersectionType,
-  ): Array<ObjectField> {
+  intersectionType)
+  {
     const fields = [];
     for (const type of intersectionType.types) {
       const resolvedType = resolvePossiblyNamedType(type);
@@ -654,16 +654,16 @@ export function validateDefinitions(definitions: Definitions): void {
         fields.push(...flattenIntersection(resolvedType));
       } else {
         throw error(
-          'Types in intersections must be object or intersection types ' +
-            `(got ${resolvedType.kind})`,
-        );
+        'Types in intersections must be object or intersection types ' +
+        `(got ${resolvedType.kind})`);
+
       }
     }
     return fields;
   }
 
   // Will return a named type if and only if the alias resolves to a builtin type, or an interface.
-  function resolvePossiblyNamedType(type: Type): Type {
+  function resolvePossiblyNamedType(type) {
     if (type.kind === 'named') {
       return resolveNamedType(type);
     } else {
@@ -671,23 +671,23 @@ export function validateDefinitions(definitions: Definitions): void {
     }
   }
 
-  function flattenUnionAlternates(types: Array<Type>): Array<Type> {
+  function flattenUnionAlternates(types) {
     return [].concat(
-      ...types.map(alternate => {
-        const resolvedAlternate = resolvePossiblyNamedType(alternate);
-        return resolvedAlternate.kind === 'union'
-          ? flattenUnionAlternates(resolvedAlternate.types)
-          : resolvedAlternate;
-      }),
-    );
+    ...types.map(alternate => {
+      const resolvedAlternate = resolvePossiblyNamedType(alternate);
+      return resolvedAlternate.kind === 'union' ?
+      flattenUnionAlternates(resolvedAlternate.types) :
+      resolvedAlternate;
+    }));
+
   }
 
   // Returns the definition of a named type. If the type resolves to an alias it returns the
   // alias's definition.
   // Will return a named type if and only if the alias resolves to a builtin type, or an interface.
-  function resolveNamedType(namedType: NamedType): Type {
-    const def = namedTypes.get(namedType.name);
-    invariant(def != null);
+  function resolveNamedType(namedType) {
+    const def = namedTypes.get(namedType.name);if (!(
+    def != null)) {throw new Error('Invariant violation: "def != null"');}
     switch (def.kind) {
       case 'alias':
         const type = def.definition;
@@ -701,11 +701,11 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'interface':
         return namedType;
       default:
-        throw new Error('Unexpected definition kind');
-    }
+        throw new Error('Unexpected definition kind');}
+
   }
 
-  function visitAllTypes(operation: (type: Type) => void): void {
+  function visitAllTypes(operation) {
     Object.keys(definitions).forEach(name => {
       const definition = definitions[name];
       switch (definition.kind) {
@@ -736,38 +736,38 @@ export function validateDefinitions(definitions: Definitions): void {
             contextLocation = method.location;
             operation(method);
           });
-          break;
-      }
+          break;}
+
     });
   }
 
-  function error(message: string) {
-    invariant(contextLocation != null, 'Missing context');
+  function error(message) {if (!(
+    contextLocation != null)) {throw new Error('Missing context');}
     return errorLocations([contextLocation], message);
   }
 
-  function errorLocations(locations: Array<Location>, message: string): Error {
-    let fullMessage = `${locationToString(locations[0])}:${message}`;
+  function errorLocations(locations, message) {
+    let fullMessage = `${(0, (_location || _load_location()).locationToString)(locations[0])}:${message}`;
     fullMessage = fullMessage.concat(
-      ...locations
-        .slice(1)
-        .map(location => `\n${locationToString(location)}: Related location`),
-    );
+    ...locations.
+    slice(1).
+    map(location => `\n${(0, (_location || _load_location()).locationToString)(location)}: Related location`));
+
     return new Error(fullMessage);
   }
 
-  function errorDefinitions(defs: Array<Definition>, message: string): Error {
-    let fullMessage = `${locationToString(defs[0].location)}:${message}`;
+  function errorDefinitions(defs, message) {
+    let fullMessage = `${(0, (_location || _load_location()).locationToString)(defs[0].location)}:${message}`;
     fullMessage = fullMessage.concat(
-      ...defs
-        .slice(1)
-        .map(
-          definition =>
-            `\n${locationToString(definition.location)}: Related definition ${
-              definition.name
-            }`,
-        ),
-    );
+    ...defs.
+    slice(1).
+    map(
+    definition =>
+    `\n${(0, (_location || _load_location()).locationToString)(definition.location)}: Related definition ${
+    definition.name
+    }`));
+
+
     return new Error(fullMessage);
   }
 }

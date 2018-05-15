@@ -1,43 +1,43 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));let createOCamlLanguageService = (() => {var _ref = (0, _asyncToGenerator.default)(
 
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {parseLogLevel} from '../../nuclide-logging/lib/rpc-types';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 
-async function createOCamlLanguageService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const service = getVSCodeLanguageServiceByConnection(connection);
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
 
-  const logLevel = parseLogLevel(
-    featureConfig.get('nuclide-ocaml.logLevel'),
-    'DEBUG',
-  );
 
-  const lspService = await service.createMultiLspLanguageService(
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function* (
+  connection)
+  {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getVSCodeLanguageServiceByConnection)(connection);
+    const [fileNotifier, host] = yield Promise.all([
+    (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection),
+    (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
+
+
+    const logLevel = (0, (_rpcTypes || _load_rpcTypes()).parseLogLevel)(
+    (_featureConfig || _load_featureConfig()).default.get('nuclide-ocaml.logLevel'),
+    'DEBUG');
+
+
+    const lspService = yield service.createMultiLspLanguageService(
     'ocaml',
     'ocaml-language-server',
     ['--stdio'],
@@ -59,47 +59,47 @@ async function createOCamlLanguageService(
           // This doesn't actually change the encoding (Nuclide/Atom can handle
           // unicode just fine), but instead just disables some single-character
           // substitutions that make displayed code lenses not valid OCaml.
-          unicode: false,
-        },
-        format: {
-          width: 80,
-        },
-      },
-    },
-  );
-  return lspService || new NullLanguageService();
-}
+          unicode: false },
 
-export function createLanguageService(): AtomLanguageService<LanguageService> {
-  const atomConfig: AtomLanguageServiceConfig = {
-    name: 'OCaml',
-    grammars: ['source.ocaml', 'source.reason'],
-    outline: {
-      version: '0.1.0',
-      priority: 1,
-      analyticsEventName: 'ocaml.outline',
-    },
+        format: {
+          width: 80 } } });
+
+
+
+
+    return lspService || new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).NullLanguageService();
+  });return function createOCamlLanguageService(_x) {return _ref.apply(this, arguments);};})(); /**
+                                                                                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                 * All rights reserved.
+                                                                                                 *
+                                                                                                 * This source code is licensed under the license found in the LICENSE file in
+                                                                                                 * the root directory of this source tree.
+                                                                                                 *
+                                                                                                 *  strict-local
+                                                                                                 * @format
+                                                                                                 */exports.createLanguageService = createLanguageService;var _featureConfig;function _load_featureConfig() {return _featureConfig = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/feature-config'));}var _nuclideLanguageService;function _load_nuclideLanguageService() {return _nuclideLanguageService = require('../../nuclide-language-service');}var _nuclideLanguageServiceRpc;function _load_nuclideLanguageServiceRpc() {return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');}var _rpcTypes;function _load_rpcTypes() {return _rpcTypes = require('../../nuclide-logging/lib/rpc-types');}var _nuclideOpenFiles;function _load_nuclideOpenFiles() {return _nuclideOpenFiles = require('../../nuclide-open-files');}var _nuclideRemoteConnection;function _load_nuclideRemoteConnection() {return _nuclideRemoteConnection = require('../../nuclide-remote-connection');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function createLanguageService() {const atomConfig = { name: 'OCaml', grammars: ['source.ocaml', 'source.reason'], outline: { version: '0.1.0', priority: 1, analyticsEventName: 'ocaml.outline' },
+
     definition: {
       version: '0.1.0',
       priority: 20,
-      definitionEventName: 'ocaml.getDefinition',
-    },
+      definitionEventName: 'ocaml.getDefinition' },
+
     typeHint: {
       version: '0.0.0',
       priority: 1,
-      analyticsEventName: 'ocaml.typeHint',
-    },
+      analyticsEventName: 'ocaml.typeHint' },
+
     codeFormat: {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'ocaml.formatCode',
       canFormatRanges: true,
-      canFormatAtPosition: false,
-    },
+      canFormatAtPosition: false },
+
     findReferences: {
       version: '0.1.0',
-      analyticsEventName: 'ocaml.findReferences',
-    },
+      analyticsEventName: 'ocaml.findReferences' },
+
     autocomplete: {
       inclusionPriority: 1,
       // OCaml completions are more relevant than snippets.
@@ -108,16 +108,16 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       excludeLowerPriority: false,
       analytics: {
         eventName: 'nuclide-ocaml',
-        shouldLogInsertedSuggestion: false,
-      },
+        shouldLogInsertedSuggestion: false },
+
       autocompleteCacherConfig: null,
-      supportsResolve: true,
-    },
+      supportsResolve: true },
+
     diagnostics: {
       version: '0.2.0',
-      analyticsEventName: 'ocaml.observeDiagnostics',
-    },
-  };
+      analyticsEventName: 'ocaml.observeDiagnostics' } };
 
-  return new AtomLanguageService(createOCamlLanguageService, atomConfig);
+
+
+  return new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(createOCamlLanguageService, atomConfig);
 }

@@ -1,81 +1,81 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import * as child_process from 'child_process';
 
-import invariant from 'assert';
-import {logVerbose} from './MIDebugSession';
 
-import MILineParser from './MILineParser';
-import {
-  MIAsyncRecord,
-  MIRecord,
-  MIResultRecord,
-  MIStreamRecord,
-} from './MIRecord';
 
-export type StreamTarget = 'console' | 'target' | 'log';
 
-import EventEmitter from 'events';
 
-type PendingCommand = {
-  command: string,
-  resolve: (result: MIResultRecord) => void,
-};
 
-export default class MIProxy extends EventEmitter {
-  _miServer: ?child_process$ChildProcess;
-  _parser: MILineParser;
-  _lastPartialString: string;
-  _nextToken: number;
-  _pendingCommands: Map<number, PendingCommand>;
+
+
+
+
+var _child_process = _interopRequireWildcard(require('child_process'));var _MIDebugSession;
+
+
+function _load_MIDebugSession() {return _MIDebugSession = require('./MIDebugSession');}var _MILineParser;
+
+function _load_MILineParser() {return _MILineParser = _interopRequireDefault(require('./MILineParser'));}var _MIRecord;
+function _load_MIRecord() {return _MIRecord = require('./MIRecord');}
+
+
+
+
+
+
+
+
+var _events = _interopRequireDefault(require('events'));function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+
+
+
+
+
+class MIProxy extends _events.default {
+
+
+
+
+
 
   constructor() {
     super();
 
-    this._parser = new MILineParser();
+    this._parser = new (_MILineParser || _load_MILineParser()).default();
     this._nextToken = 1;
     this._lastPartialString = '';
     this._pendingCommands = new Map();
   }
 
-  isConnected(): boolean {
+  isConnected() {
     return this._miServer != null;
   }
 
   start(
-    executable: string,
-    args: Array<string>,
-    env: ?{[string]: string},
-  ): void {
+  executable,
+  args,
+  env)
+  {
     if (this._miServer != null) {
       this.stop();
     }
 
     let options = {};
     if (env != null) {
-      options = {
-        ...options,
-        env: {
-          ...process.env,
-          ...env,
-        },
-      };
+      options = Object.assign({},
+      options, {
+        env: Object.assign({},
+        process.env,
+        env) });
+
+
     }
 
-    const proc = child_process.spawn(executable, args, options);
+    const proc = _child_process.spawn(executable, args, options);
     this._miServer = proc;
 
-    proc.stdout.on('data', (buffer: Buffer) => this._onData(buffer));
+    proc.stdout.on('data', buffer => this._onData(buffer));
     proc.on('error', err => {
       this.emit('error', err);
     });
@@ -84,7 +84,7 @@ export default class MIProxy extends EventEmitter {
     });
   }
 
-  pause(): void {
+  pause() {
     const server = this._miServer;
     if (server == null) {
       return;
@@ -93,69 +93,69 @@ export default class MIProxy extends EventEmitter {
     server.kill('SIGINT');
   }
 
-  stop(): void {
+  stop() {
     if (this._miServer != null) {
       this._miServer.disconnect();
       this._miServer = null;
     }
   }
 
-  async sendCommand(command: string): Promise<MIResultRecord> {
-    return new Promise((resolve, reject) => {
-      const dbg = this._miServer;
-      if (dbg == null) {
-        reject(
-          new Error('Attempt to send a command when no MI server connected'),
-        );
-        return;
-      }
+  sendCommand(command) {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      return new Promise(function (resolve, reject) {
+        const dbg = _this._miServer;
+        if (dbg == null) {
+          reject(
+          new Error('Attempt to send a command when no MI server connected'));
 
-      const token = this._nextToken++;
-      const pendingCommand: PendingCommand = {
-        command,
-        token,
-        resolve: (record: MIResultRecord) => {},
-      };
-      pendingCommand.resolve = resolve;
-      this._pendingCommands.set(token, pendingCommand);
-      const tokenizedCommand = `${token}-${command}\n`;
-      logVerbose(`MIProxy sending command '${tokenizedCommand}' to server`);
-      dbg.stdin.write(tokenizedCommand);
-    });
+          return;
+        }
+
+        const token = _this._nextToken++;
+        const pendingCommand = {
+          command,
+          token,
+          resolve: function (record) {} };
+
+        pendingCommand.resolve = resolve;
+        _this._pendingCommands.set(token, pendingCommand);
+        const tokenizedCommand = `${token}-${command}\n`;
+        (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`MIProxy sending command '${tokenizedCommand}' to server`);
+        dbg.stdin.write(tokenizedCommand);
+      });})();
   }
 
-  _onData(buffer: Buffer): void {
+  _onData(buffer) {
     // NB data coming back from gdb will be ASCII, and data from the target
-    // does not come over this channel.
-    const str: string = this._lastPartialString + buffer.toString('ASCII');
 
-    const tailSplit: number = str.lastIndexOf('\n');
+    const str = this._lastPartialString + buffer.toString('ASCII');
+
+    const tailSplit = str.lastIndexOf('\n');
     if (tailSplit === -1) {
       this._lastPartialString = str;
       return;
     }
 
     this._lastPartialString = str.substr(tailSplit + 1);
-    str
-      .substr(0, tailSplit)
-      .split('\n')
-      .forEach((line: string) => this._onLine(line.trim()));
+    str.
+    substr(0, tailSplit).
+    split('\n').
+    forEach(line => this._onLine(line.trim()));
   }
 
-  _onLine(line: string): void {
+  _onLine(line) {
     if (line === '') {
       return;
     }
 
-    logVerbose(`proxy received line ${line}`);
+    (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`proxy received line ${line}`);
     const parsed = this._parser.parseMILine(line);
     this._emitRecord(parsed, line);
   }
 
-  _emitRecord(record: MIRecord, line: string): void {
-    if (record instanceof MIResultRecord) {
-      const token = record.token;
-      invariant(token != null, 'token should always exist in a result record');
+  _emitRecord(record, line) {
+    if (record instanceof (_MIRecord || _load_MIRecord()).MIResultRecord) {
+      const token = record.token;if (!(
+      token != null)) {throw new Error('token should always exist in a result record');}
       const pending = this._pendingCommands.get(token);
       if (pending != null) {
         pending.resolve(record);
@@ -163,20 +163,20 @@ export default class MIProxy extends EventEmitter {
         return;
       }
       throw new Error(
-        `Received response with token ${token} which matches no pending command`,
-      );
+      `Received response with token ${token} which matches no pending command`);
+
     }
 
-    if (record instanceof MIAsyncRecord) {
+    if (record instanceof (_MIRecord || _load_MIRecord()).MIAsyncRecord) {
       this.emit('async', record);
-    } else if (record instanceof MIStreamRecord) {
+    } else if (record instanceof (_MIRecord || _load_MIRecord()).MIStreamRecord) {
       if (!this._hackForAttachPermissions(record)) {
         this.emit('stream', record);
       }
     }
   }
 
-  _hackForAttachPermissions(record: MIStreamRecord): boolean {
+  _hackForAttachPermissions(record) {
     if (record.streamTarget !== 'log') {
       return false;
     }
@@ -186,8 +186,8 @@ export default class MIProxy extends EventEmitter {
     }
 
     const attach = [...this._pendingCommands].find(
-      _ => _[1].command.match(/target-attach/) != null,
-    );
+    _ => _[1].command.match(/target-attach/) != null);
+
 
     if (attach == null) {
       return false;
@@ -203,14 +203,23 @@ export default class MIProxy extends EventEmitter {
     // MI failure in this case; it prints a message to the log saying how
     // to fix the problem but the command never actually completes. Hence
     // this hack...
-    const failure = new MIResultRecord(
-      token,
-      {msg: record.text.replace('\n', ' ')},
-      'error',
-    );
+    const failure = new (_MIRecord || _load_MIRecord()).MIResultRecord(
+    token,
+    { msg: record.text.replace('\n', ' ') },
+    'error');
+
     command.resolve(failure);
     this._pendingCommands.delete(token);
 
     return true;
-  }
-}
+  }}exports.default = MIProxy; /**
+                                * Copyright (c) 2017-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the BSD-style license found in the
+                                * LICENSE file in the root directory of this source tree. An additional grant
+                                * of patent rights can be found in the PATENTS file in the same directory.
+                                *
+                                *  strict-local
+                                * @format
+                                */

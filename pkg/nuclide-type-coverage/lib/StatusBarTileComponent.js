@@ -1,100 +1,100 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.StatusBarTileComponent = undefined;var _UnstyledButton;
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import UnstyledButton from 'nuclide-commons-ui/UnstyledButton';
-import * as React from 'react';
 
-import {Icon} from 'nuclide-commons-ui/Icon';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import classnames from 'classnames';
 
-type Props = {
-  result: ?{
-    percentage: number,
-    providerName: string,
-    icon?: IconName,
-  },
-  pending: boolean,
-  // true iff we are currently displaying uncovered regions in the editor.
-  isActive: boolean,
-  onClick: Function,
-};
 
-const REALLY_BAD_THRESHOLD = 50;
-const NOT_GREAT_THRESHOLD = 80;
-const COLOR_DISPLAY_SETTING = 'nuclide-type-coverage.colorizeStatusBar';
 
-export class StatusBarTileComponent extends React.Component<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
 
-  render(): React.Node {
+
+
+
+
+
+function _load_UnstyledButton() {return _UnstyledButton = _interopRequireDefault(require('../../../modules/nuclide-commons-ui/UnstyledButton'));}
+var _react = _interopRequireWildcard(require('react'));var _Icon;
+
+function _load_Icon() {return _Icon = require('../../../modules/nuclide-commons-ui/Icon');}var _addTooltip;
+function _load_addTooltip() {return _addTooltip = _interopRequireDefault(require('../../../modules/nuclide-commons-ui/addTooltip'));}var _featureConfig;
+function _load_featureConfig() {return _featureConfig = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/feature-config'));}var _classnames;
+function _load_classnames() {return _classnames = _interopRequireDefault(require('classnames'));}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
+
+
+
+
+
+
+
+
+
+
+
+
+
+const REALLY_BAD_THRESHOLD = 50; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  * @format
+                                  */const NOT_GREAT_THRESHOLD = 80;const COLOR_DISPLAY_SETTING = 'nuclide-type-coverage.colorizeStatusBar';class StatusBarTileComponent extends _react.Component {constructor(props) {super(props);}render() {
     const result = this.props.result;
     if (result != null) {
       const percentage = result.percentage;
-      let colorClasses: {[classname: string]: boolean} = {};
-      if (featureConfig.get(COLOR_DISPLAY_SETTING)) {
+      let colorClasses = {};
+      if ((_featureConfig || _load_featureConfig()).default.get(COLOR_DISPLAY_SETTING)) {
         colorClasses = {
           'text-error': percentage <= REALLY_BAD_THRESHOLD,
           'text-warning':
-            percentage > REALLY_BAD_THRESHOLD &&
-            percentage <= NOT_GREAT_THRESHOLD,
+          percentage > REALLY_BAD_THRESHOLD &&
+          percentage <= NOT_GREAT_THRESHOLD,
           // Nothing applied if percentage > NOT_GREAT_THRESHOLD,
-          'nuclide-type-coverage-status-bar-active': this.props.isActive,
-        };
+          'nuclide-type-coverage-status-bar-active': this.props.isActive };
+
       }
-      const classes: string = classnames({
+      const classes = (0, (_classnames || _load_classnames()).default)(Object.assign({
         'inline-block': true,
         'nuclide-type-coverage-status-bar': true,
         'nuclide-type-coverage-status-bar-pending': this.props.pending,
-        'nuclide-type-coverage-status-bar-ready': !this.props.pending,
-        ...colorClasses,
-      });
-      const formattedPercentage: string = `${Math.floor(percentage)}%`;
+        'nuclide-type-coverage-status-bar-ready': !this.props.pending },
+      colorClasses));
+
+      const formattedPercentage = `${Math.floor(percentage)}%`;
       const tooltipString = getTooltipString(
-        formattedPercentage,
-        result.providerName,
-      );
+      formattedPercentage,
+      result.providerName);
+
       return (
-        <UnstyledButton
-          onClick={this.props.onClick}
-          className={classes}
-          // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-          ref={addTooltip({
-            title: tooltipString,
-            delay: 0,
-            placement: 'top',
-          })}>
-          {result.icon == null ? null : <Icon icon={result.icon} />}
-          <span className="nuclide-type-coverage-status-bar-percentage">
-            {formattedPercentage}
-          </span>
-        </UnstyledButton>
-      );
+        _react.createElement((_UnstyledButton || _load_UnstyledButton()).default, {
+            onClick: this.props.onClick,
+            className: classes
+            // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+            , ref: (0, (_addTooltip || _load_addTooltip()).default)({
+              title: tooltipString,
+              delay: 0,
+              placement: 'top' }) },
+
+          result.icon == null ? null : _react.createElement((_Icon || _load_Icon()).Icon, { icon: result.icon }),
+          _react.createElement('span', { className: 'nuclide-type-coverage-status-bar-percentage' },
+            formattedPercentage)));
+
+
+
     } else {
       return null;
     }
-  }
-}
+  }}exports.StatusBarTileComponent = StatusBarTileComponent;
+
 
 function getTooltipString(
-  formattedPercentage: string,
-  providerName: string,
-): string {
+formattedPercentage,
+providerName)
+{
   return (
     `This file is ${formattedPercentage} covered by ${providerName}.<br/>` +
-    'Click to toggle display of uncovered areas.'
-  );
+    'Click to toggle display of uncovered areas.');
+
 }

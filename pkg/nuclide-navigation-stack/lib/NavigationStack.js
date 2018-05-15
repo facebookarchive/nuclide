@@ -1,23 +1,28 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.NavigationStack = undefined;
 
-import type {EditorLocation, Location} from './Location';
-import type {Observable} from 'rxjs';
 
-import invariant from 'assert';
-import {Subject} from 'rxjs';
 
-const MAX_STACK_DEPTH = 100;
 
-// Provides a navigation stack abstraction, useful for going forward/backwards
+
+
+
+
+
+
+
+
+
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js'); /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              *  strict-local
+                                                              * @format
+                                                              */const MAX_STACK_DEPTH = 100; // Provides a navigation stack abstraction, useful for going forward/backwards
 // while browsing code.
 //
 // Stack entries include the file (as uri for closed files and as
@@ -42,35 +47,30 @@ const MAX_STACK_DEPTH = 100;
 //
 // filter can be used to remove entries from the stack. This is done when
 // closing unnamed editors and when closing remote directories.
-export class NavigationStack {
-  _elements: Array<Location>;
-  _index: number;
-  _changes: Subject<NavigationStack>;
-
-  constructor() {
+class NavigationStack {constructor() {
     this._elements = [];
     this._index = -1;
-    this._changes = new Subject();
+    this._changes = new _rxjsBundlesRxMinJs.Subject();
   }
 
-  observeChanges(): Observable<NavigationStack> {
+  observeChanges() {
     return this._changes;
   }
 
-  isEmpty(): boolean {
+  isEmpty() {
     return this._elements.length === 0;
   }
 
-  hasCurrent(): boolean {
+  hasCurrent() {
     return !this.isEmpty();
   }
 
-  getCurrent(): Location {
-    invariant(this._index >= 0 && this._index < this._elements.length);
+  getCurrent() {if (!(
+    this._index >= 0 && this._index < this._elements.length)) {throw new Error('Invariant violation: "this._index >= 0 && this._index < this._elements.length"');}
     return this._elements[this._index];
   }
 
-  getCurrentEditor(): ?atom$TextEditor {
+  getCurrentEditor() {
     if (!this.hasCurrent()) {
       return null;
     }
@@ -79,14 +79,14 @@ export class NavigationStack {
   }
 
   // Removes any elements below current, then pushes newTop onto the stack.
-  push(newTop: EditorLocation): void {
+  push(newTop) {
     this._elements.splice(this._index + 1);
     this._elements.push(newTop);
 
     if (this._elements.length > MAX_STACK_DEPTH) {
       this._elements.splice(0, 1);
-    }
-    invariant(this._elements.length <= MAX_STACK_DEPTH);
+    }if (!(
+    this._elements.length <= MAX_STACK_DEPTH)) {throw new Error('Invariant violation: "this._elements.length <= MAX_STACK_DEPTH"');}
 
     this._index = this._elements.length - 1;
     this._hasChanged();
@@ -94,7 +94,7 @@ export class NavigationStack {
 
   // Updates the current location if the editors match.
   // If the editors don't match then push a new top.
-  attemptUpdate(newTop: EditorLocation): void {
+  attemptUpdate(newTop) {
     if (this.getCurrentEditor() === newTop.editor) {
       const current = this.getCurrent();
       current.bufferPosition = newTop.bufferPosition;
@@ -103,17 +103,17 @@ export class NavigationStack {
     }
   }
 
-  hasNext(): boolean {
+  hasNext() {
     return this._index + 1 < this._elements.length;
   }
 
-  hasPrevious(): boolean {
+  hasPrevious() {
     return this._index > 0;
   }
 
   // Moves current to the previous entry.
   // Returns null if there is no previous entry.
-  previous(): ?Location {
+  previous() {
     if (this.hasPrevious()) {
       this._index -= 1;
       const result = this.getCurrent();
@@ -126,7 +126,7 @@ export class NavigationStack {
 
   // Moves to the next entry.
   // Returns null if already at the last entry.
-  next(): ?Location {
+  next() {
     if (!this.hasNext()) {
       return null;
     }
@@ -139,7 +139,7 @@ export class NavigationStack {
 
   // When opening a new editor, convert all Uri locations on the stack to editor
   // locations.
-  editorOpened(editor: atom$TextEditor): void {
+  editorOpened(editor) {
     const uri = editor.getPath();
     if (uri == null) {
       return;
@@ -150,34 +150,34 @@ export class NavigationStack {
         this._elements[index] = {
           type: 'editor',
           editor,
-          bufferPosition: location.bufferPosition,
-        };
+          bufferPosition: location.bufferPosition };
+
       }
     });
   }
 
   // When closing editors, convert all locations for that editor to URI locations.
-  editorClosed(editor: atom$TextEditor): void {
+  editorClosed(editor) {
     const uri = editor.getPath();
     if (uri === '' || uri == null) {
       this.filter(
-        location => location.type !== 'editor' || editor !== location.editor,
-      );
+      location => location.type !== 'editor' || editor !== location.editor);
+
     } else {
       this._elements.forEach((location, index) => {
         if (location.type === 'editor' && editor === location.editor) {
           this._elements[index] = {
             type: 'uri',
             uri,
-            bufferPosition: location.bufferPosition,
-          };
+            bufferPosition: location.bufferPosition };
+
         }
       });
     }
   }
 
   // Removes all entries which do not match the predicate.
-  filter(predicate: (location: Location) => boolean): void {
+  filter(predicate) {
     const originalSize = this._elements.length;
     let newIndex = this._index;
     this._elements = this._elements.filter((location, index) => {
@@ -193,16 +193,15 @@ export class NavigationStack {
     }
   }
 
-  _hasChanged(): void {
+  _hasChanged() {
     this._changes.next(this);
   }
 
   // For testing ...
-  getLocations(): Array<Location> {
+  getLocations() {
     return this._elements;
   }
 
-  getIndex(): number {
+  getIndex() {
     return this._index;
-  }
-}
+  }}exports.NavigationStack = NavigationStack;

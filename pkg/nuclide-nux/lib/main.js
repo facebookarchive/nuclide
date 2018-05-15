@@ -1,112 +1,116 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import invariant from 'assert';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {NuxManager} from './NuxManager';
-import {NuxStore} from './NuxStore';
 
-import type {NuxTourModel} from './NuxModel';
 
-export type RegisterNux = (nux: NuxTourModel) => IDisposable;
-export type TriggerNux = (id: number) => void;
-export type SyncCompletedNux = (id: number) => void;
 
-class Activation {
-  _disposables: UniversalDisposable;
-  _nuxStore: NuxStore;
-  _nuxManager: NuxManager;
-  _syncCompletedNuxService: SyncCompletedNux;
 
-  constructor(): void {
-    this._disposables = new UniversalDisposable();
-    this._nuxStore = new NuxStore();
-    this._nuxManager = new NuxManager(
-      this._nuxStore,
-      this._syncCompletedNux.bind(this),
-    );
 
-    this._disposables.add(this._nuxStore);
-    this._disposables.add(this._nuxManager);
-  }
 
-  dispose(): void {
-    this._serializeAndPersist();
-    this._disposables.dispose();
-  }
 
-  _serializeAndPersist(): void {
-    this._nuxStore.serialize();
-  }
 
-  addNewNux(nux: NuxTourModel): IDisposable {
-    return this._nuxManager.addNewNux(nux);
-  }
 
-  tryTriggerNux(id: number): void {
-    this._nuxManager.tryTriggerNux(id);
-  }
 
-  setSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
-    this._syncCompletedNuxService = syncCompletedNuxService;
-  }
 
-  _syncCompletedNux(id: number): void {
-    if (this._syncCompletedNuxService == null) {
-      return;
-    }
-    this._syncCompletedNuxService(id);
-  }
-}
 
-let activation: ?Activation = null;
 
-export function activate(): void {
-  if (activation == null) {
-    activation = new Activation();
-  }
-}
 
-export function deactivate(): void {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
 
-export function provideRegisterNuxService(): RegisterNux {
-  return (nux: NuxTourModel): IDisposable => {
-    if (activation == null) {
-      throw new Error('An error occurred when instantiating the NUX package.');
-    }
-    if (nux == null) {
-      throw new Error('Cannot register a "null" NuxTour.');
-    }
-    return activation.addNewNux(nux);
-  };
-}
 
-export function provideTriggerNuxService(): TriggerNux {
-  return (id: number): void => {
-    if (activation == null) {
-      throw new Error('An error occurred when instantiating the NUX package.');
-    }
-    activation.tryTriggerNux(id);
-  };
-}
 
-export function consumeSyncCompletedNuxService(
-  syncCompletedNuxService: SyncCompletedNux,
-): void {
-  invariant(activation != null);
-  activation.setSyncCompletedNuxService(syncCompletedNuxService);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+activate = activate;exports.
+
+
+
+
+
+deactivate = deactivate;exports.
+
+
+
+
+
+
+provideRegisterNuxService = provideRegisterNuxService;exports.
+
+
+
+
+
+
+
+
+
+
+
+provideTriggerNuxService = provideTriggerNuxService;exports.
+
+
+
+
+
+
+
+
+consumeSyncCompletedNuxService = consumeSyncCompletedNuxService;var _UniversalDisposable;function _load_UniversalDisposable() {return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));}var _NuxManager;function _load_NuxManager() {return _NuxManager = require('./NuxManager');}var _NuxStore;function _load_NuxStore() {return _NuxStore = require('./NuxStore');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *  strict-local
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   */class Activation {constructor() {this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();this._nuxStore = new (_NuxStore || _load_NuxStore()).NuxStore();this._nuxManager = new (_NuxManager || _load_NuxManager()).NuxManager(this._nuxStore, this._syncCompletedNux.bind(this));this._disposables.add(this._nuxStore);this._disposables.add(this._nuxManager);}dispose() {this._serializeAndPersist();this._disposables.dispose();}_serializeAndPersist() {this._nuxStore.serialize();}addNewNux(nux) {return this._nuxManager.addNewNux(nux);}tryTriggerNux(id) {this._nuxManager.tryTriggerNux(id);}setSyncCompletedNuxService(syncCompletedNuxService) {this._syncCompletedNuxService = syncCompletedNuxService;}_syncCompletedNux(id) {if (this._syncCompletedNuxService == null) {return;}this._syncCompletedNuxService(id);}}let activation = null;function activate() {if (activation == null) {activation = new Activation();}}function deactivate() {if (activation != null) {activation.dispose();activation = null;}}function provideRegisterNuxService() {return nux => {if (activation == null) {throw new Error('An error occurred when instantiating the NUX package.');}if (nux == null) {throw new Error('Cannot register a "null" NuxTour.');}return activation.addNewNux(nux);};}function provideTriggerNuxService() {return id => {if (activation == null) {throw new Error('An error occurred when instantiating the NUX package.');}activation.tryTriggerNux(id);};}function consumeSyncCompletedNuxService(syncCompletedNuxService) {if (!(activation != null)) {throw new Error('Invariant violation: "activation != null"');}activation.setSyncCompletedNuxService(syncCompletedNuxService);}

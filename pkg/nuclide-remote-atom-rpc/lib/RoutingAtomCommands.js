@@ -1,77 +1,77 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.RoutingAtomCommands = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {
-  AtomFileEvent,
-  AtomNotification,
-  MultiConnectionAtomCommands,
-  ProjectState,
-} from './rpc-types';
-import type {CommandServer} from './CommandServer';
-import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {Observable} from 'rxjs';
-import {timeoutPromise} from 'nuclide-commons/promise';
 
-/**
- * Timeout to use when making a getProjectState() RPC.
- * Note this is less than the server's default timeout of 60s.
- */
-const GET_PROJECT_STATES_TIMEOUT_MS = 10 * 1000;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');var _promise;
+function _load_promise() {return _promise = require('../../../modules/nuclide-commons/promise');}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
 
 /**
- * Implementation of MultiConnectionAtomCommands that routes requests
- * to the appropriate connection from the underlying CommandServer.
- */
-export class RoutingAtomCommands implements MultiConnectionAtomCommands {
-  _server: CommandServer;
+                                                                                                                                                                                                * Timeout to use when making a getProjectState() RPC.
+                                                                                                                                                                                                * Note this is less than the server's default timeout of 60s.
+                                                                                                                                                                                                */ /**
+                                                                                                                                                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                    * All rights reserved.
+                                                                                                                                                                                                    *
+                                                                                                                                                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                    * the root directory of this source tree.
+                                                                                                                                                                                                    *
+                                                                                                                                                                                                    * 
+                                                                                                                                                                                                    * @format
+                                                                                                                                                                                                    */const GET_PROJECT_STATES_TIMEOUT_MS = 10 * 1000; /**
+                                                                                                                                                                                                                                                        * Implementation of MultiConnectionAtomCommands that routes requests
+                                                                                                                                                                                                                                                        * to the appropriate connection from the underlying CommandServer.
+                                                                                                                                                                                                                                                        */class RoutingAtomCommands {constructor(server) {this._server = server;}
 
-  constructor(server: CommandServer) {
-    this._server = server;
-  }
-
-  getConnectionCount(): Promise<number> {
+  getConnectionCount() {
     return Promise.resolve(this._server.getConnectionCount());
   }
 
   openFile(
-    filePath: NuclideUri,
-    line: number,
-    column: number,
-    isWaiting: boolean,
-  ): ConnectableObservable<AtomFileEvent> {
+  filePath,
+  line,
+  column,
+  isWaiting)
+  {
     const commands = this._server.getAtomCommandsByPath(filePath);
     if (commands != null) {
       return commands.openFile(filePath, line, column, isWaiting);
     } else {
-      return Observable.throw(Error('No connected Atom windows')).publish();
+      return _rxjsBundlesRxMinJs.Observable.throw(Error('No connected Atom windows')).publish();
     }
   }
 
   openRemoteFile(
-    uri: string,
-    line: number,
-    column: number,
-    isWaiting: boolean,
-  ): ConnectableObservable<AtomFileEvent> {
+  uri,
+  line,
+  column,
+  isWaiting)
+  {
     const commands = this._server.getAtomCommandsByPath(uri);
     if (commands != null) {
       return commands.openRemoteFile(uri, line, column, isWaiting);
     } else {
-      return Observable.throw(Error('No connected Atom windows')).publish();
+      return _rxjsBundlesRxMinJs.Observable.throw(Error('No connected Atom windows')).publish();
     }
   }
 
-  addProject(projectPath: NuclideUri, newWindow: boolean): Promise<void> {
+  addProject(projectPath, newWindow) {
     const commands = this._server.getAtomCommandsByPath(projectPath);
     if (commands != null) {
       return commands.addProject(projectPath, newWindow);
@@ -80,32 +80,31 @@ export class RoutingAtomCommands implements MultiConnectionAtomCommands {
     }
   }
 
-  async getProjectStates(): Promise<Array<ProjectState>> {
-    const projectStates = [];
-    for (const connection of this._server.getConnections()) {
-      // Just in case the connection is no longer valid, we wrap it with a
-      // timeout less than Nuclide RPC's default of 60s. We swallow any
-      // errors and return an empty ProjectState if this happens.
-      projectStates.push(
-        timeoutPromise(
-          connection.getAtomCommands().getProjectState(),
-          GET_PROJECT_STATES_TIMEOUT_MS,
-        ).catch(error => ({
-          rootFolders: [],
-        })),
-      );
-    }
-    const resolvedProjectStates = await Promise.all(projectStates);
-    return [].concat(...resolvedProjectStates);
+  getProjectStates() {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      const projectStates = [];
+      for (const connection of _this._server.getConnections()) {
+        // Just in case the connection is no longer valid, we wrap it with a
+        // timeout less than Nuclide RPC's default of 60s. We swallow any
+        // errors and return an empty ProjectState if this happens.
+        projectStates.push(
+        (0, (_promise || _load_promise()).timeoutPromise)(
+        connection.getAtomCommands().getProjectState(),
+        GET_PROJECT_STATES_TIMEOUT_MS).
+        catch(function (error) {return {
+            rootFolders: [] };}));
+
+
+      }
+      const resolvedProjectStates = yield Promise.all(projectStates);
+      return [].concat(...resolvedProjectStates);})();
   }
 
-  async addNotification(notification: AtomNotification): Promise<void> {
-    const promises = [];
-    for (const connection of this._server.getConnections()) {
-      promises.push(connection.getAtomCommands().addNotification(notification));
-    }
-    await Promise.all(promises);
+  addNotification(notification) {var _this2 = this;return (0, _asyncToGenerator.default)(function* () {
+      const promises = [];
+      for (const connection of _this2._server.getConnections()) {
+        promises.push(connection.getAtomCommands().addNotification(notification));
+      }
+      yield Promise.all(promises);})();
   }
 
-  dispose() {}
-}
+  dispose() {}}exports.RoutingAtomCommands = RoutingAtomCommands;

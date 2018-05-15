@@ -1,101 +1,101 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                        * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                                                        * All rights reserved.
+                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                        * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                                                        * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                                                        * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                        *  strict
+                                                                                                                                                                                                                                                        * @format
+                                                                                                                                                                                                                                                        */
 
-import type {Command} from './Command';
-import type {DispatcherInterface} from './DispatcherInterface';
 
-export default class CommandDispatcher implements DispatcherInterface {
-  _commands: Command[] = [];
-  _aliases: Map<string, string>;
 
-  constructor(aliases: Map<string, string>) {
+
+class CommandDispatcher {
+
+
+
+  constructor(aliases) {this._commands = [];
     this._aliases = aliases;
   }
 
-  registerCommand(command: Command): void {
+  registerCommand(command) {
     this._commands.push(command);
   }
 
-  getCommands(): Command[] {
+  getCommands() {
     return this._commands;
   }
 
-  getCommandsMatching(prefix: string): Command[] {
+  getCommandsMatching(prefix) {
     const re = new RegExp(`^${prefix}`);
     return this._commands.filter(x => x.name.match(re));
   }
 
-  commandListToString(commands: Command[]): string {
+  commandListToString(commands) {
     const names = commands.map(_ => _.name);
     return `"${names.join('", "')}"`;
   }
 
-  async execute(line: string): Promise<?Error> {
-    let tail = line;
-    const tokens: string[] = [];
+  execute(line) {var _this = this;return (0, _asyncToGenerator.default)(function* () {
+      let tail = line;
+      const tokens = [];
 
-    // Here we're looking for quoted arguments.
-    // \1 is the contents of a single-quoted arg that may contain spaces
-    // \2 is a space-delimited arg if there are no quotes
-    // \3 is the rest of the command line
-    const tokenizer: RegExp = /^\s*(?:('([^']*)')|(\S+))\s*(.*)$/;
+      // Here we're looking for quoted arguments.
+      // \1 is the contents of a single-quoted arg that may contain spaces
+      // \2 is a space-delimited arg if there are no quotes
+      // \3 is the rest of the command line
+      const tokenizer = /^\s*(?:('([^']*)')|(\S+))\s*(.*)$/;
 
-    while (tail.length > 0) {
-      const match = tail.match(tokenizer);
-      if (match == null) {
-        break;
+      while (tail.length > 0) {
+        const match = tail.match(tokenizer);
+        if (match == null) {
+          break;
+        }
+
+        const [,, quoted, unquoted, rest] = match;
+        tokens.push(quoted != null ? quoted : unquoted);
+        tail = rest;
       }
 
-      const [, , quoted, unquoted, rest] = match;
-      tokens.push(quoted != null ? quoted : unquoted);
-      tail = rest;
-    }
-
-    return this.executeTokenizedLine(tokens);
+      return _this.executeTokenizedLine(tokens);})();
   }
 
-  async executeTokenizedLine(tokens: string[]): Promise<?Error> {
-    if (tokens.length === 0 || !tokens[0]) {
-      return;
-    }
+  executeTokenizedLine(tokens) {var _this2 = this;return (0, _asyncToGenerator.default)(function* () {
+      if (tokens.length === 0 || !tokens[0]) {
+        return;
+      }
 
-    // Get all commands of which the given command is a prefix
-    const cmd = tokens[0];
+      // Get all commands of which the given command is a prefix
+      const cmd = tokens[0];
 
-    // resolve aliases
-    const alias = this.resolveAlias(tokens);
-    if (alias != null) {
-      return this.execute(alias);
-    }
+      // resolve aliases
+      const alias = _this2.resolveAlias(tokens);
+      if (alias != null) {
+        return _this2.execute(alias);
+      }
 
-    const matches = this.getCommandsMatching(cmd);
+      const matches = _this2.getCommandsMatching(cmd);
 
-    if (matches.length === 0) {
-      return new Error(`No command matches "${cmd}".`);
-    }
+      if (matches.length === 0) {
+        return new Error(`No command matches "${cmd}".`);
+      }
 
-    if (matches.length > 1) {
-      const list = this.commandListToString(matches);
-      return new Error(`Multiple commands match "${cmd}": ${list}`);
-    }
+      if (matches.length > 1) {
+        const list = _this2.commandListToString(matches);
+        return new Error(`Multiple commands match "${cmd}": ${list}`);
+      }
 
-    return new Promise((resolve, reject) => {
-      matches[0]
-        .execute(tokens.slice(1))
-        .then(_ => resolve(null), _ => resolve(_));
-    });
+      return new Promise(function (resolve, reject) {
+        matches[0].
+        execute(tokens.slice(1)).
+        then(function (_) {return resolve(null);}, function (_) {return resolve(_);});
+      });})();
   }
 
-  resolveAlias(tokens: string[]): ?string {
+  resolveAlias(tokens) {
     const alias = this._aliases.get(tokens[0]);
     if (alias != null) {
       return `${alias} ${tokens.splice(1).join(' ')}`;
@@ -111,5 +111,4 @@ export default class CommandDispatcher implements DispatcherInterface {
     }
 
     return null;
-  }
-}
+  }}exports.default = CommandDispatcher;

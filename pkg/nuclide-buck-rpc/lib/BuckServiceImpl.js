@@ -1,310 +1,332 @@
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.getBuildFile = exports._getFbRepoSpecificArgs = exports.query = exports.runBuckCommandFromProjectRoot = exports.getOwners = exports.getDefaultPlatform = exports._build = exports._getBuckCommandAndOptions = undefined;var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {BaseBuckBuildOptions} from './types';
-import type {ObserveProcessOptions} from 'nuclide-commons/process';
-
-import {runCommand} from 'nuclide-commons/process';
-import {PromisePool} from '../../commons-node/promise-executors';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-import * as os from 'os';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {shellQuote} from 'nuclide-commons/string';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getLogger} from 'log4js';
-import {trackTiming} from '../../nuclide-analytics';
-
-const logger = getLogger('nuclide-buck-rpc');
-
-// Tag these Buck calls as coming from Nuclide for analytics purposes.
-const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
-
-type FullBuckBuildOptions = {
-  baseOptions: BaseBuckBuildOptions,
-  pathToBuildReport?: string,
-  buildTargets: Array<string>,
-};
-
-type BuckCommandAndOptions = {
-  pathToBuck: string,
-  buckCommandOptions: ObserveProcessOptions,
-};
-
-/**
- * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
- * read-only. The read-only commands can be executed in parallel, but the rest
- * must be executed serially.
- *
- * Still, we try to make sure we don't slow down the user's computer.
- *
- * TODO(hansonw): Buck seems to have some race conditions that prevent us
- * from running things in parallel :(
- */
-const MAX_CONCURRENT_READ_ONLY = 1; // Math.max(1, os.cpus().length - 1);
-const pools = new Map();
-
-export function getPool(path: string, readOnly: boolean): PromisePool {
-  const key = (readOnly ? 'ro:' : '') + path;
-  let pool = pools.get(key);
-  if (pool != null) {
-    return pool;
-  }
-  pool = new PromisePool(readOnly ? MAX_CONCURRENT_READ_ONLY : 1);
-  pools.set(key, pool);
-  return pool;
-}
-
-/**
- * @return The path to buck and set of options to be used to run a `buck` command.
- */
-export async function _getBuckCommandAndOptions(
-  rootPath: string,
-  commandOptions?: ObserveProcessOptions = {},
-): Promise<BuckCommandAndOptions> {
-  // $UPFixMe: This should use nuclide-features-config
-  let pathToBuck =
-    (global.atom &&
-      global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) ||
+                                                                                                                                                                                                                                                                                                                                                                                           * @return The path to buck and set of options to be used to run a `buck` command.
+                                                                                                                                                                                                                                                                                                                                                                                           */let _getBuckCommandAndOptions = exports._getBuckCommandAndOptions = (() => {var _ref = (0, _asyncToGenerator.default)(
+  function* (
+  rootPath,
+  commandOptions = {})
+  {
+    // $UPFixMe: This should use nuclide-features-config
+    let pathToBuck =
+    global.atom &&
+    global.atom.config.get('nuclide.nuclide-buck.pathToBuck') ||
     'buck';
-  if (pathToBuck === 'buck' && os.platform() === 'win32') {
-    pathToBuck = 'buck.exe';
-  }
-  let env = await getOriginalEnvironment();
-  try {
-    // $FlowFB
-    const {getRealUsername} = require('./fb/realUsername');
-    const username = await getRealUsername(env.USER);
-    if (username != null) {
-      env = {...env, USER: username};
+    if (pathToBuck === 'buck' && _os.platform() === 'win32') {
+      pathToBuck = 'buck.exe';
     }
-  } catch (_) {}
-  const buckCommandOptions = {
-    cwd: rootPath,
-    // Buck restarts itself if the environment changes, so try to preserve
-    // the original environment that Nuclide was started in.
-    env,
-    ...commandOptions,
-  };
-  return {pathToBuck, buckCommandOptions};
-}
+    let env = yield (0, (_process || _load_process()).getOriginalEnvironment)();
+    try {
+      // $FlowFB
+      const { getRealUsername } = require('./fb/realUsername');
+      const username = yield getRealUsername(env.USER);
+      if (username != null) {
+        env = Object.assign({}, env, { USER: username });
+      }
+    } catch (_) {}
+    const buckCommandOptions = Object.assign({
+      cwd: rootPath,
+      // Buck restarts itself if the environment changes, so try to preserve
+      // the original environment that Nuclide was started in.
+      env },
+    commandOptions);
+
+    return { pathToBuck, buckCommandOptions };
+  });return function _getBuckCommandAndOptions(_x) {return _ref.apply(this, arguments);};})();
 
 /**
- * @param options An object describing the desired buck build operation.
- * @return An array of strings that can be passed as `args` to spawn a
- *   process to run the `buck` command.
- */
-export function _translateOptionsToBuckBuildArgs(
-  options: FullBuckBuildOptions,
-): Array<string> {
-  const {baseOptions, pathToBuildReport, buildTargets} = options;
-  const {
-    install: doInstall,
-    run,
-    simulator,
-    test,
-    debug,
-    extraArguments,
-  } = baseOptions;
+                                                                                                * @param options An object describing the desired buck build operation.
+                                                                                                * @return An array of strings that can be passed as `args` to spawn a
+                                                                                                *   process to run the `buck` command.
+                                                                                                */let _build = exports._build = (() => {var _ref2 = (0, _asyncToGenerator.default)(
 
-  let args = [test ? 'test' : doInstall ? 'install' : run ? 'run' : 'build'];
-  args = args.concat(buildTargets, CLIENT_ID_ARGS);
 
-  if (!run) {
-    args.push('--keep-going');
-  }
-  // flowlint-next-line sketchy-null-string:off
-  if (pathToBuildReport) {
-    args = args.concat(['--build-report', pathToBuildReport]);
-  }
-  if (doInstall) {
-    // flowlint-next-line sketchy-null-string:off
-    if (simulator) {
-      args.push('--udid');
-      args.push(simulator);
-    }
 
-    if (run) {
-      args.push('--run');
-      if (debug) {
-        args.push('--wait-for-debugger');
-      }
-    }
-  } else if (test) {
-    if (debug) {
-      args.push('--debug');
-    }
-  }
-  if (extraArguments != null) {
-    args = args.concat(extraArguments);
-  }
-  return args;
-}
 
-export async function _build(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  options: BaseBuckBuildOptions,
-): Promise<any> {
-  const report = await fsPromise.tempfile({suffix: '.json'});
-  const args = _translateOptionsToBuckBuildArgs({
-    baseOptions: {...options},
-    pathToBuildReport: report,
-    buildTargets,
-  });
 
-  try {
-    await runBuckCommandFromProjectRoot(
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function* (
+  rootPath,
+  buildTargets,
+  options)
+  {
+    const report = yield (_fsPromise || _load_fsPromise()).default.tempfile({ suffix: '.json' });
+    const args = _translateOptionsToBuckBuildArgs({
+      baseOptions: Object.assign({}, options),
+      pathToBuildReport: report,
+      buildTargets });
+
+
+    try {
+      yield runBuckCommandFromProjectRoot(
       rootPath,
       args,
       options.commandOptions,
       false, // Do not add the client ID, since we already do it in the build args.
-      true, // Build commands are blocking.
-    );
-  } catch (e) {
-    // The build failed. However, because --keep-going was specified, the
-    // build report should have still been written unless any of the target
-    // args were invalid. We check the contents of the report file to be sure.
-    const stat = await fsPromise.stat(report).catch(() => null);
-    if (stat == null || stat.size === 0) {
-      throw e;
-    }
-  }
-
-  try {
-    const json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
-    try {
-      return JSON.parse(json);
+      true // Build commands are blocking.
+      );
     } catch (e) {
-      throw Error(`Failed to parse:\n${json}`);
+      // The build failed. However, because --keep-going was specified, the
+      // build report should have still been written unless any of the target
+      // args were invalid. We check the contents of the report file to be sure.
+      const stat = yield (_fsPromise || _load_fsPromise()).default.stat(report).catch(function () {return null;});
+      if (stat == null || stat.size === 0) {
+        throw e;
+      }
     }
-  } finally {
-    fsPromise.unlink(report);
-  }
-}
 
-export function build(
-  rootPath: NuclideUri,
-  buildTargets: Array<string>,
-  options?: BaseBuckBuildOptions,
-): Promise<any> {
-  return _build(rootPath, buildTargets, options || {});
-}
+    try {
+      const json = yield (_fsPromise || _load_fsPromise()).default.readFile(report, { encoding: 'UTF-8' });
+      try {
+        return JSON.parse(json);
+      } catch (e) {
+        throw Error(`Failed to parse:\n${json}`);
+      }
+    } finally {
+      (_fsPromise || _load_fsPromise()).default.unlink(report);
+    }
+  });return function _build(_x2, _x3, _x4) {return _ref2.apply(this, arguments);};})();let getDefaultPlatform = exports.getDefaultPlatform = (() => {var _ref3 = (0, _asyncToGenerator.default)(
 
-export async function getDefaultPlatform(
-  rootPath: NuclideUri,
-  target: string,
-): Promise<?string> {
-  const result = await query(rootPath, target, [
+
+
+
+
+
+
+
+
+  function* (
+  rootPath,
+  target)
+  {
+    const result = yield query(rootPath, target, [
     '--output-attributes',
-    'defaults',
-  ]);
-  if (
+    'defaults']);
+
+    if (
     result[target] != null &&
     result[target].defaults != null &&
-    result[target].defaults.platform != null
-  ) {
-    return result[target].defaults.platform;
-  }
-  return null;
-}
+    result[target].defaults.platform != null)
+    {
+      return result[target].defaults.platform;
+    }
+    return null;
+  });return function getDefaultPlatform(_x5, _x6) {return _ref3.apply(this, arguments);};})();let getOwners = exports.getOwners = (() => {var _ref4 = (0, _asyncToGenerator.default)(
 
-export async function getOwners(
-  rootPath: NuclideUri,
-  filePath: NuclideUri,
-  extraArguments: Array<string>,
-  kindFilter?: string,
-): Promise<Array<string>> {
-  let queryString = `owner("${shellQuote([filePath])}")`;
-  if (kindFilter != null) {
-    queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
-  }
-  return query(rootPath, queryString, extraArguments);
-}
+  function* (
+  rootPath,
+  filePath,
+  extraArguments,
+  kindFilter)
+  {
+    let queryString = `owner("${(0, (_string || _load_string()).shellQuote)([filePath])}")`;
+    if (kindFilter != null) {
+      queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
+    }
+    return query(rootPath, queryString, extraArguments);
+  });return function getOwners(_x7, _x8, _x9, _x10) {return _ref4.apply(this, arguments);};})();
 
-export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
-  return fsPromise.findNearestFile('.buckconfig', file);
-}
+
+
+
 
 /**
- * @param args Do not include 'buck' as the first argument: it will be added
- *     automatically.
- */
-export async function runBuckCommandFromProjectRoot(
-  rootPath: string,
-  args: Array<string>,
-  commandOptions?: ObserveProcessOptions,
-  addClientId?: boolean = true,
-  readOnly?: boolean = true,
-): Promise<string> {
-  const {
-    pathToBuck,
-    buckCommandOptions: options,
-  } = await _getBuckCommandAndOptions(rootPath, commandOptions);
+                                                                                                  * @param args Do not include 'buck' as the first argument: it will be added
+                                                                                                  *     automatically.
+                                                                                                  */let runBuckCommandFromProjectRoot = exports.runBuckCommandFromProjectRoot = (() => {var _ref5 = (0, _asyncToGenerator.default)(
+  function* (
+  rootPath,
+  args,
+  commandOptions,
+  addClientId = true,
+  readOnly = true)
+  {
+    const {
+      pathToBuck,
+      buckCommandOptions: options } =
+    yield _getBuckCommandAndOptions(rootPath, commandOptions);
 
-  // Create an event name from the first arg, e.g. 'buck.query' or 'buck.build'.
-  const analyticsEvent = `buck.${args.length > 0 ? args[0] : ''}`;
-  const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
-  return getPool(rootPath, readOnly).submit(() => {
-    logger.debug(`Running \`${pathToBuck} ${shellQuote(args)}\``);
-    return trackTiming(
+    // Create an event name from the first arg, e.g. 'buck.query' or 'buck.build'.
+    const analyticsEvent = `buck.${args.length > 0 ? args[0] : ''}`;
+    const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
+    return getPool(rootPath, readOnly).submit(function () {
+      logger.debug(`Running \`${pathToBuck} ${(0, (_string || _load_string()).shellQuote)(args)}\``);
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(
       analyticsEvent,
-      () => runCommand(pathToBuck, newArgs, options).toPromise(),
-      {args},
-    );
-  });
-}
+      function () {return (0, (_process || _load_process()).runCommand)(pathToBuck, newArgs, options).toPromise();},
+      { args });
 
-/** Runs `buck query --json` with the specified query. */
-export async function query(
-  rootPath: NuclideUri,
-  queryString: string,
-  extraArguments: Array<string>,
-): Promise<any> {
-  const fbRepoSpecificArgs = await _getFbRepoSpecificArgs(rootPath);
-  const args = [
+    });
+  });return function runBuckCommandFromProjectRoot(_x11, _x12, _x13) {return _ref5.apply(this, arguments);};})();
+
+/** Runs `buck query --json` with the specified query. */let query = exports.query = (() => {var _ref6 = (0, _asyncToGenerator.default)(
+  function* (
+  rootPath,
+  queryString,
+  extraArguments)
+  {
+    const fbRepoSpecificArgs = yield _getFbRepoSpecificArgs(rootPath);
+    const args = [
     'query',
     ...extraArguments,
     '--json',
     queryString,
-    ...fbRepoSpecificArgs,
-  ];
-  const result = await runBuckCommandFromProjectRoot(rootPath, args);
-  return JSON.parse(result);
-}
+    ...fbRepoSpecificArgs];
 
-export async function _getFbRepoSpecificArgs(
-  buckRoot: NuclideUri,
-): Promise<Array<string>> {
-  try {
-    // $FlowFB
-    const {getFbRepoSpecificArgs} = require('./fb/repoSpecificArgs');
-    return await getFbRepoSpecificArgs(buckRoot);
-  } catch (e) {
-    return [];
-  }
-}
+    const result = yield runBuckCommandFromProjectRoot(rootPath, args);
+    return JSON.parse(result);
+  });return function query(_x14, _x15, _x16) {return _ref6.apply(this, arguments);};})();let _getFbRepoSpecificArgs = exports._getFbRepoSpecificArgs = (() => {var _ref7 = (0, _asyncToGenerator.default)(
 
-export async function getBuildFile(
-  rootPath: NuclideUri,
-  targetName: string,
-): Promise<?string> {
-  try {
-    const result = await query(rootPath, `buildfile(${targetName})`, []);
-    if (result.length === 0) {
+  function* (
+  buckRoot)
+  {
+    try {
+      // $FlowFB
+      const { getFbRepoSpecificArgs } = require('./fb/repoSpecificArgs');
+      return yield getFbRepoSpecificArgs(buckRoot);
+    } catch (e) {
+      return [];
+    }
+  });return function _getFbRepoSpecificArgs(_x17) {return _ref7.apply(this, arguments);};})();let getBuildFile = exports.getBuildFile = (() => {var _ref8 = (0, _asyncToGenerator.default)(
+
+  function* (
+  rootPath,
+  targetName)
+  {
+    try {
+      const result = yield query(rootPath, `buildfile(${targetName})`, []);
+      if (result.length === 0) {
+        return null;
+      }
+      return (_nuclideUri || _load_nuclideUri()).default.join(rootPath, result[0]);
+    } catch (e) {
+      logger.error(`No build file for target "${targetName}" ${e}`);
       return null;
     }
-    return nuclideUri.join(rootPath, result[0]);
-  } catch (e) {
-    logger.error(`No build file for target "${targetName}" ${e}`);
-    return null;
-  }
-}
+  });return function getBuildFile(_x18, _x19) {return _ref8.apply(this, arguments);};})();exports.getPool = getPool;exports._translateOptionsToBuckBuildArgs = _translateOptionsToBuckBuildArgs;exports.build = build;exports.getRootForPath = getRootForPath;var _process;function _load_process() {return _process = require('../../../modules/nuclide-commons/process');}var _promiseExecutors;function _load_promiseExecutors() {return _promiseExecutors = require('../../commons-node/promise-executors');}var _os = _interopRequireWildcard(require('os'));var _fsPromise;function _load_fsPromise() {return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));}var _string;function _load_string() {return _string = require('../../../modules/nuclide-commons/string');}var _nuclideUri;function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));}var _log4js;function _load_log4js() {return _log4js = require('log4js');}var _nuclideAnalytics;function _load_nuclideAnalytics() {return _nuclideAnalytics = require('../../nuclide-analytics');}function _interopRequireWildcard(obj) {if (obj && obj.__esModule) {return obj;} else {var newObj = {};if (obj != null) {for (var key in obj) {if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];}}newObj.default = obj;return newObj;}}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * the root directory of this source tree.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * @format
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-buck-rpc'); // Tag these Buck calls as coming from Nuclide for analytics purposes.
+const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide']; /**
+                                                           * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
+                                                           * read-only. The read-only commands can be executed in parallel, but the rest
+                                                           * must be executed serially.
+                                                           *
+                                                           * Still, we try to make sure we don't slow down the user's computer.
+                                                           *
+                                                           * TODO(hansonw): Buck seems to have some race conditions that prevent us
+                                                           * from running things in parallel :(
+                                                           */const MAX_CONCURRENT_READ_ONLY = 1; // Math.max(1, os.cpus().length - 1);
+const pools = new Map();function getPool(path, readOnly) {const key = (readOnly ? 'ro:' : '') + path;let pool = pools.get(key);if (pool != null) {return pool;}pool = new (_promiseExecutors || _load_promiseExecutors()).PromisePool(readOnly ? MAX_CONCURRENT_READ_ONLY : 1);pools.set(key, pool);return pool;}function _translateOptionsToBuckBuildArgs(options) {const { baseOptions, pathToBuildReport, buildTargets } = options;const { install: doInstall, run, simulator, test, debug, extraArguments } = baseOptions;let args = [test ? 'test' : doInstall ? 'install' : run ? 'run' : 'build'];args = args.concat(buildTargets, CLIENT_ID_ARGS);if (!run) {args.push('--keep-going');} // flowlint-next-line sketchy-null-string:off
+  if (pathToBuildReport) {args = args.concat(['--build-report', pathToBuildReport]);}if (doInstall) {// flowlint-next-line sketchy-null-string:off
+    if (simulator) {args.push('--udid');args.push(simulator);}if (run) {args.push('--run');if (debug) {args.push('--wait-for-debugger');}}} else if (test) {if (debug) {args.push('--debug');}}if (extraArguments != null) {args = args.concat(extraArguments);}return args;}function build(rootPath, buildTargets, options) {return _build(rootPath, buildTargets, options || {});}function getRootForPath(file) {return (_fsPromise || _load_fsPromise()).default.findNearestFile('.buckconfig', file);}

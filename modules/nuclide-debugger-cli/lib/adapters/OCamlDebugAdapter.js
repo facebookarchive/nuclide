@@ -1,55 +1,55 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _debuggerRegistry;
 
-import type {Arguments} from '../DebuggerAdapterFactory';
-import type {CustomArgumentType} from '../VSPOptionsParser';
-import type {DebugAdapter} from '../DebugAdapter';
-import type {VsAdapterType} from 'nuclide-debugger-common';
 
-import {getAdapterPackageRoot} from 'nuclide-debugger-common/debugger-registry';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import VSPOptionsParser from '../VSPOptionsParser';
 
-export default class OCamlDebugAdapter implements DebugAdapter {
-  key: VsAdapterType = VsAdapterTypes.OCAML;
-  type: string = 'ocaml';
-  excludedOptions: Set<string> = new Set([]);
 
-  extensions: Set<string> = new Set();
-  customArguments: Map<string, CustomArgumentType> = new Map();
 
-  _includedOptions: Set<string> = new Set();
 
-  parseArguments(args: Arguments): Map<string, any> {
+
+
+
+
+
+
+
+
+
+
+function _load_debuggerRegistry() {return _debuggerRegistry = require('../../../nuclide-debugger-common/debugger-registry');}var _nuclideUri;
+function _load_nuclideUri() {return _nuclideUri = _interopRequireDefault(require('../../../nuclide-commons/nuclideUri'));}var _constants;
+function _load_constants() {return _constants = require('../../../nuclide-debugger-common/constants');}var _VSPOptionsParser;
+function _load_VSPOptionsParser() {return _VSPOptionsParser = _interopRequireDefault(require('../VSPOptionsParser'));}function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} /**
+                                                                                                                                                                                                                     * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                     * All rights reserved.
+                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                     * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                     * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                     * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                     * 
+                                                                                                                                                                                                                     * @format
+                                                                                                                                                                                                                     */class OCamlDebugAdapter {constructor() {this.key = (_constants || _load_constants()).VsAdapterTypes.OCAML;this.type = 'ocaml';this.excludedOptions = new Set([]);this.extensions = new Set();this.customArguments = new Map();this._includedOptions = new Set();}
+
+  parseArguments(args) {
     const action = args.attach ? 'attach' : 'launch';
-    const root = getAdapterPackageRoot(this.key);
-    const parser = new VSPOptionsParser(root);
+    const root = (0, (_debuggerRegistry || _load_debuggerRegistry()).getAdapterPackageRoot)(this.key);
+    const parser = new (_VSPOptionsParser || _load_VSPOptionsParser()).default(root);
     const commandLineArgs = parser.parseCommandLine(
-      this.type,
-      action,
-      this.excludedOptions,
-      this._includedOptions,
-      this.customArguments,
-    );
+    this.type,
+    action,
+    this.excludedOptions,
+    this._includedOptions,
+    this.customArguments);
+
 
     if (action === 'launch') {
       const launchArgs = args._;
       const program = launchArgs[0];
 
       commandLineArgs.set('args', launchArgs.splice(1));
-      commandLineArgs.set('program', nuclideUri.resolve(program));
+      commandLineArgs.set('program', (_nuclideUri || _load_nuclideUri()).default.resolve(program));
       commandLineArgs.set('noDebug', false);
-      commandLineArgs.set('cwd', nuclideUri.resolve('.'));
+      commandLineArgs.set('cwd', (_nuclideUri || _load_nuclideUri()).default.resolve('.'));
 
       if (args.usenode != null) {
         commandLineArgs.set('runtimeExecutable', args.usenode);
@@ -57,5 +57,4 @@ export default class OCamlDebugAdapter implements DebugAdapter {
     }
 
     return commandLineArgs;
-  }
-}
+  }}exports.default = OCamlDebugAdapter;

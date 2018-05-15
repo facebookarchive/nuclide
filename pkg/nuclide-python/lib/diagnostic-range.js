@@ -1,41 +1,41 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';Object.defineProperty(exports, "__esModule", { value: true });exports.
 
-import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
-import {Point, Range} from 'atom';
-import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
-import {getLogger} from 'log4js';
 
-const logger = getLogger('nuclide-python');
 
-// Computes an appropriate underline range using the diagnostic type information.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+getDiagnosticRange = getDiagnosticRange;var _atom = require('atom');var _range;function _load_range() {return _range = require('../../../modules/nuclide-commons-atom/range');}var _log4js;function _load_log4js() {return _log4js = require('log4js');} /**
+                                                                                                                                                                                                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                                          * All rights reserved.
+                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                                          * the root directory of this source tree.
+                                                                                                                                                                                                                                                          *
+                                                                                                                                                                                                                                                          *  strict-local
+                                                                                                                                                                                                                                                          * @format
+                                                                                                                                                                                                                                                          */const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-python'); // Computes an appropriate underline range using the diagnostic type information.
 // Range variants include underlining the entire line, entire trimmed line,
 // or a word or whitespace range within the line.
-export function getDiagnosticRange(
-  diagnostic: PythonDiagnostic,
-  editor: atom$TextEditor,
-): Range {
-  const buffer = editor.getBuffer();
-
-  // The diagnostic message's line index may be out of bounds if buffer contents
+function getDiagnosticRange(diagnostic, editor) {const buffer = editor.getBuffer(); // The diagnostic message's line index may be out of bounds if buffer contents
   // have changed. To prevent an exception, we just use the last line of the buffer if
   // unsafeLine is out of bounds.
-  const {code, line: unsafeLine, column, message} = diagnostic;
-  const lastRow = buffer.getLastRow();
-  const line = unsafeLine <= lastRow ? unsafeLine : lastRow;
-
-  const lineLength = buffer.lineLengthForRow(line);
-  const trimmedRange = trimRange(editor, buffer.rangeForRow(line, false));
-  const trimmedStartCol = trimmedRange.start.column;
+  const { code, line: unsafeLine, column, message } = diagnostic;const lastRow = buffer.getLastRow();const line = unsafeLine <= lastRow ? unsafeLine : lastRow;const lineLength = buffer.lineLengthForRow(line);const trimmedRange = (0, (_range || _load_range()).trimRange)(editor, buffer.rangeForRow(line, false));const trimmedStartCol = trimmedRange.start.column;
   const trimmedEndCol = trimmedRange.end.column;
 
   try {
@@ -49,24 +49,24 @@ export function getDiagnosticRange(
         if (code === 'E902' || message.startsWith('SyntaxError')) {
           break;
         }
-        return new Range([line, 0], [line, trimmedStartCol]);
+        return new _atom.Range([line, 0], [line, trimmedStartCol]);
       // pep8 - whitespace
       case 'E2':
         // '#' comment spacing
         if (code.startsWith('E26')) {
-          return new Range([line, column], [line, trimmedEndCol]);
+          return new _atom.Range([line, column], [line, trimmedEndCol]);
         }
         const numericCode = parseInt(code.slice(1), 10);
         // Missing whitespace - underline the closest symbol
-        if ((numericCode >= 225 && numericCode <= 231) || numericCode === 275) {
-          return new Range([line, column], [line, column + 1]);
+        if (numericCode >= 225 && numericCode <= 231 || numericCode === 275) {
+          return new _atom.Range([line, column], [line, column + 1]);
         }
         // Extra whitespace - underline the offending whitespace
-        const whitespace = wordAtPosition(
-          editor,
-          new Point(line, column),
-          /\s+/g,
-        );
+        const whitespace = (0, (_range || _load_range()).wordAtPosition)(
+        editor,
+        new _atom.Point(line, column),
+        /\s+/g);
+
         if (whitespace) {
           return whitespace.range;
         }
@@ -75,19 +75,19 @@ export function getDiagnosticRange(
       // pep8 - line length
       case 'E3':
       case 'E5':
-        return new Range([line, 0], [line, lineLength]);
+        return new _atom.Range([line, 0], [line, lineLength]);
       // pep8 - whitespace warning
       case 'W2':
         // trailing whitespace
         if (code === 'W291') {
-          return new Range([line, trimmedEndCol], [line, lineLength]);
+          return new _atom.Range([line, trimmedEndCol], [line, lineLength]);
         }
         break;
       // pyflakes - import related messages
       case 'F4':
         if (code === 'F405') {
           // <XXX> may be undefined, or defined from import *
-          const word = wordAtPosition(editor, new Point(line, column));
+          const word = (0, (_range || _load_range()).wordAtPosition)(editor, new _atom.Point(line, column));
           if (word) {
             return word.range;
           }
@@ -100,23 +100,23 @@ export function getDiagnosticRange(
         if (!code.startsWith('F82')) {
           break;
         }
-        const word = wordAtPosition(editor, new Point(line, column));
+        const word = (0, (_range || _load_range()).wordAtPosition)(editor, new _atom.Point(line, column));
         if (word) {
           return word.range;
         }
         break;
       default:
-        break;
-    }
+        break;}
+
   } catch (e) {
     const diagnosticAsString = `${
-      diagnostic.file
+    diagnostic.file
     }:${unsafeLine}:${column} - ${code}: ${message}`;
     logger.error(
-      `Failed to find flake8 diagnostic range: ${diagnosticAsString}`,
-      e,
-    );
+    `Failed to find flake8 diagnostic range: ${diagnosticAsString}`,
+    e);
+
   }
 
-  return new Range([line, trimmedStartCol], [line, trimmedEndCol]);
+  return new _atom.Range([line, trimmedStartCol], [line, trimmedEndCol]);
 }
