@@ -23,12 +23,14 @@ const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 const CERT_NOT_YET_VALID_DELAY = 3000;
 const CERT_NOT_YET_VALID_RETRIES = 3;
+const ECONNRESET_ERRORS_IN_ROW_LIMIT = 4;
 
 export class XhrConnectionHeartbeat {
   _heartbeatConnectedOnce: boolean;
   _lastHeartbeat: ?('here' | 'away');
   _lastHeartbeatTime: ?number;
   _heartbeatInterval: ?IntervalID;
+  _connectionResetCount: number;
   _emitter: Emitter;
   _options: RequestOptions;
 
@@ -40,6 +42,7 @@ export class XhrConnectionHeartbeat {
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
     this._lastHeartbeatTime = null;
+    this._connectionResetCount = 0;
     const options: RequestOptions = {
       uri: `${serverUri}/${heartbeatChannel}`,
       method: 'POST',
@@ -104,6 +107,7 @@ export class XhrConnectionHeartbeat {
       }
       this._lastHeartbeat = 'here';
       this._lastHeartbeatTime = now;
+      this._connectionResetCount = 0;
       this._emitter.emit('heartbeat');
     } catch (err) {
       this._lastHeartbeat = 'away';
@@ -139,14 +143,25 @@ export class XhrConnectionHeartbeat {
           }
           break;
         case 'ECONNRESET':
-          code = 'INVALID_CERTIFICATE';
+          code = this._checkReconnectErrorType(originalCode);
           break;
         default:
           code = originalCode;
           break;
       }
+      if (code !== 'ECONNRESET') {
+        this._connectionResetCount = 0;
+      }
       this._emitter.emit('heartbeat.error', {code, originalCode, message});
     }
+  }
+
+  _checkReconnectErrorType(originalCode: string): string {
+    this._connectionResetCount++;
+    if (this._connectionResetCount >= ECONNRESET_ERRORS_IN_ROW_LIMIT) {
+      return 'INVALID_CERTIFICATE';
+    }
+    return originalCode;
   }
 
   onHeartbeat(callback: () => mixed): IDisposable {
