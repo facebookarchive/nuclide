@@ -14,7 +14,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
-import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {observeDevices} from './DevicePoller';
 
 export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
@@ -24,5 +23,5 @@ export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
 export function observeTizenDevicesX(
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
-  return observeDevices('sdb', getSdbServiceByNuclideUri(host), host);
+  return observeDevices('sdb', host);
 }

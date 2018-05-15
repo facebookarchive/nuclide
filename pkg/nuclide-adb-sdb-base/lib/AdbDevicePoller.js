@@ -14,7 +14,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {observeDevices} from './DevicePoller';
 
 export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
@@ -24,5 +23,5 @@ export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
 export function observeAndroidDevicesX(
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
-  return observeDevices('adb', getAdbServiceByNuclideUri(host), host);
+  return observeDevices('adb', host);
 }

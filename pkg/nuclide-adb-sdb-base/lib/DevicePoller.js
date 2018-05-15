@@ -11,9 +11,9 @@
 
 import type {DeviceDescription} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
-import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {DBPlatform, DBType} from './Platforms';
 
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -23,27 +23,17 @@ import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export type DBType = 'sdb' | 'adb';
-type DBDeviceListService = {
-  getDeviceList: () => ConnectableObservable<Array<DeviceDescription>>,
-};
+import {getPlatform} from './Platforms';
 
 class DevicePoller {
-  _type: DBType;
-  _service: DBDeviceListService;
+  _platform: DBPlatform;
   _observables: SimpleCache<
     string,
     Observable<Expected<Device[]>>,
   > = new SimpleCache();
 
-  constructor(type: DBType, service: DBDeviceListService) {
-    this._type = type;
-    this._service = service;
-  }
-
-  _getPlatform(): string {
-    return this._type === 'adb' ? 'Android' : 'Tizen';
+  constructor(type: DBType) {
+    this._platform = getPlatform(type);
   }
 
   observe(_host: NuclideUri): Observable<Expected<Device[]>> {
@@ -67,8 +57,10 @@ class DevicePoller {
               return Observable.of(
                 Expect.error(
                   new Error(
-                    `Can't fetch ${this._getPlatform()} devices. Make sure that ${
-                      this._type
+                    `Can't fetch ${
+                      this._platform.name
+                    } devices. Make sure that ${
+                      this._platform.command
                     } is in your $PATH and that it works properly.`,
                   ),
                 ),
@@ -96,7 +88,8 @@ class DevicePoller {
 
   fetch(host: NuclideUri): Observable<Device[]> {
     try {
-      return this._service
+      return this._platform
+        .getService(host)
         .getDeviceList()
         .refCount()
         .map(devices => devices.map(device => this.parseRawDevice(device)));
@@ -137,13 +130,12 @@ const pollers: Map<string, DevicePoller> = new Map();
 
 export function observeDevices(
   type: DBType,
-  service: DBDeviceListService,
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
   const pollerKey = `${type}:${host}`;
   let poller = pollers.get(pollerKey);
   if (poller == null) {
-    poller = new DevicePoller(type, service);
+    poller = new DevicePoller(type);
     pollers.set(pollerKey, poller);
   }
   return poller.observe(host);
