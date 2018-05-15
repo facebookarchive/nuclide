@@ -14,7 +14,7 @@ import log4js from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import {getUsername} from '../common/username';
-import {generateCertificatesAndStartServer} from './main';
+import {startServer} from './main';
 import {parsePorts} from '../common/ports';
 
 log4js.configure({
@@ -40,6 +40,9 @@ export type BigDigCliParams = {|
   serverParams: mixed,
   ports: ?string,
   exclusive: ?string,
+  caPath?: string,
+  serverCertPath?: string,
+  serverKeyPath?: string,
 |};
 
 /**
@@ -53,7 +56,15 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   const params: BigDigCliParams = JSON.parse(
     process.argv[process.argv.length - 1],
   );
-  const {cname, expiration, exclusive, jsonOutputFile} = params;
+  const {
+    cname,
+    expiration,
+    exclusive,
+    jsonOutputFile,
+    caPath,
+    serverCertPath,
+    serverKeyPath,
+  } = params;
   let {ports, timeout} = params;
   if (typeof cname !== 'string') {
     throw Error(`cname must be specified as string but was: '${cname}'`);
@@ -101,14 +112,36 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     throw Error(`exclusive must be a valid identifier: '${exclusive}'`);
   }
 
-  const clientCommonName = 'nuclide';
-  const serverCommonName = cname || `${getUsername()}.nuclide.${os.hostname()}`;
-  const openSSLConfigPath = require.resolve('./openssl.cnf');
+  let certificateStrategy;
+  if (caPath != null || serverCertPath != null || serverKeyPath != null) {
+    if (
+      typeof caPath !== 'string' ||
+      typeof serverCertPath !== 'string' ||
+      typeof serverKeyPath !== 'string'
+    ) {
+      throw Error(
+        'need either all or none of caPath, serverCertPath and serverKeyPath',
+      );
+    }
+    certificateStrategy = {
+      type: 'reuse',
+      paths: {
+        caCert: caPath,
+        serverCert: serverCertPath,
+        serverKey: serverKeyPath,
+      },
+    };
+  } else {
+    certificateStrategy = {
+      type: 'generate',
+      clientCommonName: 'nuclide',
+      serverCommonName: cname || `${getUsername()}.nuclide.${os.hostname()}`,
+      openSSLConfigPath: require.resolve('./openssl.cnf'),
+    };
+  }
 
-  await generateCertificatesAndStartServer({
-    clientCommonName,
-    serverCommonName,
-    openSSLConfigPath,
+  await startServer({
+    certificateStrategy,
     ports,
     timeout,
     expirationDays,

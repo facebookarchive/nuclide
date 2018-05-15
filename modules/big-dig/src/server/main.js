@@ -20,10 +20,20 @@ import os from 'os';
 import temp from 'temp';
 import {generateCertificates} from './certificates';
 
+export type CertificateStrategy =
+  | {
+      type: 'reuse',
+      paths: {serverKey: string, serverCert: string, caCert: string},
+    }
+  | {
+      type: 'generate',
+      clientCommonName: string,
+      serverCommonName: string,
+      openSSLConfigPath: string,
+    };
+
 export type StartServerParams = {
-  clientCommonName: string,
-  serverCommonName: string,
-  openSSLConfigPath: string,
+  certificateStrategy: CertificateStrategy,
   ports: string,
   timeout: number,
   expirationDays: number,
@@ -33,10 +43,8 @@ export type StartServerParams = {
   serverParams: mixed,
 };
 
-export async function generateCertificatesAndStartServer({
-  clientCommonName,
-  serverCommonName,
-  openSSLConfigPath,
+export async function startServer({
+  certificateStrategy,
   ports,
   timeout,
   expirationDays,
@@ -46,15 +54,38 @@ export async function generateCertificatesAndStartServer({
   serverParams,
 }: StartServerParams): Promise<void> {
   const logger = getLogger();
-  logger.info('in generateCertificatesAndStartServer()');
+  logger.info('in startServer()');
 
-  const paths = await generateCertificates(
-    clientCommonName,
-    serverCommonName,
-    openSSLConfigPath,
-    expirationDays,
-  );
-  logger.info('generateCertificates() succeeded!');
+  let paths;
+  let certificateGeneratorOutput = {};
+  switch (certificateStrategy.type) {
+    case 'generate':
+      const {
+        clientCommonName,
+        serverCommonName,
+        openSSLConfigPath,
+      } = certificateStrategy;
+      paths = await generateCertificates(
+        clientCommonName,
+        serverCommonName,
+        openSSLConfigPath,
+        expirationDays,
+      );
+      logger.info('generateCertificates() succeeded!');
+      certificateGeneratorOutput = {
+        hostname: serverCommonName,
+        cert: await fs.readFileAsString(paths.clientCert),
+        key: await fs.readFileAsString(paths.clientKey),
+      };
+      break;
+    case 'reuse':
+      paths = certificateStrategy.paths;
+      logger.info('reusing existing certificates');
+      break;
+    default:
+      (certificateStrategy.type: empty);
+      throw Error('invalid certificate strategy');
+  }
 
   const [key, cert, ca] = await Promise.all([
     fs.readFileAsBuffer(paths.serverKey),
@@ -130,16 +161,14 @@ export async function generateCertificatesAndStartServer({
   const json = JSON.stringify(
     // These properties are the ones currently written by nuclide-server.
     {
+      ...certificateGeneratorOutput,
       pid: child.pid,
       version,
-      hostname: serverCommonName,
       port: childPort,
       ca: ca.toString(),
       ca_path: paths.caCert,
       server_cert_path: paths.serverCert,
       server_key_path: paths.serverKey,
-      cert: await fs.readFileAsString(paths.clientCert),
-      key: await fs.readFileAsString(paths.clientKey),
       protocol_version: 2,
       success: true,
     },
