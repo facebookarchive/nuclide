@@ -35,6 +35,7 @@
     "nuclide-definition-preview-provider",
     "nuclide-deprecation-cop",
     "nuclide-diagnostics-extras",
+    "nuclide-diff-gutters",
     "nuclide-distraction-free-mode",
     "nuclide-file-family",
     "nuclide-file-family-projectionist",

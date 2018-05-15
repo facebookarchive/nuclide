@@ -35,7 +35,6 @@ import type {ConnectableObservable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
-import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
 import {
   cacheWhileSubscribed,
@@ -43,16 +42,13 @@ import {
   compact,
 } from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
-import {gitDiffContentAgainstFile} from './utils';
 import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
 } from '../../nuclide-hg-rpc/lib/hg-constants';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import LRU from 'lru-cache';
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
 import {getLogger} from 'log4js';
 import nullthrows from 'nullthrows';
 
@@ -137,7 +133,6 @@ import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {mapTransform} from 'nuclide-commons/collection';
 
 export type HgStatusChanges = {
@@ -174,14 +169,10 @@ export class HgRepositoryClient {
     hgUncommittedStatusChanges: HgStatusChanges,
     hgHeadStatusChanges: HgStatusChanges,
     hgStackStatusChanges: HgStatusChanges,
-    hgDiffCache: Map<NuclideUri, DiffInfo>,
-    hgDiffCacheFilesUpdating: Set<NuclideUri>,
-    hgDiffCacheFilesToClear: Set<NuclideUri>,
     revisionsCache: RevisionsCache,
     revisionStatusCache: RevisionStatusCache,
     revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>,
     fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>,
-    fileContentsAtHead: LRUCache<NuclideUri, string>,
     currentHeadId: ?string,
     bookmarks: BehaviorSubject<{
       isLoading: boolean,
@@ -192,6 +183,9 @@ export class HgRepositoryClient {
     isDestroyed: boolean,
     isFetchingPathStatuses: Subject<boolean>,
     manualStatusRefreshRequests: Subject<void>,
+
+    // absolute path of file to DiffInfo
+    bufferDiffsFromHeadCache: Map<NuclideUri, DiffInfo>,
   };
 
   constructor(
@@ -220,7 +214,6 @@ export class HgRepositoryClient {
     );
     this._sharedMembers.revisionIdToFileChanges = new LRU({max: 100});
     this._sharedMembers.fileContentsAtRevisionIds = new LRU({max: 20});
-    this._sharedMembers.fileContentsAtHead = new LRU({max: 30});
 
     this._sharedMembers.emitter = new Emitter();
     this._sharedMembers.subscriptions = new UniversalDisposable(
@@ -234,69 +227,7 @@ export class HgRepositoryClient {
       bookmarks: [],
     });
 
-    this._sharedMembers.hgDiffCache = new Map();
-    this._sharedMembers.hgDiffCacheFilesUpdating = new Set();
-    this._sharedMembers.hgDiffCacheFilesToClear = new Set();
-
-    const diffStatsSubscription = (featureConfig.observeAsStream(
-      'nuclide-hg-repository.enableDiffStats',
-    ): Observable<any>)
-      .switchMap((enableDiffStats: boolean) => {
-        if (!enableDiffStats) {
-          // TODO(most): rewrite fetching structures avoiding side effects
-          this._sharedMembers.hgDiffCache = new Map();
-          this._sharedMembers.emitter.emit('did-change-statuses');
-          return Observable.empty();
-        }
-
-        return observableFromSubscribeFunction(
-          atom.workspace.observeTextEditors.bind(atom.workspace),
-        ).flatMap(textEditor => {
-          return this._observePaneItemVisibility(textEditor).switchMap(
-            visible => {
-              if (!visible) {
-                return Observable.empty();
-              }
-
-              const buffer = textEditor.getBuffer();
-              const filePath = buffer.getPath();
-              if (
-                filePath == null ||
-                filePath.length === 0 ||
-                !this.isPathRelevantToRepository(filePath)
-              ) {
-                return Observable.empty();
-              }
-              return Observable.combineLatest(
-                observableFromSubscribeFunction(
-                  buffer.onDidSave.bind(buffer),
-                ).startWith(''),
-                this._sharedMembers.hgUncommittedStatusChanges.statusChanges,
-              )
-                .filter(([_, statusChanges]) => {
-                  return (
-                    statusChanges.has(filePath) &&
-                    this.isStatusModified(statusChanges.get(filePath))
-                  );
-                })
-                .map(() => filePath)
-                .takeUntil(
-                  Observable.merge(
-                    observeBufferCloseOrRename(buffer),
-                    this._observePaneItemVisibility(textEditor).filter(v => !v),
-                  ).do(() => {
-                    // TODO(most): rewrite to be simpler and avoid side effects.
-                    // Remove the file from the diff stats cache when the buffer is closed.
-                    this._sharedMembers.hgDiffCacheFilesToClear.add(filePath);
-                  }),
-                );
-            },
-          );
-        });
-      })
-      .flatMap(filePath => this._updateDiffInfo([filePath]))
-      .subscribe();
-    this._sharedMembers.subscriptions.add(diffStatsSubscription);
+    this._sharedMembers.bufferDiffsFromHeadCache = new Map();
 
     this._sharedMembers.repoSubscriptions = this._sharedMembers.service
       .createRepositorySubscriptions(this._sharedMembers.workingDirectoryPath)
@@ -404,8 +335,6 @@ export class HgRepositoryClient {
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
       shouldRevisionsUpdate.subscribe(() => {
         this._sharedMembers.revisionsCache.refreshRevisions();
-        this._sharedMembers.fileContentsAtHead.reset();
-        this._sharedMembers.hgDiffCache = new Map();
       }),
     );
   }
@@ -894,16 +823,27 @@ export class HgRepositoryClient {
    *
    */
 
-  getDiffStats(filePath: ?NuclideUri): {added: number, deleted: number} {
-    const cleanStats = {added: 0, deleted: 0};
-    // flowlint-next-line sketchy-null-string:off
-    if (!filePath) {
-      return cleanStats;
+  setDiffInfo(filePath: NuclideUri, diffInfo: DiffInfo): void {
+    if (this.isPathRelevantToRepository(filePath)) {
+      this._sharedMembers.bufferDiffsFromHeadCache.set(filePath, diffInfo);
     }
-    const cachedData = this._sharedMembers.hgDiffCache.get(filePath);
-    return cachedData
-      ? {added: cachedData.added, deleted: cachedData.deleted}
-      : cleanStats;
+  }
+
+  deleteDiffInfo(filePath: NuclideUri): void {
+    this._sharedMembers.bufferDiffsFromHeadCache.delete(filePath);
+  }
+
+  clearAllDiffInfo(): void {
+    this._sharedMembers.bufferDiffsFromHeadCache.clear();
+  }
+
+  getDiffStats(filePath: NuclideUri): {added: number, deleted: number} {
+    return (
+      this._sharedMembers.bufferDiffsFromHeadCache.get(filePath) || {
+        added: 0,
+        deleted: 0,
+      }
+    );
   }
 
   /**
@@ -912,16 +852,13 @@ export class HgRepositoryClient {
    * NOTE: this method currently ignores the passed-in text, and instead diffs
    * against the currently saved contents of the file.
    */
-  // TODO (jessicalin) Export the LineDiff type (from hg-output-helpers) when
-  // types can be exported.
   // TODO (jessicalin) Make this method work with the passed-in `text`. t6391579
-  getLineDiffs(filePath: ?NuclideUri, text: ?string): Array<LineDiff> {
-    // flowlint-next-line sketchy-null-string:off
-    if (!filePath) {
-      return [];
-    }
-    const diffInfo = this._sharedMembers.hgDiffCache.get(filePath);
-    return diffInfo ? diffInfo.lineDiffs : [];
+  // TODO (tjfryan): diff gutters is a pull-based API, but we calculate diffs in a
+  // push-based way. This can lead to some cases like committing changes
+  // sometimes won't clear gutters until changes are made to the buffer
+  getLineDiffs(filePath: NuclideUri, text: ?string): Array<LineDiff> {
+    const diffInfo = this._sharedMembers.bufferDiffsFromHeadCache.get(filePath);
+    return diffInfo != null ? diffInfo.lineDiffs : [];
   }
 
   /**
@@ -929,124 +866,6 @@ export class HgRepositoryClient {
    * Section: Retrieving Diffs (async methods)
    *
    */
-
-  /**
-   * Updates the diff information for the given paths, and updates the cache.
-   * @param An array of absolute file paths for which to update the diff info.
-   * @return A map of each path to its DiffInfo.
-   *   This method may return `null` if the call to `hg diff` fails.
-   *   A file path will not appear in the returned Map if it is not in the repo,
-   *   if it has no changes, or if there is a pending `hg diff` call for it already.
-   */
-  _updateDiffInfo(
-    filePaths: Array<NuclideUri>,
-  ): Observable<?Map<NuclideUri, DiffInfo>> {
-    const pathsToFetch = filePaths.filter(aPath => {
-      // Don't try to fetch information for this path if it's not in the repo.
-      if (!this.isPathRelevantToRepository(aPath)) {
-        return false;
-      }
-      // Don't do another update for this path if we are in the middle of running an update.
-      if (this._sharedMembers.hgDiffCacheFilesUpdating.has(aPath)) {
-        return false;
-      } else {
-        this._sharedMembers.hgDiffCacheFilesUpdating.add(aPath);
-        return true;
-      }
-    });
-
-    if (pathsToFetch.length === 0) {
-      return Observable.of(new Map());
-    }
-
-    return this._getCurrentHeadId().switchMap(currentHeadId => {
-      if (currentHeadId == null) {
-        return Observable.of(new Map());
-      }
-
-      return this._getFileDiffs(pathsToFetch, currentHeadId).do(
-        pathsToDiffInfo => {
-          if (pathsToDiffInfo) {
-            for (const [filePath, diffInfo] of pathsToDiffInfo) {
-              this._sharedMembers.hgDiffCache.set(filePath, diffInfo);
-            }
-          }
-
-          // Remove files marked for deletion.
-          this._sharedMembers.hgDiffCacheFilesToClear.forEach(fileToClear => {
-            this._sharedMembers.hgDiffCache.delete(fileToClear);
-          });
-          this._sharedMembers.hgDiffCacheFilesToClear.clear();
-
-          // The fetched files can now be updated again.
-          for (const pathToFetch of pathsToFetch) {
-            this._sharedMembers.hgDiffCacheFilesUpdating.delete(pathToFetch);
-          }
-
-          // TODO (t9113913) Ideally, we could send more targeted events that better
-          // describe what change has occurred. Right now, GitRepository dictates either
-          // 'did-change-status' or 'did-change-statuses'.
-          this._sharedMembers.emitter.emit('did-change-statuses');
-        },
-      );
-    });
-  }
-
-  _getFileDiffs(
-    pathsToFetch: Array<NuclideUri>,
-    revision: string,
-  ): Observable<Map<NuclideUri, DiffInfo>> {
-    const fileContents = pathsToFetch.map(filePath => {
-      const cachedContent = this._sharedMembers.fileContentsAtHead.get(
-        filePath,
-      );
-      let contentObservable;
-      if (cachedContent == null) {
-        contentObservable = this._sharedMembers.service
-          .fetchFileContentAtRevision(
-            this._sharedMembers.workingDirectoryPath,
-            filePath,
-            revision,
-          )
-          .refCount()
-          .map(contents => {
-            this._sharedMembers.fileContentsAtHead.set(filePath, contents);
-            return contents;
-          });
-      } else {
-        contentObservable = Observable.of(cachedContent);
-      }
-      return contentObservable
-        .switchMap(content => {
-          return gitDiffContentAgainstFile(content, filePath);
-        })
-        .map(diff => ({
-          filePath,
-          diff,
-        }));
-    });
-    const diffs = Observable.merge(...fileContents)
-      .map(({filePath, diff}) => {
-        // This is to differentiate between diff delimiter and the source
-        // eslint-disable-next-line no-useless-escape
-        const toParse = diff.split('--- ');
-        const lineDiff = parseHgDiffUnifiedOutput(toParse[1]);
-        return [filePath, lineDiff];
-      })
-      .toArray()
-      .map(contents => new Map(contents));
-    return diffs;
-  }
-
-  _getCurrentHeadId(): Observable<string> {
-    if (this._sharedMembers.currentHeadId != null) {
-      return Observable.of(this._sharedMembers.currentHeadId);
-    }
-    return this._sharedMembers.service
-      .getHeadId(this._sharedMembers.workingDirectoryPath)
-      .refCount()
-      .do(headId => (this._sharedMembers.currentHeadId = headId));
-  }
 
   fetchMergeConflicts(): Observable<?MergeConflicts> {
     return this._sharedMembers.service
@@ -1227,6 +1046,13 @@ export class HgRepositoryClient {
         .refCount()
         .do(contents => fileContentsAtRevision.set(filePath, contents));
     }
+  }
+
+  fetchMultipleFilesContentAtRevision(
+    filePaths: Array<NuclideUri>,
+    revision: string,
+  ): Observable<Array<{abspath: NuclideUri, path: NuclideUri, data: string}>> {
+    return this.runCommand(['cat', '-Tjson', ...filePaths]).map(JSON.parse);
   }
 
   fetchFilesChangedAtRevision(
@@ -1553,18 +1379,12 @@ export class HgRepositoryClient {
 
   _clearClientCache(filePaths: Array<NuclideUri>): void {
     if (filePaths.length === 0) {
-      this._sharedMembers.hgDiffCache = new Map();
       this._sharedMembers.hgStatusCache = new Map();
-      this._sharedMembers.fileContentsAtHead.reset();
     } else {
-      this._sharedMembers.hgDiffCache = new Map(
-        this._sharedMembers.hgDiffCache,
-      );
       this._sharedMembers.hgStatusCache = new Map(
         this._sharedMembers.hgStatusCache,
       );
       filePaths.forEach(filePath => {
-        this._sharedMembers.hgDiffCache.delete(filePath);
         this._sharedMembers.hgStatusCache.delete(filePath);
       });
     }

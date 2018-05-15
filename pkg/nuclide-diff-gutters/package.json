@@ -1,0 +1,12 @@
+{
+  "name": "nuclide-diff-gutters",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "author": "Nuclide Code Lifecycle",
+  "description": "Handles rendering UI in editor gutters to show changes. A push-based alternate to the git-diff package",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}

@@ -277,52 +277,6 @@ describe('HgRepositoryClient', () => {
       spyOn(repo, '_updateDiffInfo').andReturn(Observable.of('fake'));
       spyOn(repo, '_observePaneItemVisibility').andReturn(Observable.of(true));
     });
-
-    // eslint-disable-next-line jasmine/no-disabled-tests
-    xit(
-      'is updated when the active pane item changes to an editor, if the editor file is in the' +
-        ' project.',
-      () => {
-        const file = temp.openSync({dir: projectDirectory.getPath()});
-        waitsForPromise(async () => {
-          const editor = await atom.workspace.open(file.path);
-          expect(repo._updateDiffInfo.calls.length).toBe(1);
-          expect(repo._updateDiffInfo).toHaveBeenCalledWith(editor.getPath());
-        });
-      },
-    );
-
-    it(
-      'is not updated when the active pane item changes to an editor whose file is not in the' +
-        ' repo.',
-      () => {
-        const file = temp.openSync();
-        waitsForPromise(async () => {
-          await atom.workspace.open(file.path);
-          expect(repo._updateDiffInfo.calls.length).toBe(0);
-        });
-      },
-    );
-
-    it(
-      'marks a file to be removed from the cache after its editor is closed, if the file is in the' +
-        ' project.',
-      () => {
-        const file = temp.openSync({dir: projectDirectory.getPath()});
-        repo._sharedMembers.hgUncommittedStatusChanges.statusChanges = Observable.of(
-          new Map().set(file.path, 1),
-        );
-        waitsForPromise(async () => {
-          const editor = await atom.workspace.open(file.path);
-          expect(repo._sharedMembers.hgDiffCacheFilesToClear.size).toBe(0);
-          editor.destroy();
-          const expectedSet = new Set([editor.getPath()]);
-          expect(repo._sharedMembers.hgDiffCacheFilesToClear).toEqual(
-            expectedSet,
-          );
-        });
-      },
-    );
   });
 
   describe('::_updateDiffInfo', () => {
@@ -358,40 +312,6 @@ describe('HgRepositoryClient', () => {
         return true;
       });
     });
-
-    it('updates the cache when the path to update is not already being updated.', () => {
-      waitsForPromise(async () => {
-        expect(repo._sharedMembers.hgDiffCache.get(PATH_1)).toBeUndefined();
-        await repo._updateDiffInfo([PATH_1]).toPromise();
-        expect(repo._sharedMembers.hgDiffCache.get(PATH_1)).toEqual(
-          mockDiffInfo,
-        );
-      });
-    });
-
-    it('removes paths that are marked for removal from the cache.', () => {
-      // Set up some mock paths to be removed. One already exists in the cache,
-      // the other is going to be attempted to be updated. Both should be removed.
-      const testPathToRemove1 = PATH_1;
-      const testPathToRemove2 = PATH_2;
-      repo._sharedMembers.hgDiffCache.set(testPathToRemove1, {
-        added: 0,
-        deleted: 0,
-        lineDiffs: [],
-      });
-      repo._sharedMembers.hgDiffCacheFilesToClear.add(testPathToRemove1);
-      repo._sharedMembers.hgDiffCacheFilesToClear.add(testPathToRemove2);
-
-      waitsForPromise(async () => {
-        await repo._updateDiffInfo([testPathToRemove2]).toPromise();
-        expect(
-          repo._sharedMembers.hgDiffCache.get(testPathToRemove1),
-        ).not.toBeDefined();
-        expect(
-          repo._sharedMembers.hgDiffCache.get(testPathToRemove2),
-        ).not.toBeDefined();
-      });
-    });
   });
 
   describe('::getCachedPathStatus/::getPathStatus', () => {
@@ -424,77 +344,6 @@ describe('HgRepositoryClient', () => {
       expect(repo.isStatusNew(null)).toBe(false);
       expect(repo.isStatusNew(undefined)).toBe(false);
     });
-  });
-
-  describe('::getDiffStats', () => {
-    it(
-      'returns clean stats if the path is null or undefined, but handles paths with those' +
-        ' names.',
-      () => {
-        const mockDiffInfo = {
-          added: 1,
-          deleted: 1,
-          lineDiffs: [
-            {
-              oldStart: 2,
-              oldLines: 1,
-              newStart: 2,
-              newLines: 1,
-            },
-          ],
-        };
-        // Force the state of the cache.
-        repo._sharedMembers.hgDiffCache = new Map([
-          [PATH_CALLED_NULL, mockDiffInfo],
-          [PATH_CALLED_UNDEFINED, mockDiffInfo],
-        ]);
-        const cleanStats = {added: 0, deleted: 0};
-        const expectedChangeStats = {added: 1, deleted: 1};
-        expect(repo.getDiffStats(null)).toEqual(cleanStats);
-        expect(repo.getDiffStats(undefined)).toEqual(cleanStats);
-        expect(repo.getDiffStats(PATH_CALLED_NULL)).toEqual(
-          expectedChangeStats,
-        );
-        expect(repo.getDiffStats(PATH_CALLED_UNDEFINED)).toEqual(
-          expectedChangeStats,
-        );
-      },
-    );
-  });
-
-  describe('::getLineDiffs', () => {
-    it(
-      'returns an empty array if the path is null or undefined, but handles paths with those' +
-        ' names.',
-      () => {
-        const mockDiffInfo = {
-          added: 1,
-          deleted: 1,
-          lineDiffs: [
-            {
-              oldStart: 2,
-              oldLines: 1,
-              newStart: 2,
-              newLines: 1,
-            },
-          ],
-        };
-        // Force the state of the cache.
-        repo._sharedMembers.hgDiffCache = new Map([
-          [PATH_CALLED_NULL, mockDiffInfo],
-          [PATH_CALLED_UNDEFINED, mockDiffInfo],
-        ]);
-        // For now the second argument, 'text', is not used.
-        expect(repo.getLineDiffs(null, null)).toEqual([]);
-        expect(repo.getLineDiffs(undefined, null)).toEqual([]);
-        expect(repo.getLineDiffs(PATH_CALLED_NULL, null)).toEqual(
-          mockDiffInfo.lineDiffs,
-        );
-        expect(repo.getLineDiffs(PATH_CALLED_UNDEFINED, null)).toEqual(
-          mockDiffInfo.lineDiffs,
-        );
-      },
-    );
   });
 
   describe('::destroy', () => {
