@@ -14,20 +14,22 @@ import type {LRUCache} from 'lru-cache';
 import type {NuclideUri} from './nuclideUri';
 
 import LRU from 'lru-cache';
+import {findSubArrayIndex} from './collection';
 import fsPromise from './fsPromise';
+import nuclideUri from './nuclideUri';
 
-export type SearchStrategy = 'nearest' | 'furthest' | 'priority';
+export type SearchStrategy = 'nearest' | 'furthest' | 'priority' | 'pathMatch';
 
 export class ConfigCache {
-  _configFileNames: Array<string>;
+  _configPatterns: Array<string>;
   _searchStrategy: SearchStrategy;
   _configCache: LRUCache<NuclideUri, Promise<?NuclideUri>>;
 
   constructor(
-    configFileNames: Array<string>,
+    configPatterns: Array<string>,
     searchStrategy?: SearchStrategy = 'nearest',
   ) {
-    this._configFileNames = configFileNames;
+    this._configPatterns = configPatterns;
     this._searchStrategy = searchStrategy;
     this._configCache = LRU({
       max: 200, // Want this to exceed the maximum expected number of open files + dirs.
@@ -46,7 +48,7 @@ export class ConfigCache {
 
   async _findConfigDir(path: NuclideUri): Promise<?NuclideUri> {
     const configDirs = await Promise.all(
-      this._configFileNames.map(configFile => {
+      this._configPatterns.map(configFile => {
         if (this._searchStrategy === 'furthest') {
           return fsPromise.findFurthestFile(configFile, path);
         } else {
@@ -70,6 +72,20 @@ export class ConfigCache {
         }
         return previous;
       }, null);
+    } else if (this._searchStrategy === 'pathMatch') {
+      // Find the first occurrence of a config segment in the path.
+      const pathSplit = nuclideUri.split(path);
+      return this._configPatterns
+        .map(configPattern => {
+          const configSplit = nuclideUri.split(configPattern);
+          const foundIndex = findSubArrayIndex(pathSplit, configSplit);
+          return foundIndex !== -1
+            ? nuclideUri.join(
+                ...pathSplit.slice(0, foundIndex + configSplit.length),
+              )
+            : null;
+        })
+        .find(Boolean);
     } else {
       // Find the first match.
       return configDirs.find(Boolean);

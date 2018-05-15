@@ -88,6 +88,19 @@ export function arrayFindLastIndex<T>(
 }
 
 /**
+ * Return the first index in array where subarray is equal to the next
+ * subarray-sized slice of array. Return -1 if no match is found.
+ */
+export function findSubArrayIndex<T>(
+  array: Array<T>,
+  subarr: Array<T>,
+): number {
+  return array.findIndex((_, offset) =>
+    arrayEqual(array.slice(offset, offset + subarr.length), subarr),
+  );
+}
+
+/**
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */

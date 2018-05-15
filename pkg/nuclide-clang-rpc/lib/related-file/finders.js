@@ -9,10 +9,11 @@
  * @format
  */
 
+import {findSubArrayIndex} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import {getFileBasename, isHeaderFile, isSourceFile} from '../utils';
-import {searchFileWithBasename, findSubArrayIndex} from './common';
+import {searchFileWithBasename} from './common';
 import {
   getRelatedHeaderForSourceFromFramework,
   getRelatedSourceForHeaderFromFramework,

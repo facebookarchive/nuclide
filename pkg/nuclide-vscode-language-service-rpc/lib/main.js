@@ -67,6 +67,9 @@ export type LspLanguageServiceParams = {|
   // furthest: Uses the matching project file in the furthest parent directory possible.
   // priority: Takes the first match in `projectFileNames` that exists in a parent directory,
   //           and then takes the 'nearest' strategy for that file.
+  // pathMatch: Treat the filename list as path fragments and use the portion of the
+  //            parent directory up to the end of the first fragment that matches.
+  //            Example: file '/a/b/x/foo.c' with pattern ['b/x'] will match '/a/b/x'.
   // Default: 'nearest'.
   projectFileSearchStrategy?: SearchStrategy,
   // When spawning the LSP process, use the user's original shell environment

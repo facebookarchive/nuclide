@@ -78,4 +78,18 @@ describe('ConfigCache', () => {
       expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
     });
   });
+
+  it('matches first path segment when the search strategy is "pathMatch"', () => {
+    waitsForPromise(async () => {
+      const cache = new ConfigCache(
+        ['ConfigCache/testFolder', 'ConfigCache'],
+        'pathMatch',
+      );
+
+      // matches both patterns, tie-breaks with first one
+      expect(await cache.getConfigDir(nestedFolder)).toBe(nestedFolder);
+      // matches second pattern
+      expect(await cache.getConfigDir(nestedFolder2)).toBe(rootFolder);
+    });
+  });
 });

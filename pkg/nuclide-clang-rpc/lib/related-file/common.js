@@ -9,7 +9,6 @@
  * @format
  */
 
-import {arrayEqual} from 'nuclide-commons/collection';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getFileBasename} from '../utils';
@@ -26,13 +25,4 @@ export async function searchFileWithBasename(
     }
   }
   return null;
-}
-
-export function findSubArrayIndex(arr: string[], subarr: string[]): number {
-  for (let offset = 0; offset + subarr.length <= arr.length; offset++) {
-    if (arrayEqual(arr.slice(offset, offset + subarr.length), subarr)) {
-      return offset;
-    }
-  }
-  return -1;
 }

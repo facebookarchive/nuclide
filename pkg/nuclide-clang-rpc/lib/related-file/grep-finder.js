@@ -20,13 +20,13 @@
  * The resulting Observable fires and completes as soon as a matching file is found;
  * 'null' will always be emitted if no results are found.
  */
+import {findSubArrayIndex} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {track} from '../../../nuclide-analytics';
 import {codeSearch} from '../../../nuclide-code-search-rpc';
 import {isSourceFile} from '../utils';
 import escapeStringRegExp from 'escape-string-regexp';
-import {findSubArrayIndex} from './common';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-clang-rpc');
