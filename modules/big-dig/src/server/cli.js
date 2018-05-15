@@ -33,7 +33,7 @@ const DEFAULT_PORTS = '0';
 const DEFAULT_TIMEOUT = 60000;
 
 export type BigDigCliParams = {|
-  cname: string,
+  cname?: string,
   jsonOutputFile: string,
   timeout: ?number,
   expiration: string,
@@ -66,8 +66,8 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     serverKeyPath,
   } = params;
   let {ports, timeout} = params;
-  if (typeof cname !== 'string') {
-    throw Error(`cname must be specified as string but was: '${cname}'`);
+  if (cname != null && (typeof cname !== 'string' || cname.length === 0)) {
+    throw Error(`cname must be a non-empty string but was: '${cname}'`);
   }
   if (typeof jsonOutputFile !== 'string') {
     throw Error('Must specify jsonOutputFile');
@@ -135,7 +135,8 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     certificateStrategy = {
       type: 'generate',
       clientCommonName: 'nuclide',
-      serverCommonName: cname || `${getUsername()}.nuclide.${os.hostname()}`,
+      serverCommonName:
+        cname != null ? cname : `${getUsername()}.nuclide.${os.hostname()}`,
       openSSLConfigPath: require.resolve('./openssl.cnf'),
     };
   }
