@@ -9,9 +9,9 @@
  * @format
  */
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';
 import {
-  activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
@@ -25,8 +25,9 @@ describe('React Native Inspector', () => {
     waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
-      // Activate nuclide packages.
-      await activateAllPackages();
+      await atom.packages.activatePackage(
+        nuclideUri.join(__dirname, '../pkg/nuclide-react-inspector'),
+      );
     });
   });
 
