@@ -80,6 +80,6 @@ describe('Mercurial Conflict Resolution Flow Integration Tests', () => {
   });
 
   afterEach(() => {
-    deactivateAllPackages();
+    waitsForPromise(() => deactivateAllPackages());
   });
 });

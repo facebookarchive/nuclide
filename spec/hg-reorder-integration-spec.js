@@ -77,6 +77,6 @@ describe('Mercurial Reorder Integration Tests', () => {
   });
 
   afterEach(() => {
-    deactivateAllPackages();
+    waitsForPromise(() => deactivateAllPackages());
   });
 });

@@ -97,6 +97,6 @@ describe('Mercurial fold Integration Tests', () => {
   });
 
   afterEach(() => {
-    deactivateAllPackages();
+    waitsForPromise(() => deactivateAllPackages());
   });
 });

@@ -102,6 +102,18 @@ export async function activateAllPackages(): Promise<Array<string>> {
   return atom.packages.getActivePackages().map(pack => pack.name);
 }
 
+/**
+ * IMPORTANT: You must wait for the returned promise to resolve before continuing! Otherwise, other
+ * code may attempt to activate or deactivate packages mid-deactivation. In fact, this is extremely
+ * likely because Atom itself [will call `atom.reset()`][1] which, in turn, [will call
+ * `atom.packages.reset()`][2], which calls `atom.packages.deactivatePackages()`. Because of the
+ * async nature of Nuclide's deactivation, this will result in Nuclide's `deactivate()` being called
+ * twice, which is invalid. This fact also makes many of our calls redundant; we may wish to remove
+ * them in the future or may not because it makes the cleanup of `activateAllPackages()` explicit.
+ *
+ * [1]: https://github.com/atom/atom/blob/495376639113a3211bc80e00328870e119a8f872/spec/spec-helper.coffee#L129-L130
+ * [2]: https://github.com/atom/atom/blob/495376639113a3211bc80e00328870e119a8f872/src/atom-environment.js#L358
+ */
 export async function deactivateAllPackages(): Promise<void> {
   await atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
