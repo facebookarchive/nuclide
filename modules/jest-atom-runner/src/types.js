@@ -12,6 +12,8 @@
 
 export type GlobalConfig = {
   maxWorkers: number,
+  watch: boolean,
+  watchAll: boolean,
 };
 export type ProjectConfig = {};
 export type Resolver = {};
