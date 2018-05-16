@@ -160,6 +160,9 @@ function resolveVisible(resolveInfo: ResolveInfo): Observable<?CodeLensData> {
   const firstLine = (editor: any).element.getFirstVisibleScreenRow();
   const lastLine = (editor: any).element.getLastVisibleScreenRow() + 1;
 
+  const firstBufferLine = editor.bufferRowForScreenRow(firstLine);
+  const lastBufferLine = editor.bufferRowForScreenRow(lastLine);
+
   // If this begins to become a performance concern we can sort the list and
   // then do a binary search to find the starting and ending range, but in
   // practice I've observed that it's rare for a file to have more than a few
@@ -169,13 +172,18 @@ function resolveVisible(resolveInfo: ResolveInfo): Observable<?CodeLensData> {
   // comparisons.
   const resolvableLenses = resolveInfo.lenses.filter(
     lensInfo =>
-      !lensInfo.resolved &&
-      lensInfo.lens.range.start.row >= firstLine &&
-      lensInfo.lens.range.start.row <= lastLine,
+      lensInfo.lens.range.start.row >= firstBufferLine &&
+      lensInfo.lens.range.start.row <= lastBufferLine,
   );
 
-  return Observable.from(resolvableLenses).mergeMap(lensInfo =>
-    Observable.defer(() => {
+  return Observable.from(resolvableLenses).mergeMap(lensInfo => {
+    const isFolded = () =>
+      editor.isFoldedAtBufferRow(lensInfo.lens.range.start.row);
+    return Observable.defer(() => {
+      if (lensInfo.resolved || isFolded()) {
+        return Promise.resolve(lensInfo.lens);
+      }
+
       // Set this *before* we get the data so we don't send duplicate requests.
       lensInfo.resolved = true;
       return resolveInfo.languageService.resolveCodeLens(
@@ -183,6 +191,13 @@ function resolveVisible(resolveInfo: ResolveInfo): Observable<?CodeLensData> {
         lensInfo.lens,
       );
     }).do((lens: ?CodeLensData) => {
+      lensInfo.element.classList.toggle('folded', isFolded());
+
+      if (!lensInfo.resolved) {
+        // We skipped this one because it was folded.
+        return;
+      }
+
       if (lens != null && lens.command != null) {
         const text = domPurify.sanitize(lens.command.title, {
           ALLOWED_TAGS: [],
@@ -192,8 +207,8 @@ function resolveVisible(resolveInfo: ResolveInfo): Observable<?CodeLensData> {
         lensInfo.resolved = false;
         lensInfo.retries++;
       }
-    }),
-  );
+    });
+  });
 }
 
 export function observeForCodeLens(
