@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "babel-plugin-idx": "1.4.0",
-    "dedent": "0.6.0",
+    "dedent": "0.7.0",
     "invariant": "2.2.2",
     "nuclide-node-transpiler": "0.7.1-dev",
     "simple-text-buffer": "9.2.11"

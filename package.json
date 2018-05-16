@@ -59,7 +59,7 @@
     "classnames": "2.2.5",
     "connect": "3.5.0",
     "core-js": "2.5.1",
-    "dedent": "0.6.0",
+    "dedent": "0.7.0",
     "deep-is": "0.1.3",
     "diff": "3.0.1",
     "diffparser": "1.1.0",
