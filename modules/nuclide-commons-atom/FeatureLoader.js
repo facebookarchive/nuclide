@@ -85,6 +85,8 @@ export default class FeatureLoader {
   load(): void {
     invariant(!this._loadDisposable.disposed);
 
+    patchPackageManager();
+
     // Add a dummy deserializer. This forces Atom to load Nuclide's main module
     // (this file) when the package is loaded, which is super important because
     // this module loads all of the Nuclide features. We could accomplish the same
@@ -133,6 +135,26 @@ export default class FeatureLoader {
         return activateExperimentalPackages([...featuresToLoad]);
       }),
     );
+
+    const featureNames = new Set(
+      this._features.map(feature => feature.pkg.name),
+    );
+
+    // Ensure that the root package is initialized before all of its features. This is important
+    // because the root package defines the config for all managed features and we need to make
+    // sure that it's present before they're initialized (i.e. before their deserializers are
+    // called).
+    // $FlowIssue: Need to upstream this.
+    const onWillInitializePackageDisposable = atom.packages.onWillInitializePackage(
+      pack => {
+        if (featureNames.has(pack.name)) {
+          onWillInitializePackageDisposable.dispose();
+          const rootPackage = atom.packages.getLoadedPackage(this._pkgName);
+          nullthrows(rootPackage).initializeIfNeeded();
+        }
+      },
+    );
+    this._loadDisposable.add(onWillInitializePackageDisposable);
 
     // Clean up when the package is unloaded.
     this._loadDisposable.add(
@@ -464,4 +486,65 @@ function groupFeatures(
     }
   }
   return featureGroups;
+}
+
+/**
+ * Patch the package manager and packages to (1) implement `onWillInitializePackage` and (2) call
+ * `registerConfigSchemaFromMainModule()` when a package is initialized (to guarantee its config
+ * schema is ready when its deserializers are called). This should be removed once these changes
+ * are upstreamed.
+ */
+function patchPackageManager(): void {
+  if (
+    (atom.packages: any).onWillInitializePackage == null &&
+    !(atom.packages: any).__onWillInitializePackagePatched
+  ) {
+    (atom.packages: any).onWillInitializePackage = function(callback) {
+      (atom.packages: any).__onWillInitializePackagePatched = true;
+      return this.emitter.on('will-initialize-package', callback);
+    };
+  }
+
+  if (!(atom.packages: any).__packageLookupPatched) {
+    (atom.packages: any).__packageLookupPatched = true;
+    const loadPackage = atom.packages.loadPackage;
+    (atom.packages: any).loadPackage = function(nameOrPath, ...args) {
+      const pack = loadPackage.call(this, nameOrPath, ...args);
+      if (pack == null) {
+        return null;
+      }
+      patchPackage(pack);
+      return pack;
+    };
+
+    const getLoadedPackage = atom.packages.getLoadedPackage;
+    (atom.packages: any).getLoadedPackage = function(name, ...args) {
+      const pack = getLoadedPackage.call(this, name, ...args);
+      if (pack == null) {
+        return null;
+      }
+      patchPackage(pack);
+      return pack;
+    };
+  }
+}
+
+function patchPackage(pack): void {
+  if ((pack: any).__initializeIfNeededPatched) {
+    return;
+  }
+  (pack: any).__initializeIfNeededPatched = true;
+
+  const initializeIfNeeded = (pack: any).initializeIfNeeded;
+  (pack: any).initializeIfNeeded = function() {
+    if (this.mainInitialized) {
+      return;
+    }
+    if ((atom.packages: any).__onWillInitializePackagePatched) {
+      // If we didn't apply our patch for this, Atom is already dispatching the event.
+      atom.packages.emitter.emit('will-initialize-package', pack);
+    }
+    this.registerConfigSchemaFromMainModule();
+    return initializeIfNeeded.call(this);
+  };
 }

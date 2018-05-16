@@ -83,6 +83,7 @@ declare class atom$Package {
   // Undocumented
   bundledPackage: boolean,
   getCanDeferMainModuleRequireStorageKey(): string,
+  initializeIfNeeded(): void,
 }
 
 /**
