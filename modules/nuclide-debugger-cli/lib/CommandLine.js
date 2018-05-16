@@ -24,6 +24,7 @@ export default class CommandLine implements ConsoleIO {
   _inputStopped = false;
   _shouldPrompt = false;
   _lastLine = '';
+  _overridePrompt: ?string = null;
 
   _interrupts: Subject<void>;
   _lines: Subject<string>;
@@ -86,7 +87,18 @@ export default class CommandLine implements ConsoleIO {
   }
 
   setPrompt(prompt: ?string): void {
-    this._cli.setPrompt(prompt == null ? PROMPT : prompt);
+    this._overridePrompt = prompt;
+    this._updatePrompt();
+  }
+
+  _updatePrompt(): void {
+    if (this._inputStopped) {
+      this._cli.setPrompt('');
+    } else {
+      this._cli.setPrompt(
+        this._overridePrompt != null ? this._overridePrompt : PROMPT,
+      );
+    }
   }
 
   // $TODO handle paging long output (more) if termcap allows us to know the screen height
@@ -112,10 +124,12 @@ export default class CommandLine implements ConsoleIO {
 
   stopInput(): void {
     this._inputStopped = true;
+    this._updatePrompt();
   }
 
   startInput(): void {
     this._inputStopped = false;
+    this._updatePrompt();
     if (this._shouldPrompt) {
       this._cli.prompt();
       this._shouldPrompt = false;
