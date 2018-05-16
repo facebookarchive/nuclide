@@ -18,7 +18,7 @@
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",
     "nullthrows": "1.0.0",
-    "react": "16.2.0",
+    "react": "16.3.2",
     "rxjs": "5.5.5",
     "vscode-debugprotocol": "1.24.0"
   },
