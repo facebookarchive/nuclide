@@ -142,6 +142,7 @@ async function activateLsp(): Promise<UniversalDisposable> {
         fileExtensions: ['.js'],
         logCategory: 'flow-language-server',
         logLevel: 'ALL',
+        additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
       },
     );
     // TODO(ljw):
