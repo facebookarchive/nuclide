@@ -86,6 +86,7 @@ class MIDebugSession extends LoggingDebugSession {
   _pauseQueue: Array<() => Promise<void>>;
   _continueOnAttach: boolean;
   _stepping: boolean;
+  _configurationDoneResponse: ?DebugProtocol.ConfigurationDoneResponse;
 
   constructor() {
     const logfile = nuclideUri.join(os.tmpdir(), 'native-debugger-vsp.log');
@@ -330,13 +331,16 @@ class MIDebugSession extends LoggingDebugSession {
       ) {
         return;
       }
+
+      // target-attach returns done very quickly, but isn't really done until
+      // the corresponding *stopped event happens.
+      this._configurationDoneResponse = response;
     } else {
       if (!(await this._sendWithFailureCheck(response, 'exec-run'))) {
         return;
       }
+      this.sendResponse(response);
     }
-
-    this.sendResponse(response);
   }
 
   async setBreakPointsRequest(
@@ -854,6 +858,11 @@ class MIDebugSession extends LoggingDebugSession {
       return;
     } else if (stopped.reason == null) {
       // the stop reason is empty for attach start
+      if (this._configurationDoneResponse != null) {
+        this.send(this._configurationDoneResponse);
+        this._configurationDoneResponse = null;
+      }
+
       if (this._continueOnAttach) {
         this._continueOnAttach = false;
         this._running = true;
