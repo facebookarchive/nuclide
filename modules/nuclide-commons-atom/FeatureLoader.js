@@ -133,6 +133,15 @@ export default class FeatureLoader {
         return activateExperimentalPackages([...featuresToLoad]);
       }),
     );
+
+    // Clean up when the package is unloaded.
+    this._loadDisposable.add(
+      atom.packages.onDidUnloadPackage(pack => {
+        if (pack.name === this._pkgName) {
+          this._loadDisposable.dispose();
+        }
+      }),
+    );
   }
 
   activate(): void {
