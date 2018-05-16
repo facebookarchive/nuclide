@@ -1381,6 +1381,13 @@ declare class atom$WorkspaceCenter extends atom$AbstractPaneContainer {
 
   observeActivePaneItem(callback: atom$PaneItem => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
+  onDidAddTextEditor(
+    callback: (item: {
+      textEditor: atom$TextEditor,
+      pane: atom$Pane,
+      index: number,
+    }) => mixed,
+  ): IDisposable;
   // This should be removed soon anyway, it's currently deprecated.
   paneContainer: Object;
 }
