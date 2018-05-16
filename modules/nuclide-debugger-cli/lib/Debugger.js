@@ -50,6 +50,11 @@ import ThreadCollection from './ThreadCollection';
 import invariant from 'assert';
 import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
 
+type Capabilities = {
+  ...DebugProtocol.Capabilities,
+  supportsReadyForEvaluationsEvent?: ?boolean,
+};
+
 type SessionState =
   | 'INITIALIZING' // waiting for initialized event from adapter
   | 'CONFIGURING' // waiting for user to issue 'run' command after setting initial breakpoints
@@ -58,7 +63,7 @@ type SessionState =
   | 'TERMINATED'; // program is gone and not coming back
 
 export default class Debugger implements DebuggerInterface {
-  _capabilities: DebugProtocol.Capabilities = {};
+  _capabilities: Capabilities = {};
   _console: ConsoleIO;
   _debugSession: ?VsDebugSession;
   _logger: log4js$Logger;
@@ -70,6 +75,7 @@ export default class Debugger implements DebuggerInterface {
   _adapter: ?ParsedVSAdapter;
   _attachMode: boolean = false;
   _preset: ?Preset;
+  _readyForEvaluations: boolean = false;
 
   constructor(logger: log4js$Logger, con: ConsoleIO, preset: ?Preset) {
     this._logger = logger;
@@ -133,7 +139,7 @@ export default class Debugger implements DebuggerInterface {
     invariant(adapter != null);
 
     this._state = 'CONFIGURING';
-    this._console.startInput();
+    this._startConfigurationInput();
   }
 
   async _configurationDone(): Promise<void> {
@@ -541,7 +547,18 @@ export default class Debugger implements DebuggerInterface {
       columnsStartAt1: true,
     });
 
-    this._capabilities = body || {};
+    this._capabilities = {};
+    if (body != null) {
+      // $FlowFixMe should be able to just assign here
+      this._capabilities = ((body: any): Capabilities);
+    }
+    this._readyForEvaluations = true;
+
+    // $FlowFixMe
+    const extraBody: any = body;
+    if (extraBody.supportsReadyForEvaluationsEvent === true) {
+      this._readyForEvaluations = false;
+    }
   }
 
   async _resetAllBreakpoints(): Promise<void> {
@@ -682,6 +699,12 @@ export default class Debugger implements DebuggerInterface {
     session
       .observeBreakpointEvents()
       .subscribe(this._onBreakpointEvent.bind(this));
+
+    session.observeCustomEvents().subscribe(e => {
+      if (e.event === 'readyForEvaluations') {
+        this._onReadyForEvaluations();
+      }
+    });
   }
 
   async closeSession(): Promise<void> {
@@ -786,6 +809,17 @@ export default class Debugger implements DebuggerInterface {
 
     if (reason === 'exited') {
       this._threads.removeThread(threadId);
+    }
+  }
+
+  _onReadyForEvaluations(): void {
+    this._readyForEvaluations = true;
+    this._startConfigurationInput();
+  }
+
+  _startConfigurationInput(): void {
+    if (this._readyForEvaluations && this._state === 'CONFIGURING') {
+      this._console.startInput();
     }
   }
 

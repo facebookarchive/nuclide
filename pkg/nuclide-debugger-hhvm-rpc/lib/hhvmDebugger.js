@@ -358,6 +358,11 @@ class HHVMDebuggerWrapper {
 
               // Experimental support for terminate thread
               supportsTerminateThreadsRequest: true,
+
+              // Non-standard capability to indicate we send a custom event when
+              // the startup doc for the console REPL is complete, so that a client
+              // can wait for this event before offering the console.
+              supportsReadyForEvaluationsEvent: true,
             },
           });
           break;
