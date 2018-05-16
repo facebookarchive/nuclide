@@ -94,6 +94,7 @@ function copyHostname(): void {
     }
     const {hostname} = nuclideUri.parse(uri);
     if (hostname == null) {
+      notify('Nothing copied - the path is a local path.');
       return;
     }
     copyToClipboard('Copied hostname', hostname);
