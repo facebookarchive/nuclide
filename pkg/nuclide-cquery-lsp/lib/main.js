@@ -57,6 +57,8 @@ import passesGK from '../../commons-node/passesGK';
 import {
   AtomLanguageService,
   getHostServices,
+  updateAutocompleteResults,
+  updateAutocompleteFirstResults,
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -445,7 +447,10 @@ class Activation {
         suggestionPriority: 3,
         disableForSelector: null,
         excludeLowerPriority: false,
-        autocompleteCacherConfig: null,
+        autocompleteCacherConfig: {
+          updateResults: updateAutocompleteResults,
+          updateFirstResults: updateAutocompleteFirstResults,
+        },
         analytics: {
           eventName: 'nuclide-cquery-lsp',
           shouldLogInsertedSuggestion: false,
