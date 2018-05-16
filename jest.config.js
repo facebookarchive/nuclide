@@ -18,6 +18,7 @@
 const path = require('path');
 
 module.exports = {
+  displayName: 'node',
   rootDir: path.resolve(__dirname, '../../'),
   roots: ['<rootDir>/xplat/nuclide'],
   testMatch: ['**/__tests__/**/*.js?(x)'],

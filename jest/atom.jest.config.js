@@ -18,6 +18,7 @@
 const path = require('path');
 
 module.exports = {
+  displayName: 'atom',
   rootDir: path.resolve(__dirname, '..'),
   testMatch: ['**/__atom_tests__/**/*.js?(x)'],
   transform: {
