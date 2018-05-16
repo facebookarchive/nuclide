@@ -1219,15 +1219,19 @@
       }
     ]
   'namespace':
-    'begin': '(?i)(?:(namespace)|[a-z0-9_]+)?(\\\\)(?=.*?[^a-z_0-9\\\\])'
+    'begin': '(?i)((namespace)|[a-z0-9_]+)?(\\\\)(?=.*?[^a-z_0-9\\\\])'
     'beginCaptures':
       '1':
-        'name': 'variable.language.namespace.php'
-      '2':
+        'name': 'entity.name.type.namespace.php'
+      '3':
         'name': 'punctuation.separator.inheritance.php'
     'end': '(?i)(?=[a-z0-9_]*[^a-z0-9_\\\\])'
     'name': 'support.other.namespace.php'
     'patterns': [
+      {
+        'name': 'entity.name.type.namespace.php'
+        'match': '(?i)[a-z0-9_]+(?=\\\\)'
+      }
       {
         'captures':
           '1':
@@ -2083,6 +2087,9 @@
   'user-function-call':
     'begin': '(?i)(?=[a-z_0-9\\\\]*[a-z_][a-z0-9_]*\\s*\\()'
     'end': '(?i)[a-z_][a-z_0-9]*(?=\\s*\\()'
+    'endCaptures':
+      '0':
+        'name': 'entity.name.function.php'
     'name': 'meta.function-call.php'
     'patterns': [
       {
