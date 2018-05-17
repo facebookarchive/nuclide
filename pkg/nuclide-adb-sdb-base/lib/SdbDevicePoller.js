@@ -14,7 +14,15 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 import type {Device} from '../../nuclide-device-panel/lib/types';
 
-import {observeDevices} from './DevicePoller';
+import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {DevicePoller} from './DevicePoller';
+
+const SDB_PLATFORM = {
+  name: 'Tizen',
+  type: 'sdb',
+  command: 'sdb',
+  getService: getSdbServiceByNuclideUri,
+};
 
 export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
   return observeTizenDevicesX(host).map(devices => devices.getOrDefault([]));
@@ -23,5 +31,5 @@ export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
 export function observeTizenDevicesX(
   host: NuclideUri,
 ): Observable<Expected<Device[]>> {
-  return observeDevices('sdb', host);
+  return DevicePoller.observeDevices(SDB_PLATFORM, host);
 }

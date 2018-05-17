@@ -12,8 +12,8 @@
 import type {DeviceDescription} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ConnectableObservable} from 'rxjs';
 import type {Device} from '../../nuclide-device-panel/lib/types';
-import type {DBPlatform, DBType} from './Platforms';
 
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -23,17 +23,29 @@ import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getPlatform} from './Platforms';
 
-class DevicePoller {
+type DBType = 'adb' | 'sdb';
+
+type DBPlatform = {
+  name: string,
+  type: DBType,
+  command: string,
+  getService: NuclideUri => {
+    getDeviceList: () => ConnectableObservable<Array<DeviceDescription>>,
+  },
+};
+
+const pollers: Map<string, DevicePoller> = new Map();
+
+export class DevicePoller {
   _platform: DBPlatform;
   _observables: SimpleCache<
     string,
     Observable<Expected<Device[]>>,
   > = new SimpleCache();
 
-  constructor(type: DBType) {
-    this._platform = getPlatform(type);
+  constructor(platform: DBPlatform) {
+    this._platform = platform;
   }
 
   observe(_host: NuclideUri): Observable<Expected<Device[]>> {
@@ -124,19 +136,17 @@ class DevicePoller {
       rawArchitecture: device.architecture,
     };
   }
-}
 
-const pollers: Map<string, DevicePoller> = new Map();
-
-export function observeDevices(
-  type: DBType,
-  host: NuclideUri,
-): Observable<Expected<Device[]>> {
-  const pollerKey = `${type}:${host}`;
-  let poller = pollers.get(pollerKey);
-  if (poller == null) {
-    poller = new DevicePoller(type);
-    pollers.set(pollerKey, poller);
+  static observeDevices(
+    platform: DBPlatform,
+    host: NuclideUri,
+  ): Observable<Expected<Device[]>> {
+    const pollerKey = `${platform.type}:${host}`;
+    let poller = pollers.get(pollerKey);
+    if (poller == null) {
+      poller = new DevicePoller(platform);
+      pollers.set(pollerKey, poller);
+    }
+    return poller.observe(host);
   }
-  return poller.observe(host);
 }
