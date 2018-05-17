@@ -198,7 +198,7 @@ export default class WatchmanClient {
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
       };
-      if (relativePath && !options.expression) {
+      if (relativePath) {
         options.relative_root = relativePath;
       }
       // Try this thing out where we always set empty_on_fresh_instance. Eden will be a lot happier

@@ -25,6 +25,7 @@ import type {
   PublishDiagnosticsParams,
   RelatedLocation,
   CodeLens,
+  FileEvent,
 } from './protocol';
 import type {
   Completion,
@@ -33,6 +34,7 @@ import type {
   SymbolResult,
   CodeLensData,
 } from '../../nuclide-language-service/lib/LanguageService';
+import type {FileChange} from 'nuclide-watchman-helpers';
 import type {ShowNotificationLevel} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
   TextDocumentIdentifier,
@@ -55,6 +57,7 @@ import {
   InsertTextFormat,
   SymbolKind,
   MessageType as LspMessageType,
+  FileChangeType,
 } from './protocol';
 import {
   className,
@@ -659,5 +662,19 @@ export function lspSignatureHelp_atomSignatureHelp(
     })),
     activeSignature: signatureHelp.activeSignature,
     activeParameter: signatureHelp.activeParameter,
+  };
+}
+
+export function watchmanFileChange_lspFileEvent(
+  fileChange: FileChange,
+  watchmanRoot: NuclideUri,
+): FileEvent {
+  return {
+    uri: localPath_lspUri(nuclideUri.resolve(watchmanRoot, fileChange.name)),
+    type: fileChange.new
+      ? FileChangeType.Created
+      : !fileChange.exists
+        ? FileChangeType.Deleted
+        : FileChangeType.Changed,
   };
 }

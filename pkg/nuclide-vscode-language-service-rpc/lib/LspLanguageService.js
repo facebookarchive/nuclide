@@ -67,9 +67,12 @@ import type {
   Command,
   RegistrationParams,
   UnregistrationParams,
+  DidChangeWatchedFilesRegistrationOptions,
   Registration,
+  FileSystemWatcher,
 } from './protocol';
 
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
@@ -104,6 +107,8 @@ import {
   ErrorCodes,
   TextDocumentSyncKind,
   MessageType as LspMessageType,
+  WatchKind,
+  FileChangeType,
 } from './protocol';
 import {arrayCompact} from 'nuclide-commons/collection';
 
@@ -524,7 +529,7 @@ export class LspLanguageService {
             dynamicRegistration: false,
           },
           didChangeWatchedFiles: {
-            dynamicRegistration: false,
+            dynamicRegistration: true,
           },
           symbol: {
             dynamicRegistration: false,
@@ -1227,7 +1232,7 @@ export class LspLanguageService {
     params.registrations.forEach(this._registerCapability);
   }
 
-  _registerCapability(registration: Registration): void {
+  _registerCapability = (registration: Registration): void => {
     if (this._registeredCapabilities.has(registration.id)) {
       this._logger.warn(
         'LSP.registerCapability - attempting to register already registered capability ' +
@@ -1238,7 +1243,14 @@ export class LspLanguageService {
       return;
     }
 
+    let disposable;
+
     switch (registration.method) {
+      case 'workspace/didChangeWatchedFiles':
+        disposable = this._registerDidChangeWatchedFiles(
+          nullthrows(registration.registerOptions),
+        );
+        break;
       default:
         this._logger.warn(
           'LSP.registerCapability - attempting to register unsupported capability ' +
@@ -1246,6 +1258,74 @@ export class LspLanguageService {
         );
         return;
     }
+
+    this._registeredCapabilities.set(registration.id, disposable);
+  };
+
+  async _registerDidChangeWatchedFiles(
+    options: DidChangeWatchedFilesRegistrationOptions,
+  ): Promise<IDisposable> {
+    const watchmanClient = new WatchmanClient();
+    const subscriptions = await Promise.all(
+      options.watchers.map(watcher => {
+        return this._subscribeWatcher(watcher, watchmanClient);
+      }),
+    );
+
+    return new UniversalDisposable(watchmanClient, ...subscriptions);
+  }
+
+  async _subscribeWatcher(
+    watcher: FileSystemWatcher,
+    watchmanClient: WatchmanClient,
+  ): Promise<IDisposable> {
+    // Kind defaults to 7 according to LSP spec.
+    const watcherKind = watcher.kind != null ? watcher.kind : 7;
+    // Unique subscription name per watcher
+    const subscriptionName =
+      this._projectRoot + watcher.globPattern + watcherKind.toString();
+    const subscriptionOptions = {
+      expression: [
+        'match',
+        watcher.globPattern,
+        'wholename',
+        {includedotfiles: true},
+      ],
+    };
+    // Get the set of file change types to care about, based on the bits set in
+    // the watcher.kind bit field.
+    const subscriptionTypes = new Set(
+      [
+        [WatchKind.Create, FileChangeType.Created],
+        [WatchKind.Change, FileChangeType.Changed],
+        [WatchKind.Delete, FileChangeType.Deleted],
+      ]
+        // eslint-disable-next-line no-bitwise
+        .filter(([kind]) => (watcherKind & kind) !== 0)
+        .map(([_, changeType]) => changeType),
+    );
+
+    const subscription = await watchmanClient.watchDirectoryRecursive(
+      this._projectRoot,
+      subscriptionName,
+      subscriptionOptions,
+    );
+
+    Observable.fromEvent(subscription, 'change').subscribe(fileChanges => {
+      const fileEvents = fileChanges
+        .map(fileChange =>
+          convert.watchmanFileChange_lspFileEvent(
+            fileChange,
+            subscription.path,
+          ),
+        )
+        .filter(fileEvent => subscriptionTypes.has(fileEvent.type));
+      this._lspConnection.didChangeWatchedFiles({
+        changes: fileEvents,
+      });
+    });
+
+    return subscription;
   }
 
   _handleUnregisterCapability(params: UnregistrationParams): void {
