@@ -19,18 +19,18 @@ const path = require('path');
 
 module.exports = {
   displayName: 'atom',
-  rootDir: path.resolve(__dirname, '..'),
+  rootDir: path.resolve(__dirname, '../../..'),
+  roots: ['<rootDir>/xplat/nuclide'],
   testMatch: ['**/__atom_tests__/**/*.js?(x)'],
   transform: {
-    '\\.js$': '<rootDir>/modules/nuclide-jest/jestTransformer.js',
+    '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
   },
   setupFiles: [],
-  testFailureExitCode: 0,
-  forceExit: true,
   testPathIgnorePatterns: ['/node_modules/'],
   runner: path.resolve(__dirname, '../modules/jest-atom-runner/build/index.js'),
   moduleNameMapper: {
     oniguruma: path.resolve(__dirname, './__mocks__/emptyObject.js'),
   },
-  testEnvironment: '<rootDir>/modules/jest-atom-runner/build/environment.js',
+  testEnvironment:
+    '<rootDir>/xplat/nuclide/modules/jest-atom-runner/build/environment.js',
 };

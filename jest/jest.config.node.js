@@ -15,12 +15,16 @@
   nuclide-internal/no-commonjs: 0,
   */
 
+const path = require('path');
+
 module.exports = {
-  rootDir: '../..',
-  projects: [
-    '<rootDir>/xplat/nuclide/jest/jest.config.atom.js',
-    '<rootDir>/xplat/nuclide/jest/jest.config.node.js',
-  ],
-  testFailureExitCode: 0,
-  forceExit: true,
+  displayName: 'node',
+  rootDir: path.resolve(__dirname, '../../../'),
+  roots: ['<rootDir>/xplat/nuclide'],
+  testMatch: ['**/__tests__/**/*.js?(x)'],
+  transform: {
+    '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
+  },
+  setupFiles: ['<rootDir>/xplat/nuclide/jest/setup.js'],
+  testPathIgnorePatterns: ['/node_modules/'],
 };

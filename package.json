@@ -38,7 +38,7 @@
     "fix-all": "eslint --fix .",
     "release-transpile": "./modules/nuclide-node-transpiler/bin/release-transpile.js",
     "test": "npm run lint-all && npm run flow",
-    "jest": "jest"
+    "jest": "jest/build_atom_jest_runner.sh 1>/dev/null && jest"
   },
   "workspaces": [
     "modules/*"

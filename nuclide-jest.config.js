@@ -22,6 +22,6 @@ module.exports = {
   jestConfig: path.resolve(__dirname, 'jest.config.js'),
   nodeBin: path.resolve(__dirname, '../third-party/node/bin/node'),
   rootDir: __dirname,
-  testRegex: '__tests__\\/.*\\.js$',
+  testRegex: '__(atom_)?tests__\\/.*\\.js$',
   env: {},
 };
