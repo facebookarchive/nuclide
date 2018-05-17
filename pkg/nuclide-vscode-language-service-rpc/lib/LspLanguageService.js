@@ -65,10 +65,14 @@ import type {
   ApplyWorkspaceEditParams,
   ApplyWorkspaceEditResponse,
   Command,
+  RegistrationParams,
+  UnregistrationParams,
+  Registration,
 } from './protocol';
 
 import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {sleep, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import through from 'through';
@@ -162,6 +166,8 @@ export class LspLanguageService {
   _serverCapabilities: ServerCapabilities;
   _derivedServerCapabilities: DerivedServerCapabilities;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
+  // Map from registered capability id's to disposable for unregistering
+  _registeredCapabilities: Map<string, Promise<IDisposable>> = new Map();
 
   // Whenever we trigger a new request, we cancel the outstanding request, so
   // only one request of these types would be active at a time. Note that the
@@ -485,6 +491,14 @@ export class LspLanguageService {
       this._lspConnection.onDiagnosticsNotification(params => {
         this._childOut.stdout = null;
         perConnectionUpdates.next(params);
+      });
+      this._lspConnection.onRegisterCapabilityRequest(params => {
+        this._childOut.stdout = null;
+        this._handleRegisterCapability(params);
+      });
+      this._lspConnection.onUnregisterCapabilityRequest(params => {
+        this._childOut.stdout = null;
+        this._handleUnregisterCapability(params);
       });
 
       await new Promise(process.nextTick);
@@ -1207,6 +1221,52 @@ export class LspLanguageService {
       );
       this._actionRequiredIndicators.set(params.id, newIndicator);
     }
+  }
+
+  _handleRegisterCapability(params: RegistrationParams): void {
+    params.registrations.forEach(this._registerCapability);
+  }
+
+  _registerCapability(registration: Registration): void {
+    if (this._registeredCapabilities.has(registration.id)) {
+      this._logger.warn(
+        'LSP.registerCapability - attempting to register already registered capability ' +
+          registration.method +
+          ' with id ' +
+          registration.id,
+      );
+      return;
+    }
+
+    switch (registration.method) {
+      default:
+        this._logger.warn(
+          'LSP.registerCapability - attempting to register unsupported capability ' +
+            registration.method,
+        );
+        return;
+    }
+  }
+
+  _handleUnregisterCapability(params: UnregistrationParams): void {
+    params.unregistrations.forEach(unregistration => {
+      if (!this._registeredCapabilities.has(unregistration.id)) {
+        this._logger.warn(
+          'LSP.unregisterCapability - attempting to unregister non-registered capability ' +
+            unregistration.method +
+            ' with id ' +
+            unregistration.id,
+        );
+        return;
+      }
+
+      const disposable: Promise<IDisposable> = nullthrows(
+        this._registeredCapabilities.get(unregistration.id),
+      );
+      this._registeredCapabilities.delete(unregistration.id);
+
+      disposable.then(d => d.dispose());
+    });
   }
 
   getRoot(): string {

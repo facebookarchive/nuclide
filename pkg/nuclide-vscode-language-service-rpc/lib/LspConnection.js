@@ -312,6 +312,22 @@ export class LspConnection {
     );
   }
 
+  onRegisterCapabilityRequest(callback: p.RegistrationParams => void): void {
+    this._jsonRpcConnection.onRequest(
+      {method: 'client/registerCapability'},
+      callback,
+    );
+  }
+
+  onUnregisterCapabilityRequest(
+    callback: p.UnregistrationParams => void,
+  ): void {
+    this._jsonRpcConnection.onRequest(
+      {method: 'client/unregisterCapability'},
+      callback,
+    );
+  }
+
   onProgressNotification(callback: p.ProgressParams => void): void {
     this._jsonRpcConnection.onNotification(
       {method: 'window/progress'},

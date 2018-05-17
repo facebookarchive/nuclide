@@ -928,3 +928,22 @@ export type TextDocumentEdit = {
   // The edits to be applied.
   edits: Array<TextEdit>,
 };
+
+export type Registration = {
+  id: string,
+  method: string,
+  registerOptions?: any,
+};
+
+export type RegistrationParams = {
+  registrations: Array<Registration>,
+};
+
+export type Unregistration = {
+  id: string,
+  method: string,
+};
+
+export type UnregistrationParams = {
+  unregistrations: Array<Unregistration>,
+};
