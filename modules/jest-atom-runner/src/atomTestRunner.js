@@ -20,13 +20,11 @@
  */
 import type {IPCWorker} from './ipc-client';
 
-import {ipcRenderer} from 'electron';
-
-import {Console} from 'console';
 import os from 'os';
 import runTest from 'jest-runner/build/run_test';
 import Runtime from 'jest-runtime';
 import HasteMap from 'jest-haste-map';
+import patchAtomConsole from 'nuclide-commons/patch-atom-console';
 
 import {
   parseMessage,
@@ -40,24 +38,6 @@ import {extractIPCIDsFromFilePath} from './utils';
 
 const ATOM_BUILTIN_MODULES = new Set(['atom', 'electron']);
 
-const redirectIO = () => {
-  // Patch `console` to output through the main process.
-  global.console = new Console(
-    /* stdout */ {
-      write(chunk) {
-        // $FlowFixMe
-        ipcRenderer.send('write-to-stdout', chunk);
-      },
-    },
-    /* stderr */ {
-      write(chunk) {
-        // $FlowFixMe
-        ipcRenderer.send('write-to-stderr', chunk);
-      },
-    },
-  );
-};
-
 process.on('uncaughtException', err => {
   console.error(err.stack);
   process.exit(1);
@@ -70,7 +50,7 @@ export type AtomParams = {
 };
 
 module.exports = async function(params: AtomParams) {
-  redirectIO();
+  patchAtomConsole();
   const firstTestPath = params.testPaths[0];
 
   // We pass server and worker IDs via a basename of non-existing file.

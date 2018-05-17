@@ -16,6 +16,7 @@
     "jest-message-util": "23.0.0-charlie.1",
     "jest-runner": "23.0.0-charlie.1",
     "jest-runtime": "23.0.0-charlie.1",
+    "nuclide-commons": "0.7.1-dev",
     "mkdirp": "0.5.1",
     "node-ipc": "9.1.1"
   },

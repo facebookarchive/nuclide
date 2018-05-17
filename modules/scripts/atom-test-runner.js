@@ -28,21 +28,10 @@
 // eslint-disable-next-line nuclide-internal/modules-dependencies
 require('nuclide-node-transpiler');
 
-// Patch `console` to output through the main process.
-const {Console} = require('console');
-const {ipcRenderer} = require('electron');
-global.console = new Console(
-  /* stdout */ {
-    write(chunk) {
-      ipcRenderer.send('write-to-stdout', chunk);
-    },
-  },
-  /* stderr */ {
-    write(chunk) {
-      ipcRenderer.send('write-to-stderr', chunk);
-    },
-  }
-);
+// Patch Atom's console to output to stdio.
+// eslint-disable-next-line nuclide-internal/modules-dependencies
+const patchAtomConsole = require('nuclide-commons/patch-atom-console');
+patchAtomConsole();
 
 module.exports = function(params) {
   return params.legacyTestRunner(params)
