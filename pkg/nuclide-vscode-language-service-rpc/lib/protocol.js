@@ -126,6 +126,10 @@ export type TextDocumentPositionParams = {
   position: Position,
 };
 
+export type TextDocumentRegistrationOptions = {
+  documentSelector: ?DocumentSelector,
+};
+
 // General
 
 export const ErrorCodes = {
@@ -520,6 +524,21 @@ export const CompletionItemKind = {
   Reference: 18,
 };
 
+export type CompletionRegistrationOptions = TextDocumentRegistrationOptions & {
+  // Most tools trigger completion request automatically without explicitly requesting
+  // it using a keyboard shortcut (e.g. Ctrl+Space). Typically they do so when the user
+  // starts to type an identifier. For example if the user types `c` in a JavaScript file
+  // code complete will automatically pop up present `console` besides others as a
+  // completion item. Characters that make up identifiers don't need to be listed here.
+  //
+  // If code complete should automatically be trigger on characters not being valid inside
+  // an identifier (for example `.` in JavaScript) list them in `triggerCharacters`.
+  triggerCharacters?: Array<string>,
+  // The server provides support to resolve additional
+  // information for a completion item.
+  resolveProvider?: boolean,
+};
+
 // The result of a hover request.
 export type Hover = {
   // The hover's content
@@ -578,6 +597,11 @@ export type ParameterInformation = {
   label: string,
   // The human-readable doc-comment of this parameter. Will be shown in the UI but can be omitted.
   documentation?: string | MarkupContent,
+};
+
+export type SignatureHelpRegistrationOptions = TextDocumentRegistrationOptions & {
+  // The characters that trigger signature help automatically.
+  triggerCharacters?: Array<string>,
 };
 
 export type ReferenceParams = TextDocumentPositionParams & {
@@ -696,6 +720,11 @@ export type CodeLens = {
   data?: any,
 };
 
+export type CodeLensRegistrationOptions = TextDocumentRegistrationOptions & {
+  // Code lens has a resolve provider as well.
+  resolveProvider?: boolean,
+};
+
 export type DocumentLinkParams = {
   // The document to provide document links for.
   textDocument: TextDocumentIdentifier,
@@ -711,6 +740,11 @@ export type DocumentLink = {
   range: Range,
   // The uri this link points to.
   target: string,
+};
+
+export type DocumentLinkRegistrationOptions = TextDocumentRegistrationOptions & {
+  // Document links have a resolve provider as well.
+  resolveProvider?: boolean,
 };
 
 export type DocumentFormattingParams = {
@@ -748,6 +782,13 @@ export type DocumentOnTypeFormattingParams = {
   ch: string,
   // The format options.
   options: FormattingOptions,
+};
+
+export type DocumentOnTypeFormattingRegistrationOptions = TextDocumentRegistrationOptions & {
+  // A character on which formatting should be triggered, like `}`.
+  firstTriggerCharacter: string,
+  // More trigger characters.
+  moreTriggerCharacter?: Array<string>,
 };
 
 export type RenameParams = {
@@ -869,6 +910,13 @@ export type TextDocumentContentChangeEvent = {
   text: string,
 };
 
+// Describe options to be used when registered for text document change events.
+export type TextDocumentChangeRegistrationOption = TextDocumentRegistrationOptions & {
+  // How documents are synced to the server. See TextDocumentSyncKind.Full
+  // and TextDocumentSyncKind.Incremental.
+  syncKind: number,
+};
+
 export type DidCloseTextDocumentParams = {
   // The document that was closed.
   textDocument: TextDocumentIdentifier,
@@ -880,6 +928,11 @@ export type DidSaveTextDocumentParams = {
   // Optional the content when saved. Depends on the includeText value
   // when the save notification was requested.
   text: ?string,
+};
+
+export type TextDocumentSaveRegistrationOptions = TextDocumentRegistrationOptions & {
+  // The client is supposed to include the content on save.
+  includeText?: boolean,
 };
 
 export type DidChangeWatchedFilesParams = {
@@ -905,11 +958,43 @@ export type FileEvent = {
   type: number,
 };
 
+// Describe options to be used when registered for text document change events.
+export type DidChangeWatchedFilesRegistrationOptions = {
+  // The watchers to register.
+  watchers: FileSystemWatcher[],
+};
+
+export type FileSystemWatcher = {
+  // The glob pattern to watch
+  globPattern: string,
+  /**
+   * The kind of events of interest. If omitted it defaults
+   * to WatchKind.Create | WatchKind.Change | WatchKind.Delete
+   * which is 7.
+   */
+  kind?: number,
+};
+
+export const WatchKind = {
+  // Interested in create events
+  Create: 1,
+  // Interested in change events
+  Change: 2,
+  // Interested in delete events
+  Delete: 4,
+};
+
 export type ExecuteCommandParams = {
   // The identifier of the actual command handler.
   command: string,
   // Arguments that the command should be invoked with.
   arguments?: Array<any>,
+};
+
+// Execute command registration options.
+export type ExecuteCommandRegistrationOptions = {
+  // The commands to be executed on the server.
+  commands: Array<string>,
 };
 
 export type ApplyWorkspaceEditParams = {
@@ -947,3 +1032,14 @@ export type Unregistration = {
 export type UnregistrationParams = {
   unregistrations: Array<Unregistration>,
 };
+
+export type DocumentFilter = {
+  // A language id, like `typescript`.
+  language?: string,
+  // A Uri [scheme](#Uri.scheme), like `file` or `untitled`.
+  scheme?: string,
+  // A glob pattern, like `*.{ts,js}`.
+  pattern?: string,
+};
+
+export type DocumentSelector = Array<DocumentFilter>;
