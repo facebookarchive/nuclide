@@ -704,8 +704,8 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
     },
     {
       // An absolute file path
-      regex: /(\/[^<>:"\\|?*[\]\s]+)\s+/,
-      matchIndex: 1,
+      regex: /(^|\s)(\/[^<>:"\\|?*[\]\s]+)/,
+      matchIndex: 2,
       urlPattern: 'open-file-object://%s',
     },
   ];
@@ -716,7 +716,9 @@ function registerLinkHandlers(terminal: Terminal, cwd: ?NuclideUri): void {
       (event, match) => {
         const replacedUrl = urlPattern.replace('%s', match);
         if (replacedUrl !== '') {
-          if (event.shiftKey && tryOpenInAtom(replacedUrl, cwd)) {
+          const commandClicked =
+            process.platform === 'win32' ? event.ctrlKey : event.metaKey;
+          if (commandClicked && tryOpenInAtom(replacedUrl, cwd)) {
             return;
           }
           shell.openExternal(replacedUrl);
