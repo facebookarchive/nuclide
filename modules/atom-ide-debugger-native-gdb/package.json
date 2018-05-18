@@ -76,9 +76,12 @@
                 "type": "string",
                 "description": "Absolute path of program to run"
               },
-              "arguments": {
-                "type": "string",
-                "description": "Arguments to pass in on the command line"
+              "args": {
+                "type": "array",
+                "description": "Arguments to pass in on the command line",
+                "items": {
+                  "type": "string"
+                }
               },
               "sourcePath": {
                 "type": "string",

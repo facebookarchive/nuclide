@@ -53,7 +53,7 @@ type LaunchRequestArguments = {
   ...DebugProtocol.LaunchRequestArguments,
   program: string,
   cwd: ?string,
-  arguments: ?string,
+  args: ?Array<string>,
   env: Array<string>,
   sourcePath: string,
   debuggerRoot: ?string,
@@ -236,10 +236,10 @@ class MIDebugSession extends LoggingDebugSession {
     }
 
     if (
-      args.arguments != null &&
+      args.args != null &&
       !(await this._sendWithFailureCheck(
         response,
-        `exec-arguments ${args.arguments}`,
+        `exec-arguments ${args.args.join(' ')}`,
       ))
     ) {
       return;
