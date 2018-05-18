@@ -41,6 +41,7 @@ export type ParsedVSAdapter = {
   adapterInfo: VSAdapterExecutableInfo,
   launchArgs?: LaunchRequestArguments,
   attachArgs?: AttachRequestArguments,
+  adapter: DebugAdapter,
 };
 
 export type Arguments = {
@@ -104,6 +105,7 @@ export default class DebuggerAdapterFactory {
       type: adapter.key,
       adapterInfo: getAdapterExecutable(adapter.key),
       attachArgs: objectFromMap(commandLineArgs),
+      adapter,
     };
   }
 
@@ -134,6 +136,7 @@ export default class DebuggerAdapterFactory {
       type: adapter.key,
       adapterInfo: getAdapterExecutable(adapter.key),
       launchArgs: objectFromMap(commandLineArgs),
+      adapter,
     };
   }
 

@@ -10,6 +10,10 @@
  * @format
  */
 
+import type {
+  LaunchRequestArguments,
+  AttachRequestArguments,
+} from 'vscode-debugprotocol';
 import type {Arguments} from '../DebuggerAdapterFactory';
 import type {CustomArgumentType} from '../VSPOptionsParser';
 import type {DebugAdapter} from '../DebugAdapter';
@@ -64,5 +68,17 @@ export default class PythonDebugAdapter implements DebugAdapter {
     }
 
     return commandLineArgs;
+  }
+
+  transformLaunchArguments(
+    args: ?LaunchRequestArguments,
+  ): LaunchRequestArguments {
+    return args || {};
+  }
+
+  transformAttachArguments(
+    args: ?AttachRequestArguments,
+  ): AttachRequestArguments {
+    return args || {};
   }
 }

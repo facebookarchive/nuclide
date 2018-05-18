@@ -10,6 +10,10 @@
  * @format
  */
 
+import type {
+  LaunchRequestArguments,
+  AttachRequestArguments,
+} from 'vscode-debugprotocol';
 import type {Arguments} from '../DebuggerAdapterFactory';
 import type {CustomArgumentType} from '../VSPOptionsParser';
 import type {DebugAdapter} from '../DebugAdapter';
@@ -70,5 +74,23 @@ export default class HHVMDebugAdapter implements DebugAdapter {
     );
 
     return commandLineArgs;
+  }
+
+  transformLaunchArguments(
+    args: ?LaunchRequestArguments,
+  ): LaunchRequestArguments {
+    return {
+      ...(args || {}),
+      showDummyOnAsyncPause: true,
+    };
+  }
+
+  transformAttachArguments(
+    args: ?AttachRequestArguments,
+  ): AttachRequestArguments {
+    return {
+      ...(args || {}),
+      showDummyOnAsyncPause: true,
+    };
   }
 }

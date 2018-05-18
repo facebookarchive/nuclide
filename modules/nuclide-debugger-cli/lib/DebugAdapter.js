@@ -10,6 +10,10 @@
  * @format
  */
 
+import type {
+  LaunchRequestArguments,
+  AttachRequestArguments,
+} from 'vscode-debugprotocol';
 import type {Arguments} from './DebuggerAdapterFactory';
 import type {CustomArgumentType} from './VSPOptionsParser';
 import type {VsAdapterType} from 'nuclide-debugger-common';
@@ -20,5 +24,11 @@ export interface DebugAdapter {
   +excludedOptions: Set<string>;
   +extensions: Set<string>;
   +customArguments: Map<string, CustomArgumentType>;
+  transformLaunchArguments(
+    args: ?LaunchRequestArguments,
+  ): LaunchRequestArguments;
+  transformAttachArguments(
+    args: ?AttachRequestArguments,
+  ): AttachRequestArguments;
   parseArguments(args: Arguments): Map<string, any>;
 }

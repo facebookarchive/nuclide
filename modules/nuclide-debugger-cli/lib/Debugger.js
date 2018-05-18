@@ -128,9 +128,17 @@ export default class Debugger implements DebuggerInterface {
     const session = this._ensureDebugSession(true);
 
     if (this._attachMode) {
-      await session.attach(nullthrows(adapter.attachArgs));
+      await session.attach(
+        nullthrows(this._adapter).adapter.transformAttachArguments(
+          adapter.attachArgs,
+        ),
+      );
     } else {
-      await session.launch(nullthrows(adapter.launchArgs));
+      await session.launch(
+        nullthrows(this._adapter).adapter.transformLaunchArguments(
+          adapter.launchArgs,
+        ),
+      );
     }
   }
 
