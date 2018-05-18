@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
@@ -63,7 +63,6 @@ describe('Checkbox', () => {
     const inputEl = nullthrows(
       TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input'),
     );
-    // $FlowFixMe(>=0.66.0) Flow suppress
-    expect(inputEl.indeterminate).toBe(true);
+    expect((inputEl: any).indeterminate).toBe(true);
   });
 });
