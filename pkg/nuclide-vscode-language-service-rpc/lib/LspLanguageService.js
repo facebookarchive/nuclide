@@ -70,6 +70,7 @@ import type {
   DidChangeWatchedFilesRegistrationOptions,
   Registration,
   FileSystemWatcher,
+  CompletionItem,
 } from './protocol';
 
 import {WatchmanClient} from 'nuclide-watchman-helpers';
@@ -109,6 +110,7 @@ import {
   MessageType as LspMessageType,
   WatchKind,
   FileChangeType,
+  InsertTextFormat,
 } from './protocol';
 import {arrayCompact} from 'nuclide-commons/collection';
 
@@ -1600,14 +1602,39 @@ export class LspLanguageService {
       const result = await this._lspConnection.completionItemResolve(
         JSON.parse(suggestion.extraData),
       );
+
+      const modifiedResult = this._createAutocompleteSnippet(result);
+
       return {
         ...suggestion,
-        ...convert.lspCompletionItem_atomCompletion(result, true),
+        ...convert.lspCompletionItem_atomCompletion(modifiedResult, true),
       };
     } catch (e) {
       this._logLspException(e);
       return null;
     }
+  }
+
+  // modify a given CompletionItem result to work as a snippet if possible
+  _createAutocompleteSnippet(result: CompletionItem): CompletionItem {
+    const {textEdit, additionalTextEdits, ...rest} = result;
+    const modifiedResult = ((rest: any): CompletionItem);
+    if (
+      result.insertTextFormat === InsertTextFormat.Snippet &&
+      result.textEdit != null
+    ) {
+      if (result.additionalTextEdits != null) {
+        this._handleLogMessageNotification({
+          type: LspMessageType.Warning,
+          message:
+            'Additional text edits not supported for resolve autocomplete suggestions',
+        });
+        return result;
+      }
+      modifiedResult.insertText = result.textEdit.newText;
+      return modifiedResult;
+    }
+    return result;
   }
 
   _supportsAutocompleteResolve(): boolean {
