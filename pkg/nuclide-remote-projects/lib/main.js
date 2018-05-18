@@ -521,30 +521,20 @@ export function consumeStatusBar(statusBar: atom$StatusBar): void {
   }
 }
 
-// TODO: All of the elements of the array are non-null, but it does not seem possible to convince
-// Flow of that.
 export function serialize(): {
-  remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>,
+  remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
 } {
-  const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> = getRemoteRootDirectories()
-    .map(
-      (
-        directory: atom$Directory,
-      ): ?SerializableRemoteConnectionConfiguration => {
-        const connection = RemoteConnection.getForUri(directory.getPath());
-        return connection
-          ? createSerializableRemoteConnectionConfiguration(
-              connection.getConfig(),
-            )
-          : null;
-      },
-    )
-    .filter(
-      (config: ?SerializableRemoteConnectionConfiguration) => config != null,
-    );
-  return {
-    remoteProjectsConfig,
-  };
+  const remoteProjectsConfig = getRemoteRootDirectories()
+    .map(directory => {
+      const connection = RemoteConnection.getForUri(directory.getPath());
+      return connection == null
+        ? null
+        : createSerializableRemoteConnectionConfiguration(
+            connection.getConfig(),
+          );
+    })
+    .filter(Boolean);
+  return {remoteProjectsConfig};
 }
 
 export function deactivate(): Promise<void> {
