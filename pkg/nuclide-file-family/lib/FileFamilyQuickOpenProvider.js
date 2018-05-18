@@ -14,7 +14,10 @@ import * as React from 'react';
 import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 
+import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
+import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import {Matcher} from '../../nuclide-fuzzy-native';
 import {BehaviorSubject, Observable} from 'rxjs';
 import FileFamilyAggregator from './FileFamilyAggregator';
 
@@ -86,14 +89,26 @@ class FileFamilyQuickOpenProvider {
         const cwd = this._cwds.getValue();
         const projectUri = cwd && cwd.getCwd();
 
-        return Array.from(graph.files)
-          .filter(([uri, file]) => uri !== activeUri)
-          .map(([uri, file]) => {
+        const files = Array.from(graph.files)
+          .map(([uri, file]) => ({
+            path: uri,
+            pathWithoutRoot:
+              projectUri == null ? uri : `.${uri.replace(projectUri, '')}`,
+            ...file,
+          }))
+          .filter(file => file.path !== activeUri);
+
+        const matcher = new Matcher(files.map(file => file.pathWithoutRoot));
+
+        return matcher
+          .match(query, {recordMatchIndexes: true})
+          .map((result, i) => {
+            const file = files.find(f => f.pathWithoutRoot === result.value);
+
             return {
               resultType: 'FILE',
-              path: uri,
-              pathWithoutRoot:
-                projectUri == null ? null : uri.replace(projectUri, ''),
+              score: result.score,
+              matchIndexes: result.matchIndexes,
               ...file,
             };
           });
@@ -116,18 +131,21 @@ class FileFamilyQuickOpenProvider {
         );
     }
 
+    const matchIndexes = item.matchIndexes || [];
+    const path = item.pathWithoutRoot == null ? '' : item.pathWithoutRoot;
+
     return (
       <div
         className="nuclide-file-family-quick-open-provider-result"
         style={{opacity: item.exists ? 1 : 0.5}}>
         <PathWithFileIcon
           className="nuclide-file-family-quick-open-provider-file-path"
-          path={
-            item.pathWithoutRoot == null
-              ? item.path
-              : `.${item.pathWithoutRoot}`
-          }
-        />
+          path={path}>
+          <HighlightedText
+            highlightedRanges={matchIndexesToRanges(matchIndexes)}
+            text={path}
+          />
+        </PathWithFileIcon>
         {!item.exists && (
           <div className="nuclide-file-family-quick-open-provider-create-file-container">
             <span className="nuclide-file-family-quick-open-provider-create-file-label">
