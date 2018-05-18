@@ -1489,7 +1489,9 @@ export class LspLanguageService {
       return;
     }
     let text;
-    switch (this._derivedServerCapabilities.serverWantsTextOnSave) {
+    switch (this._derivedServerCapabilities.serverWantsSave) {
+      case 'none':
+        return;
       case 'excludeText':
         text = null;
         break;
@@ -1498,7 +1500,7 @@ export class LspLanguageService {
         text = buffer.getText();
         break;
       default:
-        (this._derivedServerCapabilities.serverWantsTextOnSave: empty);
+        (this._derivedServerCapabilities.serverWantsSave: empty);
     }
     const params: DidSaveTextDocumentParams = {
       textDocument: {
@@ -2444,7 +2446,7 @@ export class LspLanguageService {
 class DerivedServerCapabilities {
   serverWantsOpenClose: boolean;
   serverWantsChange: 'full' | 'incremental' | 'none';
-  serverWantsTextOnSave: 'excludeText' | 'includeText';
+  serverWantsSave: 'excludeText' | 'includeText' | 'none';
   onTypeFormattingTriggerCharacters: Set<string>;
   completionTriggerCharacters: Set<string>;
 
@@ -2453,19 +2455,22 @@ class DerivedServerCapabilities {
     // capabilities.textDocumentSync is either a number (protocol v2)
     // or an object (protocol v3) or absent (indicating no capabilities).
     const sync = capabilities.textDocumentSync;
-    this.serverWantsTextOnSave = 'excludeText';
     if (typeof sync === 'number') {
       this.serverWantsOpenClose = true;
+      this.serverWantsSave = 'excludeText';
       syncKind = sync;
     } else if (typeof sync === 'object') {
       this.serverWantsOpenClose = Boolean(sync.openClose);
+      this.serverWantsSave =
+        sync.save == null
+          ? 'none'
+          : sync.save.includeText
+            ? 'includeText'
+            : 'excludeText';
       syncKind = Number(sync.change);
-
-      if (sync.save != null && sync.save.includeText) {
-        this.serverWantsTextOnSave = 'includeText';
-      }
     } else {
       this.serverWantsOpenClose = false;
+      this.serverWantsSave = 'none';
       syncKind = TextDocumentSyncKind.None;
       if (sync != null) {
         logger.error(
