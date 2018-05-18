@@ -472,13 +472,13 @@ declare class electron$Menu {
   static getApplicationMenu(): ?electron$Menu,
   static sendActionToFirstResponder(action: string): void,
   static buildFromTemplate(templates: Array<electron$MenuItemOptions>): electron$Menu,
-  popup(
-    browserWindow: electron$BrowserWindow,
+  popup({|
+    window?: electron$BrowserWindow,
     x?: number,
     y?: number,
     positioningItem?: number,
-  ): void,
-  popup(x?: number, y?: number, positioningItem?: number): void,
+    callback?: Function,
+  |}): void,
   append(menuItem: electron$MenuItem): void,
   insert(pos: number, menuItem: electron$MenuItem): void,
   items: Array<electron$MenuItem>,

@@ -47,7 +47,6 @@ export default function showActionsMenu(
       .take(1)
       .race(Observable.of(new WeakMap()).delay(CODE_ACTIONS_TIMEOUT))
       .subscribe(codeActionsForMessage => {
-        const currentWindow = remote.getCurrentWindow();
         const menu = new remote.Menu();
         const fixes = arrayCompact(
           messagesAtPosition.map(message => {
@@ -96,16 +95,15 @@ export default function showActionsMenu(
         const scrollView = editorView.querySelector('.scroll-view');
         invariant(scrollView != null);
         const boundingRect = scrollView.getBoundingClientRect();
-        menu.popup(
-          currentWindow,
-          Math.round(
+        menu.popup({
+          x: Math.round(
             boundingRect.left + pixelPosition.left - editorView.getScrollLeft(),
           ),
-          Math.round(
+          y: Math.round(
             boundingRect.top + pixelPosition.top - editorView.getScrollTop(),
           ),
-          0,
-        );
+          positioningItem: 0,
+        });
       }),
   );
 }

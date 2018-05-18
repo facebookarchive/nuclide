@@ -534,8 +534,7 @@ All the changes across your entire stacked diff.
       });
       menu.append(menuItem);
     }
-    const currentWindow = remote.getCurrentWindow();
-    menu.popup(currentWindow, event.clientX, event.clientY);
+    menu.popup({x: event.clientX, y: event.clientY});
     event.stopPropagation();
   };
 
