@@ -12,7 +12,9 @@
 // $FlowFB
 import type {RegisterProvider} from '../../fb-dash/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {Provider} from '../../nuclide-quick-open/lib/types';
 import type {FileFamilyProvider} from './types';
+import type {RelatedFileResult} from './FileFamilyQuickOpenProvider';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
@@ -20,6 +22,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
 import FileFamilyAggregator from './FileFamilyAggregator';
 import FileFamilyDashProvider from './FileFamilyDashProvider';
+import FileFamilyQuickOpenProvider from './FileFamilyQuickOpenProvider';
 import {getAlternatesFromGraph} from './FileFamilyUtils';
 
 class Activation {
@@ -43,6 +46,10 @@ class Activation {
     this._disposables.dispose();
   }
 
+  registerQuickOpenProvider(): Provider<RelatedFileResult> {
+    return new FileFamilyQuickOpenProvider(this._aggregators, this._cwds);
+  }
+
   provideFileFamilyService(): FileFamilyProvider {
     if (this._aggregator) {
       return this._aggregator;
@@ -52,6 +59,7 @@ class Activation {
     this._aggregator = aggregator;
     this._aggregators.next(aggregator);
     this._disposables.add(aggregator);
+
     return aggregator;
   }
 
