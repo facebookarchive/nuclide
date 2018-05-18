@@ -495,14 +495,19 @@ export default class DebugService implements IDebugService {
             session &&
             session.getCapabilities().supportsConfigurationDoneRequest
           ) {
-            return session.configurationDone().catch(e => {
-              // Disconnect the debug session on configuration done error #10596
-              this._onSessionEnd();
-              session.disconnect().catch(onUnexpectedError);
-              atom.notifications.addError('Failed to configure debugger', {
-                detail: e.message,
+            return session
+              .configurationDone()
+              .then(_ => {
+                this._updateModeAndEmit(DebuggerMode.RUNNING);
+              })
+              .catch(e => {
+                // Disconnect the debug session on configuration done error #10596
+                this._onSessionEnd();
+                session.disconnect().catch(onUnexpectedError);
+                atom.notifications.addError('Failed to configure debugger', {
+                  detail: e.message,
+                });
               });
-            });
           }
         };
 
@@ -979,6 +984,8 @@ export default class DebugService implements IDebugService {
       return DebuggerMode.PAUSED;
     } else if (this._getCurrentProcess() == null) {
       return DebuggerMode.STOPPED;
+    } else if (this._debuggerMode === DebuggerMode.STARTING) {
+      return DebuggerMode.STARTING;
     } else {
       return DebuggerMode.RUNNING;
     }
@@ -1313,9 +1320,6 @@ export default class DebugService implements IDebugService {
     } else {
       // It's 'launch'
       await session.launch(configuration.config);
-    }
-    if (!session.isDisconnected()) {
-      this._updateModeAndEmit(DebuggerMode.RUNNING);
     }
   }
 

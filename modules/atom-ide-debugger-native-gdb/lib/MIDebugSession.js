@@ -859,7 +859,7 @@ class MIDebugSession extends LoggingDebugSession {
     } else if (stopped.reason == null) {
       // the stop reason is empty for attach start
       if (this._configurationDoneResponse != null) {
-        this.send(this._configurationDoneResponse);
+        this.sendResponse(this._configurationDoneResponse);
         this._configurationDoneResponse = null;
       }
 
