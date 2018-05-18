@@ -117,15 +117,24 @@ class FileFamilyQuickOpenProvider {
     }
 
     return (
-      <div>
+      <div
+        className="nuclide-file-family-quick-open-provider-result"
+        style={{opacity: item.exists ? 1 : 0.5}}>
         <PathWithFileIcon
-          className="nuclide-file-family-quick-open-provider-result"
+          className="nuclide-file-family-quick-open-provider-file-path"
           path={
             item.pathWithoutRoot == null
               ? item.path
               : `.${item.pathWithoutRoot}`
           }
         />
+        {!item.exists && (
+          <div className="nuclide-file-family-quick-open-provider-create-file-container">
+            <span className="nuclide-file-family-quick-open-provider-create-file-label">
+              Create File
+            </span>
+          </div>
+        )}
       </div>
     );
   }
