@@ -14,6 +14,7 @@ import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+import type {LspPreferences} from './LspLanguageService';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
@@ -86,6 +87,8 @@ export type LspLanguageServiceParams = {|
   // Otherwise, this should always be enabled.
   // Default: true.
   waitForDiagnostics?: boolean,
+  // Additional preferences for the language server.
+  lspPreferences?: LspPreferences,
 |};
 
 /**
@@ -145,6 +148,7 @@ export async function createMultiLspLanguageService(
       params.initializationOptions || {},
       Number(params.additionalLogFilesRetentionPeriod),
       params.useOriginalEnvironment || false,
+      params.lspPreferences,
     );
 
     lsp.start(); // Kick off 'Initializing'...

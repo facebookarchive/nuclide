@@ -124,6 +124,11 @@ type State =
   | 'Stopping'
   | 'Stopped';
 
+export type LspPreferences = {
+  // See https://microsoft.github.io/language-server-protocol/specification#textDocument_formatting
+  additionalFormattingOptions?: Map<string, any>,
+};
+
 // Marshals messages from Nuclide's LanguageService
 // to VS Code's Language Server Protocol
 export class LspLanguageService {
@@ -147,6 +152,7 @@ export class LspLanguageService {
   _initializationOptions: Object;
   _additionalLogFilesRetentionPeriod: number;
   _useOriginalEnvironment: boolean;
+  _lspPreferences: LspPreferences;
 
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
@@ -199,6 +205,7 @@ export class LspLanguageService {
     initializationOptions: Object,
     additionalLogFilesRetentionPeriod: number,
     useOriginalEnvironment?: boolean = false,
+    lspPreferences?: LspPreferences = {},
   ) {
     this._snapshotter = new SnapshotLogger(additionalLogFilesRetentionPeriod);
     this._logger = new MemoryLogger(logger, additionalLogFilesRetentionPeriod);
@@ -215,6 +222,7 @@ export class LspLanguageService {
     this._initializationOptions = initializationOptions;
     this._additionalLogFilesRetentionPeriod = additionalLogFilesRetentionPeriod;
     this._useOriginalEnvironment = useOriginalEnvironment;
+    this._lspPreferences = lspPreferences;
   }
 
   dispose(): void {
@@ -2282,6 +2290,11 @@ export class LspLanguageService {
       ),
       options,
     };
+    const additionalFormattingOptions =
+      this._lspPreferences.additionalFormattingOptions || new Map();
+    for (const [key, value] of additionalFormattingOptions) {
+      params.options[key] = value;
+    }
     let response;
 
     // The user might have requested to format either some or all of the buffer.
