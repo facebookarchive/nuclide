@@ -49,6 +49,8 @@ export type StopReason = {
   description: string,
 };
 
+// NB that trace is not actually exposed in package.json as it's only used for
+// debugging the adapter itself
 type LaunchRequestArguments = {
   ...DebugProtocol.LaunchRequestArguments,
   program: string,
@@ -57,6 +59,7 @@ type LaunchRequestArguments = {
   env: Array<string>,
   sourcePath: string,
   debuggerRoot: ?string,
+  trace: ?boolean,
 };
 
 type AttachRequestArguments = {
@@ -65,6 +68,7 @@ type AttachRequestArguments = {
   sourcePath: string,
   debuggerRoot: ?string,
   stopOnAttach: ?boolean,
+  trace: ?boolean,
 };
 
 class MIDebugSession extends LoggingDebugSession {
@@ -187,7 +191,6 @@ class MIDebugSession extends LoggingDebugSession {
     args: LaunchRequestArguments,
   ): Promise<void> {
     logger.setup(
-      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
       true,
     );
@@ -265,7 +268,6 @@ class MIDebugSession extends LoggingDebugSession {
     args: AttachRequestArguments,
   ): Promise<void> {
     logger.setup(
-      // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
       args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
       true,
     );
