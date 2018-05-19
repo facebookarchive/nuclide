@@ -201,14 +201,28 @@ export class CqueryLanguageClient extends LspLanguageService {
         const edits: Array<TextEdit> = command.arguments[1];
         // Split each edit into its own command.
         for (const edit of edits) {
-          const includeValue = edit.newText;
+          const includeValue = edit.newText.trim();
           if (!seenIncludes.has(includeValue)) {
             seenIncludes.add(includeValue);
-            outputCommands.push({
-              command: 'cquery._applyFixIt',
-              title: 'Insert ' + includeValue,
-              arguments: [file, [edit]],
-            });
+            // Add a command for quote and bracket includes.
+            for (const wrappedInclude of [
+              `<${includeValue}>`,
+              `"${includeValue}"`,
+            ]) {
+              outputCommands.push({
+                command: 'cquery._applyFixIt',
+                title: 'Insert ' + wrappedInclude,
+                arguments: [
+                  file,
+                  [
+                    {
+                      ...edit,
+                      newText: `#include ${wrappedInclude}\n`,
+                    },
+                  ],
+                ],
+              });
+            }
           }
         }
       }
