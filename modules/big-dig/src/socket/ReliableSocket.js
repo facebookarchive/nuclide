@@ -41,7 +41,7 @@ const MAX_RECONNECT_TIME_MS = 5000;
 // Can be in one of the following states:
 //   - Connected - everything healthy
 //   - Disconnected - Was connected, but connection died. Will attempt to reconnect.
-//   - Closed - No longer connected. May not send/receive messages. Cannot be resurected.
+//   - Closed - No longer connected. May not send/receive messages. Cannot be resurrected.
 //
 // Publishes the following events:
 //   - status(boolean): on connect/disconnect
@@ -50,6 +50,9 @@ const MAX_RECONNECT_TIME_MS = 5000;
 //   - message(message: Object): on receipt fo JSON message
 //   - heartbeat: On receipt of successful heartbeat
 //   - heartbeat.error({code, originalCode, message}): On failure of heartbeat
+//   - intransient-error: the server is reachable but refusing to respond to
+//     connections (i.e. ECONNREFUSED).
+//   - close: this socket has been closed by a call to `close()`.
 export class ReliableSocket {
   id: string;
 
