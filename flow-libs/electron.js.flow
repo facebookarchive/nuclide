@@ -850,10 +850,6 @@ declare class electron$NativeImage {
   getSize(): {width: number, height: number},
   setTemplateImage(option: boolean): void,
   isTemplateImage(): boolean,
-  // Deprecated, but Atom is behind - so keep them around.
-  toPng(): Uint8Array,
-  toJpeg(quality: number): Uint8Array,
-  toDataUrl(): string,
 }
 
 /**
