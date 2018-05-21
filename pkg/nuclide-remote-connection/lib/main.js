@@ -114,6 +114,12 @@ export function getFileSystemServiceByNuclideUri(
   return nullthrows(getServiceByNuclideUri('FileSystemService', uri));
 }
 
+export function getFileSystemServiceByConnection(
+  connection: ?ServerConnection,
+): FileSystemService {
+  return nullthrows(getServiceByConnection('FileSystemService', connection));
+}
+
 export function getFileWatcherServiceByNuclideUri(
   uri: NuclideUri,
 ): FileWatcherService {
