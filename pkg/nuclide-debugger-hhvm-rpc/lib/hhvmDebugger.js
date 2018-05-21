@@ -87,7 +87,11 @@ class HHVMDebuggerWrapper {
       args.sandboxUser = os.userInfo().username;
     }
 
-    attachMessage.arguments = args;
+    attachMessage.arguments = {
+      ...attachMessage.arguments,
+      ...args,
+    };
+
     const socket = new net.Socket();
     socket
       .once('connect', () => {
@@ -619,7 +623,8 @@ class HHVMDebuggerWrapper {
       message.event === 'stopped' &&
       ((message.body.threadCausedFocus === false ||
         message.body.preserveFocusHint === true) &&
-        this._initializeArgs.clientID !== 'atom')
+        (this._initializeArgs.clientID !== 'atom' &&
+          this._initializeArgs.clientID !== 'nuclide-cli'))
     ) {
       return;
     }

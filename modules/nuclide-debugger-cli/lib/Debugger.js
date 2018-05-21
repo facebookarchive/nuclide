@@ -553,6 +553,7 @@ export default class Debugger implements DebuggerInterface {
       pathFormat: 'path',
       linesStartAt1: true,
       columnsStartAt1: true,
+      clientID: 'nuclide-cli',
     });
 
     this._capabilities = {};
