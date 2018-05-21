@@ -11,7 +11,6 @@ package com.facebook.nuclide.debugger;
 import java.io.File;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;

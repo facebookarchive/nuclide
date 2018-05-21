@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 /** Responsible for locating source file using class/source file paths. */
 public class SourceLocator {
+  public static final String DEFAULT_ANDROID_SDK = "/opt/android_sdk";
   // TODO: use ReadWriteLock if perf is an issue.
   private final Object _sourceSearchPathsLock = new Object();
   private final Set<String> _sourceSearchPaths = new HashSet<>();
@@ -57,18 +58,17 @@ public class SourceLocator {
     }
 
     // Add the Android SDK to the source and class search path if we can find it.
-    String androidHome = System.getenv("ANDROID_SDK");
-    if (androidHome != null) {
-      addPotentialPath(Paths.get(androidHome, "platforms").toString(), true);
-      addPotentialPath(Paths.get(androidHome, "extras").toString(), true);
+    String androidHome =
+        Optional.ofNullable(System.getenv("ANDROID_SDK")).orElse(DEFAULT_ANDROID_SDK);
+    addPotentialPath(Paths.get(androidHome, "platforms").toString(), true);
+    addPotentialPath(Paths.get(androidHome, "extras").toString(), true);
 
-      addSourcesFromAndroidSdk(androidHome);
+    addSourcesFromAndroidSdk(androidHome);
 
-      // On Windows, Android studio unpacks sources to per-user local app data.
-      String appData = System.getenv("LOCALAPPDATA");
-      if (appData != null) {
-        addSourcesFromAndroidSdk(Paths.get(appData, "Android", "sdk").toString());
-      }
+    // On Windows, Android studio unpacks sources to per-user local app data.
+    String appData = System.getenv("LOCALAPPDATA");
+    if (appData != null) {
+      addSourcesFromAndroidSdk(Paths.get(appData, "Android", "sdk").toString());
     }
   }
 
