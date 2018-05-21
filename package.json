@@ -196,7 +196,7 @@
   "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
-    "file-icons",
+    "file-icons:2.1.21",
     "tool-bar",
     "highlight-selected",
     "language-babel",
