@@ -9,9 +9,8 @@
  * @format
  */
 
+import type {Tunnel, ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
-import type {Tunnel} from './types';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

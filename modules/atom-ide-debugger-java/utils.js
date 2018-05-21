@@ -193,7 +193,7 @@ export function getSourcePathClickSubscriptionsOnVspInstance(
   ];
 }
 
-function getSourcePathClickSubscriptions(
+export function getSourcePathClickSubscriptions(
   targetUri: NuclideUri,
   debugSession: ISession,
   clickEvents: rxjs$Subject<void>,

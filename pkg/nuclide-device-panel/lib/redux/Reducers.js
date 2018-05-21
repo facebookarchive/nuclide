@@ -9,7 +9,8 @@
  * @format
  */
 
-import type {Action, AppState, Device} from '../types';
+import type {Action, AppState} from '../types';
+import type {Device} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as Actions from './Actions';

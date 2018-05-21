@@ -14,7 +14,7 @@ import type {Expected} from 'nuclide-commons/expected';
 import type {
   DeviceTypeComponent,
   DeviceTypeComponentProvider,
-} from '../../../nuclide-device-panel/lib/types';
+} from 'nuclide-debugger-common/types';
 
 import {WatchmanClient} from 'nuclide-watchman-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';

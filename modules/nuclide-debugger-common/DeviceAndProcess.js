@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -11,67 +12,51 @@
 
 import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
 import type {Column, Row} from 'nuclide-commons-ui/Table';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from 'nuclide-commons/expected';
-import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Subscription} from 'rxjs';
+import type {Device} from './types';
 
-import * as React from 'react';
-import {AdbDeviceSelector} from './AdbDeviceSelector';
-import {Table} from 'nuclide-commons-ui/Table';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {
-  getAdbService,
-  debugAndroidDebuggerService,
-} from './JavaDebuggerServiceHelpers';
-import {Subscription} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import debounce from 'nuclide-commons/debounce';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from 'nuclide-debugger-common';
-import {
-  getAdbPath,
-  getAdbPorts,
-  setAdbPath,
-  addAdbPorts,
-} from './EmulatorUtils';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Expect} from 'nuclide-commons/expected';
+import idx from 'idx';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
-import invariant from 'assert';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import {Table} from 'nuclide-commons-ui/Table';
 import {arrayEqual} from 'nuclide-commons/collection';
+import debounce from 'nuclide-commons/debounce';
+import {Expect} from 'nuclide-commons/expected';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import * as React from 'react';
 import {Observable} from 'rxjs';
-
-type Props = {|
-  +targetUri: NuclideUri,
-  +configIsValidChanged: (valid: boolean) => void,
-|};
-
-type State = {|
-  selectedDevice: ?Device,
-  javaProcesses: Expected<Array<AndroidJavaProcess>>,
-  selectedProcess: ?AndroidJavaProcess,
-  sortedColumn: ?ColumnName,
-  sortDescending: boolean,
-  selectedProcessName: ?string,
-  adbPorts: string,
-  adbPath: ?string,
-|};
+import {AdbDeviceSelector} from './AdbDeviceSelector';
+import {getAdbPath, setAdbPath, addAdbPorts} from './EmulatorUtils';
 
 type ColumnName = 'pid' | 'user' | 'name';
 
-export class AndroidAttachComponent extends React.Component<Props, State> {
+type Props = {|
+  +targetUri: NuclideUri,
+  +onSelect: (device: ?Device, javaProcess: ?AndroidJavaProcess) => void,
+  +deserialize: () => ?string,
+|};
+
+type State = {
+  selectedDevice: ?Device,
+  javaProcesses: Expected<Array<AndroidJavaProcess>>,
+  selectedProcess: ?AndroidJavaProcess,
+  selectedProcessName: ?string,
+  sortedColumn: ?ColumnName,
+  sortDescending: boolean,
+  adbPorts: string,
+};
+
+export class DeviceAndProcess extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
-  _deserializedSavedSettings: boolean;
   _javaProcessSubscription: ?Subscription;
 
   constructor(props: Props) {
     super(props);
 
     this._disposables = new UniversalDisposable();
-    this._deserializedSavedSettings = false;
     this._javaProcessSubscription = null;
     this._disposables.add(() => {
       if (this._javaProcessSubscription != null) {
@@ -79,7 +64,6 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       }
     });
     (this: any)._setAdbPorts = debounce(this._setAdbPorts.bind(this), 1000);
-    (this: any)._handleDeviceChange = this._handleDeviceChange.bind(this);
 
     this.state = {
       selectedDevice: null,
@@ -89,58 +73,37 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       sortedColumn: 'name',
       sortDescending: false,
       adbPorts: '',
-      adbPath: null,
     };
-  }
-
-  async _getAdbParameters() {
-    this.setState({
-      adbPorts: (await getAdbPorts(this.props.targetUri)).join(', '),
-      adbPath: nuclideUri.isRemote(this.props.targetUri)
-        ? await getAdbPath()
-        : 'adb',
-    });
-  }
-
-  componentDidMount(): void {
-    this._getAdbParameters();
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': async (): Promise<void> => {
-          if (this._debugButtonShouldEnable()) {
-            await this._handleAttachClick();
-          }
-        },
-      }),
-    );
-
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        this.setState({
-          selectedProcessName: savedSettings.selectedProcessName,
-        });
-      },
-    );
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  setState(newState: Object): void {
-    super.setState(newState, () =>
-      this.props.configIsValidChanged(this._debugButtonShouldEnable()),
-    );
+  async _setAdbPorts(value: string): Promise<void> {
+    setAdbPath(this.props.targetUri, await getAdbPath());
+
+    const parsedPorts = value
+      .split(/,\s*/)
+      .map(port => parseInt(port.trim(), 10))
+      .filter(port => !Number.isNaN(port));
+
+    addAdbPorts(this.props.targetUri, parsedPorts);
+    this.setState({adbPorts: value, selectedDevice: null});
   }
 
-  _debugButtonShouldEnable(): boolean {
-    return (
-      this.state.selectedProcess != null && this.state.selectedDevice != null
-    );
+  setState(partialState: Object, callback?: () => mixed): void {
+    const fullState: State = {
+      ...this.state,
+      ...partialState,
+    };
+    super.setState(fullState, () => {
+      this.props.onSelect(fullState.selectedDevice, fullState.selectedProcess);
+      callback && callback();
+    });
   }
 
-  _handleDeviceChange(device: ?Device): void {
+  _handleDeviceChange = (device: ?Device): void => {
     const oldDevice = this.state.selectedDevice;
     if (
       oldDevice != null &&
@@ -152,22 +115,22 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       return;
     }
 
-    this.setState({
-      selectedDevice: device,
-      javaProcesses:
-        device == null ? Expect.value([]) : Expect.pendingValue([]),
-      selectedProcess: null,
-    });
-
     if (this._javaProcessSubscription != null) {
       this._javaProcessSubscription.unsubscribe();
       this._javaProcessSubscription = null;
     }
 
+    this.setState({
+      selectedDevice: device,
+      javaProcesses:
+        device == null ? Expect.value([]) : Expect.pendingValue([]),
+      selectedProcess: null,
+      selectedProcessName: this.props.deserialize(),
+    });
+
     if (device != null) {
       // If a device is selected, observe the Java processes on the device.
       const adbService = getAdbServiceByNuclideUri(this.props.targetUri);
-      invariant(adbService != null);
       this._javaProcessSubscription = Observable.interval(2000)
         .startWith(0)
         .switchMap(() => adbService.getJavaProcesses(device).refCount())
@@ -180,17 +143,7 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
           this._javaProcessListChanged(Expect.value(javaProcesses));
         });
     }
-  }
-
-  _getSerializationArgs() {
-    return [
-      nuclideUri.isRemote(this.props.targetUri)
-        ? nuclideUri.getHostname(this.props.targetUri)
-        : 'local',
-      'attach',
-      'Java - Android',
-    ];
-  }
+  };
 
   _javaProcessListChanged(javaProcesses: Expected<Array<AndroidJavaProcess>>) {
     const selectedPid =
@@ -219,20 +172,6 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
     });
   }
 
-  _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {
-    this.setState({sortedColumn, sortDescending});
-  };
-
-  _handleSelectTableRow = (
-    item: ?AndroidJavaProcess,
-    selectedIndex: number,
-  ): void => {
-    this.setState({
-      selectedProcess: item,
-      selectedProcessName: item == null ? null : item.name,
-    });
-  };
-
   _getColumns(): Array<Column<*>> {
     return [
       {
@@ -252,6 +191,10 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       },
     ];
   }
+
+  _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {
+    this.setState({sortedColumn, sortDescending});
+  };
 
   _sortRows = (
     processes: Array<Row<*>>,
@@ -282,19 +225,36 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
     });
   };
 
-  _setAdbPorts(value: string): void {
-    setAdbPath(this.props.targetUri, this.state.adbPath || '');
-
-    const parsedPorts = value
-      .split(/,\s*/)
-      .map(port => parseInt(port.trim(), 10))
-      .filter(port => !Number.isNaN(port));
-
-    addAdbPorts(this.props.targetUri, parsedPorts);
-    this.setState({adbPorts: value});
-  }
+  _handleSelectTableRow = (
+    item: ?AndroidJavaProcess,
+    selectedIndex: number,
+  ): void => {
+    this.setState({
+      selectedProcess: item,
+      selectedProcessName: idx(item, _ => _.name),
+    });
+  };
 
   render(): React.Node {
+    const devicesLabel =
+      this.state.adbPorts === ''
+        ? ''
+        : '(ADB port ' + this.state.adbPorts + ')';
+
+    const emptyMessage: string =
+      this.state.selectedDevice == null
+        ? 'No device selected'
+        : 'No debuggable Java processes found!';
+    const emptyComponent = () => (
+      <div>
+        {this.state.javaProcesses.isPending ? (
+          <LoadingSpinner size="EXTRA_SMALL" />
+        ) : (
+          emptyMessage
+        )}
+      </div>
+    );
+
     const processListRows =
       !this.state.javaProcesses.isPending && !this.state.javaProcesses.isError
         ? this._sortRows(
@@ -311,21 +271,6 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
           )
         : [];
 
-    const emptyMessage: string =
-      this.state.selectedDevice == null
-        ? 'No device selected'
-        : 'No debuggable Java processes found!';
-
-    const emptyComponent = () => (
-      <div>
-        {this.state.javaProcesses.isPending ? (
-          <LoadingSpinner size="EXTRA_SMALL" />
-        ) : (
-          emptyMessage
-        )}
-      </div>
-    );
-
     const selectedRows =
       this.state.selectedProcess == null
         ? []
@@ -335,14 +280,8 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
               (row.data.pid === this.state.selectedProcess.pid &&
                 row.data.name === this.state.selectedProcess.name),
           );
-
     const selectedRowIndex =
       selectedRows.length === 1 ? processListRows.indexOf(selectedRows[0]) : -1;
-
-    const devicesLabel =
-      this.state.adbPorts === ''
-        ? ''
-        : '(ADB port ' + this.state.adbPorts + ')';
 
     return (
       <div className="block">
@@ -355,7 +294,6 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
         />
         <label>Device: {devicesLabel}</label>
         <AdbDeviceSelector
-          tabIndex="11"
           onChange={this._handleDeviceChange}
           targetUri={this.props.targetUri}
         />
@@ -379,37 +317,4 @@ export class AndroidAttachComponent extends React.Component<Props, State> {
       </div>
     );
   }
-
-  _handleAttachClick = async (): Promise<void> => {
-    const adbService = getAdbService(this.props.targetUri);
-    const action = null;
-    const activity = null;
-    const device = this.state.selectedDevice;
-    invariant(device != null, 'No device selected.');
-
-    const selectedProcess = this.state.selectedProcess;
-    if (selectedProcess == null) {
-      return;
-    }
-
-    const packageName = selectedProcess.name;
-
-    await debugAndroidDebuggerService(
-      parseInt(selectedProcess.pid, 10),
-      adbService,
-      null /* service */,
-      activity,
-      action,
-      device,
-      packageName,
-      this.props.targetUri /* adbServiceUri */,
-      this.props.targetUri,
-    );
-
-    serializeDebuggerConfig(...this._getSerializationArgs(), {
-      selectedDeviceName:
-        this.state.selectedDevice == null ? '' : this.state.selectedDevice.name,
-      selectedProcessName: packageName,
-    });
-  };
 }

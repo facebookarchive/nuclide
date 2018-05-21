@@ -10,7 +10,7 @@
  */
 
 import type {TaskEvent} from 'nuclide-commons/process';
-import type {IDeviceTask} from './types';
+import type {IDeviceTask} from 'nuclide-debugger-common/types';
 
 import {Observable, ReplaySubject, Subscription} from 'rxjs';
 

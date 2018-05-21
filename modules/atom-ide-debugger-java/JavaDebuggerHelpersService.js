@@ -23,7 +23,7 @@ import {getAvailableServerPort} from 'nuclide-commons/serverPort';
 
 export type JavaLaunchTargetConfig = {|
   +debugMode: 'launch',
-  +commandLine: string,
+  +entryPointClass: string,
   +classPath: string,
   +runArgs?: ?Array<string>,
 |};
@@ -65,7 +65,7 @@ export async function getJavaVSAdapterExecutableInfo(
 export async function prepareForTerminalLaunch(
   config: JavaLaunchTargetConfig,
 ): Promise<TerminalLaunchInfo> {
-  const {classPath, commandLine} = config;
+  const {classPath, entryPointClass} = config;
   const launchPath = nuclideUri.expandHomeDir(classPath);
   const attachPort = await getAvailableServerPort();
 
@@ -84,7 +84,7 @@ export async function prepareForTerminalLaunch(
       `-Xrunjdwp:transport=dt_socket,address=${attachHost}:${attachPort},server=y,suspend=y`,
       '-classpath',
       launchPath,
-      commandLine,
+      entryPointClass,
       ...(config.runArgs || []),
     ],
   });

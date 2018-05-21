@@ -18,7 +18,7 @@ import type {
   Process,
   ProcessTask,
   IDeviceTask,
-} from '../types';
+} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Props as TaskButtonPropsType} from './TaskButton';

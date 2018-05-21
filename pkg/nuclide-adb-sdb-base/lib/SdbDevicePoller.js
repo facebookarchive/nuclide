@@ -9,15 +9,16 @@
  * @format
  */
 
+import type {DBPlatform} from 'nuclide-adb';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
-import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {Device} from 'nuclide-debugger-common/types';
 
+import {DevicePoller} from 'nuclide-adb';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {DevicePoller} from './DevicePoller';
 
-const SDB_PLATFORM = {
+const SDB_PLATFORM: DBPlatform = {
   name: 'Tizen',
   type: 'sdb',
   command: 'sdb',

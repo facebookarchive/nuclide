@@ -1,12 +1,12 @@
 {
-  "name": "atom-ide-debugger-java",
+  "name": "atom-ide-debugger-java-android",
   "version": "0.7.1-dev",
   "main": "./main.js",
-  "description": "Desktop Java Debugger for Atom IDE.",
+  "description": "Android Java Debugger for Atom IDE.",
   "author": "NEEDS OWNER",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
-  "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-java",
+  "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-java-android",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec",
@@ -18,7 +18,7 @@
   },
   "providedServices": {
     "debugger.provider": {
-      "description": "Java debugger engine.",
+      "description": "Android Java debugger engine.",
       "versions": {
         "0.0.0": "createDebuggerProvider"
       }
@@ -30,22 +30,10 @@
       }
     }
   },
-  "consumedServices": {
-    "nuclide-rpc-services": {
-      "versions": {
-        "0.0.0": "consumeRpcService"
-      }
-    },
-    "consumedServices": {
-      "debugger.sourcePaths": {
-        "versions": {
-          "0.0.0": "consumeSourcePathsService"
-        }
-      }
-    }
-  },
   "dependencies": {
-    "log4js": "1.1.1",
+    "async-to-generator": "1.1.0",
+    "atom-ide-debugger-java": "0.7.1-dev",
+    "nuclide-adb": "0.7.1-dev",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",
@@ -55,8 +43,9 @@
     "rxjs": "5.5.5",
     "vscode-chrome-debug-core": "3.17.10",
     "vscode-debugadapter": "1.24.0",
-    "vscode-debugprotocol": "1.24.0",
     "vscode-nls": "2.0.2"
   },
-  "package-deps": ["atom-ide-ui"]
+  "package-deps": [
+    "atom-ide-ui"
+  ]
 }

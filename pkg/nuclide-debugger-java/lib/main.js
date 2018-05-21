@@ -5,14 +5,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {NuclideDebuggerProvider} from 'nuclide-debugger-common';
-import type {DebuggerLaunchAttachProvider} from 'nuclide-debugger-common';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AdditionalLogFilesProvider,
   AdditionalLogFile,
@@ -22,32 +19,19 @@ import type {
   AdbProcessParameters,
   JavaDebugInfo,
 } from './types';
-import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
+import {
+  launchAndroidServiceOrActivityAndGetPid,
+  getAdbAttachPortTargetInfo,
+  createJavaVspProcessInfo,
+} from 'atom-ide-debugger-java-android/AndroidJavaDebuggerHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
-import {
-  createJavaVspProcessInfo,
-  getAdbService,
-  launchAndroidServiceOrActivityAndGetPid,
-  getAdbAttachPortTargetInfo,
-} from './JavaDebuggerServiceHelpers';
-import {JavaLaunchAttachProvider} from './JavaLaunchAttachProvider';
 import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider';
-
-export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return {
-    name: 'java',
-    getLaunchAttachProvider(
-      connection: NuclideUri,
-    ): ?DebuggerLaunchAttachProvider {
-      return new JavaLaunchAttachProvider('Java', connection);
-    },
-  };
-}
 
 export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
   return {
@@ -62,10 +46,9 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
           : parameters.targetUri;
 
       const service = parameters.service != null ? parameters.service : null;
-      const adbService = getAdbService(adbServiceUri);
       const {pid} = await launchAndroidServiceOrActivityAndGetPid(
         parameters.pid,
-        adbService,
+        adbServiceUri,
         service,
         activity,
         action,
@@ -76,7 +59,6 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
       const subscriptions = new UniversalDisposable();
       const attachPortTargetInfo = await getAdbAttachPortTargetInfo(
         device,
-        adbService,
         adbServiceUri,
         targetUri,
         pid,
@@ -132,7 +114,7 @@ export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
         targetUri,
         {
           debugMode: 'launch',
-          commandLine: mainClass,
+          entryPointClass: mainClass,
           classPath,
           runArgs,
         },

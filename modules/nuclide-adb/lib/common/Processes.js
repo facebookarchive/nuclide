@@ -162,9 +162,15 @@ export class Processes {
   }
 
   async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await this._db
-      .runShortCommand('shell', 'ps', '|', 'grep', '-i', packageName)
-      .toPromise()).split(os.EOL)[0];
+    let pidLines: string;
+    try {
+      pidLines = await this._db
+        .runShortCommand('shell', 'ps', '|', 'grep', '-i', packageName)
+        .toPromise();
+    } catch (e) {
+      pidLines = '';
+    }
+    const pidLine = pidLines.split(os.EOL)[0];
     if (pidLine == null) {
       throw new Error(
         `Can not find a running process with package name: ${packageName}`,

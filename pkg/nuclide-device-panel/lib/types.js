@@ -9,127 +9,19 @@
  * @format
  */
 
-import type {TaskEvent} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from 'nuclide-commons/expected';
-import type {Device as DeviceIdType} from '../../nuclide-device-panel/lib/types';
+import type {
+  Process,
+  Device,
+  AppInfoRow,
+  ProcessTask,
+  IDeviceTask,
+  ComponentPosition,
+  DeviceTypeComponent,
+} from 'nuclide-debugger-common/types';
 
 import * as Immutable from 'immutable';
-import {Observable} from 'rxjs';
-
-//
-// DeviceTask interface
-//
-
-export interface IDeviceTask {
-  getName(): string;
-  getTaskEvents(): Observable<?TaskEvent>;
-  start(): void;
-  cancel(): void;
-}
-
-//
-// Api
-//
-
-export type DevicePanelServiceApi = {
-  registerListProvider: (provider: DeviceListProvider) => IDisposable,
-  registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
-  registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
-  registerTaskProvider: (provider: DeviceTaskProvider) => IDisposable,
-  registerProcessTaskProvider: (
-    provider: DeviceProcessTaskProvider,
-  ) => IDisposable,
-  registerDeviceTypeTaskProvider: (
-    provider: DeviceTypeTaskProvider,
-  ) => IDisposable,
-  registerDeviceActionProvider: (provider: DeviceActionProvider) => IDisposable,
-  registerAppInfoProvider: (provider: DeviceAppInfoProvider) => IDisposable,
-  registerDeviceTypeComponentProvider: (
-    provider: DeviceTypeComponentProvider,
-  ) => IDisposable,
-};
-
-export interface DeviceListProvider {
-  observe(host: NuclideUri): Observable<Expected<Device[]>>;
-  getType(): string;
-}
-
-export interface DeviceInfoProvider {
-  fetch(
-    host: NuclideUri,
-    device: DeviceIdType,
-  ): Observable<Map<string, string>>;
-  getType(): string;
-  getTitle(): string;
-  getPriority(): number;
-  isSupported(host: NuclideUri): Observable<boolean>;
-}
-
-export interface DeviceProcessesProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<Process[]>;
-  getType(): string;
-}
-
-export interface DeviceTaskProvider {
-  getTask(host: NuclideUri, device: DeviceIdType): Observable<TaskEvent>;
-  getName(): string;
-  getType(): string;
-  isSupported(host: NuclideUri): Observable<boolean>;
-}
-
-export interface DeviceTypeTaskProvider {
-  getTask(host: NuclideUri): Observable<TaskEvent>;
-  getName(): string;
-  getType(): string;
-}
-
-export interface DeviceProcessTaskProvider {
-  run(host: NuclideUri, device: DeviceIdType, proc: Process): Promise<void>;
-  getTaskType(): ProcessTaskType;
-  getType(): string;
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: DeviceIdType,
-    procs: Process[],
-  ): Observable<Set<number>>;
-  getName(): string;
-}
-
-export interface DeviceAppInfoProvider {
-  observe(host: NuclideUri, device: DeviceIdType): Observable<string>;
-  getName(): string;
-  getType(): string;
-  getProcessName(): string;
-  getAppName(): string;
-  canUpdate(): boolean;
-  update(value: string): Promise<void>;
-}
-
-export type DeviceAction = {
-  name: string,
-  callback: (device: Device) => void,
-};
-
-export interface DeviceActionProvider {
-  getActionsForDevice(device: Device): Array<DeviceAction>;
-}
-
-export type ComponentPosition = 'host_selector' | 'above_table' | 'below_table';
-
-export type DeviceTypeComponent = {
-  position: ComponentPosition,
-  type: React$ComponentType<any>,
-  key: string,
-};
-
-export interface DeviceTypeComponentProvider {
-  getType(): string;
-  observe(
-    host: NuclideUri,
-    callback: (?DeviceTypeComponent) => void,
-  ): IDisposable;
-}
 
 //
 // Store
@@ -159,46 +51,6 @@ export type AppState = {
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
-};
-
-//
-// Basic objects
-//
-
-export type DeviceArchitecture = 'x86' | 'x86_64' | 'arm' | 'arm64' | '';
-
-export type Device = {|
-  name: string,
-  port: number,
-  displayName: string,
-  architecture: DeviceArchitecture,
-  rawArchitecture: string,
-  ignoresSelection?: boolean,
-|};
-
-export type Process = {
-  user: string,
-  pid: number,
-  name: string,
-  cpuUsage: ?number,
-  memUsage: ?number,
-  isJava: boolean,
-};
-
-export type ProcessTaskType = 'KILL' | 'DEBUG';
-
-export type ProcessTask = {
-  type: ProcessTaskType,
-  run: (proc: Process) => Promise<void>,
-  isSupported: (proc: Process) => boolean,
-  name: string,
-};
-
-export type AppInfoRow = {
-  appName: string,
-  name: string,
-  value: string,
-  isError?: boolean,
 };
 
 //

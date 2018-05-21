@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {Device, DeviceAction, DeviceActionProvider} from '../types';
+import type {
+  Device,
+  DeviceAction,
+  DeviceActionProvider,
+} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as React from 'react';

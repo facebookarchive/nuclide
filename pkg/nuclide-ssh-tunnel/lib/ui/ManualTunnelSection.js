@@ -9,8 +9,8 @@
  * @format
  */
 
+import type {Tunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Tunnel} from '../types';
 
 import invariant from 'assert';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';

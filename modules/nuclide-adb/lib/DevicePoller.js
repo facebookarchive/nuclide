@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -12,8 +13,8 @@
 import type {DeviceDescription} from 'nuclide-adb/lib/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ConnectableObservable} from 'rxjs';
-import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {Device} from 'nuclide-debugger-common/types';
+import type {DBPlatform} from './types';
 
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
@@ -21,19 +22,8 @@ import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import shallowEqual from 'shallowequal';
 import {Observable} from 'rxjs';
 import {Expect} from 'nuclide-commons/expected';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-
-type DBType = 'adb' | 'sdb';
-
-type DBPlatform = {
-  name: string,
-  type: DBType,
-  command: string,
-  getService: NuclideUri => {
-    getDeviceList: () => ConnectableObservable<Array<DeviceDescription>>,
-  },
-};
 
 const pollers: Map<string, DevicePoller> = new Map();
 

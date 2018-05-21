@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Tunnel} from './types';
+import type {Tunnel} from 'nuclide-adb/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';

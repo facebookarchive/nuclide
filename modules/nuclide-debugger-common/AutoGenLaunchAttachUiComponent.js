@@ -10,12 +10,14 @@
  * @format
  */
 
+import type {AndroidJavaProcess} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenProperty,
   AutoGenLaunchOrAttachConfig,
   AutoGenPropertyType,
   AutoGenPropertyPrimitiveType,
+  Device,
 } from './types';
 import * as React from 'react';
 
@@ -32,7 +34,11 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from './DebuggerConfigSerializer';
+import {DeviceAndPackage} from './DeviceAndPackage';
+import {DeviceAndProcess} from './DeviceAndProcess';
 import SelectableFilterableProcessTable from './SelectableFilterableProcessTable';
+
+type StringPair = [string, string];
 
 type Props = {|
   +targetUri: NuclideUri,
@@ -41,11 +47,23 @@ type Props = {|
   +debuggerTypeName: string,
 |};
 
+type DeviceAndPackageType = {|
+  +device: ?Device,
+  +selectedPackage: string,
+|};
+
+type DeviceAndProcessType = {|
+  +device: ?Device,
+  +selectedProcess: ?AndroidJavaProcess,
+|};
+
 type State = {
   enumValues: Map<string, string>,
   booleanValues: Map<string, boolean>,
   atomInputValues: Map<string, string>,
   processTableValues: Map<string, number>,
+  deviceAndPackageValues: Map<string, DeviceAndPackageType>,
+  deviceAndProcessValues: Map<string, DeviceAndProcessType>,
 };
 
 // extension must be a string starting with a '.' like '.js' or '.py'
@@ -78,6 +96,8 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       booleanValues: new Map(),
       enumValues: new Map(),
       processTableValues: new Map(),
+      deviceAndPackageValues: new Map(),
+      deviceAndProcessValues: new Map(),
     };
   }
 
@@ -202,13 +222,18 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           booleanValues,
           enumValues,
         );
-        // do not serialize and deserialize processes
+        // do not serialize and deserialize these values:
         const processTableValues = new Map();
+        const deviceAndPackageValues = new Map();
+        const deviceAndProcessValues = new Map();
+
         this.setState({
           atomInputValues,
           booleanValues,
           enumValues,
           processTableValues,
+          deviceAndPackageValues,
+          deviceAndProcessValues,
         });
       },
     );
@@ -263,6 +288,20 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     } else if (type === 'process') {
       const value = this.state.processTableValues.get(name);
       return value != null;
+    } else if (type === 'deviceAndPackage') {
+      const deviceAndPackageValue = this.state.deviceAndPackageValues.get(name);
+      return (
+        deviceAndPackageValue != null &&
+        deviceAndPackageValue.device != null &&
+        deviceAndPackageValue.selectedPackage != null
+      );
+    } else if (type === 'deviceAndProcess') {
+      const deviceAndProcessValue = this.state.deviceAndProcessValues.get(name);
+      return (
+        deviceAndProcessValue != null &&
+        deviceAndProcessValue.device != null &&
+        deviceAndProcessValue.selectedProcess != null
+      );
     }
     return false;
   }
@@ -346,6 +385,56 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           />
         </div>
       );
+    } else if (type === 'deviceAndPackage') {
+      return (
+        <DeviceAndPackage
+          targetUri={this.props.targetUri}
+          deserialize={() => {
+            let packageValuesArray: Array<StringPair> = [];
+            deserializeDebuggerConfig(
+              ...this._getSerializationArgs(this.props),
+              (transientSettings, savedSettings) => {
+                packageValuesArray =
+                  (savedSettings.packageValues: Array<StringPair>) || [];
+              },
+            );
+            const packageValues = new Map(packageValuesArray);
+            return packageValues.get(name) || null;
+          }}
+          onSelect={(device, javaPackage) => {
+            this.state.deviceAndPackageValues.set(name, {
+              device,
+              selectedPackage: javaPackage,
+            });
+            this.props.configIsValidChanged(this._debugButtonShouldEnable());
+          }}
+        />
+      );
+    } else if (type === 'deviceAndProcess') {
+      return (
+        <DeviceAndProcess
+          targetUri={this.props.targetUri}
+          deserialize={() => {
+            let processValuesArray: Array<StringPair> = [];
+            deserializeDebuggerConfig(
+              ...this._getSerializationArgs(this.props),
+              (transientSettings, savedSettings) => {
+                processValuesArray =
+                  (savedSettings.processValues: Array<StringPair>) || [];
+              },
+            );
+            const processValues = new Map(processValuesArray);
+            return processValues.get(name) || null;
+          }}
+          onSelect={(device, javaProcess) => {
+            this.state.deviceAndProcessValues.set(name, {
+              device,
+              selectedProcess: javaProcess,
+            });
+            this.props.configIsValidChanged(this._debugButtonShouldEnable());
+          }}
+        />
+      );
     }
     return (
       <div>
@@ -378,6 +467,8 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       booleanValues,
       enumValues,
       processTableValues,
+      deviceAndPackageValues,
+      deviceAndProcessValues,
     } = this.state;
     const {launch, vsAdapterType, threads} = config;
 
@@ -412,6 +503,33 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         }
       });
 
+    const packageValues = new Map();
+    this._getConfigurationProperties()
+      .filter(
+        property =>
+          property.visible && deviceAndPackageValues.has(property.name),
+      )
+      .forEach(property => {
+        const deviceAndPackage = deviceAndPackageValues.get(property.name);
+        if (deviceAndPackage != null) {
+          packageValues.set(property.name, deviceAndPackage.selectedPackage);
+        }
+      });
+
+    const processValues = new Map();
+    this._getConfigurationProperties()
+      .filter(
+        property =>
+          property.visible && deviceAndProcessValues.has(property.name),
+      )
+      .forEach(property => {
+        const deviceAndProcess = deviceAndProcessValues.get(property.name);
+        const processName = idx(deviceAndProcess, _ => _.selectedProcess.name);
+        if (deviceAndProcess != null && processName != null) {
+          processValues.set(property.name, processName);
+        }
+      });
+
     const values = {};
     [
       booleanValues,
@@ -422,6 +540,8 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       numberValues,
       processTableValues,
       jsonValues,
+      deviceAndPackageValues,
+      deviceAndProcessValues,
     ].forEach(map => {
       map.forEach((value, key) => {
         values[key] = value;
@@ -456,6 +576,8 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       atomInputValues: Array.from(atomInputValues),
       booleanValues: Array.from(booleanValues),
       enumValues: Array.from(enumValues),
+      packageValues: Array.from(packageValues),
+      processValues: Array.from(processValues),
     });
   };
 }

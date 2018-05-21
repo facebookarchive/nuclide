@@ -26,6 +26,8 @@ import type {
   SetDeviceTypeComponentsAction,
   ToggleDevicePollingAction,
   ToggleProcessPollingAction,
+} from '../types';
+import type {
   Device,
   Process,
   ProcessTask,
@@ -33,7 +35,7 @@ import type {
   DeviceTypeComponent,
   ComponentPosition,
   IDeviceTask,
-} from '../types';
+} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import * as Immutable from 'immutable';

@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {VspProcessInfo} from 'nuclide-debugger-common';
-import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {Device} from 'nuclide-debugger-common/types';
 
 export type AdbProcessParameters = {
   targetUri: NuclideUri,

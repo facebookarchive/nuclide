@@ -10,8 +10,8 @@
  */
 
 import type {OutputService} from 'atom-ide-ui';
+import type {SshTunnelService} from 'nuclide-adb/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {SshTunnelService} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';

@@ -1,29 +1,30 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
-import type {Device} from '../../nuclide-device-panel/lib/types';
+import type {Device} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 
+import {observeAndroidDevicesX} from 'nuclide-adb/lib/AdbDevicePoller';
+import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/AdbDevicePoller';
 import {Expect} from 'nuclide-commons/expected';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {arrayEqual} from 'nuclide-commons/collection';
 import invariant from 'assert';
 
-export const DEFAULT_ADB_PORT = 5037;
 const NO_DEVICES_MSG = 'No adb devices attached!';
 
 type Props = {

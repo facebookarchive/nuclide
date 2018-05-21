@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow strict-local
  * @format
@@ -11,19 +12,23 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import invariant from 'assert';
-import {DEFAULT_ADB_PORT} from './AdbDeviceSelector';
 
-export async function getAdbPath(): Promise<?string> {
-  try {
-    // $FlowFB
-    return require('../../commons-node/fb-sitevar').fetchSitevarOnce(
-      'NUCLIDE_ONE_WORLD_ADB_PATH',
-    );
-  } catch (e) {
-    return 'adb';
+export const NUCLIDE_ONE_WORLD_ADB_PATH_NAME = 'NUCLIDE_ONE_WORLD_ADB_PATH';
+
+export function getAdbPath(): string {
+  const atomConfigAdbPathName = atom.config.get(
+    NUCLIDE_ONE_WORLD_ADB_PATH_NAME,
+  );
+  if (
+    atomConfigAdbPathName != null &&
+    typeof atomConfigAdbPathName === 'string'
+  ) {
+    return atomConfigAdbPathName;
   }
+  return 'adb';
 }
 
 export async function getAdbPorts(

@@ -11,17 +11,15 @@
 
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {
-  Action,
-  Store,
-  AppState,
   ProcessTask,
   Process,
   AppInfoRow,
   DeviceAppInfoProvider,
   DeviceTypeComponent,
   IDeviceTask,
-} from '../types';
-import type {Device as DeviceIdType} from '../../../nuclide-device-panel/lib/types';
+  Device as DeviceIdType,
+} from 'nuclide-debugger-common/types';
+import type {Action, Store, AppState} from '../types';
 
 import log4js from 'log4js';
 import {arrayEqual, arrayFlatten, collect} from 'nuclide-commons/collection';

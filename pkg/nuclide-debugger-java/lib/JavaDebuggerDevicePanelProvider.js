@@ -14,7 +14,7 @@ import type {
   DeviceProcessTaskProvider,
   Process,
   ProcessTaskType,
-} from '../../nuclide-device-panel/lib/types';
+} from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NuclideJavaDebuggerProvider} from './types';
 

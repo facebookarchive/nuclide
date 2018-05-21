@@ -9,19 +9,12 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Observable, Subject} from 'rxjs';
+import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
+import type {Subject} from 'rxjs';
 import type {ConsoleMessage} from 'atom-ide-ui';
-import type {ResolvedTunnel} from '../../nuclide-socket-rpc/lib/types';
 import type {ActiveTunnels} from './ActiveTunnels';
 
 import {Map, Set} from 'immutable';
-
-export type SshTunnelService = {
-  openTunnels(tunnels: Array<Tunnel>): Observable<'ready'>,
-  getOpenTunnels(): Set<ResolvedTunnel>,
-  getAvailableServerPort(uri: NuclideUri): Promise<number>,
-};
 
 export type Store = {
   getState(): AppState,
@@ -33,18 +26,6 @@ export type AppState = {
   tunnels: ActiveTunnels,
   currentWorkingDirectory: ?string,
   consoleOutput: Subject<ConsoleMessage>,
-};
-
-export type Host = {
-  host: 'localhost' | NuclideUri,
-  port: number,
-  family?: 4 | 6,
-};
-
-export type Tunnel = {
-  description: string,
-  from: Host,
-  to: Host,
 };
 
 export type TunnelSubscription = {

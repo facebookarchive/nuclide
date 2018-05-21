@@ -18,6 +18,7 @@ export const VsAdapterTypes = Object.freeze({
   REACT_NATIVE: 'react-native',
   NODE: 'node',
   JAVA: 'java',
+  JAVA_ANDROID: 'java_android',
   PREPACK: 'prepack',
   OCAML: 'ocaml',
   MOBILEJS: 'mobilejs',

@@ -10,8 +10,15 @@
  * @format
  */
 
+import type {DBPlatform} from './types';
+
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {DevicePoller} from './DevicePoller';
 import {setRpcService} from './utils';
+
+export type {DBPlatform};
+
+export {DevicePoller};
 
 class Activation {
   constructor() {}

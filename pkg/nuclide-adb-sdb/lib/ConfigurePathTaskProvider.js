@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DeviceTypeTaskProvider} from '../../nuclide-device-panel/lib/types';
+import type {DeviceTypeTaskProvider} from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Bridge} from './types';

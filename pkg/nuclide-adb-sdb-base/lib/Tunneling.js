@@ -9,9 +9,9 @@
  * @format
  */
 
+import type {SshTunnelService} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
-import type {SshTunnelService} from '../../nuclide-ssh-tunnel/lib/types';
 
 import invariant from 'assert';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';

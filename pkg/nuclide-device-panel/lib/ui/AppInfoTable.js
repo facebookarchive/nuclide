@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppInfoRow} from '../types';
+import type {AppInfoRow} from 'nuclide-debugger-common/types';
 
 import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';

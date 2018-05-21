@@ -10,8 +10,8 @@
  */
 
 import type {Props} from './ui/RootPanel';
-
 import type {Store, AppState} from './types';
+
 import * as React from 'react';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';

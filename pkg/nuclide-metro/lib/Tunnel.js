@@ -9,11 +9,8 @@
  * @format
  */
 
+import type {SshTunnelService, Tunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  SshTunnelService,
-  Tunnel,
-} from '../../nuclide-ssh-tunnel/lib/types';
 import type {TunnelBehavior} from './types';
 
 import nullthrows from 'nullthrows';

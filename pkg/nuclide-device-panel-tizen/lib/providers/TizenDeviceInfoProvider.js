@@ -9,9 +9,8 @@
  * @format
  */
 
-import type {DeviceInfoProvider} from '../../../nuclide-device-panel/lib/types';
+import type {DeviceInfoProvider, Device} from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import {Observable} from 'rxjs';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';

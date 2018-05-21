@@ -13,7 +13,7 @@ import type {
   Device,
   DeviceProcessesProvider,
   Process,
-} from '../../../nuclide-device-panel/lib/types';
+} from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Observable} from 'rxjs';

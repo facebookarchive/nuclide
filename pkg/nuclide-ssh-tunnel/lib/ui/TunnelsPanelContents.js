@@ -9,9 +9,9 @@
  * @format
  */
 
+import type {ResolvedTunnel, Tunnel} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
-import type {ActiveTunnel, Tunnel} from '../types';
+import type {ActiveTunnel} from '../types';
 
 import * as React from 'react';
 import ManualTunnelSection from './ManualTunnelSection';

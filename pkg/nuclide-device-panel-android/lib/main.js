@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

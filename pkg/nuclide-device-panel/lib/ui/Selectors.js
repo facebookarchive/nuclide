@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
-import type {DeviceTypeComponent} from '../types';
+import type {DeviceTypeComponent} from 'nuclide-debugger-common/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';

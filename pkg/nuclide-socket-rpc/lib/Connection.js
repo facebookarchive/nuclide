@@ -9,7 +9,9 @@
  * @format
  */
 
-import type {IRemoteSocket, TunnelHost} from './types';
+import type {TunnelHost} from 'nuclide-adb/lib/types';
+import type {IRemoteSocket} from './types';
+
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
 import net from 'net';

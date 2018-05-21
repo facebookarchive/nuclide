@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeTizenDevicesX} from '../../nuclide-adb-sdb-base/lib/SdbDevicePoller';

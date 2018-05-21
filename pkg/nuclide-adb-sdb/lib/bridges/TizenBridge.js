@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as SdbService from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {Store} from '../types';
 import type {Expected} from 'nuclide-commons/expected';
-import type {Device} from '../../../nuclide-device-panel/lib/types';
+import type {Device} from 'nuclide-debugger-common/types';
 import type {DeviceTypeTizen} from '../types';
 
 import * as Actions from '../redux/Actions';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ResolvedTunnel} from '../../../nuclide-socket-rpc/lib/types';
+import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {
   CloseTunnelAction,
   DeleteTunnelAction,

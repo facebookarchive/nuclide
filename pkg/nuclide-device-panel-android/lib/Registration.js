@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
+import {observeAndroidDevicesX} from 'nuclide-adb/lib/AdbDevicePoller';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeAndroidDevicesX} from '../../nuclide-adb-sdb-base/lib/AdbDevicePoller';
 import {AndroidDeviceInfoProvider} from './providers/AndroidDeviceInfoProvider';
 import {AndroidDeviceProcessesProvider} from './providers/AndroidDeviceProcessesProvider';
 import {AndroidDeviceStopProcessProvider} from './providers/AndroidDeviceStopProcessProvider';

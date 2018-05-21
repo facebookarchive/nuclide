@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "idx": "1.2.0",
+    "immutable": "4.0.0-rc.9",
     "invariant": "2.2.2",
+    "nuclide-adb": "0.7.1-dev",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-atom": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",

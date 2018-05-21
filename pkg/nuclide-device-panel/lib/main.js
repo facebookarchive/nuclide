@@ -29,7 +29,8 @@ import * as Epics from './redux/Epics';
 import {getProviders} from './providers';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
-import type {Store, DevicePanelServiceApi} from './types';
+import type {Store} from './types';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
 let activation = null;
 

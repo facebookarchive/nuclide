@@ -19,7 +19,7 @@ import type {
   DeviceActionProvider,
   DeviceAppInfoProvider,
   DeviceTypeComponentProvider,
-} from './types';
+} from 'nuclide-debugger-common/types';
 
 type DeviceProviders = {
   deviceList: Set<DeviceListProvider>,

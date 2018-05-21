@@ -12,7 +12,7 @@
 import type {
   DeviceArchitecture,
   DevicePanelServiceApi,
-} from '../../nuclide-device-panel/lib/types';
+} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

@@ -9,17 +9,6 @@
  * @format
  */
 
-export type TunnelHost = {
-  host: string,
-  port: number,
-  family: 4 | 6,
-};
-
-export type ResolvedTunnel = {
-  from: TunnelHost,
-  to: TunnelHost,
-};
-
 export type SocketEvent =
   | {type: 'server_started'}
   | {

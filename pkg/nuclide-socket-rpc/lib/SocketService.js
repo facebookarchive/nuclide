@@ -13,8 +13,9 @@ import * as Tunnel from './Tunnel';
 import {ConnectionFactory} from './Connection';
 import {getAvailableServerPort as _getAvailableServerPort} from 'nuclide-commons/serverPort';
 
-import type {ResolvedTunnel, SocketEvent} from './types.js';
+import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {ConnectableObservable} from 'rxjs';
+import type {SocketEvent} from './types';
 
 /**
  * The role of the Connection Factory is to create

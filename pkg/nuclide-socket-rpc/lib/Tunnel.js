@@ -9,8 +9,9 @@
  * @format
  */
 
+import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
 import type {Connection, ConnectionFactory} from './Connection';
-import type {ResolvedTunnel, SocketEvent, IRemoteSocket} from './types.js';
+import type {SocketEvent, IRemoteSocket} from './types.js';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {getLogger} from 'log4js';

@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DeviceTypeComponentProvider,
   DeviceTypeComponent,
-} from '../../../nuclide-device-panel/lib/types';
+} from 'nuclide-debugger-common/types';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import nuclideUri from 'nuclide-commons/nuclideUri';

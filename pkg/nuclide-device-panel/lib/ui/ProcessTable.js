@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Process, ProcessTask} from '../types';
+import type {Process, ProcessTask} from 'nuclide-debugger-common/types';
 import type {Expected} from 'nuclide-commons/expected';
 
 import {ProcessTaskButton} from './ProcessTaskButton';

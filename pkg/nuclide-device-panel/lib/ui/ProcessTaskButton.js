@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {Process, ProcessTask, ProcessTaskType} from '../types';
+import type {
+  Process,
+  ProcessTask,
+  ProcessTaskType,
+} from 'nuclide-debugger-common/types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
