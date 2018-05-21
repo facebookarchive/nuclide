@@ -1678,16 +1678,19 @@ declare class atom$MenuManager {
   template: Array<Object>,
 }
 
+type atom$ProjectSpecification = {|
+  originPath?: string,
+  paths?: Array<string>,
+  config?: {[string]: mixed}
+|};
+
 declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): IDisposable,
   onDidAddBuffer(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
+  onDidReplace((settings: atom$ProjectSpecification) => mixed): IDisposable,
   observeBuffers(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
-  replace?: (newSettings: {|
-    originPath?: string,
-    paths?: Array<string>,
-    config?: {[string]: mixed}
-  |}) => void,
+  replace?: (newSettings: atom$ProjectSpecification) => void,
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>,
   repositoryForDirectory(directory: atom$Directory): Promise<?atom$Repository>,
