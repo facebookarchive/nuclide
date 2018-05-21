@@ -79,12 +79,20 @@ export async function launchServer(
 
   // $FlowIgnore
   const launcher: LauncherType = require(options.absolutePathToServerMain);
+  const tunnelLauncher: LauncherType = require('../services/tunnel/launcher');
 
   const bigDigServer = new BigDigServer(webServer, webSocketServer);
+
   await launcher({
     server: bigDigServer,
     serverParams: options.serverParams,
   });
+
+  await tunnelLauncher({
+    server: bigDigServer,
+    serverParams: options.serverParams,
+  });
+
   return webServer.address().port;
 }
 

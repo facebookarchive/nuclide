@@ -13,9 +13,12 @@
 import type {Observable} from 'rxjs';
 import type {ReliableSocket} from '../socket/ReliableSocket';
 import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
+import type {Proxy} from '../services/tunnel/Proxy';
 
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
+
+import {createTunnel} from '../services/tunnel/tunnel';
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
@@ -26,6 +29,7 @@ export class BigDigClient {
   _logger: log4js$Logger;
   _tagToSubject: Map<string, Subject<string>>;
   _transport: ReliableSocket;
+  _proxyPromise: Promise<Proxy>;
 
   constructor(reliableSocketTransport: ReliableSocket) {
     this._logger = getLogger();
@@ -63,7 +67,22 @@ export class BigDigClient {
     return this._transport.onClose(callback);
   }
 
+  async createTunnel(localPort: number, remotePort: number): Promise<Proxy> {
+    const transportAdapter = {
+      onMessage: () => {
+        return this.onMessage('tunnel');
+      },
+      send: (message: string) => {
+        this.sendMessage('tunnel', message);
+      },
+    };
+
+    return createTunnel(localPort, remotePort, transportAdapter);
+  }
+
   close(): void {
+    this._logger.info('close called');
+    this._proxyPromise.then(proxy => proxy.close());
     this._transport.close();
   }
 
