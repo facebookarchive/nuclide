@@ -9,13 +9,10 @@
  * @format
  */
 
-import type {DebuggerSourcePathsService} from 'atom-ide-debugger-java/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
-  ControlButtonSpecification,
   IProcessConfig,
   VSAdapterExecutableInfo,
-  IVspInstance,
 } from 'nuclide-debugger-common';
 import type {
   JavaTargetConfig,
@@ -33,28 +30,19 @@ import invariant from 'assert';
 import {
   getJavaDebuggerHelpersServiceByNuclideUri,
   NUCLIDE_DEBUGGER_DEV_GK,
+  getSourcePathString,
+  getCustomControlButtonsForJavaSourcePaths,
+  getSourcePathClickSubscriptionsOnVspInstance,
 } from 'atom-ide-debugger-java/utils';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import showModal from 'nuclide-commons-ui/showModal';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable, Subject} from 'rxjs';
+import {Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 import {track} from '../../nuclide-analytics';
 import * as BuckService from '../../nuclide-buck-rpc';
-import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VspProcessInfo} from 'nuclide-debugger-common';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
-import {SourceFilePathsModal} from './SourceFilePathsModal';
-
-let _sourcePathsService: ?DebuggerSourcePathsService;
-
-export function setSourcePathsService(
-  sourcePathsService: DebuggerSourcePathsService,
-) {
-  _sourcePathsService = sourcePathsService;
-}
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before
@@ -217,47 +205,6 @@ export function getAdbService(adbServiceUri: NuclideUri): AdbService {
   return service;
 }
 
-function getCustomControlButtons(
-  clickEvents: rxjs$Subject<void>,
-): ControlButtonSpecification[] {
-  return [
-    {
-      icon: 'file-code',
-      title: 'Set Source Path',
-      onClick: () => clickEvents.next(),
-    },
-  ];
-}
-
-export function getDialogValues(
-  clickEvents: rxjs$Subject<void>,
-): rxjs$Observable<Array<string>> {
-  let userSourcePaths = getSavedPathsFromConfig();
-  return clickEvents.switchMap(() => {
-    return Observable.create(observer => {
-      const modalDisposable = showModal(
-        ({dismiss}) => (
-          <SourceFilePathsModal
-            initialSourcePaths={userSourcePaths}
-            sourcePathsChanged={(newPaths: Array<string>) => {
-              userSourcePaths = newPaths;
-              persistSourcePathsToConfig(newPaths);
-              observer.next(newPaths);
-            }}
-            onClosed={dismiss}
-          />
-        ),
-        {className: 'sourcepath-modal-container'},
-      );
-
-      track('fb-java-debugger-source-dialog-shown');
-      return () => {
-        modalDisposable.dispose();
-      };
-    });
-  });
-}
-
 export async function createJavaVspProcessInfo(
   targetUri: NuclideUri,
   config: JavaTargetConfig,
@@ -276,14 +223,20 @@ export async function createJavaVspProcessInfo(
     processConfig.config,
     {threads: true},
     {
-      customControlButtons: getCustomControlButtons(clickEvents),
+      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
+        clickEvents,
+      ),
       threadsComponentTitle: 'Threads',
     },
   );
 
   const subscriptions = new UniversalDisposable();
   subscriptions.add(
-    ..._getSourcePathClickSubscriptions(targetUri, info, clickEvents),
+    ...getSourcePathClickSubscriptionsOnVspInstance(
+      targetUri,
+      info,
+      clickEvents,
+    ),
   );
   info.addCustomDisposable(subscriptions);
   return info;
@@ -326,7 +279,9 @@ async function _createJavaVspIProcessConfig(
     config,
     capabilities: {threads: true},
     properties: {
-      customControlButtons: getCustomControlButtons(clickEvents),
+      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
+        clickEvents,
+      ),
       threadsComponentTitle: 'Threads',
     },
   };
@@ -399,24 +354,6 @@ export async function debugAndroidDebuggerService(
   }
 }
 
-function _getSourcePathClickSubscriptions(
-  targetUri: NuclideUri,
-  vspInstance: IVspInstance,
-  clickEvents: rxjs$Subject<void>,
-): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
-  const defaultValues = getDefaultSourceSearchPaths(targetUri);
-  return [
-    getDialogValues(clickEvents)
-      .startWith(getSavedPathsFromConfig())
-      .subscribe(userValues => {
-        vspInstance.customRequest('setSourcePath', {
-          sourcePath: getSourcePathString(defaultValues.concat(userValues)),
-        });
-      }),
-    clickEvents,
-  ];
-}
-
 export async function debugJavaDebuggerService(
   targetUri: NuclideUri,
   config: JavaTargetConfig,
@@ -440,7 +377,11 @@ export async function debugJavaDebuggerService(
   //    disposable on componentWillUnmount which has already occurred
 
   subscriptions.add(
-    ..._getSourcePathClickSubscriptions(targetUri, vspInstance, clickEvents),
+    ...getSourcePathClickSubscriptionsOnVspInstance(
+      targetUri,
+      vspInstance,
+      clickEvents,
+    ),
   );
   vspInstance.addCustomDisposable(subscriptions);
 
@@ -463,56 +404,6 @@ export async function debugJavaDebuggerService(
       });
     }
   }
-}
-
-export function persistSourcePathsToConfig(
-  newSourcePaths: Array<string>,
-): void {
-  featureConfig.set(
-    'nuclide-debugger-java.sourceFilePaths',
-    newSourcePaths.join(';'),
-  );
-}
-
-export function getSavedPathsFromConfig(): Array<string> {
-  const paths = featureConfig.get('nuclide-debugger-java.sourceFilePaths');
-  // flowlint-next-line sketchy-null-mixed:off
-  if (paths && typeof paths === 'string') {
-    return (paths: string).split(';');
-  } else {
-    featureConfig.set('nuclide-debugger-java.sourceFilePaths', '');
-  }
-  return [];
-}
-
-export function getDefaultSourceSearchPaths(
-  targetUri: NuclideUri,
-): Array<string> {
-  const searchPaths: Array<string> = [];
-  const remote = nuclideUri.isRemote(targetUri);
-
-  // Add all the project root paths as potential source locations the Java debugger server should
-  // check for resolving source.
-  // NOTE: the Java debug server will just ignore any directory path that doesn't exist.
-  atom.project.getPaths().forEach(path => {
-    if (
-      (remote && nuclideUri.isRemote(path)) ||
-      (!remote && nuclideUri.isLocal(path))
-    ) {
-      const translatedPath = remote ? nuclideUri.getPath(path) : path;
-      searchPaths.push(translatedPath);
-
-      if (_sourcePathsService != null) {
-        _sourcePathsService.addKnownSubdirectoryPaths(
-          remote,
-          translatedPath,
-          searchPaths,
-        );
-      }
-    }
-  });
-
-  return searchPaths;
 }
 
 async function javaDebugSetSourcePaths(
@@ -553,8 +444,4 @@ export async function javaDebugAddBuckTargetSourcePaths(
   if (newDirs.length > 0) {
     await javaDebugSetSourcePaths(processInfo, newDirs);
   }
-}
-
-export function getSourcePathString(searchPaths: Array<string>): string {
-  return searchPaths.join(';');
 }

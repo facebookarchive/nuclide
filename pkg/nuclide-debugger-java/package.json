@@ -49,13 +49,6 @@
       "versions": {
         "0.0.0": "consumeDevicePanelServiceApi"
       }
-    },
-    "consumedServices": {
-      "debugger.sourcePaths": {
-        "versions": {
-          "0.0.0": "consumeSourcePathsService"
-        }
-      }
     }
   }
 }

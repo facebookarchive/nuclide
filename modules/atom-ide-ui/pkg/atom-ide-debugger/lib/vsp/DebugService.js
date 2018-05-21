@@ -1200,6 +1200,11 @@ export default class DebugService implements IDebugService {
         ...rawConfiguration,
         adapterExecutable,
       });
+      const {
+        adapterType,
+        onInitializeCallback,
+        customDisposable,
+      } = configuration;
 
       track(AnalyticsEvents.DEBUGGER_START, {
         serviceName: configuration.adapterType,
@@ -1221,7 +1226,7 @@ export default class DebugService implements IDebugService {
       );
       await session.initialize({
         clientID: 'atom',
-        adapterID: configuration.adapterType,
+        adapterID: adapterType,
         pathFormat: 'path',
         linesStartAt1: true,
         columnsStartAt1: true,
@@ -1231,8 +1236,8 @@ export default class DebugService implements IDebugService {
         locale: 'en-us',
       });
 
-      if (configuration.onInitializeCallback != null) {
-        configuration.onInitializeCallback(session);
+      if (onInitializeCallback != null) {
+        onInitializeCallback(session);
       }
 
       this._model.setExceptionBreakpoints(
@@ -1244,7 +1249,6 @@ export default class DebugService implements IDebugService {
 
       // make sure to add the configuration.customDisposable to dispose on
       //   session end
-      const customDisposable = configuration.customDisposable;
       if (customDisposable != null) {
         customDisposable.add(
           this.viewModel.onDidFocusProcess(() => {

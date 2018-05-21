@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,29 +16,26 @@ import {ListView, ListViewItem} from 'nuclide-commons-ui/ListView';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import nullthrows from 'nullthrows';
-import {track} from '../../nuclide-analytics';
+import {track} from 'nuclide-commons/analytics';
 
-type PropsType = {
+type Props = {
   initialSourcePaths: Array<string>,
   sourcePathsChanged: (Array<string>) => void,
   onClosed: () => void,
 };
 
-type StateType = {
+type State = {
   currentPaths: Array<string>,
 };
 
-export class SourceFilePathsModal extends React.Component<
-  PropsType,
-  StateType,
-> {
+export class SourceFilePathsModal extends React.Component<Props, State> {
   _newSourcePath: ?AtomInput;
   _savedSourcePaths: Array<string> = [];
   state = {
     currentPaths: this.props.initialSourcePaths.slice(0),
   };
 
-  _getSourcePathControls(): Array<React.Element<any>> {
+  _getSourcePathControls() {
     const items = [];
     const paths = Array.from(new Set(this.state.currentPaths));
 
