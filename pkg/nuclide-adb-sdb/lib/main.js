@@ -13,6 +13,7 @@ import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
 import type {Store} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import * as AdbTunnelService from '../../nuclide-adb-sdb-base/lib/Tunneling';
 import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -29,6 +30,12 @@ import {
 } from 'nuclide-commons/redux-observable';
 import {AndroidBridge} from './bridges/AndroidBridge';
 import {TizenBridge} from './bridges/TizenBridge';
+
+let fbStartTunnelingAdb;
+try {
+  // $eslint-disable-next-line $FlowFB
+  fbStartTunnelingAdb = require('../../nuclide-adb-sdb-base/lib/fb-Tunneling');
+} catch (e) {}
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -91,6 +98,16 @@ class Activation {
         new ConfigurePathTaskProvider(new TizenBridge(this._store)),
       ),
     );
+  }
+
+  provideAdbTunnelService() {
+    return {
+      ...AdbTunnelService,
+      startTunnelingAdb:
+        fbStartTunnelingAdb != null
+          ? fbStartTunnelingAdb
+          : AdbTunnelService.startTunnelingAdb,
+    };
   }
 }
 
