@@ -32,6 +32,7 @@ import type {
   SymbolResult,
   Completion,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -419,6 +420,16 @@ export class ServerLanguageService<
       originalCursorPosition,
     );
   }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return Observable.of({kind: 'null'}).publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {}
 
   dispose(): void {
     this._service.dispose();

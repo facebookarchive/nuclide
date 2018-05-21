@@ -131,10 +131,30 @@ export type CodeLensData = {
   data?: any,
 };
 
+// Messages in StatusData are interpreted as Markdown.
+export type StatusData =
+  | {|kind: 'null'|}
+  | {|kind: 'green', message: string|}
+  | {|kind: 'yellow', message: string, fraction?: number|}
+  | {|
+      kind: 'red',
+      id?: string,
+      message: string,
+      buttons: Array<string>,
+    |};
+
 export interface LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData>;
+
+  clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void>;
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,

@@ -34,6 +34,7 @@ import type {
   SymbolResult,
   Completion,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -486,6 +487,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       originalCursorPosition,
     );
   }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return Observable.of({kind: 'null'}).publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {}
 
   dispose(): void {
     this._resources.dispose();

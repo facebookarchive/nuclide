@@ -39,6 +39,7 @@ import type {
   SymbolResult,
   Completion,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   HostServices,
@@ -2481,6 +2482,16 @@ export class LspLanguageService {
     this._logger.error('NYI: getCollapsedSelectionRange');
     return Promise.resolve(null);
   }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return Observable.of({kind: 'null'}).publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {}
 }
 
 class DerivedServerCapabilities {

@@ -22,6 +22,7 @@ import type {
   SymbolResult,
   Completion,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
@@ -288,6 +289,14 @@ export interface FlowLanguageServiceType {
     currentSelection: atom$Range,
     originalCursorPosition: atom$Point,
   ): Promise<?atom$Range>;
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData>;
+
+  clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void>;
 
   dispose(): void;
 }

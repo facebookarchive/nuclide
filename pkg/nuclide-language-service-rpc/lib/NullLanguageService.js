@@ -34,6 +34,7 @@ import type {
   SymbolResult,
   Completion,
   CodeLensData,
+  StatusData,
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {Observable} from 'rxjs';
@@ -191,6 +192,16 @@ export class NullLanguageService {
   ): Promise<?atom$Range> {
     return Promise.resolve(null);
   }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return Observable.of({kind: 'null'}).publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {}
 
   dispose(): void {}
 }
