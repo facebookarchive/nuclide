@@ -30,6 +30,7 @@ import InputArea from './InputArea';
 import PromptButton from './PromptButton';
 import NewMessagesNotification from './NewMessagesNotification';
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import shallowEqual from 'shallowequal';
 import recordsChanged from '../recordsChanged';
 import StyleSheet from 'nuclide-commons-ui/StyleSheet';
@@ -68,6 +69,8 @@ const MAXIMUM_SCROLLING_TIME = 3000;
 let count = 0;
 
 export default class ConsoleView extends React.Component<Props, State> {
+  _consoleBodyEl: ?HTMLDivElement;
+  _consoleHeaderComponent: ?ConsoleHeader;
   _disposables: UniversalDisposable;
   _isScrolledNearBottom: boolean;
   _id: number;
@@ -113,6 +116,11 @@ export default class ConsoleView extends React.Component<Props, State> {
           }
         },
       }),
+      atom.commands.add(
+        nullthrows(this._consoleBodyEl),
+        'atom-ide:filter',
+        () => this._focusFilter(),
+      ),
     );
   }
 
@@ -131,6 +139,12 @@ export default class ConsoleView extends React.Component<Props, State> {
       )
     ) {
       this._startScrollToBottom();
+    }
+  }
+
+  _focusFilter(): void {
+    if (this._consoleHeaderComponent != null) {
+      this._consoleHeaderComponent.focusFilter();
     }
   }
 
@@ -210,6 +224,7 @@ export default class ConsoleView extends React.Component<Props, State> {
           invalidFilterInput={this.props.invalidFilterInput}
           enableRegExpFilter={this.props.enableRegExpFilter}
           filterText={this.props.filterText}
+          ref={component => (this._consoleHeaderComponent = component)}
           selectedSourceIds={this.props.selectedSourceIds}
           sources={this.props.sources}
           onFilterChange={this.props.updateFilter}
@@ -221,7 +236,10 @@ export default class ConsoleView extends React.Component<Props, State> {
 
           console-font-size is defined in main.js and updated via a user setting
         */}
-        <div className="console-body" id={'console-font-size-' + this._id}>
+        <div
+          className="console-body atom-ide-filterable"
+          id={'console-font-size-' + this._id}
+          ref={el => (this._consoleBodyEl = el)}>
           <div className="console-scroll-pane-wrapper">
             <FilteredMessagesReminder
               filteredRecordCount={this.props.filteredRecordCount}

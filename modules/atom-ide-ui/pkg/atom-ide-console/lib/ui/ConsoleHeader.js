@@ -38,6 +38,14 @@ type Props = {
 };
 
 export default class ConsoleHeader extends React.Component<Props> {
+  _filterComponent: ?RegExpFilter;
+
+  focusFilter = (): void => {
+    if (this._filterComponent != null) {
+      this._filterComponent.focus();
+    }
+  };
+
   _handleClearButtonClick = (event: SyntheticMouseEvent<>): void => {
     this.props.clear();
   };
@@ -152,6 +160,7 @@ export default class ConsoleHeader extends React.Component<Props> {
         <ToolbarLeft>
           {sourceButton}
           <RegExpFilter
+            ref={component => (this._filterComponent = component)}
             value={{
               text: this.props.filterText,
               isRegExp: this.props.enableRegExpFilter,
