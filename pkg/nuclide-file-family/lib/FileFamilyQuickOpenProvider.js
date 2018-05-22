@@ -14,12 +14,14 @@ import * as React from 'react';
 import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 
-import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 import HighlightedText from 'nuclide-commons-ui/HighlightedText';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import {Matcher} from '../../nuclide-fuzzy-native';
 import {BehaviorSubject, Observable} from 'rxjs';
 import FileFamilyAggregator from './FileFamilyAggregator';
+
+import nullthrows from 'nullthrows';
+import matchIndexesToRanges from 'nuclide-commons/matchIndexesToRanges';
 
 const ErrorCodes = Object.freeze({
   NO_ACTIVE_FILE: 'NO_ACTIVE_FILE',
@@ -31,7 +33,42 @@ export type RelatedFileResult = FileResult & {
   exists?: boolean,
   creatable?: boolean,
   errorCode?: $Keys<typeof ErrorCodes>,
+  labelHeader?: string,
 };
+
+function groupFilesByLabel(files: Array<RelatedFileResult>) {
+  const labelGroups: Map<string, Array<RelatedFileResult>> = new Map();
+  labelGroups.set('unlabeled', []);
+
+  files.forEach(file => {
+    if (file.labels == null || file.labels.size === 0) {
+      nullthrows(labelGroups.get('unlabeled')).push(file);
+    } else {
+      file.labels.forEach(label => {
+        if (labelGroups.has(label)) {
+          nullthrows(labelGroups.get(label)).push(file);
+        } else {
+          labelGroups.set(label, [file]);
+        }
+      });
+    }
+  });
+
+  const groupedFiles = [];
+  labelGroups.forEach((labelledFiles, label) => {
+    groupedFiles.push(
+      ...labelledFiles.map((file, i) => {
+        // Add header for the first file in the label group
+        if (i === 0) {
+          file.labelHeader = label;
+        }
+        return file;
+      }),
+    );
+  });
+
+  return groupedFiles;
+}
 
 class FileFamilyQuickOpenProvider {
   providerType = 'GLOBAL';
@@ -100,9 +137,8 @@ class FileFamilyQuickOpenProvider {
 
         const matcher = new Matcher(files.map(file => file.pathWithoutRoot));
 
-        return matcher
-          .match(query, {recordMatchIndexes: true})
-          .map((result, i) => {
+        return groupFilesByLabel(
+          matcher.match(query, {recordMatchIndexes: true}).map((result, i) => {
             const file = files.find(f => f.pathWithoutRoot === result.value);
 
             return {
@@ -111,7 +147,8 @@ class FileFamilyQuickOpenProvider {
               matchIndexes: result.matchIndexes,
               ...file,
             };
-          });
+          }),
+        );
       })
       .toPromise();
 
@@ -135,24 +172,31 @@ class FileFamilyQuickOpenProvider {
     const path = item.pathWithoutRoot == null ? '' : item.pathWithoutRoot;
 
     return (
-      <div
-        className="nuclide-file-family-quick-open-provider-result"
-        style={{opacity: item.exists ? 1 : 0.5}}>
-        <PathWithFileIcon
-          className="nuclide-file-family-quick-open-provider-file-path"
-          path={path}>
-          <HighlightedText
-            highlightedRanges={matchIndexesToRanges(matchIndexes)}
-            text={path}
-          />
-        </PathWithFileIcon>
-        {!item.exists && (
-          <div className="nuclide-file-family-quick-open-provider-create-file-container">
-            <span className="nuclide-file-family-quick-open-provider-create-file-label">
-              Create File
-            </span>
+      <div>
+        {item.labelHeader != null && (
+          <div className="nuclide-file-family-quick-open-provider-file-label-header">
+            {item.labelHeader}
           </div>
         )}
+        <div
+          className="nuclide-file-family-quick-open-provider-result"
+          style={{opacity: item.exists ? 1 : 0.5}}>
+          <PathWithFileIcon
+            className="nuclide-file-family-quick-open-provider-file-path"
+            path={path}>
+            <HighlightedText
+              highlightedRanges={matchIndexesToRanges(matchIndexes)}
+              text={path}
+            />
+          </PathWithFileIcon>
+          {!item.exists && (
+            <div className="nuclide-file-family-quick-open-provider-create-file-container">
+              <span className="nuclide-file-family-quick-open-provider-create-file-label">
+                Create File
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
