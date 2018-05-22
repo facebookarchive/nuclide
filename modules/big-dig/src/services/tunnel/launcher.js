@@ -13,10 +13,9 @@
 import type {LauncherParameters} from '../../server/NuclideServer';
 import type {Transport} from '../../server/BigDigServer';
 
-import {SocketManager} from './SocketManager';
+import {TunnelManager} from './TunnelManager';
 
 import {getLogger} from 'log4js';
-import invariant from 'assert';
 
 const logger = getLogger('tunnel-service');
 
@@ -26,32 +25,12 @@ module.exports = function launch(
 ): Promise<void> {
   const {server} = launcherParams;
   logger.info('adding tunnel subscriber!');
-  const idToSocketManager: Map<string, SocketManager> = new Map();
 
   server.addSubscriber('tunnel', {
     onConnection(transport: Transport) {
-      logger.info('connection made!');
-
-      transport.onMessage().subscribe(async data => {
-        const message = JSON.parse(data);
-        const event = message.event;
-        const tunnelId = message.tunnelId;
-        const socketManager: ?SocketManager = idToSocketManager.get(tunnelId);
-
-        if (event === 'proxyCreated') {
-          logger.info('creating connection manager');
-          idToSocketManager.set(
-            tunnelId,
-            new SocketManager(message.tunnelId, message.remotePort, transport),
-          );
-        } else if (event === 'connection' || event === 'data') {
-          invariant(socketManager);
-          socketManager.send(message);
-        } else if (event === 'proxyClosed') {
-          invariant(socketManager);
-          socketManager.close();
-        }
-      });
+      logger.info('connection made, creating TunnelManager');
+      // eslint-disable-next-line no-unused-vars
+      const tunnelManager = new TunnelManager(transport); // when do we close this?
     },
   });
 

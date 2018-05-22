@@ -32,7 +32,7 @@ export class SocketManager {
     this._idToSocket = new Map();
   }
 
-  send(message: Object) {
+  receive(message: Object) {
     this._handleMessage(message);
   }
 

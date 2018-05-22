@@ -145,6 +145,6 @@ function waitsForSpy(spy, numberOfCalls: ?number) {
 
 function sendMessages(socketManager: SocketManager, messages: Array<Object>) {
   messages.forEach(message =>
-    setTimeout(() => socketManager.send(message), 100),
+    setTimeout(() => socketManager.receive(message), 100),
   );
 }

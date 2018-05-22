@@ -20,7 +20,7 @@ export type TunnelMessage = {
     | 'end'
     | 'close'
     | 'connection',
-
+  tunnelId?: string,
   clientId?: number,
   arg?: string,
   port?: number,

@@ -12,6 +12,7 @@
 
 import type {Subscription} from 'rxjs';
 import type {Transport} from './Proxy';
+import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
 
 import invariant from 'assert';
@@ -20,9 +21,8 @@ import {getLogger} from 'log4js';
 
 export class TunnelManager {
   _transport: Transport;
-  _idToTunnel: Map<string, Tunnel>;
+  _idToTunnel: Map<string, Tunnel | SocketManager>;
   _logger: log4js$Logger;
-  _tunnel: Promise<Tunnel>;
   _subscription: Subscription;
 
   constructor(transport: Transport) {
@@ -35,11 +35,21 @@ export class TunnelManager {
       .map(msg => {
         return JSON.parse(msg);
       })
-      .subscribe(msg => {
-        const tunnel = this._idToTunnel.get(msg.tunnelId);
-        invariant(tunnel);
-        tunnel.receive(msg);
-      });
+      .subscribe(msg => this._handleMessage(msg));
+  }
+
+  async createSocketManager(
+    tunnelId: string,
+    remotePort: number,
+  ): Promise<SocketManager> {
+    const socketManager = new SocketManager(
+      tunnelId,
+      remotePort,
+      this._transport,
+    );
+
+    this._idToTunnel.set(tunnelId, socketManager);
+    return socketManager;
   }
 
   async createTunnel(localPort: number, remotePort: number): Promise<Tunnel> {
@@ -52,11 +62,24 @@ export class TunnelManager {
     return tunnel;
   }
 
-  close() {
+  close(): void {
     this._logger.trace('closing tunnel manager');
     this._idToTunnel.forEach(tunnel => {
       tunnel.close();
     });
+  }
+
+  async _handleMessage(msg: Object /* TunnelMessage? */): Promise<void> {
+    const tunnel = this._idToTunnel.get(msg.tunnelId);
+    if (msg.event === 'proxyCreated') {
+      await this.createSocketManager(msg.tunnelId, msg.remotePort);
+    } else if (msg.event === 'proxyClosed') {
+      invariant(tunnel);
+      tunnel.close();
+    } else {
+      invariant(tunnel);
+      tunnel.receive(msg);
+    }
   }
 }
 
