@@ -41,7 +41,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
   constructor(projectRootPath: BehaviorSubject<?NuclideUri>) {
     this._projectRootPath = projectRootPath;
     this._disposables = new UniversalDisposable();
-    this._logTailer = createLogTailer(projectRootPath);
+    this._logTailer = this._createLogTailer(projectRootPath);
 
     this._disposables.add(
       () => this.stop(),
@@ -162,46 +162,51 @@ export class DefaultMetroAtomService implements MetroAtomService {
       }
     });
   };
-}
 
-function createLogTailer(projectRootPath: BehaviorSubject<?NuclideUri>) {
-  const metroEvents = Observable.defer(() => {
-    const path = projectRootPath.getValue();
-    if (path == null) {
-      return Observable.empty();
-    }
-    const metroService = getMetroServiceByNuclideUri(path);
-    return metroService.startMetro(path, getEditorArgs(path)).refCount();
-  }).share();
+  _createLogTailer(projectRootPath: BehaviorSubject<?NuclideUri>) {
+    const self = this;
 
-  const messages = metroEvents
-    .filter(event => event.type === 'message')
-    .map(event => {
-      invariant(event.type === 'message');
-      return {...event.message};
+    const metroEvents = Observable.defer(() => {
+      const path = projectRootPath.getValue();
+      if (path == null) {
+        return Observable.empty();
+      }
+      const metroService = getMetroServiceByNuclideUri(path);
+      return metroService.startMetro(path, getEditorArgs(path)).refCount();
+    }).share();
+
+    const messages = metroEvents
+      .filter(event => event.type === 'message')
+      .map(event => {
+        invariant(event.type === 'message');
+        return {...event.message};
+      });
+    const ready = metroEvents
+      .filter(message => message.type === 'ready')
+      .mapTo(undefined);
+
+    return new LogTailer({
+      name: 'Metro',
+      messages,
+      ready,
+      handleError(error) {
+        atom.notifications.addError(
+          `Unexpected error while running Metro.\n\n${error.message}`,
+          {
+            dismissable: true,
+          },
+        );
+
+        logger.warn('stopping metro due to an error');
+        self.stop();
+      },
+      trackingEvents: {
+        start: 'metro:start',
+        stop: 'metro:stop',
+        restart: 'metro:restart',
+      },
     });
-  const ready = metroEvents
-    .filter(message => message.type === 'ready')
-    .mapTo(undefined);
-
-  return new LogTailer({
-    name: 'Metro',
-    messages,
-    ready,
-    handleError(error) {
-      atom.notifications.addError(
-        `Unexpected error while running Metro.\n\n${error.message}`,
-        {
-          dismissable: true,
-        },
-      );
-    },
-    trackingEvents: {
-      start: 'metro:start',
-      stop: 'metro:stop',
-      restart: 'metro:restart',
-    },
-  });
+  }
 }
 
 function getEditorArgs(projectRoot: NuclideUri): Array<string> {
