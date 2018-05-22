@@ -820,6 +820,24 @@ function validate(uri: NuclideUri, mustBeRemote?: boolean): void {
   }
 }
 
+const IMAGE_EXTENSIONS = new Set([
+  '.bmp',
+  '.gif',
+  '.ico',
+  '.jpeg',
+  '.jpg',
+  '.png',
+  '.webp',
+]);
+
+/**
+ * Returns true if this filename looks like an image that Nuclide can open; otherwise false.
+ */
+function looksLikeImageUri(uri: NuclideUri): boolean {
+  const ext = extname(uri).toLowerCase();
+  return IMAGE_EXTENSIONS.has(ext);
+}
+
 export default {
   basename,
   dirname,
@@ -839,6 +857,7 @@ export default {
   join,
   archiveJoin,
   relative,
+  looksLikeImageUri,
   normalize,
   normalizeDir,
   getParent,

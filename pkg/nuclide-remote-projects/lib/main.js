@@ -451,6 +451,16 @@ export function activate(
   // Subscribe opener before restoring the remote projects.
   subscriptions.add(
     atom.workspace.addOpener((uri = '') => {
+      if (
+        nuclideUri.looksLikeImageUri(uri) &&
+        atom.packages.getLoadedPackage('nuclide-image-view') != null
+      ) {
+        // Images will be handled by the nuclide-remote-images package. Ideally, all remote files
+        // would go through one code path and then be delegated to the appropriate handler (instead
+        // of having this need to be aware of the nuclide-remote-images package implementation), but
+        // this is quick and dirty.
+        return;
+      }
       if (uri.startsWith('nuclide:') || nuclideUri.isInArchive(uri)) {
         if (uri.startsWith('nuclide:')) {
           const serverConnection = ServerConnection.getForUri(uri);

@@ -39,16 +39,6 @@ class Activation {
 
 createPackage(module.exports, Activation);
 
-const imageExtensions = new Set([
-  '.bmp',
-  '.gif',
-  '.ico',
-  '.jpeg',
-  '.jpg',
-  '.png',
-  '.webp',
-]);
 function openUri(uri: string): ?ImageEditor {
-  const ext = nuclideUri.extname(uri).toLowerCase();
-  return imageExtensions.has(ext) ? new ImageEditor(uri) : null;
+  return nuclideUri.looksLikeImageUri(uri) ? new ImageEditor(uri) : null;
 }
