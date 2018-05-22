@@ -29,7 +29,6 @@ export class BigDigClient {
   _logger: log4js$Logger;
   _tagToSubject: Map<string, Subject<string>>;
   _transport: ReliableSocket;
-  _proxyPromise: Promise<Proxy>;
 
   constructor(reliableSocketTransport: ReliableSocket) {
     this._logger = getLogger();
@@ -82,7 +81,6 @@ export class BigDigClient {
 
   close(): void {
     this._logger.info('close called');
-    this._proxyPromise.then(proxy => proxy.close());
     this._transport.close();
   }
 
