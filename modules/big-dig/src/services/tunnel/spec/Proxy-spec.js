@@ -26,7 +26,12 @@ describe('Proxy', () => {
 
   beforeEach(async () => {
     transport = TestTransportFactory();
-    testProxy = await Proxy.createProxy(TEST_PORT, 5678, transport);
+    testProxy = await Proxy.createProxy(
+      'test-tunnel',
+      TEST_PORT,
+      5678,
+      transport,
+    );
   });
 
   afterEach(() => {

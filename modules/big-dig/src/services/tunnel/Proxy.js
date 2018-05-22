@@ -16,6 +16,7 @@ import type {TunnelMessage} from './types.js';
 import net from 'net';
 
 import {getLogger} from 'log4js';
+import invariant from 'assert';
 
 const logger = getLogger('tunnel-proxy');
 
@@ -31,8 +32,15 @@ export class Proxy {
   _server: ?net.Server;
   _subscription: ?Subscription;
   _idToSocket: Map<number, net.Socket>;
+  _tunnelId: string;
 
-  constructor(port: number, remotePort: number, transport: Transport) {
+  constructor(
+    tunnelId: string,
+    port: number,
+    remotePort: number,
+    transport: Transport,
+  ) {
+    this._tunnelId = tunnelId;
     this._port = port;
     this._remotePort = remotePort;
     this._transport = transport;
@@ -42,11 +50,12 @@ export class Proxy {
   }
 
   static async createProxy(
+    tunnelId: string,
     port: number,
     remotePort: number,
     transport: Transport,
   ): Promise<Proxy> {
-    const proxy = new Proxy(port, remotePort, transport);
+    const proxy = new Proxy(tunnelId, port, remotePort, transport);
     await proxy.startListening();
 
     return proxy;
@@ -61,20 +70,6 @@ export class Proxy {
           event: 'connection',
           clientId,
         });
-
-        this._subscription = this._transport
-          .onMessage()
-          .map(msg => {
-            return JSON.parse(msg);
-          })
-          .filter(msg => {
-            return msg.clientId === clientId;
-          })
-          .subscribe(msg => {
-            if (msg.event === 'data') {
-              socket.write(Buffer.from(msg.arg, 'base64'));
-            }
-          });
 
         socket.on('data', arg => {
           logger.trace('socket data: ', arg);
@@ -110,8 +105,22 @@ export class Proxy {
     });
   }
 
+  receive(msg: TunnelMessage): void {
+    logger.warn('in proxy, got message');
+    const clientId = msg.clientId;
+    invariant(clientId != null);
+    const socket = this._idToSocket.get(clientId);
+    invariant(socket);
+    const arg = msg.arg;
+    invariant(arg != null);
+
+    if (msg.event === 'data') {
+      socket.write(Buffer.from(arg, 'base64'));
+    }
+  }
+
   _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(JSON.stringify(msg));
+    this._transport.send(JSON.stringify({tunnelId: this._tunnelId, ...msg}));
   }
 
   close(): void {
@@ -126,5 +135,7 @@ export class Proxy {
     this._idToSocket.forEach(socket => {
       socket.end();
     });
+
+    this._sendMessage({event: 'proxyClosed'});
   }
 }

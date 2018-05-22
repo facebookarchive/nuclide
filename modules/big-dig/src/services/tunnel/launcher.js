@@ -16,6 +16,7 @@ import type {Transport} from '../../server/BigDigServer';
 import {SocketManager} from './SocketManager';
 
 import {getLogger} from 'log4js';
+import invariant from 'assert';
 
 const logger = getLogger('tunnel-service');
 
@@ -25,7 +26,7 @@ module.exports = function launch(
 ): Promise<void> {
   const {server} = launcherParams;
   logger.info('adding tunnel subscriber!');
-  let socketManager;
+  const idToSocketManager: Map<string, SocketManager> = new Map();
 
   server.addSubscriber('tunnel', {
     onConnection(transport: Transport) {
@@ -34,13 +35,20 @@ module.exports = function launch(
       transport.onMessage().subscribe(async data => {
         const message = JSON.parse(data);
         const event = message.event;
+        const tunnelId = message.tunnelId;
+        const socketManager: ?SocketManager = idToSocketManager.get(tunnelId);
 
         if (event === 'proxyCreated') {
           logger.info('creating connection manager');
-          socketManager = new SocketManager(message.remotePort, transport);
+          idToSocketManager.set(
+            tunnelId,
+            new SocketManager(message.tunnelId, message.remotePort, transport),
+          );
         } else if (event === 'connection' || event === 'data') {
+          invariant(socketManager);
           socketManager.send(message);
         } else if (event === 'proxyClosed') {
+          invariant(socketManager);
           socketManager.close();
         }
       });

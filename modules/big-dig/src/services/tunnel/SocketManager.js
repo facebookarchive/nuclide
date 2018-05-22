@@ -23,8 +23,10 @@ export class SocketManager {
   _transport: Transport;
   _subscription: Subscription;
   _idToSocket: Map<number, net.Socket>;
+  _tunnelId: string;
 
-  constructor(port: number, transport: Transport) {
+  constructor(tunnelId: string, port: number, transport: Transport) {
+    this._tunnelId = tunnelId;
     this._port = port;
     this._transport = transport;
     this._idToSocket = new Map();
@@ -55,6 +57,7 @@ export class SocketManager {
         event: 'data',
         arg: data.toString('base64'),
         clientId: message.clientId,
+        tunnelId: this._tunnelId,
       });
     });
 
