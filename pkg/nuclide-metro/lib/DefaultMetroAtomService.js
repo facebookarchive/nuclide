@@ -108,8 +108,10 @@ export class DefaultMetroAtomService implements MetroAtomService {
   stop = () => {
     const remote = electron.remote;
     invariant(remote != null);
-    logger.trace('unregistering global reload hotkey');
-    remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
+    if (remote.globalShortcut.isRegistered(GLOBAL_RELOAD_HOTKEY)) {
+      logger.trace('unregistering global reload hotkey');
+      remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
+    }
     this._closeTunnel();
     this._logTailer.stop();
   };
