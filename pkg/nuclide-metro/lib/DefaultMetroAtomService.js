@@ -31,6 +31,8 @@ import electron from 'electron';
 
 const logger = getLogger('Metro');
 const GLOBAL_RELOAD_HOTKEY = 'CmdOrCtrl+Alt+R';
+const remote = electron.remote;
+invariant(remote);
 
 export class DefaultMetroAtomService implements MetroAtomService {
   _logTailer: LogTailer;
@@ -87,8 +89,6 @@ export class DefaultMetroAtomService implements MetroAtomService {
       });
     });
     // now that the logTailer has started, start the global reload hotkey
-    const remote = electron.remote;
-    invariant(remote != null);
     logger.trace('adding global reload hotkey (' + GLOBAL_RELOAD_HOTKEY + ')');
     const success = remote.globalShortcut.register(GLOBAL_RELOAD_HOTKEY, () => {
       logger.trace('reloading the app via the global reload hotkey');
@@ -106,8 +106,6 @@ export class DefaultMetroAtomService implements MetroAtomService {
   };
 
   stop = () => {
-    const remote = electron.remote;
-    invariant(remote != null);
     if (remote.globalShortcut.isRegistered(GLOBAL_RELOAD_HOTKEY)) {
       logger.trace('unregistering global reload hotkey');
       remote.globalShortcut.unregister(GLOBAL_RELOAD_HOTKEY);
@@ -213,8 +211,6 @@ function getEditorArgs(projectRoot: NuclideUri): Array<string> {
   if (nuclideUri.isRemote(projectRoot)) {
     return ['atom'];
   } else {
-    const remote = electron.remote;
-    invariant(remote != null);
     const args = [remote.app.getPath('exe')];
     if (atom.devMode) {
       args.push('--dev');
