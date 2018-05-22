@@ -353,8 +353,12 @@ class Activation {
     )
       .startWith(null)
       .map(() => {
-        const editor = atom.workspace.getActiveTextEditor();
-        return editor != null ? editor.getPath() : null;
+        const activePaneItem = atom.workspace.getActivePaneItem();
+        if (activePaneItem == null || activePaneItem.getPath == null) {
+          return null;
+        }
+
+        return activePaneItem.getPath();
       });
 
     return compact(rawPathStream).distinctUntilChanged();
