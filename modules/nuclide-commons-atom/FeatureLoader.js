@@ -375,7 +375,9 @@ function safeDeactivate(
 
 function getFeatureDefaultValue(feature: Feature): string {
   const name = packageNameFromPath(feature.path);
-  return name.startsWith('sample-') ? NEVER_ENABLED : DEFAULT;
+  return name.startsWith('sample-') || name.startsWith('fb-sample-')
+    ? NEVER_ENABLED
+    : DEFAULT;
 }
 
 function safeSerialize(feature: Feature) {
