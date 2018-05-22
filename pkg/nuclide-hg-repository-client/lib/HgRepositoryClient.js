@@ -11,7 +11,6 @@
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-import type {DifferentialStatusName} from '../../fb-phabricator-common/lib/types';
 import type {
   AmendModeValue,
   BookmarkInfo,
@@ -60,7 +59,7 @@ const FETCH_BOOKMARKS_TIMEOUT = 15 * 1000;
 
 export type RevisionStatusDisplay = {
   id: number,
-  name: DifferentialStatusName,
+  name: string,
   className: ?string,
   latestDiff: number, // id of the latest diff within this revision
   seriesLandBlocker?: string,
