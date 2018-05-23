@@ -492,7 +492,7 @@ export class RemoteConnection {
 
 function hasAtomProjectFormat(filepath) {
   const ext = nuclideUri.extname(filepath);
-  return ext === '.json' || ext === '.cson';
+  return ext === '.json' || ext === '.cson' || ext === '.toml';
 }
 
 function parseProject(raw: string): any {
