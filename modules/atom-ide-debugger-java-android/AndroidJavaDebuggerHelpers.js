@@ -35,7 +35,7 @@ import {Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {VspProcessInfo} from 'nuclide-debugger-common';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before

@@ -15,23 +15,19 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import typeof * as AdbService from './AdbService';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as AdbServiceLocal from './AdbService';
 import nullthrows from 'nullthrows';
 
-let _rpcService: ?nuclide$RpcService = null;
-
-export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
-  _rpcService = rpcService;
-  return new UniversalDisposable(() => {
-    _rpcService = null;
-  });
-}
+let rpcService: ?nuclide$RpcService;
+atom.packages.serviceHub.consume('nuclide-rpc-services', '0.0.0', provider => {
+  rpcService = provider;
+});
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   if (!nuclideUri.isRemote(uri)) {
     return AdbServiceLocal;
   }
-
-  return nullthrows(_rpcService).getServiceByNuclideUri('AdbService', uri);
+  // nuclide-rpc-services should be available at this point.
+  // If it isn't, throw an error.
+  return nullthrows(rpcService).getServiceByNuclideUri('AdbService', uri);
 }

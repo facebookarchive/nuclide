@@ -19,7 +19,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 
 export type AdbTunnelingOptions = {
   retries?: number,

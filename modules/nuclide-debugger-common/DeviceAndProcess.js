@@ -18,7 +18,7 @@ import type {Subscription} from 'rxjs';
 import type {Device} from './types';
 
 import idx from 'idx';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import {Table} from 'nuclide-commons-ui/Table';

@@ -13,7 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import invariant from 'assert';
 
 export const NUCLIDE_ONE_WORLD_ADB_PATH_NAME = 'NUCLIDE_ONE_WORLD_ADB_PATH';

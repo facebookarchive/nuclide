@@ -15,7 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import * as AdbTunnelService from '../../nuclide-adb-sdb-base/lib/Tunneling';
 import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
