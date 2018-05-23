@@ -17,6 +17,7 @@ import type {Tunnel} from '../services/tunnel/TunnelManager';
 
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
+import {CLOSE_TAG} from '../server/BigDigServer';
 
 import {TunnelManager} from '../services/tunnel/TunnelManager';
 
@@ -82,6 +83,9 @@ export class BigDigClient {
   close(): void {
     this._logger.info('close called');
     this._tunnelManager.close();
+    if (!this.isClosed()) {
+      this.sendMessage(CLOSE_TAG, '');
+    }
     this._transport.close();
   }
 

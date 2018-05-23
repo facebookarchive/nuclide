@@ -24,6 +24,7 @@ import {WebSocketTransport} from '../socket/WebSocketTransport';
 import {QueuedAckTransport} from '../socket/QueuedAckTransport';
 
 export const HEARTBEAT_CHANNEL = 'big-dig-heartbeat';
+export const CLOSE_TAG = 'big-dig-close-connection';
 
 export type Transport = {
   send(message: string): void,
@@ -60,6 +61,10 @@ export default class BigDigServer {
   }
 
   addSubscriber(tag: string, subscriber: Subscriber) {
+    if (tag === CLOSE_TAG) {
+      throw new Error(`Tag ${CLOSE_TAG} is reserved; cannot subscribe.`);
+    }
+
     const existingSubscriber = this._tagToSubscriber.get(tag);
     if (existingSubscriber == null) {
       // TODO(mbolin): WS connections that were created before this subscriber
@@ -120,7 +125,7 @@ export default class BigDigServer {
       // subsequent messages will be BigDig messages
       // TODO: could the message be a Buffer?
       qaTransport.onMessage().subscribe(message => {
-        this._handleBigDigMessage(tagToTransport, message);
+        this._handleBigDigMessage(tagToTransport, qaTransport, message);
       });
 
       // TODO: Either garbage collect inactive transports, or implement
@@ -133,18 +138,30 @@ export default class BigDigServer {
 
   _handleBigDigMessage(
     tagToTransport: Map<string, InternalTransport>,
+    qaTransport: QueuedAckTransport,
     message: string,
   ) {
     // The message must start with a header identifying its route.
     const index = message.indexOf('\0');
     const tag = message.substring(0, index);
-    const body = message.substring(index + 1);
 
-    const transport = tagToTransport.get(tag);
-    if (transport != null) {
-      transport.broadcastMessage(body);
+    if (tag === CLOSE_TAG) {
+      for (const transport of tagToTransport.values()) {
+        transport.close();
+      }
+      tagToTransport.clear();
+
+      this._clientIdToTransport.delete(qaTransport.id);
+      qaTransport.close();
     } else {
-      this._logger.info(`No route for ${tag}.`);
+      const body = message.substring(index + 1);
+
+      const transport = tagToTransport.get(tag);
+      if (transport != null) {
+        transport.broadcastMessage(body);
+      } else {
+        this._logger.info(`No route for ${tag}.`);
+      }
     }
   }
 }
