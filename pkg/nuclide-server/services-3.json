@@ -72,10 +72,6 @@
     "name": "CSSLSPService"
   },
   {
-    "implementation": "../nuclide-js-imports-client-rpc/lib/JsImportsService.js",
-    "name": "JSAutoImportsService"
-  },
-  {
     "implementation": "../nuclide-metro-rpc/lib/MetroService.js",
     "name": "MetroService"
   },

@@ -22,7 +22,6 @@ import type {LanguageService} from '../../nuclide-language-service/lib/LanguageS
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import typeof * as JsService from '../../nuclide-js-imports-client-rpc/lib/JsImportsService';
 
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {TAB_SIZE_SIGNIFYING_FIX_ALL_IMPORTS_FORMATTING} from '../../nuclide-js-imports-server/src/utils/constantsForClient';
@@ -35,34 +34,35 @@ import {
   getNotifierByConnection,
   getFileVersionOfEditor,
 } from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import QuickOpenProvider from './QuickOpenProvider';
 import JSSymbolSearchProvider from './JSSymbolSearchProvider';
 import DashProjectSymbolProvider from './DashProjectSymbolProvider';
 
-const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
-
 async function connectToJSImportsService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const jsService: JsService = getServiceByConnection(
-    JS_IMPORTS_SERVICE_NAME,
-    connection,
-  );
-
   const [fileNotifier, host] = await Promise.all([
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
 
-  const lspService = await jsService.initializeLsp(
-    ['.flowconfig'],
-    ['.js'],
-    (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
-    fileNotifier,
-    host,
-    getAutoImportSettings(),
+  const service = getVSCodeLanguageServiceByConnection(connection);
+  const lspService = await service.createMultiLspLanguageService(
+    'jsimports',
+    './pkg/nuclide-js-imports-server/src/index-entry.js',
+    [],
+    {
+      fileNotifier,
+      host,
+      logCategory: 'jsimports',
+      logLevel: (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
+      projectFileNames: ['.flowconfig'],
+      fileExtensions: ['.js'],
+      initializationOptions: getAutoImportSettings(),
+      fork: true,
+    },
   );
   return lspService || new NullLanguageService();
 }
