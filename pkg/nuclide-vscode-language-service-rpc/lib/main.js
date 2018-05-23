@@ -18,8 +18,11 @@ import type {LspPreferences} from './LspLanguageService';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import fsPromise from 'nuclide-commons/fsPromise';
 import which from 'nuclide-commons/which';
+import resolveFrom from 'resolve-from';
 import {LspLanguageService} from './LspLanguageService';
+import {getNuclideRealDir} from '../../commons-node/system-info';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/main';
 import {
   MultiProjectLanguageService,
@@ -59,6 +62,9 @@ export type LspLanguageServiceParams = {|
   // Additional options to be passed to spawn().
   // See: SpawnProcessOptions from nuclide-commons/process
   spawnOptions?: Object,
+  // When enabled, fork Nuclide's Node process to run the server.
+  // `command` will be resolved via Node's require algorithm relative to the Nuclide root.
+  fork?: boolean,
   // `initializationOptions` will be included in the LSP 'initialize' request.
   // See: https://microsoft.github.io/language-server-protocol/specification#initialize
   initializationOptions?: Object,
@@ -97,14 +103,20 @@ export type LspLanguageServiceParams = {|
  */
 export async function createMultiLspLanguageService(
   languageServerName: string,
-  command: string,
+  command_: string,
   args: Array<string>,
   params: LspLanguageServiceParams,
 ): Promise<?LanguageService> {
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
 
-  if ((await which(command)) == null) {
+  const command = params.fork
+    ? resolveFrom(getNuclideRealDir(), command_)
+    : command_;
+  const exists = params.fork
+    ? await fsPromise.exists(command)
+    : (await which(command)) != null;
+  if (!exists) {
     const message = `Command "${command}" could not be found: ${languageServerName} language features will be disabled.`;
     logger.warn(message);
     params.host.consoleNotification(languageServerName, 'warning', message);
@@ -143,6 +155,7 @@ export async function createMultiLspLanguageService(
       command,
       args,
       params.spawnOptions,
+      params.fork,
       projectDir,
       params.fileExtensions,
       params.initializationOptions || {},

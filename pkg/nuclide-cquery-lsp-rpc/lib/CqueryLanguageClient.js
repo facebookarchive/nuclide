@@ -101,6 +101,7 @@ export class CqueryLanguageClient extends LspLanguageService {
       command,
       args,
       spawnOptions,
+      /* fork */ false,
       projectRoot,
       fileExtensions,
       initializationOptions,

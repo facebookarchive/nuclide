@@ -81,7 +81,7 @@ import nullthrows from 'nullthrows';
 import {sleep, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import through from 'through';
-import {spawn} from 'nuclide-commons/process';
+import {fork, spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
@@ -144,6 +144,7 @@ export class LspLanguageService {
   _command: string;
   _args: Array<string>;
   _spawnOptions: Object; // supplies the options for spawning a process
+  _spawnWithFork: boolean;
   _fileExtensions: Array<string>;
   _logger: MemoryLogger;
   _snapshotter: SnapshotLogger;
@@ -201,6 +202,7 @@ export class LspLanguageService {
     command: string,
     args: Array<string>,
     spawnOptions: Object = {},
+    spawnWithFork: boolean = false,
     projectRoot: string,
     fileExtensions: Array<string>,
     initializationOptions: Object,
@@ -219,6 +221,7 @@ export class LspLanguageService {
     this._command = command;
     this._args = args;
     this._spawnOptions = spawnOptions;
+    this._spawnWithFork = spawnWithFork;
     this._fileExtensions = fileExtensions;
     this._initializationOptions = initializationOptions;
     this._additionalLogFilesRetentionPeriod = additionalLogFilesRetentionPeriod;
@@ -360,11 +363,15 @@ export class LspLanguageService {
 
         const lspSpawnOptions = {
           cwd: this._projectRoot,
+          // Forked processes don't pipe stdio by default.
+          stdio: this._spawnWithFork
+            ? ['pipe', 'pipe', 'pipe', 'ipc']
+            : undefined,
           ...this._spawnOptions,
           killTreeWhenDone: true,
         };
 
-        if (this._useOriginalEnvironment && !lspSpawnOptions.env) {
+        if (this._useOriginalEnvironment) {
           // NodeJS is the one thing where we need to make sure to use Nuclide's
           // version.
           const originalEnvironment = await getOriginalEnvironment();
@@ -387,13 +394,16 @@ export class LspLanguageService {
             ...originalEnvironment,
             ...lspSpawnOptions.env,
           };
+        } else if (lspSpawnOptions.env) {
+          lspSpawnOptions.env = {
+            ...process.env,
+            ...lspSpawnOptions.env,
+          };
         }
 
-        const childProcessStream = spawn(
-          this._command,
-          this._args,
-          lspSpawnOptions,
-        ).publish();
+        const childProcessStream = this._spawnWithFork
+          ? fork(this._command, this._args, lspSpawnOptions).publish()
+          : spawn(this._command, this._args, lspSpawnOptions).publish();
         // disposing of the stream will kill the process, if it still exists
         const processPromise = childProcessStream.take(1).toPromise();
         perConnectionDisposables.add(childProcessStream.connect());
