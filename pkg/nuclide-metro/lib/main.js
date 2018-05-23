@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from 'atom-ide-ui';
 import type {MetroAtomService} from './types';
+import type {TunnelBehavior} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -32,12 +33,22 @@ class Activation {
       this._metroAtomService,
       atom.commands.add('atom-workspace', {
         // Ideally based on CWD, the commands can be disabled and the UI would explain why.
-        'nuclide-metro:start': ({detail}) => {
+        'nuclide-metro:start': ({
+          detail,
+        }: {
+          detail: {port?: number, tunnelBehavior?: TunnelBehavior},
+        }) => {
           let tunnelBehavior = 'ask_about_tunnel';
-          if (detail != null && detail.tunnelBehavior != null) {
-            tunnelBehavior = detail.tunnelBehavior;
+          let port = undefined;
+          if (detail != null) {
+            if (detail.port != null) {
+              port = detail.port;
+            }
+            if (detail.tunnelBehavior != null) {
+              tunnelBehavior = detail.tunnelBehavior;
+            }
           }
-          this._metroAtomService.start(tunnelBehavior);
+          this._metroAtomService.start(tunnelBehavior, port);
         },
         'nuclide-metro:stop': () => this._metroAtomService.stop(),
         'nuclide-metro:restart': () => this._metroAtomService.restart(),

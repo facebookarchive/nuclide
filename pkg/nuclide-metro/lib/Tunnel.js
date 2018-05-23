@@ -21,6 +21,7 @@ import {Observable} from 'rxjs';
 export function openTunnel(
   serviceUri: NuclideUri,
   behavior: TunnelBehavior,
+  port: number,
 ): Observable<'ready'> {
   if (!nuclideUri.isRemote(serviceUri) || behavior === 'do_not_open_tunnel') {
     return Observable.of('ready').concat(Observable.never());
@@ -29,7 +30,7 @@ export function openTunnel(
     nullthrows(consumeFirstProvider('nuclide.ssh-tunnel')),
   )
     .switchMap((service: SshTunnelService) => {
-      const desired = _desiredTunnelTo(serviceUri);
+      const desired = _desiredTunnelTo(serviceUri, port);
       for (const tunnel of service.getOpenTunnels()) {
         const {from, to} = tunnel;
         if (
@@ -41,7 +42,7 @@ export function openTunnel(
             nuclideUri.getHostname(desired.to.host)
           ) {
             throw new Error(
-              'You have a tunnel open from `localhost:8081` to a different host than your ' +
+              `You have a tunnel open from \`localhost:${port}\` to a different host than your ` +
                 'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
             );
           }
@@ -63,7 +64,9 @@ function _askToRequestTunnel(
   return Observable.create(observer => {
     let subscription;
     const notification = atom.notifications.addSuccess('Open tunnel?', {
-      detail: 'Open a new tunnel so Metro becomes available at localhost:8081?',
+      detail: `Open a new tunnel so Metro becomes available at localhost:${
+        tunnel.from.port
+      }?`,
       icon: 'milestone',
       dismissable: true,
       buttons: [
@@ -90,13 +93,13 @@ function _askToRequestTunnel(
   });
 }
 
-function _desiredTunnelTo(uri: NuclideUri): Tunnel {
+function _desiredTunnelTo(uri: NuclideUri, port: number): Tunnel {
   return {
     description: 'Metro',
     from: {
       host: 'localhost',
-      port: 8081,
+      port,
     },
-    to: {host: uri, port: 8081},
+    to: {host: uri, port},
   };
 }

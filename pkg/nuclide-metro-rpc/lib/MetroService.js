@@ -52,6 +52,7 @@ export async function getStartCommand(
 export function startMetro(
   projectRoot: NuclideUri,
   editorArgs: Array<string>,
+  port: number = 8081,
 ): ConnectableObservable<MetroEvent> {
   const stdout = Observable.defer(() => getStartCommand(projectRoot))
     .switchMap(
@@ -61,8 +62,8 @@ export function startMetro(
           : Observable.of(commandInfo),
     )
     .switchMap(commandInfo => {
-      const {command, cwd, args} = commandInfo;
-      return observeProcess(command, args, {
+      const {command, cwd, args = []} = commandInfo;
+      return observeProcess(command, args.concat([`--port=${port}`]), {
         cwd,
         env: {
           ...process.env,
@@ -100,9 +101,9 @@ function metroPortBusyError(): Error {
   return error;
 }
 
-export async function reloadApp(): Promise<void> {
+export async function reloadApp(port: number = 8081): Promise<void> {
   return new Promise((resolve, reject) => {
-    const url = 'ws://localhost:8081/message?role=interface&name=Nuclide';
+    const url = `ws://localhost:${port}/message?role=interface&name=Nuclide`;
     const message = {
       version: 2,
       method: 'reload',
@@ -123,15 +124,17 @@ export async function reloadApp(): Promise<void> {
 export async function buildBundle(
   bundleName: string,
   platform: 'ios' | 'android',
+  port: number = 8081,
 ): Promise<void> {
-  const url = `http://localhost:8081/${bundleName}.bundle?platform=${platform}&dev=true&minify=false`;
+  const url = `http://localhost:${port}/${bundleName}.bundle?platform=${platform}&dev=true&minify=false`;
   await xfetch(url, {method: 'HEAD'});
 }
 
 export async function buildSourceMaps(
   bundleName: string,
   platform: 'ios' | 'android',
+  port: number = 8081,
 ): Promise<void> {
-  const url = `http://localhost:8081/${bundleName}.map?platform=${platform}&dev=true&minify=false`;
+  const url = `http://localhost:${port}/${bundleName}.map?platform=${platform}&dev=true&minify=false`;
   await xfetch(url, {method: 'HEAD'});
 }

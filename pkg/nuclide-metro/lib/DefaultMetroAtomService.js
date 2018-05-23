@@ -11,14 +11,14 @@
 
 import type {OutputProviderStatus} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {BehaviorSubject, Subscription} from 'rxjs';
+import type {Subscription} from 'rxjs';
 import type {TunnelBehavior} from './types';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
+import {Observable, BehaviorSubject} from 'rxjs';
 import {getMetroServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {openTunnel} from './Tunnel';
 import {MetroAtomService} from './types';
@@ -37,13 +37,15 @@ invariant(remote);
 export class DefaultMetroAtomService implements MetroAtomService {
   _logTailer: LogTailer;
   _projectRootPath: BehaviorSubject<?NuclideUri>;
+  _port: BehaviorSubject<number>;
   _disposables: UniversalDisposable;
   _currentTunnelSubscription: ?Subscription;
 
   constructor(projectRootPath: BehaviorSubject<?NuclideUri>) {
     this._projectRootPath = projectRootPath;
     this._disposables = new UniversalDisposable();
-    this._logTailer = this._createLogTailer(projectRootPath);
+    this._port = new BehaviorSubject(8081);
+    this._logTailer = this._createLogTailer(projectRootPath, this._port);
 
     this._disposables.add(
       () => this.stop(),
@@ -55,7 +57,11 @@ export class DefaultMetroAtomService implements MetroAtomService {
     this._disposables.dispose();
   };
 
-  start = async (tunnelBehavior: TunnelBehavior): Promise<void> => {
+  start = async (
+    tunnelBehavior: TunnelBehavior,
+    port: number = 8081,
+  ): Promise<void> => {
+    this._port.next(port);
     await new Promise((resolve, reject) => {
       this._logTailer.start({
         onRunning: error => {
@@ -75,7 +81,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
               atom.notifications.addWarning(
                 'Metro failed to start. This is expected if you are ' +
                   'intentionally running Metro in a separate terminal. If not, ' +
-                  '`lsof -i tcp:8081` might help you find the process using the default port.',
+                  `\`lsof -i tcp:${port}\` might help you find the process using the default port.`,
                 {
                   dismissable: true,
                 },
@@ -97,10 +103,12 @@ export class DefaultMetroAtomService implements MetroAtomService {
     logger.trace('hotkey register success: ' + String(success));
     const projectRoot = this._projectRootPath.getValue();
     invariant(projectRoot != null);
-    const tunnelEvents = openTunnel(projectRoot, tunnelBehavior).catch(e => {
-      this._closeTunnel();
-      throw e;
-    });
+    const tunnelEvents = openTunnel(projectRoot, tunnelBehavior, port).catch(
+      e => {
+        this._closeTunnel();
+        throw e;
+      },
+    );
     this._currentTunnelSubscription = tunnelEvents.subscribe();
     await tunnelEvents.take(1).toPromise();
   };
@@ -124,7 +132,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
       return;
     }
     const metroService = getMetroServiceByNuclideUri(path);
-    metroService.reloadApp();
+    metroService.reloadApp(this._port.getValue());
   };
 
   observeStatus = (callback: OutputProviderStatus => void): IDisposable => {
@@ -161,7 +169,10 @@ export class DefaultMetroAtomService implements MetroAtomService {
     });
   };
 
-  _createLogTailer(projectRootPath: BehaviorSubject<?NuclideUri>) {
+  _createLogTailer = (
+    projectRootPath: BehaviorSubject<?NuclideUri>,
+    port: BehaviorSubject<number>,
+  ) => {
     const self = this;
 
     const metroEvents = Observable.defer(() => {
@@ -170,7 +181,9 @@ export class DefaultMetroAtomService implements MetroAtomService {
         return Observable.empty();
       }
       const metroService = getMetroServiceByNuclideUri(path);
-      return metroService.startMetro(path, getEditorArgs(path)).refCount();
+      return metroService
+        .startMetro(path, getEditorArgs(path), port.getValue())
+        .refCount();
     }).share();
 
     const messages = metroEvents
@@ -204,7 +217,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
         restart: 'metro:restart',
       },
     });
-  }
+  };
 }
 
 function getEditorArgs(projectRoot: NuclideUri): Array<string> {
