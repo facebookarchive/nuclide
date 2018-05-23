@@ -40,10 +40,6 @@
     "name": "FuzzyFileSearchService"
   },
   {
-    "implementation": "../nuclide-graphql-rpc/lib/GraphQLService.js",
-    "name": "GraphQLService"
-  },
-  {
     "implementation": "../nuclide-grep-rpc/lib/GrepService.js",
     "name": "GrepService"
   },

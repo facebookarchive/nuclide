@@ -12,7 +12,6 @@
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
 
 import {
   AtomLanguageService,
@@ -20,35 +19,32 @@ import {
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
-
-const GRAPHQL_SERVICE_NAME = 'GraphQLService';
+import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 
 async function connectionToGraphQLService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const graphqlService: GraphQLService = getServiceByConnection(
-    GRAPHQL_SERVICE_NAME,
-    connection,
-  );
   const [fileNotifier, host] = await Promise.all([
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
   const graphqlCommand = 'graphql-language-service/bin/graphql.js';
-  const options = {
-    env: {...process.env, ELECTRON_RUN_AS_NODE: '1'},
-  };
-
-  const lspService = await graphqlService.initializeLsp(
+  const lspService = await getVSCodeLanguageServiceByConnection(
+    connection,
+  ).createMultiLspLanguageService(
+    'graphql',
     graphqlCommand,
     ['server', '--method', 'stream'],
-    options,
-    ['.graphqlconfig'],
-    ['.js', '.graphql'],
-    'INFO',
-    fileNotifier,
-    host,
+    {
+      fileNotifier,
+      host,
+      projectFileNames: ['.graphqlconfig'],
+      fileExtensions: ['.js', '.graphql'],
+      logCategory: 'nuclide-graphql',
+      logLevel: 'INFO',
+      fork: true,
+      additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+    },
   );
   return lspService || new NullLanguageService();
 }
