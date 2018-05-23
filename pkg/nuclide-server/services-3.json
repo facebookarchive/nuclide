@@ -64,10 +64,6 @@
     "name": "JavaDebuggerHelpersService"
   },
   {
-    "implementation": "../nuclide-css-lsp-client-rpc/lib/CSSLSPService.js",
-    "name": "CSSLSPService"
-  },
-  {
     "implementation": "../nuclide-metro-rpc/lib/MetroService.js",
     "name": "MetroService"
   },

@@ -13,7 +13,6 @@
 import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-dash-provider/lib/types';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as CSSLSPService from '../../nuclide-css-lsp-client-rpc/lib/CSSLSPService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 
@@ -23,7 +22,7 @@ import {
 } from '../../nuclide-language-service';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import DashProjectSymbolProvider from './DashProjectSymbolProvider';
 import {
@@ -31,28 +30,30 @@ import {
   updateAutocompleteFirstResults,
 } from '../../nuclide-language-service';
 
-const SERVICE_NAME = 'CSSLSPService';
-
 async function connectToService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const cssLSPService: CSSLSPService = getServiceByConnection(
-    SERVICE_NAME,
-    connection,
-  );
-
   const [fileNotifier, host] = await Promise.all([
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
 
-  const lspService = await cssLSPService.initializeLsp(
-    ['.arcconfig', '.flowconfig', '.hg', '.git'],
-    ['.css', '.less', '.scss'],
-    (featureConfig.get('nuclide-css-lsp-client.logLevel'): any),
-    fileNotifier,
-    host,
-    {}, // initializationOptions
+  const lspService = await getVSCodeLanguageServiceByConnection(
+    connection,
+  ).createMultiLspLanguageService(
+    'css',
+    'vscode-css-languageserver-bin/cssServerMain',
+    ['--stdio'],
+    {
+      fileNotifier,
+      host,
+      projectFileNames: ['.arcconfig', '.flowconfig', '.hg', '.git'],
+      fileExtensions: ['.css', '.less', '.scss'],
+      logCategory: 'nuclide-css-lsp',
+      logLevel: (featureConfig.get('nuclide-css-lsp-client.logLevel'): any),
+      fork: true,
+      waitForDiagnostics: false,
+    },
   );
   return lspService || new NullLanguageService();
 }
