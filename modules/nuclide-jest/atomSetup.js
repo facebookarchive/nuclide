@@ -19,7 +19,7 @@
 const temp = require('temp');
 const {getPackage} = require('./AtomJestUtils');
 const pkg = getPackage(atom.getLoadSettings().testPaths[0]);
-const nuclideConfig = pkg.atomConfig || (pkg.nuclide && pkg.nuclide.config);
+const nuclideConfig = pkg.atomConfig || (pkg.nuclide && pkg.nuclide.config) || {};
 
 beforeEach(() => {
   // Since the FeatureLoader creates the config for all feature packages,
