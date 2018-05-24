@@ -53,12 +53,12 @@ export class JavaDebuggerDevicePanelProvider
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
     const debuggerService = await getDebuggerService();
-    const {processInfo} = await this._javaDebugger.createAndroidDebugInfo({
+    const config = await this._javaDebugger.createAndroidDebugAttachConfig({
       targetUri: host,
       packageName: '',
       device,
       pid: proc.pid,
     });
-    debuggerService.startDebugging(processInfo);
+    debuggerService.startVspDebugging(config);
   }
 }

@@ -113,6 +113,8 @@ export async function resolveConfiguration(
   let device: ?Device = null;
   const subscriptions = new UniversalDisposable();
   const clickEvents = new Subject();
+  const adbServiceUri =
+    config.adbServiceUri != null ? config.adbServiceUri : targetUri;
   // adapterType === VsAdapterTypes.JAVA_ANDROID
   if (debugMode === 'launch') {
     const {service, intent, activity, deviceAndPackage} = config;
@@ -121,7 +123,7 @@ export async function resolveConfiguration(
 
     pid = (await launchAndroidServiceOrActivityAndGetPid(
       null /* providedPid */,
-      targetUri,
+      adbServiceUri,
       service || null,
       activity || null,
       intent || null /* intent and action are the same */,
@@ -143,7 +145,7 @@ export async function resolveConfiguration(
 
     pid = (await launchAndroidServiceOrActivityAndGetPid(
       selectedProcessPid,
-      targetUri,
+      adbServiceUri,
       null,
       null,
       null,
@@ -159,7 +161,7 @@ export async function resolveConfiguration(
 
   const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
     nullthrows(device),
-    targetUri,
+    adbServiceUri,
     targetUri,
     nullthrows(pid),
     subscriptions,

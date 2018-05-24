@@ -11,6 +11,10 @@
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {
+  IProcessConfig,
+  DevicePanelServiceApi,
+} from 'nuclide-debugger-common';
+import type {
   AdditionalLogFilesProvider,
   AdditionalLogFile,
 } from '../../nuclide-logging/lib/rpc-types';
@@ -18,15 +22,12 @@ import type {
   NuclideJavaDebuggerProvider,
   AdbProcessParameters,
   JavaDebugInfo,
+  JavaDebugConfig,
 } from './types';
-import type {DevicePanelServiceApi} from 'nuclide-debugger-common/types';
 
-import {
-  launchAndroidServiceOrActivityAndGetPid,
-  getAdbAttachPortTargetInfo,
-  createJavaVspProcessInfo,
-} from 'atom-ide-debugger-java-android/AndroidJavaDebuggerHelpers';
+import {createJavaVspProcessInfo} from 'atom-ide-debugger-java-android/AndroidJavaDebuggerHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -35,47 +36,72 @@ import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider
 
 export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
   return {
-    createAndroidDebugInfo: async (
+    createAndroidDebugLaunchConfig: async (
       parameters: AdbProcessParameters,
-    ): Promise<JavaDebugInfo> => {
-      const {targetUri, packageName, activity, action, device} = parameters;
+    ): Promise<JavaDebugConfig> => {
+      const {targetUri, packageName, device} = parameters;
 
       const adbServiceUri =
         parameters.adbServiceUri != null
           ? parameters.adbServiceUri
           : parameters.targetUri;
 
-      const service = parameters.service != null ? parameters.service : null;
-      const {pid} = await launchAndroidServiceOrActivityAndGetPid(
-        parameters.pid,
+      const debuggerConfig = {
+        deviceAndPackage: {
+          device,
+          selectedPackage: packageName,
+        },
         adbServiceUri,
-        service,
-        activity,
-        action,
-        device,
-        packageName,
-      );
-
+      };
       const subscriptions = new UniversalDisposable();
-      const attachPortTargetInfo = await getAdbAttachPortTargetInfo(
-        device,
-        adbServiceUri,
+      const processConfig = {
         targetUri,
-        pid,
-        subscriptions,
-      );
-
-      const clickEvents = new Subject();
-      const processInfo = await createJavaVspProcessInfo(
-        targetUri,
-        attachPortTargetInfo,
-        clickEvents,
-      );
-      subscriptions.add(clickEvents);
-      processInfo.addCustomDisposable(subscriptions);
+        debugMode: 'launch',
+        adapterType: VsAdapterTypes.JAVA_ANDROID,
+        adapterExecutable: null,
+        config: debuggerConfig,
+        capabilities: {threads: true},
+        properties: {
+          customControlButtons: [],
+          threadsComponentTitle: 'Threads',
+        },
+        customDisposable: subscriptions,
+      };
       return {
-        processInfo,
+        config: processConfig,
         subscriptions,
+      };
+    },
+    createAndroidDebugAttachConfig: async (
+      parameters: AdbProcessParameters,
+    ): Promise<IProcessConfig> => {
+      const {targetUri, packageName, pid, device} = parameters;
+      const adbServiceUri =
+        parameters.adbServiceUri != null
+          ? parameters.adbServiceUri
+          : parameters.targetUri;
+      const config = {
+        deviceAndProcess: {
+          device,
+          selectedProcess: {
+            pid,
+            name: packageName,
+          },
+        },
+        adbServiceUri,
+      };
+      return {
+        targetUri,
+        debugMode: 'attach',
+        adapterType: VsAdapterTypes.JAVA_ANDROID,
+        adapterExecutable: null,
+        config,
+        capabilities: {threads: true},
+        properties: {
+          customControlButtons: [],
+          threadsComponentTitle: 'Threads',
+        },
+        customDisposable: new UniversalDisposable(),
       };
     },
     createJavaTestAttachInfo: async (

@@ -17,6 +17,8 @@ export type {
   DebuggerConfigAction,
   DebuggerConfigurationProvider,
   DebuggerProperties,
+  Device,
+  DevicePanelServiceApi,
   IProcessConfig,
   IVspInstance,
   MessageProcessor,
