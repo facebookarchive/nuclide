@@ -122,7 +122,7 @@ describe('PathSetUpdater', () => {
         ];
         emitMockWatchmanUpdate(mockChanges);
         jasmine.Clock.tick(5000);
-        let newValues = pathSet.query('').map(x => x.path);
+        let newValues = (await pathSet.query('')).map(x => x.path);
         expect(newValues.sort()).toEqual(['/b', '/c']);
 
         // This is a no-op.
@@ -141,7 +141,8 @@ describe('PathSetUpdater', () => {
             mode: 1234,
           },
         ]);
-        newValues = pathSet.query('').map(x => x.path);
+
+        newValues = (await pathSet.query('')).map(x => x.path);
         expect(newValues.sort()).toEqual(['/b', '/c']);
 
         // Verify that disposing the Disposable stops updates to the pathSet.
@@ -162,7 +163,7 @@ describe('PathSetUpdater', () => {
           },
         ];
         emitMockWatchmanUpdate(unnoticedChanges);
-        const unchangedValues = pathSet.query('').map(x => x.path);
+        const unchangedValues = (await pathSet.query('')).map(x => x.path);
         expect(unchangedValues.sort()).toEqual(newValues);
       });
     });

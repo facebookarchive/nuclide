@@ -133,11 +133,32 @@ function aFileSearchShould(typename, dirPathFn) {
         });
       });
 
-      it('should not match ignored patterns', () => {
+      it("should not match ignored patterns if it's not an exact-match", () => {
         waitsForPromise(async () => {
           const results = await search.query('');
           expect(values(results)).toEqual([nuclideUri.join(dirPath, 'test')]);
         });
+      });
+
+      it('should match ignored patterns if it is an exact-match', () => {
+        if (typename === 'Vanilla (No VCS)') {
+          // This test makes no sense for Vanilla searches =)
+          return;
+        }
+
+        const querySuites = [
+          './ignored',
+          'ignored',
+          nuclideUri.join(dirPath, 'ignored'),
+        ];
+        for (const querySuite of querySuites) {
+          waitsForPromise(async () => {
+            const results = await search.query(querySuite);
+            expect(values(results)).toEqual([
+              nuclideUri.join(dirPath, 'ignored'),
+            ]);
+          });
+        }
       });
     });
   });
