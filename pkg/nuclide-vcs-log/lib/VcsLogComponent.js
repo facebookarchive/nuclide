@@ -96,9 +96,9 @@ export default class VcsLogComponent extends React.Component<Props, State> {
               <tbody>
                 <tr>
                   <th className="nuclide-vcs-log-header-cell">Date</th>
-                  <th className="nuclide-vcs-log-header-cell">ID</th>
+                  <th className="nuclide-vcs-log-header-cell">Hash</th>
                   {showDifferentialRevision ? (
-                    <th className="nuclide-vcs-log-header-cell">Revision</th>
+                    <th className="nuclide-vcs-log-header-cell">Diff</th>
                   ) : null}
                   <th className="nuclide-vcs-log-header-cell">Author</th>
                   <th className="nuclide-vcs-log-header-cell">Summary</th>
