@@ -218,7 +218,7 @@ describe('Completion Functions', () => {
     autoImportsManager.indexFile('/a/b/test3.js', 'export function test() {}');
     autoImportsManager.indexFile(
       '/a/node_modules/module',
-      'export function test() {}',
+      'export function test() {}\nexport class MyClass {}',
     );
   });
 
@@ -309,6 +309,40 @@ describe('Completion Functions', () => {
         // Note the absence of test3.js.
         "import {test} from '../above';",
         "import {test} from 'module';",
+      ]);
+    });
+    it('does not suggest functions for type imports', () => {
+      const importInformation = {
+        ids: ['test'],
+        importType: 'namedType',
+        isComplete: false,
+      };
+      const completions = provideImportFileCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test3.js',
+        '',
+        0,
+      );
+      expect(completions.map(getCompletionText)).toEqual([]);
+    });
+    it('suggests classes for type imports', () => {
+      const importInformation = {
+        ids: ['MyClass'],
+        importType: 'namedType',
+        isComplete: false,
+      };
+      const completions = provideImportFileCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test3.js',
+        '',
+        0,
+      );
+      expect(completions.map(getCompletionText)).toEqual([
+        "import type {MyClass} from 'module';",
       ]);
     });
   });

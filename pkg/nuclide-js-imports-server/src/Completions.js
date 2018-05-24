@@ -227,15 +227,13 @@ function filterSuggestions(
       return suggestions.filter(exp => exp.isDefault && !exp.isTypeExport);
     case 'defaultType':
       return suggestions.filter(
-        exp =>
-          exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
+        exp => exp.isDefault && (exp.isTypeExport || canBeTypeImported(exp)),
       );
     case 'namedValue':
       return suggestions.filter(exp => !exp.isDefault && !exp.isTypeExport);
     case 'namedType':
       return suggestions.filter(
-        exp =>
-          !exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
+        exp => !exp.isDefault && (exp.isTypeExport || canBeTypeImported(exp)),
       );
     case 'requireImport':
       return suggestions.filter(exp => exp.isDefault && !exp.isTypeExport);
@@ -298,16 +296,12 @@ function isImportStatement(line: string): boolean {
   return /^\s*import/.test(line) || /^const/.test(line);
 }
 
-// This function will always return true when an export is a Class export,
-// but will sometimes return true even if an export is NOT a class export.
-// More specifically, if the type of export is unknown (for example, this would
-// happen in the program: "class SomeClass{}; export {SomeClass}")
-// this function returns true.
-function isClassOrUnknownExport(exp: JSExport): boolean {
+//
+function canBeTypeImported(exp: JSExport): boolean {
   return (
-    !exp.type ||
-    exp.type === 'ClassDeclaration' ||
-    exp.type === 'ClassExpression'
+    exp.type !== 'FunctionDeclaration' &&
+    exp.type !== 'FunctionExpression' &&
+    exp.type !== 'VariableDeclaration'
   );
 }
 
