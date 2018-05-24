@@ -161,11 +161,35 @@ const DEPRECATED_TERMINAL_COMMANDS = {
   'nuclide-terminal:clear': 'atom-ide-terminal:clear',
 };
 
+const DEPRECATED_SOURCE_CONTROL_COMMANDS = {
+  'fb-interactive-smartlog:copy-differential-id':
+    'fb-interactive-smartlog:copy-diff-number',
+  'fb-interactive-smartlog:copy-revision-hash':
+    'fb-interactive-smartlog:copy-commit-hash',
+  'fb-interactive-smartlog:strip-revision':
+    'fb-interactive-smartlog:strip-commit',
+  'fb-interactive-smartlog:abandon-revision':
+    'fb-interactive-smartlog:abandon-diff',
+  'fb-interactive-smartlog:accept-revision':
+    'fb-interactive-smartlog:accept-diff',
+  'fb-interactive-smartlog:publish-revision':
+    'fb-interactive-smartlog:publish-diff',
+  'fb-interactive-smartlog:reclaim-revision':
+    'fb-interactive-smartlog:reclaim-diff',
+  'fb-interactive-smartlog:reject-revision':
+    'fb-interactive-smartlog:reject-diff',
+  'fb-interactive-smartlog:request-revision':
+    'fb-interactive-smartlog:request-diff',
+  'fb-interactive-smartlog:rethink-revision':
+    'fb-interactive-smartlog:rethink-diff',
+};
+
 const DEPRECATED_COMMANDS = {
   ...DEPRECATED_CONSOLE_COMMANDS,
   ...DEPRECATED_DEBUGGER_COMMANDS,
   ...DEPRECATED_FILE_TREE_COMMANDS,
   ...DEPRECATED_TERMINAL_COMMANDS,
+  ...DEPRECATED_SOURCE_CONTROL_COMMANDS,
 };
 
 class Activation {
