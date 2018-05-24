@@ -274,7 +274,7 @@ export function isEmpty(obj: Object): boolean {
  *
  * Based off the equivalent function in www.
  */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
+export function keyMirror<T: Object>(obj: T): $ObjMapi<T, <K>(k: K) => K> {
   const ret = {};
   Object.keys(obj).forEach(key => {
     ret[key] = key;
