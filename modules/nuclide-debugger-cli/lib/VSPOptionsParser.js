@@ -43,12 +43,13 @@ export default class VSPOptionsParser {
     return this._optionsData;
   }
 
-  showCommandLineHelp(
+  commandLineHelp(
     type: string,
     action: DebuggerConfigAction,
     exclude: Set<string>,
     customArguments: CustomArgumentMap,
-  ): void {
+  ): Array<string> {
+    let help = [];
     const custom = customArguments == null ? new Map() : customArguments;
 
     const properties: Map<
@@ -63,16 +64,20 @@ export default class VSPOptionsParser {
     for (const optionKey of optionKeys) {
       const property = properties.get(optionKey);
       if (property != null) {
-        this._printHelpFor(optionKey, property, custom);
+        help = help.concat(this._helpFor(optionKey, property, custom));
       }
     }
+
+    return help;
   }
 
-  _printHelpFor(
+  _helpFor(
     optionKey: string,
     property: AdapterProperty,
     customArguments: CustomArgumentMap,
-  ): void {
+  ): Array<string> {
+    const help = [];
+
     const description = property.description;
     if (description != null && description !== '') {
       let spec = '';
@@ -92,7 +97,7 @@ export default class VSPOptionsParser {
         spec = type.map(_ => this._typeToDisplay(_, itemType)).join('|');
       }
 
-      process.stdout.write(`--${optionKey}: ${spec}\n`);
+      help.push(`--${optionKey}: ${spec}\n`);
 
       const maxLineLength = 80;
       const prefix = '  ';
@@ -106,15 +111,17 @@ export default class VSPOptionsParser {
           if (newLine.length <= maxLineLength) {
             line = newLine;
           } else {
-            process.stdout.write(`${line}\n`);
+            help.push(line);
             line = `${prefix}${word}`;
           }
         }
       }
       if (line !== '') {
-        process.stdout.write(`${line}\n`);
+        help.push(line);
       }
     }
+
+    return help;
   }
 
   _typeToDisplay(type: string, itemType: ?string): string {

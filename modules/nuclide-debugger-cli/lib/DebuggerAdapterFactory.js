@@ -71,17 +71,17 @@ export default class DebuggerAdapterFactory {
     return adapter;
   }
 
-  showContextSensitiveHelp(args: Arguments): void {
+  contextSensitiveHelp(args: Arguments): Array<string> {
     const adapter = this._adapterFromCommandLine(args);
     if (adapter == null) {
-      return;
+      return [];
     }
 
     const root = getAdapterPackageRoot(adapter.key);
     const optionsParser = new VSPOptionsParser(root);
     const action: DebuggerConfigAction = args.attach ? 'attach' : 'launch';
 
-    optionsParser.showCommandLineHelp(
+    return optionsParser.commandLineHelp(
       adapter.type,
       action,
       adapter.excludedOptions,

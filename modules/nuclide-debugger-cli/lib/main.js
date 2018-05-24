@@ -88,14 +88,20 @@ const _help: string[] = [
   '',
 ];
 
-function showHelp(configFile: ConfigFile): void {
-  _help.forEach(_ => process.stdout.write(_ + '\n'));
+function showHelp(
+  configFile: ConfigFile,
+  contextSensitiveHelp: Array<string>,
+): void {
+  process.stdout.write(_help.join('\n') + '\n');
+
+  if (contextSensitiveHelp.length !== 0) {
+    process.stdout.write('Options which are specific to the debugger type:\n');
+    process.stdout.write(contextSensitiveHelp.join('\n') + '\n');
+  }
 
   const presets = configFile.presets();
-  if (presets.length === 0) {
-    process.stdout.write('No presets found.\n');
-  } else {
-    process.stdout.write('Presets:\n');
+  if (presets.length !== 0) {
+    process.stdout.write('\nPresets:\n');
     presets.forEach(preset => {
       process.stdout.write(`${preset.name}:\n  ${preset.description}\n`);
     });
@@ -118,8 +124,7 @@ async function main(): Promise<void> {
       .boolean('help').argv;
 
     if (args.help) {
-      showHelp(configFile);
-      await debuggerAdapterFactory.showContextSensitiveHelp(args);
+      showHelp(configFile, debuggerAdapterFactory.contextSensitiveHelp(args));
       process.exit(0);
     }
 
@@ -137,7 +142,7 @@ async function main(): Promise<void> {
     } catch (error) {
       cli.outputLine(error.message);
       cli.outputLine();
-      showHelp(configFile);
+      showHelp(configFile, debuggerAdapterFactory.contextSensitiveHelp(args));
       process.exit(0);
     }
 
