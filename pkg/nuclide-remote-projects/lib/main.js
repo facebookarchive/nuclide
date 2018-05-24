@@ -15,6 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {enforceReadOnlyEditor} from 'nuclide-commons-atom/text-editor';
 import {
   loadBufferForUri,
@@ -96,13 +97,276 @@ export type SerializableRemoteConnectionConfiguration = {
   promptReconnectOnFailure?: boolean,
 };
 
-let packageSubscriptions: ?UniversalDisposable = null;
-let controller: ?RemoteProjectsController = null;
-let remoteProjectsService: ?RemoteProjectsServiceImpl = null;
-let workingSetsStore: ?WorkingSetsStore = null;
-
 const CLOSE_PROJECT_DELAY_MS = 100;
-const pendingFiles = {};
+
+class Activation {
+  _subscriptions = new UniversalDisposable();
+  _pendingFiles = {};
+  _controller = new RemoteProjectsController();
+  _remoteProjectsService = new RemoteProjectsServiceImpl();
+  _workingSetsStore: ?WorkingSetsStore;
+
+  constructor(
+    state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
+  ) {
+    this._subscriptions.add(
+      RemoteConnection.onDidAddRemoteConnection(connection => {
+        this._subscriptions.add(addRemoteFolderToProject(connection));
+
+        // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
+        // Here, Nuclide reloads the remote project files that have empty text editors open.
+        const config = connection.getConfig();
+        const openInstances = getOpenFileEditorForRemoteProject(config);
+        for (const openInstance of openInstances) {
+          // Keep the original open editor item with a unique name until the remote buffer is loaded,
+          // Then, we are ready to replace it with the remote tab in the same pane.
+          const {pane, editor, uri, filePath} = openInstance;
+
+          // Skip restoring the editor who has remote content loaded.
+          if (
+            editor instanceof TextEditor &&
+            editor.getBuffer().file instanceof RemoteFile
+          ) {
+            continue;
+          }
+
+          // Atom ensures that each pane only has one item per unique URI.
+          // Null out the existing pane item's URI so we can insert the new one
+          // without closing the pane.
+          if (editor instanceof TextEditor) {
+            editor.getURI = () => null;
+          }
+          // Cleanup the old pane item on successful opening or when no connection could be
+          // established.
+          const cleanupBuffer = () => {
+            pane.removeItem(editor);
+            editor.destroy();
+          };
+          if (filePath === config.cwd) {
+            cleanupBuffer();
+          } else {
+            // If we clean up the buffer before the `openUriInPane` finishes,
+            // the pane will be closed, because it could have no other items.
+            // So we must clean up after.
+            atom.workspace
+              .openURIInPane(uri, pane)
+              .then(newEditor => {
+                if (
+                  editor instanceof RemoteTextEditorPlaceholder &&
+                  editor.isModified()
+                ) {
+                  // If we had unsaved changes previously, restore them.
+                  newEditor.setText(editor.getText());
+                }
+              })
+              .then(cleanupBuffer, cleanupBuffer);
+          }
+        }
+      }),
+    );
+
+    this._subscriptions.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-remote-projects:connect',
+        event => {
+          let args;
+          if (event.detail != null) {
+            const {initialCwd} = event.detail;
+            if (initialCwd != null) {
+              args = {initialCwd};
+            }
+          }
+          openConnectionDialog(args);
+        },
+      ),
+    );
+
+    this._subscriptions.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-remote-projects:kill-and-restart',
+        () => shutdownServersAndRestartNuclide(),
+      ),
+    );
+
+    // Subscribe opener before restoring the remote projects.
+    this._subscriptions.add(
+      atom.workspace.addOpener((uri = '') => {
+        if (
+          nuclideUri.looksLikeImageUri(uri) &&
+          atom.packages.getLoadedPackage('nuclide-image-view') != null
+        ) {
+          // Images will be handled by the nuclide-remote-images package. Ideally, all remote files
+          // would go through one code path and then be delegated to the appropriate handler (instead
+          // of having this need to be aware of the nuclide-remote-images package implementation), but
+          // this is quick and dirty.
+          return;
+        }
+        if (uri.startsWith('nuclide:') || nuclideUri.isInArchive(uri)) {
+          if (uri.startsWith('nuclide:')) {
+            const serverConnection = ServerConnection.getForUri(uri);
+            if (serverConnection == null) {
+              // It's possible that the URI opens before the remote connection has finished loading
+              // (or the remote connection cannot be restored for some reason).
+              //
+              // In this case, we can just let Atom open a blank editor. Once the connection
+              // is re-established, the `onDidAddRemoteConnection` logic above will restore the
+              // editor contents as appropriate.
+              return;
+            }
+            const connection = RemoteConnection.getForUri(uri);
+            // On Atom restart, it tries to open the uri path as a file tab because it's not a local
+            // directory. We can't let that create a file with the initial working directory path.
+            if (
+              connection != null &&
+              uri === connection.getUriForInitialWorkingDirectory()
+            ) {
+              const blankEditor = atom.workspace.buildTextEditor({});
+              // No matter what we do here, Atom is going to create a blank editor.
+              // We don't want the user to see this, so destroy it as soon as possible.
+              setImmediate(() => blankEditor.destroy());
+              return blankEditor;
+            }
+          }
+          if (this._pendingFiles[uri]) {
+            return this._pendingFiles[uri];
+          }
+          const textEditorPromise = (this._pendingFiles[
+            uri
+          ] = createEditorForNuclide(uri));
+          const removeFromCache = () => delete this._pendingFiles[uri];
+          textEditorPromise.then(removeFromCache, removeFromCache);
+          return textEditorPromise;
+        }
+      }),
+    );
+
+    this._subscriptions.add(
+      atom.workspace.observeTextEditors(editor => {
+        const uri = editor.getURI();
+        if (uri != null && nuclideUri.isInArchive(uri)) {
+          enforceReadOnlyEditor(editor);
+        }
+      }),
+    );
+
+    this._subscriptions.add(patchAtomWorkspaceReplace());
+
+    // If RemoteDirectoryProvider is called before this, and it failed
+    // to provide a RemoteDirectory for a
+    // given URI, Atom will create a generic Directory to wrap that. We want
+    // to delete these instead, because those directories aren't valid/useful
+    // if they are not true RemoteDirectory objects (connected to a real
+    // real remote folder).
+    deleteDummyRemoteRootDirectories();
+
+    // Attempt to reload previously open projects.
+    const remoteProjectsConfig = state && state.remoteProjectsConfig;
+    reloadRemoteProjects(
+      remoteProjectsConfig || [],
+      this._remoteProjectsService,
+    );
+  }
+
+  dispose(): Promise<void> {
+    this._subscriptions.dispose();
+    this._controller.dispose();
+    this._remoteProjectsService.dispose();
+
+    // Gracefully shutdown all server connections and leave servers running.
+    const shutdown = false;
+    const shutdownTimeout = 1000;
+    // This tells Atom to wait for the close request to be acknowledged -
+    // but don't wait too long.
+    return Promise.race([
+      ServerConnection.closeAll(shutdown).catch(err => {
+        // log4js is potentially also being shut down during deactivation.
+        // eslint-disable-next-line no-console
+        console.error('Error closing server connections in deactivate', err);
+      }),
+      sleep(shutdownTimeout),
+    ]);
+  }
+
+  serialize(): {
+    remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
+  } {
+    const remoteProjectsConfig = getRemoteRootDirectories()
+      .map(directory => {
+        const connection = RemoteConnection.getForUri(directory.getPath());
+        return connection == null
+          ? null
+          : createSerializableRemoteConnectionConfiguration(
+              connection.getConfig(),
+            );
+      })
+      .filter(Boolean);
+    return {remoteProjectsConfig};
+  }
+
+  //
+  // Services
+  //
+
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Remote Connection',
+        icon: 'cloud-upload',
+        description: 'Connect to a remote server to edit files.',
+        command: 'nuclide-remote-projects:connect',
+      },
+      priority: 8,
+    };
+  }
+
+  provideRemoteProjectsService(): RemoteProjectsService {
+    return this._remoteProjectsService;
+  }
+
+  provideRpcServices(): nuclide$RpcService {
+    return Object.freeze({
+      getServiceByNuclideUri: (serviceName: string, uri: ?string) =>
+        getServiceByNuclideUri(serviceName, uri),
+    });
+  }
+
+  createRemoteDirectorySearcher(): RemoteDirectorySearcher {
+    return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
+      return getCodeSearchServiceByNuclideUri(dir.getPath());
+    }, () => this._workingSetsStore);
+  }
+
+  consumeStatusBar(statusBar: atom$StatusBar): void {
+    this._controller.consumeStatusBar(statusBar);
+  }
+
+  consumeNotifications(
+    raiseNativeNotification: (
+      title: string,
+      body: string,
+      timeout: number,
+      raiseIfAtomHasFocus: boolean,
+    ) => ?IDisposable,
+  ): void {
+    setNotificationService(raiseNativeNotification);
+  }
+
+  consumeWorkingSetsStore(store: WorkingSetsStore): void {
+    this._workingSetsStore = store;
+  }
+
+  //
+  // Deserializers
+  //
+
+  deserializeRemoteTextEditorPlaceholder(
+    state: RemoteTextEditorPlaceholderState,
+  ): RemoteTextEditorPlaceholder {
+    return new RemoteTextEditorPlaceholder(state);
+  }
+}
 
 function createSerializableRemoteConnectionConfiguration(
   config: RemoteConnectionConfiguration,
@@ -288,13 +552,13 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
 
 async function reloadRemoteProjects(
   remoteProjects: Array<SerializableRemoteConnectionConfiguration>,
+  remoteProjectsService: RemoteProjectsServiceImpl,
 ): Promise<void> {
   // This is intentionally serial.
   // The 90% use case is to have multiple remote projects for a single connection;
   // after the first one succeeds the rest should require no user action.
   const reloadedProjects: Array<string> = [];
   for (const config of remoteProjects) {
-    invariant(remoteProjectsService);
     // eslint-disable-next-line no-await-in-loop
     const connection = await remoteProjectsService.createRemoteConnection(
       config,
@@ -333,9 +597,7 @@ async function reloadRemoteProjects(
       reloadedProjects.push(connection.getUriForInitialWorkingDirectory());
     }
   }
-  if (remoteProjectsService != null) {
-    remoteProjectsService._reloadFinished(reloadedProjects);
-  }
+  remoteProjectsService._reloadFinished(reloadedProjects);
 }
 
 function shutdownServersAndRestartNuclide(): void {
@@ -359,276 +621,10 @@ function shutdownServersAndRestartNuclide(): void {
   });
 }
 
-export function activate(
-  state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
-): void {
-  const subscriptions = new UniversalDisposable();
+createPackage(module.exports, Activation);
 
-  controller = new RemoteProjectsController();
-  remoteProjectsService = new RemoteProjectsServiceImpl();
-
-  subscriptions.add(
-    RemoteConnection.onDidAddRemoteConnection(connection => {
-      subscriptions.add(addRemoteFolderToProject(connection));
-
-      // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
-      // Here, Nuclide reloads the remote project files that have empty text editors open.
-      const config = connection.getConfig();
-      const openInstances = getOpenFileEditorForRemoteProject(config);
-      for (const openInstance of openInstances) {
-        // Keep the original open editor item with a unique name until the remote buffer is loaded,
-        // Then, we are ready to replace it with the remote tab in the same pane.
-        const {pane, editor, uri, filePath} = openInstance;
-
-        // Skip restoring the editor who has remote content loaded.
-        if (
-          editor instanceof TextEditor &&
-          editor.getBuffer().file instanceof RemoteFile
-        ) {
-          continue;
-        }
-
-        // Atom ensures that each pane only has one item per unique URI.
-        // Null out the existing pane item's URI so we can insert the new one
-        // without closing the pane.
-        if (editor instanceof TextEditor) {
-          editor.getURI = () => null;
-        }
-        // Cleanup the old pane item on successful opening or when no connection could be
-        // established.
-        const cleanupBuffer = () => {
-          pane.removeItem(editor);
-          editor.destroy();
-        };
-        if (filePath === config.cwd) {
-          cleanupBuffer();
-        } else {
-          // If we clean up the buffer before the `openUriInPane` finishes,
-          // the pane will be closed, because it could have no other items.
-          // So we must clean up after.
-          atom.workspace
-            .openURIInPane(uri, pane)
-            .then(newEditor => {
-              if (
-                editor instanceof RemoteTextEditorPlaceholder &&
-                editor.isModified()
-              ) {
-                // If we had unsaved changes previously, restore them.
-                newEditor.setText(editor.getText());
-              }
-            })
-            .then(cleanupBuffer, cleanupBuffer);
-        }
-      }
-    }),
-  );
-
-  subscriptions.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-remote-projects:connect',
-      event => {
-        let args;
-        if (event.detail != null) {
-          const {initialCwd} = event.detail;
-          if (initialCwd != null) {
-            args = {initialCwd};
-          }
-        }
-        openConnectionDialog(args);
-      },
-    ),
-  );
-
-  subscriptions.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-remote-projects:kill-and-restart',
-      () => shutdownServersAndRestartNuclide(),
-    ),
-  );
-
-  // Subscribe opener before restoring the remote projects.
-  subscriptions.add(
-    atom.workspace.addOpener((uri = '') => {
-      if (
-        nuclideUri.looksLikeImageUri(uri) &&
-        atom.packages.getLoadedPackage('nuclide-image-view') != null
-      ) {
-        // Images will be handled by the nuclide-remote-images package. Ideally, all remote files
-        // would go through one code path and then be delegated to the appropriate handler (instead
-        // of having this need to be aware of the nuclide-remote-images package implementation), but
-        // this is quick and dirty.
-        return;
-      }
-      if (uri.startsWith('nuclide:') || nuclideUri.isInArchive(uri)) {
-        if (uri.startsWith('nuclide:')) {
-          const serverConnection = ServerConnection.getForUri(uri);
-          if (serverConnection == null) {
-            // It's possible that the URI opens before the remote connection has finished loading
-            // (or the remote connection cannot be restored for some reason).
-            //
-            // In this case, we can just let Atom open a blank editor. Once the connection
-            // is re-established, the `onDidAddRemoteConnection` logic above will restore the
-            // editor contents as appropriate.
-            return;
-          }
-          const connection = RemoteConnection.getForUri(uri);
-          // On Atom restart, it tries to open the uri path as a file tab because it's not a local
-          // directory. We can't let that create a file with the initial working directory path.
-          if (
-            connection != null &&
-            uri === connection.getUriForInitialWorkingDirectory()
-          ) {
-            const blankEditor = atom.workspace.buildTextEditor({});
-            // No matter what we do here, Atom is going to create a blank editor.
-            // We don't want the user to see this, so destroy it as soon as possible.
-            setImmediate(() => blankEditor.destroy());
-            return blankEditor;
-          }
-        }
-        if (pendingFiles[uri]) {
-          return pendingFiles[uri];
-        }
-        const textEditorPromise = (pendingFiles[uri] = createEditorForNuclide(
-          uri,
-        ));
-        const removeFromCache = () => delete pendingFiles[uri];
-        textEditorPromise.then(removeFromCache, removeFromCache);
-        return textEditorPromise;
-      }
-    }),
-  );
-
-  subscriptions.add(
-    atom.workspace.observeTextEditors(editor => {
-      const uri = editor.getURI();
-      if (uri != null && nuclideUri.isInArchive(uri)) {
-        enforceReadOnlyEditor(editor);
-      }
-    }),
-  );
-
-  subscriptions.add(patchAtomWorkspaceReplace());
-
-  // If RemoteDirectoryProvider is called before this, and it failed
-  // to provide a RemoteDirectory for a
-  // given URI, Atom will create a generic Directory to wrap that. We want
-  // to delete these instead, because those directories aren't valid/useful
-  // if they are not true RemoteDirectory objects (connected to a real
-  // real remote folder).
-  deleteDummyRemoteRootDirectories();
-
-  // Attempt to reload previously open projects.
-  const remoteProjectsConfig = state && state.remoteProjectsConfig;
-  reloadRemoteProjects(remoteProjectsConfig || []);
-  packageSubscriptions = subscriptions;
-}
-
-export function consumeStatusBar(statusBar: atom$StatusBar): void {
-  if (controller) {
-    controller.consumeStatusBar(statusBar);
-  }
-}
-
-export function serialize(): {
-  remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
-} {
-  const remoteProjectsConfig = getRemoteRootDirectories()
-    .map(directory => {
-      const connection = RemoteConnection.getForUri(directory.getPath());
-      return connection == null
-        ? null
-        : createSerializableRemoteConnectionConfiguration(
-            connection.getConfig(),
-          );
-    })
-    .filter(Boolean);
-  return {remoteProjectsConfig};
-}
-
-export function deactivate(): Promise<void> {
-  if (packageSubscriptions) {
-    packageSubscriptions.dispose();
-    packageSubscriptions = null;
-  }
-
-  if (controller != null) {
-    controller.dispose();
-    controller = null;
-  }
-
-  if (remoteProjectsService != null) {
-    remoteProjectsService.dispose();
-    remoteProjectsService = null;
-  }
-
-  // Gracefully shutdown all server connections and leave servers running.
-  const shutdown = false;
-  const shutdownTimeout = 1000;
-  // This tells Atom to wait for the close request to be acknowledged -
-  // but don't wait too long.
-  return Promise.race([
-    ServerConnection.closeAll(shutdown).catch(err => {
-      // log4js is potentially also being shut down during deactivation.
-      // eslint-disable-next-line no-console
-      console.error('Error closing server connections in deactivate', err);
-    }),
-    sleep(shutdownTimeout),
-  ]);
-}
-
-export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
-  return new RemoteDirectoryProvider();
-}
-
-export function createRemoteDirectorySearcher(): RemoteDirectorySearcher {
-  return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
-    return getCodeSearchServiceByNuclideUri(dir.getPath());
-  }, () => workingSetsStore);
-}
-
-export function getHomeFragments(): HomeFragments {
-  return {
-    feature: {
-      title: 'Remote Connection',
-      icon: 'cloud-upload',
-      description: 'Connect to a remote server to edit files.',
-      command: 'nuclide-remote-projects:connect',
-    },
-    priority: 8,
-  };
-}
-
-export function provideRemoteProjectsService(): RemoteProjectsService {
-  invariant(remoteProjectsService != null);
-  return remoteProjectsService;
-}
-
-export function provideRpcServices(): nuclide$RpcService {
-  return Object.freeze({
-    getServiceByNuclideUri: (serviceName: string, uri: ?string) =>
-      getServiceByNuclideUri(serviceName, uri),
-  });
-}
-
-export function consumeNotifications(
-  raiseNativeNotification: (
-    title: string,
-    body: string,
-    timeout: number,
-    raiseIfAtomHasFocus: boolean,
-  ) => ?IDisposable,
-): void {
-  setNotificationService(raiseNativeNotification);
-}
-
-export function consumeWorkingSetsStore(store: WorkingSetsStore): void {
-  workingSetsStore = store;
-}
-
-export function deserializeRemoteTextEditorPlaceholder(
-  state: RemoteTextEditorPlaceholderState,
-): RemoteTextEditorPlaceholder {
-  return new RemoteTextEditorPlaceholder(state);
-}
+// The "atom.directory-provider" service is unique in that it's requested prior to package
+// activation. Since the Activation class pattern guards against this, we need to special-case it.
+// eslint-disable-next-line nuclide-internal/no-commonjs
+module.exports.createRemoteDirectoryProvider = () =>
+  new RemoteDirectoryProvider();
