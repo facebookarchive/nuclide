@@ -149,7 +149,11 @@ export class WebSocketTransport {
   // The WS socket automatically responds to pings with pongs.
   ping(data: ?string): void {
     if (this._socket != null) {
-      this._socket.ping(data);
+      try {
+        this._socket.ping(data);
+      } catch (e) {
+        logger.error('Attempted to ping on the socket and got an error:', e);
+      }
     } else {
       logger.error('Attempted to send socket ping after connection closed');
     }
