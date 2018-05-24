@@ -42,6 +42,22 @@
       "type": "boolean",
       "default": false
     },
+    "allowTransparency": {
+      "title": "Allow Transparency",
+      "description": "Enables transparent terminal foreground or background theme colors. Also disables subpixel anti-aliasing.",
+      "type": "boolean",
+      "default": false
+    },
+    "charAtlas": {
+      "title": "Character atlas implementation",
+      "type": "string",
+      "default": "dynamic",
+      "enum": [
+        {"value": "none", "description": "None (No character atlas, not recommended)"},
+        {"value": "static", "description": "Static (Generate a small character atlas on instantiation)"},
+        {"value": "dynamic", "description": "Dynamic (Experimental; Use an LRU cache to improve the cache hit rate)"}
+      ]
+    },
     "fontFamily": {
       "title": "Font Family",
       "type": "string",
