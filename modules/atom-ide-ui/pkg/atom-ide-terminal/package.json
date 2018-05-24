@@ -42,6 +42,11 @@
       "type": "boolean",
       "default": false
     },
+    "optionIsMeta": {
+      "title": "Use Option as Meta key (MacOS only)",
+      "type": "boolean",
+      "default": false
+    },
     "allowTransparency": {
       "title": "Allow Transparency",
       "description": "Enables transparent terminal foreground or background theme colors. Also disables subpixel anti-aliasing.",

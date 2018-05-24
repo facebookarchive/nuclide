@@ -68,6 +68,7 @@ const PRESERVED_COMMANDS_CONFIG = 'atom-ide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
+const OPTION_IS_META_CONFIG = 'atom-ide-terminal.optionIsMeta';
 const TRANSPARENCY_CONFIG = 'atom-ide-terminal.allowTransparency';
 const CHAR_ATLAS_CONFIG = 'atom-ide-terminal.charAtlas';
 const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
@@ -180,6 +181,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
       cursorBlink: featureConfig.get(CURSOR_BLINK_CONFIG),
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
+      macOptionIsMeta: featureConfig.get(OPTION_IS_META_CONFIG),
       allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
       experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),
     }));
