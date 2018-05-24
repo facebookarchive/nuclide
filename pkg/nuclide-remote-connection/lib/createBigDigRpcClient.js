@@ -18,6 +18,7 @@ import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
 import {RpcConnection} from '../../nuclide-rpc';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from '../../nuclide-rpc/lib/config';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
+import {protocolLogger} from '../../nuclide-server/lib/utils';
 import {NUCLIDE_RPC_TAG} from '../../nuclide-server2/lib/constants';
 
 export default (async function createBigDigRpcClient(
@@ -52,6 +53,8 @@ export default (async function createBigDigRpcClient(
       servicesConfig,
       {trackSampleRate: 10},
       SERVICE_FRAMEWORK3_PROTOCOL,
+      null,
+      protocolLogger,
     ),
   };
 });
