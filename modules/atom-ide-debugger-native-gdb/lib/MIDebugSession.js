@@ -790,7 +790,10 @@ class MIDebugSession extends LoggingDebugSession {
     }
 
     if (this._pauseQueue.length === 1) {
-      this._client.pause();
+      // NB there is a race condition in gdb where if you send a SIGINT too soon
+      // after the target is changed from stopped to running, it doesn't send another
+      // stopped event. This really should be a throttle, not done every time.
+      setTimeout(() => this._client.pause(), 125);
     }
   }
 
