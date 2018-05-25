@@ -172,18 +172,25 @@ export class FlowSingleProjectLanguageService {
     if (!isSupported) {
       return null;
     }
-    const result = await this._findRefs(filePath, buffer, position, false);
+    const result = await this.customFindReferences(
+      filePath,
+      buffer,
+      position,
+      false,
+      false,
+    );
     if (result == null || result.type === 'error') {
       return null;
     }
     return result.references.map(ref => ref.range);
   }
 
-  async _findRefs(
+  async customFindReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     global_: boolean,
+    multiHop: boolean,
   ): Promise<?FindReferencesReturn> {
     const options = {input: buffer.getText()};
     const args = [
@@ -196,6 +203,9 @@ export class FlowSingleProjectLanguageService {
     ];
     if (global_) {
       args.push('--global');
+    }
+    if (multiHop) {
+      args.push('--multi-hop');
     }
     try {
       const result = await this._process.execFlow(args, options);
@@ -619,7 +629,7 @@ export class FlowSingleProjectLanguageService {
   ): Observable<?FindReferencesReturn> {
     // TODO check flow version
     return Observable.fromPromise(
-      this._findRefs(filePath, buffer, position, true),
+      this.customFindReferences(filePath, buffer, position, true, false),
     );
   }
 

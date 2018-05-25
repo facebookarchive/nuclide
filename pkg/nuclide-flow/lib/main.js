@@ -9,6 +9,7 @@
  * @format
  */
 
+import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import type {
   FlowLanguageServiceType,
@@ -20,6 +21,7 @@ import type {LanguageService} from '../../nuclide-language-service/lib/LanguageS
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {BusySignalService} from 'atom-ide-ui';
+import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -30,7 +32,10 @@ import registerGrammar from '../../commons-atom/register-grammar';
 import passesGK from '../../commons-node/passesGK';
 import {onceGkInitialized, isGkEnabled} from '../../commons-node/passesGK';
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
-import {getNotifierByConnection} from '../../nuclide-open-files';
+import {
+  getNotifierByConnection,
+  getFileVersionOfEditor,
+} from '../../nuclide-open-files';
 import {
   AtomLanguageService,
   getHostServices,
@@ -211,6 +216,11 @@ async function activateLegacy(): Promise<UniversalDisposable> {
         return disposableForBusyService;
       },
     ),
+    atom.packages.serviceHub.consume(
+      'find-references-view',
+      '0.1.0',
+      consumeFindReferencesView,
+    ),
   );
 
   registerGrammar('source.ini', ['.flowconfig']);
@@ -293,7 +303,10 @@ export function serverStatusUpdatesToBusyMessages(
     .subscribe();
 }
 
+let busySignalService: ?BusySignalService = null;
+
 function consumeBusySignal(service: BusySignalService): IDisposable {
+  busySignalService = service;
   const serverStatusUpdates = getConnectionCache()
     .observeValues()
     // mergeAll loses type info
@@ -307,8 +320,99 @@ function consumeBusySignal(service: BusySignalService): IDisposable {
     service,
   );
   return new UniversalDisposable(() => {
+    busySignalService = null;
     subscription.unsubscribe();
   });
+}
+
+function consumeFindReferencesView(
+  service: FindReferencesViewService,
+): IDisposable {
+  const promise: Promise<IDisposable> = registerMultiHopFindReferencesCommand(
+    service,
+  );
+  return new UniversalDisposable(() => {
+    promise.then(disposable => disposable.dispose());
+  });
+}
+
+async function registerMultiHopFindReferencesCommand(
+  service: FindReferencesViewService,
+): Promise<IDisposable> {
+  if (!(await shouldEnableFindRefs())) {
+    return new UniversalDisposable();
+  }
+  let lastMouseEvent = null;
+  atom.contextMenu.add({
+    'atom-text-editor[data-grammar="source js jsx"]': [
+      {
+        label: 'Find Indirect References (slower)',
+        command: 'nuclide-flow:find-indirect-references',
+        created: event => {
+          lastMouseEvent = event;
+        },
+      },
+    ],
+  });
+  return atom.commands.add(
+    'atom-text-editor',
+    'nuclide-flow:find-indirect-references',
+    async () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor == null) {
+        return;
+      }
+      const path = editor.getPath();
+      if (path == null) {
+        return;
+      }
+      const cursors = editor.getCursors();
+      if (cursors.length !== 1) {
+        return;
+      }
+      const cursor = cursors[0];
+      const position =
+        lastMouseEvent != null
+          ? bufferPositionForMouseEvent(lastMouseEvent, editor)
+          : cursor.getBufferPosition();
+      lastMouseEvent = null;
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const flowLS = await getConnectionCache().getForUri(path);
+      if (flowLS == null) {
+        return;
+      }
+      if (fileVersion == null) {
+        return;
+      }
+      const getReferences = () =>
+        flowLS
+          .customFindReferences(fileVersion, position, true, true)
+          .refCount()
+          .toPromise();
+      let result;
+      if (busySignalService == null) {
+        result = await getReferences();
+      } else {
+        result = await busySignalService.reportBusyWhile(
+          'Running Flow find-indirect-references (this may take a while)',
+          getReferences,
+          {
+            revealTooltip: true,
+            waitingFor: 'computer',
+          },
+        );
+      }
+      if (result == null) {
+        atom.notifications.addInfo('No find references results available');
+      } else if (result.type === 'data') {
+        service.viewResults(result);
+      } else {
+        atom.notifications.addWarning(
+          `Flow find-indirect-references issued an error: "${result.message}"`,
+        );
+      }
+    },
+  );
 }
 
 async function allowFlowServerRestart(): Promise<void> {
@@ -331,13 +435,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   const enableTypeHints = Boolean(
     featureConfig.get('nuclide-flow.enableTypeHints'),
   );
-  const enableFindRefs =
-    Boolean(featureConfig.get('nuclide-flow.enableFindReferences')) ||
-    (await passesGK(
-      'nuclide_flow_find_refs',
-      // Wait 15 seconds for the gk check
-      15 * 1000,
-    ));
+  const enableFindRefs = await shouldEnableFindRefs();
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -435,4 +533,15 @@ async function shouldUsePushDiagnostics(): Promise<boolean> {
     `Enabling Flow persistent connection: ${String(result)}`,
   );
   return result;
+}
+
+async function shouldEnableFindRefs(): Promise<boolean> {
+  return (
+    Boolean(featureConfig.get('nuclide-flow.enableFindReferences')) ||
+    passesGK(
+      'nuclide_flow_find_refs',
+      // Wait 15 seconds for the gk check
+      15 * 1000,
+    )
+  );
 }

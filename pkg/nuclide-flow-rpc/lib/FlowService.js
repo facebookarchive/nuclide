@@ -43,6 +43,7 @@ import type {
 
 import invariant from 'assert';
 
+import {Observable} from 'rxjs';
 import {setConfig} from './config';
 import {
   ServerLanguageService,
@@ -163,6 +164,32 @@ class FlowLanguageService extends MultiProjectLanguageService<
     }
   }
 
+  customFindReferences(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    global_: boolean,
+    multiHop: boolean,
+  ): ConnectableObservable<?FindReferencesReturn> {
+    return Observable.defer(async () => {
+      const ls = await this.getLanguageServiceForFile(fileVersion.filePath);
+      if (ls == null) {
+        return;
+      }
+      const flowLs = ls.getSingleFileLanguageService();
+      const buffer = await getBufferAtVersion(fileVersion);
+      if (buffer == null) {
+        return null;
+      }
+      return flowLs.customFindReferences(
+        fileVersion.filePath,
+        buffer,
+        position,
+        global_,
+        multiHop,
+      );
+    }).publish();
+  }
+
   getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
     return this.observeLanguageServices()
       .mergeMap(languageService => {
@@ -206,6 +233,13 @@ export interface FlowLanguageServiceType {
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
+  ): ConnectableObservable<?FindReferencesReturn>;
+
+  customFindReferences(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    global_: boolean,
+    multiHop: boolean,
   ): ConnectableObservable<?FindReferencesReturn>;
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
