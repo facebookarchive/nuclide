@@ -169,7 +169,7 @@ export async function stopNuclideServer(
   service.dispose();
   // If this ever fires, either ensure that your test closes all RemoteConnections
   // or we can add a force shutdown method to ServerConnection.
-  invariant(connection.isOnlyConnection());
+  invariant(connection.getConnection().hasSingleMountPoint());
   const attemptShutdown = true;
   await connection.close(attemptShutdown);
 }

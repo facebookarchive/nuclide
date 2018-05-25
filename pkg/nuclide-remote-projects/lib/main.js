@@ -344,7 +344,7 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
     // The project was removed from the tree.
     logger.info(`Project ${workingDirectoryUri} removed from the tree`);
     subscription.dispose();
-    if (connection.isOnlyConnection()) {
+    if (connection.getConnection().hasSingleMountPoint()) {
       closeOpenFilesForRemoteProject(connection);
     }
 
@@ -366,7 +366,7 @@ function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
     };
 
     logger.info('Closing connection to remote project.');
-    if (!connection.isOnlyConnection()) {
+    if (!connection.getConnection().hasSingleMountPoint()) {
       logger.info(
         'Remaining remote projects using Nuclide Server - no prompt to shutdown',
       );
@@ -399,7 +399,7 @@ function closeOpenFilesForRemoteProject(connection: RemoteConnection): void {
     // It's possible to open files outside of the root of the connection.
     // Only clean up these files if we're the only connection left.
     if (
-      connection.isOnlyConnection() ||
+      connection.getConnection().hasSingleMountPoint() ||
       nuclideUri.contains(connection.getUriForInitialWorkingDirectory(), uri)
     ) {
       pane.removeItem(editor);

@@ -39,7 +39,7 @@ describe('Edit remote file Integration Test', () => {
 
       const remotePath = nuclideUri.join(repoPath, 'test.txt');
       const textEditor = await atom.workspace.open(
-        connection.getUriOfRemotePath(remotePath),
+        connection.getConnection().getUriOfRemotePath(remotePath),
       );
       invariant(textEditor);
       const textEditorView = atom.views.getView(textEditor);

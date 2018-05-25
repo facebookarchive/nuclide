@@ -15,7 +15,6 @@ import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
 import typeof * as FileSystemServiceType from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
-import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {ServerConnectionVersion} from './ServerConnection';
 
@@ -39,13 +38,15 @@ export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
   port: number, // port to connect to.
   family?: 4 | 6, // ipv4 or ipv6?
-  cwd: string, // Path to remote directory user should start in upon connection.
-  displayTitle: string, // Name of the saved connection profile.
   certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
   clientCertificate?: Buffer, // client certificate for https connection.
   clientKey?: Buffer, // key for https connection.
-  promptReconnectOnFailure?: boolean, // open a connection dialog prompt if the reconnect fails
   version?: ServerConnectionVersion,
+
+  // Stuff specific to RemoteConnectionConfiguration (e.g. not in ServerConnectionConfiguration)
+  cwd: string, // Path to remote directory user should start in upon connection.
+  displayTitle: string, // Name of the saved connection profile.
+  promptReconnectOnFailure?: boolean, // open a connection dialog prompt if the reconnect fails
 };
 
 // A RemoteConnection represents a directory which has been opened in Nuclide on a remote machine.
@@ -266,14 +267,10 @@ export class RemoteConnection {
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
     const remotePath = this.getPathForInitialWorkingDirectory();
-    const {getHgRepository} = (this.getService(
+    const {getHgRepository} = (this.getConnection().getService(
       'SourceControlService',
     ): SourceControlService);
     this._setHgRepositoryDescription(await getHgRepository(remotePath));
-  }
-
-  getUriOfRemotePath(remotePath: string): string {
-    return `nuclide://${this.getRemoteHostname()}${remotePath}`;
   }
 
   getPathOfUri(uri: string): string {
@@ -299,10 +296,6 @@ export class RemoteConnection {
     return this._hgRepositoryDescription;
   }
 
-  createFile(uri: string, symlink: boolean = false): RemoteFile {
-    return this._connection.createFile(uri, symlink);
-  }
-
   async _initialize(): Promise<RemoteConnection> {
     const attemptShutdown = false;
     // Must add first to prevent the ServerConnection from going away
@@ -324,7 +317,7 @@ export class RemoteConnection {
   _watchRootProjectDirectory(): void {
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
     const rootDirectoryPath = this.getPathForInitialWorkingDirectory();
-    const FileWatcherService: FileWatcherServiceType = this.getService(
+    const FileWatcherService: FileWatcherServiceType = this.getConnection().getService(
       FILE_WATCHER_SERVICE,
     );
     invariant(FileWatcherService);
@@ -344,7 +337,7 @@ export class RemoteConnection {
       async error => {
         let warningMessageToUser = '';
         let detail;
-        const fileSystemService: FileSystemServiceType = this.getService(
+        const fileSystemService: FileSystemServiceType = this.getConnection().getService(
           FILE_SYSTEM_SERVICE,
         );
         if (await fileSystemService.isNfs(rootDirectoryUri)) {
@@ -403,20 +396,14 @@ export class RemoteConnection {
     return this._connection;
   }
 
-  getPort(): number {
-    return this._connection.getPort();
-  }
-
-  getRemoteHostname(): string {
-    return this._connection.getRemoteHostname();
-  }
-
   getDisplayTitle(): string {
     return this._displayTitle;
   }
 
   getUriForInitialWorkingDirectory(): string {
-    return this.getUriOfRemotePath(this.getPathForInitialWorkingDirectory());
+    return this.getConnection().getUriOfRemotePath(
+      this.getPathForInitialWorkingDirectory(),
+    );
   }
 
   getPathForInitialWorkingDirectory(): string {
@@ -471,14 +458,6 @@ export class RemoteConnection {
   static getByHostname(hostname: string): Array<RemoteConnection> {
     const server = ServerConnection.getByHostname(hostname);
     return server == null ? [] : server.getConnections();
-  }
-
-  getService(serviceName: string): any {
-    return this._connection.getService(serviceName);
-  }
-
-  isOnlyConnection(): boolean {
-    return this._connection.getConnections().length === 1;
   }
 
   setAlwaysShutdownIfLast(alwaysShutdownIfLast: boolean): void {

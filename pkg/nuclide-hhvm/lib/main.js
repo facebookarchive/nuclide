@@ -149,10 +149,12 @@ class Activation {
 
     // The hostname might have changed slightly from what was passed in due to
     // DNS lookup, so create a new remote URI rather than using cwd from above.
-    const hackRootUri = remoteConnection.getUriOfRemotePath(hackRootString);
-    const navUri = remoteConnection.getUriOfRemotePath(
-      nuclideUri.getPath(pathString),
-    );
+    const hackRootUri = remoteConnection
+      .getConnection()
+      .getUriOfRemotePath(hackRootString);
+    const navUri = remoteConnection
+      .getConnection()
+      .getUriOfRemotePath(nuclideUri.getPath(pathString));
 
     // Set the current project root.
     if (this._cwdApi != null) {

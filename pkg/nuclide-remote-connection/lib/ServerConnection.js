@@ -520,6 +520,10 @@ export class ServerConnection {
     return this._connections;
   }
 
+  hasSingleMountPoint(): boolean {
+    return this.getConnections().length === 1;
+  }
+
   getService(serviceName: string): any {
     return this.getClient().getService(serviceName);
   }
