@@ -293,7 +293,7 @@ export class AttachUiComponent extends React.Component<PropsType, StateType> {
       nuclideUri.getHostname(this.props.targetUri),
     );
     return connections.map((connection, index) => {
-      const pathToProject = connection.getPathForInitialWorkingDirectory();
+      const pathToProject = connection.getPath();
       return {
         label: pathToProject,
         value: index,

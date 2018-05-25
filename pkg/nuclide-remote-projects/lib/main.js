@@ -232,10 +232,7 @@ class Activation {
       const connection = RemoteConnection.getForUri(uri);
       // On Atom restart, it tries to open the uri path as a file tab because it's not a local
       // directory. We can't let that create a file with the initial working directory path.
-      if (
-        connection != null &&
-        uri === connection.getUriForInitialWorkingDirectory()
-      ) {
+      if (connection != null && uri === connection.getUri()) {
         const blankEditor = atom.workspace.buildTextEditor({});
         // No matter what we do here, Atom is going to create a blank editor.
         // We don't want the user to see this, so destroy it as soon as possible.
@@ -328,7 +325,7 @@ function createSerializableRemoteConnectionConfiguration(
 }
 
 function addRemoteFolderToProject(connection: RemoteConnection): IDisposable {
-  const workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
+  const workingDirectoryUri = connection.getUri();
   // If restoring state, then the project already exists with local directory and wrong repo
   // instances. Hence, we remove it here, if existing, and add the new path for which we added a
   // workspace opener handler.
@@ -400,7 +397,7 @@ function closeOpenFilesForRemoteProject(connection: RemoteConnection): void {
     // Only clean up these files if we're the only connection left.
     if (
       connection.getConnection().hasSingleMountPoint() ||
-      nuclideUri.contains(connection.getUriForInitialWorkingDirectory(), uri)
+      nuclideUri.contains(connection.getUri(), uri)
     ) {
       pane.removeItem(editor);
       editor.destroy();
@@ -542,7 +539,7 @@ async function reloadRemoteProjects(
 
       ServerConnection.cancelConnection(config.host);
     } else {
-      reloadedProjects.push(connection.getUriForInitialWorkingDirectory());
+      reloadedProjects.push(connection.getUri());
     }
   }
   remoteProjectsService._reloadFinished(reloadedProjects);

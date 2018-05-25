@@ -427,7 +427,7 @@ export class ServerConnection {
     );
     this._connections.splice(this._connections.indexOf(connection), 1);
     logger.info('Removed connection.', {
-      cwd: connection.getUriForInitialWorkingDirectory(),
+      cwd: connection.getUri(),
       title: connection.getDisplayTitle(),
       remainingConnections: this._connections.length,
     });
@@ -508,7 +508,7 @@ export class ServerConnection {
   getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
     const {path} = nuclideUri.parse(uri);
     return this.getConnections().filter(connection => {
-      return path.startsWith(connection.getPathForInitialWorkingDirectory());
+      return path.startsWith(connection.getPath());
     })[0];
   }
 

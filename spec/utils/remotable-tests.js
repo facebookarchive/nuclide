@@ -108,7 +108,7 @@ class RemoteTestContext {
     const connection = await addRemoteProject(localProjectPath);
     invariant(connection != null, 'connection was not established');
     this._connection = connection;
-    this._remoteProjectPath = connection.getUriForInitialWorkingDirectory();
+    this._remoteProjectPath = connection.getUri();
     invariant(this._remoteProjectPath != null, 'Remote project path not set');
   }
 

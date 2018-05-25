@@ -237,7 +237,7 @@ export class LaunchUiComponent extends React.Component<Props, State> {
     const hostname = nuclideUri.getHostname(this.props.targetUri);
     const connections = RemoteConnection.getByHostname(hostname);
     return connections.map((connection, index) => {
-      const pathToProject = connection.getPathForInitialWorkingDirectory();
+      const pathToProject = connection.getPath();
       return {
         label: pathToProject,
         value: index,

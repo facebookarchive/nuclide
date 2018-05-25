@@ -56,7 +56,7 @@ export type RemoteConnectionConfiguration = {
 // Nuclide behaves badly when remote directories are opened which are parent/child of each other.
 // And there needn't be a 1:1 relationship between RemoteConnections and hg repos.
 export class RemoteConnection {
-  _cwd: string; // Path to remote directory user should start in upon connection.
+  _path: string; // Path to remote directory user should start in upon connection.
   _subscriptions: UniversalDisposable;
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _connection: ServerConnection;
@@ -145,11 +145,11 @@ export class RemoteConnection {
   // Do NOT call this directly. Use findOrCreate instead.
   constructor(
     connection: ServerConnection,
-    cwd: string,
+    path: string,
     displayTitle: string,
     promptReconnectOnFailure: boolean,
   ) {
-    this._cwd = cwd;
+    this._path = path;
     this._subscriptions = new UniversalDisposable();
     this._hgRepositoryDescription = null;
     this._connection = connection;
@@ -266,7 +266,7 @@ export class RemoteConnection {
   // ::repositoryForDirectorySync, so we need the repo information to already be
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
-    const remotePath = this.getPathForInitialWorkingDirectory();
+    const remotePath = this.getPath();
     const {getHgRepository} = (this.getConnection().getService(
       'SourceControlService',
     ): SourceControlService);
@@ -311,8 +311,8 @@ export class RemoteConnection {
   }
 
   _watchRootProjectDirectory(): void {
-    const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
-    const rootDirectoryPath = this.getPathForInitialWorkingDirectory();
+    const rootDirectoryUri = this.getUri();
+    const rootDirectoryPath = this.getPath();
     const FileWatcherService: FileWatcherServiceType = this.getConnection().getService(
       FILE_WATCHER_SERVICE,
     );
@@ -396,20 +396,18 @@ export class RemoteConnection {
     return this._displayTitle;
   }
 
-  getUriForInitialWorkingDirectory(): string {
-    return this.getConnection().getUriOfRemotePath(
-      this.getPathForInitialWorkingDirectory(),
-    );
+  getUri(): string {
+    return this.getConnection().getUriOfRemotePath(this.getPath());
   }
 
-  getPathForInitialWorkingDirectory(): string {
-    return this._cwd;
+  getPath(): string {
+    return this._path;
   }
 
   getConfig(): RemoteConnectionConfiguration {
     return {
       ...this._connection.getConfig(),
-      cwd: this._cwd,
+      cwd: this._path,
       displayTitle: this._displayTitle,
       promptReconnectOnFailure: this._promptReconnectOnFailure,
     };
@@ -447,7 +445,7 @@ export class RemoteConnection {
     path: string,
   ): ?RemoteConnection {
     return RemoteConnection.getByHostname(hostname).filter(connection => {
-      return path.startsWith(connection.getPathForInitialWorkingDirectory());
+      return path.startsWith(connection.getPath());
     })[0];
   }
 
