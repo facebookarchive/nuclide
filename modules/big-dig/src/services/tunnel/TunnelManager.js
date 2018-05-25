@@ -127,26 +127,20 @@ export class Tunnel {
   _remotePort: number;
   _transport: Transport;
   _proxy: ?Proxy;
-  _socketManager: ?SocketManager;
   _id: string;
   _logger: log4js$Logger;
-  _isReverse: boolean;
 
   constructor(
     id: string,
     proxy: ?Proxy,
-    socketManager: ?SocketManager,
     localPort: number,
     remotePort: number,
-    isReverse: boolean,
     transport: Transport,
   ) {
     this._id = id;
     this._proxy = proxy;
-    this._socketManager = socketManager;
     this._localPort = localPort;
     this._remotePort = remotePort;
-    this._isReverse = isReverse;
     this._transport = transport;
     this._logger = getLogger('tunnel');
   }
@@ -163,15 +157,7 @@ export class Tunnel {
       remotePort,
       transport,
     );
-    return new Tunnel(
-      tunnelId,
-      proxy,
-      null,
-      localPort,
-      remotePort,
-      false,
-      transport,
-    );
+    return new Tunnel(tunnelId, proxy, localPort, remotePort, transport);
   }
 
   static async createReverseTunnel(
@@ -191,21 +177,16 @@ export class Tunnel {
         remotePort,
       }),
     );
-    return new Tunnel(
+    return new ReverseTunnel(
       tunnelId,
-      null,
       socketManager,
       localPort,
       remotePort,
-      true,
       transport,
     );
   }
 
   receive(msg: Object): void {
-    if (this._isReverse) {
-      throw new Error('Tunnel.receive is not implemented for a reverse tunnel');
-    }
     if (this._proxy != null) {
       this._proxy.receive(msg);
     }
@@ -216,19 +197,38 @@ export class Tunnel {
   }
 
   close() {
-    if (!this._isReverse) {
-      invariant(this._proxy);
-      this._proxy.close();
-    } else {
-      invariant(this._socketManager);
-      this._socketManager.close();
-      this._transport.send(
-        JSON.stringify({
-          event: 'closeProxy',
-          tunnelId: this._id,
-        }),
-      );
-    }
+    invariant(this._proxy);
+    this._proxy.close();
+  }
+}
+
+class ReverseTunnel extends Tunnel {
+  _socketManager: SocketManager;
+
+  constructor(
+    id: string,
+    socketManager: SocketManager,
+    localPort: number,
+    remotePort: number,
+    transport: Transport,
+  ) {
+    super(id, null, localPort, remotePort, transport);
+    this._socketManager = socketManager;
+  }
+
+  receive(msg: Object): void {
+    throw new Error('Tunnel.receive is not implemented for a reverse tunnel');
+  }
+
+  close() {
+    invariant(this._socketManager);
+    this._socketManager.close();
+    this._transport.send(
+      JSON.stringify({
+        event: 'closeProxy',
+        tunnelId: this._id,
+      }),
+    );
   }
 }
 
