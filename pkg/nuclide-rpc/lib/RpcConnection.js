@@ -170,7 +170,11 @@ class Call {
       this._reject(
         new RpcTimeoutError(
           `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
-            `${this._message.id}, ${timeoutMessage}.`,
+            `${
+              this._message.id
+            }, ${timeoutMessage}. Nuclide was trying to call ` +
+            'to the remote Nuclide server. This usually means the server was ' +
+            'not reachable, or the network connection is unreliable.',
         ),
       );
     }
