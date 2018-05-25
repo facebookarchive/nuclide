@@ -10,12 +10,12 @@
  */
 
 import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/HgService';
+import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {BehaviorSubject, Observable, Subject, TimeoutError} from 'rxjs';
 import {getLogger} from 'log4js';
-import {getHgServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
 // The request timeout is 60 seconds anyways.
@@ -64,8 +64,9 @@ export default class RevisionsCache {
   _lazyRevisionFetcher: Observable<RevisionInfoFetched>;
   _fetchRevisionsRequests: Subject<null>;
   _isFetchingRevisions: Subject<boolean>;
+  _service: HgService;
 
-  constructor(workingDirectory: string) {
+  constructor(workingDirectory: string, service: HgService) {
     this._workingDirectory = workingDirectory;
     this._revisions = new BehaviorSubject({
       revisions: [],
@@ -73,6 +74,7 @@ export default class RevisionsCache {
     });
     this._fetchRevisionsRequests = new Subject();
     this._isFetchingRevisions = new Subject();
+    this._service = service;
 
     this._lazyRevisionFetcher = this._fetchRevisionsRequests
       .startWith(null) // Initially, no refresh requests applied.
@@ -98,7 +100,7 @@ export default class RevisionsCache {
 
   _fetchSmartlogRevisions(): Observable<RevisionInfoFetched> {
     this._isFetchingRevisions.next(true);
-    return getHgServiceByNuclideUri(this._workingDirectory)
+    return this._service
       .fetchSmartlogRevisions(this._workingDirectory)
       .refCount()
       .map(revisions => ({revisions, fromFilesystem: true}))

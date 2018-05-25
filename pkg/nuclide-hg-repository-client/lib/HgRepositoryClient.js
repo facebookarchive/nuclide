@@ -207,6 +207,7 @@ export class HgRepositoryClient {
     this._sharedMembers.isDestroyed = false;
     this._sharedMembers.revisionsCache = new RevisionsCache(
       this._sharedMembers.workingDirectoryPath,
+      hgService,
     );
     this._sharedMembers.revisionStatusCache = getRevisionStatusCache(
       this._sharedMembers.revisionsCache,
