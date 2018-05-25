@@ -23,6 +23,8 @@ import classnames from 'classnames';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {AnalyticsEvents} from '../constants';
 import {openSourceLocation} from '../utils';
+import {Section} from 'nuclide-commons-ui/Section';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type Props = {|
   service: IDebugService,
@@ -32,6 +34,7 @@ type State = {
   supportsConditionalBreakpoints: boolean,
   breakpoints: IBreakpoint[],
   exceptionBreakpoints: IExceptionBreakpoint[],
+  exceptionBreakpointsCollapsed: boolean,
 };
 
 export default class BreakpointListComponent extends React.Component<
@@ -49,6 +52,11 @@ export default class BreakpointListComponent extends React.Component<
     const {service} = this.props;
     const {focusedProcess} = service.viewModel;
     const model = service.getModel();
+
+    const exceptionBreakpointsCollapsed = Boolean(
+      featureConfig.get('debugger-exceptionBreakpointsCollapsed'),
+    );
+
     return {
       supportsConditionalBreakpoints:
         focusedProcess != null &&
@@ -57,6 +65,7 @@ export default class BreakpointListComponent extends React.Component<
         ),
       breakpoints: model.getBreakpoints(),
       exceptionBreakpoints: model.getExceptionBreakpoints(),
+      exceptionBreakpointsCollapsed,
     };
   }
 
@@ -90,6 +99,11 @@ export default class BreakpointListComponent extends React.Component<
     const {uri, line} = breakpoint;
     // Debugger model is 1-based while Atom UI is zero-based.
     openSourceLocation(uri, line - 1);
+  };
+
+  _setExceptionCollapsed = (collapsed: boolean): void => {
+    featureConfig.set('debugger-exceptionBreakpointsCollapsed', collapsed);
+    this.setState({exceptionBreakpointsCollapsed: collapsed});
   };
 
   render(): React.Node {
@@ -226,34 +240,41 @@ export default class BreakpointListComponent extends React.Component<
         );
       });
     const separator =
-      breakpoints.length !== 0 ? (
+      breakpoints.length !== 0 && !this.state.exceptionBreakpointsCollapsed ? (
         <hr className="nuclide-ui-hr debugger-breakpoint-separator" />
       ) : null;
     return (
       <div>
-        {exceptionBreakpoints.map(exceptionBreakpoint => {
-          return (
-            <div
-              className="debugger-breakpoint"
-              key={exceptionBreakpoint.getId()}>
-              <Checkbox
-                className={classnames(
-                  'debugger-breakpoint-checkbox',
-                  'debugger-exception-checkbox',
-                )}
-                onChange={enabled =>
-                  service.enableOrDisableBreakpoints(
-                    enabled,
-                    exceptionBreakpoint,
-                  )
-                }
-                checked={exceptionBreakpoint.enabled}
-              />
-              {exceptionBreakpoint.label ||
-                `${exceptionBreakpoint.filter} exceptions`}
-            </div>
-          );
-        })}
+        <Section
+          className="debugger-breakpoint-section"
+          headline="Exception breakpoints"
+          collapsable={true}
+          onChange={this._setExceptionCollapsed}
+          collapsed={this.state.exceptionBreakpointsCollapsed}>
+          {exceptionBreakpoints.map(exceptionBreakpoint => {
+            return (
+              <div
+                className="debugger-breakpoint"
+                key={exceptionBreakpoint.getId()}>
+                <Checkbox
+                  className={classnames(
+                    'debugger-breakpoint-checkbox',
+                    'debugger-exception-checkbox',
+                  )}
+                  onChange={enabled =>
+                    service.enableOrDisableBreakpoints(
+                      enabled,
+                      exceptionBreakpoint,
+                    )
+                  }
+                  checked={exceptionBreakpoint.enabled}
+                />
+                {exceptionBreakpoint.label ||
+                  `${exceptionBreakpoint.filter} exceptions`}
+              </div>
+            );
+          })}
+        </Section>
         {separator}
         <ListView
           alternateBackground={true}
