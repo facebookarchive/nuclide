@@ -153,13 +153,15 @@ public class JavaDebuggerServer extends CommandInterpreterBase {
   }
 
   private void handleLaunchRequest(JSONObject arguments, LaunchResponse response) {
+    JSONArray runArgsNullable = arguments.optJSONArray("runArgs");
+    JSONArray runArgs = runArgsNullable != null ? runArgsNullable : new JSONArray();
     try {
       getContextManager()
           .getBootstrapDomain()
           .launch(
               arguments.getString("entryPointClass"),
               arguments.getString("classPath"),
-              new JSONArray() /* args */,
+              runArgs,
               "" /* sourcePath */);
       send(response);
       send(new InitializedEvent());
