@@ -47,7 +47,11 @@ describe('Epics', () => {
         expect(
           await fetchCodeActions(
             new ActionsObservable(
-              Observable.of(Actions.fetchCodeActions(fakeEditor, fakeMessages)),
+              Observable.of(
+                Actions.fetchCodeActions(fakeEditor, fakeMessages),
+                // Identical requests should be de-deped.
+                Actions.fetchCodeActions(fakeEditor, [...fakeMessages]),
+              ),
             ),
             store,
           )

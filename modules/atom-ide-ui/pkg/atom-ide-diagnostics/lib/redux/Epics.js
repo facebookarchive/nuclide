@@ -18,6 +18,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
+import {arrayEqual} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import * as Selectors from './Selectors';
@@ -126,50 +127,60 @@ export function fetchCodeActions(
   store: Store,
 ): Observable<Action> {
   // TODO(hansonw): Until we have have a UI for it, only handle one request at a time.
-  return actions.ofType(Actions.FETCH_CODE_ACTIONS).switchMap(action => {
-    invariant(action.type === Actions.FETCH_CODE_ACTIONS);
-    const {codeActionFetcher} = store.getState();
-    if (codeActionFetcher == null) {
-      return Observable.empty();
-    }
-    const {messages, editor} = action.payload;
-    return forkJoinArray(
-      messages.map(message =>
-        Observable.defer(() => {
-          // Skip fetching code actions if the diagnostic already includes them.
-          if (message.actions != null && message.actions.length > 0) {
-            return Promise.resolve([]);
-          } else {
-            return codeActionFetcher.getCodeActionForDiagnostic(
-              message,
-              editor,
-            );
-          }
-        })
-          .switchMap(codeActions => {
-            return codeActions.length === 0
-              ? // forkJoin emits nothing for empty arrays.
-                Observable.of([])
-              : forkJoinArray(
-                  // Eagerly fetch the titles so that they're immediately usable in a UI.
-                  codeActions.map(async codeAction => [
-                    await codeAction.getTitle(),
-                    codeAction,
-                  ]),
-                );
-          })
-          .map(codeActions => [message, new Map(codeActions)]),
-      ),
-    )
-      .map(codeActionsForMessage =>
-        Actions.setCodeActions(new Map(codeActionsForMessage)),
-      )
-      .catch(err => {
-        getLogger('atom-ide-diagnostics').error(
-          `Error fetching code actions for ${messages[0].filePath}`,
-          err,
-        );
+  return actions
+    .ofType(Actions.FETCH_CODE_ACTIONS)
+    .distinctUntilChanged((x, y) => {
+      invariant(x.type === Actions.FETCH_CODE_ACTIONS);
+      invariant(y.type === Actions.FETCH_CODE_ACTIONS);
+      return (
+        x.payload.editor === y.payload.editor &&
+        arrayEqual(x.payload.messages, y.payload.messages)
+      );
+    })
+    .switchMap(action => {
+      invariant(action.type === Actions.FETCH_CODE_ACTIONS);
+      const {codeActionFetcher} = store.getState();
+      if (codeActionFetcher == null) {
         return Observable.empty();
-      });
-  });
+      }
+      const {messages, editor} = action.payload;
+      return forkJoinArray(
+        messages.map(message =>
+          Observable.defer(() => {
+            // Skip fetching code actions if the diagnostic already includes them.
+            if (message.actions != null && message.actions.length > 0) {
+              return Promise.resolve([]);
+            } else {
+              return codeActionFetcher.getCodeActionForDiagnostic(
+                message,
+                editor,
+              );
+            }
+          })
+            .switchMap(codeActions => {
+              return codeActions.length === 0
+                ? // forkJoin emits nothing for empty arrays.
+                  Observable.of([])
+                : forkJoinArray(
+                    // Eagerly fetch the titles so that they're immediately usable in a UI.
+                    codeActions.map(async codeAction => [
+                      await codeAction.getTitle(),
+                      codeAction,
+                    ]),
+                  );
+            })
+            .map(codeActions => [message, new Map(codeActions)]),
+        ),
+      )
+        .map(codeActionsForMessage =>
+          Actions.setCodeActions(new Map(codeActionsForMessage)),
+        )
+        .catch(err => {
+          getLogger('atom-ide-diagnostics').error(
+            `Error fetching code actions for ${messages[0].filePath}`,
+            err,
+          );
+          return Observable.empty();
+        });
+    });
 }
