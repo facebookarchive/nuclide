@@ -11,8 +11,10 @@
 
 import type {Directory as LocalDirectoryType} from 'atom';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {BigDigClient} from 'big-dig/src/client';
 
 import nullthrows from 'nullthrows';
+import invariant from 'assert';
 
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
@@ -83,6 +85,12 @@ import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
 import typeof * as CqueryLSPService from '../../nuclide-cquery-lsp-rpc';
+
+export function getBigDigClientByNuclideUri(uri: NuclideUri): BigDigClient {
+  const connection = ServerConnection.getForUri(uri);
+  invariant(connection, `no server connection for ${uri}`);
+  return connection.getBigDigClient();
+}
 
 export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {
   return nullthrows(getServiceByNuclideUri('BuckService', uri));

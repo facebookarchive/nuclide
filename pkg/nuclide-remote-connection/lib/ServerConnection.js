@@ -327,6 +327,15 @@ export class ServerConnection {
     return this._client;
   }
 
+  getBigDigClient(): BigDigClient {
+    invariant(
+      !this._closed && this._bigDigClient != null,
+      'Server connection has been closed',
+    );
+
+    return this._bigDigClient;
+  }
+
   getHeartbeat(): XhrConnectionHeartbeat {
     invariant(
       !this._closed && this._client != null && this._heartbeat != null,
