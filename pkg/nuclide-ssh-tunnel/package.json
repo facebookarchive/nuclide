@@ -3,7 +3,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Adds a panel for managing ssh tunnels from a remote host to localhost",
-  "author": "NEEDS OWNER",
+  "author": "Nuclide : Remote",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
