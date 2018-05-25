@@ -20,7 +20,7 @@ import type {ProcessMessage} from 'nuclide-commons/process';
 
 import VsAdapterSpawner from './VsAdapterSpawner';
 import V8Protocol from './V8Protocol';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, TimeoutError} from 'rxjs';
 import idx from 'idx';
 import invariant from 'assert';
 import {trackTiming} from 'nuclide-commons/analytics';
@@ -511,6 +511,15 @@ export default class VsDebugSession extends V8Protocol {
     this._adapterProcessSubscription = this._spawner
       .spawnAdapter(this._adapterExecutable)
       .refCount()
+      .timeout(10000)
+      .catch(err => {
+        if (err instanceof TimeoutError) {
+          throw new Error(
+            'Timed out trying to launch debugger server process.',
+          );
+        }
+        throw err;
+      })
       .subscribe(
         (message: ProcessMessage) => {
           if (message.kind === 'stdout') {

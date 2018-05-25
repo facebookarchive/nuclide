@@ -117,6 +117,7 @@ import logger from '../logger';
 import stripAnsi from 'strip-ansi';
 import url from 'url';
 import idx from 'idx';
+import os from 'os';
 
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
 
@@ -1170,7 +1171,6 @@ export default class DebugService implements IDebugService {
   ): Promise<?IProcess> {
     let process: ?IProcess;
     let session: ?VsDebugSession;
-
     const errorHandler = (error: Error) => {
       if (this._timer != null) {
         this._timer.onError(error);
@@ -1211,41 +1211,76 @@ export default class DebugService implements IDebugService {
         clientType: 'VSP',
       });
 
-      session = await this._createVsDebugSession(
-        configuration,
-        configuration.adapterExecutable || adapterExecutable,
-        sessionId,
-      );
+      const createInitializeSession = async (config: IProcessConfig) => {
+        const newSession = await this._createVsDebugSession(
+          config,
+          config.adapterExecutable || adapterExecutable,
+          sessionId,
+        );
 
-      process = this._model.addProcess(configuration, session);
-      this.focusStackFrame(null, null, process);
-      this._registerSessionListeners(process, session);
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'debugger:show',
-      );
-      await session.initialize({
-        clientID: 'atom',
-        adapterID: adapterType,
-        pathFormat: 'path',
-        linesStartAt1: true,
-        columnsStartAt1: true,
-        supportsVariableType: true,
-        supportsVariablePaging: false,
-        supportsRunInTerminalRequest: getTerminalService() != null,
-        locale: 'en-us',
-      });
+        process = this._model.addProcess(config, newSession);
+        this.focusStackFrame(null, null, process);
+        this._registerSessionListeners(process, newSession);
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'debugger:show',
+        );
+        await newSession.initialize({
+          clientID: 'atom',
+          adapterID: adapterType,
+          pathFormat: 'path',
+          linesStartAt1: true,
+          columnsStartAt1: true,
+          supportsVariableType: true,
+          supportsVariablePaging: false,
+          supportsRunInTerminalRequest: getTerminalService() != null,
+          locale: 'en-us',
+        });
 
-      if (onInitializeCallback != null) {
-        onInitializeCallback(session);
-      }
+        if (onInitializeCallback != null) {
+          onInitializeCallback(newSession);
+        }
 
-      this._model.setExceptionBreakpoints(
-        session.getCapabilities().exceptionBreakpointFilters || [],
-      );
+        this._model.setExceptionBreakpoints(
+          newSession.getCapabilities().exceptionBreakpointFilters || [],
+        );
+        return newSession;
+      };
+
+      session = await createInitializeSession(configuration);
+
       // We're not awaiting launch/attach to finish because some debug adapters
       // need to do custom work for launch/attach to work (e.g. mobilejs)
-      this._launchOrAttachTarget(session, configuration).catch(errorHandler);
+      this._launchOrAttachTarget(session, configuration).catch(async error => {
+        if (
+          configuration.debugMode === 'attach' &&
+          configuration.adapterExecutable != null &&
+          configuration.adapterExecutable.command !== 'sudo' &&
+          // sudo is not supported on Windows, and currently remote projects
+          // are not supported on Windows, so a remote URI must be *nix.
+          (os.platform() !== 'win32' ||
+            nuclideUri.isRemote(configuration.targetUri))
+        ) {
+          configuration.adapterExecutable.args = [
+            configuration.adapterExecutable.command,
+            ...configuration.adapterExecutable.args,
+          ];
+          configuration.adapterExecutable.command = 'sudo';
+
+          const errorMessage = error instanceof Error ? error.message : error;
+          atom.notifications.addWarning(
+            `The debugger was unable to attach to the target process: ${errorMessage}. ` +
+              'Attempting to re-launch the debugger as root...',
+          );
+
+          session = await createInitializeSession(configuration);
+          this._launchOrAttachTarget(session, configuration).catch(
+            errorHandler,
+          );
+        } else {
+          errorHandler(error);
+        }
+      });
 
       // make sure to add the configuration.customDisposable to dispose on
       //   session end
