@@ -1,3 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../nuclide-commons/collection');
+}
+
+var _VSPOptionsData;
+
+function _load_VSPOptionsData() {
+  return _VSPOptionsData = _interopRequireDefault(require('./VSPOptionsData'));
+}
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,59 +38,26 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AdapterProperty,
-  AdapterPropertyMap,
-  AdapterPropertyType,
-} from './VSPOptionsData';
+class VSPOptionsParser {
 
-import type {DebuggerConfigAction} from 'nuclide-debugger-common';
-
-import idx from 'idx';
-import invariant from 'assert';
-import {mapFilter, mapTransform} from 'nuclide-commons/collection';
-import VSPOptionsData from './VSPOptionsData';
-import yargs from 'yargs';
-
-export type CustomArgumentType = {
-  typeDescription: string,
-  parseType: AdapterPropertyType,
-  parser: any => any,
-};
-
-export type CustomArgumentMap = Map<string, CustomArgumentType>;
-
-export default class VSPOptionsParser {
-  _optionsData: VSPOptionsData;
-
-  constructor(packagePath: string) {
-    this._optionsData = new VSPOptionsData(packagePath);
+  constructor(packagePath) {
+    this._optionsData = new (_VSPOptionsData || _load_VSPOptionsData()).default(packagePath);
   }
 
-  get optionsData(): VSPOptionsData {
+  get optionsData() {
     return this._optionsData;
   }
 
-  showCommandLineHelp(
-    type: string,
-    action: DebuggerConfigAction,
-    exclude: Set<string>,
-    customArguments: CustomArgumentMap,
-  ): void {
+  showCommandLineHelp(type, action, exclude, customArguments) {
     const custom = customArguments == null ? new Map() : customArguments;
 
-    const properties: Map<
-      string,
-      AdapterProperty,
-    > = this._optionsData.adapterPropertiesForAction(type, action);
+    const properties = this._optionsData.adapterPropertiesForAction(type, action);
 
-    const optionKeys = Array.from(properties.keys())
-      .filter(_ => !exclude.has(_))
-      .sort();
+    const optionKeys = Array.from(properties.keys()).filter(_ => !exclude.has(_)).sort();
 
     for (const optionKey of optionKeys) {
       const property = properties.get(optionKey);
@@ -68,11 +67,7 @@ export default class VSPOptionsParser {
     }
   }
 
-  _printHelpFor(
-    optionKey: string,
-    property: AdapterProperty,
-    customArguments: CustomArgumentMap,
-  ): void {
+  _printHelpFor(optionKey, property, customArguments) {
     const description = property.description;
     if (description != null && description !== '') {
       let spec = '';
@@ -85,10 +80,12 @@ export default class VSPOptionsParser {
       } else if (custom != null) {
         spec = custom.typeDescription;
       } else if (type != null) {
+        var _ref, _ref2;
+
         if (!Array.isArray(type)) {
           type = [type];
         }
-        const itemType = idx(property, _ => _.items.type) || null;
+        const itemType = ((_ref = property) != null ? (_ref2 = _ref.items) != null ? _ref2.type : _ref2 : _ref) || null;
         spec = type.map(_ => this._typeToDisplay(_, itemType)).join('|');
       }
 
@@ -117,7 +114,7 @@ export default class VSPOptionsParser {
     }
   }
 
-  _typeToDisplay(type: string, itemType: ?string): string {
+  _typeToDisplay(type, itemType) {
     switch (type) {
       case 'boolean':
         return "'true'|'false'";
@@ -131,42 +128,22 @@ export default class VSPOptionsParser {
     return type;
   }
 
-  parseCommandLine(
-    type: string,
-    action: DebuggerConfigAction,
-    exclude: Set<string>,
-    includeDefaults: Set<string>,
-    customArguments: CustomArgumentMap,
-  ): Map<string, any> {
-    const propertyMap = this._optionsData.adapterPropertiesForAction(
-      type,
-      action,
-    );
+  parseCommandLine(type, action, exclude, includeDefaults, customArguments) {
+    const propertyMap = this._optionsData.adapterPropertiesForAction(type, action);
 
-    let args = mapFilter(
-      propertyMap,
-      (name, prop) => prop.default != null && name in includeDefaults,
-    );
-    args = mapTransform(args, (prop, name) => [name, prop.default]);
+    let args = (0, (_collection || _load_collection()).mapFilter)(propertyMap, (name, prop) => prop.default != null && name in includeDefaults);
+    args = (0, (_collection || _load_collection()).mapTransform)(args, (prop, name) => [name, prop.default]);
 
     const parser = this._yargsFromPropertyMap(propertyMap, customArguments);
 
-    this._applyCommandLineToArgs(
-      args,
-      parser.argv,
-      propertyMap,
-      customArguments,
-    );
+    this._applyCommandLineToArgs(args, parser.argv, propertyMap, customArguments);
 
     return args;
   }
 
   // $TODO better flow typing for yargs
-  _yargsFromPropertyMap(
-    propertyMap: AdapterPropertyMap,
-    customArguments: CustomArgumentMap,
-  ): Object {
-    let parser = yargs;
+  _yargsFromPropertyMap(propertyMap, customArguments) {
+    let parser = (_yargs || _load_yargs()).default;
 
     for (const [name, prop] of propertyMap) {
       // If an enum is specified, it gives a list of valid choices, so don't
@@ -207,12 +184,7 @@ export default class VSPOptionsParser {
     return parser;
   }
 
-  _applyCommandLineToArgs(
-    args: Map<string, any>,
-    commandLine: {[string]: any},
-    propertyMap: AdapterPropertyMap,
-    customArguments: CustomArgumentMap,
-  ) {
+  _applyCommandLineToArgs(args, commandLine, propertyMap, customArguments) {
     for (const [name, prop] of propertyMap) {
       const value = commandLine[name];
       if (value == null) {
@@ -234,7 +206,10 @@ export default class VSPOptionsParser {
       }
 
       const type = prop.type;
-      invariant(type != null);
+
+      if (!(type != null)) {
+        throw new Error('Invariant violation: "type != null"');
+      }
 
       switch (type) {
         case 'number':
@@ -266,3 +241,4 @@ export default class VSPOptionsParser {
     }
   }
 }
+exports.default = VSPOptionsParser;

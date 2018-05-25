@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DevicePoller = undefined;
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../nuclide-commons-atom/createPackage'));
+}
+
+var _DevicePoller;
+
+function _load_DevicePoller() {
+  return _DevicePoller = require('./DevicePoller');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,27 +33,20 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DBPlatform} from './types';
+exports.DevicePoller = (_DevicePoller || _load_DevicePoller()).DevicePoller;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {DevicePoller} from './DevicePoller';
-import {setRpcService} from './utils';
-
-export type {DBPlatform};
-
-export {DevicePoller};
 
 class Activation {
   constructor() {}
   dispose() {}
 
-  consumeRpcService(rpcService: nuclide$RpcService): IDisposable {
-    return setRpcService(rpcService);
+  consumeRpcService(rpcService) {
+    return (0, (_utils || _load_utils()).setRpcService)(rpcService);
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

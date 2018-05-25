@@ -1,66 +1,74 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {SshTunnelService} from 'nuclide-adb/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  IProcessConfig,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
-import type {
-  JavaTargetConfig,
-  JavaAttachPortTargetConfig,
-} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
-import type {Device} from 'nuclide-debugger-common/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.launchAndroidServiceOrActivityAndGetPid = launchAndroidServiceOrActivityAndGetPid;
+exports.getAdbAttachPortTargetInfo = getAdbAttachPortTargetInfo;
+exports.createJavaVspProcessInfo = createJavaVspProcessInfo;
+exports.createJavaVspIProcessConfig = createJavaVspIProcessConfig;
 
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+var _nuclideDebuggerCommon;
 
-import invariant from 'assert';
-import {
-  getJavaDebuggerHelpersServiceByNuclideUri,
-  getCustomControlButtonsForJavaSourcePaths,
-  getSourcePathClickSubscriptionsOnVspInstance,
-} from 'atom-ide-debugger-java/utils';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject} from 'rxjs';
-import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {VspProcessInfo} from 'nuclide-debugger-common';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb/lib/utils';
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../nuclide-debugger-common');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../atom-ide-debugger-java/utils');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../nuclide-commons/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../nuclide-commons-atom/consumeFirstProvider'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../nuclide-commons/nuclideUri'));
+}
+
+var _utils2;
+
+function _load_utils2() {
+  return _utils2 = require('../nuclide-adb/lib/utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before
 // they can begin debugging.
-let cleanupSubject: ?Subject<void> = null;
+let cleanupSubject = null; /**
+                            * Copyright (c) 2017-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the BSD-style license found in the
+                            * LICENSE file in the root directory of this source tree. An additional grant
+                            * of patent rights can be found in the PATENTS file in the same directory.
+                            *
+                            * 
+                            * @format
+                            */
 
 const DEBUG_JAVA_DEBUGGER = false;
 
-export type AndroidDebugTargetInfo = {
-  pid: number,
-  attach: boolean,
-};
-
-export async function launchAndroidServiceOrActivityAndGetPid(
-  providedPid: ?number,
-  adbServiceUri: NuclideUri,
-  service: ?string,
-  activity: ?string,
-  action: ?string,
-  device: Device,
-  packageName: string,
-): Promise<AndroidDebugTargetInfo> {
+async function launchAndroidServiceOrActivityAndGetPid(providedPid, adbServiceUri, service, activity, action, device, packageName) {
   let attach = true;
   let pid = providedPid;
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
+  const adbService = (0, (_utils2 || _load_utils2()).getAdbServiceByNuclideUri)(adbServiceUri);
   if (service != null) {
     attach = false;
     await adbService.launchService(device, packageName, service || '', true);
@@ -68,37 +76,16 @@ export async function launchAndroidServiceOrActivityAndGetPid(
     // First query the device to be sure the activity exists in the specified package.
     // This will allow us to bubble up a useful error message instead of a cryptic
     // adb failure if the user simply mistyped the activity or package name.
-    const activityExists = await adbService.activityExists(
-      device,
-      packageName,
-      activity || '',
-    );
+    const activityExists = await adbService.activityExists(device, packageName, activity || '');
 
     if (!activityExists) {
       const packages = await adbService.getAllAvailablePackages(device);
-      const availableActivities = new Set(
-        packages.filter(line => line.includes(packageName + '/')),
-      );
-      atom.notifications.addError(
-        `Activity ${activity || ''} does not exist in package ` +
-          packageName +
-          '\n' +
-          'Did you mean one of these activities: ' +
-          '\n' +
-          Array.from(availableActivities)
-            .map(activityLine => activityLine.split('/')[1])
-            .join('\n'),
-      );
+      const availableActivities = new Set(packages.filter(line => line.includes(packageName + '/')));
+      atom.notifications.addError(`Activity ${activity || ''} does not exist in package ` + packageName + '\n' + 'Did you mean one of these activities: ' + '\n' + Array.from(availableActivities).map(activityLine => activityLine.split('/')[1]).join('\n'));
     }
 
     attach = false;
-    await adbService.launchActivity(
-      device,
-      packageName,
-      activity || '',
-      true,
-      action,
-    );
+    await adbService.launchActivity(device, packageName, activity || '', true, action);
   }
 
   if (pid == null) {
@@ -110,42 +97,31 @@ export async function launchAndroidServiceOrActivityAndGetPid(
 
   return {
     pid,
-    attach,
+    attach
   };
 }
 
-export async function getAdbAttachPortTargetInfo(
-  device: Device,
-  adbServiceUri: NuclideUri,
-  targetUri: NuclideUri,
-  pid: ?number,
-  subscriptions: UniversalDisposable,
-): Promise<JavaAttachPortTargetConfig> {
-  const tunnelRequired =
-    nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
-  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  let tunnelService: ?SshTunnelService;
+async function getAdbAttachPortTargetInfo(device, adbServiceUri, targetUri, pid, subscriptions) {
+  const tunnelRequired = (_nuclideUri || _load_nuclideUri()).default.isLocal(adbServiceUri) && (_nuclideUri || _load_nuclideUri()).default.isRemote(targetUri);
+  const adbService = (0, (_utils2 || _load_utils2()).getAdbServiceByNuclideUri)(adbServiceUri);
+  let tunnelService;
   let adbPort;
   if (tunnelRequired) {
-    tunnelService = await consumeFirstProvider('nuclide.ssh-tunnel');
+    tunnelService = await (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide.ssh-tunnel');
     adbPort = await tunnelService.getAvailableServerPort(adbServiceUri);
   } else {
     tunnelService = null;
-    const service = getJavaDebuggerHelpersServiceByNuclideUri(adbServiceUri);
+    const service = (0, (_utils || _load_utils()).getJavaDebuggerHelpersServiceByNuclideUri)(adbServiceUri);
     adbPort = await service.getPortForJavaDebugger();
   }
 
-  const forwardSpec = await adbService.forwardJdwpPortToPid(
-    device,
-    adbPort,
-    pid || 0,
-  );
+  const forwardSpec = await adbService.forwardJdwpPortToPid(device, adbPort, pid || 0);
 
   if (cleanupSubject != null) {
     await cleanupSubject.toPromise();
   }
 
-  cleanupSubject = new Subject();
+  cleanupSubject = new _rxjsBundlesRxMinJs.Subject();
   subscriptions.add(async () => {
     const result = await adbService.removeJdwpForwardSpec(device, forwardSpec);
     if (result.trim().startsWith('error')) {
@@ -167,18 +143,20 @@ export async function getAdbAttachPortTargetInfo(
         resolve(adbPort);
         return;
       }
-      invariant(tunnelService);
-      const debuggerPort = await tunnelService.getAvailableServerPort(
-        targetUri,
-      );
+
+      if (!tunnelService) {
+        throw new Error('Invariant violation: "tunnelService"');
+      }
+
+      const debuggerPort = await tunnelService.getAvailableServerPort(targetUri);
       const tunnel = {
         description: 'Java debugger',
         from: {
-          host: nuclideUri.getHostname(targetUri),
+          host: (_nuclideUri || _load_nuclideUri()).default.getHostname(targetUri),
           port: debuggerPort,
-          family: 4,
+          family: 4
         },
-        to: {host: 'localhost', port: adbPort, family: 4},
+        to: { host: 'localhost', port: adbPort, family: 4 }
       };
       const openTunnel = tunnelService.openTunnels([tunnel]).share();
       subscriptions.add(openTunnel.subscribe());
@@ -191,60 +169,28 @@ export async function getAdbAttachPortTargetInfo(
   return {
     debugMode: 'attach',
     machineName: 'localhost',
-    port: attachPort,
+    port: attachPort
   };
 }
 
-export async function createJavaVspProcessInfo(
-  targetUri: NuclideUri,
-  config: JavaTargetConfig,
-  clickEvents: rxjs$Subject<void>,
-): Promise<VspProcessInfo> {
-  const processConfig = await createJavaVspIProcessConfig(
-    targetUri,
-    config,
-    clickEvents,
-  );
-  const info = new VspProcessInfo(
-    processConfig.targetUri,
-    processConfig.debugMode,
-    processConfig.adapterType,
-    processConfig.adapterExecutable,
-    processConfig.config,
-    {threads: true},
-    {
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-      threadsComponentTitle: 'Threads',
-    },
-  );
+async function createJavaVspProcessInfo(targetUri, config, clickEvents) {
+  const processConfig = await createJavaVspIProcessConfig(targetUri, config, clickEvents);
+  const info = new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VspProcessInfo(processConfig.targetUri, processConfig.debugMode, processConfig.adapterType, processConfig.adapterExecutable, processConfig.config, { threads: true }, {
+    customControlButtons: (0, (_utils || _load_utils()).getCustomControlButtonsForJavaSourcePaths)(clickEvents),
+    threadsComponentTitle: 'Threads'
+  });
 
-  const subscriptions = new UniversalDisposable();
-  subscriptions.add(
-    ...getSourcePathClickSubscriptionsOnVspInstance(
-      targetUri,
-      info,
-      clickEvents,
-    ),
-  );
+  const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  subscriptions.add(...(0, (_utils || _load_utils()).getSourcePathClickSubscriptionsOnVspInstance)(targetUri, info, clickEvents));
   info.addCustomDisposable(subscriptions);
   return info;
 }
 
-async function getJavaVSAdapterExecutableInfo(
-  targetUri: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getJavaDebuggerHelpersServiceByNuclideUri(
-    targetUri,
-  ).getJavaVSAdapterExecutableInfo(DEBUG_JAVA_DEBUGGER);
+async function getJavaVSAdapterExecutableInfo(targetUri) {
+  return (0, (_utils || _load_utils()).getJavaDebuggerHelpersServiceByNuclideUri)(targetUri).getJavaVSAdapterExecutableInfo(DEBUG_JAVA_DEBUGGER);
 }
 
-export async function createJavaVspIProcessConfig(
-  targetUri: NuclideUri,
-  config: JavaTargetConfig,
-  clickEvents: rxjs$Subject<void>,
-): Promise<IProcessConfig> {
+async function createJavaVspIProcessConfig(targetUri, config, clickEvents) {
   const adapterExecutable = await getJavaVSAdapterExecutableInfo(targetUri);
   // If you have built using debug information, then print the debug server port:
   if (DEBUG_JAVA_DEBUGGER) {
@@ -254,32 +200,20 @@ export async function createJavaVspIProcessConfig(
       console.log('Java Debugger Debug Port:', port);
     } catch (error) {
       /* eslint-disable no-console */
-      console.log(
-        'Could not find debug server port from adapter executable',
-        adapterExecutable,
-      );
+      console.log('Could not find debug server port from adapter executable', adapterExecutable);
     }
   }
 
   return {
     targetUri,
     debugMode: config.debugMode,
-    adapterType: VsAdapterTypes.JAVA,
+    adapterType: (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.JAVA,
     adapterExecutable,
     config,
-    capabilities: {threads: true},
+    capabilities: { threads: true },
     properties: {
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-      threadsComponentTitle: 'Threads',
-    },
+      customControlButtons: (0, (_utils || _load_utils()).getCustomControlButtonsForJavaSourcePaths)(clickEvents),
+      threadsComponentTitle: 'Threads'
+    }
   };
 }
-
-export type AndroidDebugInfo = {|
-  attach: boolean,
-  subscriptions: UniversalDisposable,
-  pid: number,
-  attachPortTargetInfo: JavaAttachPortTargetConfig,
-|};

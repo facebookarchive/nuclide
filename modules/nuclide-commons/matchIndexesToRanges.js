@@ -1,20 +1,10 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+"use strict";
 
-type MatchRange = [/* start */ number, /* end */ number];
-
-export default function matchIndexesToRanges(
-  matchIndexes: Array<number>,
-): Array<MatchRange> {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = matchIndexesToRanges;
+function matchIndexesToRanges(matchIndexes) {
   let streakOngoing = false;
   let start = 0;
   const ranges = [];
@@ -38,4 +28,14 @@ export default function matchIndexesToRanges(
     }
   });
   return ranges;
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   *  strict
+   * @format
+   */

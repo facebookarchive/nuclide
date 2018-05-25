@@ -1,3 +1,74 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PtyImplementation = undefined;
+exports.spawn = spawn;
+exports.useTitleAsPath = useTitleAsPath;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../../../nuclide-commons/fsPromise'));
+}
+
+var _pty;
+
+function _load_pty() {
+  return _pty = _interopRequireWildcard(require('nuclide-prebuilt-libs/pty'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../../../nuclide-commons/process');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../../../nuclide-commons/nuclideUri'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../../../nuclide-commons/collection');
+}
+
+var _performanceNow;
+
+function _load_performanceNow() {
+  return _performanceNow = _interopRequireDefault(require('../../../../../nuclide-commons/performanceNow'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../../nuclide-commons/UniversalDisposable'));
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = require('../../../../../nuclide-commons/analytics');
+}
+
+var _shellConfig;
+
+function _load_shellConfig() {
+  return _shellConfig = require('./shellConfig');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,39 +77,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import fs from 'fs';
-import fsPromise from 'nuclide-commons/fsPromise';
-import * as ptyFactory from 'nuclide-prebuilt-libs/pty';
-
-import os from 'os';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {objectFromMap} from 'nuclide-commons/collection';
-import performanceNow from 'nuclide-commons/performanceNow';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from 'nuclide-commons/analytics';
-import {runCommand} from 'nuclide-commons/process';
-
-import {readConfig} from './shellConfig';
-
-import type {Command, Pty, PtyInfo, PtyClient} from './rpc-types';
-
-export async function spawn(info: PtyInfo, client: PtyClient): Promise<Pty> {
-  return new PtyImplementation(
-    info,
-    client,
-    await getCommand(info, client),
-    await getEnvironment(info),
-  );
+async function spawn(info, client) {
+  return new PtyImplementation(info, client, (await getCommand(info, client)), (await getEnvironment(info)));
 }
 
-export async function useTitleAsPath(client: PtyClient): Promise<boolean> {
+async function useTitleAsPath(client) {
   try {
-    const config = await readConfig();
+    const config = await (0, (_shellConfig || _load_shellConfig()).readConfig)();
     // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
     if (config != null && config.useTitleAsPath != null) {
       return config.useTitleAsPath;
@@ -50,7 +99,7 @@ export async function useTitleAsPath(client: PtyClient): Promise<boolean> {
   return false;
 }
 
-async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
+async function getCommand(info, client) {
   // Client-specified command is highest precedence.
   if (info.command != null) {
     return info.command;
@@ -60,7 +109,7 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
   // (server) config file.  This cannot be Atom config/preference,
   // since the default shell path varies between client and server.
   try {
-    const config = await readConfig();
+    const config = await (0, (_shellConfig || _load_shellConfig()).readConfig)();
     if (config != null && config.command != null) {
       return config.command;
     }
@@ -80,29 +129,24 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
   // If no command and no local settings, default to /bin/bash
   return {
     file: '/bin/bash',
-    args: ['-l'],
+    args: ['-l']
   };
 }
 
-async function getDefaultShellCommand(): Promise<?Command> {
+async function getDefaultShellCommand() {
   if (process.platform === 'win32') {
     return {
       file: 'cmd.exe',
-      args: [],
+      args: []
     };
   }
 
-  const userInfo = os.userInfo();
+  const userInfo = _os.default.userInfo();
   const username = userInfo.username;
   let defaultShell = null;
   if (process.platform === 'darwin') {
     const homedir = userInfo.homedir;
-    const output = await runCommand('dscl', [
-      '.',
-      '-read',
-      homedir,
-      'UserShell',
-    ]).toPromise();
+    const output = await (0, (_process || _load_process()).runCommand)('dscl', ['.', '-read', homedir, 'UserShell']).toPromise();
     // Expected output looks like:
     //   UserShell: /bin/bash
     const prefix = 'UserShell: ';
@@ -110,7 +154,7 @@ async function getDefaultShellCommand(): Promise<?Command> {
       defaultShell = output.substring(prefix.length).trim();
     }
   } else if (process.platform === 'linux') {
-    const output = await runCommand('getent', ['passwd', username]).toPromise();
+    const output = await (0, (_process || _load_process()).runCommand)('getent', ['passwd', username]).toPromise();
     // Expected output looks like:
     //   userid:*:1000:1000:Full Name:/home/userid:/bin/bash
     defaultShell = output.substring(output.lastIndexOf(':') + 1).trim();
@@ -120,15 +164,15 @@ async function getDefaultShellCommand(): Promise<?Command> {
   }
 
   // Sanity check that the file exists and is executable
-  const stat = await fsPromise.stat(defaultShell);
+  const stat = await (_fsPromise || _load_fsPromise()).default.stat(defaultShell);
   // eslint-disable-next-line no-bitwise
-  if ((stat.mode & fs.constants.S_IXOTH) === 0) {
+  if ((stat.mode & _fs.default.constants.S_IXOTH) === 0) {
     return null;
   }
 
   return {
     file: defaultShell,
-    args: ['-l'],
+    args: ['-l']
   };
 }
 
@@ -136,46 +180,34 @@ async function getDefaultShellCommand(): Promise<?Command> {
 // erased.
 const filteredVariables = ['NODE_ENV', 'NODE_PATH'];
 
-async function getEnvironment(info: PtyInfo): Promise<Object> {
-  const newEnv = {...(await getOriginalEnvironment())};
+async function getEnvironment(info) {
+  const newEnv = Object.assign({}, (await (0, (_process || _load_process()).getOriginalEnvironment)()));
   for (const x of filteredVariables) {
     delete newEnv[x];
   }
-  return {
-    ...newEnv,
-    ...(info.environment != null ? objectFromMap(info.environment) : {}),
-    TERM_PROGRAM: 'nuclide',
-  };
+  return Object.assign({}, newEnv, info.environment != null ? (0, (_collection || _load_collection()).objectFromMap)(info.environment) : {}, {
+    TERM_PROGRAM: 'nuclide'
+  });
 }
 
-export class PtyImplementation implements Pty {
-  _subscriptions: UniversalDisposable;
-  _pty: Object;
-  _client: PtyClient;
-  _initialization: {command: string, cwd: string};
-  _startTime: number;
-  _bytesIn: number;
-  _bytesOut: number;
+class PtyImplementation {
 
-  constructor(info: PtyInfo, client: PtyClient, command: Command, env: Object) {
-    this._startTime = performanceNow();
+  constructor(info, client, command, env) {
+    this._startTime = (0, (_performanceNow || _load_performanceNow()).default)();
     this._bytesIn = 0;
     this._bytesOut = 0;
     this._initialization = {
       command: [command.file, ...command.args].join(' '),
-      cwd: info.cwd != null ? info.cwd : '',
+      cwd: info.cwd != null ? info.cwd : ''
     };
-    track('nuclide-pty-rpc.spawn', this._initialization);
+    (0, (_analytics || _load_analytics()).track)('nuclide-pty-rpc.spawn', this._initialization);
 
-    const subscriptions = (this._subscriptions = new UniversalDisposable());
-    const pty = (this._pty = ptyFactory.spawn(command.file, command.args, {
+    const subscriptions = this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    const pty = this._pty = (_pty || _load_pty()).spawn(command.file, command.args, {
       name: info.terminalType,
-      cwd:
-        info.cwd != null
-          ? nuclideUri.expandHomeDir(info.cwd)
-          : nuclideUri.expandHomeDir('~'),
-      env,
-    }));
+      cwd: info.cwd != null ? (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(info.cwd) : (_nuclideUri || _load_nuclideUri()).default.expandHomeDir('~'),
+      env
+    });
     subscriptions.add(() => pty.destroy());
     // We need to dispose PtyClient here so that the client can GC the client.
     // (Otherwise, Nuclide's RPC framework will keep it around forever).
@@ -195,37 +227,37 @@ export class PtyImplementation implements Pty {
     subscriptions.add(() => pty.removeListener('exit', onExit));
   }
 
-  _onOutput(data: string): void {
+  _onOutput(data) {
     this._bytesOut += data.length;
     this._client.onOutput(data);
   }
 
-  _onExit(code: number, signal: number): void {
-    track('nuclide-pty-rpc.on-exit', {
-      ...this._initialization,
+  _onExit(code, signal) {
+    (0, (_analytics || _load_analytics()).track)('nuclide-pty-rpc.on-exit', Object.assign({}, this._initialization, {
       bytesIn: String(this._bytesIn),
       bytesOut: String(this._bytesOut),
-      duration: String((performanceNow() - this._startTime) / 1000),
+      duration: String(((0, (_performanceNow || _load_performanceNow()).default)() - this._startTime) / 1000),
       exitCode: String(code),
-      signal: String(code),
-    });
+      signal: String(code)
+    }));
     this._client.onExit(code, signal);
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 
-  resize(columns: number, rows: number): void {
+  resize(columns, rows) {
     if (this._pty.writable) {
       this._pty.resize(columns, rows);
     }
   }
 
-  writeInput(data: string): void {
+  writeInput(data) {
     if (this._pty.writable) {
       this._bytesIn += data.length;
       this._pty.write(data);
     }
   }
 }
+exports.PtyImplementation = PtyImplementation;

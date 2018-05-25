@@ -1,27 +1,29 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class QuitCommand {
 
-export default class QuitCommand implements Command {
-  name = 'quit';
-  helpText = 'Exit the debugger.';
-  quit: () => void;
+  constructor(quit) {
+    this.name = 'quit';
+    this.helpText = 'Exit the debugger.';
 
-  constructor(quit: () => void) {
     this.quit = quit;
   }
 
-  async execute(): Promise<void> {
+  async execute() {
     this.quit();
   }
 }
+exports.default = QuitCommand; /**
+                                * Copyright (c) 2017-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the BSD-style license found in the
+                                * LICENSE file in the root directory of this source tree. An additional grant
+                                * of patent rights can be found in the PATENTS file in the same directory.
+                                *
+                                *  strict
+                                * @format
+                                */

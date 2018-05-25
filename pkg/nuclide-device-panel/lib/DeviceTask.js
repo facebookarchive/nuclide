@@ -1,65 +1,51 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {TaskEvent} from 'nuclide-commons/process';
-import type {IDeviceTask} from 'nuclide-debugger-common/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DeviceTask = undefined;
 
-import {Observable, ReplaySubject, Subscription} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export class DeviceTask implements IDeviceTask {
-  _name: string;
-  _taskFactory: () => Observable<TaskEvent>;
-  _subscription: ?Subscription = null;
-  _events: ReplaySubject<?TaskEvent> = new ReplaySubject(1);
+class DeviceTask {
 
-  constructor(taskFactory: () => Observable<TaskEvent>, name: string) {
+  constructor(taskFactory, name) {
+    this._subscription = null;
+    this._events = new _rxjsBundlesRxMinJs.ReplaySubject(1);
+
     this._taskFactory = taskFactory;
     this._name = name;
     this._events.next(null);
   }
 
-  getName(): string {
+  getName() {
     return this._name;
   }
 
-  getTaskEvents(): Observable<?TaskEvent> {
+  getTaskEvents() {
     return this._events;
   }
 
-  start(): void {
+  start() {
     const task = this._taskFactory().share();
-    this._subscription = task.subscribe(
-      message => {
-        this._events.next(message);
-        if (message.type === 'result') {
-          atom.notifications.addSuccess(
-            `Device task '${this._name}' succeeded.`,
-          );
-        }
-      },
-      () => {
-        atom.notifications.addError(`Device task '${this._name}' failed.`);
-        this._finishRun();
-      },
-      () => {
-        this._finishRun();
-      },
-    );
+    this._subscription = task.subscribe(message => {
+      this._events.next(message);
+      if (message.type === 'result') {
+        atom.notifications.addSuccess(`Device task '${this._name}' succeeded.`);
+      }
+    }, () => {
+      atom.notifications.addError(`Device task '${this._name}' failed.`);
+      this._finishRun();
+    }, () => {
+      this._finishRun();
+    });
   }
 
-  cancel(): void {
+  cancel() {
     this._finishRun();
   }
 
-  _finishRun(): void {
+  _finishRun() {
     if (this._subscription != null) {
       this._subscription.unsubscribe();
       this._subscription = null;
@@ -67,3 +53,13 @@ export class DeviceTask implements IDeviceTask {
     this._events.next(null);
   }
 }
+exports.DeviceTask = DeviceTask; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  *  strict-local
+                                  * @format
+                                  */

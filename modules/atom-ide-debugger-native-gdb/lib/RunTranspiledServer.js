@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -18,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 if (fs.existsSync(path.join(__dirname, '../DEVELOPMENT'))) {
   // eslint-disable-next-line nuclide-internal/modules-dependencies
-  require('nuclide-node-transpiler');
+  require('../../nuclide-node-transpiler');
 }
 
 require('./MIDebugSession');

@@ -1,3 +1,47 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerSdbPath = registerSdbPath;
+exports.getFullConfig = getFullConfig;
+exports.registerCustomPath = registerCustomPath;
+exports.getDeviceInfo = getDeviceInfo;
+exports.getDeviceList = getDeviceList;
+exports.getPidFromPackageName = getPidFromPackageName;
+exports.getFileContentsAtPath = getFileContentsAtPath;
+exports.installPackage = installPackage;
+exports.launchApp = launchApp;
+exports.stopProcess = stopProcess;
+exports.uninstallPackage = uninstallPackage;
+exports.getProcesses = getProcesses;
+
+var _Store;
+
+function _load_Store() {
+  return _Store = require('../../../modules/nuclide-adb/lib/common/Store');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Sdb;
+
+function _load_Sdb() {
+  return _Sdb = require('./bridges/Sdb');
+}
+
+var _Processes;
+
+function _load_Processes() {
+  return _Processes = require('../../../modules/nuclide-adb/lib/common/Processes');
+}
+
+var _Devices;
+
+function _load_Devices() {
+  return _Devices = require('../../../modules/nuclide-adb/lib/common/Devices');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,103 +49,58 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {
-  DeviceDescription,
-  DebugBridgeFullConfig,
-  DeviceId,
-  Process,
-} from 'nuclide-adb/lib/types';
-
-import {getStore} from 'nuclide-adb/lib/common/Store';
-import {ConnectableObservable} from 'rxjs';
-import {Sdb} from './bridges/Sdb';
-import {Processes} from 'nuclide-adb/lib/common/Processes';
-import {Devices} from 'nuclide-adb/lib/common/Devices';
-
 const SDB = 'sdb';
 
-export async function registerSdbPath(
-  id: string,
-  path: NuclideUri,
-  priority: number = -1,
-): Promise<void> {
-  getStore(SDB).registerPath(id, {path, priority});
+async function registerSdbPath(id, path, priority = -1) {
+  (0, (_Store || _load_Store()).getStore)(SDB).registerPath(id, { path, priority });
 }
 
-export async function getFullConfig(): Promise<DebugBridgeFullConfig> {
-  return getStore(SDB).getFullConfig();
+async function getFullConfig() {
+  return (0, (_Store || _load_Store()).getStore)(SDB).getFullConfig();
 }
 
-export async function registerCustomPath(path: ?string): Promise<void> {
-  getStore(SDB).registerCustomPath(path);
+async function registerCustomPath(path) {
+  (0, (_Store || _load_Store()).getStore)(SDB).registerCustomPath(path);
 }
 
-export function getDeviceInfo(
-  device: DeviceId,
-): ConnectableObservable<Map<string, string>> {
-  return new Sdb(device).getDeviceInfo().publish();
+function getDeviceInfo(device) {
+  return new (_Sdb || _load_Sdb()).Sdb(device).getDeviceInfo().publish();
 }
 
-export function getDeviceList(): ConnectableObservable<
-  Array<DeviceDescription>,
-> {
-  return new Devices(Sdb).getDeviceList().publish();
+function getDeviceList() {
+  return new (_Devices || _load_Devices()).Devices((_Sdb || _load_Sdb()).Sdb).getDeviceList().publish();
 }
 
-export async function getPidFromPackageName(
-  device: DeviceId,
-  packageName: string,
-): Promise<number> {
-  return new Processes(new Sdb(device)).getPidFromPackageName(packageName);
+async function getPidFromPackageName(device, packageName) {
+  return new (_Processes || _load_Processes()).Processes(new (_Sdb || _load_Sdb()).Sdb(device)).getPidFromPackageName(packageName);
 }
 
-export async function getFileContentsAtPath(
-  device: DeviceId,
-  path: string,
-): Promise<string> {
-  return new Sdb(device).getFileContentsAtPath(path);
+async function getFileContentsAtPath(device, path) {
+  return new (_Sdb || _load_Sdb()).Sdb(device).getFileContentsAtPath(path);
 }
 
-export function installPackage(
-  device: DeviceId,
-  packagePath: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> {
+function installPackage(device, packagePath) {
   // TODO(T17463635)
-  return new Sdb(device).installPackage(packagePath).publish();
+  return new (_Sdb || _load_Sdb()).Sdb(device).installPackage(packagePath).publish();
 }
 
-export async function launchApp(
-  device: DeviceId,
-  identifier: string,
-): Promise<string> {
-  return new Sdb(device).launchApp(identifier);
+async function launchApp(device, identifier) {
+  return new (_Sdb || _load_Sdb()).Sdb(device).launchApp(identifier);
 }
 
-export async function stopProcess(
-  device: DeviceId,
-  packageName: string,
-  pid: number,
-): Promise<void> {
-  return new Sdb(device).stopProcess(packageName, pid);
+async function stopProcess(device, packageName, pid) {
+  return new (_Sdb || _load_Sdb()).Sdb(device).stopProcess(packageName, pid);
 }
 
-export function uninstallPackage(
-  device: DeviceId,
-  packageName: string,
-): ConnectableObservable<LegacyProcessMessage> {
+function uninstallPackage(device, packageName) {
   // TODO(T17463635)
-  return new Sdb(device).uninstallPackage(packageName).publish();
+  return new (_Sdb || _load_Sdb()).Sdb(device).uninstallPackage(packageName).publish();
 }
 
-export function getProcesses(
-  device: DeviceId,
-  timeout: number,
-): ConnectableObservable<Array<Process>> {
-  return new Processes(new Sdb(device)).fetch(timeout).publish();
+function getProcesses(device, timeout) {
+  return new (_Processes || _load_Processes()).Processes(new (_Sdb || _load_Sdb()).Sdb(device)).fetch(timeout).publish();
 }

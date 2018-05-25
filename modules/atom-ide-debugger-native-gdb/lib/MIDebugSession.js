@@ -1,3 +1,102 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.logVerbose = logVerbose;
+
+var _vscodeDebugadapter;
+
+function _load_vscodeDebugadapter() {
+  return _vscodeDebugadapter = require('vscode-debugadapter');
+}
+
+var _Breakpoints;
+
+function _load_Breakpoints() {
+  return _Breakpoints = _interopRequireDefault(require('./Breakpoints'));
+}
+
+var _SourceBreakpoints;
+
+function _load_SourceBreakpoints() {
+  return _SourceBreakpoints = _interopRequireDefault(require('./SourceBreakpoints'));
+}
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _Disassemble;
+
+function _load_Disassemble() {
+  return _Disassemble = _interopRequireDefault(require('./Disassemble'));
+}
+
+var _ExceptionBreakpoints;
+
+function _load_ExceptionBreakpoints() {
+  return _ExceptionBreakpoints = _interopRequireDefault(require('./ExceptionBreakpoints'));
+}
+
+var _FunctionBreakpoints;
+
+function _load_FunctionBreakpoints() {
+  return _FunctionBreakpoints = _interopRequireDefault(require('./FunctionBreakpoints'));
+}
+
+var _MIProxy;
+
+function _load_MIProxy() {
+  return _MIProxy = _interopRequireDefault(require('./MIProxy'));
+}
+
+var _MIRecord;
+
+function _load_MIRecord() {
+  return _MIRecord = require('./MIRecord');
+}
+
+var _pty;
+
+function _load_pty() {
+  return _pty = _interopRequireWildcard(require('nuclide-prebuilt-libs/pty'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../nuclide-commons/nuclideUri'));
+}
+
+var _MITypes;
+
+function _load_MITypes() {
+  return _MITypes = require('./MITypes');
+}
+
+var _StackFrames;
+
+function _load_StackFrames() {
+  return _StackFrames = _interopRequireDefault(require('./StackFrames'));
+}
+
+var _Variables;
+
+function _load_Variables() {
+  return _Variables = _interopRequireDefault(require('./Variables'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// NB that trace is not actually exposed in package.json as it's only used for
+// debugging the adapter itself
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,111 +105,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ITerminal} from 'nuclide-prebuilt-libs/pty';
-
-import {
-  BreakpointEvent,
-  logger,
-  Logger,
-  LoggingDebugSession,
-  InitializedEvent,
-  OutputEvent,
-  StoppedEvent,
-  TerminatedEvent,
-  ThreadEvent,
-} from 'vscode-debugadapter';
-import Breakpoints from './Breakpoints';
-import SourceBreakpoints from './SourceBreakpoints';
-import * as DebugProtocol from 'vscode-debugprotocol';
-import Disassemble from './Disassemble';
-import ExceptionBreakpoints from './ExceptionBreakpoints';
-import FunctionBreakpoints from './FunctionBreakpoints';
-import invariant from 'assert';
-import MIProxy from './MIProxy';
-import {MIAsyncRecord, MIResultRecord} from './MIRecord';
-import * as pty from 'nuclide-prebuilt-libs/pty';
-import os from 'os';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  breakpointModifiedEventResult,
-  stoppedEventResult,
-  toCommandError,
-  threadInfoResult,
-} from './MITypes';
-import StackFrames from './StackFrames';
-import Variables from './Variables';
-
-export type StopReason = {
-  reason: string,
-  description: string,
-};
-
-// NB that trace is not actually exposed in package.json as it's only used for
-// debugging the adapter itself
-type LaunchRequestArguments = {
-  ...DebugProtocol.LaunchRequestArguments,
-  program: string,
-  cwd: ?string,
-  args: ?Array<string>,
-  env: Array<string>,
-  sourcePath: string,
-  debuggerRoot: ?string,
-  trace: ?boolean,
-};
-
-type AttachRequestArguments = {
-  ...DebugProtocol.AttachRequestArguments,
-  pid: number,
-  sourcePath: string,
-  debuggerRoot: ?string,
-  stopOnAttach: ?boolean,
-  trace: ?boolean,
-};
-
-class MIDebugSession extends LoggingDebugSession {
-  _hasTarget: boolean;
-  _configurationDone: boolean;
-  _client: MIProxy;
-  _breakpoints: Breakpoints;
-  _sourceBreakpoints: SourceBreakpoints;
-  _functionBreakpoints: FunctionBreakpoints;
-  _disassemble: Disassemble;
-  _exceptionBreakpoints: ExceptionBreakpoints;
-  _stackFrames: StackFrames;
-  _variables: Variables;
-  _targetIO: ?ITerminal;
-  _asyncHandlers: Map<string, (record: MIAsyncRecord) => void>;
-  _attachPID: ?number;
-  _running: boolean;
-  _expectingPause: boolean;
-  _pauseQueue: Array<() => Promise<void>>;
-  _continueOnAttach: boolean;
-  _stepping: boolean;
-  _configurationDoneResponse: ?DebugProtocol.ConfigurationDoneResponse;
+class MIDebugSession extends (_vscodeDebugadapter || _load_vscodeDebugadapter()).LoggingDebugSession {
 
   constructor() {
-    const logfile = nuclideUri.join(os.tmpdir(), 'native-debugger-vsp.log');
+    const logfile = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), 'native-debugger-vsp.log');
     super(logfile);
     this._hasTarget = false;
     this._configurationDone = false;
 
-    const client = new MIProxy();
+    const client = new (_MIProxy || _load_MIProxy()).default();
     this._client = client;
 
-    this._breakpoints = new Breakpoints();
-    this._sourceBreakpoints = new SourceBreakpoints(client, this._breakpoints);
-    this._functionBreakpoints = new FunctionBreakpoints(
-      client,
-      this._breakpoints,
-    );
-    this._exceptionBreakpoints = new ExceptionBreakpoints(client);
-    this._stackFrames = new StackFrames(client);
-    this._disassemble = new Disassemble(client, this._stackFrames);
-    this._variables = new Variables(client, this._stackFrames);
+    this._breakpoints = new (_Breakpoints || _load_Breakpoints()).default();
+    this._sourceBreakpoints = new (_SourceBreakpoints || _load_SourceBreakpoints()).default(client, this._breakpoints);
+    this._functionBreakpoints = new (_FunctionBreakpoints || _load_FunctionBreakpoints()).default(client, this._breakpoints);
+    this._exceptionBreakpoints = new (_ExceptionBreakpoints || _load_ExceptionBreakpoints()).default(client);
+    this._stackFrames = new (_StackFrames || _load_StackFrames()).default(client);
+    this._disassemble = new (_Disassemble || _load_Disassemble()).default(client, this._stackFrames);
+    this._variables = new (_Variables || _load_Variables()).default(client, this._stackFrames);
     this._expectingPause = false;
     this._continueOnAttach = false;
 
@@ -128,54 +144,40 @@ class MIDebugSession extends LoggingDebugSession {
 
     client.on('async', record => this._asyncRecord(record));
 
-    this._asyncHandlers = new Map([
-      [
-        'stopped',
-        record => {
-          this._onAsyncStopped(record);
-        },
-      ],
-      ['thread-created', record => this._onAsyncThread(record, true)],
-      ['thread-exited', record => this._onAsyncThread(record, false)],
-      ['breakpoint-modified', record => this._onBreakpointModified(record)],
-    ]);
+    this._asyncHandlers = new Map([['stopped', record => {
+      this._onAsyncStopped(record);
+    }], ['thread-created', record => this._onAsyncThread(record, true)], ['thread-exited', record => this._onAsyncThread(record, false)], ['breakpoint-modified', record => this._onBreakpointModified(record)]]);
 
     this._pauseQueue = [];
   }
 
-  _asyncRecord(record: MIAsyncRecord): void {
+  _asyncRecord(record) {
     const handler = this._asyncHandlers.get(record.asyncClass);
     if (handler != null) {
       handler(record);
     }
   }
 
-  start(inStream: ReadableStream, outStream: WritableStream): void {
+  start(inStream, outStream) {
     super.start(inStream, outStream);
     logVerbose(`using node ${process.version} at ${process.execPath}`);
   }
 
-  initializeRequest(
-    response: DebugProtocol.InitializeResponse,
-    args: DebugProtocol.InitializeRequestArguments,
-  ): void {
+  initializeRequest(response, args) {
     response.body = response.body || {};
     response.body.supportsFunctionBreakpoints = true;
     response.body.supportsConfigurationDoneRequest = true;
     response.body.supportsSetVariable = true;
     response.body.supportsValueFormattingOptions = true;
-    response.body.exceptionBreakpointFilters = [
-      {
-        filter: 'uncaught',
-        label: 'Uncaught exceptions',
-        default: false,
-      },
-      {
-        filter: 'thrown',
-        label: 'Thrown exceptions',
-        default: false,
-      },
-    ];
+    response.body.exceptionBreakpointFilters = [{
+      filter: 'uncaught',
+      label: 'Uncaught exceptions',
+      default: false
+    }, {
+      filter: 'thrown',
+      label: 'Thrown exceptions',
+      default: false
+    }];
 
     this.sendResponse(response);
 
@@ -183,17 +185,11 @@ class MIDebugSession extends LoggingDebugSession {
     // notably we will get a launchRequest *before* configuration done, and actually before the breakpoint
     // requests. so we have to be careful to bring up the debugger in the launch request, then set the
     // initial breakpoints, and not actually start the program until configuration done.
-    this.sendEvent(new InitializedEvent());
+    this.sendEvent(new (_vscodeDebugadapter || _load_vscodeDebugadapter()).InitializedEvent());
   }
 
-  async launchRequest(
-    response: DebugProtocol.LaunchResponse,
-    args: LaunchRequestArguments,
-  ): Promise<void> {
-    logger.setup(
-      args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
-      true,
-    );
+  async launchRequest(response, args) {
+    (_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.setup(args.trace === true ? (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Verbose : (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Error, true);
 
     let environment = {};
     if (args.env != null) {
@@ -204,56 +200,29 @@ class MIDebugSession extends LoggingDebugSession {
         }
         const key = _.substr(0, equal);
         const value = _.substr(equal + 1);
-        environment = {
-          ...environment,
-          [key]: value,
-        };
+        environment = Object.assign({}, environment, {
+          [key]: value
+        });
       });
     }
 
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
+    const debuggerRoot = args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
 
     this._client.start('gdb', ['-q', '--interpreter=mi2'], environment);
 
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
+    if (debuggerRoot != null && debuggerRoot.trim() !== '' && !(await this._sendWithFailureCheck(response, `environment-directory -r "${debuggerRoot}"`))) {
       return;
     }
 
-    if (
-      args.cwd != null &&
-      args.cwd.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-cd ${args.cwd}`,
-      ))
-    ) {
+    if (args.cwd != null && args.cwd.trim() !== '' && !(await this._sendWithFailureCheck(response, `environment-cd ${args.cwd}`))) {
       return;
     }
 
-    if (
-      args.args != null &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `exec-arguments ${args.args.join(' ')}`,
-      ))
-    ) {
+    if (args.args != null && !(await this._sendWithFailureCheck(response, `exec-arguments ${args.args.join(' ')}`))) {
       return;
     }
 
-    if (
-      !(await this._sendWithFailureCheck(
-        response,
-        `file-exec-and-symbols ${args.program}`,
-      ))
-    ) {
+    if (!(await this._sendWithFailureCheck(response, `file-exec-and-symbols ${args.program}`))) {
       return;
     }
 
@@ -263,28 +232,14 @@ class MIDebugSession extends LoggingDebugSession {
     this.sendResponse(response);
   }
 
-  async attachRequest(
-    response: DebugProtocol.AttachResponse,
-    args: AttachRequestArguments,
-  ): Promise<void> {
-    logger.setup(
-      args.trace === true ? Logger.LogLevel.Verbose : Logger.LogLevel.Error,
-      true,
-    );
+  async attachRequest(response, args) {
+    (_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.setup(args.trace === true ? (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Verbose : (_vscodeDebugadapter || _load_vscodeDebugadapter()).Logger.LogLevel.Error, true);
 
-    const debuggerRoot =
-      args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
+    const debuggerRoot = args.debuggerRoot != null ? args.debuggerRoot : args.sourcePath;
 
     this._client.start('gdb', ['-q', '--interpreter=mi2'], null);
 
-    if (
-      debuggerRoot != null &&
-      debuggerRoot.trim() !== '' &&
-      !(await this._sendWithFailureCheck(
-        response,
-        `environment-directory -r "${debuggerRoot}"`,
-      ))
-    ) {
+    if (debuggerRoot != null && debuggerRoot.trim() !== '' && !(await this._sendWithFailureCheck(response, `environment-directory -r "${debuggerRoot}"`))) {
       return;
     }
 
@@ -295,10 +250,7 @@ class MIDebugSession extends LoggingDebugSession {
     this.sendResponse(response);
   }
 
-  async disconnectRequest(
-    response: DebugProtocol.DisconnectResponse,
-    request: DebugProtocol.DisconnectRequest,
-  ): Promise<void> {
+  async disconnectRequest(response, request) {
     this._stepping = false;
     this._runWhenStopped(async () => {
       if (this._attachPID != null) {
@@ -310,10 +262,7 @@ class MIDebugSession extends LoggingDebugSession {
     });
   }
 
-  async configurationDoneRequest(
-    response: DebugProtocol.ConfigurationDoneResponse,
-    args: DebugProtocol.ConfigurationDoneArguments,
-  ): Promise<void> {
+  async configurationDoneRequest(response, args) {
     this._configurationDone = true;
 
     if (!(await this._initializeTargetIO(response))) {
@@ -325,12 +274,7 @@ class MIDebugSession extends LoggingDebugSession {
     this._running = true;
 
     if (this._attachPID != null) {
-      if (
-        !(await this._sendWithFailureCheck(
-          response,
-          `target-attach ${this._attachPID}`,
-        ))
-      ) {
+      if (!(await this._sendWithFailureCheck(response, `target-attach ${this._attachPID}`))) {
         return;
       }
 
@@ -345,32 +289,25 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async setBreakPointsRequest(
-    response: DebugProtocol.SetBreakpointsResponse,
-    args: DebugProtocol.SetBreakpointsArguments,
-  ): Promise<void> {
+  async setBreakPointsRequest(response, args) {
     this._runWhenStopped(async () => {
       try {
-        const source =
-          args.source.path != null ? args.source.path : args.source.name;
-        invariant(source != null);
+        const source = args.source.path != null ? args.source.path : args.source.name;
+
+        if (!(source != null)) {
+          throw new Error('Invariant violation: "source != null"');
+        }
 
         const breakpoints = args.breakpoints;
         if (breakpoints == null) {
-          this._sendFailureResponse(
-            response,
-            'No breakpoints specified in breakpoints request',
-          );
+          this._sendFailureResponse(response, 'No breakpoints specified in breakpoints request');
           return;
         }
 
-        const protocolBreakpoints = await this._sourceBreakpoints.setSourceBreakpoints(
-          source,
-          breakpoints,
-        );
+        const protocolBreakpoints = await this._sourceBreakpoints.setSourceBreakpoints(source, breakpoints);
 
         response.body = {
-          breakpoints: protocolBreakpoints,
+          breakpoints: protocolBreakpoints
         };
 
         this.sendResponse(response);
@@ -380,28 +317,20 @@ class MIDebugSession extends LoggingDebugSession {
     });
   }
 
-  async setFunctionBreakPointsRequest(
-    response: DebugProtocol.SetFunctionBreakpointsResponse,
-    args: DebugProtocol.SetFunctionBreakpointsArguments,
-  ): Promise<void> {
+  async setFunctionBreakPointsRequest(response, args) {
     this._runWhenStopped(async () => {
       try {
         const breakpoints = args.breakpoints;
         if (breakpoints == null) {
-          this._sendFailureResponse(
-            response,
-            'No breakpoints specified in breakpoints request',
-          );
+          this._sendFailureResponse(response, 'No breakpoints specified in breakpoints request');
           return;
         }
 
         const functions = breakpoints.map(_ => _.name);
-        const breakpointsOut = await this._functionBreakpoints.setFunctionBreakpoints(
-          functions,
-        );
+        const breakpointsOut = await this._functionBreakpoints.setFunctionBreakpoints(functions);
 
         response.body = {
-          breakpoints: breakpointsOut,
+          breakpoints: breakpointsOut
         };
 
         this.sendResponse(response);
@@ -411,43 +340,33 @@ class MIDebugSession extends LoggingDebugSession {
     });
   }
 
-  async _sendCachedBreakpoints(): Promise<void> {
+  async _sendCachedBreakpoints() {
     logVerbose('_sendCachedBreakpoints');
-    const changedBreakpoints = [
-      ...(await this._sourceBreakpoints.setCachedBreakpoints()),
-      ...(await this._functionBreakpoints.setCachedBreakpoints()),
-    ];
+    const changedBreakpoints = [...(await this._sourceBreakpoints.setCachedBreakpoints()), ...(await this._functionBreakpoints.setCachedBreakpoints())];
 
     changedBreakpoints.forEach(breakpoint => {
-      const event = new BreakpointEvent();
+      const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).BreakpointEvent();
       event.body = {
         reason: 'changed',
-        breakpoint,
+        breakpoint
       };
 
       this.sendEvent(event);
     });
   }
 
-  async setExceptionBreakPointsRequest(
-    response: DebugProtocol.SetExceptionBreakpointsResponse,
-    args: DebugProtocol.SetExceptionBreakpointsArguments,
-  ): Promise<void> {
+  async setExceptionBreakPointsRequest(response, args) {
     try {
-      await this._exceptionBreakpoints.setExceptionBreakpointFilters(
-        args.filters,
-      );
+      await this._exceptionBreakpoints.setExceptionBreakpointFilters(args.filters);
       this.sendResponse(response);
     } catch (error) {
       this._sendFailureResponse(response, error.message);
     }
   }
 
-  async threadsRequest(response: DebugProtocol.ThreadsResponse): Promise<void> {
+  async threadsRequest(response) {
     this._runWhenStopped(async () => {
-      const threadRecord: MIResultRecord = await this._client.sendCommand(
-        'thread-info',
-      );
+      const threadRecord = await this._client.sendCommand('thread-info');
 
       try {
         if (!threadRecord.done) {
@@ -455,15 +374,15 @@ class MIDebugSession extends LoggingDebugSession {
           return;
         }
 
-        const threads = threadInfoResult(threadRecord).threads;
+        const threads = (0, (_MITypes || _load_MITypes()).threadInfoResult)(threadRecord).threads;
 
         response.body = {
           threads: threads.map(_ => {
             return {
               id: parseInt(_.id, 10),
-              name: _['target-id'],
+              name: _['target-id']
             };
-          }),
+          })
         };
 
         this.sendResponse(response);
@@ -473,37 +392,23 @@ class MIDebugSession extends LoggingDebugSession {
     });
   }
 
-  async stackTraceRequest(
-    response: DebugProtocol.StackTraceResponse,
-    args: DebugProtocol.StackTraceArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
+  async stackTraceRequest(response, args) {
+    await this._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);
 
-    response.body = await this._stackFrames.stackFramesForThread(
-      args.threadId,
-      args.startFrame,
-      args.levels,
-    );
+    response.body = await this._stackFrames.stackFramesForThread(args.threadId, args.startFrame, args.levels);
 
     try {
-      response.body.stackFrames = await Promise.all(
-        response.body.stackFrames.map(async frame => {
-          let source = frame.source;
-          if (source == null || source.path == null) {
-            source = {
-              sourceReference: await this._disassemble.sourceReferenceForStackFrame(
-                frame.id,
-              ),
-            };
-          }
-          return {
-            ...frame,
-            source,
+      response.body.stackFrames = await Promise.all(response.body.stackFrames.map(async frame => {
+        let source = frame.source;
+        if (source == null || source.path == null) {
+          source = {
+            sourceReference: await this._disassemble.sourceReferenceForStackFrame(frame.id)
           };
-        }),
-      );
+        }
+        return Object.assign({}, frame, {
+          source
+        });
+      }));
 
       this.sendResponse(response);
     } catch (err) {
@@ -511,25 +416,17 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async sourceRequest(
-    response: DebugProtocol.SourceResponse,
-    args: DebugProtocol.SourceArguments,
-  ): Promise<void> {
+  async sourceRequest(response, args) {
     try {
-      const content = await this._disassemble.getDisassembly(
-        args.sourceReference,
-      );
-      response.body = {content};
+      const content = await this._disassemble.getDisassembly(args.sourceReference);
+      response.body = { content };
       this.sendResponse(response);
     } catch (err) {
       this._sendFailureResponse(response, err.message);
     }
   }
 
-  async pauseRequest(
-    response: DebugProtocol.PauseResponse,
-    args: DebugProtocol.PauseArguments,
-  ): Promise<void> {
+  async pauseRequest(response, args) {
     try {
       this._expectingPause = true;
       this._client.pause();
@@ -539,50 +436,31 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async continueRequest(
-    response: DebugProtocol.ContinueResponse,
-    args: DebugProtocol.ContinueRequest,
-  ): Promise<void> {
+  async continueRequest(response, args) {
     return this._executeCommon('exec-continue', null, response);
   }
 
-  async nextRequest(
-    response: DebugProtocol.NextResponse,
-    args: DebugProtocol.NextArguments,
-  ): Promise<void> {
+  async nextRequest(response, args) {
     this._stepping = true;
     return this._executeCommon('exec-next', args.threadId, response);
   }
 
-  async stepInRequest(
-    response: DebugProtocol.StepInResponse,
-    args: DebugProtocol.StepInArguments,
-  ): Promise<void> {
+  async stepInRequest(response, args) {
     this._stepping = true;
     return this._executeCommon('exec-step', args.threadId, response);
   }
 
-  async stepOutRequest(
-    response: DebugProtocol.StepOutResponse,
-    args: DebugProtocol.StepOutArguments,
-  ): Promise<void> {
+  async stepOutRequest(response, args) {
     this._stepping = true;
     return this._executeCommon('exec-finish', args.threadId, response);
   }
 
-  async _executeCommon(
-    execCommand: string,
-    threadId: ?number,
-    response: DebugProtocol.Response,
-  ): Promise<void> {
+  async _executeCommon(execCommand, threadId, response) {
     try {
       const thread = threadId != null ? `--thread ${threadId}` : '';
       const result = await this._client.sendCommand(`${execCommand} ${thread}`);
       if (!result.running) {
-        this._sendFailureResponse(
-          response,
-          `Failed to ${execCommand} program ${toCommandError(result).msg}`,
-        );
+        this._sendFailureResponse(response, `Failed to ${execCommand} program ${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg}`);
         return;
       }
 
@@ -593,55 +471,39 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async scopesRequest(
-    response: DebugProtocol.ScopesResponse,
-    args: DebugProtocol.ScopesArguments,
-  ): Promise<void> {
+  async scopesRequest(response, args) {
     try {
-      const varref = this._variables.variableReferenceForStackFrame(
-        args.frameId,
-      );
+      const varref = this._variables.variableReferenceForStackFrame(args.frameId);
 
-      const scopes = [
-        {
-          name: 'Locals',
-          variablesReference: varref,
-          expensive: false,
-        },
-      ];
+      const scopes = [{
+        name: 'Locals',
+        variablesReference: varref,
+        expensive: false
+      }];
 
       const regVarref = await this._variables.registersVariableReference();
       if (regVarref != null) {
         scopes.push({
           name: 'Registers',
           variablesReference: regVarref,
-          expensive: false,
+          expensive: false
         });
       }
 
-      response.body = {scopes};
+      response.body = { scopes };
       this.sendResponse(response);
     } catch (err) {
       this._sendFailureResponse(response, err.message);
     }
   }
 
-  async variablesRequest(
-    response: DebugProtocol.VariablesResponse,
-    args: DebugProtocol.VariablesArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
+  async variablesRequest(response, args) {
+    await this._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);
 
     try {
-      const variables = await this._variables.getVariables(
-        args.variablesReference,
-        args.start,
-        args.count,
-      );
+      const variables = await this._variables.getVariables(args.variablesReference, args.start, args.count);
 
-      response.body = {variables};
+      response.body = { variables };
 
       this.sendResponse(response);
     } catch (err) {
@@ -649,24 +511,13 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async setVariableRequest(
-    response: DebugProtocol.SetVariableResponse,
-    args: DebugProtocol.SetVariableArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
+  async setVariableRequest(response, args) {
+    await this._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);
 
     try {
-      const varref = this._variables.getVariableReference(
-        args.variablesReference,
-      );
+      const varref = this._variables.getVariableReference(args.variablesReference);
       if (varref == null) {
-        throw new Error(
-          `setVariableRequest: invalid variable reference ${
-            args.variablesReference
-          }`,
-        );
+        throw new Error(`setVariableRequest: invalid variable reference ${args.variablesReference}`);
       }
 
       const varSet = await varref.setChildValue(args.name, args.value);
@@ -678,17 +529,12 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async evaluateRequest(
-    response: DebugProtocol.EvaluateResponse,
-    args: DebugProtocol.EvaluateArguments,
-  ): Promise<void> {
-    await this._setOutputFormat(
-      args.format != null && args.format.hex != null && args.format.hex,
-    );
+  async evaluateRequest(response, args) {
+    await this._setOutputFormat(args.format != null && args.format.hex != null && args.format.hex);
 
     try {
-      let threadId: ?number;
-      let frameIndex: ?number;
+      let threadId;
+      let frameIndex;
 
       const frameId = args.frameId;
       if (frameId != null) {
@@ -700,17 +546,14 @@ class MIDebugSession extends LoggingDebugSession {
         frameIndex = stackFrame.frameIndex;
       }
 
-      const handle = this._variables.expressionVariableReference(
-        threadId,
-        frameIndex,
-        args.expression,
-      );
+      const handle = this._variables.expressionVariableReference(threadId, frameIndex, args.expression);
 
       const variables = await this._variables.getVariables(handle);
-      invariant(
-        variables.length === 1,
-        'call should return 1 element or throw on error',
-      );
+
+      if (!(variables.length === 1)) {
+        throw new Error('call should return 1 element or throw on error');
+      }
+
       const variable = variables[0];
 
       response.body = {
@@ -718,7 +561,7 @@ class MIDebugSession extends LoggingDebugSession {
         type: variable.type,
         variablesReference: variable.variablesReference,
         namedVariables: variable.namedVariables,
-        indexedVariables: variable.indexedVariables,
+        indexedVariables: variable.indexedVariables
       };
 
       this.sendResponse(response);
@@ -727,18 +570,16 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async _setOutputFormat(hex: boolean): Promise<void> {
+  async _setOutputFormat(hex) {
     this._client.sendCommand(`gdb-set output-radix ${hex ? 16 : 10}`);
   }
 
-  async _initializeTargetIO(
-    response: DebugProtocol.ConfigurationDoneResponse,
-  ): Promise<boolean> {
+  async _initializeTargetIO(response) {
     // $TODO Windows
 
     // gdb uses a pty to pipe target (what it calls inferior) output separately from
     // MI traffic. set up a pty and handlers.
-    const targetIO = pty.open({});
+    const targetIO = (_pty || _load_pty()).open({});
     this._targetIO = targetIO;
     targetIO.on('data', line => this._onTargetIO(line));
 
@@ -748,35 +589,30 @@ class MIDebugSession extends LoggingDebugSession {
     // if there's an error such as the actual debugger crashing, shut down cleanly
     targetIO.once('error', () => this._onTargetTerminated());
 
-    if (
-      !(await this._sendWithFailureCheck(
-        response,
-        `inferior-tty-set ${targetIO.ptyName}`,
-      ))
-    ) {
+    if (!(await this._sendWithFailureCheck(response, `inferior-tty-set ${targetIO.ptyName}`))) {
       return false;
     }
 
     return true;
   }
 
-  _onTargetIO(line: string): void {
-    const event = new OutputEvent();
+  _onTargetIO(line) {
+    const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).OutputEvent();
     event.body = {
       category: 'stdout',
-      output: line,
+      output: line
     };
 
     this.sendEvent(event);
   }
 
-  _onTargetTerminated(): void {
-    this.sendEvent(new TerminatedEvent());
+  _onTargetTerminated() {
+    this.sendEvent(new (_vscodeDebugadapter || _load_vscodeDebugadapter()).TerminatedEvent());
     this._hasTarget = false;
     this._configurationDone = false;
   }
 
-  async _runWhenStopped(fn: () => Promise<void>): Promise<void> {
+  async _runWhenStopped(fn) {
     if (!this._running) {
       return fn();
     }
@@ -794,30 +630,27 @@ class MIDebugSession extends LoggingDebugSession {
     }
   }
 
-  async _processPauseQueue(): Promise<void> {
+  async _processPauseQueue() {
     const fns = this._pauseQueue.slice();
     this._pauseQueue = [];
     await Promise.all(fns.map(fn => fn()));
   }
 
-  _pauseIfThereAreQueuedCommands(): void {
+  _pauseIfThereAreQueuedCommands() {
     if (this._pauseQueue.length !== 0) {
       this._client.pause();
     }
   }
 
-  async _onAsyncStopped(record: MIAsyncRecord): Promise<void> {
-    const stopped = stoppedEventResult(record);
+  async _onAsyncStopped(record) {
+    const stopped = (0, (_MITypes || _load_MITypes()).stoppedEventResult)(record);
 
     await this._processPauseQueue();
 
     // A received signal means one of two things: SIGINT sent to gdb to drop
     // into command mode (pausing the target), or an unexpected signal which
     // is an exception to break on.
-    if (
-      !this._expectingPause &&
-      this._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped)
-    ) {
+    if (!this._expectingPause && this._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped)) {
       this._running = true;
       await this._client.sendCommand('exec-continue');
       // we are really running again. if any commands came in from the UI during
@@ -852,10 +685,7 @@ class MIDebugSession extends LoggingDebugSession {
       return;
     } else if (stopped.reason === 'signal-received') {
       this._expectingPause = false;
-    } else if (
-      stopped.reason === 'exited-normally' ||
-      stopped.reason === 'exited-signalled'
-    ) {
+    } else if (stopped.reason === 'exited-normally' || stopped.reason === 'exited-signalled') {
       this._onTargetTerminated();
       return;
     } else if (stopped.reason == null) {
@@ -873,53 +703,51 @@ class MIDebugSession extends LoggingDebugSession {
       }
     }
 
-    const event = new StoppedEvent();
+    const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).StoppedEvent();
     event.body = {
       reason,
       description,
       threadId: parseInt(stopped['thread-id'], 10),
       preserveFocusHint: false,
-      allThreadsStopped: true,
+      allThreadsStopped: true
     };
 
     this.sendEvent(event);
   }
 
-  _onAsyncThread(record: MIAsyncRecord, started: boolean): void {
+  _onAsyncThread(record, started) {
     // NB that using a handle table is not needed for threads, because the MI
     // interface defines a thread id which is exactly the same thing.
     const id = record.result.id;
-    const event = new ThreadEvent();
+    const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).ThreadEvent();
 
     event.body = {
       reason: started ? 'started' : 'exited',
-      threadId: parseInt(id, 10),
+      threadId: parseInt(id, 10)
     };
 
     this.sendEvent(event);
   }
 
-  async _sendWithFailureCheck(
-    response: DebugProtocol.Response,
-    command: string,
-  ): Promise<boolean> {
+  async _sendWithFailureCheck(response, command) {
     const result = await this._client.sendCommand(command);
     if (result.error) {
-      this._sendFailureResponse(response, toCommandError(result).msg);
+      this._sendFailureResponse(response, (0, (_MITypes || _load_MITypes()).toCommandError)(result).msg);
       return false;
     }
     return true;
   }
 
-  _onBreakpointModified(record: MIAsyncRecord): void {
-    const result = breakpointModifiedEventResult(record);
-    const breakpoint = this._breakpoints.breakpointByDebuggerId(
-      parseInt(result.bkpt[0].number, 10),
-    );
+  _onBreakpointModified(record) {
+    const result = (0, (_MITypes || _load_MITypes()).breakpointModifiedEventResult)(record);
+    const breakpoint = this._breakpoints.breakpointByDebuggerId(parseInt(result.bkpt[0].number, 10));
 
     if (breakpoint != null && !breakpoint.verified) {
       const handle = this._breakpoints.handleForBreakpoint(breakpoint);
-      invariant(handle != null);
+
+      if (!(handle != null)) {
+        throw new Error('Invariant violation: "handle != null"');
+      }
 
       breakpoint.setVerified();
 
@@ -927,32 +755,29 @@ class MIDebugSession extends LoggingDebugSession {
         id: handle,
         verified: true,
         source: {
-          source: breakpoint.source,
+          source: breakpoint.source
         },
-        line: breakpoint.line,
+        line: breakpoint.line
       };
 
-      const event = new BreakpointEvent();
+      const event = new (_vscodeDebugadapter || _load_vscodeDebugadapter()).BreakpointEvent();
       event.body = {
         reason: 'changed',
-        breakpoint: protocolBreakpoint,
+        breakpoint: protocolBreakpoint
       };
 
       this.sendEvent(event);
     }
   }
 
-  _sendFailureResponse(
-    response: DebugProtocol.Response,
-    message?: string,
-  ): void {
+  _sendFailureResponse(response, message) {
     response.success = false;
     response.message = message;
     this.sendResponse(response);
   }
 }
 
-function timestamp(): string {
+function timestamp() {
   let ts = `${new Date().getTime()}`;
 
   // This code put seperators in the timestamp in groups of thousands
@@ -977,8 +802,8 @@ function timestamp(): string {
   return fmt;
 }
 
-export function logVerbose(line: string): void {
-  logger.verbose(`${timestamp()} ${line}`);
+function logVerbose(line) {
+  (_vscodeDebugadapter || _load_vscodeDebugadapter()).logger.verbose(`${timestamp()} ${line}`);
 }
 
-LoggingDebugSession.run(MIDebugSession);
+(_vscodeDebugadapter || _load_vscodeDebugadapter()).LoggingDebugSession.run(MIDebugSession);

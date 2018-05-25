@@ -1,37 +1,33 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {ReliableSocket} from '../socket/ReliableSocket';
-import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
-import type {Proxy} from '../services/tunnel/Proxy';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BigDigClient = undefined;
 
-import {Subject} from 'rxjs';
-import {getLogger} from 'log4js';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {createTunnel} from '../services/tunnel/tunnel';
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _tunnel;
+
+function _load_tunnel() {
+  return _tunnel = require('../services/tunnel/tunnel');
+}
 
 /**
  * This class is responsible for talking to a Big Dig server, which enables the
  * client to launch a remote process and communication with its stdin, stdout,
  * and stderr.
  */
-export class BigDigClient {
-  _logger: log4js$Logger;
-  _tagToSubject: Map<string, Subject<string>>;
-  _transport: ReliableSocket;
+class BigDigClient {
 
-  constructor(reliableSocketTransport: ReliableSocket) {
-    this._logger = getLogger();
+  constructor(reliableSocketTransport) {
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)();
     this._transport = reliableSocketTransport;
     this._tagToSubject = new Map();
 
@@ -54,61 +50,70 @@ export class BigDigClient {
       },
       complete() {
         this._logger.error('ConnectionWrapper completed()?');
-      },
+      }
     });
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._transport.isClosed();
   }
 
-  onClose(callback: () => mixed): IDisposable {
+  onClose(callback) {
     return this._transport.onClose(callback);
   }
 
-  async createTunnel(localPort: number, remotePort: number): Promise<Proxy> {
+  async createTunnel(localPort, remotePort) {
     const transportAdapter = {
       onMessage: () => {
         return this.onMessage('tunnel');
       },
-      send: (message: string) => {
+      send: message => {
         this.sendMessage('tunnel', message);
-      },
+      }
     };
 
-    return createTunnel(localPort, remotePort, transportAdapter);
+    return (0, (_tunnel || _load_tunnel()).createTunnel)(localPort, remotePort, transportAdapter);
   }
 
-  close(): void {
+  close() {
     this._logger.info('close called');
     this._transport.close();
   }
 
-  sendMessage(tag: string, body: string) {
+  sendMessage(tag, body) {
     const message = `${tag}\0${body}`;
     if (this.isClosed()) {
-      this._logger.warn(
-        `Attempting to send message to ${this.getAddress()} on closed BigDigClient: ${message}`,
-      );
+      this._logger.warn(`Attempting to send message to ${this.getAddress()} on closed BigDigClient: ${message}`);
       return;
     }
     this._transport.send(message);
   }
 
-  onMessage(tag: string): Observable<string> {
+  onMessage(tag) {
     let subject = this._tagToSubject.get(tag);
     if (subject == null) {
-      subject = new Subject();
+      subject = new _rxjsBundlesRxMinJs.Subject();
       this._tagToSubject.set(tag, subject);
     }
     return subject.asObservable();
   }
 
-  getHeartbeat(): XhrConnectionHeartbeat {
+  getHeartbeat() {
     return this._transport.getHeartbeat();
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._transport.getAddress();
   }
 }
+exports.BigDigClient = BigDigClient; /**
+                                      * Copyright (c) 2017-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the BSD-style license found in the
+                                      * LICENSE file in the root directory of this source tree. An additional grant
+                                      * of patent rights can be found in the PATENTS file in the same directory.
+                                      *
+                                      * 
+                                      * @format
+                                      */

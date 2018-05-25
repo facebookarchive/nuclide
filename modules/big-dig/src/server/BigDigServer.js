@@ -1,65 +1,69 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type WS from 'ws';
-import type https from 'https';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HEARTBEAT_CHANNEL = undefined;
 
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-import url from 'url';
-import {Subject} from 'rxjs';
-import {getVersion} from '../common/getVersion';
+var _log4js;
 
-import {WebSocketTransport} from '../socket/WebSocketTransport';
-import {QueuedAckTransport} from '../socket/QueuedAckTransport';
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
 
-export const HEARTBEAT_CHANNEL = 'big-dig-heartbeat';
+var _url = _interopRequireDefault(require('url'));
 
-export type Transport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-type Subscriber = {
-  onConnection(transport: Transport): mixed,
-};
+var _getVersion;
 
-export default class BigDigServer {
-  _logger: log4js$Logger;
-  _tagToSubscriber: Map<string, Subscriber>;
-  _clientIdToTransport: Map<string, QueuedAckTransport>;
+function _load_getVersion() {
+  return _getVersion = require('../common/getVersion');
+}
 
-  _httpsServer: https.Server;
-  _webSocketServer: WS.Server;
+var _WebSocketTransport;
+
+function _load_WebSocketTransport() {
+  return _WebSocketTransport = require('../socket/WebSocketTransport');
+}
+
+var _QueuedAckTransport;
+
+function _load_QueuedAckTransport() {
+  return _QueuedAckTransport = require('../socket/QueuedAckTransport');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const HEARTBEAT_CHANNEL = exports.HEARTBEAT_CHANNEL = 'big-dig-heartbeat'; /**
+                                                                            * Copyright (c) 2017-present, Facebook, Inc.
+                                                                            * All rights reserved.
+                                                                            *
+                                                                            * This source code is licensed under the BSD-style license found in the
+                                                                            * LICENSE file in the root directory of this source tree. An additional grant
+                                                                            * of patent rights can be found in the PATENTS file in the same directory.
+                                                                            *
+                                                                            *  strict-local
+                                                                            * @format
+                                                                            */
+
+class BigDigServer {
 
   /**
    * Note: The webSocketServer must be running on top of the httpsServer.
    * Note: This BigDigServer is responsible for closing httpServer and wss.
    */
-  constructor(httpsServer: https.Server, webSocketServer: WS.Server) {
-    this._logger = getLogger();
+  constructor(httpsServer, webSocketServer) {
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)();
     this._tagToSubscriber = new Map();
     this._httpsServer = httpsServer;
     this._httpsServer.on('request', this._onHttpsRequest.bind(this));
     this._clientIdToTransport = new Map();
     this._webSocketServer = webSocketServer;
-    this._webSocketServer.on(
-      'connection',
-      this._onWebSocketConnection.bind(this),
-    );
+    this._webSocketServer.on('connection', this._onWebSocketConnection.bind(this));
   }
 
-  addSubscriber(tag: string, subscriber: Subscriber) {
+  addSubscriber(tag, subscriber) {
     const existingSubscriber = this._tagToSubscriber.get(tag);
     if (existingSubscriber == null) {
       // TODO(mbolin): WS connections that were created before this subscriber
@@ -72,23 +76,18 @@ export default class BigDigServer {
     }
   }
 
-  _onHttpsRequest(
-    request: http$IncomingMessage,
-    response: http$ServerResponse,
-  ) {
-    const {pathname} = url.parse(request.url);
+  _onHttpsRequest(request, response) {
+    const { pathname } = _url.default.parse(request.url);
     if (request.method === 'POST' && pathname === `/v1/${HEARTBEAT_CHANNEL}`) {
-      response.write(getVersion());
+      response.write((0, (_getVersion || _load_getVersion()).getVersion)());
       response.end();
       return;
     }
-    this._logger.info(
-      `Ignored HTTPS ${request.method} request for ${request.url}`,
-    );
+    this._logger.info(`Ignored HTTPS ${request.method} request for ${request.url}`);
   }
 
-  _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
-    const {pathname} = url.parse(req.url);
+  _onWebSocketConnection(ws, req) {
+    const { pathname } = _url.default.parse(req.url);
     const clientId = req.headers.client_id;
     this._logger.info(`connection negotiation via path ${String(pathname)}`);
     this._logger.info(`received client_id in header ${clientId}`);
@@ -99,17 +98,17 @@ export default class BigDigServer {
     }
 
     const cachedTransport = this._clientIdToTransport.get(clientId);
-    const wsTransport = new WebSocketTransport(clientId, ws);
+    const wsTransport = new (_WebSocketTransport || _load_WebSocketTransport()).WebSocketTransport(clientId, ws);
 
     if (cachedTransport == null) {
       this._logger.info(`on connection the clientId is ${clientId}`);
 
-      const qaTransport = new QueuedAckTransport(clientId, wsTransport);
+      const qaTransport = new (_QueuedAckTransport || _load_QueuedAckTransport()).QueuedAckTransport(clientId, wsTransport);
       this._clientIdToTransport.set(clientId, qaTransport);
 
       // Every subscriber must be notified of the new connection because it may
       // want to broadcast messages to it.
-      const tagToTransport: Map<string, InternalTransport> = new Map();
+      const tagToTransport = new Map();
       for (const [tag, subscriber] of this._tagToSubscriber) {
         const transport = new InternalTransport(tag, qaTransport);
         this._logger.info(`Created new InternalTransport for ${tag}`);
@@ -126,15 +125,15 @@ export default class BigDigServer {
       // TODO: Either garbage collect inactive transports, or implement
       // an explicit "close" action in the big-dig protocol.
     } else {
-      invariant(clientId === cachedTransport.id);
+      if (!(clientId === cachedTransport.id)) {
+        throw new Error('Invariant violation: "clientId === cachedTransport.id"');
+      }
+
       cachedTransport.reconnect(wsTransport);
     }
   }
 
-  _handleBigDigMessage(
-    tagToTransport: Map<string, InternalTransport>,
-    message: string,
-  ) {
+  _handleBigDigMessage(tagToTransport, message) {
     // The message must start with a header identifying its route.
     const index = message.indexOf('\0');
     const tag = message.substring(0, index);
@@ -149,38 +148,36 @@ export default class BigDigServer {
   }
 }
 
-/**
- * Note that an InternalTransport maintains a reference to a WS connection.
- * It is imperative that it does not leak this reference such that a client
- * holds onto it and prevents it from being garbage-collected after the
- * connection is terminated.
- */
-class InternalTransport {
-  _messages: Subject<string>;
-  _tag: string;
-  _transport: QueuedAckTransport;
+exports.default = BigDigServer; /**
+                                 * Note that an InternalTransport maintains a reference to a WS connection.
+                                 * It is imperative that it does not leak this reference such that a client
+                                 * holds onto it and prevents it from being garbage-collected after the
+                                 * connection is terminated.
+                                 */
 
-  constructor(tag: string, ws: QueuedAckTransport) {
-    this._messages = new Subject();
+class InternalTransport {
+
+  constructor(tag, ws) {
+    this._messages = new _rxjsBundlesRxMinJs.Subject();
     this._tag = tag;
     this._transport = ws;
   }
 
-  send(message: string): void {
+  send(message) {
     this._transport.send(`${this._tag}\0${message}`);
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     // Only expose the subset of the Subject interface that implements
     // Observable.
     return this._messages.asObservable();
   }
 
-  broadcastMessage(message: string): void {
+  broadcastMessage(message) {
     this._messages.next(message);
   }
 
-  close(): void {
+  close() {
     this._messages.complete();
   }
 }

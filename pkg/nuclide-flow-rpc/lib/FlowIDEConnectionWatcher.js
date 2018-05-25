@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FlowIDEConnectionWatcher = undefined;
+
+var _FlowIDEConnection;
+
+function _load_FlowIDEConnection() {
+  return _FlowIDEConnection = require('./FlowIDEConnection');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,26 +32,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import {FlowIDEConnection} from './FlowIDEConnection';
-
-import {sleep} from 'nuclide-commons/promise';
-import {getLogger} from 'log4js';
-import {Observable} from 'rxjs';
-
-import type {FileCache} from '../../nuclide-open-files-rpc';
-
-const defaultIDEConnectionFactory = (proc, fileCache) =>
-  new FlowIDEConnection(proc, fileCache);
+const defaultIDEConnectionFactory = (proc, fileCache) => new (_FlowIDEConnection || _load_FlowIDEConnection()).FlowIDEConnection(proc, fileCache);
 
 // ESLint thinks the comment at the end is whitespace and warns. Worse, the autofix removes the
 // entire comment as well as the whitespace.
 // eslint-disable-next-line semi-spacing
-const IDE_CONNECTION_MAX_WAIT_MS =
-  20 /* min */ * 60 /* s/min */ * 1000 /* ms/s */;
+const IDE_CONNECTION_MAX_WAIT_MS = 20 /* min */ * 60 /* s/min */ * 1000 /* ms/s */;
 
 const IDE_CONNECTION_MIN_INTERVAL_MS = 1000;
 
@@ -35,37 +52,13 @@ const IDE_CONNECTION_HEALTHY_THRESHOLD_MS = 10 * 1000;
 // If we get this many unhealthy connections in a row, give up.
 const MAX_UNHEALTHY_CONNECTIONS = 20;
 
-type IdeConnectionFactory = (
-  child_process$ChildProcess,
-  FileCache,
-) => FlowIDEConnection;
-
 // For the lifetime of this class instance, keep a FlowIDEConnection alive, assuming we do not have
 // too many failures in a row.
-export class FlowIDEConnectionWatcher {
-  _processFactory: Observable<?child_process$ChildProcess>;
-  _ideConnectionCallback: (?FlowIDEConnection) => mixed;
-  _ideConnectionFactory: (
-    child_process$ChildProcess,
-    FileCache,
-  ) => FlowIDEConnection;
+class FlowIDEConnectionWatcher {
 
-  _currentIDEConnection: ?FlowIDEConnection;
-  _currentIDEConnectionSubscription: ?IDisposable;
-  _consecutiveUnhealthyConnections: number;
-
-  _fileCache: FileCache;
-
-  _isStarted: boolean;
-  _isDisposed: boolean;
-
-  constructor(
-    processFactory: Observable<?child_process$ChildProcess>,
-    fileCache: FileCache,
-    ideConnectionCallback: (?FlowIDEConnection) => mixed,
-    // Can be injected for testing purposes
-    ideConnectionFactory: IdeConnectionFactory = defaultIDEConnectionFactory,
-  ) {
+  constructor(processFactory, fileCache, ideConnectionCallback,
+  // Can be injected for testing purposes
+  ideConnectionFactory = defaultIDEConnectionFactory) {
     this._processFactory = processFactory;
     this._fileCache = fileCache;
     this._ideConnectionFactory = ideConnectionFactory;
@@ -80,7 +73,7 @@ export class FlowIDEConnectionWatcher {
   }
 
   // Returns a promise which resolves when the first connection has been established, or we give up.
-  start(): Promise<void> {
+  start() {
     if (!this._isStarted) {
       this._isStarted = true;
       return this._makeIDEConnection();
@@ -89,8 +82,8 @@ export class FlowIDEConnectionWatcher {
     }
   }
 
-  async _makeIDEConnection(): Promise<void> {
-    getLogger('nuclide-flow-rpc').info('Attempting to start IDE connection...');
+  async _makeIDEConnection() {
+    (0, (_log4js || _load_log4js()).getLogger)('nuclide-flow-rpc').info('Attempting to start IDE connection...');
     let proc = null;
     const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
     while (true) {
@@ -116,25 +109,18 @@ export class FlowIDEConnectionWatcher {
       if (proc != null || attemptEndTime > endTimeMS) {
         break;
       } else {
-        getLogger('nuclide-flow-rpc').info(
-          'Failed to start Flow IDE connection... retrying',
-        );
+        (0, (_log4js || _load_log4js()).getLogger)('nuclide-flow-rpc').info('Failed to start Flow IDE connection... retrying');
         const attemptWallTime = attemptEndTime - attemptStartTime;
-        const additionalWaitTime =
-          IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
+        const additionalWaitTime = IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
         if (additionalWaitTime > 0) {
-          getLogger('nuclide-flow-rpc').info(
-            `Waiting an additional ${additionalWaitTime} ms before retrying`,
-          );
+          (0, (_log4js || _load_log4js()).getLogger)('nuclide-flow-rpc').info(`Waiting an additional ${additionalWaitTime} ms before retrying`);
           // eslint-disable-next-line no-await-in-loop
           await this._sleep(additionalWaitTime);
         }
       }
     }
     if (proc == null) {
-      getLogger('nuclide-flow-rpc').error(
-        'Failed to start Flow IDE connection too many times... giving up',
-      );
+      (0, (_log4js || _load_log4js()).getLogger)('nuclide-flow-rpc').error('Failed to start Flow IDE connection too many times... giving up');
       return;
     }
     const connectionStartTime = this._getTimeMS();
@@ -145,12 +131,8 @@ export class FlowIDEConnectionWatcher {
       const connectionAliveTime = this._getTimeMS() - connectionStartTime;
       if (connectionAliveTime < IDE_CONNECTION_HEALTHY_THRESHOLD_MS) {
         this._consecutiveUnhealthyConnections++;
-        if (
-          this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS
-        ) {
-          getLogger('nuclide-flow-rpc').error(
-            'Too many consecutive unhealthy Flow IDE connections... giving up',
-          );
+        if (this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS) {
+          (0, (_log4js || _load_log4js()).getLogger)('nuclide-flow-rpc').error('Too many consecutive unhealthy Flow IDE connections... giving up');
           return;
         }
       } else {
@@ -163,16 +145,16 @@ export class FlowIDEConnectionWatcher {
   }
 
   // Split this out just so it's easy to mock
-  _getTimeMS(): number {
+  _getTimeMS() {
     return Date.now();
   }
 
   // Split this out just so it's easy to mock
-  _sleep(ms: number): Promise<void> {
-    return sleep(ms);
+  _sleep(ms) {
+    return (0, (_promise || _load_promise()).sleep)(ms);
   }
 
-  dispose(): void {
+  dispose() {
     if (!this._isDisposed) {
       this._isDisposed = true;
       if (this._currentIDEConnectionSubscription != null) {
@@ -184,3 +166,4 @@ export class FlowIDEConnectionWatcher {
     }
   }
 }
+exports.FlowIDEConnectionWatcher = FlowIDEConnectionWatcher;

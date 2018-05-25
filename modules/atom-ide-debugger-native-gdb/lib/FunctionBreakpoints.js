@@ -1,63 +1,87 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-import invariant from 'assert';
-import Breakpoints from './Breakpoints';
-import {Breakpoint} from './Breakpoints';
-import {logVerbose} from './MIDebugSession';
-import MIProxy from './MIProxy';
-import {MIResultRecord} from './MIRecord';
-import {breakInsertResult, toCommandError} from './MITypes';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-class FunctionBreakpoint extends Breakpoint {
-  _functionName: string;
+var _vscodeDebugprotocol;
 
-  constructor(
-    id: ?number,
-    source: ?string,
-    line: ?number,
-    functionName: string,
-    verified: boolean,
-  ) {
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _Breakpoints;
+
+function _load_Breakpoints() {
+  return _Breakpoints = _interopRequireDefault(require('./Breakpoints'));
+}
+
+var _Breakpoints2;
+
+function _load_Breakpoints2() {
+  return _Breakpoints2 = require('./Breakpoints');
+}
+
+var _MIDebugSession;
+
+function _load_MIDebugSession() {
+  return _MIDebugSession = require('./MIDebugSession');
+}
+
+var _MIProxy;
+
+function _load_MIProxy() {
+  return _MIProxy = _interopRequireDefault(require('./MIProxy'));
+}
+
+var _MIRecord;
+
+function _load_MIRecord() {
+  return _MIRecord = require('./MIRecord');
+}
+
+var _MITypes;
+
+function _load_MITypes() {
+  return _MITypes = require('./MITypes');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class FunctionBreakpoint extends (_Breakpoints2 || _load_Breakpoints2()).Breakpoint {
+
+  constructor(id, source, line, functionName, verified) {
     super(id, source, line, null, verified);
     this._functionName = functionName;
   }
 
-  get functionName(): string {
+  get functionName() {
     return this._functionName;
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-type AddRemoveSets = {
-  addFunctions: Array<string>,
-  removeBreakpoints: Array<FunctionBreakpoint>,
-};
+class FunctionBreakpoints {
 
-export default class FunctionBreakpoints {
-  _client: MIProxy;
-  _breakpoints: Breakpoints;
-  _breakpointsByFunction: Map<string, FunctionBreakpoint>;
-
-  constructor(client: MIProxy, breakpoints: Breakpoints) {
+  constructor(client, breakpoints) {
     this._client = client;
     this._breakpoints = breakpoints;
     this._breakpointsByFunction = new Map();
   }
 
   // Returns a an array of breakpoints in the same order as the source
-  async setFunctionBreakpoints(
-    functions: Array<string>,
-  ): Promise<Array<DebugProtocol.Breakpoint>> {
+  async setFunctionBreakpoints(functions) {
     const addRemove = this._computeAddRemoveSets(functions);
 
     if (!this._client.isConnected()) {
@@ -66,41 +90,33 @@ export default class FunctionBreakpoints {
       await this._addRemoveBreakpointsViaProxy(addRemove);
     }
 
-    return [...this._breakpointsByFunction.values()].map(_ =>
-      this._breakpointToProtocolBreakpoint(_),
-    );
+    return [...this._breakpointsByFunction.values()].map(_ => this._breakpointToProtocolBreakpoint(_));
   }
 
-  async setCachedBreakpoints(): Promise<Array<DebugProtocol.Breakpoint>> {
-    const cachedBreakpoints = ((this._breakpoints.breakpointsWithNoDebuggerId(): any): Array<
-      FunctionBreakpoint,
-    >);
+  async setCachedBreakpoints() {
+    const cachedBreakpoints = this._breakpoints.breakpointsWithNoDebuggerId();
 
-    const results = await Promise.all(
-      cachedBreakpoints.map(_ => {
-        return this._setBreakpoint(_.functionName);
-      }),
-    );
+    const results = await Promise.all(cachedBreakpoints.map(_ => {
+      return this._setBreakpoint(_.functionName);
+    }));
 
     results.forEach((response, index) => {
       if (response.done) {
-        const result = breakInsertResult(response);
+        const result = (0, (_MITypes || _load_MITypes()).breakInsertResult)(response);
         const bkpt = result.bkpt[0];
-        logVerbose(`breakpoint ${JSON.stringify(bkpt)}`);
+        (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`breakpoint ${JSON.stringify(bkpt)}`);
         cachedBreakpoints[index].setId(parseInt(bkpt.number, 10));
         if (bkpt.pending == null) {
-          logVerbose(`breakpoint ${index} is now verified`);
+          (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`breakpoint ${index} is now verified`);
           cachedBreakpoints[index].setVerified();
         }
       }
     });
 
-    return cachedBreakpoints
-      .filter(_ => _.verified)
-      .map(_ => this._breakpointToProtocolBreakpoint(_));
+    return cachedBreakpoints.filter(_ => _.verified).map(_ => this._breakpointToProtocolBreakpoint(_));
   }
 
-  getBreakpointByHandle(handle: number): ?Breakpoint {
+  getBreakpointByHandle(handle) {
     return this._breakpoints.breakpointByHandle(handle);
   }
 
@@ -108,26 +124,20 @@ export default class FunctionBreakpoints {
   // a delta from the current set. We must compute the delta manually
   // to update the MI debugger.
   //
-  _computeAddRemoveSets(functions: Array<string>): AddRemoveSets {
-    const existingBreakpoints: Array<FunctionBreakpoint> = [
-      ...this._breakpointsByFunction.values(),
-    ];
+  _computeAddRemoveSets(functions) {
+    const existingBreakpoints = [...this._breakpointsByFunction.values()];
     const existingFunctions = existingBreakpoints.map(_ => _.functionName);
 
-    const removeBreakpoints = existingBreakpoints.filter(
-      _ => !functions.includes(_.functionName),
-    );
+    const removeBreakpoints = existingBreakpoints.filter(_ => !functions.includes(_.functionName));
 
-    const addFunctions: Array<string> = functions.filter(
-      _ => !existingFunctions.includes(_),
-    );
+    const addFunctions = functions.filter(_ => !existingFunctions.includes(_));
 
-    return {addFunctions, removeBreakpoints};
+    return { addFunctions, removeBreakpoints };
   }
 
   // If we're called before the proxy is set up, we need to cache the breakpoints
   // until gdb is launched
-  _cacheBreakpointsInConfiguration(addRemove: AddRemoveSets): void {
+  _cacheBreakpointsInConfiguration(addRemove) {
     for (const bpt of addRemove.removeBreakpoints) {
       this._breakpoints.removeBreakpoint(bpt);
       this._breakpointsByFunction.delete(bpt.functionName);
@@ -141,13 +151,11 @@ export default class FunctionBreakpoints {
     });
   }
 
-  async _addRemoveBreakpointsViaProxy(addRemove: AddRemoveSets): Promise<void> {
-    const promises: Array<Promise<MIResultRecord>> = [];
+  async _addRemoveBreakpointsViaProxy(addRemove) {
+    const promises = [];
 
     if (addRemove.removeBreakpoints.length !== 0) {
-      const removeCommand = `break-delete ${addRemove.removeBreakpoints
-        .map(_ => _.id)
-        .join(' ')}`;
+      const removeCommand = `break-delete ${addRemove.removeBreakpoints.map(_ => _.id).join(' ')}`;
       promises.push(this._client.sendCommand(removeCommand));
     }
 
@@ -159,14 +167,14 @@ export default class FunctionBreakpoints {
 
     if (addRemove.removeBreakpoints.length !== 0) {
       const removeResult = results.shift();
-      invariant(removeResult != null);
+
+      if (!(removeResult != null)) {
+        throw new Error('Invariant violation: "removeResult != null"');
+      }
+
       if (removeResult.result.error) {
         // this means our internal state is out of sync with the debugger
-        throw new Error(
-          `Failed to remove breakpoints which should have existed (${
-            toCommandError(removeResult).msg
-          })`,
-        );
+        throw new Error(`Failed to remove breakpoints which should have existed (${(0, (_MITypes || _load_MITypes()).toCommandError)(removeResult).msg})`);
       }
     }
 
@@ -177,65 +185,76 @@ export default class FunctionBreakpoints {
 
     const failure = results.find(_ => !_.done);
     if (failure != null) {
-      throw new Error(
-        `Failed to add function breakpokints (${toCommandError(failure).msg})`,
-      );
+      throw new Error(`Failed to add function breakpokints (${(0, (_MITypes || _load_MITypes()).toCommandError)(failure).msg})`);
     }
 
     results.forEach(_ => {
-      logVerbose(JSON.stringify(_));
-      const result = breakInsertResult(_);
+      (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(JSON.stringify(_));
+      const result = (0, (_MITypes || _load_MITypes()).breakInsertResult)(_);
 
       // We may get back a list of multiple sub breakpoints, each with a source/line,
       // but the protocol only supports one location right now.
       const bkpt = result.bkpt[0];
-      invariant(bkpt != null);
+
+      if (!(bkpt != null)) {
+        throw new Error('Invariant violation: "bkpt != null"');
+      }
+
       const location = bkpt['original-location'];
-      invariant(location != null);
+
+      if (!(location != null)) {
+        throw new Error('Invariant violation: "location != null"');
+      }
 
       // MI returns the location back as '-function functioname'
+
+
       const funcMatch = location.match(/^-function (.*)$/);
-      invariant(funcMatch != null);
+
+      if (!(funcMatch != null)) {
+        throw new Error('Invariant violation: "funcMatch != null"');
+      }
+
       const functionName = funcMatch[1];
-      invariant(functionName != null);
+
+      if (!(functionName != null)) {
+        throw new Error('Invariant violation: "functionName != null"');
+      }
 
       const verified = bkpt.pending == null;
 
-      const breakpoint = new FunctionBreakpoint(
-        parseInt(bkpt.number, 10),
-        bkpt.file,
-        parseInt(bkpt.line, 10),
-        functionName,
-        verified,
-      );
+      const breakpoint = new FunctionBreakpoint(parseInt(bkpt.number, 10), bkpt.file, parseInt(bkpt.line, 10), functionName, verified);
 
       this._breakpoints.addBreakpoint(breakpoint);
       this._breakpointsByFunction.set(breakpoint.functionName, breakpoint);
     });
   }
 
-  async _setBreakpoint(functionName: string): Promise<MIResultRecord> {
+  async _setBreakpoint(functionName) {
     // -f means insert unverified breakpoint rather than error if fn not found
     const cmd = `break-insert -f --function ${functionName}`;
     return this._client.sendCommand(cmd);
   }
 
-  _breakpointToProtocolBreakpoint(
-    breakpoint: FunctionBreakpoint,
-  ): DebugProtocol.Breakpoint {
+  _breakpointToProtocolBreakpoint(breakpoint) {
     const handle = this._breakpoints.handleForBreakpoint(breakpoint);
-    invariant(handle != null);
+
+    if (!(handle != null)) {
+      throw new Error('Invariant violation: "handle != null"');
+    }
+
     let bkpt = {
       id: handle,
       verified: breakpoint.verified,
-      source: {sourceReference: 0},
+      source: { sourceReference: 0 }
     };
     if (breakpoint.source != null) {
-      bkpt.source = {...bkpt.source, path: breakpoint.source};
+      bkpt.source = Object.assign({}, bkpt.source, { path: breakpoint.source });
     }
     if (breakpoint.line != null) {
-      bkpt = {...bkpt, line: breakpoint.line};
+      bkpt = Object.assign({}, bkpt, { line: breakpoint.line });
     }
     return bkpt;
   }
 }
+exports.default = FunctionBreakpoints;

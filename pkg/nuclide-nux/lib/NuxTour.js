@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NuxTour = undefined;
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../../modules/nuclide-commons/string');
+}
+
+var _NuxView;
+
+function _load_NuxView() {
+  return _NuxView = require('./NuxView');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +30,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {NuxTriggerModel, NuxTriggerType} from './NuxModel';
+class NuxTour {
 
-import {track} from '../../nuclide-analytics';
-import {maybeToString} from 'nuclide-commons/string';
-import {NuxView} from './NuxView';
-
-export class NuxTour {
-  _nuxList: Array<NuxView>;
-  _callback: ?() => void;
-  _currentStep: number;
-  _id: number;
-  _name: string;
-  _trigger: ?NuxTriggerModel;
-  _gatekeeperID: ?string;
-
-  constructor(
-    id: number,
-    name: string,
-    nuxList: ?Array<NuxView>,
-    trigger: ?NuxTriggerModel,
-    gatekeeperID: ?string,
-  ): void {
+  constructor(id, name, nuxList, trigger, gatekeeperID) {
     if (nuxList == null || nuxList.length < 1) {
-      throw new Error(
-        'You must create a NuxTour with at least one NuxView element!',
-      );
+      throw new Error('You must create a NuxTour with at least one NuxView element!');
     }
     this._currentStep = 0;
     this._id = id;
@@ -49,15 +53,15 @@ export class NuxTour {
     });
   }
 
-  getGatekeeperID(): ?string {
+  getGatekeeperID() {
     return this._gatekeeperID;
   }
 
-  begin(): void {
+  begin() {
     try {
       this._nuxList[0].showNux();
     } catch (err) {
-      this._track(false, (err: Error).toString());
+      this._track(false, err.toString());
     }
   }
 
@@ -68,7 +72,7 @@ export class NuxTour {
    * If marked as completed, it will not be shown again.
    * To be used when the user dismisses the NUX and doesn't want to see it again.
    */
-  forceEnd(shouldMarkAsCompleted: boolean = false): void {
+  forceEnd(shouldMarkAsCompleted = false) {
     if (shouldMarkAsCompleted) {
       this._track(true, 'NuxTour was dismissed by the user.');
     } else {
@@ -79,7 +83,7 @@ export class NuxTour {
     this._onNuxComplete(shouldMarkAsCompleted);
   }
 
-  _nextStep(stepWasSuccesful: boolean): void {
+  _nextStep(stepWasSuccesful) {
     if (!stepWasSuccesful) {
       // Mark the NUX as completed, since the step was exited prematurely (skipped)
       this.forceEnd(true);
@@ -88,47 +92,48 @@ export class NuxTour {
       try {
         this._nuxList[++this._currentStep].showNux();
       } catch (err) {
-        this._track(false, (err: Error).toString());
+        this._track(false, err.toString());
       }
     } else {
       this._onNuxComplete();
     }
   }
 
-  _onNuxComplete(completionSuccesful: boolean = true): void {
+  _onNuxComplete(completionSuccesful = true) {
     this._track(completionSuccesful);
     if (this._callback != null) {
       this._callback();
     }
   }
 
-  _track(completed: boolean = false, error: ?string): void {
-    track('nux-tour-action', {
+  _track(completed = false, error) {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nux-tour-action', {
       tourId: this._id,
       tourName: this._name,
       step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
       completed: `${completed.toString()}`,
-      error: maybeToString(error),
+      error: (0, (_string || _load_string()).maybeToString)(error)
     });
   }
 
-  setNuxCompleteCallback(callback: () => void): void {
+  setNuxCompleteCallback(callback) {
     this._callback = callback;
   }
 
-  isReady(editor: atom$TextEditor): boolean {
+  isReady(editor) {
     return this._trigger != null ? this._trigger.triggerCallback(editor) : true;
   }
 
-  getTriggerType(): ?NuxTriggerType {
+  getTriggerType() {
     return this._trigger != null ? this._trigger.triggerType : null;
   }
 
-  getID(): number {
+  getID() {
     return this._id;
   }
 
-  getName(): string {
+  getName() {
     return this._name;
   }
 }
+exports.NuxTour = NuxTour;

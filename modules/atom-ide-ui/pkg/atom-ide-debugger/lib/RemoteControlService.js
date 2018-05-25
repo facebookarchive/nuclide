@@ -1,3 +1,31 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,105 +34,75 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Observable} from 'rxjs';
-import type {IDebugService, IProcess} from './types';
-import type {
-  IProcessConfig,
-  IVspInstance,
-  VspProcessInfo,
-} from 'nuclide-debugger-common';
-import * as DebugProtocol from 'vscode-debugprotocol';
+class RemoteControlService {
 
-import {DebuggerMode} from './constants';
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class RemoteControlService {
-  _service: IDebugService;
-  _disposables: UniversalDisposable;
-
-  constructor(service: IDebugService) {
+  constructor(service) {
     this._service = service;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  onSessionEnd(
-    focusedProcess: IProcess,
-    disposables: UniversalDisposable,
-  ): void {
-    disposables.add(
-      this._service.viewModel.onDidFocusProcess(() => {
-        if (
-          !this._service
-            .getModel()
-            .getProcesses()
-            .includes(focusedProcess)
-        ) {
-          disposables.dispose();
-        }
-      }),
-    );
+  onSessionEnd(focusedProcess, disposables) {
+    disposables.add(this._service.viewModel.onDidFocusProcess(() => {
+      if (!this._service.getModel().getProcesses().includes(focusedProcess)) {
+        disposables.dispose();
+      }
+    }));
   }
 
-  async startDebugging(processInfo: VspProcessInfo): Promise<void> {
-    const instance = await this.startVspDebugging(
-      processInfo.getProcessConfig(),
-    );
+  async startDebugging(processInfo) {
+    const instance = await this.startVspDebugging(processInfo.getProcessConfig());
 
     processInfo.setVspDebuggerInstance(instance);
 
-    const {focusedProcess} = this._service.viewModel;
-    invariant(focusedProcess != null);
-    const disposables = new UniversalDisposable();
+    const { focusedProcess } = this._service.viewModel;
+
+    if (!(focusedProcess != null)) {
+      throw new Error('Invariant violation: "focusedProcess != null"');
+    }
+
+    const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     disposables.add(processInfo);
     this.onSessionEnd(focusedProcess, disposables);
   }
 
-  async startVspDebugging(config: IProcessConfig): Promise<IVspInstance> {
+  async startVspDebugging(config) {
     await this._service.startDebugging(config);
 
-    const {viewModel} = this._service;
-    const {focusedProcess} = viewModel;
-    invariant(focusedProcess != null);
+    const { viewModel } = this._service;
+    const { focusedProcess } = viewModel;
 
-    const isFocusedProcess = (): boolean => {
-      return (
-        this._service.getDebuggerMode() !== DebuggerMode.STOPPED &&
-        viewModel.focusedProcess === focusedProcess
-      );
+    if (!(focusedProcess != null)) {
+      throw new Error('Invariant violation: "focusedProcess != null"');
+    }
+
+    const isFocusedProcess = () => {
+      return this._service.getDebuggerMode() !== (_constants || _load_constants()).DebuggerMode.STOPPED && viewModel.focusedProcess === focusedProcess;
     };
 
-    const customRequest = async (
-      request: string,
-      args: any,
-    ): Promise<DebugProtocol.CustomResponse> => {
+    const customRequest = async (request, args) => {
       if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+        throw new Error('Cannot send custom requests to a no longer active debug session!');
       }
       return focusedProcess.session.custom(request, args);
     };
 
-    const observeCustomEvents = (): Observable<DebugProtocol.DebugEvent> => {
+    const observeCustomEvents = () => {
       if (!isFocusedProcess()) {
-        throw new Error(
-          'Cannot send custom requests to a no longer active debug session!',
-        );
+        throw new Error('Cannot send custom requests to a no longer active debug session!');
       }
       return focusedProcess.session.observeCustomEvents();
     };
 
-    const disposables = new UniversalDisposable();
-    const addCustomDisposable = (disposable: IDisposable): void => {
+    const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    const addCustomDisposable = disposable => {
       disposables.add(disposable);
     };
 
@@ -113,7 +111,8 @@ export default class RemoteControlService {
     return Object.freeze({
       customRequest,
       observeCustomEvents,
-      addCustomDisposable,
+      addCustomDisposable
     });
   }
 }
+exports.default = RemoteControlService;

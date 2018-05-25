@@ -1,3 +1,37 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../../../nuclide-commons/event');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../../../nuclide-commons-atom/go-to-location');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../../../nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _DiagnosticsPopup;
+
+function _load_DiagnosticsPopup() {
+  return _DiagnosticsPopup = require('./ui/DiagnosticsPopup');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +40,23 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Datatip} from '../../atom-ide-datatip/lib/types';
-import type {
-  DiagnosticUpdater,
-  DiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/types';
+const gotoLine = (file, line) => (0, (_goToLocation || _load_goToLocation()).goToLocation)(file, { line });
 
-import invariant from 'assert';
-import * as React from 'react';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
-
-const gotoLine = (file: string, line: number) => goToLocation(file, {line});
-
-function makeDatatipComponent(
-  messages: Array<DiagnosticMessage>,
-  diagnosticUpdater: DiagnosticUpdater,
-): React.ComponentType<*> {
+function makeDatatipComponent(messages, diagnosticUpdater) {
   const fixer = message => diagnosticUpdater.applyFix(message);
-  return bindObservableAsProps(
-    observableFromSubscribeFunction(cb =>
-      diagnosticUpdater.observeCodeActionsForMessage(cb),
-    ).map(codeActionsForMessage => ({
-      messages,
-      fixer,
-      goToLocation: gotoLine,
-      codeActionsForMessage,
-    })),
-    DiagnosticsPopup,
-  );
+  return (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)((0, (_event || _load_event()).observableFromSubscribeFunction)(cb => diagnosticUpdater.observeCodeActionsForMessage(cb)).map(codeActionsForMessage => ({
+    messages,
+    fixer,
+    goToLocation: gotoLine,
+    codeActionsForMessage
+  })), (_DiagnosticsPopup || _load_DiagnosticsPopup()).DiagnosticsPopup);
 }
 
-export default (async function getDiagnosticDatatip(
-  editor: TextEditor,
-  position: atom$Point,
-  messagesAtPosition: Array<DiagnosticMessage>,
-  diagnosticUpdater: DiagnosticUpdater,
-): Promise<?Datatip> {
+exports.default = async function getDiagnosticDatatip(editor, position, messagesAtPosition, diagnosticUpdater) {
   let range = null;
   for (const message of messagesAtPosition) {
     if (message.range != null) {
@@ -56,10 +64,14 @@ export default (async function getDiagnosticDatatip(
     }
   }
   diagnosticUpdater.fetchCodeActions(editor, messagesAtPosition);
-  invariant(range != null);
+
+  if (!(range != null)) {
+    throw new Error('Invariant violation: "range != null"');
+  }
+
   return {
     component: makeDatatipComponent(messagesAtPosition, diagnosticUpdater),
     pinnable: false,
-    range,
+    range
   };
-});
+};

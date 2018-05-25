@@ -1,100 +1,94 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classnames from 'classnames';
-import * as React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ListView = exports.ListViewItem = undefined;
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+var _classnames;
 
-type ListViewItemProps = {
-  index: number,
-  value?: ?Object,
-  children?: ?React.Element<any>,
-  onSelect?: (value: ?Object, index: number) => void,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _ignoreTextSelectionEvents;
+
+function _load_ignoreTextSelectionEvents() {
+  return _ignoreTextSelectionEvents = _interopRequireDefault(require('./ignoreTextSelectionEvents'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
 
 /**
  * Use ListViewItem in conjunction with ListView.
  */
-export class ListViewItem extends React.Component<ListViewItemProps> {
-  _select(value: ?Object, index: number, event: SyntheticMouseEvent<>): void {
+class ListViewItem extends _react.Component {
+  _select(value, index, event) {
     if (this.props.onSelect != null) {
       this.props.onSelect(value, index);
     }
   }
 
-  render(): React.Node {
-    const {children, index, value, ...remainingProps} = this.props;
-    return (
-      <div
-        className="nuclide-ui-listview-item"
-        {...remainingProps}
-        onClick={ignoreTextSelectionEvents(
-          this._select.bind(this, value, index),
-        )}>
-        {children}
-      </div>
+  render() {
+    const _props = this.props,
+          { children, index, value } = _props,
+          remainingProps = _objectWithoutProperties(_props, ['children', 'index', 'value']);
+    return _react.createElement(
+      'div',
+      Object.assign({
+        className: 'nuclide-ui-listview-item'
+      }, remainingProps, {
+        onClick: (0, (_ignoreTextSelectionEvents || _load_ignoreTextSelectionEvents()).default)(this._select.bind(this, value, index)) }),
+      children
     );
   }
 }
 
-type ListViewProps = {
-  /**
-   * Whether to shade even and odd items differently.
-   */
-  alternateBackground?: boolean,
-  children?: Array<React.Element<any>>,
-  /**
-   * Whether items can be selected.
-   * If specified, `onSelect` must also be specified.
-   */
-  selectable?: boolean,
-  /**
-   * Handler to be called upon selection. Called iff `selectable` is `true`.
-   */
-  onSelect?: (selectedIndex: number, selectedData: ?Object) => mixed,
-};
+exports.ListViewItem = ListViewItem;
+class ListView extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-export class ListView extends React.Component<ListViewProps> {
-  _handleSelect = (
-    value: ?Object,
-    index: number,
-    event: SyntheticMouseEvent<>,
-  ): void => {
-    if (this.props.selectable && this.props.onSelect != null) {
-      this.props.onSelect(index, value);
-    }
-  };
+    return _temp = super(...args), this._handleSelect = (value, index, event) => {
+      if (this.props.selectable && this.props.onSelect != null) {
+        this.props.onSelect(index, value);
+      }
+    }, _temp;
+  }
 
-  render(): React.Node {
-    const {children, alternateBackground, selectable} = this.props;
-    const renderedItems = React.Children.map(
-      children,
-      (child: React.Element<any>, index: number) =>
-        React.cloneElement(child, {
-          index,
-          onSelect: this._handleSelect,
-        }),
-    );
-    const className = classnames({
+  render() {
+    const { children, alternateBackground, selectable } = this.props;
+    const renderedItems = _react.Children.map(children, (child, index) => _react.cloneElement(child, {
+      index,
+      onSelect: this._handleSelect
+    }));
+    const className = (0, (_classnames || _load_classnames()).default)({
       'native-key-bindings': true,
       'nuclide-ui-listview': true,
       'nuclide-ui-listview-highlight-odd': alternateBackground,
-      'nuclide-ui-listview-selectable': selectable,
+      'nuclide-ui-listview-selectable': selectable
     });
-    return (
-      <div className={className} tabIndex={-1}>
-        {renderedItems}
-      </div>
+    return _react.createElement(
+      'div',
+      { className: className, tabIndex: -1 },
+      renderedItems
     );
   }
 }
+exports.ListView = ListView;

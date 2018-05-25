@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TypeCoverageProvider = undefined;
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+// Provides Diagnostics for un-typed regions of Hack code.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,43 +25,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {LanguageService} from './LanguageService';
+class TypeCoverageProvider {
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-
-export type TypeCoverageConfig = {|
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-  icon?: IconName,
-|};
-
-// Provides Diagnostics for un-typed regions of Hack code.
-export class TypeCoverageProvider<T: LanguageService> {
-  displayName: string;
-  priority: number;
-  grammarScopes: string;
-  icon: IconName | void;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _onToggleValue: boolean;
-
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    icon: IconName | void,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  constructor(name, selector, priority, analyticsEventName, icon, connectionToLanguageService) {
     this.displayName = name;
     this.priority = priority;
     this.grammarScopes = selector;
@@ -49,36 +39,18 @@ export class TypeCoverageProvider<T: LanguageService> {
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
     this._onToggleValue = false;
-    this._connectionToLanguageService
-      .observeValues()
-      .subscribe(async languageService => {
-        const ls = await languageService;
-        ls.onToggleCoverage(this._onToggleValue);
-      });
+    this._connectionToLanguageService.observeValues().subscribe(async languageService => {
+      const ls = await languageService;
+      ls.onToggleCoverage(this._onToggleValue);
+    });
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: TypeCoverageConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-type-coverage',
-      config.version,
-      new TypeCoverageProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        config.icon,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-type-coverage', config.version, new TypeCoverageProvider(name, selector, config.priority, config.analyticsEventName, config.icon, connectionToLanguageService));
   }
 
-  async getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-    return trackTiming(this._analyticsEventName, async () => {
+  async getCoverage(path) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, async () => {
       const languageService = this._connectionToLanguageService.getForUri(path);
       if (languageService == null) {
         return null;
@@ -88,15 +60,12 @@ export class TypeCoverageProvider<T: LanguageService> {
     });
   }
 
-  async onToggle(on: boolean): Promise<void> {
+  async onToggle(on) {
     this._onToggleValue = on;
-    await Promise.all(
-      Array.from(this._connectionToLanguageService.values()).map(
-        async languageService => {
-          const ls = await languageService;
-          ls.onToggleCoverage(on);
-        },
-      ),
-    );
+    await Promise.all(Array.from(this._connectionToLanguageService.values()).map(async languageService => {
+      const ls = await languageService;
+      ls.onToggleCoverage(on);
+    }));
   }
 }
+exports.TypeCoverageProvider = TypeCoverageProvider;

@@ -1,3 +1,11 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +14,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -15,25 +23,25 @@
  * Each individual loaded package's config is a subconfig of the root package.
  */
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-
 let packageName = null;
 
 /**
  * Sets the root package name.
  * This gets automatically called from FeatureLoader.
  */
-function setPackageName(name: string): void {
+function setPackageName(name) {
   packageName = name;
 }
 
-function getPackageName(): string {
-  invariant(packageName != null, 'No package name available');
+function getPackageName() {
+  if (!(packageName != null)) {
+    throw new Error('No package name available');
+  }
+
   return packageName;
 }
 
-function formatKeyPath(keyPath: string): string {
+function formatKeyPath(keyPath) {
   if (packageName == null) {
     return keyPath;
   }
@@ -52,32 +60,14 @@ function formatKeyPath(keyPath: string): string {
  * Example:
  *   const config: MyConfigType = (featureConfig.get('config-name'): any);
  */
-function get(
-  keyPath: string,
-  options?: {
-    excludeSources?: Array<string>,
-    sources?: Array<string>,
-    scope?: atom$ScopeDescriptorLike,
-  },
-): mixed {
+function get(keyPath, options) {
   // atom.config.get will crash if the second arg is present and undefined.
   // It does not crash if the second arg is missing.
-  return atom.config.get(
-    formatKeyPath(keyPath),
-    ...(options == null ? [] : [options]),
-  );
+  return atom.config.get(formatKeyPath(keyPath), ...(options == null ? [] : [options]));
 }
 
-function getWithDefaults<T>(
-  keyPath: string,
-  defaults: T,
-  options?: {
-    excludeSources?: Array<string>,
-    sources?: Array<string>,
-    scope?: atom$ScopeDescriptorLike,
-  },
-): T {
-  const current: any = get(keyPath, options);
+function getWithDefaults(keyPath, defaults, options) {
+  const current = get(keyPath, options);
   return current == null ? defaults : current;
 }
 
@@ -85,7 +75,7 @@ function getWithDefaults<T>(
  * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.getSchema`.
  */
-function getSchema(keyPath: string): atom$ConfigSchema {
+function getSchema(keyPath) {
   return atom.config.getSchema(formatKeyPath(keyPath));
 }
 
@@ -94,28 +84,16 @@ function getSchema(keyPath: string): atom$ConfigSchema {
  *
  * To observe changes on the entire config, use `atom.config.observe`.
  */
-function observe(
-  keyPath: string,
-  optionsOrCallback?:
-    | {scope?: atom$ScopeDescriptorLike}
-    | ((value: any) => mixed),
-  callback?: (value: any) => mixed,
-): IDisposable {
-  return atom.config.observe(
-    formatKeyPath(keyPath),
-    ...Array.prototype.slice.call(arguments, 1),
-  );
+function observe(keyPath, optionsOrCallback, callback) {
+  return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
 }
 
 /*
  * Behaves similarly to the `observe` function, but returns a stream of values, rather
  * then receiving a callback.
  */
-function observeAsStream(
-  keyPath: string,
-  options?: {scope?: atom$ScopeDescriptorLike} = {},
-): Observable<mixed> {
-  return Observable.create(observer => {
+function observeAsStream(keyPath, options = {}) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     const disposable = observe(keyPath, options, observer.next.bind(observer));
     return disposable.dispose.bind(disposable);
   });
@@ -125,80 +103,46 @@ function observeAsStream(
  * Takes and returns the same types as `atom.config.onDidChange` except `keyPath` is not optional.
  * To listen to changes on all key paths, use `atom.config.onDidChange`.
  */
-function onDidChange(
-  keyPath: string,
-  optionsOrCallback?:
-    | {scope?: atom$ScopeDescriptorLike}
-    | ((event: {oldValue: mixed, newValue: mixed}) => mixed),
-  callback?: (event: {oldValue: mixed, newValue: mixed}) => mixed,
-): IDisposable {
-  return atom.config.onDidChange(
-    formatKeyPath(keyPath),
-    ...Array.prototype.slice.call(arguments, 1),
-  );
+function onDidChange(keyPath, optionsOrCallback, callback) {
+  return atom.config.onDidChange(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
 }
 
 /*
  * Sets the value of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.set`.
  */
-function set(
-  keyPath: string,
-  value: ?mixed,
-  options?: {
-    scopeSelector?: string,
-    source?: string,
-  },
-): boolean {
-  return atom.config.set(
-    formatKeyPath(keyPath),
-    ...Array.prototype.slice.call(arguments, 1),
-  );
+function set(keyPath, value, options) {
+  return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
 }
 
 /*
  * Sets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.setSchema`.
  */
-function setSchema(keyPath: string, schema: Object): void {
-  return atom.config.setSchema(
-    formatKeyPath(keyPath),
-    ...Array.prototype.slice.call(arguments, 1),
-  );
+function setSchema(keyPath, schema) {
+  return atom.config.setSchema(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
 }
 
 /*
  * Restores a setting for a Nuclide feature key to its default value. Takes and returns the same
  * types as `atom.config.set`.
  */
-function unset(
-  keyPath: string,
-  options?: {
-    scopeSelector?: string,
-    source?: string,
-  },
-): void {
-  return atom.config.unset(
-    formatKeyPath(keyPath),
-    ...Array.prototype.slice.call(arguments, 1),
-  );
+function unset(keyPath, options) {
+  return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
 }
 
 /**
  * Returns `true` if the feature with the given name is disabled either directly or because the
  * container package itself is disabled.
  */
-function isFeatureDisabled(name: string): boolean {
+function isFeatureDisabled(name) {
   if (packageName == null) {
     return atom.packages.isPackageDisabled(name);
   }
-  return (
-    atom.packages.isPackageDisabled(packageName) ||
-    !atom.config.get(`${packageName}.use.${name}`)
-  );
+  return atom.packages.isPackageDisabled(packageName) || !atom.config.get(`${packageName}.use.${name}`);
 }
 
-export default {
+exports.default = {
   formatKeyPath,
   setPackageName,
   getPackageName,
@@ -211,5 +155,5 @@ export default {
   set,
   setSchema,
   unset,
-  isFeatureDisabled,
+  isFeatureDisabled
 };

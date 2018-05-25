@@ -1,3 +1,31 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _MIDebugSession;
+
+function _load_MIDebugSession() {
+  return _MIDebugSession = require('./MIDebugSession');
+}
+
+var _MIProxy;
+
+function _load_MIProxy() {
+  return _MIProxy = _interopRequireDefault(require('./MIProxy'));
+}
+
+var _VariableReference;
+
+function _load_VariableReference() {
+  return _VariableReference = _interopRequireDefault(require('./VariableReference'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// An ExpressionVariableReference refers to a watch or hover expression rather
+// than a variable rooted in a stack frame scope.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,81 +34,58 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Variable} from 'vscode-debugprotocol';
-
-import {logVerbose} from './MIDebugSession';
-import MIProxy from './MIProxy';
-import VariableReference from './VariableReference';
-
-// An ExpressionVariableReference refers to a watch or hover expression rather
-// than a variable rooted in a stack frame scope.
-export default class ExpressionVariableReference extends VariableReference {
-  constructor(
-    client: MIProxy,
-    variables: Variables,
-    threadId: ?number,
-    frameIndex: ?number,
-    expression: string,
-  ) {
-    super({client, variables, expression, threadId, frameIndex});
+class ExpressionVariableReference extends (_VariableReference || _load_VariableReference()).default {
+  constructor(client, variables, threadId, frameIndex, expression) {
+    super({ client, variables, expression, threadId, frameIndex });
   }
 
   // Unlike variable enumeration, getVariables here can only return exactly
   // one variable.
-  async getVariables(start: ?number, count: ?number): Promise<Array<Variable>> {
+  async getVariables(start, count) {
     const value = await this.getValue();
     const typeClass = await this.getTypeClass(value);
 
     const resolvedType = await this.getType();
 
-    logVerbose(
-      `eval name ${
-        this._expression
-      } type ${resolvedType} value ${value} typeClass ${typeClass}`,
-    );
+    (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`eval name ${this._expression} type ${resolvedType} value ${value} typeClass ${typeClass}`);
 
-    let variable: Variable = {
+    let variable = {
       name: this._expression,
       value,
       type: resolvedType,
-      variablesReference: 0,
+      variablesReference: 0
     };
 
     if (typeClass !== 'simple') {
-      const handle = this._variables.nestedVariableReference(
-        this,
-        this._expression,
-        await this._getVarName(),
-      );
+      const handle = this._variables.nestedVariableReference(this, this._expression, (await this._getVarName()));
       const childCount = await this.getChildCount();
 
       if (typeClass === 'indexed') {
-        variable = {
-          ...variable,
+        variable = Object.assign({}, variable, {
           indexedVariables: childCount,
-          variablesReference: handle,
-        };
+          variablesReference: handle
+        });
       } else if (typeClass === 'named') {
-        variable = {
-          ...variable,
+        variable = Object.assign({}, variable, {
           namedVariables: childCount,
-          variablesReference: handle,
-        };
+          variablesReference: handle
+        });
       }
     }
 
     return [variable];
   }
 
-  get needsDeletion(): boolean {
+  get needsDeletion() {
     return true;
   }
 
-  get qualifiedName(): string {
+  get qualifiedName() {
     return `eval.${this._expression}`;
   }
 }
+exports.default = ExpressionVariableReference;

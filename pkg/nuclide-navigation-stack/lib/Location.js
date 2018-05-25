@@ -1,55 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPathOfLocation = getPathOfLocation;
+exports.getLocationOfEditor = getLocationOfEditor;
+exports.editorOfLocation = editorOfLocation;
 
-import invariant from 'assert';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('../../../modules/nuclide-commons-atom/go-to-location');
+}
 
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position.
-export type UriLocation = {
-  type: 'uri',
-  uri: NuclideUri,
-  bufferPosition: atom$Point,
-};
-export type EditorLocation = {
-  type: 'editor',
-  editor: atom$TextEditor,
-  bufferPosition: atom$Point,
-};
-export type Location = EditorLocation | UriLocation;
-
-export function getPathOfLocation(location: Location): ?NuclideUri {
+function getPathOfLocation(location) {
   return location.type === 'uri' ? location.uri : location.editor.getPath();
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function getLocationOfEditor(editor: atom$TextEditor): EditorLocation {
+function getLocationOfEditor(editor) {
   return {
     type: 'editor',
     editor,
-    bufferPosition: editor.getCursorBufferPosition(),
+    bufferPosition: editor.getCursorBufferPosition()
   };
 }
 
-export async function editorOfLocation(
-  location: Location,
-): Promise<atom$TextEditor> {
+async function editorOfLocation(location) {
   if (location.type === 'uri') {
-    return goToLocation(location.uri);
+    return (0, (_goToLocation || _load_goToLocation()).goToLocation)(location.uri);
   } else {
-    invariant(location.type === 'editor');
+    if (!(location.type === 'editor')) {
+      throw new Error('Invariant violation: "location.type === \'editor\'"');
+    }
+
     const editor = location.editor;
     const pane = atom.workspace.paneForItem(editor);
-    invariant(pane != null);
+
+    if (!(pane != null)) {
+      throw new Error('Invariant violation: "pane != null"');
+    }
+
     pane.activateItem(editor);
     pane.activate();
     return editor;

@@ -1,3 +1,48 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDebuggerArgs = getDebuggerArgs;
+exports.getLaunchArgs = getLaunchArgs;
+exports.getHhvmStackTraces = getHhvmStackTraces;
+exports.createLogFilePaste = createLogFilePaste;
+exports.getAttachTargetList = getAttachTargetList;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _serverPort;
+
+function _load_serverPort() {
+  return _serverPort = require('../../../modules/nuclide-commons/serverPort');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _fs = _interopRequireDefault(require('fs'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DEFAULT_HHVM_PATH = '/usr/local/bin/hhvm';
+
+// The default path (relative to Hack Root) to use for the startup document,
+// which is loaded by the dummy request thread in the debugger backend.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,67 +50,35 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAvailableServerPort} from 'nuclide-commons/serverPort';
-import fsPromise from 'nuclide-commons/fsPromise';
-import os from 'os';
-import {runCommand} from 'nuclide-commons/process';
-import fs from 'fs';
-
-export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
-
-const DEFAULT_HHVM_PATH = '/usr/local/bin/hhvm';
-
-// The default path (relative to Hack Root) to use for the startup document,
-// which is loaded by the dummy request thread in the debugger backend.
 const DEFAULT_STARTUP_DOC_PATH = 'scripts/vsdebug_includes.php';
 
-export async function getDebuggerArgs(
-  config: HHVMAttachConfig | HHVMLaunchConfig,
-): Promise<Object> {
+async function getDebuggerArgs(config) {
   switch (config.action) {
     case 'launch':
-      const launchConfig: HHVMLaunchConfig = (config: any);
+      const launchConfig = config;
       return getLaunchArgs(launchConfig);
     case 'attach':
-      const attachConfig: HHVMAttachConfig = (config: any);
+      const attachConfig = config;
       return _getAttachArgs(attachConfig);
     default:
       throw new Error('Invalid launch/attach action:' + JSON.stringify(config));
   }
 }
 
-function _expandPath(path: string, cwd: string): string {
+function _expandPath(path, cwd) {
   // Expand a path to interpret ~/ as home and ./ as relative
   // to the current working directory.
-  return path.startsWith('./')
-    ? nuclideUri.resolve(
-        cwd != null ? nuclideUri.expandHomeDir(cwd) : '',
-        path.substring(2),
-      )
-    : nuclideUri.expandHomeDir(path);
+  return path.startsWith('./') ? (_nuclideUri || _load_nuclideUri()).default.resolve(cwd != null ? (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(cwd) : '', path.substring(2)) : (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(path);
 }
 
-export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
-  const launchWrapperCommand =
-    config.launchWrapperCommand != null &&
-    config.launchWrapperCommand.trim() !== ''
-      ? _expandPath(
-          config.launchWrapperCommand,
-          nuclideUri.dirname(config.targetUri),
-        )
-      : null;
+async function getLaunchArgs(config) {
+  const launchWrapperCommand = config.launchWrapperCommand != null && config.launchWrapperCommand.trim() !== '' ? _expandPath(config.launchWrapperCommand, (_nuclideUri || _load_nuclideUri()).default.dirname(config.targetUri)) : null;
 
-  const cwd =
-    config.cwd != null && config.cwd.trim() !== ''
-      ? config.cwd
-      : nuclideUri.dirname(config.targetUri);
+  const cwd = config.cwd != null && config.cwd.trim() !== '' ? config.cwd : (_nuclideUri || _load_nuclideUri()).default.dirname(config.targetUri);
 
   // Expand paths in the launch config from the front end.
   if (config.hhvmRuntimePath != null) {
@@ -77,16 +90,13 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
   const deferArgs = [];
   let debugPort = null;
   if (config.deferLaunch) {
-    debugPort = await getAvailableServerPort();
+    debugPort = await (0, (_serverPort || _load_serverPort()).getAvailableServerPort)();
     deferArgs.push('--vsDebugPort');
     deferArgs.push(debugPort);
   }
 
   const hhvmPath = await _getHhvmPath(config);
-  const launchArgs =
-    launchWrapperCommand != null
-      ? [launchWrapperCommand, config.launchScriptPath]
-      : [config.launchScriptPath];
+  const launchArgs = launchWrapperCommand != null ? [launchWrapperCommand, config.launchScriptPath] : [config.launchScriptPath];
 
   let hhvmRuntimeArgs = config.hhvmRuntimeArgs || [];
   try {
@@ -95,16 +105,9 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
     hhvmRuntimeArgs = fbConfig.getHHVMRuntimeArgs(config);
   } catch (_) {}
 
-  const hhvmArgs = [
-    ...hhvmRuntimeArgs,
-    '--mode',
-    'vsdebug',
-    ...deferArgs,
-    ...launchArgs,
-    ...config.scriptArgs,
-  ];
+  const hhvmArgs = [...hhvmRuntimeArgs, '--mode', 'vsdebug', ...deferArgs, ...launchArgs, ...config.scriptArgs];
 
-  const startupDocumentPath: ?string = await _getStartupDocumentPath(config);
+  const startupDocumentPath = await _getStartupDocumentPath(config);
 
   const logFilePath = await _getHHVMLogFilePath();
 
@@ -114,39 +117,35 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
     startupDocumentPath,
     logFilePath,
     debugPort,
-    cwd,
+    cwd
   };
 }
 
-async function _getHHVMLogFilePath(): Promise<string> {
-  const path = nuclideUri.join(
-    os.tmpdir(),
-    `nuclide-${os.userInfo().username}-logs`,
-    'hhvm-debugger.log',
-  );
+async function _getHHVMLogFilePath() {
+  const path = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), `nuclide-${_os.default.userInfo().username}-logs`, 'hhvm-debugger.log');
 
   await _rotateHHVMLogs(path);
   await _createLogFile(path);
   return path;
 }
 
-async function _createLogFile(path: string): Promise<void> {
+async function _createLogFile(path) {
   // Ensure the log file exists, and is write-able by everyone so that
   // HHVM, which is running as a different user, can append to it.
   const mode = 0o666;
   try {
-    const fd = await fsPromise.open(path, 'a+', mode);
+    const fd = await (_fsPromise || _load_fsPromise()).default.open(path, 'a+', mode);
     if (fd >= 0) {
-      await fsPromise.chmod(path, mode);
+      await (_fsPromise || _load_fsPromise()).default.chmod(path, mode);
     }
-    fs.close(fd, () => {});
+    _fs.default.close(fd, () => {});
   } catch (_) {}
 }
 
-async function _rotateHHVMLogs(path: string): Promise<void> {
+async function _rotateHHVMLogs(path) {
   let fileStat;
   try {
-    fileStat = await fsPromise.stat(path);
+    fileStat = await (_fsPromise || _load_fsPromise()).default.stat(path);
   } catch (_) {
     return;
   }
@@ -161,23 +160,23 @@ async function _rotateHHVMLogs(path: string): Promise<void> {
       const toFile = path + (i + 1);
 
       // eslint-disable-next-line no-await-in-loop
-      const exists = await fsPromise.exists(toFile);
+      const exists = await (_fsPromise || _load_fsPromise()).default.exists(toFile);
       if (exists) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          await fsPromise.unlink(toFile).catch(() => {});
+          await (_fsPromise || _load_fsPromise()).default.unlink(toFile).catch(() => {});
         } catch (_) {}
       }
 
       try {
         // eslint-disable-next-line no-await-in-loop
-        await fsPromise.mv(fromFile, toFile).catch(() => {});
+        await (_fsPromise || _load_fsPromise()).default.mv(fromFile, toFile).catch(() => {});
       } catch (_) {}
     }
   }
 }
 
-export async function getHhvmStackTraces(): Promise<Array<string>> {
+async function getHhvmStackTraces() {
   try {
     // $FlowFB
     const fbConfig = require('./fbConfig');
@@ -186,22 +185,18 @@ export async function getHhvmStackTraces(): Promise<Array<string>> {
   return [];
 }
 
-export async function createLogFilePaste(): Promise<string> {
+async function createLogFilePaste() {
   try {
     // $FlowFB
     const fbPaste = require('../../fb-pastebin');
-    return fsPromise
-      .readFile(await _getHHVMLogFilePath(), 'utf8')
-      .then(contents =>
-        fbPaste.createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
-      );
+    return (_fsPromise || _load_fsPromise()).default.readFile((await _getHHVMLogFilePath()), 'utf8').then(contents => fbPaste.createPasteFromContents(contents, { title: 'HHVM-Debugger' }));
   } catch (error) {
     return '';
   }
 }
 
-async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
-  const startupDocumentPath: ?string = await _getStartupDocumentPath(config);
+async function _getAttachArgs(config) {
+  const startupDocumentPath = await _getStartupDocumentPath(config);
   const logFilePath = await _getHHVMLogFilePath();
 
   let debugPort = config.debugPort;
@@ -223,40 +218,35 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
   return {
     debugPort,
     startupDocumentPath,
-    logFilePath,
+    logFilePath
   };
 }
 
-async function _getStartupDocumentPath(
-  config: HHVMAttachConfig | HHVMLaunchConfig,
-): Promise<?string> {
+async function _getStartupDocumentPath(config) {
   if (config.startupDocumentPath != null) {
-    const configPath = nuclideUri.expandHomeDir(config.startupDocumentPath);
-    if (await fsPromise.exists(configPath)) {
+    const configPath = (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(config.startupDocumentPath);
+    if (await (_fsPromise || _load_fsPromise()).default.exists(configPath)) {
       return configPath;
     }
   }
 
   // Otherwise, fall back to the default path, relative to the current
   // hack root directory.
-  const filePath = nuclideUri.getPath(config.targetUri);
-  const hackRoot = await fsPromise.findNearestFile('.hhconfig', filePath);
-  const startupDocPath = nuclideUri.join(
-    hackRoot != null ? hackRoot : '',
-    DEFAULT_STARTUP_DOC_PATH,
-  );
+  const filePath = (_nuclideUri || _load_nuclideUri()).default.getPath(config.targetUri);
+  const hackRoot = await (_fsPromise || _load_fsPromise()).default.findNearestFile('.hhconfig', filePath);
+  const startupDocPath = (_nuclideUri || _load_nuclideUri()).default.join(hackRoot != null ? hackRoot : '', DEFAULT_STARTUP_DOC_PATH);
 
-  if (await fsPromise.exists(startupDocPath)) {
+  if (await (_fsPromise || _load_fsPromise()).default.exists(startupDocPath)) {
     return startupDocPath;
   }
 
   return null;
 }
 
-async function _getHhvmPath(config: HHVMLaunchConfig): Promise<string> {
+async function _getHhvmPath(config) {
   // If the client specified an HHVM runtime path, and it exists, use that.
   if (config.hhvmRuntimePath != null && config.hhvmRuntimePath !== '') {
-    const exists = await fsPromise.exists(config.hhvmRuntimePath);
+    const exists = await (_fsPromise || _load_fsPromise()).default.exists(config.hhvmRuntimePath);
     if (exists) {
       return String(config.hhvmRuntimePath);
     }
@@ -271,25 +261,15 @@ async function _getHhvmPath(config: HHVMLaunchConfig): Promise<string> {
   }
 }
 
-export async function getAttachTargetList(): Promise<
-  Array<{pid: number, command: string}>,
-> {
-  const commands = await runCommand(
-    'ps',
-    ['-e', '-o', 'pid,args'],
-    {},
-  ).toPromise();
-  return commands
-    .toString()
-    .split('\n')
-    .filter(line => line.indexOf('vsDebugPort') > 0)
-    .map(line => {
-      const words = line.trim().split(' ');
-      const pid = Number(words[0]);
-      const command = words.slice(1).join(' ');
-      return {
-        pid,
-        command,
-      };
-    });
+async function getAttachTargetList() {
+  const commands = await (0, (_process || _load_process()).runCommand)('ps', ['-e', '-o', 'pid,args'], {}).toPromise();
+  return commands.toString().split('\n').filter(line => line.indexOf('vsDebugPort') > 0).map(line => {
+    const words = line.trim().split(' ');
+    const pid = Number(words[0]);
+    const command = words.slice(1).join(' ');
+    return {
+      pid,
+      command
+    };
+  });
 }

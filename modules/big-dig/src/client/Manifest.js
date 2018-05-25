@@ -1,25 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CorruptManifestError = undefined;
+exports.createManifest = createManifest;
+exports.serializeManifest = serializeManifest;
+exports.deserializeManifest = deserializeManifest;
+exports.compareManifests = compareManifests;
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _path = _interopRequireDefault(require('path'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
+ * Thrown when a manifest does not have a valid structure.
  */
 
-import crypto from 'crypto';
-import path from 'path';
-
-export type FileStats = {
-  mode: number,
-  uid: number,
-  gid: number,
-  size: number,
-  mtime: number,
-};
 
 /**
  * Represents a "hash" of the state of a file tree. Ideally, comparing a stored manifest with a
@@ -32,38 +31,40 @@ export type FileStats = {
  * themselves. (The justification is that any change to the file is likely to also change its size
  * or last-modified time).
  */
-export type Manifest = {
-  version: string,
-  hash: string,
-};
+
 
 /**
  * Convenience type to document how we expect a manifest to look when we read it from a file. But
  * without trusting that the structure is valid.
  */
-type UntrustedManifest = {
-  version?: string | any,
-  hash?: string | any,
-};
-
 /**
- * Thrown when a manifest does not have a valid structure.
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
  */
-export class CorruptManifestError extends Error {}
 
-/**
- * Verifies that the manifest has a valid structure; throws `ManifestError` if not.
- * @param {*} manifest an (untrusted) manifest object.
- */
-function verifyManifest(manifest: UntrustedManifest): Manifest {
+class CorruptManifestError extends Error {}
+
+exports.CorruptManifestError = CorruptManifestError; /**
+                                                      * Verifies that the manifest has a valid structure; throws `ManifestError` if not.
+                                                      * @param {*} manifest an (untrusted) manifest object.
+                                                      */
+
+function verifyManifest(manifest) {
   if (typeof manifest.version !== 'string') {
     throw corrupt('Invalid version in manifest');
   }
   if (typeof manifest.hash !== 'string') {
     throw corrupt('Invalid hash property in manifest');
   }
-  const {version, hash} = manifest;
-  return {version, hash};
+  const { version, hash } = manifest;
+  return { version, hash };
 }
 
 /**
@@ -76,35 +77,24 @@ function verifyManifest(manifest: UntrustedManifest): Manifest {
  * @param files A list of all [sub]files and [sub]directories under `basePath`, paired with the
  *    output of `stat` on each file. These should be absolute paths.
  */
-export function createManifest(
-  version: string,
-  manifestFilename: string,
-  basePath: string,
-  files: $ReadOnlyArray<{
-    filename: string,
-    +stats: FileStats & {isDirectory(): boolean},
-  }>,
-): Manifest {
-  const hash = crypto.createHash('sha1');
+function createManifest(version, manifestFilename, basePath, files) {
+  const hash = _crypto.default.createHash('sha1');
   const sortedFiles = files
-    // Exclude the manifest file and directories from the manifest.
-    .filter(
-      file => file.filename !== manifestFilename && !file.stats.isDirectory(),
-    )
-    .sort((a, b) => a.filename.localeCompare(b.filename));
+  // Exclude the manifest file and directories from the manifest.
+  .filter(file => file.filename !== manifestFilename && !file.stats.isDirectory()).sort((a, b) => a.filename.localeCompare(b.filename));
   for (const file of sortedFiles) {
-    const filename = path.relative(basePath, file.filename);
-    const {mode, uid, gid, size, mtime} = file.stats;
+    const filename = _path.default.relative(basePath, file.filename);
+    const { mode, uid, gid, size, mtime } = file.stats;
     hash.update(`${filename}:${mode}.${uid}.${gid}.${size}.${mtime}`, 'utf8');
   }
-  return {version, hash: hash.digest('hex')};
+  return { version, hash: hash.digest('hex') };
 }
 
 /**
  * Serializes the manifest into a `Buffer` that can be written to a manifest file.
  * @param manifest
  */
-export function serializeManifest(manifest: Manifest): Buffer {
+function serializeManifest(manifest) {
   return new Buffer(JSON.stringify(manifest), 'utf8');
 }
 
@@ -113,14 +103,9 @@ export function serializeManifest(manifest: Manifest): Buffer {
  * Throws `ManifestError` if `data` does not encode a valid manifest structure.
  * @param data A buffer containing the manifest data loaded from a file.
  */
-export function deserializeManifest(data: Buffer): Manifest {
+function deserializeManifest(data) {
   return verifyManifest(parseManifest(data.toString('utf8')));
 }
-
-export type ManifestCheckResult =
-  | {|status: 'changed-files', message: string|}
-  | {|status: 'diff-versions', message: string|}
-  | {|status: 'equal'|};
 
 /**
  * Compares two manifests for agreement on the state of the system.
@@ -134,27 +119,24 @@ export type ManifestCheckResult =
  * @param current The observed state.
  * @return `{status: 'okay'}` if the two manifests agree on the state of the system.
  */
-export function compareManifests(
-  expected: Manifest,
-  current: Manifest,
-): ManifestCheckResult {
+function compareManifests(expected, current) {
   if (expected.version !== current.version) {
-    return {status: 'diff-versions', message: 'Different versions'};
+    return { status: 'diff-versions', message: 'Different versions' };
   } else if (expected.hash !== current.hash) {
     return {
       status: 'changed-files',
-      message: 'Files are missing, have been added, or file-stats have changed',
+      message: 'Files are missing, have been added, or file-stats have changed'
     };
   }
 
-  return {status: 'equal'};
+  return { status: 'equal' };
 }
 
-function corrupt(message: string): CorruptManifestError {
+function corrupt(message) {
   return new CorruptManifestError(message);
 }
 
-function parseManifest(data: string): UntrustedManifest {
+function parseManifest(data) {
   try {
     return JSON.parse(data);
   } catch (error) {

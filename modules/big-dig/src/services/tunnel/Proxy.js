@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Proxy = undefined;
+
+var _net = _interopRequireDefault(require('net'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +23,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Observable, Subscription} from 'rxjs';
-import type {TunnelMessage} from './types.js';
+const logger = (0, (_log4js || _load_log4js()).getLogger)('tunnel-proxy');
 
-import net from 'net';
+class Proxy {
 
-import {getLogger} from 'log4js';
-
-const logger = getLogger('tunnel-proxy');
-
-export type Transport = {
-  send(string): void,
-  onMessage(): Observable<string>,
-};
-
-export class Proxy {
-  _port: number;
-  _remotePort: number;
-  _transport: Transport;
-  _server: ?net.Server;
-  _subscription: ?Subscription;
-  _idToSocket: Map<number, net.Socket>;
-
-  constructor(port: number, remotePort: number, transport: Transport) {
+  constructor(port, remotePort, transport) {
     this._port = port;
     this._remotePort = remotePort;
     this._transport = transport;
@@ -41,47 +40,39 @@ export class Proxy {
     this._idToSocket = new Map();
   }
 
-  static async createProxy(
-    port: number,
-    remotePort: number,
-    transport: Transport,
-  ): Promise<Proxy> {
+  static async createProxy(port, remotePort, transport) {
     const proxy = new Proxy(port, remotePort, transport);
     await proxy.startListening();
 
     return proxy;
   }
 
-  async startListening(): Promise<void> {
+  async startListening() {
     return new Promise((resolve, reject) => {
-      this._server = net.createServer(socket => {
-        const clientId: number = socket.remotePort;
+      this._server = _net.default.createServer(socket => {
+        const clientId = socket.remotePort;
         this._idToSocket.set(clientId, socket);
         this._sendMessage({
           event: 'connection',
-          clientId,
+          clientId
         });
 
-        this._subscription = this._transport
-          .onMessage()
-          .map(msg => {
-            return JSON.parse(msg);
-          })
-          .filter(msg => {
-            return msg.clientId === clientId;
-          })
-          .subscribe(msg => {
-            if (msg.event === 'data') {
-              socket.write(Buffer.from(msg.arg, 'base64'));
-            }
-          });
+        this._subscription = this._transport.onMessage().map(msg => {
+          return JSON.parse(msg);
+        }).filter(msg => {
+          return msg.clientId === clientId;
+        }).subscribe(msg => {
+          if (msg.event === 'data') {
+            socket.write(Buffer.from(msg.arg, 'base64'));
+          }
+        });
 
         socket.on('data', arg => {
           logger.trace('socket data: ', arg);
           this._sendMessage({
             event: 'data',
             arg: arg.toString('base64'),
-            clientId,
+            clientId
           });
         });
 
@@ -92,29 +83,29 @@ export class Proxy {
             this._sendMessage({
               event,
               arg,
-              clientId,
+              clientId
             });
           });
         });
       });
 
-      this._server.listen({port: this._port}, () => {
+      this._server.listen({ port: this._port }, () => {
         // send a message to create the connection manager
         this._sendMessage({
           event: 'proxyCreated',
           port: this._port,
-          remotePort: this._remotePort,
+          remotePort: this._remotePort
         });
         resolve();
       });
     });
   }
 
-  _sendMessage(msg: TunnelMessage): void {
+  _sendMessage(msg) {
     this._transport.send(JSON.stringify(msg));
   }
 
-  close(): void {
+  close() {
     if (this._server != null) {
       this._server.close();
       this._server = null;
@@ -128,3 +119,4 @@ export class Proxy {
     });
   }
 }
+exports.Proxy = Proxy;

@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createTunnel = createTunnel;
+
+var _Proxy;
+
+function _load_Proxy() {
+  return _Proxy = require('./Proxy');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,17 +19,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Transport} from './Proxy';
-import {Proxy} from './Proxy';
-
-export async function createTunnel(
-  localPort: number,
-  remotePort: number,
-  transport: Transport,
-): Promise<Proxy> {
-  return Proxy.createProxy(localPort, remotePort, transport);
+async function createTunnel(localPort, remotePort, transport) {
+  return (_Proxy || _load_Proxy()).Proxy.createProxy(localPort, remotePort, transport);
 }

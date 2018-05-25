@@ -1,3 +1,47 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NUCLIDE_DEBUGGER_DEV_GK = undefined;
+exports.getJavaAndroidConfig = getJavaAndroidConfig;
+exports.getCustomControlButtonsForJavaSourcePaths = getCustomControlButtonsForJavaSourcePaths;
+exports.resolveConfiguration = resolveConfiguration;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../nuclide-commons/UniversalDisposable'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../nuclide-debugger-common/constants');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../atom-ide-debugger-java/utils');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _AndroidJavaDebuggerHelpers;
+
+function _load_AndroidJavaDebuggerHelpers() {
+  return _AndroidJavaDebuggerHelpers = require('./AndroidJavaDebuggerHelpers');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,61 +50,40 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {
-  AutoGenConfig,
-  IProcessConfig,
-  ControlButtonSpecification,
-} from 'nuclide-debugger-common/types';
-import type {Device} from 'nuclide-debugger-common/types';
+const NUCLIDE_DEBUGGER_DEV_GK = exports.NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
 
-import {Subject} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import {
-  getJavaDebuggerHelpersServiceByNuclideUri,
-  getSourcePathClickSubscriptions,
-} from 'atom-ide-debugger-java/utils';
-import nullthrows from 'nullthrows';
-import {
-  launchAndroidServiceOrActivityAndGetPid,
-  getAdbAttachPortTargetInfo,
-} from './AndroidJavaDebuggerHelpers';
-import invariant from 'assert';
-
-export const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
-
-export function getJavaAndroidConfig(): AutoGenConfig {
+function getJavaAndroidConfig() {
   const deviceAndPackage = {
     name: 'deviceAndPackage',
     type: 'deviceAndPackage',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
   const activity = {
     name: 'activity',
     type: 'string',
     description: 'com.example.app.main.MainActivity',
     required: false,
-    visible: true,
+    visible: true
   };
   const service = {
     name: 'service',
     type: 'string',
     description: '.example.package.path.MyServiceClass',
     required: false,
-    visible: true,
+    visible: true
   };
   const intent = {
     name: 'intent',
     type: 'string',
     description: 'android.intent.action.MAIN',
     required: false,
-    visible: true,
+    visible: true
   };
 
   const deviceAndProcess = {
@@ -68,125 +91,86 @@ export function getJavaAndroidConfig(): AutoGenConfig {
     type: 'deviceAndProcess',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
 
   return {
     launch: {
       launch: true,
-      vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
+      vsAdapterType: (_constants || _load_constants()).VsAdapterTypes.JAVA_ANDROID,
       threads: true,
       properties: [deviceAndPackage, activity, service, intent],
       cwdPropertyName: 'cwd',
-      header: null,
+      header: null
     },
     attach: {
       launch: false,
-      vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
+      vsAdapterType: (_constants || _load_constants()).VsAdapterTypes.JAVA_ANDROID,
       threads: true,
       properties: [deviceAndProcess],
-      header: null,
-    },
+      header: null
+    }
   };
 }
 
-export function getCustomControlButtonsForJavaSourcePaths(
-  clickEvents: rxjs$Subject<void>,
-): ControlButtonSpecification[] {
-  return [
-    {
-      icon: 'file-code',
-      title: 'Set Source Path',
-      onClick: () => clickEvents.next(),
-    },
-  ];
+function getCustomControlButtonsForJavaSourcePaths(clickEvents) {
+  return [{
+    icon: 'file-code',
+    title: 'Set Source Path',
+    onClick: () => clickEvents.next()
+  }];
 }
 
-export async function resolveConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
-  const {adapterExecutable, config, debugMode, targetUri} = configuration;
+async function resolveConfiguration(configuration) {
+  const { adapterExecutable, config, debugMode, targetUri } = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
   let pid = null;
-  let device: ?Device = null;
-  const subscriptions = new UniversalDisposable();
-  const clickEvents = new Subject();
+  let device = null;
+  const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  const clickEvents = new _rxjsBundlesRxMinJs.Subject();
   // adapterType === VsAdapterTypes.JAVA_ANDROID
   if (debugMode === 'launch') {
-    const {service, intent, activity, deviceAndPackage} = config;
-    const {selectedPackage} = deviceAndPackage;
+    const { service, intent, activity, deviceAndPackage } = config;
+    const { selectedPackage } = deviceAndPackage;
     device = deviceAndPackage.device;
 
-    pid = (await launchAndroidServiceOrActivityAndGetPid(
-      null /* providedPid */,
-      targetUri,
-      service || null,
-      activity || null,
-      intent || null /* intent and action are the same */,
-      device,
-      selectedPackage,
-    )).pid;
+    pid = (await (0, (_AndroidJavaDebuggerHelpers || _load_AndroidJavaDebuggerHelpers()).launchAndroidServiceOrActivityAndGetPid)(null /* providedPid */
+    , targetUri, service || null, activity || null, intent || null /* intent and action are the same */
+    , device, selectedPackage)).pid;
   } else if (debugMode === 'attach') {
-    const {deviceAndProcess} = config;
-    const {selectedProcess} = deviceAndProcess;
+    const { deviceAndProcess } = config;
+    const { selectedProcess } = deviceAndProcess;
     device = deviceAndProcess.device;
 
     const selectedProcessPid = parseInt(selectedProcess.pid, 10);
     if (isNaN(selectedProcessPid)) {
-      throw new Error(
-        'Selected process pid is not a number: ' +
-          JSON.stringify(selectedProcess.pid),
-      );
+      throw new Error('Selected process pid is not a number: ' + JSON.stringify(selectedProcess.pid));
     }
 
-    pid = (await launchAndroidServiceOrActivityAndGetPid(
-      selectedProcessPid,
-      targetUri,
-      null,
-      null,
-      null,
-      device,
-      selectedProcess.name,
-    )).pid;
+    pid = (await (0, (_AndroidJavaDebuggerHelpers || _load_AndroidJavaDebuggerHelpers()).launchAndroidServiceOrActivityAndGetPid)(selectedProcessPid, targetUri, null, null, null, device, selectedProcess.name)).pid;
   }
 
-  invariant(
-    debugMode === 'attach' || debugMode === 'launch',
-    'Debug Mode was neither launch nor attach, debugMode: ' + debugMode,
-  );
+  if (!(debugMode === 'attach' || debugMode === 'launch')) {
+    throw new Error('Debug Mode was neither launch nor attach, debugMode: ' + debugMode);
+  }
 
-  const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
-    nullthrows(device),
-    targetUri,
-    targetUri,
-    nullthrows(pid),
-    subscriptions,
-  );
+  const attachPortTargetConfig = await (0, (_AndroidJavaDebuggerHelpers || _load_AndroidJavaDebuggerHelpers()).getAdbAttachPortTargetInfo)((0, (_nullthrows || _load_nullthrows()).default)(device), targetUri, targetUri, (0, (_nullthrows || _load_nullthrows()).default)(pid), subscriptions);
 
-  const customDisposable =
-    configuration.customDisposable || new UniversalDisposable();
+  const customDisposable = configuration.customDisposable || new (_UniversalDisposable || _load_UniversalDisposable()).default();
   customDisposable.add(subscriptions);
 
-  return {
-    ...configuration,
+  return Object.assign({}, configuration, {
     debugMode: attachPortTargetConfig.debugMode,
-    adapterExecutable: await getJavaDebuggerHelpersServiceByNuclideUri(
-      targetUri,
-    ).getJavaVSAdapterExecutableInfo(false),
-    properties: {
-      ...configuration.properties,
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-    },
+    adapterExecutable: await (0, (_utils || _load_utils()).getJavaDebuggerHelpersServiceByNuclideUri)(targetUri).getJavaVSAdapterExecutableInfo(false),
+    properties: Object.assign({}, configuration.properties, {
+      customControlButtons: getCustomControlButtonsForJavaSourcePaths(clickEvents)
+    }),
     config: attachPortTargetConfig,
     customDisposable,
     onInitializeCallback: session => {
-      customDisposable.add(
-        ...getSourcePathClickSubscriptions(targetUri, session, clickEvents),
-      );
-    },
-  };
+      customDisposable.add(...(0, (_utils || _load_utils()).getSourcePathClickSubscriptions)(targetUri, session, clickEvents));
+    }
+  });
 }

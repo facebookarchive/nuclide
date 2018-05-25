@@ -1,3 +1,153 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _BackTraceCommand;
+
+function _load_BackTraceCommand() {
+  return _BackTraceCommand = _interopRequireDefault(require('./BackTraceCommand'));
+}
+
+var _Breakpoint;
+
+function _load_Breakpoint() {
+  return _Breakpoint = _interopRequireDefault(require('./Breakpoint'));
+}
+
+var _BreakpointCollection;
+
+function _load_BreakpointCollection() {
+  return _BreakpointCollection = _interopRequireDefault(require('./BreakpointCollection'));
+}
+
+var _BreakpointCommand;
+
+function _load_BreakpointCommand() {
+  return _BreakpointCommand = _interopRequireDefault(require('./BreakpointCommand'));
+}
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+var _ContinueCommand;
+
+function _load_ContinueCommand() {
+  return _ContinueCommand = _interopRequireDefault(require('./ContinueCommand'));
+}
+
+var _EnterCodeCommand;
+
+function _load_EnterCodeCommand() {
+  return _EnterCodeCommand = _interopRequireDefault(require('./EnterCodeCommand'));
+}
+
+var _SourceFileCache;
+
+function _load_SourceFileCache() {
+  return _SourceFileCache = _interopRequireDefault(require('./SourceFileCache'));
+}
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../nuclide-commons/nuclideUri'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _StepCommand;
+
+function _load_StepCommand() {
+  return _StepCommand = _interopRequireDefault(require('./StepCommand'));
+}
+
+var _NextCommand;
+
+function _load_NextCommand() {
+  return _NextCommand = _interopRequireDefault(require('./NextCommand'));
+}
+
+var _Thread;
+
+function _load_Thread() {
+  return _Thread = _interopRequireDefault(require('./Thread'));
+}
+
+var _ThreadsCommand;
+
+function _load_ThreadsCommand() {
+  return _ThreadsCommand = _interopRequireDefault(require('./ThreadsCommand'));
+}
+
+var _VariablesCommand;
+
+function _load_VariablesCommand() {
+  return _VariablesCommand = _interopRequireDefault(require('./VariablesCommand'));
+}
+
+var _ListCommand;
+
+function _load_ListCommand() {
+  return _ListCommand = _interopRequireDefault(require('./ListCommand'));
+}
+
+var _RestartCommand;
+
+function _load_RestartCommand() {
+  return _RestartCommand = _interopRequireDefault(require('./RestartCommand'));
+}
+
+var _PrintCommand;
+
+function _load_PrintCommand() {
+  return _PrintCommand = _interopRequireDefault(require('./PrintCommand'));
+}
+
+var _RunCommand;
+
+function _load_RunCommand() {
+  return _RunCommand = _interopRequireDefault(require('./RunCommand'));
+}
+
+var _ThreadCollection;
+
+function _load_ThreadCollection() {
+  return _ThreadCollection = _interopRequireDefault(require('./ThreadCollection'));
+}
+
+var _VsDebugSession;
+
+function _load_VsDebugSession() {
+  return _VsDebugSession = _interopRequireDefault(require('../../nuclide-debugger-common/VsDebugSession'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+// program is gone and not coming back
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,113 +156,53 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {ConsoleIO} from './ConsoleIO';
-import type {ParsedVSAdapter} from './DebuggerAdapterFactory';
-import type {
-  DebuggerInterface,
-  VariablesInScope,
-  BreakpointSetResult,
-} from './DebuggerInterface';
-import * as DebugProtocol from 'vscode-debugprotocol';
-import type {AdapterExitedEvent} from 'nuclide-debugger-common/VsDebugSession';
-import type {
-  SourceBreakpoint,
-  FunctionBreakpoint,
-} from './BreakpointCollection';
-import type {Preset} from './ConfigFile';
+class Debugger {
 
-import BackTraceCommand from './BackTraceCommand';
-import Breakpoint from './Breakpoint';
-import BreakpointCollection from './BreakpointCollection';
-import BreakpointCommand from './BreakpointCommand';
-import CommandDispatcher from './CommandDispatcher';
-import ContinueCommand from './ContinueCommand';
-import EnterCodeCommand from './EnterCodeCommand';
-import SourceFileCache from './SourceFileCache';
-import idx from 'idx';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import nullthrows from 'nullthrows';
-import StepCommand from './StepCommand';
-import NextCommand from './NextCommand';
-import Thread from './Thread';
-import ThreadsCommand from './ThreadsCommand';
-import VariablesCommand from './VariablesCommand';
-import ListCommand from './ListCommand';
-import RestartCommand from './RestartCommand';
-import PrintCommand from './PrintCommand';
-import RunCommand from './RunCommand';
-import ThreadCollection from './ThreadCollection';
+  constructor(logger, con, preset) {
+    this._capabilities = {};
+    this._threads = new (_ThreadCollection || _load_ThreadCollection()).default();
+    this._state = 'INITIALIZING';
+    this._breakpoints = new (_BreakpointCollection || _load_BreakpointCollection()).default();
+    this._attachMode = false;
+    this._readyForEvaluations = false;
 
-import invariant from 'assert';
-import VsDebugSession from 'nuclide-debugger-common/VsDebugSession';
-
-type Capabilities = {
-  ...DebugProtocol.Capabilities,
-  supportsReadyForEvaluationsEvent?: ?boolean,
-};
-
-type SessionState =
-  | 'INITIALIZING' // waiting for initialized event from adapter
-  | 'CONFIGURING' // waiting for user to issue 'run' command after setting initial breakpoints
-  | 'RUNNING' // program is running
-  | 'STOPPED' // program has hit a breakpoint
-  | 'TERMINATED'; // program is gone and not coming back
-
-export default class Debugger implements DebuggerInterface {
-  _capabilities: Capabilities = {};
-  _console: ConsoleIO;
-  _debugSession: ?VsDebugSession;
-  _logger: log4js$Logger;
-  _activeThread: ?number;
-  _threads: ThreadCollection = new ThreadCollection();
-  _sourceFiles: SourceFileCache;
-  _state: SessionState = 'INITIALIZING';
-  _breakpoints: BreakpointCollection = new BreakpointCollection();
-  _adapter: ?ParsedVSAdapter;
-  _attachMode: boolean = false;
-  _preset: ?Preset;
-  _readyForEvaluations: boolean = false;
-
-  constructor(logger: log4js$Logger, con: ConsoleIO, preset: ?Preset) {
     this._logger = logger;
     this._console = con;
-    this._sourceFiles = new SourceFileCache(
-      this._getSourceByReference.bind(this),
-    );
+    this._sourceFiles = new (_SourceFileCache || _load_SourceFileCache()).default(this._getSourceByReference.bind(this));
     this._preset = preset;
   }
 
-  registerCommands(dispatcher: CommandDispatcher): void {
-    dispatcher.registerCommand(new BackTraceCommand(this._console, this));
-    dispatcher.registerCommand(new ThreadsCommand(this._console, this));
-    dispatcher.registerCommand(new StepCommand(this));
-    dispatcher.registerCommand(new NextCommand(this));
-    dispatcher.registerCommand(new VariablesCommand(this._console, this));
-    dispatcher.registerCommand(new BreakpointCommand(this._console, this));
-    dispatcher.registerCommand(new ContinueCommand(this));
-    dispatcher.registerCommand(new ListCommand(this._console, this));
-    dispatcher.registerCommand(new RestartCommand(this));
-    dispatcher.registerCommand(new PrintCommand(this._console, this));
-    dispatcher.registerCommand(new RunCommand(this));
-    dispatcher.registerCommand(new EnterCodeCommand(this._console, this));
+  registerCommands(dispatcher) {
+    dispatcher.registerCommand(new (_BackTraceCommand || _load_BackTraceCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_ThreadsCommand || _load_ThreadsCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_StepCommand || _load_StepCommand()).default(this));
+    dispatcher.registerCommand(new (_NextCommand || _load_NextCommand()).default(this));
+    dispatcher.registerCommand(new (_VariablesCommand || _load_VariablesCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_BreakpointCommand || _load_BreakpointCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_ContinueCommand || _load_ContinueCommand()).default(this));
+    dispatcher.registerCommand(new (_ListCommand || _load_ListCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_RestartCommand || _load_RestartCommand()).default(this));
+    dispatcher.registerCommand(new (_PrintCommand || _load_PrintCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_RunCommand || _load_RunCommand()).default(this));
+    dispatcher.registerCommand(new (_EnterCodeCommand || _load_EnterCodeCommand()).default(this._console, this));
   }
 
   // launch is for launching a process from scratch when we need a new
   // session
-  launch(adapter: ParsedVSAdapter): Promise<void> {
+  launch(adapter) {
     this._adapter = adapter;
-    this._breakpoints = new BreakpointCollection();
+    this._breakpoints = new (_BreakpointCollection || _load_BreakpointCollection()).default();
     return this.relaunch();
   }
 
   // relaunch is for when we want to restart the current process
   // without tearing down the session. some adapters can do this
   // automatically
-  async relaunch(): Promise<void> {
+  async relaunch() {
     const adapter = this._adapter;
     if (adapter == null) {
       throw new Error('There is nothing to relaunch.');
@@ -122,42 +212,40 @@ export default class Debugger implements DebuggerInterface {
     await this.closeSession();
     await this.createSession(adapter);
 
-    invariant(adapter.action === 'attach' || adapter.action === 'launch');
+    if (!(adapter.action === 'attach' || adapter.action === 'launch')) {
+      throw new Error('Invariant violation: "adapter.action === \'attach\' || adapter.action === \'launch\'"');
+    }
+
     this._attachMode = adapter.action === 'attach';
 
     const session = this._ensureDebugSession(true);
 
     if (this._attachMode) {
-      await session.attach(
-        nullthrows(this._adapter).adapter.transformAttachArguments(
-          adapter.attachArgs,
-        ),
-      );
+      await session.attach((0, (_nullthrows || _load_nullthrows()).default)(this._adapter).adapter.transformAttachArguments(adapter.attachArgs));
     } else {
-      await session.launch(
-        nullthrows(this._adapter).adapter.transformLaunchArguments(
-          adapter.launchArgs,
-        ),
-      );
+      await session.launch((0, (_nullthrows || _load_nullthrows()).default)(this._adapter).adapter.transformLaunchArguments(adapter.launchArgs));
     }
   }
 
-  async _onInitialized(): Promise<void> {
+  async _onInitialized() {
     const adapter = this._adapter;
-    invariant(adapter != null);
+
+    if (!(adapter != null)) {
+      throw new Error('Invariant violation: "adapter != null"');
+    }
 
     this._state = 'CONFIGURING';
     this._startConfigurationInput();
   }
 
-  async _configurationDone(): Promise<void> {
+  async _configurationDone() {
     const session = this._ensureDebugSession(true);
     this._state = 'RUNNING';
 
     await this._resetAllBreakpoints();
 
     // this needs to be sent last for adapters that don't support configurationDone
-    await session.setExceptionBreakpoints({filters: []});
+    await session.setExceptionBreakpoints({ filters: [] });
 
     if (this._capabilities.supportsConfigurationDoneRequest) {
       await session.configurationDone();
@@ -167,7 +255,7 @@ export default class Debugger implements DebuggerInterface {
     this._console.stopInput();
   }
 
-  async run(): Promise<void> {
+  async run() {
     if (this._attachMode) {
       throw new Error('Cannot run an attached process; already attached.');
     }
@@ -179,57 +267,46 @@ export default class Debugger implements DebuggerInterface {
     return this._configurationDone();
   }
 
-  breakInto(): void {
+  breakInto() {
     // if there is a focus thread from before, stop that one, else just
     // pick the first.
-    const thread =
-      this._threads.focusThread != null
-        ? this._threads.focusThread
-        : this._threads.allThreads[0];
+    const thread = this._threads.focusThread != null ? this._threads.focusThread : this._threads.allThreads[0];
     if (thread == null) {
       return;
     }
 
-    this._ensureDebugSession().pause({threadId: thread.id()});
+    this._ensureDebugSession().pause({ threadId: thread.id() });
   }
 
-  getThreads(): ThreadCollection {
+  getThreads() {
     this._ensureDebugSession();
     return this._threads;
   }
 
-  getActiveThread(): Thread {
+  getActiveThread() {
     this._ensureDebugSession();
-    return nullthrows(this._threads.focusThread);
+    return (0, (_nullthrows || _load_nullthrows()).default)(this._threads.focusThread);
   }
 
-  async getStackTrace(
-    thread: number,
-    levels: number,
-  ): Promise<DebugProtocol.StackFrame[]> {
+  async getStackTrace(thread, levels) {
     const {
-      body: {stackFrames},
+      body: { stackFrames }
     } = await this._ensureDebugSession().stackTrace({
       threadId: thread,
-      levels,
+      levels
     });
     return stackFrames;
   }
 
-  async setSelectedStackFrame(
-    thread: Thread,
-    frameIndex: number,
-  ): Promise<void> {
+  async setSelectedStackFrame(thread, frameIndex) {
     const frames = await this.getStackTrace(thread.id(), frameIndex + 1);
     if (frames[frameIndex] == null) {
-      throw new Error(
-        `There are only ${frames.length} frames in the thread's stack trace.`,
-      );
+      throw new Error(`There are only ${frames.length} frames in the thread's stack trace.`);
     }
     thread.setSelectedStackFrame(frameIndex);
   }
 
-  async getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame> {
+  async getCurrentStackFrame() {
     this._ensureDebugSession();
     const thread = this.getActiveThread();
     const selectedFrame = thread.selectedStackFrame();
@@ -238,19 +315,19 @@ export default class Debugger implements DebuggerInterface {
     return frames[selectedFrame];
   }
 
-  async stepIn(): Promise<void> {
+  async stepIn() {
     await this._ensureDebugSession().stepIn({
-      threadId: this.getActiveThread().id(),
+      threadId: this.getActiveThread().id()
     });
   }
 
-  async stepOver(): Promise<void> {
+  async stepOver() {
     await this._ensureDebugSession().next({
-      threadId: this.getActiveThread().id(),
+      threadId: this.getActiveThread().id()
     });
   }
 
-  async continue(): Promise<void> {
+  async continue() {
     const session = this._ensureDebugSession(true);
 
     // if we are attaching and still in configuration, this is where we'll
@@ -264,7 +341,7 @@ export default class Debugger implements DebuggerInterface {
 
     if (this._state === 'STOPPED') {
       await session.continue({
-        threadId: this.getActiveThread().id(),
+        threadId: this.getActiveThread().id()
       });
 
       return;
@@ -277,34 +354,26 @@ export default class Debugger implements DebuggerInterface {
     throw new Error(`Continue called from unexpected state ${this._state}`);
   }
 
-  async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
+  async getVariables(selectedScope) {
     const session = this._ensureDebugSession();
 
     const activeThread = this.getActiveThread();
-    const stack = await this.getStackTrace(
-      activeThread.id(),
-      activeThread.selectedStackFrame() + 1,
-    );
-    const frameId = this._stackFrameId(
-      stack,
-      activeThread.selectedStackFrame(),
-    );
+    const stack = await this.getStackTrace(activeThread.id(), activeThread.selectedStackFrame() + 1);
+    const frameId = this._stackFrameId(stack, activeThread.selectedStackFrame());
     if (frameId == null) {
       return [];
     }
 
     const {
-      body: {scopes},
-    } = await session.scopes({frameId});
+      body: { scopes }
+    } = await session.scopes({ frameId });
 
-    let queries: DebugProtocol.Scope[];
+    let queries;
 
     if (selectedScope != null) {
       queries = scopes.filter(scope => scope.name === selectedScope);
       if (queries.length === 0) {
-        throw new Error(
-          `There is no scope named '${selectedScope}' in the current context.`,
-        );
+        throw new Error(`There is no scope named '${selectedScope}' in the current context.`);
       }
     } else {
       queries = scopes.filter(scope => !scope.expensive);
@@ -312,9 +381,9 @@ export default class Debugger implements DebuggerInterface {
 
     const executers = queries.map(async scope => {
       const {
-        body: {variables},
+        body: { variables }
       } = await session.variables({
-        variablesReference: scope.variablesReference,
+        variablesReference: scope.variablesReference
       });
       return [scope.variablesReference, variables];
     });
@@ -326,15 +395,12 @@ export default class Debugger implements DebuggerInterface {
       return {
         expensive: scope.expensive,
         scopeName: scope.name,
-        variables: resultsByVarRef.get(scope.variablesReference),
+        variables: resultsByVarRef.get(scope.variablesReference)
       };
     });
   }
 
-  async setSourceBreakpoint(
-    path: string,
-    line: number,
-  ): Promise<BreakpointSetResult> {
+  async setSourceBreakpoint(path, line) {
     // NB this call is allowed before the program is launched
     const session = this._ensureDebugSession(true);
     const index = this._breakpoints.addSourceBreakpoint(path, line);
@@ -342,33 +408,23 @@ export default class Debugger implements DebuggerInterface {
     let message = 'Breakpoint pending until program starts.';
 
     if (this._state !== 'CONFIGURING') {
-      const breakpoint = await this._setSourceBreakpointsForPath(
-        session,
-        path,
-        index,
-      );
+      const breakpoint = await this._setSourceBreakpointsForPath(session, path, index);
       message = breakpoint == null ? null : breakpoint.message;
     }
 
-    return {index, message};
+    return { index, message };
   }
 
-  async _setSourceBreakpointsForPath(
-    session: VsDebugSession,
-    path: string,
-    indexOfInterest: ?number,
-  ): Promise<?DebugProtocol.Breakpoint> {
-    const localBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
-      path,
-    );
+  async _setSourceBreakpointsForPath(session, path, indexOfInterest) {
+    const localBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(path);
 
     const request = {
-      source: {path},
-      breakpoints: localBreakpoints.map(x => ({line: x.line})),
+      source: { path },
+      breakpoints: localBreakpoints.map(x => ({ line: x.line }))
     };
 
     const {
-      body: {breakpoints: adapterBreakpoints},
+      body: { breakpoints: adapterBreakpoints }
     } = await session.setBreakpoints(request);
 
     const paired = localBreakpoints.map((_, i) => [_, adapterBreakpoints[i]]);
@@ -381,13 +437,9 @@ export default class Debugger implements DebuggerInterface {
     return breakpoint == null ? null : breakpoint[1];
   }
 
-  async setFunctionBreakpoint(func: string): Promise<BreakpointSetResult> {
+  async setFunctionBreakpoint(func) {
     if (!this._capabilities.supportsFunctionBreakpoints) {
-      throw new Error(
-        `The ${
-          nullthrows(this._adapter).type
-        } debugger does not support function breakpoints.`,
-      );
+      throw new Error(`The ${(0, (_nullthrows || _load_nullthrows()).default)(this._adapter).type} debugger does not support function breakpoints.`);
     }
 
     // NB this call is allowed before the program is launched
@@ -401,25 +453,22 @@ export default class Debugger implements DebuggerInterface {
       message = breakpoint == null ? null : breakpoint.message;
     }
 
-    return {index, message};
+    return { index, message };
   }
 
-  async _setFunctionBreakpoints(
-    session: VsDebugSession,
-    indexOfInterest: number,
-  ): Promise<?DebugProtocol.Breakpoint> {
+  async _setFunctionBreakpoints(session, indexOfInterest) {
     const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
 
     const request = {
       breakpoints: funcBreakpoints.map(bpt => ({
-        name: bpt.func,
-      })),
+        name: bpt.func
+      }))
     };
 
     const response = await session.setFunctionBreakpoints(request);
 
     const {
-      body: {breakpoints: adapterBreakpoints},
+      body: { breakpoints: adapterBreakpoints }
     } = response;
 
     const paired = funcBreakpoints.map((_, i) => [_, adapterBreakpoints[i]]);
@@ -432,26 +481,21 @@ export default class Debugger implements DebuggerInterface {
     return breakpoint == null ? null : breakpoint[1];
   }
 
-  _stackFrameId(stack: DebugProtocol.StackFrame[], depth: number): ?number {
-    return idx(stack, _ => _[depth].id);
+  _stackFrameId(stack, depth) {
+    var _ref, _ref2;
+
+    return (_ref = stack) != null ? (_ref2 = _ref[depth]) != null ? _ref2.id : _ref2 : _ref;
   }
 
-  async getSourceLines(
-    source: DebugProtocol.Source,
-    start: number,
-    length: number,
-  ): Promise<string[]> {
+  async getSourceLines(source, start, length) {
     // If `source' contains a non-zero sourceReference, then the adapter
     // supports returning source data; otherwise, we use the given
     // path as a local file system path.
-    //
-    let lines: string[] = [];
+    let lines = [];
     const sourceReference = source.sourceReference;
 
     if (sourceReference != null && sourceReference !== 0) {
-      lines = await this._sourceFiles.getFileDataBySourceReference(
-        sourceReference,
-      );
+      lines = await this._sourceFiles.getFileDataBySourceReference(sourceReference);
     } else if (source.path != null) {
       lines = await this._sourceFiles.getFileDataByPath(source.path);
     }
@@ -464,15 +508,15 @@ export default class Debugger implements DebuggerInterface {
     return lines.slice(start - 1, end);
   }
 
-  getAllBreakpoints(): Breakpoint[] {
+  getAllBreakpoints() {
     return this._breakpoints.getAllBreakpoints();
   }
 
-  getBreakpointByIndex(index: number): Breakpoint {
+  getBreakpointByIndex(index) {
     return this._breakpoints.getBreakpointByIndex(index);
   }
 
-  async setBreakpointEnabled(index: number, enabled: boolean): Promise<void> {
+  async setBreakpointEnabled(index, enabled) {
     const session = this._ensureDebugSession();
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
@@ -495,7 +539,7 @@ export default class Debugger implements DebuggerInterface {
     // $TODO function breakpoints
   }
 
-  async deleteBreakpoint(index: number): Promise<void> {
+  async deleteBreakpoint(index) {
     const session = this._ensureDebugSession();
     const breakpoint = this._breakpoints.getBreakpointByIndex(index);
     const path = breakpoint.path;
@@ -503,123 +547,108 @@ export default class Debugger implements DebuggerInterface {
     this._breakpoints.deleteBreakpoint(index);
 
     if (path != null) {
-      const pathBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
-        path,
-      );
+      const pathBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(path);
 
       await session.setBreakpoints({
-        source: {path},
+        source: { path },
         breakpoints: pathBreakpoints.map(x => {
-          return {line: x.line};
-        }),
+          return { line: x.line };
+        })
       });
     }
   }
 
-  async evaluateExpression(
-    expression: string,
-  ): Promise<DebugProtocol.EvaluateResponse> {
+  async evaluateExpression(expression) {
     const session = this._ensureDebugSession(true);
 
-    let args = {expression, context: 'repl'};
+    let args = { expression, context: 'repl' };
 
     if (this._state === 'RUNNING') {
       const frame = await this.getCurrentStackFrame();
       if (frame != null) {
-        args = {...args, frameId: frame.id};
+        args = Object.assign({}, args, { frameId: frame.id });
       }
     }
 
     return session.evaluate(args);
   }
 
-  async createSession(adapter: ParsedVSAdapter): Promise<void> {
+  async createSession(adapter) {
     this._console.stopInput();
 
-    this._threads = new ThreadCollection();
+    this._threads = new (_ThreadCollection || _load_ThreadCollection()).default();
 
-    this._debugSession = new VsDebugSession(
-      process.pid.toString(),
-      this._logger,
-      adapter.adapterInfo,
-      {host: 'cli', adapter: adapter.type, isRemote: false},
-    );
+    this._debugSession = new (_VsDebugSession || _load_VsDebugSession()).default(process.pid.toString(), this._logger, adapter.adapterInfo, { host: 'cli', adapter: adapter.type, isRemote: false });
 
     this._initializeObservers();
 
-    invariant(this._debugSession != null);
-    const {body} = await this._debugSession.initialize({
+    if (!(this._debugSession != null)) {
+      throw new Error('Invariant violation: "this._debugSession != null"');
+    }
+
+    const { body } = await this._debugSession.initialize({
       adapterID: 'fbdbg',
       pathFormat: 'path',
       linesStartAt1: true,
       columnsStartAt1: true,
-      clientID: 'nuclide-cli',
+      clientID: 'nuclide-cli'
     });
 
     this._capabilities = {};
     if (body != null) {
       // $FlowFixMe should be able to just assign here
-      this._capabilities = ((body: any): Capabilities);
+      this._capabilities = body;
     }
     this._readyForEvaluations = true;
 
     // $FlowFixMe
-    const extraBody: any = body;
+    const extraBody = body;
     if (extraBody.supportsReadyForEvaluationsEvent === true) {
       this._readyForEvaluations = false;
     }
   }
 
-  async _resetAllBreakpoints(): Promise<void> {
+  async _resetAllBreakpoints() {
     const session = this._ensureDebugSession();
 
     const sourceBreakpoints = this._breakpoints.getAllEnabledBreakpointsByPath();
 
-    const sourceBreakpointSets = Array.from(sourceBreakpoints).map(
-      async ([path, breakpointLines]) => {
-        const lines: DebugProtocol.SourceBreakpoint[] = breakpointLines.map(
-          _ => ({line: _.line}),
-        );
+    const sourceBreakpointSets = Array.from(sourceBreakpoints).map(async ([path, breakpointLines]) => {
+      const lines = breakpointLines.map(_ => ({ line: _.line }));
 
-        const source: DebugProtocol.Source = {
-          path,
-        };
+      const source = {
+        path
+      };
 
-        const {
-          body: {breakpoints: breakpointsOut},
-        } = await session.setBreakpoints({
-          source,
-          breakpoints: lines,
-        });
+      const {
+        body: { breakpoints: breakpointsOut }
+      } = await session.setBreakpoints({
+        source,
+        breakpoints: lines
+      });
 
-        breakpointLines.forEach((local, i) => {
-          this._updateBreakpoint(local, breakpointsOut[i]);
-        });
-      },
-    );
+      breakpointLines.forEach((local, i) => {
+        this._updateBreakpoint(local, breakpointsOut[i]);
+      });
+    });
 
-    await Promise.all(
-      sourceBreakpointSets.concat(this._resetAllFunctionBreakpoints()),
-    );
+    await Promise.all(sourceBreakpointSets.concat(this._resetAllFunctionBreakpoints()));
   }
 
-  async _resetAllFunctionBreakpoints(): Promise<void> {
+  async _resetAllFunctionBreakpoints() {
     const session = this._ensureDebugSession();
     const funcBreakpoints = this._breakpoints.getAllEnabledFunctionBreakpoints();
 
-    if (
-      !this._capabilities.supportsFunctionBreakpoints ||
-      funcBreakpoints.length === 0
-    ) {
+    if (!this._capabilities.supportsFunctionBreakpoints || funcBreakpoints.length === 0) {
       return;
     }
 
     const {
-      body: {breakpoints: funcBreakpointsOut},
+      body: { breakpoints: funcBreakpointsOut }
     } = await session.setFunctionBreakpoints({
       breakpoints: funcBreakpoints.map(bpt => ({
-        name: bpt.func,
-      })),
+        name: bpt.func
+      }))
     });
 
     funcBreakpoints.forEach((local, i) => {
@@ -627,10 +656,7 @@ export default class Debugger implements DebuggerInterface {
     });
   }
 
-  _updateBreakpoint(
-    local: SourceBreakpoint | FunctionBreakpoint,
-    remote: DebugProtocol.Breakpoint,
-  ) {
+  _updateBreakpoint(local, remote) {
     const index = local.index;
 
     const id = remote.id;
@@ -662,12 +688,11 @@ export default class Debugger implements DebuggerInterface {
     // If we failed to set the breakpoint, and we didn't get a message why,
     // concot one.
     if (!remote.verified && (remote.message == null || remote.message === '')) {
-      remote.message =
-        'Could not set this breakpoint. The module may not have been loaded yet.';
+      remote.message = 'Could not set this breakpoint. The module may not have been loaded yet.';
     }
   }
 
-  _initializeObservers(): void {
+  _initializeObservers() {
     const session = this._ensureDebugSession(true);
 
     session.observeInitializeEvents().subscribe(() => {
@@ -680,12 +705,7 @@ export default class Debugger implements DebuggerInterface {
       }
     });
 
-    session
-      .observeOutputEvents()
-      .filter(
-        x => x.body.category !== 'stderr' && x.body.category !== 'telemetry',
-      )
-      .subscribe(this._onOutput.bind(this));
+    session.observeOutputEvents().filter(x => x.body.category !== 'stderr' && x.body.category !== 'telemetry').subscribe(this._onOutput.bind(this));
 
     session.observeContinuedEvents().subscribe(this._onContinued.bind(this));
 
@@ -693,21 +713,13 @@ export default class Debugger implements DebuggerInterface {
 
     session.observeThreadEvents().subscribe(this._onThread.bind(this));
 
-    session
-      .observeExitedDebugeeEvents()
-      .subscribe(this._onExitedDebugee.bind(this));
+    session.observeExitedDebugeeEvents().subscribe(this._onExitedDebugee.bind(this));
 
-    session
-      .observeTerminateDebugeeEvents()
-      .subscribe(this._onTerminatedDebugee.bind(this));
+    session.observeTerminateDebugeeEvents().subscribe(this._onTerminatedDebugee.bind(this));
 
-    session
-      .observeAdapterExitedEvents()
-      .subscribe(this._onAdapterExited.bind(this));
+    session.observeAdapterExitedEvents().subscribe(this._onAdapterExited.bind(this));
 
-    session
-      .observeBreakpointEvents()
-      .subscribe(this._onBreakpointEvent.bind(this));
+    session.observeBreakpointEvents().subscribe(this._onBreakpointEvent.bind(this));
 
     session.observeCustomEvents().subscribe(e => {
       if (e.event === 'readyForEvaluations') {
@@ -716,13 +728,13 @@ export default class Debugger implements DebuggerInterface {
     });
   }
 
-  async closeSession(): Promise<void> {
+  async closeSession() {
     if (this._debugSession == null) {
       return;
     }
 
     await this._debugSession.disconnect();
-    this._threads = new ThreadCollection();
+    this._threads = new (_ThreadCollection || _load_ThreadCollection()).default();
     this._debugSession = null;
     this._activeThread = null;
 
@@ -732,14 +744,16 @@ export default class Debugger implements DebuggerInterface {
     this._sourceFiles.flush();
   }
 
-  _onOutput(event: DebugProtocol.OutputEvent): void {
-    const text = idx(event, _ => _.body.output) || '';
+  _onOutput(event) {
+    var _ref3, _ref4;
+
+    const text = ((_ref3 = event) != null ? (_ref4 = _ref3.body) != null ? _ref4.output : _ref4 : _ref3) || '';
     this._console.output(text);
   }
 
-  _onContinued(event: DebugProtocol.ContinuedEvent) {
+  _onContinued(event) {
     const {
-      body: {threadId, allThreadsContinued},
+      body: { threadId, allThreadsContinued }
     } = event;
 
     if (allThreadsContinued === true) {
@@ -754,9 +768,9 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  async _onStopped(event: DebugProtocol.StoppedEvent) {
+  async _onStopped(event) {
     const {
-      body: {description, threadId, allThreadsStopped},
+      body: { description, threadId, allThreadsStopped }
     } = event;
 
     if (description != null) {
@@ -770,9 +784,7 @@ export default class Debugger implements DebuggerInterface {
       this._threads.allThreads.map(_ => _.clearSelectedStackFrame());
     } else if (threadId != null) {
       this._threads.markThreadStopped(threadId);
-      nullthrows(
-        this._threads.getThreadById(threadId),
-      ).clearSelectedStackFrame();
+      (0, (_nullthrows || _load_nullthrows()).default)(this._threads.getThreadById(threadId)).clearSelectedStackFrame();
     } else {
       // the call didn't actually contain information about anything stopping.
       this._console.outputLine('stop event with no thread information.');
@@ -784,18 +796,18 @@ export default class Debugger implements DebuggerInterface {
         this._threads.setFocusThread(threadId);
       } else {
         const firstStopped = this._threads.firstStoppedThread();
-        invariant(firstStopped != null);
+
+        if (!(firstStopped != null)) {
+          throw new Error('Invariant violation: "firstStopped != null"');
+        }
+
         this._threads.setFocusThread(firstStopped);
       }
 
-      const topOfStack = await this._getTopOfStackSourceInfo(
-        nullthrows(this._threads.focusThreadId),
-      );
+      const topOfStack = await this._getTopOfStackSourceInfo((0, (_nullthrows || _load_nullthrows()).default)(this._threads.focusThreadId));
 
       if (topOfStack != null) {
-        this._console.outputLine(
-          `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
-        );
+        this._console.outputLine(`${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`);
       }
 
       this._state = 'STOPPED';
@@ -803,15 +815,15 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  _onThread(event: DebugProtocol.ThreadEvent) {
+  _onThread(event) {
     const {
-      body: {reason, threadId},
+      body: { reason, threadId }
     } = event;
 
     if (reason === 'started') {
       // to avoid a race, create a thread immediately. then call _cacheThreads,
       // which will query gdb and update the description
-      this._threads.addThread(new Thread(threadId, `thread ${threadId}`));
+      this._threads.addThread(new (_Thread || _load_Thread()).default(threadId, `thread ${threadId}`));
       this._cacheThreads();
       return;
     }
@@ -821,26 +833,27 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  _onReadyForEvaluations(): void {
+  _onReadyForEvaluations() {
     this._readyForEvaluations = true;
     this._startConfigurationInput();
   }
 
-  _startConfigurationInput(): void {
+  _startConfigurationInput() {
     if (this._readyForEvaluations && this._state === 'CONFIGURING') {
       this._console.startInput();
     }
   }
 
-  _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
+  _onExitedDebugee(event) {
     this._state = 'TERMINATED';
 
-    this._console.outputLine(
-      `Target exited with status ${event.body.exitCode}`,
-    );
+    this._console.outputLine(`Target exited with status ${event.body.exitCode}`);
 
     const adapter = this._adapter;
-    invariant(adapter != null);
+
+    if (!(adapter != null)) {
+      throw new Error('Invariant violation: "adapter != null"');
+    }
 
     if (!this._attachMode) {
       this._console.startInput();
@@ -851,7 +864,7 @@ export default class Debugger implements DebuggerInterface {
     process.exit(0);
   }
 
-  _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
+  _onTerminatedDebugee(event) {
     // Some adapters will send multiple terminated events.
     if (this._state !== 'RUNNING') {
       return;
@@ -862,7 +875,10 @@ export default class Debugger implements DebuggerInterface {
     this._console.outputLine('The target has exited.');
 
     const adapter = this._adapter;
-    invariant(adapter != null);
+
+    if (!(adapter != null)) {
+      throw new Error('Invariant violation: "adapter != null"');
+    }
 
     if (!this._attachMode) {
       this._console.startInput();
@@ -873,12 +889,15 @@ export default class Debugger implements DebuggerInterface {
     process.exit(0);
   }
 
-  _onAdapterExited(event: AdapterExitedEvent) {
+  _onAdapterExited(event) {
     this._state = 'TERMINATED';
     this._console.outputLine('The debug adapter has exited.');
 
     const adapter = this._adapter;
-    invariant(adapter != null);
+
+    if (!(adapter != null)) {
+      throw new Error('Invariant violation: "adapter != null"');
+    }
 
     if (!this._attachMode) {
       this._console.startInput();
@@ -889,26 +908,23 @@ export default class Debugger implements DebuggerInterface {
     process.exit(0);
   }
 
-  async _cacheThreads(): Promise<void> {
-    invariant(
-      this._debugSession != null,
-      '_cacheThreads called without session',
-    );
+  async _cacheThreads() {
+    if (!(this._debugSession != null)) {
+      throw new Error('_cacheThreads called without session');
+    }
 
-    const {body} = await this._debugSession.threads();
-    const threads = (body.threads != null ? body.threads : []).map(
-      _ => new Thread(_.id, _.name),
-    );
+    const { body } = await this._debugSession.threads();
+    const threads = (body.threads != null ? body.threads : []).map(_ => new (_Thread || _load_Thread()).default(_.id, _.name));
 
     this._threads.updateThreads(threads);
   }
 
-  _onBreakpointEvent(event: DebugProtocol.BreakpointEvent): void {
+  _onBreakpointEvent(event) {
     const {
       body: {
         reason,
-        breakpoint: {id, verified},
-      },
+        breakpoint: { id, verified }
+      }
     } = event;
 
     if (id != null && (reason === 'new' || reason === 'changed')) {
@@ -921,13 +937,7 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  async _getTopOfStackSourceInfo(
-    threadId: number,
-  ): Promise<?{
-    line: string,
-    name: string,
-    frame: DebugProtocol.StackFrame,
-  }> {
+  async _getTopOfStackSourceInfo(threadId) {
     // $TODO paths relative to project root?
     const frames = await this.getStackTrace(threadId, 1);
     const source = Debugger._sourceFromTopFrame(frames);
@@ -938,11 +948,11 @@ export default class Debugger implements DebuggerInterface {
     const frame = frames[0];
     const lines = await this.getSourceLines(source, frames[0].line, 1);
 
-    let name: string;
+    let name;
 
     if (source.path != null) {
-      const path = nuclideUri.resolve(source.path);
-      name = nuclideUri.split(path).pop();
+      const path = (_nuclideUri || _load_nuclideUri()).default.resolve(source.path);
+      name = (_nuclideUri || _load_nuclideUri()).default.split(path).pop();
     } else if (source.name != null) {
       name = source.name;
     } else {
@@ -954,40 +964,36 @@ export default class Debugger implements DebuggerInterface {
     return {
       line: lines.length > 0 ? lines[0] : '',
       name,
-      frame,
+      frame
     };
   }
 
-  static _sourceFromTopFrame(
-    frames: DebugProtocol.StackFrame[],
-  ): ?DebugProtocol.Source {
-    return idx(frames, _ => _[0].source) || null;
+  static _sourceFromTopFrame(frames) {
+    var _ref5, _ref6;
+
+    return ((_ref5 = frames) != null ? (_ref6 = _ref5[0]) != null ? _ref6.source : _ref6 : _ref5) || null;
   }
 
-  async _getSourceByReference(sourceReference: number): Promise<string> {
+  async _getSourceByReference(sourceReference) {
     const {
-      body: {content},
+      body: { content }
     } = await this._ensureDebugSession().source({
-      sourceReference,
+      sourceReference
     });
     return content;
   }
 
-  _ensureDebugSession(allowBeforeLaunch: boolean = false): VsDebugSession {
+  _ensureDebugSession(allowBeforeLaunch = false) {
     if (this._debugSession == null) {
       throw new Error('There is no active debugging session.');
     }
 
-    if (
-      (this._state === 'INITIALIZING' || this._state === 'CONFIGURING') &&
-      !allowBeforeLaunch
-    ) {
-      const err = new Error(
-        "The program is not yet running (use 'run' to start it).",
-      );
+    if ((this._state === 'INITIALIZING' || this._state === 'CONFIGURING') && !allowBeforeLaunch) {
+      const err = new Error("The program is not yet running (use 'run' to start it).");
       throw err;
     }
 
     return this._debugSession;
   }
 }
+exports.default = Debugger;

@@ -1,73 +1,77 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VSAdapterExecutableInfo} from 'nuclide-debugger-common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPortForJavaDebugger = getPortForJavaDebugger;
+exports.getJavaVSAdapterExecutableInfo = getJavaVSAdapterExecutableInfo;
+exports.prepareForTerminalLaunch = prepareForTerminalLaunch;
+exports.javaDebugWaitForJdwpProcessStart = javaDebugWaitForJdwpProcessStart;
+exports.javaDebugWaitForJdwpProcessExit = javaDebugWaitForJdwpProcessExit;
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import os from 'os';
-import {runCommand} from 'nuclide-commons/process';
-import {Observable} from 'rxjs';
-import {getAvailableServerPort} from 'nuclide-commons/serverPort';
+var _fsPromise;
 
-export type JavaLaunchTargetConfig = {|
-  +debugMode: 'launch',
-  +entryPointClass: string,
-  +classPath: string,
-  +runArgs?: ?Array<string>,
-|};
-
-export type JavaAttachPortTargetConfig = {|
-  +debugMode: 'attach',
-  +machineName: string,
-  +port: number,
-|};
-
-export type JavaTargetConfig =
-  | JavaLaunchTargetConfig
-  | JavaAttachPortTargetConfig;
-
-export type TerminalLaunchInfo = {|
-  +launchCommand: string,
-  +launchCwd: NuclideUri,
-  +targetExecutable: NuclideUri,
-  +launchArgs: Array<string>,
-  +attachPort: number,
-  +attachHost: string,
-|};
-
-const JAVA = 'java';
-
-export async function getPortForJavaDebugger(): Promise<number> {
-  return getAvailableServerPort();
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../nuclide-commons/fsPromise'));
 }
 
-export async function getJavaVSAdapterExecutableInfo(
-  debug: boolean,
-): Promise<VSAdapterExecutableInfo> {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../nuclide-commons/UniversalDisposable'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _process;
+
+function _load_process() {
+  return _process = require('../nuclide-commons/process');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _serverPort;
+
+function _load_serverPort() {
+  return _serverPort = require('../nuclide-commons/serverPort');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const JAVA = 'java'; /**
+                      * Copyright (c) 2017-present, Facebook, Inc.
+                      * All rights reserved.
+                      *
+                      * This source code is licensed under the BSD-style license found in the
+                      * LICENSE file in the root directory of this source tree. An additional grant
+                      * of patent rights can be found in the PATENTS file in the same directory.
+                      *
+                      * 
+                      * @format
+                      */
+
+async function getPortForJavaDebugger() {
+  return (0, (_serverPort || _load_serverPort()).getAvailableServerPort)();
+}
+
+async function getJavaVSAdapterExecutableInfo(debug) {
   return {
     command: JAVA,
-    args: await _getJavaArgs(debug),
+    args: await _getJavaArgs(debug)
   };
 }
 
-export async function prepareForTerminalLaunch(
-  config: JavaLaunchTargetConfig,
-): Promise<TerminalLaunchInfo> {
-  const {classPath, entryPointClass} = config;
-  const launchPath = nuclideUri.expandHomeDir(classPath);
-  const attachPort = await getAvailableServerPort();
+async function prepareForTerminalLaunch(config) {
+  const { classPath, entryPointClass } = config;
+  const launchPath = (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(classPath);
+  const attachPort = await (0, (_serverPort || _load_serverPort()).getAvailableServerPort)();
 
   // Note: the attach host is passed to the Java debugger engine, which
   // runs on the RPC side of Nuclide, so it is fine to always pass localhost
@@ -79,142 +83,94 @@ export async function prepareForTerminalLaunch(
     launchCommand: 'java',
     launchCwd: launchPath,
     targetExecutable: launchPath,
-    launchArgs: [
-      '-Xdebug',
-      `-Xrunjdwp:transport=dt_socket,address=${attachHost}:${attachPort},server=y,suspend=y`,
-      '-classpath',
-      launchPath,
-      entryPointClass,
-      ...(config.runArgs || []),
-    ],
+    launchArgs: ['-Xdebug', `-Xrunjdwp:transport=dt_socket,address=${attachHost}:${attachPort},server=y,suspend=y`, '-classpath', launchPath, entryPointClass, ...(config.runArgs || [])]
   });
 }
 
-export async function javaDebugWaitForJdwpProcessStart(
-  jvmSuspendArgs: string,
-): Promise<void> {
+async function javaDebugWaitForJdwpProcessStart(jvmSuspendArgs) {
   return new Promise(resolve => {
-    const disposable = new UniversalDisposable();
-    disposable.add(
-      Observable.interval(1000)
-        .mergeMap(async () => {
-          const line = await _findJdwpProcess(jvmSuspendArgs);
-          if (line != null) {
-            disposable.dispose();
-            resolve();
-          }
-        })
-        .timeout(30000)
-        .subscribe(),
-    );
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    disposable.add(_rxjsBundlesRxMinJs.Observable.interval(1000).mergeMap(async () => {
+      const line = await _findJdwpProcess(jvmSuspendArgs);
+      if (line != null) {
+        disposable.dispose();
+        resolve();
+      }
+    }).timeout(30000).subscribe());
   });
 }
 
-export async function javaDebugWaitForJdwpProcessExit(
-  jvmSuspendArgs: string,
-): Promise<void> {
+async function javaDebugWaitForJdwpProcessExit(jvmSuspendArgs) {
   return new Promise(resolve => {
-    const disposable = new UniversalDisposable();
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     let pidLine = null;
-    disposable.add(
-      Observable.interval(1000)
-        .mergeMap(async () => {
-          const line = await _findJdwpProcess(jvmSuspendArgs);
-          if (line != null) {
-            if (pidLine != null && pidLine !== line) {
-              // The matching target process line has changed, so the process
-              // we were watching is now gone.
-              disposable.dispose();
-              resolve();
-            }
-            pidLine = line;
-          } else {
-            disposable.dispose();
-            resolve();
-          }
-        })
-        .subscribe(),
-    );
+    disposable.add(_rxjsBundlesRxMinJs.Observable.interval(1000).mergeMap(async () => {
+      const line = await _findJdwpProcess(jvmSuspendArgs);
+      if (line != null) {
+        if (pidLine != null && pidLine !== line) {
+          // The matching target process line has changed, so the process
+          // we were watching is now gone.
+          disposable.dispose();
+          resolve();
+        }
+        pidLine = line;
+      } else {
+        disposable.dispose();
+        resolve();
+      }
+    }).subscribe());
   });
 }
 
-async function _getJavaArgs(debug: boolean): Promise<Array<string>> {
-  const baseJavaArgs = [
-    '-classpath',
-    await _getClassPath(),
-    'com.facebook.nuclide.debugger.JavaDbg',
-    '--vsp',
-  ];
-  const debugArgs = debug
-    ? [
-        '-Xdebug',
-        '-Xrunjdwp:transport=dt_socket,address=127.0.0.1:' +
-          (await getAvailableServerPort()).toString() +
-          ',server=y,suspend=n',
-      ]
-    : [];
+async function _getJavaArgs(debug) {
+  const baseJavaArgs = ['-classpath', await _getClassPath(), 'com.facebook.nuclide.debugger.JavaDbg', '--vsp'];
+  const debugArgs = debug ? ['-Xdebug', '-Xrunjdwp:transport=dt_socket,address=127.0.0.1:' + (await (0, (_serverPort || _load_serverPort()).getAvailableServerPort)()).toString() + ',server=y,suspend=n'] : [];
   return debugArgs.concat(baseJavaArgs);
 }
 
-async function _getClassPath(): Promise<string> {
-  const serverJarPath = nuclideUri.join(
-    __dirname,
-    'Build',
-    'java_debugger_server.jar',
-  );
+async function _getClassPath() {
+  const serverJarPath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, 'Build', 'java_debugger_server.jar');
 
-  if (!(await fsPromise.exists(serverJarPath))) {
-    throw new Error(
-      `Could not locate the java debugger server jar: ${serverJarPath}. ` +
-        'Please check your Nuclide installation.',
-    );
+  if (!(await (_fsPromise || _load_fsPromise()).default.exists(serverJarPath))) {
+    throw new Error(`Could not locate the java debugger server jar: ${serverJarPath}. ` + 'Please check your Nuclide installation.');
   }
 
   // Determining JDK lib path varies by platform.
   let toolsJarPath;
-  switch (os.platform()) {
+  switch (_os.default.platform()) {
     case 'win32':
       toolsJarPath = (process.env.JAVA_HOME || '') + '\\lib\\tools.jar';
 
       break;
-    case 'linux': {
-      // Find java
-      const java = (await runCommand('which', ['java']).toPromise()).trim();
-      const javaHome = await fsPromise.realpath(java);
+    case 'linux':
+      {
+        // Find java
+        const java = (await (0, (_process || _load_process()).runCommand)('which', ['java']).toPromise()).trim();
+        const javaHome = await (_fsPromise || _load_fsPromise()).default.realpath(java);
 
-      const matches = /(.*)\/java/.exec(javaHome);
-      toolsJarPath = matches.length > 1 ? matches[1] + '/../lib/tools.jar' : '';
-      break;
-    }
+        const matches = /(.*)\/java/.exec(javaHome);
+        toolsJarPath = matches.length > 1 ? matches[1] + '/../lib/tools.jar' : '';
+        break;
+      }
     case 'darwin':
-    default: {
-      const javaHome = (await runCommand(
-        '/usr/libexec/java_home',
-      ).toPromise()).trim();
-      toolsJarPath = javaHome + '/lib/tools.jar';
+    default:
+      {
+        const javaHome = (await (0, (_process || _load_process()).runCommand)('/usr/libexec/java_home').toPromise()).trim();
+        toolsJarPath = javaHome + '/lib/tools.jar';
 
-      break;
-    }
+        break;
+      }
   }
-  if (!(await fsPromise.exists(toolsJarPath))) {
-    throw new Error(
-      `Could not locate required JDK tools jar: ${toolsJarPath}. Is the JDK installed?`,
-    );
+  if (!(await (_fsPromise || _load_fsPromise()).default.exists(toolsJarPath))) {
+    throw new Error(`Could not locate required JDK tools jar: ${toolsJarPath}. Is the JDK installed?`);
   }
-  return nuclideUri.joinPathList([serverJarPath, toolsJarPath]);
+  return (_nuclideUri || _load_nuclideUri()).default.joinPathList([serverJarPath, toolsJarPath]);
 }
 
-async function _findJdwpProcess(jvmSuspendArgs: string): Promise<?string> {
-  const commands = await runCommand(
-    'ps',
-    ['-eww', '-o', 'pid,args'],
-    {},
-  ).toPromise();
+async function _findJdwpProcess(jvmSuspendArgs) {
+  const commands = await (0, (_process || _load_process()).runCommand)('ps', ['-eww', '-o', 'pid,args'], {}).toPromise();
 
-  const procs = commands
-    .toString()
-    .split('\n')
-    .filter(line => line.includes(jvmSuspendArgs));
+  const procs = commands.toString().split('\n').filter(line => line.includes(jvmSuspendArgs));
   const line = procs.length === 1 ? procs[0] : null;
   return line;
 }

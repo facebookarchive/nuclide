@@ -1,14 +1,42 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AbortSignal = undefined;
+
+var _eventTargetShim;
+
+function _load_eventTargetShim() {
+  return _eventTargetShim = require('event-target-shim');
+}
+
+class AbortSignal extends (_eventTargetShim || _load_eventTargetShim()).EventTarget {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this.aborted = false, _temp;
+  }
+  // Defined via defineEventAttribute below.
+
+
+  // $FlowIssue: Computed properties are not supported
+  get [Symbol.toStringTag]() {
+    return 'AbortSignal';
+  }
+}
+
+exports.AbortSignal = AbortSignal; /**
+                                    * Copyright (c) 2017-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the BSD-style license found in the
+                                    * LICENSE file in the root directory of this source tree. An additional grant
+                                    * of patent rights can be found in the PATENTS file in the same directory.
+                                    *
+                                    * 
+                                    * @format
+                                    */
 
 /**
  * This implements polyfills for AbortSignal and AbortController
@@ -18,26 +46,13 @@
 
 // Shim of EventTarget usable in Node.
 // Note that even in Chrome, EventTarget also isn't instantiable until version 64.
-import {
-  EventTarget as EventTargetShim,
-  defineEventAttribute,
-} from 'event-target-shim';
 
-export class AbortSignal extends (EventTargetShim: typeof EventTarget) {
-  aborted: boolean = false;
-  // Defined via defineEventAttribute below.
-  onabort: ?(event: Event) => mixed;
+(0, (_eventTargetShim || _load_eventTargetShim()).defineEventAttribute)(AbortSignal.prototype, 'abort');
 
-  // $FlowIssue: Computed properties are not supported
-  get [Symbol.toStringTag]() {
-    return 'AbortSignal';
+class AbortController {
+  constructor() {
+    this.signal = new AbortSignal();
   }
-}
-
-defineEventAttribute(AbortSignal.prototype, 'abort');
-
-export default class AbortController {
-  signal = new AbortSignal();
 
   abort() {
     // From whatwg spec, section 3.2:
@@ -49,7 +64,7 @@ export default class AbortController {
     this.signal.aborted = true;
     // Fire an event named abort at signal.
     // Note: event-target-shim converts objects to Events.
-    this.signal.dispatchEvent(({type: 'abort'}: any));
+    this.signal.dispatchEvent({ type: 'abort' });
   }
 
   // $FlowIssue: Computed properties are not supported
@@ -57,3 +72,4 @@ export default class AbortController {
     return 'AbortController';
   }
 }
+exports.default = AbortController;

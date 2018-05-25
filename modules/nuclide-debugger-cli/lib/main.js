@@ -1,36 +1,65 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import CommandLine from './CommandLine';
-import CommandDispatcher from './CommandDispatcher';
-import ConfigFile from './ConfigFile';
-import Debugger from './Debugger';
-import DebuggerAdapterFactory from './DebuggerAdapterFactory';
-import HelpCommand from './HelpCommand';
-import log4js from 'log4js';
-import QuitCommand from './QuitCommand';
-import yargs from 'yargs';
+var _CommandLine;
 
-function buildLogger(): log4js$Logger {
-  const args = yargs.argv;
+function _load_CommandLine() {
+  return _CommandLine = _interopRequireDefault(require('./CommandLine'));
+}
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+var _ConfigFile;
+
+function _load_ConfigFile() {
+  return _ConfigFile = _interopRequireDefault(require('./ConfigFile'));
+}
+
+var _Debugger;
+
+function _load_Debugger() {
+  return _Debugger = _interopRequireDefault(require('./Debugger'));
+}
+
+var _DebuggerAdapterFactory;
+
+function _load_DebuggerAdapterFactory() {
+  return _DebuggerAdapterFactory = _interopRequireDefault(require('./DebuggerAdapterFactory'));
+}
+
+var _HelpCommand;
+
+function _load_HelpCommand() {
+  return _HelpCommand = _interopRequireDefault(require('./HelpCommand'));
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+var _QuitCommand;
+
+function _load_QuitCommand() {
+  return _QuitCommand = _interopRequireDefault(require('./QuitCommand'));
+}
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function buildLogger() {
+  const args = (_yargs || _load_yargs()).default.argv;
   const level = (args.loglevel || 'FATAL').toUpperCase();
-  const validLevels = new Set([
-    'TRACE',
-    'DEBUG',
-    'INFO',
-    'WARN',
-    'ERROR',
-    'FATAL',
-  ]);
+  const validLevels = new Set(['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL']);
 
   if (!validLevels.has(level)) {
     throw new Error(`${level} is not a valid loglevel.`);
@@ -39,56 +68,43 @@ function buildLogger(): log4js$Logger {
   // Send debug level logging to a file. Send a configurable (by default FATAL)
   // level to the console.
   const config = {
-    appenders: [
-      {
-        type: 'file',
-        filename: '/tmp/nuclide-cli.log',
-        maxLogSize: 50 * 1024,
-        category: '[all]',
-      },
-      {
-        type: 'logLevelFilter',
-        level,
-        maxLevel: 'FATAL',
-        appender: {
-          type: 'stdout',
-          category: '[all]',
-        },
-      },
-    ],
+    appenders: [{
+      type: 'file',
+      filename: '/tmp/nuclide-cli.log',
+      maxLogSize: 50 * 1024,
+      category: '[all]'
+    }, {
+      type: 'logLevelFilter',
+      level,
+      maxLevel: 'FATAL',
+      appender: {
+        type: 'stdout',
+        category: '[all]'
+      }
+    }],
     levels: {
-      '[all]': 'DEBUG',
-    },
+      '[all]': 'DEBUG'
+    }
   };
 
-  log4js.configure(config);
+  (_log4js || _load_log4js()).default.configure(config);
 
-  return log4js.getLogger('default');
-}
+  return (_log4js || _load_log4js()).default.getLogger('default');
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-const _help: string[] = [
-  'fbdbg [options] [program [program-arguments]]',
-  '  The debugger may be launched in either "launch" or "attach" mode. "launch"',
-  '  starts a local program; "attach" attaches to an already running program',
-  '  which may be remote. There are options which are specific to the mode and',
-  '  type of program being debugged; to see them, specify the --type and mode',
-  '  options along with --help.',
-  '',
-  '--help:',
-  '  Show this help.',
-  '--attach:',
-  '  Attach the debugger to a running process.',
-  '--preset:',
-  '  Load default arguments for a session type preset',
-  '--type python|node:',
-  '  Specify the type of program to debug. Required with --attach',
-  '',
-  '[program]: If not attaching, the program to launch. Normally the type of',
-  '           program can be inferred from the file extension.',
-  '',
-];
+const _help = ['fbdbg [options] [program [program-arguments]]', '  The debugger may be launched in either "launch" or "attach" mode. "launch"', '  starts a local program; "attach" attaches to an already running program', '  which may be remote. There are options which are specific to the mode and', '  type of program being debugged; to see them, specify the --type and mode', '  options along with --help.', '', '--help:', '  Show this help.', '--attach:', '  Attach the debugger to a running process.', '--preset:', '  Load default arguments for a session type preset', '--type python|node:', '  Specify the type of program to debug. Required with --attach', '', '[program]: If not attaching, the program to launch. Normally the type of', '           program can be inferred from the file extension.', ''];
 
-function showHelp(configFile: ConfigFile): void {
+function showHelp(configFile) {
   _help.forEach(_ => process.stdout.write(_ + '\n'));
 
   const presets = configFile.presets();
@@ -102,20 +118,15 @@ function showHelp(configFile: ConfigFile): void {
   }
 }
 
-async function main(): Promise<void> {
+async function main() {
   try {
     // see if there's session information on the command line
-    const debuggerAdapterFactory = new DebuggerAdapterFactory();
-    const configFile = new ConfigFile();
+    const debuggerAdapterFactory = new (_DebuggerAdapterFactory || _load_DebuggerAdapterFactory()).default();
+    const configFile = new (_ConfigFile || _load_ConfigFile()).default();
 
     const preset = configFile.getPresetFromArguments();
-    const cmdLine =
-      preset == null
-        ? process.argv.splice(2)
-        : configFile.applyPresetToArguments(preset);
-    const args = yargs(cmdLine)
-      .boolean('attach')
-      .boolean('help').argv;
+    const cmdLine = preset == null ? process.argv.splice(2) : configFile.applyPresetToArguments(preset);
+    const args = (0, (_yargs || _load_yargs()).default)(cmdLine).boolean('attach').boolean('help').argv;
 
     if (args.help) {
       showHelp(configFile);
@@ -124,11 +135,11 @@ async function main(): Promise<void> {
     }
 
     const aliases = configFile.resolveAliasesForPreset(preset);
-    const dispatcher = new CommandDispatcher(aliases);
-    const cli = new CommandLine(dispatcher);
+    const dispatcher = new (_CommandDispatcher || _load_CommandDispatcher()).default(aliases);
+    const cli = new (_CommandLine || _load_CommandLine()).default(dispatcher);
 
-    dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
-    dispatcher.registerCommand(new QuitCommand(() => cli.close()));
+    dispatcher.registerCommand(new (_HelpCommand || _load_HelpCommand()).default(cli, dispatcher));
+    dispatcher.registerCommand(new (_QuitCommand || _load_QuitCommand()).default(() => cli.close()));
 
     let adapter;
 
@@ -142,7 +153,7 @@ async function main(): Promise<void> {
     }
 
     const logger = buildLogger();
-    const debuggerInstance = new Debugger(logger, cli, preset);
+    const debuggerInstance = new (_Debugger || _load_Debugger()).default(logger, cli, preset);
 
     if (adapter != null) {
       await debuggerInstance.launch(adapter);
@@ -154,16 +165,12 @@ async function main(): Promise<void> {
       debuggerInstance.breakInto();
     });
 
-    cli.observeLines().subscribe(
-      _ => {},
-      _ => {},
-      _ => {
-        debuggerInstance.closeSession().then(x => {
-          cli.outputLine();
-          process.exit(0);
-        });
-      },
-    );
+    cli.observeLines().subscribe(_ => {}, _ => {}, _ => {
+      debuggerInstance.closeSession().then(x => {
+        cli.outputLine();
+        process.exit(0);
+      });
+    });
   } catch (x) {
     process.stderr.write(`${x.message}\n`);
     process.exit(1);
