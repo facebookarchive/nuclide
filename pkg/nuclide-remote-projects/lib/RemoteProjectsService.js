@@ -45,13 +45,13 @@ export default class RemoteProjectsService {
   ): Promise<?RemoteConnection> {
     const {
       host,
-      cwd,
+      path,
       displayTitle,
       promptReconnectOnFailure = true,
     } = remoteProjectConfig;
     const connection = await RemoteConnection.reconnect(
       host,
-      cwd,
+      path,
       displayTitle,
       promptReconnectOnFailure,
     );
@@ -64,7 +64,7 @@ export default class RemoteProjectsService {
     // If connection fails using saved config, open connect dialog.
     return openConnectionDialog({
       initialServer: host,
-      initialCwd: cwd,
+      initialCwd: path,
     });
   }
 

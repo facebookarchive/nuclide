@@ -548,7 +548,7 @@ export class SshHandshake {
         host: this._remoteHost,
         port: this._remotePort,
         family: this._config.family,
-        cwd: this._config.cwd,
+        path: this._config.cwd,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
         clientCertificate: this._clientCertificate,
         clientKey: this._clientKey,
@@ -568,7 +568,7 @@ export class SshHandshake {
             host: 'localhost',
             port: localPort,
             family: this._config.family,
-            cwd: this._config.cwd,
+            path: this._config.cwd,
             displayTitle: this._config.displayTitle,
           });
         });

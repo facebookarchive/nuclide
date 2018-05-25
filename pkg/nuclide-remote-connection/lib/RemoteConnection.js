@@ -44,7 +44,7 @@ export type RemoteConnectionConfiguration = {
   version?: ServerConnectionVersion,
 
   // Stuff specific to RemoteConnectionConfiguration (e.g. not in ServerConnectionConfiguration)
-  cwd: string, // Path to remote directory user should start in upon connection.
+  path: string, // Path to remote directory user should start in upon connection.
   displayTitle: string, // Name of the saved connection profile.
   promptReconnectOnFailure?: boolean, // open a connection dialog prompt if the reconnect fails
 };
@@ -70,7 +70,7 @@ export class RemoteConnection {
     config: RemoteConnectionConfiguration,
   ): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
-    const {cwd, displayTitle, promptReconnectOnFailure} = config;
+    const {path, displayTitle, promptReconnectOnFailure} = config;
     const directories = [];
 
     try {
@@ -78,7 +78,7 @@ export class RemoteConnection {
         FILE_SYSTEM_SERVICE,
       );
 
-      const realPath = await fsService.resolveRealPath(cwd);
+      const realPath = await fsService.resolveRealPath(path);
 
       // realPath may actually be a project file.
       const contents = hasAtomProjectFormat(realPath)
@@ -88,9 +88,9 @@ export class RemoteConnection {
       // If the file is not a project file, initialize the connection.
       if (contents == null) {
         // Now that we know the real path, it's possible this collides with an existing connection.
-        if (realPath !== cwd && nuclideUri.isRemote(cwd)) {
+        if (realPath !== path && nuclideUri.isRemote(path)) {
           const existingConnection = this.getByHostnameAndPath(
-            nuclideUri.getHostname(cwd),
+            nuclideUri.getHostname(path),
             realPath,
           );
           if (existingConnection != null) {
@@ -105,7 +105,9 @@ export class RemoteConnection {
         const projectPaths = projectContents.paths;
         if (projectPaths != null && Array.isArray(projectPaths)) {
           directories.push(
-            ...projectPaths.map(path => nuclideUri.resolve(dirname, path)),
+            ...projectPaths.map(dirPath =>
+              nuclideUri.resolve(dirname, dirPath),
+            ),
           );
         } else {
           directories.push(dirname);
@@ -159,13 +161,13 @@ export class RemoteConnection {
   }
 
   static _createInsecureConnectionForTesting(
-    cwd: string,
+    path: string,
     port: number,
   ): Promise<RemoteConnection> {
     const config = {
       host: 'localhost',
       port,
-      cwd,
+      path,
       displayTitle: '',
     };
     return RemoteConnection.findOrCreate(config);
@@ -179,7 +181,7 @@ export class RemoteConnection {
    */
   static async _createConnectionBySavedConfig(
     host: string,
-    cwd: string,
+    path: string,
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
@@ -190,7 +192,7 @@ export class RemoteConnection {
     try {
       const config = {
         ...connectionConfig,
-        cwd,
+        path,
         displayTitle,
         promptReconnectOnFailure,
       };
@@ -220,19 +222,19 @@ export class RemoteConnection {
    */
   static async reconnect(
     host: string,
-    cwd: string,
+    path: string,
     displayTitle: string,
     promptReconnectOnFailure: boolean = true,
   ): Promise<?RemoteConnection> {
     logger.info('Attempting to reconnect', {
       host,
-      cwd,
+      path,
       displayTitle,
       promptReconnectOnFailure,
     });
 
-    if (!hasAtomProjectFormat(cwd)) {
-      const connection = RemoteConnection.getByHostnameAndPath(host, cwd);
+    if (!hasAtomProjectFormat(path)) {
+      const connection = RemoteConnection.getByHostnameAndPath(host, path);
 
       if (connection != null) {
         return connection;
@@ -241,7 +243,7 @@ export class RemoteConnection {
 
     let connection = await RemoteConnection._createConnectionBySavedConfig(
       host,
-      cwd,
+      path,
       displayTitle,
       promptReconnectOnFailure,
     );
@@ -251,7 +253,7 @@ export class RemoteConnection {
         const {address} = await lookupPreferIpv6(host);
         connection = await RemoteConnection._createConnectionBySavedConfig(
           address,
-          cwd,
+          path,
           displayTitle,
           promptReconnectOnFailure,
         );
@@ -407,7 +409,7 @@ export class RemoteConnection {
   getConfig(): RemoteConnectionConfiguration {
     return {
       ...this._connection.getConfig(),
-      cwd: this._path,
+      path: this._path,
       displayTitle: this._displayTitle,
       promptReconnectOnFailure: this._promptReconnectOnFailure,
     };
@@ -434,9 +436,9 @@ export class RemoteConnection {
   }
 
   /**
-   * Get cached connection match the hostname and the path has the prefix of connection.cwd.
+   * Get cached connection match the hostname and the path has the prefix of connection.path.
    * @param hostname The connected server host name.
-   * @param path The absolute path that's has the prefix of cwd of the connection.
+   * @param path The absolute path that's has the prefix of path of the connection.
    *   If path is null, empty or undefined, then return the connection which matches
    *   the hostname and ignore the initial working directory.
    */

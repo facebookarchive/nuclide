@@ -137,7 +137,7 @@ class Activation {
     const remoteConnection = await this._remoteProjectsService.createRemoteConnection(
       {
         host,
-        cwd: nuclideUri.getPath(cwd),
+        path: nuclideUri.getPath(cwd),
         displayTitle: host,
       },
     );

@@ -66,7 +66,7 @@ export default function connectBigDigSshHandshake(
     ) {
       RemoteConnection.findOrCreate({
         ...remoteConfig,
-        cwd: connectionConfig.cwd,
+        path: connectionConfig.cwd,
         displayTitle: connectionConfig.displayTitle,
         version: BIG_DIG_VERSION,
       }).then(

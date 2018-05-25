@@ -164,10 +164,9 @@ class Activation {
 
         getLogger().info(`Attempting to addProject(${projectPath}).`);
         const hostname = nuclideUri.getHostname(projectPath);
-        const cwd = nuclideUri.getPath(projectPath);
         await remoteProjectsService.createRemoteConnection({
           host: hostname,
-          cwd,
+          path: nuclideUri.getPath(projectPath),
           displayTitle: hostname,
         });
       },

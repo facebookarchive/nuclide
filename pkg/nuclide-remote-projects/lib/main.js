@@ -87,12 +87,12 @@ export type RemoteProjectsService = {
 };
 
 /**
- * Stores the host, cwd, displayTitle of a remote connection and
+ * Stores the host, path, displayTitle of a remote connection and
  * a property switch for whether to prompt to connect again if reconnect attempt fails.
  */
 export type SerializableRemoteConnectionConfiguration = {
   host: string,
-  cwd: string,
+  path: string,
   displayTitle: string,
   promptReconnectOnFailure?: boolean,
 };
@@ -161,11 +161,10 @@ class Activation {
     deleteDummyRemoteRootDirectories();
 
     // Attempt to reload previously open projects.
-    const remoteProjectsConfig = state && state.remoteProjectsConfig;
-    reloadRemoteProjects(
-      remoteProjectsConfig || [],
-      this._remoteProjectsService,
+    const remoteProjectsConfig = validateRemoteProjectConfig(
+      state && state.remoteProjectsConfig,
     );
+    reloadRemoteProjects(remoteProjectsConfig, this._remoteProjectsService);
   }
 
   dispose(): Promise<void> {
@@ -318,7 +317,7 @@ function createSerializableRemoteConnectionConfiguration(
 ): SerializableRemoteConnectionConfiguration {
   return {
     host: config.host,
-    cwd: config.cwd,
+    path: config.path,
     displayTitle: config.displayTitle,
     promptReconnectOnFailure: config.promptReconnectOnFailure,
   };
@@ -512,7 +511,7 @@ async function reloadRemoteProjects(
       logger.info(
         'No RemoteConnection returned on restore state trial:',
         config.host,
-        config.cwd,
+        config.path,
       );
 
       // Atom restores remote files with a malformed URIs, which somewhat resemble local paths.
@@ -596,7 +595,7 @@ function replaceRemoteEditorPlaceholders(connection: RemoteConnection): void {
       pane.removeItem(editor);
       editor.destroy();
     };
-    if (filePath === config.cwd) {
+    if (filePath === config.path) {
       cleanupBuffer();
     } else {
       // If we clean up the buffer before the `openUriInPane` finishes,
@@ -616,6 +615,41 @@ function replaceRemoteEditorPlaceholders(connection: RemoteConnection): void {
         .then(cleanupBuffer, cleanupBuffer);
     }
   }
+}
+
+function validateRemoteProjectConfig(
+  raw: ?mixed,
+): Array<SerializableRemoteConnectionConfiguration> {
+  if (raw == null || !Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .map(config => {
+      if (config == null || typeof config !== 'object') {
+        return null;
+      }
+      const {
+        host,
+        path: path_,
+        cwd,
+        displayTitle,
+        promptReconnectOnFailure,
+      } = config;
+      const path = cwd == null ? path_ : cwd; // We renamed this. Make sure we check the old name.
+      if (host == null || path == null || displayTitle == null) {
+        return null;
+      }
+      const formatted: SerializableRemoteConnectionConfiguration = {
+        host: String(host),
+        path: String(path),
+        displayTitle: String(displayTitle),
+      };
+      if (typeof promptReconnectOnFailure === 'boolean') {
+        formatted.promptReconnectOnFailure = promptReconnectOnFailure;
+      }
+      return formatted;
+    })
+    .filter(Boolean);
 }
 
 createPackage(module.exports, Activation);
