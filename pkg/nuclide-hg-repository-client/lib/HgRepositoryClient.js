@@ -35,7 +35,7 @@ import type {ConnectableObservable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import {
   cacheWhileSubscribed,
   fastDebounce,

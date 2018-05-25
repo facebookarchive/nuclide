@@ -106,6 +106,7 @@
     "node-fetch": "1.6.3",
     "nuclide-prebuilt-libs": "0.5.1",
     "nullthrows": "1.0.0",
+    "pathwatcher": "7.1.1",
     "plist": "2.0.1",
     "q": "1.4.1",
     "queue-fifo": "0.2.4",
