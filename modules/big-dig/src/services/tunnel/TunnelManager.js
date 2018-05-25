@@ -19,9 +19,29 @@ import invariant from 'assert';
 
 import {getLogger} from 'log4js';
 
+/**
+ * A tunnel consists of two components: a Proxy to listen for connections,
+ * and a SocketManager to handle TCP socket connections from the proxy.
+ *
+ * There are two types of tunnels. A normal tunnel is one where the proxy runs
+ * on the client and proxies connections to a remote TCP port on the server.
+ * There's also  reverse tunnel where the proxy runs on the server and it
+ * proxies connections to the client.
+ *
+ * On the client, the TunnelManager maintains a Map of Tunnels it has handed
+ * back to clients. On the server, the TunnelManager maintains a map to its
+ * associated TunnelComponent (either the Proxy or the SocketManager).
+ *
+ * When the client closes tunnel, it sends a message to the server to close
+ * the associated component that is running on the server.
+ */
+
 export class TunnelManager {
   _transport: Transport;
-  _idToTunnel: Map<string, Tunnel | SocketManager>;
+  // on the client (where tunnels are created), we always map to a Tunnel.
+  // on the server, we map to either a SocketManager or a Proxy, depending
+  // on whether we are a reverse tunnel or not
+  _idToTunnel: Map<string, Tunnel | SocketManager | Proxy>;
   _logger: log4js$Logger;
   _subscription: Subscription;
 
@@ -38,27 +58,27 @@ export class TunnelManager {
       .subscribe(msg => this._handleMessage(msg));
   }
 
-  async createSocketManager(
-    tunnelId: string,
-    remotePort: number,
-  ): Promise<SocketManager> {
-    const socketManager = new SocketManager(
-      tunnelId,
-      remotePort,
-      this._transport,
-    );
-
-    this._idToTunnel.set(tunnelId, socketManager);
-    return socketManager;
-  }
-
   async createTunnel(localPort: number, remotePort: number): Promise<Tunnel> {
+    this._logger.info(`creating tunnel ${localPort}->${remotePort}`);
     const tunnel = await Tunnel.createTunnel(
       localPort,
       remotePort,
       this._transport,
     );
     this._idToTunnel.set(tunnel.id, tunnel);
+    return tunnel;
+  }
+
+  async createReverseTunnel(
+    localPort: number,
+    remotePort: number,
+  ): Promise<Tunnel> {
+    this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
+    const tunnel = await Tunnel.createReverseTunnel(
+      localPort,
+      remotePort,
+      this._transport,
+    );
     return tunnel;
   }
 
@@ -70,15 +90,34 @@ export class TunnelManager {
   }
 
   async _handleMessage(msg: Object /* TunnelMessage? */): Promise<void> {
-    const tunnel = this._idToTunnel.get(msg.tunnelId);
+    const tunnelComponent = this._idToTunnel.get(msg.tunnelId);
     if (msg.event === 'proxyCreated') {
-      await this.createSocketManager(msg.tunnelId, msg.remotePort);
+      if (tunnelComponent == null) {
+        const socketManager = new SocketManager(
+          msg.tunnelId,
+          msg.remotePort,
+          this._transport,
+        );
+
+        this._idToTunnel.set(msg.tunnelId, socketManager);
+      }
     } else if (msg.event === 'proxyClosed') {
-      invariant(tunnel);
-      tunnel.close();
+      invariant(tunnelComponent);
+      tunnelComponent.close();
+    } else if (msg.event === 'createProxy') {
+      const proxy = await Proxy.createProxy(
+        msg.tunnelId,
+        msg.localPort,
+        msg.remotePort,
+        this._transport,
+      );
+      this._idToTunnel.set(msg.tunnelId, proxy);
+    } else if (msg.event === 'closeProxy') {
+      invariant(tunnelComponent);
+      tunnelComponent.close();
     } else {
-      invariant(tunnel);
-      tunnel.receive(msg);
+      invariant(tunnelComponent);
+      tunnelComponent.receive(msg);
     }
   }
 }
@@ -87,21 +126,27 @@ export class Tunnel {
   _localPort: number;
   _remotePort: number;
   _transport: Transport;
-  _proxy: Proxy;
+  _proxy: ?Proxy;
+  _socketManager: ?SocketManager;
   _id: string;
   _logger: log4js$Logger;
+  _isReverse: boolean;
 
   constructor(
     id: string,
-    proxy: Proxy,
+    proxy: ?Proxy,
+    socketManager: ?SocketManager,
     localPort: number,
     remotePort: number,
+    isReverse: boolean,
     transport: Transport,
   ) {
     this._id = id;
     this._proxy = proxy;
+    this._socketManager = socketManager;
     this._localPort = localPort;
     this._remotePort = remotePort;
+    this._isReverse = isReverse;
     this._transport = transport;
     this._logger = getLogger('tunnel');
   }
@@ -118,11 +163,52 @@ export class Tunnel {
       remotePort,
       transport,
     );
-    return new Tunnel(tunnelId, proxy, localPort, remotePort, transport);
+    return new Tunnel(
+      tunnelId,
+      proxy,
+      null,
+      localPort,
+      remotePort,
+      false,
+      transport,
+    );
+  }
+
+  static async createReverseTunnel(
+    localPort: number,
+    remotePort: number,
+    transport: Transport,
+  ): Promise<Tunnel> {
+    const tunnelId = generateId();
+
+    const socketManager = new SocketManager(tunnelId, localPort, transport);
+
+    transport.send(
+      JSON.stringify({
+        event: 'createProxy',
+        tunnelId,
+        localPort,
+        remotePort,
+      }),
+    );
+    return new Tunnel(
+      tunnelId,
+      null,
+      socketManager,
+      localPort,
+      remotePort,
+      true,
+      transport,
+    );
   }
 
   receive(msg: Object): void {
-    this._proxy.receive(msg);
+    if (this._isReverse) {
+      throw new Error('Tunnel.receive is not implemented for a reverse tunnel');
+    }
+    if (this._proxy != null) {
+      this._proxy.receive(msg);
+    }
   }
 
   get id(): string {
@@ -130,8 +216,19 @@ export class Tunnel {
   }
 
   close() {
-    this._logger.trace('closing');
-    this._proxy.close();
+    if (!this._isReverse) {
+      invariant(this._proxy);
+      this._proxy.close();
+    } else {
+      invariant(this._socketManager);
+      this._socketManager.close();
+      this._transport.send(
+        JSON.stringify({
+          event: 'closeProxy',
+          tunnelId: this._id,
+        }),
+      );
+    }
   }
 }
 
