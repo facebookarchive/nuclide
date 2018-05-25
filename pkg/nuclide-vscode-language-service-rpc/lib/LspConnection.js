@@ -292,7 +292,10 @@ export class LspConnection {
   }
 
   onShowMessageRequest(
-    callback: (p.ShowMessageRequestParams, CancellationToken) => Promise<any>,
+    callback: (
+      p.ShowMessageRequestParams,
+      CancellationToken,
+    ) => Promise<?p.MessageActionItem>,
   ): void {
     this._jsonRpcConnection.onRequest(
       {method: 'window/showMessageRequest'},

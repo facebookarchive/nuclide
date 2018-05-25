@@ -54,6 +54,7 @@ import type {
   LogMessageParams,
   ShowMessageParams,
   ShowMessageRequestParams,
+  MessageActionItem,
   ProgressParams,
   ActionRequiredParams,
   DidOpenTextDocumentParams,
@@ -171,6 +172,13 @@ export class LspLanguageService {
     Observable<PublishDiagnosticsParams>,
   > = new BehaviorSubject(Observable.empty());
 
+  _statusClickPromise: Promise<?string> = Promise.resolve(null);
+  _statusClickPromiseResolver: (?string) => void = _ => {};
+  _statusCounter: number = 0;
+  _statusUpdates: BehaviorSubject<StatusData> = new BehaviorSubject({
+    kind: 'null',
+  });
+
   _supportsSymbolSearch: BehaviorSubject<?boolean> = new BehaviorSubject(null);
   // Fields which become live inside start(), when we spawn the LSP process.
   // Disposing of the _lspConnection will dispose of all of them.
@@ -233,6 +241,7 @@ export class LspLanguageService {
     this._stop()
       .catch(_ => {})
       .then(_ => {
+        this._statusUpdates.complete();
         this._masterHost.dispose();
         this._snapshotter.dispose();
         this._logger.dispose();
@@ -317,6 +326,45 @@ export class LspLanguageService {
       (state: empty);
       invariant(false, 'unreachable state');
     }
+  }
+
+  _showStatus(status: StatusData): Promise<?string> {
+    // If someone had previously called 'await button = _showStatus(.)' to find
+    // out which button the user clicked, but we end up switching state before
+    // the user clicked a button, then we'll cause that prior button promise
+    // to be resolved as 'null'
+    this._statusClickPromiseResolver(null);
+    this._statusClickPromise = new Promise((resolve, reject) => {
+      this._statusClickPromiseResolver = resolve;
+    });
+
+    // red status updates are accompanied by an id to correlate statusClicks
+    this._statusCounter++;
+    const status2 =
+      status.kind !== 'red'
+        ? status
+        : {...status, id: String(this._statusCounter)};
+    this._logger.trace(`_setStatus status: ${JSON.stringify(status2)}`);
+    this._statusUpdates.next(status2);
+
+    return this._statusClickPromise;
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {
+    if (id === String(this._statusCounter)) {
+      this._statusClickPromiseResolver(button);
+    } else {
+      // The user might have clicked a button after we switched to a new status,
+      // and the messages crossed in flight. In this case ignore the button
+    }
+  }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    return this._statusUpdates.asObservable().publish();
   }
 
   async start(): Promise<void> {
@@ -500,7 +548,11 @@ export class LspLanguageService {
       });
       this._lspConnection.onShowMessageRequest(async (params, cancel) => {
         this._childOut.stdout = null;
-        return this._handleShowMessageRequest(params, cancel);
+        if (params.target === 'status') {
+          return this._handleStatusRequest(params, cancel);
+        } else {
+          return this._handleShowMessageRequest(params, cancel);
+        }
       });
       this._lspConnection.onProgressNotification(params => {
         this._childOut.stdout = null;
@@ -613,6 +665,9 @@ export class LspLanguageService {
           },
         },
         window: {
+          status: {
+            dynamicRegistration: false,
+          },
           progress: {
             dynamicRegistration: false,
           },
@@ -1165,10 +1220,47 @@ export class LspLanguageService {
     return {applied: false};
   }
 
+  async _handleStatusRequest(
+    params: ShowMessageRequestParams,
+    token: rpc.CancellationToken,
+  ): Promise<?MessageActionItem> {
+    // CARE! This method may be called before initialization has finished.
+
+    const actions = params.actions || [];
+
+    let status;
+    switch (params.type) {
+      case LspMessageType.Error:
+        status = {
+          kind: 'red',
+          message: params.message,
+          buttons: actions.map(action => action.title),
+        };
+        break;
+      case LspMessageType.Warning:
+        status = {kind: 'yellow', message: params.message};
+        break;
+      case LspMessageType.Info:
+        status = {kind: 'green', message: params.message};
+        break;
+      default:
+        return null;
+    }
+
+    const response = await this._showStatus(status);
+    if (response == null) {
+      return null;
+    } else {
+      const chosenAction = actions.find(action => action.title === response);
+      invariant(chosenAction != null);
+      return chosenAction;
+    }
+  }
+
   async _handleShowMessageRequest(
     params: ShowMessageRequestParams,
     token: rpc.CancellationToken,
-  ): Promise<any> {
+  ): Promise<?MessageActionItem> {
     // CARE! This method may be called before initialization has finished.
 
     const cancelIsRequested = Observable.bindCallback(
@@ -2492,16 +2584,6 @@ export class LspLanguageService {
     this._logger.error('NYI: getCollapsedSelectionRange');
     return Promise.resolve(null);
   }
-
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
-    return Observable.of({kind: 'null'}).publish();
-  }
-
-  async clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void> {}
 }
 
 class DerivedServerCapabilities {

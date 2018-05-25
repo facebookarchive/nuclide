@@ -57,13 +57,18 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   _resources: UniversalDisposable;
   _configCache: ConfigCache;
   _logger: log4js$Logger;
-  // A promise for when AtomLanguageService has called into this feature
+  // Promises for when AtomLanguageService has called into this feature
   _observeDiagnosticsPromise: Promise<void>;
   _observeDiagnosticsPromiseResolver: () => void;
+  _observeStatusPromise: Promise<void>;
+  _observeStatusPromiseResolver: () => void;
 
   constructor() {
     this._observeDiagnosticsPromise = new Promise((resolve, reject) => {
       this._observeDiagnosticsPromiseResolver = resolve;
+    });
+    this._observeStatusPromise = new Promise((resolve, reject) => {
+      this._observeStatusPromiseResolver = resolve;
     });
   }
 
@@ -239,6 +244,29 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
         );
       })
       .publish();
+  }
+
+  hasObservedStatus(): Promise<void> {
+    return this._observeStatusPromise;
+  }
+
+  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+    this._observeStatusPromiseResolver();
+    return Observable.fromPromise(
+      this._getLanguageServiceForFile(fileVersion.filePath),
+    )
+      .flatMap(ls => ls.observeStatus(fileVersion).refCount())
+      .publish();
+  }
+
+  async clickStatus(
+    fileVersion: FileVersion,
+    id: string,
+    button: string,
+  ): Promise<void> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).clickStatus(fileVersion, id, button);
   }
 
   async getAutocompleteSuggestions(
@@ -487,16 +515,6 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       originalCursorPosition,
     );
   }
-
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
-    return Observable.of({kind: 'null'}).publish();
-  }
-
-  async clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void> {}
 
   dispose(): void {
     this._resources.dispose();

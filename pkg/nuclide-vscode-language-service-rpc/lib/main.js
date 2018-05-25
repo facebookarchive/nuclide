@@ -93,6 +93,11 @@ export type LspLanguageServiceParams = {|
   // Otherwise, this should always be enabled.
   // Default: true.
   waitForDiagnostics?: boolean,
+  // Waits for client to start observing status before starting the LSP server.
+  // This defaults to false because not many language servers show status.
+  // Similar to waitForDiagnostics.
+  // Default: false.
+  waitForStatus?: boolean,
   // Additional preferences for the language server.
   lspPreferences?: LspPreferences,
 |};
@@ -143,6 +148,9 @@ export async function createMultiLspLanguageService(
   const languageServiceFactory = async (projectDir: string) => {
     if (params.waitForDiagnostics !== false) {
       await result.hasObservedDiagnostics();
+    }
+    if (params.waitForStatus === true) {
+      await result.hasObservedStatus();
     }
     // We're awaiting until AtomLanguageService has observed diagnostics (to
     // prevent race condition: see below).
