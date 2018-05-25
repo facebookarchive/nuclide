@@ -113,6 +113,10 @@ function checkQueryPs(
         const actual = await queryPs('command')
           .map(childProcessTree)
           .toPromise();
+        if (expectedMap.size === 0) {
+          expect(actual).toBe(null);
+          return;
+        }
         function check(node: ChildProcessInfo): number {
           let count = 1;
           const expected = nullthrows(expectedMap.get(node.pid));
@@ -186,6 +190,10 @@ describe('getChildProcesses', () => {
       ],
       [fakeSummary('flow', 3), fakeSummary('hg', 3), fakeSummary('nuclide', 1)],
     );
+  });
+
+  describe('missing process', () => {
+    checkQueryPs(1, [], []);
   });
 
   describe('durationInSeconds', () => {

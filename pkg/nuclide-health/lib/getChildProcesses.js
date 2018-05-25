@@ -48,12 +48,15 @@ export function childProcessTree(ps: Map<number, PsInfo>): ?ChildProcessInfo {
     (k, v) => v.command !== 'ps -eo pid,ppid,pcpu,time,rss,vsz,command',
   );
   return postOrder(process.pid, mapChildren(viewPs), (pid, children) => {
-    const process = nullthrows(viewPs.get(pid));
+    const process = viewPs.get(pid);
+    if (process == null) {
+      return null;
+    }
     return {
       pid,
       command: process.command,
       cpuPercentage: process.pcpu,
-      children,
+      children: children.filter(Boolean),
       ioBytesStats: ioMap.get(pid),
     };
   });
@@ -63,7 +66,11 @@ export function childProcessSummary(
   ps: Map<number, PsInfo>,
 ): Array<ProcessSummary> {
   const subPs = postOrder(process.pid, mapChildren(ps), (pid, children) => {
-    return [nullthrows(ps.get(pid))].concat(...children);
+    const pidPs = ps.get(pid);
+    if (pidPs == null) {
+      return [];
+    }
+    return [pidPs].concat(...children);
   });
   return aggregate(subPs);
 }
