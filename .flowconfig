@@ -42,6 +42,7 @@ sketchy-null=error
 sketchy-null-bool=off
 
 [strict]
+deprecated-type
 nonstrict-import
 sketchy-null
 unclear-type

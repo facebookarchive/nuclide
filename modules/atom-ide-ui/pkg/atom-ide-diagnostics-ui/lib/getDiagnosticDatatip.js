@@ -28,7 +28,7 @@ const gotoLine = (file: string, line: number) => goToLocation(file, {line});
 function makeDatatipComponent(
   messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
-): React.ComponentType<*> {
+): React.ComponentType<mixed> {
   const fixer = message => diagnosticUpdater.applyFix(message);
   return bindObservableAsProps(
     observableFromSubscribeFunction(cb =>

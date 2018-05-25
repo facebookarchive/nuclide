@@ -15,7 +15,7 @@ import ReactDOM from 'react-dom';
 import {Button} from './Button';
 import {HighlightedCode} from './HighlightedCode';
 
-class HighlightedCodeExample extends React.Component<*, *> {
+class HighlightedCodeExample extends React.Component<{}, {|count: number|}> {
   state = {
     count: 1,
   };
