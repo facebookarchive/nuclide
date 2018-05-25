@@ -207,10 +207,6 @@ export class ServerConnection {
     return `nuclide://${this.getRemoteHostname()}${remotePath}`;
   }
 
-  getPathOfUri(uri: string): string {
-    return nuclideUri.parse(uri).path;
-  }
-
   createDirectory(
     uri: NuclideUri,
     hgRepositoryDescription: ?HgRepositoryDescription,

@@ -273,10 +273,6 @@ export class RemoteConnection {
     this._setHgRepositoryDescription(await getHgRepository(remotePath));
   }
 
-  getPathOfUri(uri: string): string {
-    return nuclideUri.parse(uri).path;
-  }
-
   createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
     return this._connection.createDirectory(
       uri,
