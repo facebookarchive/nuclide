@@ -11,6 +11,7 @@
 
 import type {XhrConnectionHeartbeat} from 'big-dig/src/client/XhrConnectionHeartbeat';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {BigDigClient} from 'big-dig/src/client';
 import type {Transport} from '../../nuclide-rpc';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
@@ -89,6 +90,7 @@ export class ServerConnection {
   _connections: Array<RemoteConnection>;
   _fileWatches: SharedObservableCache<string, WatchResult>;
   _directoryWatches: SharedObservableCache<string, WatchResult>;
+  _bigDigClient: ?BigDigClient;
 
   static _connections: Map<string, ServerConnection> = new Map();
   static _emitter = new Emitter();
@@ -139,6 +141,7 @@ export class ServerConnection {
     this._closed = false;
     this._healthNotifier = null;
     this._client = null;
+    this._bigDigClient = null;
     this._heartbeat = null;
     this._connections = [];
     this._fileWatches = new SharedObservableCache(path => {
@@ -338,6 +341,7 @@ export class ServerConnection {
         this._config,
       );
       this._client = rpcConnection;
+      this._bigDigClient = bigDigClient;
       this._heartbeat = bigDigClient.getHeartbeat();
       return;
     }
