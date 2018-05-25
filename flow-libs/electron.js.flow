@@ -478,7 +478,10 @@ declare class electron$Menu {
     y?: number,
     positioningItem?: number,
     callback?: Function,
+    // Note: this is always true in Electron 2.0+.
+    async?: boolean,
   |}): void,
+  closePopup(window?: electron$BrowserWindow): void,
   append(menuItem: electron$MenuItem): void,
   insert(pos: number, menuItem: electron$MenuItem): void,
   items: Array<electron$MenuItem>,

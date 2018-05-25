@@ -86,6 +86,24 @@ export class Dropdown extends React.Component<Props> {
     title: '',
   };
 
+  // Make sure that menus don't outlive the dropdown.
+  _menu: ?electron$Menu;
+
+  componentWillUnmount() {
+    this._closeMenu();
+  }
+
+  componentDidUpdate() {
+    this._closeMenu();
+  }
+
+  _closeMenu() {
+    if (this._menu != null) {
+      this._menu.closePopup();
+      this._menu = null;
+    }
+  }
+
   render(): React.Node {
     const {label: providedLabel, options, placeholder} = this.props;
     let label;
@@ -136,8 +154,8 @@ export class Dropdown extends React.Component<Props> {
   }
 
   _handleDropdownClick = (event: SyntheticMouseEvent<>): void => {
-    const menu = this._menuFromOptions(this.props.options);
-    menu.popup({x: event.clientX, y: event.clientY});
+    this._menu = this._menuFromOptions(this.props.options);
+    this._menu.popup({x: event.clientX, y: event.clientY, async: true});
   };
 
   _menuFromOptions(options: $ReadOnlyArray<Option>): remote.Menu {

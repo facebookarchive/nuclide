@@ -104,6 +104,7 @@ export default class FileTreeSidebarComponent extends React.Component<
   _scrollerScrollTop: number;
   // $FlowFixMe flow does not recognize VirtualizedFileTree as React component
   _scrollerRef: ?React.ElementRef<VirtualizedFileTree>;
+  _menu: ?electron$Menu;
 
   constructor() {
     super();
@@ -213,6 +214,9 @@ export default class FileTreeSidebarComponent extends React.Component<
 
   componentWillUnmount(): void {
     this._disposables.dispose();
+    if (this._menu != null) {
+      this._menu.closePopup();
+    }
   }
 
   componentDidUpdate(prevProps: mixed, prevState: State): void {
@@ -534,7 +538,8 @@ All the changes across your entire stacked diff.
       });
       menu.append(menuItem);
     }
-    menu.popup({x: event.clientX, y: event.clientY});
+    menu.popup({x: event.clientX, y: event.clientY, async: true});
+    this._menu = menu;
     event.stopPropagation();
   };
 

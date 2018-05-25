@@ -103,6 +103,7 @@ export default function showActionsMenu(
             boundingRect.top + pixelPosition.top - editorView.getScrollTop(),
           ),
           positioningItem: 0,
+          async: true,
         });
       }),
   );
