@@ -47,6 +47,8 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import DefinitionCache from './DefinitionCache';
 import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
 
+const TRACK_TIMING_SAMPLE_RATIO = 0.1;
+
 class Activation {
   _providers: ProviderRegistry<DefinitionProvider>;
   _definitionPreviewProvider: ?DefinitionPreviewProvider;
@@ -105,14 +107,27 @@ class Activation {
     return null;
   }
 
+  _getDefinitionCached(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
+    return this._definitionCache.get(editor, position, () => {
+      if (Math.random() < TRACK_TIMING_SAMPLE_RATIO) {
+        return analytics.trackTiming(
+          'get-definition',
+          () => this._getDefinition(editor, position),
+          {path: editor.getPath()},
+        );
+      }
+      return this._getDefinition(editor, position);
+    });
+  }
+
   async getSuggestion(
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?HyperclickSuggestion> {
-    const result = await this._definitionCache.get(editor, position, () =>
-      this._getDefinition(editor, position),
-    );
-
+    const result = await this._getDefinitionCached(editor, position);
     if (result == null) {
       return null;
     }
@@ -181,7 +196,7 @@ class Activation {
       return;
     }
 
-    const result = await this._getDefinition(editor, position);
+    const result = await this._getDefinitionCached(editor, position);
     if (result == null) {
       return null;
     }
