@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,36 +26,36 @@ export type Transport = {
 };
 
 export class Proxy {
-  _port: number;
+  _localPort: number;
   _remotePort: number;
   _transport: Transport;
   _server: ?net.Server;
   _subscription: ?Subscription;
-  _idToSocket: Map<number, net.Socket>;
+  _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
 
   constructor(
     tunnelId: string,
-    port: number,
+    localPort: number,
     remotePort: number,
     transport: Transport,
   ) {
     this._tunnelId = tunnelId;
-    this._port = port;
+    this._localPort = localPort;
     this._remotePort = remotePort;
     this._transport = transport;
     this._server = null;
     this._subscription = null;
-    this._idToSocket = new Map();
+    this._socketByClientId = new Map();
   }
 
   static async createProxy(
     tunnelId: string,
-    port: number,
+    localPort: number,
     remotePort: number,
     transport: Transport,
   ): Promise<Proxy> {
-    const proxy = new Proxy(tunnelId, port, remotePort, transport);
+    const proxy = new Proxy(tunnelId, localPort, remotePort, transport);
     await proxy.startListening();
 
     return proxy;
@@ -65,7 +65,7 @@ export class Proxy {
     return new Promise((resolve, reject) => {
       this._server = net.createServer(socket => {
         const clientId: number = socket.remotePort;
-        this._idToSocket.set(clientId, socket);
+        this._socketByClientId.set(clientId, socket);
         this._sendMessage({
           event: 'connection',
           clientId,
@@ -93,11 +93,11 @@ export class Proxy {
         });
       });
 
-      this._server.listen({port: this._port}, () => {
+      this._server.listen({port: this._localPort}, () => {
         // send a message to create the connection manager
         this._sendMessage({
           event: 'proxyCreated',
-          port: this._port,
+          port: this._localPort,
           remotePort: this._remotePort,
         });
         resolve();
@@ -109,7 +109,7 @@ export class Proxy {
     logger.warn('in proxy, got message');
     const clientId = msg.clientId;
     invariant(clientId != null);
-    const socket = this._idToSocket.get(clientId);
+    const socket = this._socketByClientId.get(clientId);
     invariant(socket);
     const arg = msg.arg;
     invariant(arg != null);
@@ -132,7 +132,7 @@ export class Proxy {
       this._subscription.unsubscribe();
       this._subscription = null;
     }
-    this._idToSocket.forEach(socket => {
+    this._socketByClientId.forEach(socket => {
       socket.end();
     });
 

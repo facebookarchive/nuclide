@@ -22,14 +22,14 @@ export class SocketManager {
   _port: number;
   _transport: Transport;
   _subscription: Subscription;
-  _idToSocket: Map<number, net.Socket>;
+  _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
 
   constructor(tunnelId: string, port: number, transport: Transport) {
     this._tunnelId = tunnelId;
     this._port = port;
     this._transport = transport;
-    this._idToSocket = new Map();
+    this._socketByClientId = new Map();
   }
 
   receive(message: Object) {
@@ -61,11 +61,11 @@ export class SocketManager {
       });
     });
 
-    this._idToSocket.set(message.clientId, socket);
+    this._socketByClientId.set(message.clientId, socket);
   }
 
   _forwardData(message: Object) {
-    const socket = this._idToSocket.get(message.clientId);
+    const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
       socket.write(Buffer.from(message.arg, 'base64'));
     } else {
@@ -81,7 +81,7 @@ export class SocketManager {
     if (this._subscription != null) {
       this._subscription.unsubscribe();
     }
-    this._idToSocket.forEach(socket => {
+    this._socketByClientId.forEach(socket => {
       socket.end();
     });
   }
