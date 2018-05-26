@@ -90,7 +90,6 @@ export class Source implements ISource {
     } else {
       this._raw = raw;
     }
-    this.available = this._raw.name !== UNKNOWN_SOURCE;
     if (this._raw.sourceReference != null && this._raw.sourceReference > 0) {
       this.uri = `${DEBUG_SOURCES_URI}/${sessionId}/${
         this._raw.sourceReference
@@ -98,6 +97,7 @@ export class Source implements ISource {
     } else {
       this.uri = this._raw.path || '';
     }
+    this.available = this.uri !== '';
   }
 
   get name(): ?string {
