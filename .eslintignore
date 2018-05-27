@@ -2,3 +2,4 @@
 **/node_modules/**
 **/VendorLib/**
 **/flow-typed/**
+**/gen-nodejs/**

@@ -142,6 +142,7 @@
     "symbol-observable": "1.0.4",
     "tabbable": "1.1.0",
     "temp": "0.8.3",
+    "thrift": "^0.11.0",
     "through": "2.3.8",
     "tmp": "0.0.29",
     "toml": "2.3.3",
