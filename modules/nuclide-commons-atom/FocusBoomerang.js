@@ -38,7 +38,7 @@ export default class FocusBoomerang {
       node.focus();
       return;
     }
-    if (pane != null) {
+    if (pane != null && !pane.isDestroyed()) {
       pane.activate();
     }
   }

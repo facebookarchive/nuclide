@@ -480,6 +480,7 @@ declare class atom$Pane {
   isActive(): boolean,
   activate(): void,
   destroy(): void,
+  isDestroyed(): void,
 
   // Splitting
   splitLeft(params?: atom$PaneSplitParams): atom$Pane,
