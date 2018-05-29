@@ -43,6 +43,7 @@ import {
 } from './MITypes';
 import StackFrames from './StackFrames';
 import Variables from './Variables';
+import {debugSymSizeByProcess, debugSymSizeByBinary} from './DebugSymbolsSize';
 
 export type StopReason = {
   reason: string,
@@ -248,6 +249,10 @@ class MIDebugSession extends LoggingDebugSession {
       return;
     }
 
+    this._showSymbolLoadingSizeWarning(
+      await debugSymSizeByBinary(args.program),
+    );
+
     if (
       !(await this._sendWithFailureCheck(
         response,
@@ -328,6 +333,8 @@ class MIDebugSession extends LoggingDebugSession {
 
     const pid = this._attachPID;
     if (pid != null) {
+      this._showSymbolLoadingSizeWarning(await debugSymSizeByProcess(pid));
+
       if (
         !(await this._sendWithFailureCheck(response, `target-attach ${pid}`))
       ) {
@@ -344,6 +351,46 @@ class MIDebugSession extends LoggingDebugSession {
         return;
       }
       this.sendResponse(response);
+    }
+  }
+
+  async _showSymbolLoadingSizeWarning(size: ?number): Promise<void> {
+    if (size == null) {
+      // generic "this operation can be slow" message since we don't know how
+      // large they are. Since we're not sure if this is really an issue,
+      // just log to console.
+      this._logToConsole(
+        'Reading executable symbols (for huge executables, this can take up to 2-3 minutes).\n',
+      );
+      return;
+    }
+
+    // Attempt to show an order of magnitude guess as to how long loading might
+    // take. If we know for sure the symbols are big, show an actual warning dialog
+
+    // very rough estimate that 100M is where things start taking more than a
+    // few seconds
+    const ONE_MEG = 1024 * 1024;
+    const SYMBOL_SIZE_LIMIT = 100 * ONE_MEG;
+
+    // over a gig you're going to be here a while
+    const ONE_GIG = 1024 * 1024 * 1024;
+    const HUGE_SYMBOL_SIZE_LIMIT = ONE_GIG;
+
+    if (size > HUGE_SYMBOL_SIZE_LIMIT) {
+      return this._nuclideWarningDialog(
+        `The symbols for your executable are very large (${(
+          size / ONE_GIG
+        ).toFixed(2)}G). Loading them may take several minutes.`,
+      );
+    }
+
+    if (size > SYMBOL_SIZE_LIMIT) {
+      return this._nuclideWarningDialog(
+        `The symbols for your executable are fairly large (${(
+          size / ONE_MEG
+        ).toFixed(2)}M). It may take up to a minute to load them.`,
+      );
     }
   }
 
@@ -932,6 +979,19 @@ class MIDebugSession extends LoggingDebugSession {
     const event = new OutputEvent();
     event.body = {
       category: 'nuclide_notification',
+      data: {
+        type: 'warning',
+      },
+      output,
+    };
+
+    return this.sendEvent(event);
+  }
+
+  async _logToConsole(output: string): Promise<void> {
+    const event = new OutputEvent();
+    event.body = {
+      category: 'stdout',
       data: {
         type: 'warning',
       },
