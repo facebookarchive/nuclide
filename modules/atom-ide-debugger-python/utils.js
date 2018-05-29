@@ -27,6 +27,7 @@ import {Observable} from 'rxjs';
 import {track} from 'nuclide-commons/analytics';
 import * as RemoteDebuggerCommandServiceLocal from './RemoteDebuggerCommandService';
 import nullthrows from 'nullthrows';
+import {getLogger} from 'log4js';
 
 let _rpcService: ?nuclide$RpcService = null;
 
@@ -65,11 +66,16 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 export function listenToRemoteDebugCommands(): IDisposable {
   const addedHostnames = observeAddedHostnames().startWith('local');
 
-  const remoteDebuggerServices = addedHostnames.map(hostname => {
+  const remoteDebuggerServices = addedHostnames.flatMap(hostname => {
     const rootUri =
       hostname === 'local' ? '' : nuclideUri.createRemoteUri(hostname, '/');
     const service = getRemoteDebuggerCommandServiceByNuclideUri(rootUri);
-    return {service, rootUri};
+    if (service == null) {
+      getLogger().error('null remote command service for uri:', rootUri);
+      return Observable.empty();
+    } else {
+      return Observable.of({service, rootUri});
+    }
   });
 
   return new UniversalDisposable(
