@@ -35,6 +35,7 @@ import {
 } from './getChildProcesses';
 import getStats from './getStats';
 import getDOMCounters from './getDOMCounters';
+import trackKeyLatency from './trackKeyLatency';
 import trackStalls from './trackStalls';
 import {makeToolbarButtonSpec} from 'nuclide-commons-ui/ToolbarUtils';
 
@@ -120,6 +121,7 @@ class Activation {
             );
           },
         ),
+        trackKeyLatency(),
         trackStalls(),
       );
     }
