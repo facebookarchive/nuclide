@@ -16,7 +16,7 @@ import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectCo
 
 import Model from 'nuclide-commons/Model';
 import showModal from 'nuclide-commons-ui/showModal';
-import {addRecentProject} from 'nuclide-commons-atom/ProjectsUtils';
+import ProjectManager from 'nuclide-commons-atom/ProjectManager';
 import {
   getDefaultConnectionProfile,
   getOfficialRemoteServerCommand,
@@ -94,8 +94,9 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     },
     onConnect: async (connection, config) => {
       onConnected(connection);
-      if (dialogOptions && dialogOptions.project) {
-        addRecentProject(dialogOptions.project, connection.getConfig().host);
+      const project = dialogOptions && dialogOptions.project;
+      if (project) {
+        ProjectManager.addRecentProject(project, connection.getConfig().host);
       }
       saveConnectionConfig(config, getOfficialRemoteServerCommand());
     },
