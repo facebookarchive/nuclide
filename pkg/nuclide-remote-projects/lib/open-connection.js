@@ -16,6 +16,7 @@ import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectCo
 
 import Model from 'nuclide-commons/Model';
 import showModal from 'nuclide-commons-ui/showModal';
+import {addRecentProject} from 'nuclide-commons-atom/ProjectsUtils';
 import {
   getDefaultConnectionProfile,
   getOfficialRemoteServerCommand,
@@ -36,6 +37,10 @@ export type OpenConnectionDialogOptions = {
   initialServer?: string,
   initialCwd?: string,
   initialRemoteServerCommand?: string,
+  project?: {|
+    repo: string,
+    path: string,
+  |},
 };
 
 const getLogger = () => getLogger_('nuclide-remote-projects');
@@ -89,6 +94,9 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     },
     onConnect: async (connection, config) => {
       onConnected(connection);
+      if (dialogOptions && dialogOptions.project) {
+        addRecentProject(dialogOptions.project, connection.getConfig().host);
+      }
       saveConnectionConfig(config, getOfficialRemoteServerCommand());
     },
     onCancel: () => {
