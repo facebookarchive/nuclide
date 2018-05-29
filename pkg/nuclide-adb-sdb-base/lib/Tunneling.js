@@ -20,7 +20,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {getOneWorldServiceByNuclideUri} from '../../commons-atom/fb-remote-connection';
 import {track} from '../../nuclide-analytics';
 
 export type AdbTunnelingOptions = {
@@ -37,7 +36,6 @@ export function startTunnelingAdb(
   const {tunnels} = activeTunnels.getOrCreate(uri, (_, serviceUri) => {
     invariant(typeof serviceUri === 'string');
     const adbService = getAdbServiceByNuclideUri(serviceUri);
-    const oneWorldService = getOneWorldServiceByNuclideUri(uri);
     const localAdbService = getAdbServiceByNuclideUri('');
 
     const observable = Observable.defer(async () => {
@@ -51,7 +49,7 @@ export function startTunnelingAdb(
             ''}`,
         );
       }
-      return oneWorldService.adbmuxCheckStatus();
+      return adbService.checkMuxStatus();
     })
       .switchMap(
         useAdbmux =>
@@ -71,7 +69,7 @@ export function startTunnelingAdb(
       .subscribe(port => (adbmuxPort = port))
       .add(() => {
         if (adbmuxPort != null) {
-          oneWorldService.adbmuxCheckOutPort(adbmuxPort);
+          adbService.checkOutMuxPort(adbmuxPort);
           adbmuxPort = null;
         }
         stopTunnelingAdb(uri);
@@ -137,8 +135,8 @@ function checkInToAdbmux(host: NuclideUri): Observable<?number> {
         .mapTo(port),
     )
     .switchMap(async port => {
-      const service = getOneWorldServiceByNuclideUri(host);
-      await service.adbmuxCheckInPort(port);
+      const service = getAdbServiceByNuclideUri(host);
+      await service.checkInMuxPort(port);
       return port;
     });
 }

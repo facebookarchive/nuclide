@@ -242,3 +242,26 @@ export async function getApkManifest(
 export async function getVersion(): Promise<string> {
   return Adb.getVersion();
 }
+
+export async function checkMuxStatus(): Promise<boolean> {
+  try {
+    await runCommand('adbmux', ['status'])
+      .ignoreElements()
+      .toPromise();
+  } catch (_) {
+    return false;
+  }
+  return true;
+}
+
+export function checkInMuxPort(port: number): Promise<void> {
+  return runCommand('adbmux', ['checkin', `${port}`])
+    .ignoreElements()
+    .toPromise();
+}
+
+export function checkOutMuxPort(port: number): Promise<void> {
+  return runCommand('adbmux', ['checkout', `${port}`])
+    .ignoreElements()
+    .toPromise();
+}
