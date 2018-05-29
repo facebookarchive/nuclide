@@ -64,4 +64,14 @@ describe('TunnelManager', () => {
     const messages = testTransport.send.mock.calls.map(msg => JSON.parse(msg));
     expect(messages.filter(msg => msg.event === 'closeProxy').length).toBe(1);
   });
+
+  it('should correctly close tunnels when the tunnel manager is closed', async () => {
+    await tunnelManager.createTunnel(9872, 9871);
+    await tunnelManager.createTunnel(9874, 9873);
+    await tunnelManager.createReverseTunnel(9876, 9875);
+
+    expect(tunnelManager.tunnels.length).toBe(3);
+    tunnelManager.close();
+    expect(tunnelManager.tunnels.length).toBe(0);
+  });
 });

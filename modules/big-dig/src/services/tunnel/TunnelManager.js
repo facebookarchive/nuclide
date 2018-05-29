@@ -89,6 +89,7 @@ export class TunnelManager {
       remotePort,
       this._transport,
     );
+    this._idToTunnel.set(tunnel.getId(), tunnel);
     return tunnel;
   }
 
@@ -99,6 +100,10 @@ export class TunnelManager {
     });
     this._idToTunnel.clear();
     this._isClosed = true;
+  }
+
+  get tunnels(): Array<Tunnel | SocketManager | Proxy> {
+    return Array.from(this._idToTunnel.values());
   }
 
   async _handleMessage(msg: Object /* TunnelMessage? */): Promise<void> {
