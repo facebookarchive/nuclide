@@ -19,6 +19,11 @@ class Atom extends JSDom {
     super(...args);
     this.global.atom = global.atom;
   }
+
+  async setup() {
+    await super.setup();
+    await this.global.atom.reset();
+  }
 }
 
 module.exports = Atom;
