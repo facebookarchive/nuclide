@@ -257,6 +257,8 @@ class MIDebugSession extends LoggingDebugSession {
       return;
     }
 
+    await this._warnIfNoSymbols(args.program);
+
     this._attachPID = null;
 
     this._hasTarget = true;
@@ -324,15 +326,15 @@ class MIDebugSession extends LoggingDebugSession {
 
     this._running = true;
 
-    if (this._attachPID != null) {
+    const pid = this._attachPID;
+    if (pid != null) {
       if (
-        !(await this._sendWithFailureCheck(
-          response,
-          `target-attach ${this._attachPID}`,
-        ))
+        !(await this._sendWithFailureCheck(response, `target-attach ${pid}`))
       ) {
         return;
       }
+
+      await this._warnIfNoSymbols(`process ${pid.toString(10)}`);
 
       // target-attach returns done very quickly, but isn't really done until
       // the corresponding *stopped event happens.
@@ -902,6 +904,18 @@ class MIDebugSession extends LoggingDebugSession {
     this.sendEvent(event);
   }
 
+  async _warnIfNoSymbols(program: string): Promise<void> {
+    const result = await this._client.sendCommand('file-list-exec-source-file');
+    if (
+      result.error &&
+      toCommandError(result).msg.startsWith('No symbol table')
+    ) {
+      return this._nuclideWarningDialog(
+        `Symbols were not found in ${program}. It will run, but breakpoints will not work. Please recompile your program with the proper flags to include debugging symbols (typically -g).`,
+      );
+    }
+  }
+
   async _sendWithFailureCheck(
     response: DebugProtocol.Response,
     command: string,
@@ -912,6 +926,19 @@ class MIDebugSession extends LoggingDebugSession {
       return false;
     }
     return true;
+  }
+
+  async _nuclideWarningDialog(output: string): Promise<void> {
+    const event = new OutputEvent();
+    event.body = {
+      category: 'nuclide_notification',
+      data: {
+        type: 'warning',
+      },
+      output,
+    };
+
+    return this.sendEvent(event);
   }
 
   _onBreakpointModified(record: MIAsyncRecord): void {
