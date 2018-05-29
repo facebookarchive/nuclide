@@ -571,6 +571,8 @@ export class RpcConnection<TransportType: Transport> {
     }
 
     result
+      // Marshal in a map() so that errors are caught below.
+      .map(data => this.marshal(data, elementType))
       // Send the next, error, and completion events of the observable across the socket.
       .subscribe(
         data => {
@@ -580,7 +582,7 @@ export class RpcConnection<TransportType: Transport> {
                 this._getProtocol(),
                 id,
                 this._generateResponseId(),
-                this.marshal(data, elementType),
+                data,
               ),
             ),
           );
