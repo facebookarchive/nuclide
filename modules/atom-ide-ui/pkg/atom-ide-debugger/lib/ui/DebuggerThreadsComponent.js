@@ -166,13 +166,15 @@ export default class DebuggerThreadsComponent extends React.Component<
 
     // Use a numerical comparison for the ID column, string compare for all the others.
     const compare: any =
-      sortedColumnName.toLowerCase() === 'id'
+      sortedColumnName != null && sortedColumnName.toLowerCase() === 'id'
         ? (a: ?number, b: ?number, isAsc: boolean): number => {
             const cmp = (a || 0) - (b || 0);
             return isAsc ? cmp : -cmp;
           }
         : (a: string, b: string, isAsc: boolean): number => {
-            const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+            const cmp = (a != null ? a.toLowerCase() : '').localeCompare(
+              b != null ? b.toLowerCase() : '',
+            );
             return isAsc ? cmp : -cmp;
           };
 
