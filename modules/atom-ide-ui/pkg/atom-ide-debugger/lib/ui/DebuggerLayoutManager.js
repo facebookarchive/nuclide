@@ -31,10 +31,13 @@ import BreakpointsView from './BreakpointsView';
 import ScopesView from './ScopesView';
 import WatchView from './WatchView';
 
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
 export type DebuggerPaneLocation = {
   dock: string,
   layoutIndex: number,
   userHidden: boolean,
+  userCustomized?: boolean,
 };
 
 // Configuration that defines a debugger pane. This controls what gets added
@@ -68,6 +71,10 @@ export type DebuggerPaneConfig = {
 
   // Location to use for layout if no user previous location is set.
   defaultLocation: string,
+
+  // Previous default location, used to track if the saved location was not
+  // explicitly chosen by the user.
+  previousDefaultLocation?: string,
 
   // Optional callback to be invoked when the pane is being resized (flex scale changed).
   onPaneResize?: (pane: atom$Pane, newFlexScale: number) => boolean,
@@ -242,7 +249,8 @@ export default class DebuggerLayoutManager {
       {
         uri: debuggerUriBase + 'watch-expressions',
         isLifetimeView: false,
-        defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
+        defaultLocation: 'bottom',
+        previousDefaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () => 'Watch Expressions',
         isEnabled: () => true,
         createView: () => <WatchView service={this._service} />,
@@ -563,9 +571,27 @@ export default class DebuggerLayoutManager {
 
     // Serialize to storage.
     for (const debuggerPane of this._debuggerPanes) {
-      const loc = JSON.stringify(debuggerPane.previousLocation);
       const key = this._getPaneStorageKey(debuggerPane.uri);
-      localStorage.setItem(key, loc);
+
+      // If the location is the pane's default location, no need to store
+      // it explicitly. This is also helpful if the default changes in the
+      // future.
+      if (
+        debuggerPane.previousLocation != null &&
+        !debuggerPane.previousLocation.userHidden &&
+        (debuggerPane.previousLocation.dock === debuggerPane.defaultLocation ||
+          (debuggerPane.previousLocation.dock ===
+            debuggerPane.previousDefaultLocation &&
+            !debuggerPane.previousLocation.userCustomized))
+      ) {
+        localStorage.removeItem(key);
+      } else {
+        if (debuggerPane.previousLocation != null) {
+          debuggerPane.previousLocation.userCustomized = true;
+        }
+        const loc = JSON.stringify(debuggerPane.previousLocation);
+        localStorage.setItem(key, loc);
+      }
     }
   }
 
@@ -764,6 +790,11 @@ export default class DebuggerLayoutManager {
       });
 
     this._debuggerVisible = true;
+
+    // Re-focus the console pane after layout so that it remains visible
+    // even if we added debugger panes to the console's dock.
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
   }
 
   _addPaneContainerToWorkspace(
