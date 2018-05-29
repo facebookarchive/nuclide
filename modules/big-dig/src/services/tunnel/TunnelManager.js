@@ -44,11 +44,13 @@ export class TunnelManager {
   _idToTunnel: Map<string, Tunnel | SocketManager | Proxy>;
   _logger: log4js$Logger;
   _subscription: Subscription;
+  _isClosed: boolean;
 
   constructor(transport: Transport) {
     this._transport = transport;
     this._idToTunnel = new Map();
     this._logger = getLogger('tunnel-manager');
+    this._isClosed = false;
 
     this._subscription = this._transport
       .onMessage()
@@ -59,13 +61,17 @@ export class TunnelManager {
   }
 
   async createTunnel(localPort: number, remotePort: number): Promise<Tunnel> {
+    invariant(
+      !this._isClosed,
+      'trying to create a tunnel with a closed tunnel manager',
+    );
     this._logger.info(`creating tunnel ${localPort}->${remotePort}`);
     const tunnel = await Tunnel.createTunnel(
       localPort,
       remotePort,
       this._transport,
     );
-    this._idToTunnel.set(tunnel.id, tunnel);
+    this._idToTunnel.set(tunnel.getId(), tunnel);
     return tunnel;
   }
 
@@ -73,6 +79,10 @@ export class TunnelManager {
     localPort: number,
     remotePort: number,
   ): Promise<Tunnel> {
+    invariant(
+      !this._isClosed,
+      'trying to create a reverse tunnel with a closed tunnel manager',
+    );
     this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
     const tunnel = await Tunnel.createReverseTunnel(
       localPort,
@@ -87,6 +97,8 @@ export class TunnelManager {
     this._idToTunnel.forEach(tunnel => {
       tunnel.close();
     });
+    this._idToTunnel.clear();
+    this._isClosed = true;
   }
 
   async _handleMessage(msg: Object /* TunnelMessage? */): Promise<void> {
@@ -104,6 +116,7 @@ export class TunnelManager {
     } else if (msg.event === 'proxyClosed') {
       invariant(tunnelComponent);
       tunnelComponent.close();
+      this._idToTunnel.delete(tunnelComponent.getId());
     } else if (msg.event === 'createProxy') {
       const proxy = await Proxy.createProxy(
         msg.tunnelId,
@@ -192,7 +205,7 @@ export class Tunnel {
     }
   }
 
-  get id(): string {
+  getId(): string {
     return this._id;
   }
 

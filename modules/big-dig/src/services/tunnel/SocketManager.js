@@ -36,6 +36,10 @@ export class SocketManager {
     this._handleMessage(message);
   }
 
+  getId(): string {
+    return this._tunnelId;
+  }
+
   _handleMessage(message: Object) {
     logger.trace(`handling this message: ${JSON.stringify(message)}`);
     if (message.event === 'connection') {

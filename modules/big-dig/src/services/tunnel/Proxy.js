@@ -105,6 +105,10 @@ export class Proxy {
     });
   }
 
+  getId(): string {
+    return this._tunnelId;
+  }
+
   receive(msg: TunnelMessage): void {
     logger.warn('in proxy, got message');
     const clientId = msg.clientId;
