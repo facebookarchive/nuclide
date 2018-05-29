@@ -23,7 +23,7 @@ import V8Protocol from './V8Protocol';
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import idx from 'idx';
 import invariant from 'assert';
-import {trackTiming} from 'nuclide-commons/analytics';
+import {track, trackTiming} from 'nuclide-commons/analytics';
 
 export interface AdapterExitedEvent extends DebugProtocol.DebugEvent {
   event: 'adapter-exited';
@@ -187,8 +187,13 @@ export default class VsDebugSession extends V8Protocol {
     const operation = (): Promise<any> => {
       // Babel Bug: `super` isn't working with `async`
       return super.send(command, args).then(
-        response => {
+        (response: DebugProtocol.Response) => {
           this._logger.info('Received response:', response);
+          track('vs-debug-session:transaction', {
+            ...this._adapterAnalyticsExtras,
+            request: {command, arguments: args},
+            response,
+          });
           return response;
         },
         (errorResponse: DebugProtocol.ErrorResponse) => {
@@ -205,6 +210,11 @@ export default class VsDebugSession extends V8Protocol {
               `adapterExecutable: , ${JSON.stringify(this._adapterExecutable)}`,
             ].join(', ');
           }
+          track('vs-debug-session:transaction', {
+            ...this._adapterAnalyticsExtras,
+            request: {command, arguments: args},
+            response: errorResponse,
+          });
           throw new Error(formattedError);
         },
       );
@@ -225,6 +235,11 @@ export default class VsDebugSession extends V8Protocol {
       // $FlowFixMe `event.body` type def.
       event.body = {sessionId: this.getId()};
     }
+
+    track('vs-debug-session:transaction', {
+      ...this._adapterAnalyticsExtras,
+      event,
+    });
 
     this._onDidEvent.next(event);
 
