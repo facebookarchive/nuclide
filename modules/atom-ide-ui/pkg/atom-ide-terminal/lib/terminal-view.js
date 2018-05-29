@@ -22,7 +22,6 @@ import {Observable} from 'rxjs';
 import url from 'url';
 import {Terminal} from 'xterm';
 import * as Fit from 'xterm/lib/addons/fit/fit';
-import * as WebLinks from 'xterm/lib/addons/webLinks/webLinks';
 
 import {getPtyServiceByNuclideUri} from './AtomServiceContainer';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -68,9 +67,6 @@ const PRESERVED_COMMANDS_CONFIG = 'atom-ide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
-const OPTION_IS_META_CONFIG = 'atom-ide-terminal.optionIsMeta';
-const TRANSPARENCY_CONFIG = 'atom-ide-terminal.allowTransparency';
-const CHAR_ATLAS_CONFIG = 'atom-ide-terminal.charAtlas';
 const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
 const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
 const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
@@ -111,15 +107,11 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _initialInput: string;
 
   constructor(paneUri: string) {
-    // Load the addons on-demand the first time we create a terminal.
     if (Terminal.fit == null) {
       // The 'fit' add-on resizes the terminal based on the container size
       // and the font size such that the terminal fills the container.
+      // Load the addon on-demand the first time we create a terminal.
       Terminal.applyAddon(Fit);
-    }
-    if (Terminal.webLinksInit == null) {
-      // The 'webLinks' add-on linkifies http URL strings.
-      Terminal.applyAddon(WebLinks);
     }
 
     this._paneUri = paneUri;
@@ -181,17 +173,14 @@ export class TerminalView implements PtyClient, TerminalInstance {
       cursorBlink: featureConfig.get(CURSOR_BLINK_CONFIG),
       cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
-      macOptionIsMeta: featureConfig.get(OPTION_IS_META_CONFIG),
-      allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
-      experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),
     }));
     (div: any).terminal = terminal;
     terminal.open(this._div);
+    terminal.setHypertextLinkHandler(openLink);
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
-    this._subscriptions.add(() => terminal.dispose());
-    terminal.webLinksInit(openLink);
+    this._subscriptions.add(() => terminal.destroy());
     registerLinkHandlers(terminal, this._cwd);
 
     if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
@@ -813,8 +802,10 @@ function getTerminalColors(): {[$Keys<typeof COLOR_CONFIGS>]: string} {
 
 function getTerminalTheme(div: HTMLDivElement): any {
   const style = window.getComputedStyle(div);
-  const foreground = style.getPropertyValue('color');
-  const background = style.getPropertyValue('background-color');
+  const foreground = convertRgbToHash(style.getPropertyValue('color'));
+  const background = convertRgbToHash(
+    style.getPropertyValue('background-color'),
+  );
   // return type: https://git.io/vxooH
   return {
     foreground,
@@ -822,4 +813,22 @@ function getTerminalTheme(div: HTMLDivElement): any {
     cursor: foreground,
     ...getTerminalColors(),
   };
+}
+
+// Terminal only allows colors of the form '#rrggbb' or '#rgb' and falls back
+// to black otherwise. https://git.io/vNE8a  :-(
+const rgbRegex = / *rgb *\( *([0-9]+) *, *([0-9]+) *, *([0-9]+) *\) */;
+function convertRgbToHash(rgb: string): string {
+  const matches = rgb.match(rgbRegex);
+  if (matches == null) {
+    return rgb;
+  }
+  return (
+    '#' +
+    matches
+      .slice(1, 4)
+      .map(Number)
+      .map(n => (n < 0x10 ? '0' : '') + n.toString(16))
+      .join('')
+  );
 }

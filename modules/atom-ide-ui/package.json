@@ -40,7 +40,7 @@
     "strip-ansi": "3.0.1",
     "uuid": "3.0.1",
     "vscode-debugprotocol": "1.24.0",
-    "xterm": "3.4.1"
+    "xterm": "3.1.0"
   },
   "devDependencies": {
     "temp": "0.8.3"
