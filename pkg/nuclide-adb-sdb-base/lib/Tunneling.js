@@ -14,15 +14,16 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Subscription} from 'rxjs';
 
 import invariant from 'assert';
+import {getLogger} from 'log4js';
 import {SimpleCache} from 'nuclide-commons/SimpleCache';
-import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
+import {getOneWorldServiceByNuclideUri} from '../../commons-atom/fb-remote-connection';
+import {track} from '../../nuclide-analytics';
 
 export type AdbTunnelingOptions = {
-  retries?: number,
   adbMismatchErrorMessage?: string,
 };
 
@@ -33,11 +34,10 @@ export function startTunnelingAdb(
   if (!nuclideUri.isRemote(uri)) {
     return Observable.of('ready').concat(Observable.never());
   }
-  let retries = options.retries || 0;
-  let isTunnelOpen = false;
   const {tunnels} = activeTunnels.getOrCreate(uri, (_, serviceUri) => {
     invariant(typeof serviceUri === 'string');
     const adbService = getAdbServiceByNuclideUri(serviceUri);
+    const oneWorldService = getOneWorldServiceByNuclideUri(uri);
     const localAdbService = getAdbServiceByNuclideUri('');
 
     const observable = Observable.defer(async () => {
@@ -46,39 +46,47 @@ export function startTunnelingAdb(
         localAdbService.getVersion(),
       ]);
       if (adbVersion !== localAdbVersion) {
-        // eslint-disable-next-line no-throw-literal
-        throw `Your remote adb version differs from the local one: ${adbVersion}(remote) != ${localAdbVersion}(local).\n\n${options.adbMismatchErrorMessage ||
-          ''}`;
+        throw new Error(
+          `Your remote adb version differs from the local one: ${adbVersion} (remote) != ${localAdbVersion} (local).\n\n${options.adbMismatchErrorMessage ||
+            ''}`,
+        );
       }
-      return adbService.killServer();
+      return oneWorldService.adbmuxCheckStatus();
     })
-      .timeout(5000)
-      .switchMap(() => {
-        return openTunnels(serviceUri).do(() => (isTunnelOpen = true));
-      })
-      .retryWhen(errors => {
-        return errors.do(error => {
-          if (retries-- <= 0) {
-            throw error;
-          }
-        });
-      })
+      .switchMap(
+        useAdbmux =>
+          useAdbmux
+            ? checkInToAdbmux(serviceUri)
+            : openTunnelsManually(serviceUri),
+      )
       .catch(e => {
-        if (isTunnelOpen) {
-          stopTunnelingAdb(uri);
-        }
-        throw e;
+        getLogger('nuclide-adb-sdb-base').error(e);
+        track('nuclide-adb-sdb-base:tunneling:error', {host: uri, error: e});
+        return Observable.empty();
       })
       .publishReplay(1);
-    const subscription = observable.connect();
+
+    let adbmuxPort;
+    const subscription = observable
+      .subscribe(port => (adbmuxPort = port))
+      .add(() => {
+        if (adbmuxPort != null) {
+          oneWorldService.adbmuxCheckOutPort(adbmuxPort);
+          adbmuxPort = null;
+        }
+        stopTunnelingAdb(uri);
+      })
+      // Start everything!
+      .add(observable.connect());
+
     return {
-      tunnels: observable,
       subscription,
+      tunnels: observable,
     };
   });
   changes.next();
 
-  return tunnels;
+  return tunnels.mapTo('ready');
 }
 
 export function stopTunnelingAdb(uri: NuclideUri) {
@@ -95,7 +103,7 @@ export function isAdbTunneled(uri: NuclideUri): Observable<boolean> {
 
 const activeTunnels: SimpleCache<
   NuclideUri,
-  {tunnels: Observable<'ready'>, subscription: Subscription},
+  {tunnels: Observable<?number>, subscription: Subscription},
 > = new SimpleCache({
   keyFactory: uri =>
     nuclideUri.createRemoteUri(nuclideUri.getHostname(uri), '/'),
@@ -103,31 +111,80 @@ const activeTunnels: SimpleCache<
 });
 const changes: Subject<void> = new Subject();
 
-function openTunnels(host: NuclideUri): Observable<'ready'> {
-  const tunnels = [
-    {
-      description: 'adb',
-      from: {host, port: 5037, family: 4},
-      to: {host: 'localhost', port: 5037, family: 4},
-    },
-    {
-      description: 'emulator console',
-      from: {host, port: 5554, family: 4},
-      to: {host: 'localhost', port: 5554, family: 4},
-    },
-    {
-      description: 'emulator adb',
-      from: {host, port: 5555, family: 4},
-      to: {host: 'localhost', port: 5555, family: 4},
-    },
-    {
-      description: 'exopackage',
-      from: {host, port: 2829, family: 4},
-      to: {host: 'localhost', port: 2829, family: 4},
-    },
-  ];
+function checkInToAdbmux(host: NuclideUri): Observable<?number> {
+  return Observable.defer(async () => {
+    const service: SshTunnelService = await consumeFirstProvider(
+      'nuclide.ssh-tunnel',
+    );
+    invariant(service);
+    const port = await service.getAvailableServerPort(host);
+    return {service, port};
+  })
+    .switchMap(({service, port}) =>
+      service
+        .openTunnels([
+          {
+            description: 'adbmux',
+            from: {host, port, family: 4},
+            to: {host: 'localhost', port: 5037, family: 4},
+          },
+          {
+            description: 'exopackage',
+            from: {host, port: 2829, family: 4},
+            to: {host: 'localhost', port: 2829, family: 4},
+          },
+        ])
+        .mapTo(port),
+    )
+    .switchMap(async port => {
+      const service = getOneWorldServiceByNuclideUri(host);
+      await service.adbmuxCheckInPort(port);
+      return port;
+    });
+}
 
-  return Observable.defer(() =>
-    nullthrows(consumeFirstProvider('nuclide.ssh-tunnel')),
-  ).switchMap((service: SshTunnelService) => service.openTunnels(tunnels));
+function openTunnelsManually(host: NuclideUri): Observable<?number> {
+  let retries = 3;
+  return Observable.defer(async () => {
+    await getAdbServiceByNuclideUri(host).killServer();
+
+    const service: SshTunnelService = await consumeFirstProvider(
+      'nuclide.ssh-tunnel',
+    );
+    invariant(service);
+    return service;
+  })
+    .timeout(5000)
+    .switchMap(service =>
+      service.openTunnels([
+        {
+          description: 'adb',
+          from: {host, port: 5037, family: 4},
+          to: {host: 'localhost', port: 5037, family: 4},
+        },
+        {
+          description: 'emulator console',
+          from: {host, port: 5554, family: 4},
+          to: {host: 'localhost', port: 5554, family: 4},
+        },
+        {
+          description: 'emulator adb',
+          from: {host, port: 5555, family: 4},
+          to: {host: 'localhost', port: 5555, family: 4},
+        },
+        {
+          description: 'exopackage',
+          from: {host, port: 2829, family: 4},
+          to: {host: 'localhost', port: 2829, family: 4},
+        },
+      ]),
+    )
+    .retryWhen(errors => {
+      return errors.do(error => {
+        if (retries-- <= 0) {
+          throw error;
+        }
+      });
+    })
+    .mapTo(null);
 }
