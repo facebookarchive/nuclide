@@ -85,7 +85,7 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         ],
       },
       root: nuclideUri.join(
-        resolvePackagePath('atom-ide-debugger-teact-native'),
+        resolvePackagePath('atom-ide-debugger-react-native'),
         'VendorLib/vscode-react-native',
       ),
     },
