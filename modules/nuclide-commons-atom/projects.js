@@ -86,10 +86,38 @@ export function getFileForPath(path: NuclideUri): ?File {
 }
 
 export function observeProjectPaths(
-  callback: (projectPath: string) => any,
+  callback: (projectPath: string, added: boolean) => any,
 ): IDisposable {
-  getValidProjectPaths().forEach(callback);
-  return onDidAddProjectPath(callback);
+  getValidProjectPaths().forEach(existingPath => callback(existingPath, true));
+  return onDidChangeProjectPath(callback);
+}
+
+export function onDidChangeProjectPath(
+  callback: (projectPath: string, added: boolean) => void,
+): IDisposable {
+  let projectPaths: Array<string> = getValidProjectPaths();
+  let changing: boolean = false;
+  return atom.project.onDidChangePaths(() => {
+    if (changing) {
+      throw new Error('Cannot update projects in the middle of an update');
+    }
+    changing = true;
+    const newProjectPaths = getValidProjectPaths();
+    // Check to see if the change was the addition of a project.
+    for (const newProjectPath of newProjectPaths) {
+      if (!projectPaths.includes(newProjectPath)) {
+        callback(newProjectPath, true);
+      }
+    }
+    // Check to see if the change was the deletion of a project.
+    for (const projectPath of projectPaths) {
+      if (!newProjectPaths.includes(projectPath)) {
+        callback(projectPath, false);
+      }
+    }
+    changing = false;
+    projectPaths = newProjectPaths;
+  });
 }
 
 export function onDidAddProjectPath(
