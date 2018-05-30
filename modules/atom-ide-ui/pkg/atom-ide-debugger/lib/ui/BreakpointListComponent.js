@@ -11,6 +11,7 @@
  */
 
 import type {IBreakpoint, IDebugService, IExceptionBreakpoint} from '../types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
@@ -25,6 +26,7 @@ import {AnalyticsEvents} from '../constants';
 import {openSourceLocation} from '../utils';
 import {Section} from 'nuclide-commons-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {observeProjectPaths} from 'nuclide-commons-atom/projects';
 
 type Props = {|
   service: IDebugService,
@@ -35,6 +37,7 @@ type State = {
   breakpoints: IBreakpoint[],
   exceptionBreakpoints: IExceptionBreakpoint[],
   exceptionBreakpointsCollapsed: boolean,
+  activeProjects: NuclideUri[],
 };
 
 export default class BreakpointListComponent extends React.Component<
@@ -46,6 +49,20 @@ export default class BreakpointListComponent extends React.Component<
   constructor(props: Props) {
     super(props);
     this.state = this._computeState();
+    this._disposables = new UniversalDisposable(
+      observeProjectPaths((projectPath, added) => {
+        const newProjects = this.state.activeProjects;
+        if (added) {
+          newProjects.push(projectPath);
+        } else {
+          const index = newProjects.indexOf(projectPath);
+          if (index >= 0) {
+            newProjects.splice(index, 1);
+          }
+        }
+        this.setState({activeProjects: newProjects});
+      }),
+    );
   }
 
   _computeState(): State {
@@ -57,6 +74,14 @@ export default class BreakpointListComponent extends React.Component<
       featureConfig.get('debugger-exceptionBreakpointsCollapsed'),
     );
 
+    let newActiveProjects = [];
+    if (this.state != null) {
+      const {activeProjects} = this.state;
+      if (activeProjects != null) {
+        newActiveProjects = activeProjects;
+      }
+    }
+
     return {
       supportsConditionalBreakpoints:
         focusedProcess != null &&
@@ -66,12 +91,13 @@ export default class BreakpointListComponent extends React.Component<
       breakpoints: model.getBreakpoints(),
       exceptionBreakpoints: model.getExceptionBreakpoints(),
       exceptionBreakpointsCollapsed,
+      activeProjects: newActiveProjects,
     };
   }
 
   componentDidMount(): void {
     const model = this.props.service.getModel();
-    this._disposables = new UniversalDisposable(
+    this._disposables.add(
       model.onDidChangeBreakpoints(() => {
         this.setState(this._computeState());
       }),
@@ -108,10 +134,15 @@ export default class BreakpointListComponent extends React.Component<
 
   render(): React.Node {
     const {
-      breakpoints,
       exceptionBreakpoints,
       supportsConditionalBreakpoints,
+      activeProjects,
     } = this.state;
+    const breakpoints = this.state.breakpoints.filter(breakpoint =>
+      activeProjects.some(projectPath =>
+        breakpoint.uri.startsWith(projectPath),
+      ),
+    );
     const {service} = this.props;
     const items = breakpoints
       .sort((breakpointA, breakpointB) => {
