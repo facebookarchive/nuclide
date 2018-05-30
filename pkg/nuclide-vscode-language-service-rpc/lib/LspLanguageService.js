@@ -1917,7 +1917,8 @@ export class LspLanguageService {
 
     const convertUncovered = (uncovered: UncoveredRange) => ({
       range: convert.lspRange_atomRange(uncovered.range),
-      message: uncovered.message,
+      message:
+        uncovered.message != null ? uncovered.message : response.defaultMessage,
     });
     return {
       percentage: response.coveredPercent,

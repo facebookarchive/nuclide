@@ -817,11 +817,12 @@ export type TypeCoverageParams = {
 export type TypeCoverageResult = {
   coveredPercent: number, // what percent of the file is covered?
   uncoveredRanges: Array<UncoveredRange>,
+  defaultMessage: string, // human-readable explanation, maybe with suggested fix
 };
 
 export type UncoveredRange = {
   range: Range,
-  message: string, // human-readable explanation, maybe with suggested fix
+  message?: string, // will use the default message if this isn't provided
 };
 
 export type ToggleTypeCoverageParams = {
