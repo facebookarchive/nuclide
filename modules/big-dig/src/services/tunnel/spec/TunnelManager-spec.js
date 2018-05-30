@@ -74,4 +74,19 @@ describe('TunnelManager', () => {
     tunnelManager.close();
     expect(tunnelManager.tunnels.length).toBe(0);
   });
+
+  it('should correctly close tunnels and remove them from the tunnel manager', async () => {
+    const tunnelA = await tunnelManager.createTunnel(9872, 9871);
+    const tunnelB = await tunnelManager.createTunnel(9874, 9873);
+    const tunnelC = await tunnelManager.createReverseTunnel(9876, 9875);
+
+    expect(tunnelManager.tunnels.length).toBe(3);
+    tunnelA.close();
+    expect(tunnelManager.tunnels.length).toBe(2);
+    tunnelB.close();
+    expect(tunnelManager.tunnels.length).toBe(1);
+    tunnelC.close();
+    expect(tunnelManager.tunnels.length).toBe(0);
+    tunnelManager.close();
+  });
 });

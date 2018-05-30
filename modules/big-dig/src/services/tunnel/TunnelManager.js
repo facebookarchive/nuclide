@@ -16,6 +16,7 @@ import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
 
 import invariant from 'assert';
+import EventEmitter from 'events';
 
 import {getLogger} from 'log4js';
 
@@ -72,6 +73,9 @@ export class TunnelManager {
       this._transport,
     );
     this._idToTunnel.set(tunnel.getId(), tunnel);
+    tunnel.once('close', () => {
+      this._idToTunnel.delete(tunnel.getId());
+    });
     return tunnel;
   }
 
@@ -90,6 +94,9 @@ export class TunnelManager {
       this._transport,
     );
     this._idToTunnel.set(tunnel.getId(), tunnel);
+    tunnel.once('close', () => {
+      this._idToTunnel.delete(tunnel.getId());
+    });
     return tunnel;
   }
 
@@ -140,12 +147,13 @@ export class TunnelManager {
   }
 }
 
-export class Tunnel {
+export class Tunnel extends EventEmitter {
   _localPort: number;
   _remotePort: number;
   _transport: Transport;
   _proxy: ?Proxy;
   _id: string;
+  _isClosed: boolean;
   _logger: log4js$Logger;
 
   constructor(
@@ -155,11 +163,13 @@ export class Tunnel {
     remotePort: number,
     transport: Transport,
   ) {
+    super();
     this._id = id;
     this._proxy = proxy;
     this._localPort = localPort;
     this._remotePort = remotePort;
     this._transport = transport;
+    this._isClosed = false;
     this._logger = getLogger('tunnel');
   }
 
@@ -215,6 +225,8 @@ export class Tunnel {
   }
 
   close() {
+    this._isClosed = true;
+    this.emit('close');
     invariant(this._proxy);
     this._proxy.close();
   }
@@ -239,6 +251,8 @@ class ReverseTunnel extends Tunnel {
   }
 
   close() {
+    this._isClosed = true;
+    this.emit('close');
     invariant(this._socketManager);
     this._socketManager.close();
     this._transport.send(
