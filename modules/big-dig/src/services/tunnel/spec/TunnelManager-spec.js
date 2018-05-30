@@ -54,6 +54,17 @@ describe('TunnelManager', () => {
     expect(messages.filter(msg => msg.event === 'createProxy').length).toBe(1);
   });
 
+  it('should have the correct localPort in the createProxy message when creating a reverse tunnel', async () => {
+    await tunnelManager.createReverseTunnel(TEST_PORT_1, TEST_PORT_2);
+    expect(testTransport.send.mock.calls.length).toBe(1);
+    const messages = testTransport.send.mock.calls
+      .map(msg => JSON.parse(msg))
+      .filter(msg => msg.event === 'createProxy');
+
+    expect(messages.length).toBe(1);
+    expect(messages[0].localPort).toBe(TEST_PORT_2);
+  });
+
   it('should send a closeProxy message when closing a reverse tunnel', async () => {
     const tunnel = await tunnelManager.createReverseTunnel(
       TEST_PORT_1,

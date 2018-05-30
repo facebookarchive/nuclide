@@ -201,8 +201,11 @@ export class Tunnel extends EventEmitter {
       JSON.stringify({
         event: 'createProxy',
         tunnelId,
-        localPort,
-        remotePort,
+        // NB: on the server, the remote port and local ports are reversed.
+        // We want to start the proxy on the remote port (relative to the
+        // client) and start the socket manager on the local port
+        localPort: remotePort,
+        remotePort: localPort,
       }),
     );
     return new ReverseTunnel(
@@ -247,7 +250,9 @@ class ReverseTunnel extends Tunnel {
   }
 
   receive(msg: Object): void {
-    throw new Error('Tunnel.receive is not implemented for a reverse tunnel');
+    if (this._socketManager != null) {
+      this._socketManager.receive(msg);
+    }
   }
 
   close() {
