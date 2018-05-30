@@ -1,64 +1,58 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from 'nuclide-debugger-common/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NuclideJavaDebuggerProvider} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.JavaDebuggerDevicePanelProvider = undefined;
 
-import {Observable} from 'rxjs';
-import {getDebuggerService} from 'nuclide-commons-atom/debugger';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export class JavaDebuggerDevicePanelProvider
-  implements DeviceProcessTaskProvider {
-  _javaDebugger: NuclideJavaDebuggerProvider;
+var _debugger;
 
-  constructor(javaDebugger: NuclideJavaDebuggerProvider) {
+function _load_debugger() {
+  return _debugger = require('../../../modules/nuclide-commons-atom/debugger');
+}
+
+class JavaDebuggerDevicePanelProvider {
+
+  constructor(javaDebugger) {
     this._javaDebugger = javaDebugger;
   }
 
-  getType(): string {
+  getType() {
     return 'Android';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'DEBUG';
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(
-      new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)),
-    );
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.filter(proc => proc.isJava).map(proc => proc.pid)));
   }
 
-  getName(): string {
+  getName() {
     return 'Attach Java debugger';
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    const debuggerService = await getDebuggerService();
+  async run(host, device, proc) {
+    const debuggerService = await (0, (_debugger || _load_debugger()).getDebuggerService)();
     const config = await this._javaDebugger.createAndroidDebugAttachConfig({
       targetUri: host,
       packageName: '',
       device,
-      pid: proc.pid,
+      pid: proc.pid
     });
     debuggerService.startVspDebugging(config);
   }
 }
+exports.JavaDebuggerDevicePanelProvider = JavaDebuggerDevicePanelProvider; /**
+                                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                                            * All rights reserved.
+                                                                            *
+                                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                                            * the root directory of this source tree.
+                                                                            *
+                                                                            *  strict-local
+                                                                            * @format
+                                                                            */

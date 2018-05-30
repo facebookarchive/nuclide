@@ -1,27 +1,37 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import * as DebugProtocol from 'vscode-debugprotocol';
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import idx from 'idx';
-import Thread from './Thread';
+var _vscodeDebugprotocol;
 
-export default class BackTraceCommand implements Command {
-  name = 'backtrace';
-  helpText = '[frame] Displays the call stack of the active thread. With optional frame index, sets the current frame for variable display.';
-  detailedHelpText = `
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _Thread;
+
+function _load_Thread() {
+  return _Thread = _interopRequireDefault(require('./Thread'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class BackTraceCommand {
+
+  constructor(con, debug) {
+    this.name = 'backtrace';
+    this.helpText = '[frame] Displays the call stack of the active thread. With optional frame index, sets the current frame for variable display.';
+    this.detailedHelpText = `
 backtrace [frame]
 
 With no arguments, displays the call stack, showing the most recent stack frame
@@ -41,23 +51,15 @@ which query program state will use the selected frame for context; for example:
   in scope in the selected frame.
   `;
 
-  _console: ConsoleIO;
-  _debugger: DebuggerInterface;
-
-  static _defaultFrames: number = 100;
-
-  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
-  async execute(args: string[]): Promise<void> {
+  async execute(args) {
     const activeThread = this._debugger.getActiveThread();
 
     if (args.length > 1) {
-      throw Error(
-        "'backtrace' takes at most one argument -- the index of the frame to select",
-      );
+      throw Error("'backtrace' takes at most one argument -- the index of the frame to select");
     }
 
     const frameArg = args[0];
@@ -66,17 +68,11 @@ which query program state will use the selected frame for context; for example:
       return;
     }
 
-    const frames = await this._debugger.getStackTrace(
-      activeThread.id(),
-      BackTraceCommand._defaultFrames,
-    );
+    const frames = await this._debugger.getStackTrace(activeThread.id(), BackTraceCommand._defaultFrames);
     this._printFrames(frames, activeThread.selectedStackFrame());
   }
 
-  async _setSelectedStackFrame(
-    thread: Thread,
-    frameArg: string,
-  ): Promise<void> {
+  async _setSelectedStackFrame(thread, frameArg) {
     if (frameArg.match(/^\d+$/) == null) {
       throw Error('Argument must be a numeric frame index.');
     }
@@ -85,17 +81,27 @@ which query program state will use the selected frame for context; for example:
     await this._debugger.setSelectedStackFrame(thread, newSelectedFrame);
   }
 
-  _printFrames(
-    frames: DebugProtocol.StackFrame[],
-    selectedFrame: number,
-  ): void {
+  _printFrames(frames, selectedFrame) {
     frames.forEach((frame, index) => {
+      var _ref, _ref2;
+
       const selectedMarker = index === selectedFrame ? '*' : ' ';
-      const path = idx(frame, _ => _.source.path) || null;
+      const path = ((_ref = frame) != null ? (_ref2 = _ref.source) != null ? _ref2.path : _ref2 : _ref) || null;
       const location = path != null ? `${path}:${frame.line}` : '[no source]';
-      this._console.outputLine(
-        `${selectedMarker} #${index} ${frame.name} ${location}`,
-      );
+      this._console.outputLine(`${selectedMarker} #${index} ${frame.name} ${location}`);
     });
   }
 }
+exports.default = BackTraceCommand; /**
+                                     * Copyright (c) 2017-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the BSD-style license found in the
+                                     * LICENSE file in the root directory of this source tree. An additional grant
+                                     * of patent rights can be found in the PATENTS file in the same directory.
+                                     *
+                                     *  strict-local
+                                     * @format
+                                     */
+
+BackTraceCommand._defaultFrames = 100;

@@ -1,3 +1,8 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,19 +11,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-export default class HandleMap<T> {
-  DEFAULT_STARTING_HANDLE = 1000;
+class HandleMap {
 
-  _startingHandle: number;
-  _objectsByHandle: Map<number, T>;
-  _handlesByObject: Map<T, number>;
-  _nextHandle: number;
+  constructor(nextHandle) {
+    this.DEFAULT_STARTING_HANDLE = 1000;
 
-  constructor(nextHandle: ?number) {
     this._startingHandle = nextHandle == null ? 1000 : nextHandle;
     this.clear();
   }
@@ -29,11 +30,11 @@ export default class HandleMap<T> {
     this._handlesByObject = new Map();
   }
 
-  get allObjects(): Array<T> {
+  get allObjects() {
     return Array.from(this._objectsByHandle.values());
   }
 
-  put(obj: T): number {
+  put(obj) {
     // maintain 1:1 mapping
     let handle = this._handlesByObject.get(obj);
     if (handle == null) {
@@ -45,15 +46,15 @@ export default class HandleMap<T> {
     return handle;
   }
 
-  getObjectByHandle(handle: number): ?T {
+  getObjectByHandle(handle) {
     return this._objectsByHandle.get(handle);
   }
 
-  getHandleByObject(obj: T): ?number {
+  getHandleByObject(obj) {
     return this._handlesByObject.get(obj);
   }
 
-  removeHandle(handle: number): void {
+  removeHandle(handle) {
     const obj = this._objectsByHandle.get(handle);
     if (obj != null) {
       this._handlesByObject.delete(obj);
@@ -61,7 +62,7 @@ export default class HandleMap<T> {
     }
   }
 
-  removeObject(obj: T): void {
+  removeObject(obj) {
     const handle = this._handlesByObject.get(obj);
     if (handle != null) {
       this._handlesByObject.delete(obj);
@@ -69,7 +70,8 @@ export default class HandleMap<T> {
     }
   }
 
-  toString(): string {
+  toString() {
     return JSON.stringify([...this._objectsByHandle]);
   }
 }
+exports.default = HandleMap;

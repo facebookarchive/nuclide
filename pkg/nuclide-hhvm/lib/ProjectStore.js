@@ -1,41 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DebugMode} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Emitter} from 'atom';
-import {BehaviorSubject} from 'rxjs';
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _HackLanguage;
+
+function _load_HackLanguage() {
+  return _HackLanguage = require('../../nuclide-hack/lib/HackLanguage');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {trackTiming} from '../../nuclide-analytics';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class ProjectStore {
-  _disposables: UniversalDisposable;
-  _emitter: Emitter;
-  _currentFilePath: string;
-  _projectRoot: BehaviorSubject<?string>;
-  _isHHVMProject: ?boolean;
-  _debugMode: DebugMode;
-  _filePathsToScriptCommand: Map<string, string>;
-  _stickyCommand: string;
-  _useTerminal: boolean;
-  _scriptArguments: string;
+class ProjectStore {
 
   constructor() {
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._currentFilePath = '';
-    this._projectRoot = new BehaviorSubject();
+    this._projectRoot = new _rxjsBundlesRxMinJs.BehaviorSubject();
     this._isHHVMProject = null;
     this._debugMode = 'webserver';
     this._filePathsToScriptCommand = new Map();
@@ -44,24 +49,18 @@ export default class ProjectStore {
     this._scriptArguments = '';
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);
-    this._disposables = new UniversalDisposable(
-      this._projectRoot
-        .do(() => {
-          // Set the project type to a "loading" state.
-          this._isHHVMProject = null;
-          this._emitter.emit('change');
-        })
-        .switchMap(root => this._isFileHHVMProject(root))
-        .subscribe(isHHVM => {
-          this._isHHVMProject = isHHVM;
-          this._emitter.emit('change');
-        }),
-      atom.workspace.onDidStopChangingActivePaneItem(onDidChange),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._projectRoot.do(() => {
+      // Set the project type to a "loading" state.
+      this._isHHVMProject = null;
+      this._emitter.emit('change');
+    }).switchMap(root => this._isFileHHVMProject(root)).subscribe(isHHVM => {
+      this._isHHVMProject = isHHVM;
+      this._emitter.emit('change');
+    }), atom.workspace.onDidStopChangingActivePaneItem(onDidChange));
     onDidChange();
   }
 
-  _onDidChangeActivePaneItem(): void {
+  _onDidChangeActivePaneItem() {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (!activeTextEditor) {
       return;
@@ -76,17 +75,13 @@ export default class ProjectStore {
     this._emitter.emit('change');
   }
 
-  _isFileHHVMProject(fileUri: ?string): Promise<boolean> {
-    return trackTiming('toolbar.isFileHHVMProject', async () => {
-      return (
-        fileUri != null &&
-        nuclideUri.isRemote(fileUri) &&
-        isFileInHackProject(fileUri)
-      );
+  _isFileHHVMProject(fileUri) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('toolbar.isFileHHVMProject', async () => {
+      return fileUri != null && (_nuclideUri || _load_nuclideUri()).default.isRemote(fileUri) && (0, (_HackLanguage || _load_HackLanguage()).isFileInHackProject)(fileUri);
     });
   }
 
-  getLastScriptCommand(filePath: string): string {
+  getLastScriptCommand(filePath) {
     const command = this._filePathsToScriptCommand.get(filePath);
     if (command != null) {
       return command;
@@ -94,51 +89,48 @@ export default class ProjectStore {
     return '';
   }
 
-  updateLastScriptCommand(command: string): void {
-    this._filePathsToScriptCommand.set(
-      nuclideUri.getPath(this._currentFilePath),
-      command,
-    );
+  updateLastScriptCommand(command) {
+    this._filePathsToScriptCommand.set((_nuclideUri || _load_nuclideUri()).default.getPath(this._currentFilePath), command);
   }
 
-  onChange(callback: () => void): IDisposable {
+  onChange(callback) {
     return this._emitter.on('change', callback);
   }
 
-  getCurrentFilePath(): string {
+  getCurrentFilePath() {
     return this._currentFilePath;
   }
 
-  setProjectRoot(root: ?string): void {
+  setProjectRoot(root) {
     this._projectRoot.next(root);
   }
 
-  getProjectRoot(): ?string {
+  getProjectRoot() {
     return this._projectRoot.getValue();
   }
 
-  isHHVMProject(): ?boolean {
+  isHHVMProject() {
     return this._isHHVMProject;
   }
 
-  getDebugMode(): DebugMode {
+  getDebugMode() {
     return this._debugMode;
   }
 
-  setDebugMode(debugMode: DebugMode): void {
+  setDebugMode(debugMode) {
     this._debugMode = debugMode;
     this._emitter.emit('change');
   }
 
-  setScriptArguments(args: string): void {
+  setScriptArguments(args) {
     this._scriptArguments = args;
   }
 
-  getScriptArguments(): string {
+  getScriptArguments() {
     return this._scriptArguments;
   }
 
-  setStickyCommand(command: string, sticky: boolean): void {
+  setStickyCommand(command, sticky) {
     if (sticky) {
       this._stickyCommand = command;
     } else {
@@ -150,21 +142,21 @@ export default class ProjectStore {
     }
   }
 
-  setUseTerminal(useTerminal: boolean): void {
+  setUseTerminal(useTerminal) {
     this._useTerminal = useTerminal;
   }
 
-  getUseTerminal(): boolean {
+  getUseTerminal() {
     return this._useTerminal;
   }
 
-  getDebugTarget(): string {
+  getDebugTarget() {
     const filePath = this._currentFilePath;
     if (this._debugMode !== 'webserver') {
       if (this._stickyCommand !== '') {
         return this._stickyCommand;
       }
-      const localPath = nuclideUri.getPath(filePath);
+      const localPath = (_nuclideUri || _load_nuclideUri()).default.getPath(filePath);
       const lastScriptCommand = this.getLastScriptCommand(localPath);
       return lastScriptCommand === '' ? localPath : lastScriptCommand;
     }
@@ -172,8 +164,8 @@ export default class ProjectStore {
     // Technically this shouldn't be visible for non-remote paths, but the UI
     // can sometimes display the toolbar anyway.
     const rootPath = this._projectRoot.getValue();
-    if (rootPath != null && nuclideUri.isRemote(rootPath)) {
-      return nuclideUri.getHostname(rootPath);
+    if (rootPath != null && (_nuclideUri || _load_nuclideUri()).default.isRemote(rootPath)) {
+      return (_nuclideUri || _load_nuclideUri()).default.getHostname(rootPath);
     }
     return '';
   }
@@ -182,3 +174,13 @@ export default class ProjectStore {
     this._disposables.dispose();
   }
 }
+exports.default = ProjectStore; /**
+                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                 * All rights reserved.
+                                 *
+                                 * This source code is licensed under the license found in the LICENSE file in
+                                 * the root directory of this source tree.
+                                 *
+                                 * 
+                                 * @format
+                                 */

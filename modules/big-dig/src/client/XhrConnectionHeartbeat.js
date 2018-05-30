@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.XhrConnectionHeartbeat = undefined;
+
+var _asyncRequest;
+
+function _load_asyncRequest() {
+  return _asyncRequest = _interopRequireDefault(require('./utils/asyncRequest'));
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../nuclide-commons/promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,16 +39,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {RequestOptions} from './utils/asyncRequest';
-import type {AgentOptions} from '../common/types';
-import asyncRequest from './utils/asyncRequest';
-import {Emitter} from 'event-kit';
-import {getLogger} from 'log4js';
-import {sleep} from 'nuclide-commons/promise';
 
 const HEARTBEAT_INTERVAL_MS = 10000;
 const HEARTBEAT_TIMEOUT_MS = 10000;
@@ -25,63 +51,47 @@ const CERT_NOT_YET_VALID_DELAY = 3000;
 const CERT_NOT_YET_VALID_RETRIES = 10;
 const ECONNRESET_ERRORS_IN_ROW_LIMIT = 4;
 
-export class XhrConnectionHeartbeat {
-  _heartbeatConnectedOnce: boolean;
-  _lastHeartbeat: ?('here' | 'away');
-  _lastHeartbeatTime: ?number;
-  _heartbeatInterval: ?IntervalID;
-  _connectionResetCount: number;
-  _emitter: Emitter;
-  _options: RequestOptions;
+class XhrConnectionHeartbeat {
 
-  constructor(
-    serverUri: string,
-    heartbeatChannel: string,
-    agentOptions: ?AgentOptions,
-  ) {
+  constructor(serverUri, heartbeatChannel, agentOptions) {
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
     this._lastHeartbeatTime = null;
     this._connectionResetCount = 0;
-    const options: RequestOptions = {
+    const options = {
       uri: `${serverUri}/${heartbeatChannel}`,
       method: 'POST',
       timeout: HEARTBEAT_TIMEOUT_MS,
       // We're trying this to see if it resolves T28442202
-      forever: true,
+      forever: true
     };
     if (agentOptions != null) {
       options.agentOptions = agentOptions;
     }
     this._options = options;
-    this._emitter = new Emitter();
+    this._emitter = new (_eventKit || _load_eventKit()).Emitter();
 
     this._monitorServerHeartbeat();
   }
 
-  _monitorServerHeartbeat(): void {
+  _monitorServerHeartbeat() {
     this._heartbeat();
-    this._heartbeatInterval = setInterval(
-      () => this._heartbeat(),
-      HEARTBEAT_INTERVAL_MS,
-    );
+    this._heartbeatInterval = setInterval(() => this._heartbeat(), HEARTBEAT_INTERVAL_MS);
   }
 
   // Returns version
-  async sendHeartBeat(): Promise<string> {
+  async sendHeartBeat() {
     let retries = CERT_NOT_YET_VALID_RETRIES;
     while (true) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        const {body} = await asyncRequest(this._options);
+        const { body } = await (0, (_asyncRequest || _load_asyncRequest()).default)(this._options);
         return body;
       } catch (err) {
         if (retries-- > 0 && err.code === 'CERT_NOT_YET_VALID') {
-          getLogger('XhrConnectionHeartbeat').warn(
-            `Certificate not yet valid, retrying after ${CERT_NOT_YET_VALID_DELAY}ms...`,
-          );
+          (0, (_log4js || _load_log4js()).getLogger)('XhrConnectionHeartbeat').warn(`Certificate not yet valid, retrying after ${CERT_NOT_YET_VALID_DELAY}ms...`);
           // eslint-disable-next-line no-await-in-loop
-          await sleep(CERT_NOT_YET_VALID_DELAY);
+          await (0, (_promise || _load_promise()).sleep)(CERT_NOT_YET_VALID_DELAY);
         } else {
           throw err;
         }
@@ -91,17 +101,14 @@ export class XhrConnectionHeartbeat {
     throw Error('unreachable');
   }
 
-  async _heartbeat(): Promise<void> {
+  async _heartbeat() {
     try {
       await this.sendHeartBeat();
       this._heartbeatConnectedOnce = true;
       const now = Date.now();
       // flowlint-next-line sketchy-null-number:off
       this._lastHeartbeatTime = this._lastHeartbeatTime || now;
-      if (
-        this._lastHeartbeat === 'away' ||
-        now - this._lastHeartbeatTime > MAX_HEARTBEAT_AWAY_RECONNECT_MS
-      ) {
+      if (this._lastHeartbeat === 'away' || now - this._lastHeartbeatTime > MAX_HEARTBEAT_AWAY_RECONNECT_MS) {
         // Trigger a websocket reconnect.
         this._emitter.emit('reconnect');
       }
@@ -114,7 +121,7 @@ export class XhrConnectionHeartbeat {
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
       // A heuristic mapping is done between the xhr error code to the state of server connection.
-      const {code: originalCode, message} = err;
+      const { code: originalCode, message } = err;
       let code = null;
       switch (originalCode) {
         case 'ENOTFOUND':
@@ -152,11 +159,11 @@ export class XhrConnectionHeartbeat {
       if (code !== 'ECONNRESET') {
         this._connectionResetCount = 0;
       }
-      this._emitter.emit('heartbeat.error', {code, originalCode, message});
+      this._emitter.emit('heartbeat.error', { code, originalCode, message });
     }
   }
 
-  _checkReconnectErrorType(originalCode: string): string {
+  _checkReconnectErrorType(originalCode) {
     this._connectionResetCount++;
     if (this._connectionResetCount >= ECONNRESET_ERRORS_IN_ROW_LIMIT) {
       return 'INVALID_CERTIFICATE';
@@ -164,25 +171,19 @@ export class XhrConnectionHeartbeat {
     return originalCode;
   }
 
-  onHeartbeat(callback: () => mixed): IDisposable {
+  onHeartbeat(callback) {
     return this._emitter.on('heartbeat', callback);
   }
 
-  onHeartbeatError(
-    callback: (arg: {
-      code: string,
-      originalCode: string,
-      message: string,
-    }) => mixed,
-  ): IDisposable {
+  onHeartbeatError(callback) {
     return this._emitter.on('heartbeat.error', callback);
   }
 
-  onConnectionRestored(callback: () => mixed): IDisposable {
+  onConnectionRestored(callback) {
     return this._emitter.on('reconnect', callback);
   }
 
-  isAway(): boolean {
+  isAway() {
     return this._lastHeartbeat === 'away';
   }
 
@@ -192,3 +193,4 @@ export class XhrConnectionHeartbeat {
     }
   }
 }
+exports.XhrConnectionHeartbeat = XhrConnectionHeartbeat;

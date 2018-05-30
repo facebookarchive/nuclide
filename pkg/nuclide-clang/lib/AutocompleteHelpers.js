@@ -1,3 +1,50 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
+
+var _atom = require('atom');
+
+var _fuzzaldrinPlus;
+
+function _load_fuzzaldrinPlus() {
+  return _fuzzaldrinPlus = _interopRequireDefault(require('fuzzaldrin-plus'));
+}
+
+var _AutocompleteCacher;
+
+function _load_AutocompleteCacher() {
+  return _AutocompleteCacher = _interopRequireDefault(require('../../commons-atom/AutocompleteCacher'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideClangRpc;
+
+function _load_nuclideClangRpc() {
+  return _nuclideClangRpc = require('../../nuclide-clang-rpc');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,19 +52,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
-
-import {Point} from 'atom';
-import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
-import {arrayFindLastIndex} from 'nuclide-commons/collection';
-import {track} from '../../nuclide-analytics';
-import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
-import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
@@ -48,20 +85,12 @@ const ClangCursorToAutocompletionTypes = Object.freeze({
   DESTRUCTOR: 'method',
   FUNCTION_TEMPLATE: 'function',
   CLASS_TEMPLATE: 'class',
-  OVERLOAD_CANDIDATE: 'function',
+  OVERLOAD_CANDIDATE: 'function'
 });
 
-function getCompletionBody(
-  completion: ClangCompletion,
-  columnOffset: number,
-  indentation: number,
-): string {
+function getCompletionBody(completion, columnOffset, indentation) {
   const inlineBody = getCompletionBodyInline(completion);
-  const multiLineBody = getCompletionBodyMultiLine(
-    completion,
-    columnOffset,
-    indentation,
-  );
+  const multiLineBody = getCompletionBodyMultiLine(completion, columnOffset, indentation);
 
   // flowlint-next-line sketchy-null-string:off
   if (columnOffset + inlineBody.length > MAX_LINE_LENGTH && multiLineBody) {
@@ -70,11 +99,7 @@ function getCompletionBody(
   return inlineBody;
 }
 
-function getCompletionBodyMultiLine(
-  completion: ClangCompletion,
-  columnOffset: number,
-  indentation: number,
-): ?string {
+function getCompletionBodyMultiLine(completion, columnOffset, indentation) {
   // Filter out whitespace chunks.
   const chunks = completion.chunks.filter(chunk => chunk.spelling.trim());
 
@@ -111,20 +136,14 @@ function getCompletionBodyMultiLine(
     args.push({
       text,
       placeholder,
-      offset: i === 0 ? columnOffset : indentation * TAB_LENGTH,
+      offset: i === 0 ? columnOffset : indentation * TAB_LENGTH
     });
   }
 
   return _convertArgsToMultiLineSnippet(args);
 }
 
-function _convertArgsToMultiLineSnippet(
-  args: Array<{
-    text: string,
-    placeholder: string,
-    offset: number,
-  }>,
-): string {
+function _convertArgsToMultiLineSnippet(args) {
   // We have two types of multine line method calls.
   //
   // 1. Here first argument is the longest, so everything can be
@@ -140,21 +159,15 @@ function _convertArgsToMultiLineSnippet(
   //     Argument3:arg3]
   //
 
-  const colonPosition = Math.max.apply(
-    null,
-    args.map(arg => arg.offset + arg.text.length),
-  );
+  const colonPosition = Math.max.apply(null, args.map(arg => arg.offset + arg.text.length));
 
   return args.reduce((body, arg, index) => {
-    const spacesCnt =
-      index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
+    const spacesCnt = index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
     if (spacesCnt < 0) {
       throw Error('This is a bug! Spaces count is negative.');
     }
 
-    const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${
-      arg.placeholder
-    }}\n`;
+    const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${arg.placeholder}}\n`;
     if (index > 0 && line[colonPosition - arg.offset] !== ':') {
       throw Error('This is a bug! Colons are not aligned!');
     }
@@ -162,19 +175,15 @@ function _convertArgsToMultiLineSnippet(
   }, '');
 }
 
-function getCompletionBodyInline(completion: ClangCompletion): string {
+function getCompletionBodyInline(completion) {
   // Make a copy to avoid mutating the original.
   const chunks = [...completion.chunks];
 
   // Merge everything between the last non-optional placeholder
   // and the last optional placeholder into one big optional.
-  const lastOptional = arrayFindLastIndex(chunks, chunk =>
-    Boolean(chunk.isOptional && chunk.isPlaceHolder),
-  );
+  const lastOptional = (0, (_collection || _load_collection()).arrayFindLastIndex)(chunks, chunk => Boolean(chunk.isOptional && chunk.isPlaceHolder));
   if (lastOptional !== -1) {
-    const lastNonOptional = arrayFindLastIndex(chunks, chunk =>
-      Boolean(!chunk.isOptional && chunk.isPlaceHolder),
-    );
+    const lastNonOptional = (0, (_collection || _load_collection()).arrayFindLastIndex)(chunks, chunk => Boolean(!chunk.isOptional && chunk.isPlaceHolder));
     if (lastNonOptional !== -1 && lastNonOptional < lastOptional) {
       let mergedSpelling = '';
       for (let i = lastNonOptional + 1; i <= lastOptional; i++) {
@@ -183,7 +192,7 @@ function getCompletionBodyInline(completion: ClangCompletion): string {
       chunks.splice(lastNonOptional + 1, lastOptional - lastNonOptional, {
         spelling: mergedSpelling,
         isPlaceHolder: true,
-        isOptional: true,
+        isOptional: true
       });
     }
   }
@@ -205,44 +214,20 @@ function getCompletionBodyInline(completion: ClangCompletion): string {
   return body;
 }
 
-function getCompletionPrefix(editor: atom$TextEditor): string {
+function getCompletionPrefix(editor) {
   const cursor = editor.getLastCursor();
   const range = cursor.getCurrentWordBufferRange({
-    wordRegex: cursor.wordRegExp({includeNonWordCharacters: false}),
+    wordRegex: cursor.wordRegExp({ includeNonWordCharacters: false })
   });
 
   // Current word might go beyond the cursor, so we cut it.
-  range.end = new Point(cursor.getBufferRow(), cursor.getBufferColumn());
+  range.end = new _atom.Point(cursor.getBufferRow(), cursor.getBufferColumn());
   return editor.getTextInBufferRange(range).trim();
 }
 
-type ClangAutocompleteSuggestion = atom$AutocompleteSuggestion & {
-  filterText: string,
-};
+class AutocompleteHelpers {
 
-export default class AutocompleteHelpers {
-  static _cacher = new AutocompleteCacher(
-    AutocompleteHelpers._getAutocompleteSuggestions,
-    {
-      updateResults(_originalRequest, request, results) {
-        // TODO: update the ranges once Clang LSP starts returning TextEdits.
-        const {editor} = request;
-        const prefix = getCompletionPrefix(editor);
-        // We hit the results limit, so there may be unlisted results.
-        // Needs to match the value in clang_server.py.
-        if (results.length === 200) {
-          return null;
-        }
-        return fuzzaldrinPlus
-          .filter(results, prefix, {key: 'filterText'})
-          .map(result => ({...result, replacementPrefix: prefix}));
-      },
-    },
-  );
-
-  static async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
+  static async getAutocompleteSuggestions(request) {
     const results = await AutocompleteHelpers._cacher.getSuggestions(request);
     if (results != null) {
       return [...results];
@@ -250,13 +235,11 @@ export default class AutocompleteHelpers {
     return [];
   }
 
-  static async _getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<ClangAutocompleteSuggestion>> {
+  static async _getAutocompleteSuggestions(request) {
     const {
       editor,
-      bufferPosition: {row, column},
-      activatedManually,
+      bufferPosition: { row, column },
+      activatedManually
     } = request;
     const prefix = getCompletionPrefix(editor);
     // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?),
@@ -269,15 +252,15 @@ export default class AutocompleteHelpers {
     }
 
     const indentation = editor.indentationForBufferRow(row);
-    const data = await getCompletions(editor, prefix);
+    const data = await (0, (_libclang || _load_libclang()).getCompletions)(editor, prefix);
     if (data == null) {
       return null;
     }
 
-    track('clang.autocompleteResults', {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('clang.autocompleteResults', {
       path: editor.getPath(),
       prefix: prefix.substr(0, 20), // avoid logging too much!
-      completions: data.length,
+      completions: data.length
     });
 
     return data.map(completion => {
@@ -287,9 +270,7 @@ export default class AutocompleteHelpers {
       // Ideally we'd use the replacement prefix, but this is a hard problem in C++:
       //   e.g. min<decltype(x)>(x, y) is a perfectly valid function call.
       if (completion.cursor_kind === 'OVERLOAD_CANDIDATE') {
-        const curParamIndex = completion.chunks.findIndex(
-          x => x.kind === 'CurrentParameter',
-        );
+        const curParamIndex = completion.chunks.findIndex(x => x.kind === 'CurrentParameter');
         if (curParamIndex !== -1) {
           completion.chunks.splice(0, curParamIndex);
           snippet = getCompletionBody(completion, column, indentation);
@@ -301,12 +282,8 @@ export default class AutocompleteHelpers {
       } else {
         snippet = getCompletionBody(completion, column, indentation);
       }
-      const rightLabel = completion.cursor_kind
-        ? ClangCursorToDeclarationTypes[completion.cursor_kind]
-        : null;
-      const type = completion.cursor_kind
-        ? ClangCursorToAutocompletionTypes[completion.cursor_kind]
-        : null;
+      const rightLabel = completion.cursor_kind ? (_nuclideClangRpc || _load_nuclideClangRpc()).ClangCursorToDeclarationTypes[completion.cursor_kind] : null;
+      const type = completion.cursor_kind ? ClangCursorToAutocompletionTypes[completion.cursor_kind] : null;
       return {
         snippet,
         displayText,
@@ -316,13 +293,27 @@ export default class AutocompleteHelpers {
         rightLabel,
         // flowlint-next-line sketchy-null-string:off
         description: completion.brief_comment || completion.result_type,
-        filterText: completion.typed_name,
+        filterText: completion.typed_name
       };
     });
   }
 }
 
-export const __test__ = {
+exports.default = AutocompleteHelpers;
+AutocompleteHelpers._cacher = new (_AutocompleteCacher || _load_AutocompleteCacher()).default(AutocompleteHelpers._getAutocompleteSuggestions, {
+  updateResults(_originalRequest, request, results) {
+    // TODO: update the ranges once Clang LSP starts returning TextEdits.
+    const { editor } = request;
+    const prefix = getCompletionPrefix(editor);
+    // We hit the results limit, so there may be unlisted results.
+    // Needs to match the value in clang_server.py.
+    if (results.length === 200) {
+      return null;
+    }
+    return (_fuzzaldrinPlus || _load_fuzzaldrinPlus()).default.filter(results, prefix, { key: 'filterText' }).map(result => Object.assign({}, result, { replacementPrefix: prefix }));
+  }
+});
+const __test__ = exports.__test__ = {
   getCompletionBodyMultiLine,
-  getCompletionBodyInline,
+  getCompletionBodyInline
 };

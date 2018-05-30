@@ -1,27 +1,36 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
-import type {HHSearchPosition} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseQueryString = parseQueryString;
+exports.executeQuery = executeQuery;
+exports.convertSearchResults = convertSearchResults;
 
-import {findHackConfigDir} from './hack-config';
+var _hackConfig;
 
-import {callHHClient} from './HackHelpers';
+function _load_hackConfig() {
+  return _hackConfig = require('./hack-config');
+}
 
-const pendingSearchPromises: Map<string, Promise<any>> = new Map();
+var _HackHelpers;
 
-export function parseQueryString(
-  queryString_: string,
-): {searchPostfix: ?string, queryString: string} {
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
+
+const pendingSearchPromises = new Map(); /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
+
+function parseQueryString(queryString_) {
   let queryString;
   let searchPostfix;
   switch (queryString_[0]) {
@@ -44,20 +53,17 @@ export function parseQueryString(
   }
   return {
     searchPostfix,
-    queryString,
+    queryString
   };
 }
 
-export async function executeQuery(
-  filePath: NuclideUri,
-  queryString_: string,
-): Promise<Array<SymbolResult>> {
-  const hackRoot = await findHackConfigDir(filePath);
+async function executeQuery(filePath, queryString_) {
+  const hackRoot = await (0, (_hackConfig || _load_hackConfig()).findHackConfigDir)(filePath);
   if (hackRoot == null) {
     return [];
   }
 
-  const {queryString, searchPostfix} = parseQueryString(queryString_);
+  const { queryString, searchPostfix } = parseQueryString(queryString_);
   if (queryString === '') {
     return [];
   }
@@ -67,18 +73,17 @@ export async function executeQuery(
   // with the original search call.
   let searchPromise = pendingSearchPromises.get(queryString);
   if (!searchPromise) {
-    searchPromise = callHHClient(
-      /* args */ ['--search' + (searchPostfix || ''), queryString],
-      /* errorStream */ false,
-      /* processInput */ null,
-      /* file */ filePath,
-    );
+    searchPromise = (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+    /* args */['--search' + (searchPostfix || ''), queryString],
+    /* errorStream */false,
+    /* processInput */null,
+    /* file */filePath);
     pendingSearchPromises.set(queryString, searchPromise);
   }
 
-  let searchResponse: ?Array<HHSearchPosition> = null;
+  let searchResponse = null;
   try {
-    searchResponse = (await searchPromise: any);
+    searchResponse = await searchPromise;
   } finally {
     pendingSearchPromises.delete(queryString);
   }
@@ -86,16 +91,13 @@ export async function executeQuery(
   return convertSearchResults(hackRoot, searchResponse);
 }
 
-export function convertSearchResults(
-  hackRoot: NuclideUri,
-  searchResponse: ?Array<HHSearchPosition>,
-): Array<SymbolResult> {
+function convertSearchResults(hackRoot, searchResponse) {
   if (searchResponse == null) {
     return [];
   }
 
   const searchResult = searchResponse;
-  const result: Array<SymbolResult> = [];
+  const result = [];
   for (const entry of searchResult) {
     const resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
@@ -110,7 +112,7 @@ export function convertSearchResults(
       path: resultFile,
       containerName: entry.scope,
       icon: bestIconForDesc(entry.desc),
-      hoverText: entry.desc,
+      hoverText: entry.desc
     });
   }
 
@@ -128,10 +130,10 @@ const ICONS = {
   trait: 'checklist',
   enum: 'file-binary',
   default: null,
-  unknown: 'squirrel',
+  unknown: 'squirrel'
 };
 
-function bestIconForDesc(desc: ?string): ?string {
+function bestIconForDesc(desc) {
   // flowlint-next-line sketchy-null-string:off
   if (!desc) {
     return ICONS.default;

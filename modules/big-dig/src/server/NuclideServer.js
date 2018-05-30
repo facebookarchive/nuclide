@@ -1,46 +1,31 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import BigDigServer from './BigDigServer';
-import WS from 'ws';
-import https from 'https';
-import {parsePorts} from '../common/ports';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.launchServer = launchServer;
 
-export type LauncherParameters = {
-  server: BigDigServer,
-  // Any sort of JSON-serializable object is fine.
-  serverParams: mixed,
-};
+var _BigDigServer;
 
-// The absolutePathToServerMain must export a single function of this type.
-export type LauncherType = (params: LauncherParameters) => Promise<void>;
+function _load_BigDigServer() {
+  return _BigDigServer = _interopRequireDefault(require('./BigDigServer'));
+}
 
-export type NuclideServerOptions = {
-  // These options will be passed verbatim to https.createServer(). Admittedly,
-  // this is not the complete list of options that it takes, but these are the
-  // ones we intentionally work with.
-  webServer: {
-    // Optional private keys in PEM format.
-    key?: string | Array<string> | Buffer | Array<Buffer>,
-    // Optional cert chains in PEM format
-    cert?: string | Array<string> | Buffer | Array<Buffer>,
-    // Optionally override the trusted CA certificates.
-    ca?: string | Array<string> | Buffer | Array<Buffer>,
-  },
-  ports: string,
-  absolutePathToServerMain: string,
-  // Any sort of JSON-serializable object is fine.
-  serverParams: mixed,
-};
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _https = _interopRequireDefault(require('https'));
+
+var _ports;
+
+function _load_ports() {
+  return _ports = require('../common/ports');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Launch a NuclideServer with the specified parameters.
@@ -53,13 +38,26 @@ export type NuclideServerOptions = {
  * Note that if options.port=0 is specified to choose an ephemeral port, then the caller should
  * check server.address().port to see what the actual port is.
  */
-export async function launchServer(
-  options: NuclideServerOptions,
-): Promise<number> {
-  const webServer = https.createServer(options.webServer);
+
+
+// The absolutePathToServerMain must export a single function of this type.
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ *  strict-local
+ * @format
+ */
+
+async function launchServer(options) {
+  const webServer = _https.default.createServer(options.webServer);
 
   let found = false;
-  for (const port of parsePorts(options.ports)) {
+  for (const port of (0, (_ports || _load_ports()).parsePorts)(options.ports)) {
     // eslint-disable-next-line no-await-in-loop
     if (await tryListen(webServer, port)) {
       found = true;
@@ -70,27 +68,27 @@ export async function launchServer(
     throw Error(`All ports in range "${options.ports}" are already in use`);
   }
 
-  const webSocketServer = new WS.Server({
+  const webSocketServer = new (_ws || _load_ws()).default.Server({
     server: webServer,
-    perMessageDeflate: true,
+    perMessageDeflate: true
   });
 
   // Let unhandled WS server errors go through to the global exception handler.
 
   // $FlowIgnore
-  const launcher: LauncherType = require(options.absolutePathToServerMain);
-  const tunnelLauncher: LauncherType = require('../services/tunnel/launcher');
+  const launcher = require(options.absolutePathToServerMain);
+  const tunnelLauncher = require('../services/tunnel/launcher');
 
-  const bigDigServer = new BigDigServer(webServer, webSocketServer);
+  const bigDigServer = new (_BigDigServer || _load_BigDigServer()).default(webServer, webSocketServer);
 
   await launcher({
     server: bigDigServer,
-    serverParams: options.serverParams,
+    serverParams: options.serverParams
   });
 
   await tunnelLauncher({
     server: bigDigServer,
-    serverParams: options.serverParams,
+    serverParams: options.serverParams
   });
 
   return webServer.address().port;
@@ -101,7 +99,7 @@ export async function launchServer(
  * Returns true if successful or false if the port is already in use.
  * Any other errors result in a rejection.
  */
-function tryListen(server: https.Server, port: number): Promise<boolean> {
+function tryListen(server, port) {
   return new Promise((resolve, reject) => {
     function onError(error) {
       if (error.errno === 'EADDRINUSE') {

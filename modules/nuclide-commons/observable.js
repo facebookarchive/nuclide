@@ -1,3 +1,108 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SingletonExecutor = exports.nextAnimationFrame = exports.macrotask = exports.microtask = undefined;
+exports.splitStream = splitStream;
+exports.bufferUntil = bufferUntil;
+exports.cacheWhileSubscribed = cacheWhileSubscribed;
+exports.diffSets = diffSets;
+exports.reconcileSetDiffs = reconcileSetDiffs;
+exports.reconcileSets = reconcileSets;
+exports.toggle = toggle;
+exports.compact = compact;
+exports.takeWhileInclusive = takeWhileInclusive;
+exports.concatLatest = concatLatest;
+exports.throttle = throttle;
+exports.completingSwitchMap = completingSwitchMap;
+exports.fastDebounce = fastDebounce;
+exports.fromAbortablePromise = fromAbortablePromise;
+exports.toAbortablePromise = toAbortablePromise;
+exports.takeUntilAbort = takeUntilAbort;
+exports.poll = poll;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('./UniversalDisposable'));
+}
+
+var _domexception;
+
+function _load_domexception() {
+  return _domexception = _interopRequireDefault(require('domexception'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _AbortController;
+
+function _load_AbortController() {
+  return _AbortController = _interopRequireDefault(require('./AbortController'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('./collection');
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('./debounce'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Splits a stream of strings on newlines.
+ * Includes the newlines in the resulting stream (if includeNewlines is true).
+ * Sends any non-newline terminated data before closing.
+ * Does not ensure a trailing newline.
+ */
+function splitStream(input, includeNewlines = true) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
+    let current = '';
+
+    function onEnd() {
+      if (current !== '') {
+        observer.next(current);
+        current = '';
+      }
+    }
+
+    return input.subscribe(value => {
+      const lines = value.split('\n');
+      lines[0] = current + lines[0];
+      current = lines.pop();
+      if (includeNewlines) {
+        lines.forEach(line => observer.next(line + '\n'));
+      } else {
+        lines.forEach(line => observer.next(line));
+      }
+    }, error => {
+      onEnd();
+      observer.error(error);
+    }, () => {
+      onEnd();
+      observer.complete();
+    });
+  });
+}
+
+/**
+ * Buffers until the predicate matches an element, then opens a new buffer.
+ *
+ * @param stream - The observable to buffer
+ * @param predicate - A function that will be called every time an element is emitted from the
+ *     source. The predicate is passed the current element as well as the buffer at that point
+ *     (which includes the element). IMPORTANT: DO NOT MUTATE THE BUFFER. It returns a boolean
+ *     specifying whether to complete the buffer (and begin a new one).
+ */
+
+// Note: DOMException is usable in Chrome but not in Node.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +111,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -24,101 +129,31 @@
 //       .let(makeExciting())
 //       .subscribe(x => console.log(x));
 
-import type {AbortSignal} from './AbortController';
-
-import UniversalDisposable from './UniversalDisposable';
-import invariant from 'assert';
-// Note: DOMException is usable in Chrome but not in Node.
-import DOMException from 'domexception';
-import {Observable, ReplaySubject, Subject} from 'rxjs';
-import AbortController from './AbortController';
-import {setDifference} from './collection';
-import debounce from './debounce';
-
-/**
- * Splits a stream of strings on newlines.
- * Includes the newlines in the resulting stream (if includeNewlines is true).
- * Sends any non-newline terminated data before closing.
- * Does not ensure a trailing newline.
- */
-export function splitStream(
-  input: Observable<string>,
-  includeNewlines?: boolean = true,
-): Observable<string> {
-  return Observable.create(observer => {
-    let current: string = '';
-
-    function onEnd() {
-      if (current !== '') {
-        observer.next(current);
-        current = '';
+function bufferUntil(condition) {
+  return stream => _rxjsBundlesRxMinJs.Observable.create(observer => {
+    let buffer = null;
+    const flush = () => {
+      if (buffer != null) {
+        observer.next(buffer);
+        buffer = null;
       }
-    }
-
-    return input.subscribe(
-      value => {
-        const lines = value.split('\n');
-        lines[0] = current + lines[0];
-        current = lines.pop();
-        if (includeNewlines) {
-          lines.forEach(line => observer.next(line + '\n'));
-        } else {
-          lines.forEach(line => observer.next(line));
-        }
-      },
-      error => {
-        onEnd();
-        observer.error(error);
-      },
-      () => {
-        onEnd();
-        observer.complete();
-      },
-    );
-  });
-}
-
-/**
- * Buffers until the predicate matches an element, then opens a new buffer.
- *
- * @param stream - The observable to buffer
- * @param predicate - A function that will be called every time an element is emitted from the
- *     source. The predicate is passed the current element as well as the buffer at that point
- *     (which includes the element). IMPORTANT: DO NOT MUTATE THE BUFFER. It returns a boolean
- *     specifying whether to complete the buffer (and begin a new one).
- */
-export function bufferUntil<T>(
-  condition: (item: T, buffer: Array<T>) => boolean,
-): (Observable<T>) => Observable<Array<T>> {
-  return (stream: Observable<T>) =>
-    Observable.create(observer => {
-      let buffer = null;
-      const flush = () => {
-        if (buffer != null) {
-          observer.next(buffer);
-          buffer = null;
-        }
-      };
-      return stream.subscribe(
-        x => {
-          if (buffer == null) {
-            buffer = [];
-          }
-          buffer.push(x);
-          if (condition(x, buffer)) {
-            flush();
-          }
-        },
-        err => {
-          flush();
-          observer.error(err);
-        },
-        () => {
-          flush();
-          observer.complete();
-        },
-      );
+    };
+    return stream.subscribe(x => {
+      if (buffer == null) {
+        buffer = [];
+      }
+      buffer.push(x);
+      if (condition(x, buffer)) {
+        flush();
+      }
+    }, err => {
+      flush();
+      observer.error(err);
+    }, () => {
+      flush();
+      observer.complete();
     });
+  });
 }
 
 /**
@@ -129,49 +164,36 @@ export function bufferUntil<T>(
  * be just fine because the hot Observable will continue producing values even when there are no
  * subscribers, so you can be assured that the cached values are up-to-date.
  */
-export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
-  return input.multicast(() => new ReplaySubject(1)).refCount();
+function cacheWhileSubscribed(input) {
+  return input.multicast(() => new _rxjsBundlesRxMinJs.ReplaySubject(1)).refCount();
 }
-
-type Diff<T> = {
-  added: Set<T>,
-  removed: Set<T>,
-};
 
 /**
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
-export function diffSets<T>(
-  hash?: (v: T) => any,
-): (Observable<Set<T>>) => Observable<Diff<T>> {
-  return (sets: Observable<Set<T>>) =>
-    Observable.concat(
-      Observable.of(new Set()), // Always start with no items with an empty set
-      sets,
-    )
-      .pairwise()
-      .map(([previous, next]) => ({
-        added: setDifference(next, previous, hash),
-        removed: setDifference(previous, next, hash),
-      }))
-      .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
+function diffSets(hash) {
+  return sets => _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of(new Set()), // Always start with no items with an empty set
+  sets).pairwise().map(([previous, next]) => ({
+    added: (0, (_collection || _load_collection()).setDifference)(next, previous, hash),
+    removed: (0, (_collection || _load_collection()).setDifference)(previous, next, hash)
+  })).filter(diff => diff.added.size > 0 || diff.removed.size > 0);
 }
 
 /**
  * Give a stream of diffs, perform an action for each added item and dispose of the returned
  * disposable when the item is removed.
  */
-export function reconcileSetDiffs<T>(
-  diffs: Observable<Diff<T>>,
-  addAction: (addedItem: T) => IDisposable,
-  hash_?: (v: T) => any,
-): IDisposable {
+function reconcileSetDiffs(diffs, addAction, hash_) {
   const hash = hash_ || (x => x);
   const itemsToDisposables = new Map();
   const disposeItem = item => {
     const disposable = itemsToDisposables.get(hash(item));
-    invariant(disposable != null);
+
+    if (!(disposable != null)) {
+      throw new Error('Invariant violation: "disposable != null"');
+    }
+
     disposable.dispose();
     itemsToDisposables.delete(item);
   };
@@ -182,18 +204,15 @@ export function reconcileSetDiffs<T>(
     itemsToDisposables.clear();
   };
 
-  return new UniversalDisposable(
-    diffs.subscribe(diff => {
-      // For every item that got added, perform the add action.
-      diff.added.forEach(item => {
-        itemsToDisposables.set(hash(item), addAction(item));
-      });
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(diffs.subscribe(diff => {
+    // For every item that got added, perform the add action.
+    diff.added.forEach(item => {
+      itemsToDisposables.set(hash(item), addAction(item));
+    });
 
-      // "Undo" the add action for each item that got removed.
-      diff.removed.forEach(disposeItem);
-    }),
-    disposeAll,
-  );
+    // "Undo" the add action for each item that got removed.
+    diff.removed.forEach(disposeItem);
+  }), disposeAll);
 }
 
 /**
@@ -224,88 +243,52 @@ export function reconcileSetDiffs<T>(
  * of the dogs observable, his notification will remain until `disposable.dispose()` is called, at
  * which point the cleanup for all remaining items will be performed.
  */
-export function reconcileSets<T>(
-  sets: Observable<Set<T>>,
-  addAction: (addedItem: T) => IDisposable,
-  hash?: (v: T) => any,
-): IDisposable {
+function reconcileSets(sets, addAction, hash) {
   const diffs = sets.let(diffSets(hash));
   return reconcileSetDiffs(diffs, addAction, hash);
 }
 
-export function toggle<T>(
-  toggler: Observable<boolean>,
-): (Observable<T>) => Observable<T> {
-  return (source: Observable<T>) =>
-    toggler
-      .distinctUntilChanged()
-      .switchMap(enabled => (enabled ? source : Observable.empty()));
+function toggle(toggler) {
+  return source => toggler.distinctUntilChanged().switchMap(enabled => enabled ? source : _rxjsBundlesRxMinJs.Observable.empty());
 }
 
-export function compact<T>(source: Observable<?T>): Observable<T> {
+function compact(source) {
   // Flow does not understand the semantics of `filter`
-  return (source.filter(x => x != null): any);
+  return source.filter(x => x != null);
 }
 
 /**
  * Like `takeWhile`, but includes the first item that doesn't match the predicate.
  */
-export function takeWhileInclusive<T>(
-  predicate: (value: T) => boolean,
-): (Observable<T>) => Observable<T> {
-  return (source: Observable<T>) =>
-    Observable.create(observer =>
-      source.subscribe(
-        x => {
-          observer.next(x);
-          if (!predicate(x)) {
-            observer.complete();
-          }
-        },
-        err => {
-          observer.error(err);
-        },
-        () => {
-          observer.complete();
-        },
-      ),
-    );
+function takeWhileInclusive(predicate) {
+  return source => _rxjsBundlesRxMinJs.Observable.create(observer => source.subscribe(x => {
+    observer.next(x);
+    if (!predicate(x)) {
+      observer.complete();
+    }
+  }, err => {
+    observer.error(err);
+  }, () => {
+    observer.complete();
+  }));
 }
 
 // Concatenate the latest values from each input observable into one big list.
 // Observables who have not emitted a value yet are treated as empty.
-export function concatLatest<T>(
-  ...observables: Array<Observable<Array<T>>>
-): Observable<Array<T>> {
+function concatLatest(...observables) {
   // First, tag all input observables with their index.
-  // Flow errors with ambiguity without the explicit annotation.
-  const tagged: Array<Observable<[Array<T>, number]>> = observables.map(
-    (observable, index) => observable.map(list => [list, index]),
-  );
-  return Observable.merge(...tagged)
-    .scan((accumulator, [list, index]) => {
-      accumulator[index] = list;
-      return accumulator;
-    }, observables.map(x => []))
-    .map(accumulator => [].concat(...accumulator));
+  const tagged = observables.map((observable, index) => observable.map(list => [list, index]));
+  return _rxjsBundlesRxMinJs.Observable.merge(...tagged).scan((accumulator, [list, index]) => {
+    accumulator[index] = list;
+    return accumulator;
+  }, observables.map(x => [])).map(accumulator => [].concat(...accumulator));
 }
-
-type ThrottleOptions = {
-  // Should the first element be emitted immeditately? Defaults to true.
-  leading?: boolean,
-};
 
 /**
  * A more sensible alternative to RxJS's throttle/audit/sample operators.
  */
-export function throttle<T>(
-  duration:
-    | number
-    | Observable<any>
-    | ((value: T) => Observable<any> | Promise<any>),
-  options_: ?ThrottleOptions,
-): (Observable<T>) => Observable<T> {
-  return (source: Observable<T>) => {
+function throttle(duration, options_) {
+  return source => {
     const options = options_ || {};
     const leading = options.leading !== false;
     let audit;
@@ -324,16 +307,10 @@ export function throttle<T>(
       return audit(source);
     }
 
-    return Observable.create(observer => {
+    return _rxjsBundlesRxMinJs.Observable.create(observer => {
       const connectableSource = source.publish();
-      const throttled = Observable.merge(
-        connectableSource.take(1),
-        audit(connectableSource.skip(1)),
-      );
-      return new UniversalDisposable(
-        throttled.subscribe(observer),
-        connectableSource.connect(),
-      );
+      const throttled = _rxjsBundlesRxMinJs.Observable.merge(connectableSource.take(1), audit(connectableSource.skip(1)));
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(throttled.subscribe(observer), connectableSource.connect());
     });
   };
 }
@@ -351,22 +328,16 @@ export function throttle<T>(
  * ends up returning an Observable that completes immediately.
  * With a regular switchMap, this would never terminate.
  */
-export function completingSwitchMap<T, U>(
-  project: (input: T, index: number) => rxjs$ObservableInput<U>,
-): (Observable<T>) => Observable<U> {
+function completingSwitchMap(project) {
   // An alternative implementation is to materialize the input observable,
   // but this avoids the creation of extra notifier objects.
   const completedSymbol = Symbol('completed');
-  return (observable: Observable<T>) =>
-    Observable.concat(
-      observable,
-      Observable.of((completedSymbol: any)),
-    ).switchMap((input, index) => {
-      if (input === completedSymbol) {
-        return Observable.empty();
-      }
-      return project(input, index);
-    });
+  return observable => _rxjsBundlesRxMinJs.Observable.concat(observable, _rxjsBundlesRxMinJs.Observable.of(completedSymbol)).switchMap((input, index) => {
+    if (input === completedSymbol) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    return project(input, index);
+  });
 }
 
 /**
@@ -381,29 +352,22 @@ export function completingSwitchMap<T, U>(
  *
  * [1]: https://github.com/ReactiveX/rxjs/blob/master/src/operators/debounceTime.ts#L106
  */
-export function fastDebounce<T>(
-  delay: number,
-): (Observable<T>) => Observable<T> {
-  return (observable: Observable<T>) =>
-    Observable.create(observer => {
-      const debouncedNext = debounce((x: T) => observer.next(x), delay);
-      const subscription = observable.subscribe(
-        debouncedNext,
-        observer.error.bind(observer),
-        observer.complete.bind(observer),
-      );
-      return new UniversalDisposable(subscription, debouncedNext);
-    });
+function fastDebounce(delay) {
+  return observable => _rxjsBundlesRxMinJs.Observable.create(observer => {
+    const debouncedNext = (0, (_debounce || _load_debounce()).default)(x => observer.next(x), delay);
+    const subscription = observable.subscribe(debouncedNext, observer.error.bind(observer), observer.complete.bind(observer));
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(subscription, debouncedNext);
+  });
 }
 
-export const microtask = Observable.create(observer => {
+const microtask = exports.microtask = _rxjsBundlesRxMinJs.Observable.create(observer => {
   process.nextTick(() => {
     observer.next();
     observer.complete();
   });
 });
 
-export const macrotask = Observable.create(observer => {
+const macrotask = exports.macrotask = _rxjsBundlesRxMinJs.Observable.create(observer => {
   const timerId = setImmediate(() => {
     observer.next();
     observer.complete();
@@ -413,7 +377,7 @@ export const macrotask = Observable.create(observer => {
   };
 });
 
-export const nextAnimationFrame = Observable.create(observer => {
+const nextAnimationFrame = exports.nextAnimationFrame = _rxjsBundlesRxMinJs.Observable.create(observer => {
   if (typeof requestAnimationFrame === 'undefined') {
     throw new Error('This util can only be used in Atom');
   }
@@ -437,23 +401,18 @@ export const nextAnimationFrame = Observable.create(observer => {
  * Note that this can take a normal `() => Promise<T>` too
  * (in which case this acts as just a plain `Observable.defer`).
  */
-export function fromAbortablePromise<T>(
-  func: (signal: AbortSignal) => Promise<T>,
-): Observable<T> {
-  return Observable.create(observer => {
+function fromAbortablePromise(func) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     let completed = false;
-    const abortController = new AbortController();
-    func(abortController.signal).then(
-      value => {
-        completed = true;
-        observer.next(value);
-        observer.complete();
-      },
-      error => {
-        completed = true;
-        observer.error(error);
-      },
-    );
+    const abortController = new (_AbortController || _load_AbortController()).default();
+    func(abortController.signal).then(value => {
+      completed = true;
+      observer.next(value);
+      observer.complete();
+    }, error => {
+      completed = true;
+      observer.error(error);
+    });
     return () => {
       if (!completed) {
         abortController.abort();
@@ -484,23 +443,16 @@ export function fromAbortablePromise<T>(
  * It's currently unclear if this should be usable with let/pipe:
  * https://github.com/ReactiveX/rxjs/issues/3445
  */
-export function toAbortablePromise<T>(
-  observable: Observable<T>,
-  signal?: ?AbortSignal,
-): Promise<T> {
+function toAbortablePromise(observable, signal) {
   if (signal == null) {
     return observable.toPromise();
   }
   if (signal.aborted) {
-    return Promise.reject(DOMException('Aborted', 'AbortError'));
+    return Promise.reject((0, (_domexception || _load_domexception()).default)('Aborted', 'AbortError'));
   }
-  return observable
-    .race(
-      Observable.fromEvent(signal, 'abort').map(() => {
-        throw new DOMException('Aborted', 'AbortError');
-      }),
-    )
-    .toPromise();
+  return observable.race(_rxjsBundlesRxMinJs.Observable.fromEvent(signal, 'abort').map(() => {
+    throw new (_domexception || _load_domexception()).default('Aborted', 'AbortError');
+  })).toPromise();
 }
 
 /**
@@ -511,34 +463,33 @@ export function toAbortablePromise<T>(
  *   myObservable
  *     .let(obs => takeUntilAbort(obs, signal))
  */
-export function takeUntilAbort<T>(
-  observable: Observable<T>,
-  signal: AbortSignal,
-): Observable<T> {
-  return Observable.defer(() => {
+function takeUntilAbort(observable, signal) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => {
     if (signal.aborted) {
-      return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
     }
-    return observable.takeUntil(Observable.fromEvent(signal, 'abort'));
+    return observable.takeUntil(_rxjsBundlesRxMinJs.Observable.fromEvent(signal, 'abort'));
   });
 }
 
 // Executes tasks. Ensures that at most one task is running at a time.
 // This class is handy for expensive tasks like processes, provided
 // you never want the result of a previous task after a new task has started.
-export class SingletonExecutor<T> {
-  _abortController: ?AbortController = null;
+class SingletonExecutor {
+  constructor() {
+    this._abortController = null;
+  }
 
   // Executes(subscribes to) the task.
   // Will terminate(unsubscribe) to any previously executing task.
   // Subsequent executes() will terminate this task if called before
   // this task completes.
-  async execute(createTask: Observable<T>): Promise<T> {
+  async execute(createTask) {
     // Kill any previously running processes
     this.cancel();
 
     // Start a new process
-    const controller = new AbortController();
+    const controller = new (_AbortController || _load_AbortController()).default();
     this._abortController = controller;
 
     // Wait for the process to complete or be canceled ...
@@ -552,12 +503,12 @@ export class SingletonExecutor<T> {
     }
   }
 
-  isExecuting(): boolean {
+  isExecuting() {
     return this._abortController != null;
   }
 
   // Cancels any currently executing tasks.
-  cancel(): void {
+  cancel() {
     if (this._abortController != null) {
       this._abortController.abort();
       this._abortController = null;
@@ -565,40 +516,37 @@ export class SingletonExecutor<T> {
   }
 }
 
-/**
- * Repeatedly subscribe to an observable every `delay` milliseconds, waiting for the observable to
- * complete each time. This is preferable to, say, `Observable.interval(d).switchMap(() => source)`
- * because, in the case that `source` takes longer than `d` milliseconds to produce a value, that
- * formulation will never produce a value (while continuing to incur the overhead of subscribing to
- * source).
- *
- * Example:
- *
- *    // Ask what time it is every second until it's Friday.
- *    runCommand('date')
- *      .let(poll(1000))
- *      .filter(output => output.startsWith('Fri'))
- *      .take(1)
- *      .subscribe(() => {
- *        console.log("IT'S FRIDAY!!")
- *      });
- *
- */
-export function poll<T>(delay: number): (Observable<T>) => Observable<T> {
-  return (source: Observable<T>) =>
-    Observable.defer(() => {
-      const delays = new Subject();
-      return delays
-        .switchMap(n => Observable.timer(n))
-        .merge(Observable.of(null))
-        .switchMap(() => {
-          const subscribedAt = Date.now();
-          return source.do({
-            complete: () => {
-              const timeElapsed = Date.now() - subscribedAt;
-              delays.next(Math.max(0, delay - timeElapsed));
-            },
-          });
-        });
+exports.SingletonExecutor = SingletonExecutor; /**
+                                                * Repeatedly subscribe to an observable every `delay` milliseconds, waiting for the observable to
+                                                * complete each time. This is preferable to, say, `Observable.interval(d).switchMap(() => source)`
+                                                * because, in the case that `source` takes longer than `d` milliseconds to produce a value, that
+                                                * formulation will never produce a value (while continuing to incur the overhead of subscribing to
+                                                * source).
+                                                *
+                                                * Example:
+                                                *
+                                                *    // Ask what time it is every second until it's Friday.
+                                                *    runCommand('date')
+                                                *      .let(poll(1000))
+                                                *      .filter(output => output.startsWith('Fri'))
+                                                *      .take(1)
+                                                *      .subscribe(() => {
+                                                *        console.log("IT'S FRIDAY!!")
+                                                *      });
+                                                *
+                                                */
+
+function poll(delay) {
+  return source => _rxjsBundlesRxMinJs.Observable.defer(() => {
+    const delays = new _rxjsBundlesRxMinJs.Subject();
+    return delays.switchMap(n => _rxjsBundlesRxMinJs.Observable.timer(n)).merge(_rxjsBundlesRxMinJs.Observable.of(null)).switchMap(() => {
+      const subscribedAt = Date.now();
+      return source.do({
+        complete: () => {
+          const timeElapsed = Date.now() - subscribedAt;
+          delays.next(Math.max(0, delay - timeElapsed));
+        }
+      });
     });
+  });
 }

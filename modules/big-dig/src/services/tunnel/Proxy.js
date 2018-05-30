@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Proxy = undefined;
+
+var _net = _interopRequireDefault(require('net'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,40 +23,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Observable, Subscription} from 'rxjs';
-import type {TunnelMessage} from './types.js';
+const logger = (0, (_log4js || _load_log4js()).getLogger)('tunnel-proxy');
 
-import net from 'net';
+class Proxy {
 
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-
-const logger = getLogger('tunnel-proxy');
-
-export type Transport = {
-  send(string): void,
-  onMessage(): Observable<string>,
-};
-
-export class Proxy {
-  _localPort: number;
-  _remotePort: number;
-  _transport: Transport;
-  _server: ?net.Server;
-  _subscription: ?Subscription;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
-
-  constructor(
-    tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    transport: Transport,
-  ) {
+  constructor(tunnelId, localPort, remotePort, transport) {
     this._tunnelId = tunnelId;
     this._localPort = localPort;
     this._remotePort = remotePort;
@@ -49,26 +41,21 @@ export class Proxy {
     this._socketByClientId = new Map();
   }
 
-  static async createProxy(
-    tunnelId: string,
-    localPort: number,
-    remotePort: number,
-    transport: Transport,
-  ): Promise<Proxy> {
+  static async createProxy(tunnelId, localPort, remotePort, transport) {
     const proxy = new Proxy(tunnelId, localPort, remotePort, transport);
     await proxy.startListening();
 
     return proxy;
   }
 
-  async startListening(): Promise<void> {
+  async startListening() {
     return new Promise((resolve, reject) => {
-      this._server = net.createServer(socket => {
-        const clientId: number = socket.remotePort;
+      this._server = _net.default.createServer(socket => {
+        const clientId = socket.remotePort;
         this._socketByClientId.set(clientId, socket);
         this._sendMessage({
           event: 'connection',
-          clientId,
+          clientId
         });
 
         socket.on('data', arg => {
@@ -76,7 +63,7 @@ export class Proxy {
           this._sendMessage({
             event: 'data',
             arg: arg.toString('base64'),
-            clientId,
+            clientId
           });
         });
 
@@ -87,47 +74,58 @@ export class Proxy {
             this._sendMessage({
               event,
               arg,
-              clientId,
+              clientId
             });
           });
         });
       });
 
-      this._server.listen({port: this._localPort}, () => {
+      this._server.listen({ port: this._localPort }, () => {
         // send a message to create the connection manager
         this._sendMessage({
           event: 'proxyCreated',
           port: this._localPort,
-          remotePort: this._remotePort,
+          remotePort: this._remotePort
         });
         resolve();
       });
     });
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  receive(msg: TunnelMessage): void {
+  receive(msg) {
     logger.warn('in proxy, got message');
     const clientId = msg.clientId;
-    invariant(clientId != null);
+
+    if (!(clientId != null)) {
+      throw new Error('Invariant violation: "clientId != null"');
+    }
+
     const socket = this._socketByClientId.get(clientId);
-    invariant(socket);
+
+    if (!socket) {
+      throw new Error('Invariant violation: "socket"');
+    }
+
     const arg = msg.arg;
-    invariant(arg != null);
+
+    if (!(arg != null)) {
+      throw new Error('Invariant violation: "arg != null"');
+    }
 
     if (msg.event === 'data') {
       socket.write(Buffer.from(arg, 'base64'));
     }
   }
 
-  _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(JSON.stringify({tunnelId: this._tunnelId, ...msg}));
+  _sendMessage(msg) {
+    this._transport.send(JSON.stringify(Object.assign({ tunnelId: this._tunnelId }, msg)));
   }
 
-  close(): void {
+  close() {
     if (this._server != null) {
       this._server.close();
       this._server = null;
@@ -140,6 +138,7 @@ export class Proxy {
       socket.end();
     });
 
-    this._sendMessage({event: 'proxyClosed'});
+    this._sendMessage({ event: 'proxyClosed' });
   }
 }
+exports.Proxy = Proxy;

@@ -1,3 +1,31 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteSocket = undefined;
+exports.createTunnel = createTunnel;
+exports.tunnelDescription = tunnelDescription;
+exports.shortenHostname = shortenHostname;
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _net = _interopRequireDefault(require('net'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,33 +33,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {ResolvedTunnel} from 'nuclide-adb/lib/types';
-import type {Connection, ConnectionFactory} from './Connection';
-import type {SocketEvent, IRemoteSocket} from './types.js';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {getLogger} from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ConnectableObservable, Observable} from 'rxjs';
-
-import net from 'net';
 
 const LOG_DELTA = 500000; // log for every half megabyte of transferred data
 const DEBUG_VERBOSE = false;
 
 const activeTunnels = new Map();
 
-export function createTunnel(
-  t: ResolvedTunnel,
-  cf: ConnectionFactory,
-): ConnectableObservable<SocketEvent> {
+function createTunnel(t, cf) {
   const logStatsIfNecessary = getStatLogger(LOG_DELTA);
-  let bytesReceived: number = 0;
-  let bytesWritten: number = 0;
+  let bytesReceived = 0;
+  let bytesWritten = 0;
 
   // We check if a tunnel already exists listening to the same port, if it
   // does we stop it so this one can take precedence. The onus on managing
@@ -40,30 +54,26 @@ export function createTunnel(
   const tunnelKey = `${shortenHostname(t.from.host)}:${t.from.port}`;
   const existingTunnel = activeTunnels.get(tunnelKey);
   if (existingTunnel) {
-    trace(
-      `Tunnel: Stopping existing tunnel -- ${tunnelDescription(
-        existingTunnel.tunnel,
-      )}`,
-    );
+    trace(`Tunnel: Stopping existing tunnel -- ${tunnelDescription(existingTunnel.tunnel)}`);
     existingTunnel.dispose();
   }
 
-  return Observable.create(observer => {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     const tunnel = t;
     trace(`Tunnel: creating tunnel -- ${tunnelDescription(tunnel)}`);
 
-    const {port, family} = tunnel.from;
-    const connections: Map<number, Promise<Connection>> = new Map();
+    const { port, family } = tunnel.from;
+    const connections = new Map();
 
     // set up server to start listening for connections
     // on client_connected
-    const listener: net.Server = net.createServer(async socket => {
+    const listener = _net.default.createServer(async socket => {
       const clientPort = socket.remotePort;
 
       if (DEBUG_VERBOSE) {
         trace('Tunnel: client connected on remote port ' + clientPort);
       }
-      observer.next({type: 'client_connected', clientPort});
+      observer.next({ type: 'client_connected', clientPort });
 
       // create outgoing connection using connection factory
       const localSocket = new LocalSocket(socket);
@@ -84,16 +94,12 @@ export function createTunnel(
 
       if (DEBUG_VERBOSE) {
         socket.on('end', () => {
-          trace(
-            `Tunnel: end (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
-          );
+          trace(`Tunnel: end (port: ${clientPort}, ${tunnelDescription(tunnel)})`);
         });
       }
 
       socket.on('error', err => {
-        trace(
-          `Tunnel: error (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
-        );
+        trace(`Tunnel: error (port: ${clientPort}, ${tunnelDescription(tunnel)})`);
         trace(`Tunnel: error (server: ${port}, client: ${clientPort}): ${err}`);
         socket.destroy(err);
       });
@@ -111,15 +117,13 @@ export function createTunnel(
       socket.on('close', () => {
         // on client_disconnect remove and dispose the connection
         if (DEBUG_VERBOSE) {
-          trace(
-            `Tunnel: close (port: ${clientPort}, ${tunnelDescription(tunnel)})`,
-          );
+          trace(`Tunnel: close (port: ${clientPort}, ${tunnelDescription(tunnel)})`);
         }
         connectionPromise.then(connection => {
           connection.dispose();
           connections.delete(clientPort);
         });
-        observer.next({type: 'client_disconnected', clientPort});
+        observer.next({ type: 'client_disconnected', clientPort });
       });
     });
 
@@ -128,40 +132,36 @@ export function createTunnel(
       observer.error(err);
     });
 
-    listener.listen({host: family === 6 ? '::' : '0.0.0.0', port}, () => {
+    listener.listen({ host: family === 6 ? '::' : '0.0.0.0', port }, () => {
       trace('Tunnel: server listening on port ' + port);
-      observer.next({type: 'server_started'});
+      observer.next({ type: 'server_started' });
     });
 
     const dispose = () => {
       trace(`Tunnel: shutting down tunnel ${tunnelDescription(tunnel)}`);
-      connections.forEach(connectionPromise =>
-        connectionPromise.then(conn => {
-          conn.dispose();
-        }),
-      );
+      connections.forEach(connectionPromise => connectionPromise.then(conn => {
+        conn.dispose();
+      }));
       connections.clear();
       cf.dispose();
       listener.close();
       activeTunnels.delete(tunnelKey);
     };
 
-    activeTunnels.set(tunnelKey, {dispose, tunnel});
+    activeTunnels.set(tunnelKey, { dispose, tunnel });
 
     return dispose;
   }).publish();
 }
 
-export function tunnelDescription(tunnel: ResolvedTunnel) {
-  return `${shortenHostname(tunnel.from.host)}:${
-    tunnel.from.port
-  }->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
+function tunnelDescription(tunnel) {
+  return `${shortenHostname(tunnel.from.host)}:${tunnel.from.port}->${shortenHostname(tunnel.to.host)}:${tunnel.to.port}`;
 }
 
-export function shortenHostname(host: NuclideUri): string {
+function shortenHostname(host) {
   let result = host;
-  if (nuclideUri.isRemote(result)) {
-    result = nuclideUri.getHostname(result);
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(result)) {
+    result = (_nuclideUri || _load_nuclideUri()).default.getHostname(result);
   }
   if (result.endsWith('.facebook.com')) {
     result = result.slice(0, result.length - '.facebook.com'.length);
@@ -176,47 +176,45 @@ export function shortenHostname(host: NuclideUri): string {
 }
 
 class LocalSocket {
-  _socket: net.Socket;
-  _writeListener: (byteCount: number) => void;
 
-  constructor(socket: net.Socket) {
+  constructor(socket) {
     this._socket = socket;
-    this._writeListener = (byteCount: number) => {};
+    this._writeListener = byteCount => {};
   }
 
-  onWrite(listener: (byteCount: number) => void) {
+  onWrite(listener) {
     this._writeListener = listener;
   }
 
-  write(data: Buffer): void {
+  write(data) {
     this._socket.write(data);
     this._writeListener(data.length);
   }
 
-  end(): void {
+  end() {
     this._socket.end();
   }
 }
 
-export class RemoteSocket implements IRemoteSocket {
-  _socket: LocalSocket | net.Socket;
+class RemoteSocket {
 
-  constructor(socket: LocalSocket | net.Socket) {
+  constructor(socket) {
     this._socket = socket;
   }
 
-  write(data: Buffer): void {
+  write(data) {
     this._socket.write(data);
   }
 
-  dispose(): void {
+  dispose() {
     this._socket.end();
   }
 }
 
-function getStatLogger(delta): (number, number) => void {
-  let lastLoggedBytes: number = 0;
-  return (bytesWritten: number, bytesReceived: number): void => {
+exports.RemoteSocket = RemoteSocket;
+function getStatLogger(delta) {
+  let lastLoggedBytes = 0;
+  return (bytesWritten, bytesReceived) => {
     const totalBytes = bytesWritten + bytesReceived;
     if (totalBytes > lastLoggedBytes + delta) {
       lastLoggedBytes = totalBytes;
@@ -225,16 +223,10 @@ function getStatLogger(delta): (number, number) => void {
   };
 }
 
-function logStats(
-  bytesWritten: number,
-  bytesReceived: number,
-  totalBytes: number,
-): void {
-  trace(
-    `Tunnel: ${totalBytes} bytes transferred; ${bytesWritten} written, ${bytesReceived} received`,
-  );
+function logStats(bytesWritten, bytesReceived, totalBytes) {
+  trace(`Tunnel: ${totalBytes} bytes transferred; ${bytesWritten} written, ${bytesReceived} received`);
 }
 
-function trace(message: string) {
-  getLogger('SocketService').trace(message);
+function trace(message) {
+  (0, (_log4js || _load_log4js()).getLogger)('SocketService').trace(message);
 }

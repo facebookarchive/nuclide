@@ -1,3 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDeploymentTargetPreference = getDeploymentTargetPreference;
+exports.selectValidDeploymentTarget = selectValidDeploymentTarget;
+exports.getPlatformProviderUiForDeploymentTarget = getPlatformProviderUiForDeploymentTarget;
+exports.formatDeploymentTarget = formatDeploymentTarget;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,54 +14,31 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {
-  AppState,
-  DeploymentTarget,
-  Device,
-  DeviceGroup,
-  Platform,
-  PlatformGroup,
-  PlatformProviderUi,
-} from './types';
-
-import invariant from 'assert';
-
-type PreferredNames = {
-  platformGroupName: ?string,
-  platformName: ?string,
-  deviceGroupName: ?string,
-  deviceName: ?string,
-};
-
-export function getDeploymentTargetPreference(state: AppState): PreferredNames {
-  const target =
-    state.userSelectedDeploymentTarget || state.selectedDeploymentTarget;
+function getDeploymentTargetPreference(state) {
+  const target = state.userSelectedDeploymentTarget || state.selectedDeploymentTarget;
   // If a deployment target exists, that's our first choice, otherwise look at the last session
   if (target != null) {
     return {
       platformGroupName: target.platformGroup.name,
       platformName: target.platform.name,
       deviceGroupName: target.deviceGroup ? target.deviceGroup.name : null,
-      deviceName: target.device ? target.device.name : null,
+      deviceName: target.device ? target.device.name : null
     };
   } else {
     return {
       platformGroupName: state.lastSessionPlatformGroupName,
       platformName: state.lastSessionPlatformName,
       deviceGroupName: state.lastSessionDeviceGroupName,
-      deviceName: state.lastSessionDeviceName,
+      deviceName: state.lastSessionDeviceName
     };
   }
 }
 
-export function selectValidDeploymentTarget(
-  preferred: PreferredNames,
-  platformGroups: Array<PlatformGroup>,
-): ?DeploymentTarget {
+function selectValidDeploymentTarget(preferred, platformGroups) {
   if (platformGroups.length === 0) {
     return null;
   }
@@ -60,43 +46,34 @@ export function selectValidDeploymentTarget(
   let result;
   result = getPreferred(platformGroups, preferred.platformGroupName, false);
   const platformGroup = result.value;
-  invariant(platformGroup);
-  result = getPreferred(
-    platformGroup.platforms,
-    preferred.platformName,
-    result.skipRest,
-  );
+
+  if (!platformGroup) {
+    throw new Error('Invariant violation: "platformGroup"');
+  }
+
+  result = getPreferred(platformGroup.platforms, preferred.platformName, result.skipRest);
   const platform = result.value;
-  invariant(platform);
-  result = platform.isMobile
-    ? getPreferred(
-        platform.deviceGroups,
-        preferred.deviceGroupName,
-        result.skipRest,
-      )
-    : null;
+
+  if (!platform) {
+    throw new Error('Invariant violation: "platform"');
+  }
+
+  result = platform.isMobile ? getPreferred(platform.deviceGroups, preferred.deviceGroupName, result.skipRest) : null;
   const deviceGroup = result != null ? result.value : null;
-  result =
-    result != null && deviceGroup != null
-      ? getPreferred(deviceGroup.devices, preferred.deviceName, result.skipRest)
-      : null;
+  result = result != null && deviceGroup != null ? getPreferred(deviceGroup.devices, preferred.deviceName, result.skipRest) : null;
   const device = result && result.value;
 
   return {
     platformGroup,
     platform,
     deviceGroup,
-    device,
+    device
   };
 }
 
-function getPreferred<T: PlatformGroup | Platform | DeviceGroup | Device>(
-  groups: Array<T>,
-  name: ?string,
-  chooseFirst: boolean,
-): {value: ?T, skipRest: boolean} {
+function getPreferred(groups, name, chooseFirst) {
   if (groups.length === 0) {
-    return {value: null, skipRest: true};
+    return { value: null, skipRest: true };
   }
   let match;
   // We want === in case of an empty string
@@ -113,35 +90,22 @@ function getPreferred<T: PlatformGroup | Platform | DeviceGroup | Device>(
   } else {
     skipRest = false;
   }
-  return {value: match, skipRest};
+  return { value: match, skipRest };
 }
 
-export function getPlatformProviderUiForDeploymentTarget(
-  deploymentTarget: ?DeploymentTarget,
-): ?PlatformProviderUi {
-  if (
-    deploymentTarget == null ||
-    !deploymentTarget.platform.isMobile ||
-    deploymentTarget.platform.extraUiWhenSelected == null
-  ) {
+function getPlatformProviderUiForDeploymentTarget(deploymentTarget) {
+  if (deploymentTarget == null || !deploymentTarget.platform.isMobile || deploymentTarget.platform.extraUiWhenSelected == null) {
     return null;
   }
   return deploymentTarget.platform.extraUiWhenSelected(deploymentTarget.device);
 }
 
-export function formatDeploymentTarget(
-  deploymentTarget: ?DeploymentTarget,
-): string {
+function formatDeploymentTarget(deploymentTarget) {
   if (deploymentTarget == null) {
     return '';
   }
-  const {device, deviceGroup, platform, platformGroup} = deploymentTarget;
+  const { device, deviceGroup, platform, platformGroup } = deploymentTarget;
   const deviceString = device != null ? `: ${device.name}` : '';
-  const deviceGroupString =
-    deviceGroup != null && deviceGroup.name !== ''
-      ? ` (${deviceGroup.name})`
-      : '';
-  return `${platformGroup.name} ${
-    platform.name
-  }${deviceString}${deviceGroupString}`;
+  const deviceGroupString = deviceGroup != null && deviceGroup.name !== '' ? ` (${deviceGroup.name})` : '';
+  return `${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}`;
 }

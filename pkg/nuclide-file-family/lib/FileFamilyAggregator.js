@@ -1,54 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {
-  FileGraph,
-  FileFamilyProvider,
-  Relation,
-  RelatedFile,
-  FileMap,
-} from './types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {setUnion} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _collection;
 
-export default class FileFamilyAggregator {
-  _disposables: UniversalDisposable;
-  _providers: Set<FileFamilyProvider>;
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
 
-  constructor(providers: Observable<Set<FileFamilyProvider>>) {
-    this._disposables = new UniversalDisposable(
-      providers.subscribe(providersValue => (this._providers = providersValue)),
-    );
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class FileFamilyAggregator {
+
+  constructor(providers) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(providers.subscribe(providersValue => this._providers = providersValue));
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  async getRelatedFiles(path: NuclideUri): Promise<FileGraph> {
-    const allRelatedFiles = await Promise.all(
-      [...this._providers].map(provider => provider.getRelatedFiles(path)),
-    );
+  async getRelatedFiles(path) {
+    const allRelatedFiles = await Promise.all([...this._providers].map(provider => provider.getRelatedFiles(path)));
 
     const allFiles = new Map();
     const directedAdjacencyMatrix = new Map();
     const undirectedAdjacencyMatrix = new Map();
 
-    allRelatedFiles.forEach(({files, relations}) => {
-      files.forEach((fileData, filePath) =>
-        addRelatedFiletoFileMap(filePath, fileData, allFiles),
-      );
+    allRelatedFiles.forEach(({ files, relations }) => {
+      files.forEach((fileData, filePath) => addRelatedFiletoFileMap(filePath, fileData, allFiles));
 
       // Combine labels for all directed relations with identical from and to fields
       // Also combine labels for all undirected relations, regardless of from and to
@@ -62,7 +50,7 @@ export default class FileFamilyAggregator {
               from: relation.to,
               to: relation.from,
               labels: relation.labels,
-              directed: relation.directed,
+              directed: relation.directed
             };
             addRelationToAdjacencyMatrix(reverse, undirectedAdjacencyMatrix);
           } else {
@@ -73,25 +61,28 @@ export default class FileFamilyAggregator {
     });
 
     const allRelations = [];
-    directedAdjacencyMatrix.forEach(map =>
-      map.forEach(relation => allRelations.push(relation)),
-    );
-    undirectedAdjacencyMatrix.forEach(map =>
-      map.forEach(relation => allRelations.push(relation)),
-    );
+    directedAdjacencyMatrix.forEach(map => map.forEach(relation => allRelations.push(relation)));
+    undirectedAdjacencyMatrix.forEach(map => map.forEach(relation => allRelations.push(relation)));
 
     return {
       files: allFiles,
-      relations: allRelations,
+      relations: allRelations
     };
   }
 }
 
-function addRelatedFiletoFileMap(
-  filePath: NuclideUri,
-  fileData: RelatedFile,
-  fileMap: FileMap,
-): void {
+exports.default = FileFamilyAggregator; /**
+                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                         * All rights reserved.
+                                         *
+                                         * This source code is licensed under the license found in the LICENSE file in
+                                         * the root directory of this source tree.
+                                         *
+                                         * 
+                                         * @format
+                                         */
+
+function addRelatedFiletoFileMap(filePath, fileData, fileMap) {
   const existingFileData = fileMap.get(filePath);
   if (existingFileData == null) {
     fileMap.set(filePath, fileData);
@@ -99,28 +90,22 @@ function addRelatedFiletoFileMap(
   }
 
   const newFileData = {};
-  newFileData.labels = setUnion(existingFileData.labels, fileData.labels);
+  newFileData.labels = (0, (_collection || _load_collection()).setUnion)(existingFileData.labels, fileData.labels);
   if (existingFileData.exists != null || fileData.exists != null) {
     // We want to optimistically trust any provider that says the file exists
     // i.e., true > false > undefined
-    newFileData.exists =
-      Boolean(existingFileData.exists) || Boolean(fileData.exists);
+    newFileData.exists = Boolean(existingFileData.exists) || Boolean(fileData.exists);
   }
   if (existingFileData.creatable != null || fileData.creatable != null) {
     // We want to trust that any provider saying that a file is not creatable
     // knows what it's talking about
     // i.e., false > true > undefined
-    newFileData.creatable = !(
-      existingFileData.creatable === false || fileData.creatable === false
-    );
+    newFileData.creatable = !(existingFileData.creatable === false || fileData.creatable === false);
   }
   fileMap.set(filePath, newFileData);
 }
 
-function addRelationToAdjacencyMatrix(
-  relation: Relation,
-  adjacencyMatrix: Map<NuclideUri, Map<NuclideUri, Relation>>,
-): void {
+function addRelationToAdjacencyMatrix(relation, adjacencyMatrix) {
   const existingRelationFrom = adjacencyMatrix.get(relation.from);
   if (existingRelationFrom == null) {
     adjacencyMatrix.set(relation.from, new Map([[relation.to, relation]]));
@@ -135,8 +120,8 @@ function addRelationToAdjacencyMatrix(
   const combinedRelation = {
     from: relation.from,
     to: relation.to,
-    labels: setUnion(relation.labels, existingRelationTo.labels),
-    directed: relation.directed,
+    labels: (0, (_collection || _load_collection()).setUnion)(relation.labels, existingRelationTo.labels),
+    directed: relation.directed
   };
   existingRelationFrom.set(relation.to, combinedRelation);
 }
