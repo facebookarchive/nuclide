@@ -13,7 +13,7 @@
 import type {Observable} from 'rxjs';
 import type {ReliableSocket} from '../socket/ReliableSocket';
 import type {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
-import type {Tunnel} from '../services/tunnel/TunnelManager';
+import type {Tunnel} from '../services/tunnel/Tunnel';
 
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
