@@ -24,6 +24,7 @@ import {Observable, Subject} from 'rxjs';
 import idx from 'idx';
 import invariant from 'assert';
 import {track, trackTiming} from 'nuclide-commons/analytics';
+import uuid from 'uuid';
 
 export interface AdapterExitedEvent extends DebugProtocol.DebugEvent {
   event: 'adapter-exited';
@@ -96,7 +97,11 @@ export default class VsDebugSession extends V8Protocol {
     this._logger = logger;
     this._readyForBreakpoints = false;
     this._spawner = spawner == null ? new VsAdapterSpawner() : spawner;
-    this._adapterAnalyticsExtras = {...adapterAnalyticsExtras};
+    this._adapterAnalyticsExtras = {
+      ...adapterAnalyticsExtras,
+      // $FlowFixMe flow doesn't consider uuid callable, but it is
+      debuggerSessionId: uuid(),
+    };
 
     this._onDidInitialize = new Subject();
     this._onDidStop = new Subject();
