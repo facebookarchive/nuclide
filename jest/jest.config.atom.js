@@ -25,7 +25,7 @@ module.exports = {
   transform: {
     '\\.js$': '<rootDir>/xplat/nuclide/modules/nuclide-jest/jestTransformer.js',
   },
-  setupFiles: [],
+  setupTestFrameworkScriptFile: '<rootDir>/xplat/nuclide/jest/setupTestFrameworkScriptFile.atom.js',
   testPathIgnorePatterns: ['/node_modules/'],
   runner: path.resolve(__dirname, '../modules/jest-atom-runner/build/index.js'),
   moduleNameMapper: {

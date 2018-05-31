@@ -12,17 +12,29 @@
 
 /* eslint-disable nuclide-internal/no-commonjs */
 
-import JSDom from 'jest-environment-jsdom';
+import mock from 'jest-mock';
 
-class Atom extends JSDom {
+class Atom {
+  global: Object;
+  moduleMocker: Object;
+
   constructor(...args: any) {
-    super(...args);
-    this.global.atom = global.atom;
+    this.global = global;
+    this.moduleMocker = new mock.ModuleMocker(global);
   }
 
   async setup() {
-    await super.setup();
     await this.global.atom.reset();
+  }
+
+  async teardown() {}
+
+  runScript(script: any): ?any {
+    // unfortunately electron clashes if we try to access anything
+    // on global from within a vm content. The only workaround i found
+    // is to lose sandboxing and run everything in a single context.
+    // We should look into using iframes/webviews in the future.
+    return script.runInThisContext();
   }
 }
 

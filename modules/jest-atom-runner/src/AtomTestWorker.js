@@ -113,6 +113,16 @@ class AtomTestWorker {
       this._childProcess = spawn('atom', ['-t', atomPathArg], {
         stdio: ['inherit', 'inherit', 'inherit'],
       });
+
+      const crash = error => {
+        for (const {reject} of this._runningTests.values()) {
+          reject(error);
+        }
+      };
+      this._childProcess.on('error', crash);
+      this._childProcess.on('close', code => {
+        crash(new Error(`child process exited with code: ${code}`));
+      });
     });
   }
 
