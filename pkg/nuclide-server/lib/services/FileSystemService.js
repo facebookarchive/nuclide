@@ -133,6 +133,17 @@ export async function readdir(
 }
 
 /**
+ * Sorts the result of readdir() by alphabetical order (case-insensitive).
+ */
+export async function readdirSorted(
+  path: NuclideUri,
+): Promise<Array<DirectoryEntry>> {
+  return (await ROOT_FS.readdir(path)).sort((a, b) => {
+    return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
+  });
+}
+
+/**
  * Gets the real path of a file path.
  * It could be different than the given path if the file is a symlink
  * or exists in a symlinked directory.

@@ -111,6 +111,17 @@ describe('FileSystemService', () => {
     });
   });
 
+  it('can readdirSorted', () => {
+    waitsForPromise(async () => {
+      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+      fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
+      const entries = await service.readdirSorted(pathToTestDir);
+      expect(entries.length).toBe(2); // Skips broken link
+      expect(entries[0]).toEqual(['testfile.txt', true, false]);
+      expect(entries[1]).toEqual(['testfile.txt.2', true, true]);
+    });
+  });
+
   it('can lstat', () => {
     waitsForPromise(async () => {
       fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');

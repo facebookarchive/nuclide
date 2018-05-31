@@ -308,7 +308,7 @@ export class RemoteDirectory {
   ): Promise<void> {
     let entries;
     try {
-      entries = await this._getFileSystemService().readdir(this._uri);
+      entries = await this._getFileSystemService().readdirSorted(this._uri);
     } catch (e) {
       callback(e, null);
       return;
@@ -316,28 +316,24 @@ export class RemoteDirectory {
 
     const directories: Array<RemoteDirectory> = [];
     const files = [];
-    entries
-      .sort((a, b) => {
-        return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
-      })
-      .forEach(entry => {
-        const [name, isFile, symlink] = entry;
-        const uri = nuclideUri.createRemoteUri(
-          this._host,
-          this._joinLocalPath(name),
+    entries.forEach(entry => {
+      const [name, isFile, symlink] = entry;
+      const uri = nuclideUri.createRemoteUri(
+        this._host,
+        this._joinLocalPath(name),
+      );
+      if (isFile) {
+        files.push(this._server.createFile(uri, symlink));
+      } else {
+        directories.push(
+          this._server.createDirectory(
+            uri,
+            this._hgRepositoryDescription,
+            symlink,
+          ),
         );
-        if (isFile) {
-          files.push(this._server.createFile(uri, symlink));
-        } else {
-          directories.push(
-            this._server.createDirectory(
-              uri,
-              this._hgRepositoryDescription,
-              symlink,
-            ),
-          );
-        }
-      });
+      }
+    });
     callback(null, directories.concat(files));
   }
 
