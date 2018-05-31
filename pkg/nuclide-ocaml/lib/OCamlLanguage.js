@@ -37,6 +37,11 @@ async function createOCamlLanguageService(
     'DEBUG',
   );
 
+  let ocpindent = featureConfig.get('nuclide-ocaml.pathToOcpIndent');
+  if (typeof ocpindent !== 'string' || ocpindent === '') {
+    ocpindent = null;
+  }
+
   const lspService = await service.createMultiLspLanguageService(
     'ocaml',
     'ocaml-language-server',
@@ -64,6 +69,12 @@ async function createOCamlLanguageService(
         format: {
           width: 80,
         },
+        path:
+          ocpindent == null
+            ? undefined
+            : {
+                ocpindent,
+              },
       },
     },
   );

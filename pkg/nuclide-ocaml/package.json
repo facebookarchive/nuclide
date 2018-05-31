@@ -29,6 +29,11 @@
         "type": "string",
         "default": ""
       },
+      "pathToOcpIndent": {
+        "title": "Path to ocp-indent, the OCaml formatter. If no path is given, will use the server default ('ocp-indent')",
+        "type": "string",
+        "default": ""
+      },
       "logLevel": {
         "title": "Log Level",
         "type": "string",
