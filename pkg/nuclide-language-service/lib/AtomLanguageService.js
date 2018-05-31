@@ -14,6 +14,7 @@ import type {LanguageService} from './LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
 import type {OutlineViewConfig} from './OutlineViewProvider';
+import type {StatusConfig} from './StatusProvider';
 import type {TypeCoverageConfig} from './TypeCoverageProvider';
 import type {DefinitionConfig} from './DefinitionProvider';
 import type {TypeHintConfig} from './TypeHintProvider';
@@ -35,6 +36,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {LanguageAdditionalLogFilesProvider} from './AdditionalLogFileProvider';
 import {CodeHighlightProvider} from './CodeHighlightProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
+import {StatusProvider} from './StatusProvider';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {DefinitionProvider} from './DefinitionProvider';
 import {TypeHintProvider} from './TypeHintProvider';
@@ -66,6 +68,7 @@ export type AtomLanguageServiceConfig = {|
   codeAction?: CodeActionConfig,
   signatureHelp?: SignatureHelpConfig,
   syntacticSelection?: SyntacticSelectionConfig,
+  status?: StatusConfig,
 |};
 
 export class AtomLanguageService<T: LanguageService> {
@@ -265,6 +268,18 @@ export class AtomLanguageService<T: LanguageService> {
           this._config.name,
           this._config.grammars,
           syntacticSelection,
+          this._connectionToLanguageService,
+        ),
+      );
+    }
+
+    const status = this._config.status;
+    if (status != null) {
+      this._subscriptions.add(
+        StatusProvider.register(
+          this._config.name,
+          this._config.grammars,
+          status,
           this._connectionToLanguageService,
         ),
       );
