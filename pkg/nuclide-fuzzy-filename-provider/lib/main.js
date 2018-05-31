@@ -111,10 +111,12 @@ class Activation {
     // It doesn't matter what the search term is. Empirically, doing an initial
     // search speeds up the next search much more than simply doing the setup
     // kicked off by 'fileSearchForDirectory'.
+    //
+    // We use an unlikely queryString so it is easy to filter out from metrics.
     try {
       await service.queryFuzzyFile({
         rootDirectory: projectPath,
-        queryString: 'a',
+        queryString: '^^^',
         ignoredNames: getIgnoredNames(),
         preferCustomSearch: Boolean(isGkEnabled('nuclide_prefer_myles_search')),
       });
