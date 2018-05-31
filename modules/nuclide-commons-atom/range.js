@@ -11,6 +11,7 @@
  */
 
 import {Range} from 'atom';
+import invariant from 'assert';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 
 /**
@@ -74,4 +75,59 @@ export function trimRange(
     stop();
   });
   return new Range(start, end);
+}
+
+function getSingleWordAtPosition(
+  editor: atom$TextEditor,
+  position: atom$Point,
+): ?string {
+  const match = wordAtPosition(editor, position);
+  // We should only receive a single identifier from a single point.
+  if (match == null || match.wordMatch.length !== 1) {
+    return null;
+  }
+
+  return match.wordMatch[0];
+}
+
+/**
+ * Gets the word being right-clicked on in a MouseEvent. A good use case for
+ * this is performing an action on a word from a context menu.
+ *
+ * @param editor  the editor containing the word where the MouseEvent occurred
+ *   from
+ * @param event   the MouseEvent containing the screen position of the click
+ */
+export function getWordFromMouseEvent(
+  editor: atom$TextEditor,
+  event: MouseEvent,
+): ?string {
+  // We can't immediately get the identifier right-clicked on from
+  // the MouseEvent. Using its target element content would work in
+  // some cases but wouldn't work if there was additional content
+  // in the same element, such as in a comment.
+  const component = editor.getElement().component;
+  invariant(component);
+  // This solution doesn't feel ideal but it is the way hyperclick does it.
+  const point = component.screenPositionForMouseEvent(event);
+  return getSingleWordAtPosition(editor, point);
+}
+
+/**
+ * Attempts to get a word from the last selection or cursor. A good use case for
+ * this is performing an action on an 'active' word after a command is triggered
+ * via a keybinding.
+ *
+ * @param editor  the editor containing the 'active' word when the keybinding is
+ *   triggered
+ */
+export function getWordFromCursorOrSelection(editor: atom$TextEditor): ?string {
+  const selection = editor.getSelectedText();
+  if (selection && selection.length > 0) {
+    return selection;
+  }
+
+  // There was no selection so we can go ahead and try the cursor position.
+  const point = editor.getCursorScreenPosition();
+  return getSingleWordAtPosition(editor, point);
 }
