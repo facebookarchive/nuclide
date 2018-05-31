@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {LanguageService, StatusData} from './LanguageService';
 
 import {Observable} from 'rxjs';
@@ -21,12 +22,14 @@ export type StatusConfig = {|
   priority: number,
   observeEventName: string,
   clickEventName: string,
+  icon?: IconName,
 |};
 
 export class StatusProvider<T: LanguageService> {
   name: string;
   priority: number;
   grammarScopes: Array<string>;
+  icon: ?IconName;
   _observeEventName: string;
   _clickEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
@@ -38,10 +41,12 @@ export class StatusProvider<T: LanguageService> {
     observeEventName: string,
     clickEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
+    icon?: IconName,
   ) {
     this.name = name;
     this.priority = priority;
     this.grammarScopes = grammars;
+    this.icon = icon;
     this._observeEventName = observeEventName;
     this._clickEventName = clickEventName;
     this._connectionToLanguageService = connectionToLanguageService;

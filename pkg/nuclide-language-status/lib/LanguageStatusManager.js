@@ -15,19 +15,19 @@ import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {TextEditorBanner} from 'nuclide-commons-ui/TextEditorBanner';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject, Observable} from 'rxjs';
+import {Observable, BehaviorSubject} from 'rxjs';
 import StatusComponent from './StatusComponent';
 
 import * as React from 'react';
 
 export class LanguageStatusManager {
   _providerRegistry: ProviderRegistry<LanguageStatusProvider>;
-  _providersChanged: Subject<void>;
+  _providersChanged: BehaviorSubject<void>;
   _disposables: UniversalDisposable;
 
   constructor() {
     this._providerRegistry = new ProviderRegistry();
-    this._providersChanged = new Subject();
+    this._providersChanged = new BehaviorSubject();
     this._disposables = new UniversalDisposable();
     this._disposables.add(
       atom.workspace.observeTextEditors(this._onTextEditor),
@@ -61,23 +61,23 @@ export class LanguageStatusManager {
             return provider
               .observeStatus(editor)
               .startWith({kind: 'null'})
-              .map(statusData => ({
-                name: provider.name,
-                statusData,
+              .map(data => ({
+                provider,
+                data,
               }));
           })
           .reduce(
-            (a, b) => Observable.combineLatest,
-            Observable.of({name: '', statusData: {kind: 'null'}}),
+            (a, b) => Observable.combineLatest(a, b, (x, y) => x.concat(y)),
+            Observable.of([]),
           );
       })
-      .map(serverStatuses => ({serverStatuses}));
+      .map(serverStatuses => ({serverStatuses, editor}));
     const StatusComponentWithProps = bindObservableAsProps(
       props,
       StatusComponent,
     );
     const statusComponentWrapper = new TextEditorBanner(editor);
-    statusComponentWrapper.render(<StatusComponentWithProps />);
+    statusComponentWrapper.renderUnstyled(<StatusComponentWithProps />);
     this._disposables.add(statusComponentWrapper);
     editor.onDidDestroy(() => {
       this._disposables.remove(statusComponentWrapper);

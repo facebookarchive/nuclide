@@ -1,0 +1,100 @@
+@import "ui-variables";
+
+.nuclide-language-status-container {
+  position: absolute;
+  width: 100%;
+  z-index: 99;
+  font-family: @font-family;
+  font-size: @font-size;
+}
+
+.nuclide-language-status-bar-and-dropdown-container {
+  position: relative;
+}
+
+.nuclide-language-status-bar-container {
+  display: flex;
+}
+
+.nuclide-language-status-bar {
+  flex-grow: 1;
+  top: 0px;
+  cursor: default;
+}
+
+.nuclide-language-status-bar-green {
+  border-top: 2px solid @background-color-success;
+}
+
+.nuclide-language-status-bar-green-inactive {
+  border-top: 2px solid mix(@background-color-success, @base-background-color, 50%);
+}
+
+.nuclide-language-status-bar-yellow {
+  border-top: 2px solid @background-color-warning;
+}
+
+.nuclide-language-status-bar-yellow-inactive {
+  border-top: 2px solid mix(@background-color-warning, @base-background-color, 50%);
+}
+
+.nuclide-language-status-bar-red {
+  border-top: 2px solid @background-color-error;
+}
+
+.nuclide-language-status-bar-red-inactive {
+  border-top: 2px solid mix(@background-color-error, @base-background-color, 50%);
+}
+
+.nuclide-language-status-dropdown {
+  position: absolute;
+  right: 0;
+  top: 2px;
+}
+
+.nuclide-language-status-dropdown-item {
+  border-bottom: 1px solid @tab-border-color;
+  border-left: 1px solid @tab-border-color;
+  color: @text-color-selected;
+  padding: 0.25em 1.0em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.nuclide-language-status-dropdown-item-green {
+  background-color: @background-color-success;
+}
+
+.nuclide-language-status-dropdown-item-yellow {
+  background-color: @background-color-warning;
+}
+
+.nuclide-language-status-dropdown-item-red {
+  background-color: @background-color-error;
+}
+
+.nuclide-language-status-icon:before {
+  margin: 0;
+}
+
+.nuclide-language-status-details {
+  width: 100%;
+  padding: 1.0em;
+  cursor: default;
+}
+
+.nuclide-language-status-details-green {
+  background-color: mix(@background-color-success, @pane-item-background-color, 10%);
+}
+
+.nuclide-language-status-details-yellow {
+  background-color: mix(@background-color-warning, @pane-item-background-color, 10%);
+}
+
+.nuclide-language-status-details-red {
+  background-color: mix(@background-color-error, @pane-item-background-color, 10%);
+}
+
+.nuclide-language-status-details-heading {
+  margin-top: 0;
+}

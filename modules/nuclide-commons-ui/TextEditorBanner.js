@@ -85,12 +85,18 @@ export class TextEditorBanner {
       .scrollToCursorPosition();
   }
 
-  render(reactElement: React.Element<any>) {
+  render = (reactElement: React.Element<any>): void => {
+    this.renderUnstyled(
+      <div className="nuclide-ui-text-editor-banner-element">
+        {reactElement}
+      </div>,
+    );
+  };
+
+  renderUnstyled = (reactElement: React.Element<any>): void => {
     ReactDOM.render(
       <div className="nuclide-ui-text-editor-banner">
-        <div className="nuclide-ui-text-editor-banner-element">
-          {reactElement}
-        </div>
+        {reactElement}
         <div
           // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={ref => this._updateTextEditorElement(ref)}
@@ -99,7 +105,7 @@ export class TextEditorBanner {
       </div>,
       this._element,
     );
-  }
+  };
 
   hide() {
     this.dispose();

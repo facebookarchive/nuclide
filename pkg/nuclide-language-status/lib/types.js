@@ -9,13 +9,17 @@
  * @format
  */
 
+import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Observable} from 'rxjs';
 import type {StatusData} from '../../nuclide-language-service/lib/LanguageService';
 
 export type LanguageStatusProvider = {
   name: string,
+  icon: ?IconName,
   grammarScopes: Array<string>,
   priority: number,
 
-  observeStatus(editor: TextEditor): Promise<?Observable<StatusData>>,
+  observeStatus(editor: TextEditor): Observable<StatusData>,
+
+  clickStatus(editor: TextEditor, id: string, button: string): Promise<void>,
 };
