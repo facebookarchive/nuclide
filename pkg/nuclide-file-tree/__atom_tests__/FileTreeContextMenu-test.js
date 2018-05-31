@@ -13,15 +13,16 @@ import invariant from 'assert';
 
 import FileTreeContextMenu from '../lib/FileTreeContextMenu';
 import {EVENT_HANDLER_SELECTOR} from '../lib/FileTreeConstants';
+import waitsFor from '../../../jest/waits_for';
 
 import type {FileTreeContextMenuItem} from '../lib/FileTreeContextMenu';
 
 describe('FileTreeContextMenu', () => {
   let menu: FileTreeContextMenu;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     menu = new FileTreeContextMenu();
-    waitsFor(() => fileTreeItemsOrNull() != null);
+    await waitsFor(() => fileTreeItemsOrNull() != null);
   });
 
   afterEach(() => {
@@ -58,27 +59,25 @@ describe('FileTreeContextMenu', () => {
     expect(new Set(distinct).size).toEqual(distinct.length);
   });
 
-  it('includes Source Control submenu on demand', () => {
+  it('includes Source Control submenu on demand', async () => {
     function includesSourceControl(): boolean {
       return fileTreeItems().some(x => x.label === 'Source Control');
     }
     expect(includesSourceControl()).toBeFalsy();
-    runs(() => menu.addItemToSourceControlMenu(testItem(), 100));
-    waitsFor(() => includesSourceControl());
+    menu.addItemToSourceControlMenu(testItem(), 100);
+    await waitsFor(() => includesSourceControl());
   });
 
-  it('supports addItemToShowInSection', () => {
+  it('supports addItemToShowInSection', async () => {
     const item = testItem();
     const label = item.label;
     invariant(label != null);
-    runs(() => menu.addItemToShowInSection(item, 100));
-    waitsFor(() => fileTreeItems().some(x => x.label === label));
-    runs(() => {
-      const groups = itemGroups(fileTreeItems());
-      expect(getNonNull(groups, label)).toBe(
-        getNonNull(groups, 'Copy Full Path'),
-      );
-    });
+    menu.addItemToShowInSection(item, 100);
+    await waitsFor(() => fileTreeItems().some(x => x.label === label));
+    const groups = itemGroups(fileTreeItems());
+    expect(getNonNull(groups, label)).toBe(
+      getNonNull(groups, 'Copy Full Path'),
+    );
   });
 });
 

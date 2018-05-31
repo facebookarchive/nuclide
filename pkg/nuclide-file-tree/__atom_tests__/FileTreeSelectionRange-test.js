@@ -24,7 +24,7 @@ import {DEFAULT_CONF} from '../lib/FileTreeStore';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import {denodeify} from 'nuclide-commons/promise';
-import {buildTempDirTree} from './helpers/BuildTempDirTree';
+import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
 import tempModule from 'temp';
 tempModule.track();
 const tempCleanup = denodeify(tempModule.cleanup);
@@ -74,19 +74,20 @@ describe('FileTreeSelectionRange', () => {
       const range = new SelectionRange(key1, key2);
       expect(range.anchor().equals(key1)).toBe(true);
       expect(range.range().equals(key2)).toBe(true);
+    });
 
-      describe('factory method', () => {
-        it('properly construct new object based on existing ones', () => {
-          const range2 = range.withNewRange(key2);
-          expect(range2.anchor().equals(key1)).toBe(true);
-          expect(range2.range().equals(key2)).toBe(true);
-          const range3 = range.withNewAnchor(key3);
-          expect(range3.anchor().equals(key3)).toBe(true);
-          expect(range3.range().equals(key2)).toBe(true);
-          const range4 = SelectionRange.ofSingleItem(key2);
-          expect(range4.anchor().equals(key2)).toBe(true);
-          expect(range4.range().equals(key2)).toBe(true);
-        });
+    describe('factory method', () => {
+      it('properly construct new object based on existing ones', () => {
+        const range = new SelectionRange(key1, key2);
+        const range2 = range.withNewRange(key2);
+        expect(range2.anchor().equals(key1)).toBe(true);
+        expect(range2.range().equals(key2)).toBe(true);
+        const range3 = range.withNewAnchor(key3);
+        expect(range3.anchor().equals(key3)).toBe(true);
+        expect(range3.range().equals(key2)).toBe(true);
+        const range4 = SelectionRange.ofSingleItem(key2);
+        expect(range4.anchor().equals(key2)).toBe(true);
+        expect(range4.range().equals(key2)).toBe(true);
       });
     });
 
@@ -118,8 +119,8 @@ describe('FileTreeSelectionRange', () => {
 
     let map: Map<string, string> = new Map();
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
+    beforeEach(async () => {
+      await (async () => {
         map = await prepareFileTree();
         const dir = map.get('dir');
         // flowlint-next-line sketchy-null-string:off
@@ -127,15 +128,15 @@ describe('FileTreeSelectionRange', () => {
         // Await **internal-only** API because the public `expandNodeDeep` API does not
         // return the promise that can be awaited on
         await store._expandNodeDeep(dir, dir);
-      });
+      })();
     });
 
-    afterEach(() => {
-      waitsForPromise(async () => {
+    afterEach(async () => {
+      await (async () => {
         actions.updateWorkingSet(new WorkingSet([]));
         store.reset();
         await tempCleanup();
-      });
+      })();
     });
 
     describe('findSelectedNode', () => {

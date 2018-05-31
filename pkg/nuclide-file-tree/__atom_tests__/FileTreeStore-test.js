@@ -18,10 +18,12 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 import {copyFixture} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import path from 'path';
+import waitsFor from '../../../jest/waits_for';
 
 import {denodeify} from 'nuclide-commons/promise';
 
-import {buildTempDirTree} from './helpers/BuildTempDirTree';
+import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
 
 import tempModule from 'temp';
 tempModule.track();
@@ -45,7 +47,7 @@ describe('FileTreeStore', () => {
   let dir2 = '';
 
   const actions: FileTreeActions = FileTreeActions.getInstance();
-  const store: FileTreeStore = FileTreeStore.getInstance();
+  let store: FileTreeStore = FileTreeStore.getInstance();
 
   /*
    * Trigger the fetch through the **internal-only** API. Enables the
@@ -76,20 +78,19 @@ describe('FileTreeStore', () => {
     return getNode(rootKey, nodeKey).isExpanded;
   }
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
-      const tmpFixturesDir = await copyFixture('.', __dirname);
-      dir1 = nuclideUri.join(tmpFixturesDir, 'dir1/');
-      fooTxt = nuclideUri.join(dir1, 'foo.txt');
-      dir2 = nuclideUri.join(tmpFixturesDir, 'dir2/');
-    });
-  });
-
-  afterEach(() => {
-    waitsForPromise(async () => {
-      store.reset();
-      await tempCleanup();
-    });
+  beforeEach(async () => {
+    store = FileTreeStore.getInstance();
+    store.reset();
+    await tempCleanup();
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+    const tmpFixturesDir = await copyFixture(
+      '.',
+      path.resolve(__dirname, '../__mocks__'),
+    );
+    dir1 = nuclideUri.join(tmpFixturesDir, 'dir1/');
+    fooTxt = nuclideUri.join(dir1, 'foo.txt');
+    dir2 = nuclideUri.join(tmpFixturesDir, 'dir2/');
   });
 
   it('should be initialized with no root keys', () => {
@@ -205,12 +206,10 @@ describe('FileTreeStore', () => {
   });
 
   describe('getRootForPath', () => {
-    beforeEach(() => {
-      waitsForPromise(async () => {
-        actions.setRootKeys([dir1, dir2]);
-        actions.expandNode(dir1, fooTxt);
-        await loadChildKeys(dir1, dir1);
-      });
+    beforeEach(async () => {
+      actions.setRootKeys([dir1, dir2]);
+      actions.expandNode(dir1, fooTxt);
+      await loadChildKeys(dir1, dir1);
     });
 
     it('returns null if path does not belong to any root', () => {
@@ -242,29 +241,30 @@ describe('FileTreeStore', () => {
   });
 
   describe('getChildKeys', () => {
-    it("clears loading and expanded states when there's an error fetching children", () => {
-      waitsForPromise(async () => {
-        spyOn(FileTreeHelpers, 'fetchChildren').andCallFake(() => {
-          return Promise.reject(new Error('This error **should** be thrown.'));
-        });
-
-        actions.setRootKeys([dir1]);
-
-        let node = getNode(dir1, dir1);
-        expect(node.isExpanded).toBe(true);
-        expect(node.isLoading).toBe(true);
-
-        try {
-          await loadChildKeys(dir1, dir1);
-        } catch (e) {
-          // This will always throw an exception, but that's irrelevant to this test. The side
-          // effects after this try/catch capture the purpose of this test.
-        }
-
-        node = getNode(dir1, dir1);
-        expect(node.isExpanded).toBe(false);
-        expect(node.isLoading).toBe(false);
+    it("clears loading and expanded states when there's an error fetching children", async () => {
+      jest.spyOn(FileTreeHelpers, 'fetchChildren').mockImplementation(() => {
+        return Promise.reject(new Error('This error **should** be thrown.'));
       });
+
+      actions.setRootKeys([dir1]);
+
+      let node = getNode(dir1, dir1);
+      expect(node.isExpanded).toBe(true);
+      expect(node.isLoading).toBe(true);
+
+      try {
+        await loadChildKeys(dir1, dir1);
+      } catch (e) {
+        // This will always throw an exception, but that's irrelevant to this test. The side
+        // effects after this try/catch capture the purpose of this test.
+      } finally {
+        // $FlowFixMe
+        FileTreeHelpers.fetchChildren.mockRestore();
+      }
+
+      node = getNode(dir1, dir1);
+      expect(node.isExpanded).toBe(false);
+      expect(node.isLoading).toBe(false);
     });
   });
 
@@ -329,34 +329,30 @@ describe('FileTreeStore', () => {
     });
   });
 
-  it('omits hidden nodes', () => {
-    waitsForPromise(async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setIgnoredNames(['foo.*']);
+  it('omits hidden nodes', async () => {
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setIgnoredNames(['foo.*']);
 
-      await loadChildKeys(dir1, dir1);
+    await loadChildKeys(dir1, dir1);
 
-      expect(shownChildren(dir1, dir1).length).toBe(0);
-    });
+    expect(shownChildren(dir1, dir1).length).toBe(0);
   });
 
-  it('shows nodes if the pattern changes to no longer match', () => {
-    waitsForPromise(async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, fooTxt);
-      actions.setIgnoredNames(['foo.*']);
+  it('shows nodes if the pattern changes to no longer match', async () => {
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, fooTxt);
+    actions.setIgnoredNames(['foo.*']);
 
-      await loadChildKeys(dir1, dir1);
+    await loadChildKeys(dir1, dir1);
 
-      actions.setIgnoredNames(['bar.*']);
+    actions.setIgnoredNames(['bar.*']);
 
-      expect(shownChildren(dir1, dir1).length).toBe(1);
-    });
+    expect(shownChildren(dir1, dir1).length).toBe(1);
   });
 
-  it('obeys the hideIgnoredNames setting', () => {
-    waitsForPromise(async () => {
+  it('obeys the hideIgnoredNames setting', async () => {
+    await (async () => {
       actions.setRootKeys([dir1]);
       actions.expandNode(dir1, fooTxt);
       actions.setIgnoredNames(['foo.*']);
@@ -365,55 +361,55 @@ describe('FileTreeStore', () => {
       await loadChildKeys(dir1, dir1);
 
       expect(shownChildren(dir1, dir1).length).toBe(1);
-    });
+    })();
   });
 
   describe('recovering from failed subscriptions', () => {
-    it('fetches children on re-expansion of failed directories', () => {
-      waitsForPromise(async () => {
-        const unsubscribeableDir = new Directory(dir1);
-        // Force subscription to fail to mimic network failure, etc.
-        spyOn(unsubscribeableDir, 'onDidChange').andCallFake(() => {
-          throw new Error('This error **should** be thrown.');
-        });
-
-        // Return the always-fail directory when it is expanded.
-        spyOn(FileTreeHelpers, 'getDirectoryByKey').andReturn(
-          unsubscribeableDir,
-        );
-
-        actions.setRootKeys([dir1]);
-        actions.expandNode(dir1, dir1);
-        await loadChildKeys(dir1, dir1);
-
-        // Children should load but the subscription should fail.
-        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
-
-        // Add a new file, 'bar.baz', for which the store will not get a notification because
-        // the subscription failed.
-        const barBaz = nuclideUri.join(dir1, 'bar.baz');
-        fs.writeFileSync(barBaz, '');
-        await loadChildKeys(dir1, dir1);
-        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
-
-        // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
-        // whether a subscription is possible.
-        actions.collapseNode(dir1, dir1);
-        actions.expandNode(dir1, dir1);
-        await loadChildKeys(dir1, dir1);
-
-        // The subscription should fail again, but the children should be refetched and match the
-        // changed structure (i.e. include the new 'bar.baz' file).
-        expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([
-          barBaz,
-          fooTxt,
-        ]);
+    it('fetches children on re-expansion of failed directories', async () => {
+      const unsubscribeableDir = new Directory(dir1);
+      // Force subscription to fail to mimic network failure, etc.
+      jest.spyOn(unsubscribeableDir, 'onDidChange').mockImplementation(() => {
+        throw new Error('This error **should** be thrown.');
       });
+
+      // Return the always-fail directory when it is expanded.
+      jest
+        .spyOn(FileTreeHelpers, 'getDirectoryByKey')
+        .mockReturnValue(unsubscribeableDir);
+
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, dir1);
+      await loadChildKeys(dir1, dir1);
+
+      // Children should load but the subscription should fail.
+      expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
+
+      // Add a new file, 'bar.baz', for which the store will not get a notification because
+      // the subscription failed.
+      const barBaz = nuclideUri.join(dir1, 'bar.baz');
+      fs.writeFileSync(barBaz, '');
+      await loadChildKeys(dir1, dir1);
+      expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
+
+      // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
+      // whether a subscription is possible.
+      actions.collapseNode(dir1, dir1);
+      actions.expandNode(dir1, dir1);
+      await loadChildKeys(dir1, dir1);
+
+      // The subscription should fail again, but the children should be refetched and match the
+      // changed structure (i.e. include the new 'bar.baz' file).
+      expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([
+        barBaz,
+        fooTxt,
+      ]);
+      // $FlowFixMe
+      FileTreeHelpers.getDirectoryByKey.mockRestore();
     });
   });
 
-  it('omits vcs-excluded paths', () => {
-    waitsForPromise(async () => {
+  it('omits vcs-excluded paths', async () => {
+    await (async () => {
       actions.setRootKeys([dir1]);
       actions.expandNode(dir1, fooTxt);
       actions.setExcludeVcsIgnoredPaths(true);
@@ -426,11 +422,11 @@ describe('FileTreeStore', () => {
 
       await loadChildKeys(dir1, dir1);
       expect(shownChildren(dir1, dir1).length).toBe(0);
-    });
+    })();
   });
 
-  it('includes vcs-excluded paths when told to', () => {
-    waitsForPromise(async () => {
+  it('includes vcs-excluded paths when told to', async () => {
+    await (async () => {
       actions.setRootKeys([dir1]);
       actions.expandNode(dir1, fooTxt);
       actions.setExcludeVcsIgnoredPaths(false);
@@ -443,11 +439,11 @@ describe('FileTreeStore', () => {
 
       await loadChildKeys(dir1, dir1);
       expect(shownChildren(dir1, dir1).length).toBe(1);
-    });
+    })();
   });
 
-  it('includes vcs-excluded paths when explicitly told to', () => {
-    waitsForPromise(async () => {
+  it('includes vcs-excluded paths when explicitly told to', async () => {
+    await (async () => {
       actions.setRootKeys([dir1]);
       actions.expandNode(dir1, fooTxt);
       actions.setExcludeVcsIgnoredPaths(true);
@@ -460,11 +456,11 @@ describe('FileTreeStore', () => {
 
       await loadChildKeys(dir1, dir1);
       expect(shownChildren(dir1, dir1).length).toBe(1);
-    });
+    })();
   });
 
-  it('expands deep nested structure of the node', () => {
-    waitsForPromise(async () => {
+  it('expands deep nested structure of the node', async () => {
+    await (async () => {
       const map: Map<string, string> = await buildTempDirTree(
         'dir3/dir31/foo31.txt',
         'dir3/dir32/bar32.txt',
@@ -480,11 +476,11 @@ describe('FileTreeStore', () => {
       await store._expandNodeDeep(dir3, dir3);
 
       expect(shownChildren(dir3, dir31).length).toBe(1);
-    });
+    })();
   });
 
-  it('collapses deep nested structore', () => {
-    waitsForPromise(async () => {
+  it('collapses deep nested structore', async () => {
+    await (async () => {
       const map: Map<string, string> = await buildTempDirTree(
         'dir3/dir31/foo31.txt',
         'dir3/dir32/bar32.txt',
@@ -501,11 +497,11 @@ describe('FileTreeStore', () => {
       expect(isExpanded(dir3, dir31)).toBe(true);
       actions.collapseNodeDeep(dir3, dir3);
       expect(isExpanded(dir3, dir31)).toBe(false);
-    });
+    })();
   });
 
-  it('stops expanding after adding 100 items to the tree in BFS order', () => {
-    waitsForPromise(async () => {
+  it('stops expanding after adding 100 items to the tree in BFS order', async () => {
+    await (async () => {
       const arrFiles = [];
       for (let i = 0; i < 100; i++) {
         arrFiles.push(`dir3/dir31/foo${i}.txt`);
@@ -525,38 +521,31 @@ describe('FileTreeStore', () => {
       await store._expandNodeDeep(dir3, dir3);
       expect(isExpanded(dir3, dir31)).toBe(true);
       expect(isExpanded(dir3, dir32)).toBe(false);
-    });
+    })();
   });
-
-  it('should be able to add, remove, then re-add a file', () => {
+  it('should be able to add, remove, then re-add a file', async () => {
     const foo2Txt = nuclideUri.join(dir1, 'foo2.txt');
 
-    waitsForPromise(async () => {
-      actions.setRootKeys([dir1]);
-      actions.expandNode(dir1, dir1);
-      await loadChildKeys(dir1, dir1);
-      fs.writeFileSync(foo2Txt, '');
-    });
+    actions.setRootKeys([dir1]);
+    actions.expandNode(dir1, dir1);
+    await loadChildKeys(dir1, dir1);
+    fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    waitsFor(() => store.getNode(dir1, foo2Txt));
+    await waitsFor(() => Boolean(store.getNode(dir1, foo2Txt)));
 
-    runs(() => {
-      // Ensure the child did not inherit the parent subscription.
-      const child = getNode(dir1, foo2Txt);
-      expect(child.subscription).toBe(null);
-      fs.unlinkSync(foo2Txt);
-    });
+    // Ensure the child did not inherit the parent subscription.
+    const child = getNode(dir1, foo2Txt);
+    expect(child.subscription).toBe(null);
+    fs.unlinkSync(foo2Txt);
 
     // Ensure that file disappears from the tree.
-    waitsFor(() => store.getNode(dir1, foo2Txt) == null);
+    await waitsFor(() => store.getNode(dir1, foo2Txt) == null);
 
     // Add the file back.
-    runs(() => {
-      fs.writeFileSync(foo2Txt, '');
-    });
+    fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    waitsFor(() => store.getNode(dir1, foo2Txt));
+    await waitsFor(() => Boolean(store.getNode(dir1, foo2Txt)));
   });
 });

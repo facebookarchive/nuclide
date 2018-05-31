@@ -9,11 +9,13 @@
  * @format
  */
 
+import {setup} from '../__mocks__/file_tree_setup';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
+import path from 'path';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
@@ -44,16 +46,13 @@ describe('FileTreeController', () => {
   }
 
   beforeEach(() => {
-    workspaceElement = atom.views.getView(atom.workspace);
-    // Attach the workspace to the DOM so focus can be determined in tests below.
-    jasmine.attachToDOM(workspaceElement);
-    controller = new FileTreeController(null);
+    ({controller} = setup());
 
     // The controller uses the currently active file to decide when and what to reveal in the file
     // tree when revealActiveFile is called. Importantly, it also short-circuits in some cases if
     // the path is null or undefined. Here we mock it out so that we get normal behavior in our
     // tests.
-    spyOn(atom.workspace, 'getActiveTextEditor').andReturn({
+    jest.spyOn(atom.workspace, 'getActiveTextEditor').mockReturnValue({
       getPath() {
         return 'foo';
       },
@@ -67,11 +66,17 @@ describe('FileTreeController', () => {
   });
 
   describe('navigating with the keyboard', () => {
-    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
-    const dir0key = nuclideUri.join(__dirname, 'fixtures/dir0') + '/';
-    const dir1Key = nuclideUri.join(__dirname, 'fixtures/dir1') + '/';
-    const fooTxtKey = nuclideUri.join(__dirname, 'fixtures/dir1/foo.txt');
-    const dir2Key = nuclideUri.join(__dirname, 'fixtures/dir2') + '/';
+    const rootKey = nuclideUri.join(__dirname, '../__mocks__/fixtures') + '/';
+    const dir0key =
+      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
+    const dir1Key =
+      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir1') + '/';
+    const fooTxtKey = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir1/foo.txt',
+    );
+    const dir2Key =
+      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir2') + '/';
 
     describe('with a collapsed root', () => {
       /*
@@ -92,7 +97,7 @@ describe('FileTreeController', () => {
     });
 
     describe('with single nesting', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         /*
          * ༼ つ ◕_◕ ༽つ
          * Start with an expanded and fetched state that looks like the following:
@@ -101,11 +106,9 @@ describe('FileTreeController', () => {
          *     → dir1
          *     → dir2
          */
-        waitsForPromise(async () => {
-          actions.expandNode(rootKey, rootKey);
-          // Populate real files from real disk like real people.
-          await store._fetchChildKeys(rootKey);
-        });
+        actions.expandNode(rootKey, rootKey);
+        // Populate real files from real disk like real people.
+        await store._fetchChildKeys(rootKey);
       });
 
       describe('via _collapseSelection (left arrow) nested', () => {
@@ -206,10 +209,9 @@ describe('FileTreeController', () => {
     });
 
     describe('with double+ nesting', () => {
-      beforeEach(() => {
-        waitsForPromise(async () => {
-          /*
-           * ¯\_(ツ)_/¯
+      beforeEach(async () => {
+        /*
+           * ¯\_(ツ)_/��
            * Expand to a view like the following:
            *
            *   ↓ fixtures
@@ -217,11 +219,10 @@ describe('FileTreeController', () => {
            *       · foo.txt
            *     → dir2
            */
-          actions.expandNode(rootKey, rootKey);
-          await store._fetchChildKeys(rootKey);
-          actions.expandNode(rootKey, dir1Key);
-          await store._fetchChildKeys(dir1Key);
-        });
+        actions.expandNode(rootKey, rootKey);
+        await store._fetchChildKeys(rootKey);
+        actions.expandNode(rootKey, dir1Key);
+        await store._fetchChildKeys(dir1Key);
       });
 
       describe('via _collapseAll ( cmd+{ )', () => {
@@ -289,24 +290,22 @@ describe('FileTreeController', () => {
     });
 
     describe('with an expanded + loading directory', () => {
-      beforeEach(() => {
-        waitsForPromise(async () => {
-          /*
+      beforeEach(async () => {
+        /*
            * Expand to a view like the following with a loading (indicated by ↻) dir1:
            *
            *   ↓ fixtures
            *     ↻ dir1
            *     → dir2
            */
-          actions.expandNode(rootKey, rootKey);
-          await store._fetchChildKeys(rootKey);
-          // Mimic the loading state where `dir1` reports itself as expanded but has no children
-          // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
-          // fetch and might populate the children of `dir1`. We don't want that.
-          store._updateNodeAtRoot(rootKey, dir1Key, node =>
-            node.set({isLoading: true, isExpanded: true}),
-          );
-        });
+        actions.expandNode(rootKey, rootKey);
+        await store._fetchChildKeys(rootKey);
+        // Mimic the loading state where `dir1` reports itself as expanded but has no children
+        // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
+        // fetch and might populate the children of `dir1`. We don't want that.
+        store._updateNodeAtRoot(rootKey, dir1Key, node =>
+          node.set({isLoading: true, isExpanded: true}),
+        );
       });
 
       describe('via _moveDown expanded + loading', () => {
@@ -333,26 +332,53 @@ describe('FileTreeController', () => {
   });
 
   describe('multi-selection and range-selection', () => {
-    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
-    const dir0 = nuclideUri.join(__dirname, 'fixtures/dir0') + '/';
-    const bar = nuclideUri.join(__dirname, 'fixtures/dir0/bar') + '/';
-    const bar1 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar1');
-    const bar2 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar2');
-    const bar3 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar3');
-    const foo = nuclideUri.join(__dirname, 'fixtures/dir0/foo') + '/';
-    const foo1 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo1');
-    const foo2 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo2');
-    const foo3 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo3');
-    const afile = nuclideUri.join(__dirname, 'fixtures/dir0/afile');
-    const bfile = nuclideUri.join(__dirname, 'fixtures/dir0/bfile');
-    const zfile = nuclideUri.join(__dirname, 'fixtures/dir0/zfile');
+    const rootKey = nuclideUri.join(__dirname, '../__mocks__/fixtures') + '/';
+    const dir0 = nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
+    const bar =
+      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0/bar') + '/';
+    const bar1 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/bar/bar1',
+    );
+    const bar2 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/bar/bar2',
+    );
+    const bar3 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/bar/bar3',
+    );
+    const foo =
+      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0/foo') + '/';
+    const foo1 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/foo/foo1',
+    );
+    const foo2 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/foo/foo2',
+    );
+    const foo3 = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/foo/foo3',
+    );
+    const afile = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/afile',
+    );
+    const bfile = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/bfile',
+    );
+    const zfile = nuclideUri.join(
+      __dirname,
+      '../__mocks__/fixtures/dir0/zfile',
+    );
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
-        // Await **internal-only** API because the public `expandNodeDeep` API does not
-        // return the promise that can be awaited on
-        await store._expandNodeDeep(rootKey, rootKey);
-      });
+    beforeEach(async () => {
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await store._expandNodeDeep(rootKey, rootKey);
     });
 
     it('selects multiple items', () => {
