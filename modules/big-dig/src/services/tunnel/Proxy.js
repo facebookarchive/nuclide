@@ -110,7 +110,6 @@ export class Proxy {
   }
 
   receive(msg: TunnelMessage): void {
-    logger.warn('in proxy, got message');
     const clientId = msg.clientId;
     invariant(clientId != null);
     const socket = this._socketByClientId.get(clientId);
