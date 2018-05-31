@@ -77,15 +77,22 @@ describe('FileSystemService', () => {
     });
   });
 
+  function normalizeStat(stat: Object) {
+    // Access time will naturally differ between calls.
+    delete stat.atime;
+    // "Ms" fields are new to Node 8 and are not currently supported.
+    Object.keys(stat).forEach(key => {
+      if (key.endsWith('Ms')) {
+        delete stat[key];
+      }
+    });
+  }
+
   it('can stat', () => {
     waitsForPromise(async () => {
       const stats = await service.stat(pathToTestFile);
       const expected = fs.statSync(pathToTestFile);
-      // The above call to statSync actually updates the value of atime.
-      // So the comparison below can fail of the two calls span a second boundary.
-      delete stats.atime;
-      delete expected.atime;
-      expect(stats).toEqual(expected);
+      expect(normalizeStat(stats)).toEqual(normalizeStat(expected));
     });
   });
 
@@ -109,11 +116,7 @@ describe('FileSystemService', () => {
       fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
       const lstats = await service.lstat(pathToLinkFile);
       const expected = fs.lstatSync(pathToLinkFile);
-      // The above call to lstatSync actually updates the value of atime.
-      // So the comparison below can fail of the two calls span a second boundary.
-      delete lstats.atime;
-      delete expected.atime;
-      expect(lstats).toEqual(expected);
+      expect(normalizeStat(lstats)).toEqual(normalizeStat(expected));
     });
   });
 
