@@ -98,11 +98,14 @@ const _adapters: Map<VsAdapterType, AdapterInfo> = new Map([
         args: [
           nuclideUri.join(
             __dirname,
-            'VendorLib/vscode-prepack/adapter/DebugAdapter.js',
+            '../nuclide-debugger-vsps/VendorLib/vscode-prepack/adapter/DebugAdapter.js',
           ),
         ],
       },
-      root: nuclideUri.join(__dirname, 'VendorLib/vscode-prepack'),
+      root: nuclideUri.join(
+        __dirname,
+        '../nuclide-debugger-vsps/VendorLib/vscode-prepack',
+      ),
     },
   ],
   [
