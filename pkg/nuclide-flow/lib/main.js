@@ -109,10 +109,16 @@ async function activateLsp(): Promise<UniversalDisposable> {
       definitionEventName: 'flow.get-definition',
     },
     autocomplete: {
+      disableForSelector: '.source.js .comment',
+      excludeLowerPriority: Boolean(
+        featureConfig.get('nuclide-flow.excludeOtherAutocomplete'),
+      ),
+      suggestionPriority: Boolean(
+        featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'),
+      )
+        ? 5
+        : 1,
       inclusionPriority: 1,
-      suggestionPriority: 3,
-      disableForSelector: null,
-      excludeLowerPriority: false,
       analytics: {
         eventName: 'nuclide-flow',
         shouldLogInsertedSuggestion: false,
@@ -123,6 +129,30 @@ async function activateLsp(): Promise<UniversalDisposable> {
       },
       supportsResolve: false,
     },
+    highlight: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'flow.codehighlight',
+    },
+    outline: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'flow.outline',
+      updateOnEdit: false, // TODO(ljw): turn on once it's fast enough!
+    },
+    coverage: {
+      version: '0.0.0',
+      priority: 10,
+      analyticsEventName: 'flow.coverage',
+      icon: 'nuclicon-flow',
+    },
+    findReferences: (await shouldEnableFindRefs())
+      ? {
+          version: '0.1.0',
+          analyticsEventName: 'flow.find-references',
+          // TODO(nmote): support indirect-find-refs here
+        }
+      : undefined,
   };
 
   const languageServiceFactory: (
@@ -133,16 +163,20 @@ async function activateLsp(): Promise<UniversalDisposable> {
       getHostServices(),
     ]);
     const service = getVSCodeLanguageServiceByConnection(connection);
-    const pathToFlow = ((featureConfig.get(
-      'nuclide-flow.pathToFlow',
-    ): any): string);
+    const pathToFlow = String(featureConfig.get('nuclide-flow.pathToFlow'));
+    // TODO(ljw) - Boolean(featureConfig.get('nuclide-flow.canUseFlowBin'))
+    // - that feature needs changes to the way LSP is initialized
     const lazy = isGkEnabled('nuclide_flow_lazy_mode_ide')
       ? ['--lazy-mode', 'ide']
       : [];
+    const autostop = Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit'))
+      ? ['--autostop']
+      : [];
+
     const lspService = await service.createMultiLspLanguageService(
       'flow',
       pathToFlow,
-      ['lsp', '--from', 'nuclide', ...lazy],
+      ['lsp', '--from', 'nuclide', ...lazy, ...autostop],
       {
         fileNotifier,
         host,
@@ -153,9 +187,6 @@ async function activateLsp(): Promise<UniversalDisposable> {
         additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
       },
     );
-    // TODO(ljw):
-    // stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
-    // canUseFlowBin: canUseFlowBin: Boolean(featureConfig.get('nuclide-flow.canUseFlowBin')),
     return lspService || new NullLanguageService();
   };
 
