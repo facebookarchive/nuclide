@@ -17,6 +17,7 @@ import type {
 } from 'nuclide-debugger-common/types';
 import type {Device} from 'nuclide-debugger-common/types';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
@@ -171,6 +172,28 @@ export async function resolveConfiguration(
     configuration.customDisposable || new UniversalDisposable();
   customDisposable.add(subscriptions);
 
+  const sdkSourcePath =
+    config.sdkVersion != null
+      ? await getJavaDebuggerHelpersServiceByNuclideUri(
+          targetUri,
+        ).getSdkVersionSourcePath(config.sdkVersion)
+      : null;
+  const sdkSourcePathResolved =
+    sdkSourcePath != null ? nuclideUri.getPath(sdkSourcePath) : sdkSourcePath;
+  const additionalSourcePaths =
+    sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
+
+  const onInitializeCallback = async session => {
+    customDisposable.add(
+      ...getSourcePathClickSubscriptions(
+        targetUri,
+        session,
+        clickEvents,
+        additionalSourcePaths,
+      ),
+    );
+  };
+
   return {
     ...configuration,
     debugMode: attachPortTargetConfig.debugMode,
@@ -185,10 +208,6 @@ export async function resolveConfiguration(
     },
     config: attachPortTargetConfig,
     customDisposable,
-    onInitializeCallback: session => {
-      customDisposable.add(
-        ...getSourcePathClickSubscriptions(targetUri, session, clickEvents),
-      );
-    },
+    onInitializeCallback,
   };
 }

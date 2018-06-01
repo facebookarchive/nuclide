@@ -93,7 +93,7 @@ export type IProcessConfig = {|
   +clientPreprocessor?: ?MessageProcessor,
   +adapterPreprocessor?: ?MessageProcessor,
   +customDisposable?: UniversalDisposable,
-  +onInitializeCallback?: (session: ISession) => void,
+  +onInitializeCallback?: (session: ISession) => Promise<void>,
 |};
 
 export interface IVsAdapterSpawner {

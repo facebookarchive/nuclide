@@ -1238,7 +1238,7 @@ export default class DebugService implements IDebugService {
         });
 
         if (onInitializeCallback != null) {
-          onInitializeCallback(newSession);
+          await onInitializeCallback(newSession);
         }
 
         this._model.setExceptionBreakpoints(

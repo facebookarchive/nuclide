@@ -63,8 +63,6 @@ public class SourceLocator {
     addPotentialPath(Paths.get(androidHome, "platforms").toString(), true);
     addPotentialPath(Paths.get(androidHome, "extras").toString(), true);
 
-    addSourcesFromAndroidSdk(androidHome);
-
     // On Windows, Android studio unpacks sources to per-user local app data.
     String appData = System.getenv("LOCALAPPDATA");
     if (appData != null) {

@@ -197,8 +197,11 @@ export function getSourcePathClickSubscriptions(
   targetUri: NuclideUri,
   debugSession: ISession,
   clickEvents: rxjs$Subject<void>,
+  additionalSourcePaths?: Array<NuclideUri> = [],
 ): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
-  const defaultValues = getDefaultSourceSearchPaths(targetUri);
+  const defaultValues = getDefaultSourceSearchPaths(targetUri).concat(
+    additionalSourcePaths,
+  );
   return [
     getDialogValues(clickEvents)
       .startWith(getSavedPathsFromConfig())
@@ -238,7 +241,7 @@ export async function resolveConfiguration(
     },
     adapterExecutable: javaAdapterExecutable,
     customDisposable,
-    onInitializeCallback: session => {
+    onInitializeCallback: async session => {
       customDisposable.add(
         ...getSourcePathClickSubscriptions(targetUri, session, clickEvents),
       );
