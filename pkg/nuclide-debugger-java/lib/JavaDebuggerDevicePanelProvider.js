@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {IProcessConfig} from 'nuclide-debugger-common';
 import type {
   Device,
   DeviceProcessTaskProvider,
@@ -16,18 +17,45 @@ import type {
   ProcessTaskType,
 } from 'nuclide-debugger-common/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NuclideJavaDebuggerProvider} from './types';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {VsAdapterTypes} from 'nuclide-debugger-common';
 import {Observable} from 'rxjs';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
 
+async function _createAndroidDebugAttachConfig(
+  targetUri: NuclideUri,
+  device: Device,
+  pid: number,
+): Promise<IProcessConfig> {
+  const config = {
+    deviceAndProcess: {
+      device,
+      selectedProcess: {
+        pid,
+        name: '',
+      },
+    },
+    adbServiceUri: targetUri,
+  };
+  return {
+    targetUri,
+    debugMode: 'attach',
+    adapterType: VsAdapterTypes.JAVA_ANDROID,
+    adapterExecutable: null,
+    config,
+    capabilities: {threads: true},
+    properties: {
+      customControlButtons: [],
+      threadsComponentTitle: 'Threads',
+    },
+    customDisposable: new UniversalDisposable(),
+  };
+}
+
 export class JavaDebuggerDevicePanelProvider
   implements DeviceProcessTaskProvider {
-  _javaDebugger: NuclideJavaDebuggerProvider;
-
-  constructor(javaDebugger: NuclideJavaDebuggerProvider) {
-    this._javaDebugger = javaDebugger;
-  }
+  constructor() {}
 
   getType(): string {
     return 'Android';
@@ -53,12 +81,11 @@ export class JavaDebuggerDevicePanelProvider
 
   async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
     const debuggerService = await getDebuggerService();
-    const config = await this._javaDebugger.createAndroidDebugAttachConfig({
-      targetUri: host,
-      packageName: '',
+    const config = await _createAndroidDebugAttachConfig(
+      host,
       device,
-      pid: proc.pid,
-    });
+      proc.pid,
+    );
     debuggerService.startVspDebugging(config);
   }
 }

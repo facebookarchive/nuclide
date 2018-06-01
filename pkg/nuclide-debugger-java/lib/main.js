@@ -10,24 +10,15 @@
  */
 
 import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {
-  IProcessConfig,
-  DevicePanelServiceApi,
-} from 'nuclide-debugger-common';
+import type {DevicePanelServiceApi} from 'nuclide-debugger-common';
 import type {
   AdditionalLogFilesProvider,
   AdditionalLogFile,
 } from '../../nuclide-logging/lib/rpc-types';
-import type {
-  NuclideJavaDebuggerProvider,
-  AdbProcessParameters,
-  JavaDebugInfo,
-  JavaDebugConfig,
-} from './types';
+import type {NuclideJavaDebuggerProvider, JavaDebugInfo} from './types';
 
 import {createJavaVspProcessInfo} from 'atom-ide-debugger-java-android/AndroidJavaDebuggerHelpers';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -36,74 +27,6 @@ import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider
 
 export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
   return {
-    createAndroidDebugLaunchConfig: async (
-      parameters: AdbProcessParameters,
-    ): Promise<JavaDebugConfig> => {
-      const {targetUri, packageName, device} = parameters;
-
-      const adbServiceUri =
-        parameters.adbServiceUri != null
-          ? parameters.adbServiceUri
-          : parameters.targetUri;
-
-      const debuggerConfig = {
-        deviceAndPackage: {
-          device,
-          selectedPackage: packageName,
-        },
-        adbServiceUri,
-      };
-      const subscriptions = new UniversalDisposable();
-      const processConfig = {
-        targetUri,
-        debugMode: 'launch',
-        adapterType: VsAdapterTypes.JAVA_ANDROID,
-        adapterExecutable: null,
-        config: debuggerConfig,
-        capabilities: {threads: true},
-        properties: {
-          customControlButtons: [],
-          threadsComponentTitle: 'Threads',
-        },
-        customDisposable: subscriptions,
-      };
-      return {
-        config: processConfig,
-        subscriptions,
-      };
-    },
-    createAndroidDebugAttachConfig: async (
-      parameters: AdbProcessParameters,
-    ): Promise<IProcessConfig> => {
-      const {targetUri, packageName, pid, device} = parameters;
-      const adbServiceUri =
-        parameters.adbServiceUri != null
-          ? parameters.adbServiceUri
-          : parameters.targetUri;
-      const config = {
-        deviceAndProcess: {
-          device,
-          selectedProcess: {
-            pid,
-            name: packageName,
-          },
-        },
-        adbServiceUri,
-      };
-      return {
-        targetUri,
-        debugMode: 'attach',
-        adapterType: VsAdapterTypes.JAVA_ANDROID,
-        adapterExecutable: null,
-        config,
-        capabilities: {threads: true},
-        properties: {
-          customControlButtons: [],
-          threadsComponentTitle: 'Threads',
-        },
-        customDisposable: new UniversalDisposable(),
-      };
-    },
     createJavaTestAttachInfo: async (
       targetUri: string,
       attachPort: number,
@@ -208,7 +131,5 @@ export function createJavaAdditionalLogFilesProvider(): AdditionalLogFilesProvid
 }
 
 export function consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-  api.registerProcessTaskProvider(
-    new JavaDebuggerDevicePanelProvider(createJavaDebuggerProvider()),
-  );
+  api.registerProcessTaskProvider(new JavaDebuggerDevicePanelProvider());
 }

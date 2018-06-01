@@ -9,39 +9,15 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import type {
-  Device,
-  IProcessConfig,
-  VspProcessInfo,
-} from 'nuclide-debugger-common';
-
-export type AdbProcessParameters = {
-  targetUri: NuclideUri,
-  packageName: string,
-  device: Device,
-  pid?: ?number,
-  adbServiceUri?: NuclideUri,
-};
+import type {VspProcessInfo} from 'nuclide-debugger-common';
 
 export type JavaDebugInfo = {|
   processInfo: VspProcessInfo,
   subscriptions: UniversalDisposable,
 |};
 
-export type JavaDebugConfig = {|
-  config: IProcessConfig,
-  subscriptions: UniversalDisposable,
-|};
-
 export type NuclideJavaDebuggerProvider = {|
-  createAndroidDebugLaunchConfig(
-    parameters: AdbProcessParameters,
-  ): Promise<JavaDebugConfig>,
-  createAndroidDebugAttachConfig(
-    parameters: AdbProcessParameters,
-  ): Promise<IProcessConfig>,
   createJavaTestAttachInfo(
     targetUri: string,
     attachPort: number,
