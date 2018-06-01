@@ -13,7 +13,7 @@ import type {ConsoleApi} from 'atom-ide-ui';
 
 import * as Actions from '../lib/redux/Actions';
 import {consolesForTaskRunners} from '../lib/redux/Reducers';
-import * as dummy from './dummy';
+import * as dummy from '../__mocks__/dummy';
 import * as Immutable from 'immutable';
 
 describe('Reducers', () => {

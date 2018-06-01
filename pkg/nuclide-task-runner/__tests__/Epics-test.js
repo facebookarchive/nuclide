@@ -21,7 +21,7 @@ import {taskFromObservable} from '../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
-import * as dummy from './dummy';
+import * as dummy from '../__mocks__/dummy';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
 import * as Immutable from 'immutable';
@@ -39,13 +39,13 @@ describe('Epics', () => {
     describe('when packages arent activated', () => {
       const state = {initialPackagesActivated: false};
 
-      it('does nothing', () => {
-        waitsForPromise(async () => {
+      it('does nothing', async () => {
+        await (async () => {
           const output = await runActions([Actions.setProjectRoot(null)], state)
             .toArray()
             .toPromise();
           expect(output).toEqual([]);
-        });
+        })();
       });
     });
 
@@ -55,14 +55,14 @@ describe('Epics', () => {
         taskRunners: Immutable.List(),
       };
 
-      it('set task runners states to an empty map', () => {
-        waitsForPromise(async () => {
+      it('set task runners states to an empty map', async () => {
+        await (async () => {
           const output = await runActions([Actions.setProjectRoot(null)], state)
             .first()
             .toPromise();
           invariant(output.type === Actions.SET_STATES_FOR_TASK_RUNNERS);
           expect(output.payload.statesForTaskRunners).toEqual(Immutable.Map());
-        });
+        })();
       });
     });
 
@@ -86,8 +86,8 @@ describe('Epics', () => {
         };
       });
 
-      it('updates states after collecting them from all task runners', () => {
-        waitsForPromise(async () => {
+      it('updates states after collecting them from all task runners', async () => {
+        await (async () => {
           const output = await runActions([Actions.setProjectRoot(null)], state)
             .first()
             .toPromise();
@@ -98,7 +98,7 @@ describe('Epics', () => {
           invariant(runnerState);
           expect(runnerState.enabled).toEqual(true);
           expect(runnerState.tasks[0].type).toEqual('test task');
-        });
+        })();
       });
     });
   });
@@ -134,8 +134,8 @@ describe('Epics', () => {
     });
 
     describe("if this working root doesn't have a preference", () => {
-      it('selects an enabled runner with the highest priority', () => {
-        waitsForPromise(async () => {
+      it('selects an enabled runner with the highest priority', async () => {
+        await (async () => {
           const output = await runActions(
             [Actions.setStatesForTaskRunners(newStates)],
             state,
@@ -147,11 +147,11 @@ describe('Epics', () => {
           invariant(action.type === Actions.SELECT_TASK_RUNNER);
           invariant(action.payload.taskRunner);
           expect(action.payload.taskRunner.id).toEqual('c');
-        });
+        })();
       });
 
-      it('shows the toolbar since it might be useful', () => {
-        waitsForPromise(async () => {
+      it('shows the toolbar since it might be useful', async () => {
+        await (async () => {
           const output = await runActions(
             [Actions.setStatesForTaskRunners(newStates)],
             state,
@@ -163,7 +163,7 @@ describe('Epics', () => {
           invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
           expect(action.payload.updateUserPreferences).toEqual(true);
           expect(action.payload.visible).toEqual(true);
-        });
+        })();
       });
     });
 
@@ -173,8 +173,8 @@ describe('Epics', () => {
         preference = {taskRunnerId: 'b', visible: true};
       });
 
-      it('restores task runner and visibility based on the preference', () => {
-        waitsForPromise(async () => {
+      it('restores task runner and visibility based on the preference', async () => {
+        await (async () => {
           const output = await runActions(
             [Actions.setStatesForTaskRunners(newStates)],
             state,
@@ -191,15 +191,15 @@ describe('Epics', () => {
           expect(taskRunnerAction.payload.taskRunner.id).toEqual('b');
           expect(visibilityAction.payload.visible).toEqual(true);
           expect(visibilityAction.payload.updateUserPreferences).toEqual(false);
-        });
+        })();
       });
     });
   });
 
   describe('SET_CONSOLE_SERVICE', () => {
     describe('if the console service is null', () => {
-      it('does nothing', () => {
-        waitsForPromise(async () => {
+      it('does nothing', async () => {
+        await (async () => {
           const state = {
             consoleService: null,
             initialPackagesActivated: true,
@@ -211,13 +211,13 @@ describe('Epics', () => {
             .toArray()
             .toPromise();
           expect(output).toEqual([]);
-        });
+        })();
       });
     });
 
     describe('if the console service exists', () => {
-      it('sets consoles for all registered task runners', () => {
-        waitsForPromise(async () => {
+      it('sets consoles for all registered task runners', async () => {
+        await (async () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: true,
@@ -237,14 +237,14 @@ describe('Epics', () => {
           );
           const {consolesForTaskRunners} = setConsolesAction.payload;
           expect(consolesForTaskRunners.count()).toEqual(1);
-        });
+        })();
       });
     });
   });
 
   describe('DID_ACTIVATE_INITIAL_PACKAGES', () => {
-    it('sends another project root message', () => {
-      waitsForPromise(async () => {
+    it('sends another project root message', async () => {
+      await (async () => {
         const mockProjectRoot = 'foo';
         const state = {
           consoleService: null,
@@ -267,14 +267,14 @@ describe('Epics', () => {
         expect(
           setProjectRootAction.payload.statesForTaskRunners.count(),
         ).toEqual(0);
-      });
+      })();
     });
   });
 
   describe('REGISTER_TASK_RUNNER', () => {
     describe('if the console service is null', () => {
-      it('sets the state for the task runner', () => {
-        waitsForPromise(async () => {
+      it('sets the state for the task runner', async () => {
+        await (async () => {
           const taskRunner = new dummy.TaskRunner();
           const task = new dummy.createTask('test task');
           const mockTaskRunner = {
@@ -303,13 +303,13 @@ describe('Epics', () => {
           expect(taskRunnerState.enabled).toEqual(true);
           expect(taskRunnerState.tasks.length).toEqual(1);
           expect(taskRunnerState.tasks[0]).toEqual(task);
-        });
+        })();
       });
     });
 
     describe('if the task runners arent ready', () => {
-      it('sets the console service for the runner', () => {
-        waitsForPromise(async () => {
+      it('sets the console service for the runner', async () => {
+        await (async () => {
           const state = {
             consoleService: createMockConsole,
             initialPackagesActivated: false,
@@ -328,13 +328,13 @@ describe('Epics', () => {
             addConsoleAction.type === Actions.ADD_CONSOLE_FOR_TASK_RUNNER,
           );
           expect(addConsoleAction.payload.taskRunner).toEqual(mockTaskRunner);
-        });
+        })();
       });
     });
 
     describe('if the task runners are ready and the console service exists', () => {
-      it('sets the project root for new task runner, sets consoles for all registered task runners', () => {
-        waitsForPromise(async () => {
+      it('sets the project root for new task runner, sets consoles for all registered task runners', async () => {
+        await (async () => {
           const taskRunner = new dummy.TaskRunner();
           const task = new dummy.createTask('test task');
           const mockTaskRunner = {
@@ -376,15 +376,15 @@ describe('Epics', () => {
           expect(taskRunnerState.enabled).toEqual(true);
           expect(taskRunnerState.tasks.length).toEqual(1);
           expect(taskRunnerState.tasks[0]).toEqual(task);
-        });
+        })();
       });
     });
   });
 
   describe('UNREGISTER_TASK_RUNNER', () => {
     describe('if the console service is null', () => {
-      it('does nothing', () => {
-        waitsForPromise(async () => {
+      it('does nothing', async () => {
+        await (async () => {
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: null,
@@ -400,13 +400,13 @@ describe('Epics', () => {
             .toPromise();
 
           expect(output.length).toEqual(0);
-        });
+        })();
       });
     });
 
     describe('if the task runner to be removed is the active task runner', () => {
-      it('removes the active task runner and the old task runner console', () => {
-        waitsForPromise(async () => {
+      it('removes the active task runner and the old task runner console', async () => {
+        await (async () => {
           const taskRunner = new dummy.TaskRunner();
           const state = {
             consoleService: createMockConsole,
@@ -439,13 +439,13 @@ describe('Epics', () => {
           expect(setTaskRunnerAction.payload.updateUserPreferences).toEqual(
             false,
           );
-        });
+        })();
       });
     });
 
     describe('if the console service exists', () => {
-      it('sets consoles for all registered task runners', () => {
-        waitsForPromise(async () => {
+      it('sets consoles for all registered task runners', async () => {
+        await (async () => {
           const mockProjectRoot = 'foo';
           const taskRunner = new dummy.TaskRunner();
           const state = {
@@ -467,18 +467,18 @@ describe('Epics', () => {
             removeConsoleAction.type === Actions.REMOVE_CONSOLE_FOR_TASK_RUNNER,
           );
           expect(removeConsoleAction.payload.taskRunner).toEqual(taskRunner);
-        });
+        })();
       });
     });
   });
 
   describe('TASK_STOPPED', () => {
-    it('cancels the current task', () => {
-      waitsForPromise(async () => {
+    it('cancels the current task', async () => {
+      await (async () => {
         const task = taskFromObservable(new Subject());
         const taskRunner = new dummy.TaskRunner();
-        spyOn(taskRunner, 'runTask').andReturn(task);
-        spyOn(task, 'cancel');
+        jest.spyOn(taskRunner, 'runTask').mockReturnValue(task);
+        jest.spyOn(task, 'cancel').mockImplementation(() => {});
         const state = {
           activeTaskRunner: taskRunner,
           taskRunners: Immutable.List([taskRunner]),
@@ -504,19 +504,19 @@ describe('Epics', () => {
           .toArray()
           .toPromise();
         expect(task.cancel).toHaveBeenCalled();
-      });
+      })();
     });
   });
 
   describe('RUN_TASK', () => {
-    it('runs a task to completion', () => {
-      waitsForPromise(async () => {
+    it('runs a task to completion', async () => {
+      await (async () => {
         const taskRunner = new dummy.TaskRunner();
         const taskEvents = new Subject();
         const task = taskFromObservable(taskEvents);
-        spyOn(task, 'cancel');
-        spyOn(task, 'onDidComplete').andCallThrough();
-        spyOn(taskRunner, 'runTask').andReturn(task);
+        jest.spyOn(task, 'cancel').mockImplementation(() => {});
+        jest.spyOn(task, 'onDidComplete');
+        jest.spyOn(taskRunner, 'runTask').mockReturnValue(task);
 
         const state = {
           activeTaskRunner: taskRunner,
@@ -538,7 +538,7 @@ describe('Epics', () => {
           Actions.TASK_COMPLETED,
         ]);
         expect(task.cancel).not.toHaveBeenCalled();
-      });
+      })();
     });
   });
 });
