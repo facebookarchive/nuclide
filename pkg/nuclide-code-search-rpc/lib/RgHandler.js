@@ -12,7 +12,11 @@
 import type {CodeSearchResult, CodeSearchParams} from './types';
 
 import {Observable} from 'rxjs';
-import {observeGrepLikeProcess, mergeOutputToResults} from './handlerCommon';
+import {
+  observeGrepLikeProcess,
+  mergeOutputToResults,
+  BUFFER_SIZE_LIMIT,
+} from './handlerCommon';
 import {parseProcessLine} from './parser';
 
 export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
@@ -31,13 +35,15 @@ export function search(params: CodeSearchParams): Observable<CodeSearchResult> {
       .concat(leadingLines != null ? ['-B', String(leadingLines)] : [])
       .concat(trailingLines != null ? ['-A', String(trailingLines)] : [])
       .concat([
-        // no colors, show line number, search hidden files,
+        // no colors, show line number, search hidden files, limit line length
         // one result per line, show filename with null byte
         '--color',
         'never',
         '--line-number',
         '--hidden',
         '--no-heading',
+        '--max-columns',
+        String(BUFFER_SIZE_LIMIT),
         '-H',
         '-0',
         '-e',

@@ -18,6 +18,8 @@ import {observeProcess} from 'nuclide-commons/process';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
+export const BUFFER_SIZE_LIMIT = 1000 * 1000 * 50; // 50 MB
+
 // Grep and related tools (ack, rg) have exit code 1 with no results.
 export function observeGrepLikeProcess(
   command: string,
@@ -26,6 +28,7 @@ export function observeGrepLikeProcess(
 ): Observable<ProcessMessage> {
   return observeProcess(command, args, {
     cwd,
+    maxBuffer: BUFFER_SIZE_LIMIT,
     // An exit code of 0 or 1 is normal for grep-like tools.
     isExitError: ({exitCode, signal}) => {
       return (
