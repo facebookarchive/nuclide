@@ -9,8 +9,8 @@
  * @format
  */
 
-jest.useFakeTimers();
+// jest.useFakeTimers();
 
 test('fake timers dont throw', () => {
-  jest.advanceTimersByTime(10);
+  // jest.advanceTimersByTime(10);
 });
