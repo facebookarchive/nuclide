@@ -24,6 +24,10 @@
     "name": "DefinitionPreviewService"
   },
   {
+    "implementation": "../nuclide-fbsimctl-rpc/lib/FbsimctlService.js",
+    "name": "FbsimctlService"
+  },
+  {
     "implementation": "./lib/services/FileSystemService.js",
     "name": "FileSystemService"
   },

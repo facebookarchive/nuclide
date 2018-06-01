@@ -66,6 +66,7 @@ import typeof * as ClangService from '../../nuclide-clang-rpc';
 import typeof * as CodeSearchService from '../../nuclide-code-search-rpc/lib/CodeSearchService';
 import typeof * as CtagsService from '../../nuclide-ctags-rpc';
 import typeof * as DefinitionPreviewService from '../../nuclide-definition-preview-rpc';
+import typeof * as FbsimctlService from '../../nuclide-fbsimctl-rpc';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
@@ -114,6 +115,12 @@ export function getDefinitionPreviewServiceByNuclideUri(
   uri: NuclideUri,
 ): DefinitionPreviewService {
   return nullthrows(getServiceByNuclideUri('DefinitionPreviewService', uri));
+}
+
+export function getFbsimctlServiceByNuclideUri(
+  uri: NuclideUri,
+): FbsimctlService {
+  return nullthrows(getServiceByNuclideUri('FbsimctlService', uri));
 }
 
 export function getFileSystemServiceByNuclideUri(

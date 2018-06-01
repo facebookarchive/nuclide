@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Platform} from '../../nuclide-buck/lib/types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
-import type {Device} from '../../nuclide-fbsimctl/lib/types';
+import type {Device} from '../../nuclide-fbsimctl-rpc/lib/types';
 
 import {getTasks, runTask} from './Tasks';
 
