@@ -14,6 +14,8 @@ import {startTracking, trackImmediate} from '..';
 import * as track from '../lib/track';
 import invariant from 'assert';
 
+const sleep = n => new Promise(r => setTimeout(r, n));
+
 describe('startTracking', () => {
   let trackKey;
   let trackValues;
@@ -21,7 +23,7 @@ describe('startTracking', () => {
 
   beforeEach(() => {
     setRawAnalyticsService(track);
-    spyOn(process, 'hrtime').andCallFake(() => {
+    jest.spyOn(process, 'hrtime').mockImplementation(() => {
       if (startTime == null) {
         startTime = Date.now();
       }
@@ -35,61 +37,61 @@ describe('startTracking', () => {
     trackKey = null;
     trackValues = null;
 
-    spyOn(track, 'track').andCallFake((key, values) => {
+    jest.spyOn(track, 'track').mockImplementation((key, values) => {
       trackKey = key;
       trackValues = values;
       return Promise.resolve();
     });
   });
 
-  it('startTracking - success', () => {
+  it('startTracking - success', async () => {
     const timer = startTracking('st-success');
-    advanceClock(10);
+    await sleep(10);
     timer.onSuccess();
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
-    expect(trackValues.duration).toBe('10');
+    expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
     expect(trackValues.eventName).toBe('st-success');
     expect(trackValues.error).toBe('0');
     expect(trackValues.exception).toBe('');
   });
 
-  it('startTracking - success with values', () => {
+  it('startTracking - success with values', async () => {
     const timer = startTracking('st-success', {newValue: 'value'});
-    advanceClock(10);
+    await sleep(10);
     timer.onSuccess();
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
-    expect(trackValues.duration).toBe('10');
+    expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
     expect(trackValues.eventName).toBe('st-success');
     expect(trackValues.error).toBe('0');
     expect(trackValues.exception).toBe('');
     expect(trackValues.newValue).toBe('value');
   });
 
-  it('startTracking - error', () => {
+  it('startTracking - error', async () => {
     const timer = startTracking('st-error');
-    advanceClock(11);
+    await sleep(11);
     timer.onError(new Error());
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
-    expect(trackValues.duration).toBe('11');
+    expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
   });
 
-  it('startTracking - error with values', () => {
+  it('startTracking - error with values', async () => {
     const timer = startTracking('st-error', {newValue: 'value'});
-    advanceClock(11);
+    await sleep(11);
     timer.onError(new Error());
     expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
-    expect(trackValues.duration).toBe('11');
+    expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
@@ -100,16 +102,16 @@ describe('startTracking', () => {
 describe('trackImmediate', () => {
   let spy;
   beforeEach(() => {
-    spy = spyOn(track, 'track').andCallFake((key, values) => {
+    spy = jest.spyOn(track, 'track').mockImplementation((key, values) => {
       return Promise.resolve(1);
     });
   });
 
-  it('should call track with immediate = true', () => {
-    waitsForPromise(async () => {
+  it('should call track with immediate = true', async () => {
+    await (async () => {
       const result = await trackImmediate('test', {});
       expect(result).toBe(1);
       expect(spy).toHaveBeenCalledWith('test', {}, true);
-    });
+    })();
   });
 });
