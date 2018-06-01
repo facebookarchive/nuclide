@@ -8,9 +8,9 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-jest",
   "private": true,
   "devDependencies": {
-    "jest-cli": "23.0.0-charlie.1",
+    "jest-cli": "23.1.0",
     "jest-mock": "23.1.0",
-    "jest-util": "23.0.0-charlie.1",
+    "jest-util": "23.1.0",
     "nuclide-commons": "0.7.1-dev",
     "nuclide-commons-ui": "0.7.1-dev",
     "nullthrows": "1.0.0",

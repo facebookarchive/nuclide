@@ -22,5 +22,4 @@ module.exports = {
     '<rootDir>/xplat/nuclide/jest/jest.config.node.js',
   ],
   testFailureExitCode: 0,
-  forceExit: true,
 };
