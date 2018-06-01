@@ -15,6 +15,7 @@
 import invariant from 'assert';
 import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {
   observeAddedHostnames,
   observeRemovedHostnames,
@@ -79,9 +80,6 @@ const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
 const DOCUMENTATION_MESSAGE_CONFIG = 'atom-ide-terminal.documentationMessage';
 const ADD_ESCAPE_COMMAND = 'atom-ide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
-// Delay terminal spawn by some time to avoid upstream xterm.js/issues/1479.
-// Time chosen by some local testing.
-const TERMINAL_SPAWN_DELAY_MS = 150;
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
 export interface TerminalViewState {
@@ -190,19 +188,12 @@ export class TerminalView implements PtyClient, TerminalInstance {
       allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
       experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),
     }));
-    (div: any).terminal = terminal;
-    terminal.open(this._div);
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
     this._subscriptions.add(() => terminal.dispose());
     terminal.webLinksInit(openLink);
     registerLinkHandlers(terminal, this._cwd);
-
-    if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
-      const docsUrl = 'https://nuclide.io/docs/features/terminal';
-      terminal.writeln(`For more info check out the docs: ${docsUrl}`);
-    }
 
     this._subscriptions.add(
       atom.commands.add(div, 'core:copy', () => {
@@ -279,12 +270,25 @@ export class TerminalView implements PtyClient, TerminalInstance {
     (this._div: any).focus = () => terminal.focus();
     (this._div: any).blur = () => terminal.blur();
 
-    // TODO(pelmers) Remove when upstream fixes xterm.js/issues/1479.
-    setTimeout(() => {
-      this._spawn(cwd)
-        .then(pty => this._onPtyFulfill(pty))
-        .catch(error => this._onPtyFail(error));
-    }, TERMINAL_SPAWN_DELAY_MS);
+    // Terminal.open only works after its div has been attached to the DOM,
+    // which happens in getElement, not in this constructor. Therefore delay
+    // open and spawn until the div is visible, which means it is in the DOM.
+    this._subscriptions.add(
+      observePaneItemVisibility(this)
+        .filter(Boolean)
+        .first()
+        .subscribe(() => {
+          terminal.open(this._div);
+          (div: any).terminal = terminal;
+          if (featureConfig.get(DOCUMENTATION_MESSAGE_CONFIG)) {
+            const docsUrl = 'https://nuclide.io/docs/features/terminal';
+            terminal.writeln(`For more info check out the docs: ${docsUrl}`);
+          }
+          this._spawn(cwd)
+            .then(pty => this._onPtyFulfill(pty))
+            .catch(error => this._onPtyFail(error));
+        }),
+    );
   }
 
   _spawn(cwd: ?NuclideUri): Promise<Pty> {
