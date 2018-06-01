@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-welcome-page",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "A welcome page interface for Nuclide packages",
+  "author": "nuclide",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide.welcome-page": {
+      "versions": {
+        "0.0.0": "consumeWelcomePage"
+      }
+    }
+  },
+  "private": true
+}
