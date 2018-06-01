@@ -11,12 +11,17 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, ProcessExitError} from 'nuclide-commons/process';
+import passesGK from './passesGK';
 
 /**
  * If we're running outside of Atom, attempt to use the prebuilt keytar libs.
  * (May throw if prebuilt libs aren't available for the current platform!)
  */
 import * as keytar from 'nuclide-prebuilt-libs/keytar';
+
+async function shouldUseApmNode(): Promise<boolean> {
+  return !(await passesGK('nuclide_prebuilt_keytar'));
+}
 
 // KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
@@ -110,7 +115,7 @@ export default {
    * Rejects on keychain access failure.
    */
   async getPassword(service: string, account: string): Promise<?string> {
-    if (typeof atom === 'object') {
+    if (typeof atom === 'object' && (await shouldUseApmNode())) {
       return JSON.parse(
         await runScriptInApmNode(getPasswordScriptAsync, service, account),
       );
@@ -127,7 +132,7 @@ export default {
     account: string,
     password: string,
   ): Promise<void> {
-    if (typeof atom === 'object') {
+    if (typeof atom === 'object' && (await shouldUseApmNode())) {
       await runScriptInApmNode(
         replacePasswordScriptAsync,
         service,
@@ -144,7 +149,7 @@ export default {
    * Rejects on keychain access failure.
    */
   async deletePassword(service: string, account: string): Promise<boolean> {
-    if (typeof atom === 'object') {
+    if (typeof atom === 'object' && (await shouldUseApmNode())) {
       return JSON.parse(
         await runScriptInApmNode(deletePasswordScriptAsync, service, account),
       );
