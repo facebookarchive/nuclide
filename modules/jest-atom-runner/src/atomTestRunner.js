@@ -69,6 +69,11 @@ module.exports = async function(params: AtomParams) {
     enablePersistence: true,
   });
 
+  // We need to delete whatever is in `prepareStackTrace` to make source map work.
+  // Right now Atom is overwriting it without an ability to reassign, so the only
+  // option is to delete the whole thing. (https://fburl.com/cqp7mj01)
+  delete Error.prepareStackTrace;
+
   return new Promise((resolve, reject) => {
     connection.onMessage(message => {
       try {
@@ -84,8 +89,12 @@ module.exports = async function(params: AtomParams) {
               getResolver(testData.config, testData.rawModuleMap),
             )
               .catch(error => {
-                const testResult = buildFailureTestResult(testData.path, error);
-                console.error(error);
+                const testResult = buildFailureTestResult(
+                  testData.path,
+                  error,
+                  testData.config,
+                  testData.globalConfig,
+                );
                 return testResult;
               })
               .then(result => {

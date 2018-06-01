@@ -12,15 +12,53 @@
 
 /* eslint-disable nuclide-internal/no-commonjs */
 
+import type {ProjectConfig} from './types';
+
 import mock from 'jest-mock';
+import {FakeTimers} from 'jest-util';
+
+type Timer = {|
+  id: number,
+  ref: () => Timer,
+  unref: () => Timer,
+|};
+
+const setupTimers = (config, moduleMocker) => {
+  const timerIdToRef = (id: number) => ({
+    id,
+    ref() {
+      return this;
+    },
+    unref() {
+      return this;
+    },
+  });
+
+  const timerRefToId = (timer: Timer): ?number => {
+    return (timer && timer.id) || null;
+  };
+
+  const timerConfig = {
+    idToRef: timerIdToRef,
+    refToId: timerRefToId,
+  };
+  return new FakeTimers({
+    config,
+    global,
+    moduleMocker,
+    timerConfig,
+  });
+};
 
 class Atom {
   global: Object;
   moduleMocker: Object;
+  fakeTimers: Object;
 
-  constructor(...args: any) {
+  constructor(config: ProjectConfig) {
     this.global = global;
     this.moduleMocker = new mock.ModuleMocker(global);
+    this.fakeTimers = setupTimers(config, this.moduleMocker);
   }
 
   async setup() {

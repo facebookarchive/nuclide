@@ -63,4 +63,5 @@ export type TestResult = {
   skipped: boolean,
   displayName: string,
   leaks: boolean,
+  testExecError: ?string,
 };

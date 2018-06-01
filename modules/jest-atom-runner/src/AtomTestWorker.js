@@ -155,7 +155,10 @@ class AtomTestWorker {
              `);
         }
 
-        runningTest.resolve(testResult);
+        testResult.testExecError != null
+          ? // $FlowFixMe jest expects it to be rejected with an object
+            runningTest.reject(testResult.testExecError)
+          : runningTest.resolve(testResult);
         this._runningTests.delete(testFilePath);
       }
     }
@@ -164,7 +167,7 @@ class AtomTestWorker {
   runTest(test: Test): Promise<TestResult> {
     if (this._runningTests.has(test.path)) {
       throw new Error(
-        "Can't run the same times in the same worker at the same time",
+        "Can't run the same test in the same worker at the same time",
       );
     }
     return new Promise((resolve, reject) => {

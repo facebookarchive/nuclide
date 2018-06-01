@@ -12,12 +12,13 @@
 
 /* eslint-disable nuclide-internal/prefer-nuclide-uri */
 
-import type {TestResult} from './types';
+import type {TestResult, ProjectConfig, GlobalConfig} from './types';
 export opaque type IPCID = string; // server id and worker id merged into one string
 export opaque type WorkerID = string;
 export opaque type ServerID = string;
 
 import path from 'path';
+import {formatExecError} from 'jest-message-util';
 
 const IPC_IDS_SEPARATOR = '_';
 
@@ -100,11 +101,14 @@ export const parseMessage = (message: string) => {
 export const buildFailureTestResult = (
   testPath: string,
   err: Error,
+  config: ProjectConfig,
+  globalConfig: GlobalConfig,
 ): TestResult => {
+  const failureMessage = formatExecError(err, config, globalConfig);
   return {
     console: null,
     displayName: '',
-    failureMessage: null,
+    failureMessage,
     leaks: false,
     numFailingTests: 0,
     numPassingTests: 0,
@@ -124,7 +128,7 @@ export const buildFailureTestResult = (
       updated: 0,
     },
     sourceMaps: {},
-    testExecError: err,
+    testExecError: failureMessage,
     testFilePath: testPath,
     testResults: [],
   };
