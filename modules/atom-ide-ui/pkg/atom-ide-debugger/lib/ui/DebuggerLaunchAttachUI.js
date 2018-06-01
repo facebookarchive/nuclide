@@ -259,6 +259,7 @@ export default class DebuggerLaunchAttachUI extends React.Component<
           <Tabs
             className="debugger-launch-attach-tabs"
             tabs={tabs}
+            growable={true}
             activeTabName={this.state.selectedProviderTab}
             triggeringEvent="onClick"
             onActiveTabChange={newTab => {
