@@ -156,6 +156,7 @@ export class Dropdown extends React.Component<Props> {
   _handleDropdownClick = (event: SyntheticMouseEvent<>): void => {
     this._menu = this._menuFromOptions(this.props.options);
     this._menu.popup({x: event.clientX, y: event.clientY, async: true});
+    event.stopPropagation();
   };
 
   _menuFromOptions(options: $ReadOnlyArray<Option>): remote.Menu {
