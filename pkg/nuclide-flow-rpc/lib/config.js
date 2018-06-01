@@ -15,8 +15,7 @@ import invariant from 'assert';
 const config: FlowSettings = {
   functionSnippetShouldIncludeArguments: true,
   stopFlowOnExit: true,
-  lazyServer: false,
-  ideLazyMode: false,
+  lazyMode: false,
   canUseFlowBin: false,
   // This can be a full path or just a command to run.
   pathToFlow: 'flow',

@@ -136,10 +136,13 @@ async function activateLsp(): Promise<UniversalDisposable> {
     const pathToFlow = ((featureConfig.get(
       'nuclide-flow.pathToFlow',
     ): any): string);
+    const lazy = isGkEnabled('nuclide_flow_lazy_mode_ide')
+      ? ['--lazy-mode', 'ide']
+      : [];
     const lspService = await service.createMultiLspLanguageService(
       'flow',
       pathToFlow,
-      ['lsp', '--from', 'nuclide'],
+      ['lsp', '--from', 'nuclide', ...lazy],
       {
         fileNotifier,
         host,
@@ -152,8 +155,6 @@ async function activateLsp(): Promise<UniversalDisposable> {
     );
     // TODO(ljw):
     // stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
-    // '--lazy-mode ide': Boolean(featureConfig.get('nuclide-flow.lazyServer'))
-    //   and passesGK('nuclide_flow_lazy_mode_ide')
     // canUseFlowBin: canUseFlowBin: Boolean(featureConfig.get('nuclide-flow.canUseFlowBin')),
     return lspService || new NullLanguageService();
   };
@@ -237,21 +238,13 @@ async function connectionToFlowService(
   );
   const fileNotifier = await getNotifierByConnection(connection);
   const host = await getHostServices();
-  getLogger('nuclide-flow').info(
-    'Checking the nuclide_flow_lazy_mode_ide gk...',
-  );
-  const ideLazyMode = await passesGK(
-    'nuclide_flow_lazy_mode_ide',
-    15 * 1000, // 15 second timeout
-  );
-  getLogger('nuclide-flow').info('ideLazyMode: %s', ideLazyMode);
+  const lazyMode = await passesGK('nuclide_flow_lazy_mode_ide', 15000);
   const config: FlowSettings = {
     functionSnippetShouldIncludeArguments: Boolean(
       featureConfig.get('nuclide-flow.functionSnippetShouldIncludeArguments'),
     ),
     stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
-    lazyServer: Boolean(featureConfig.get('nuclide-flow.lazyServer')),
-    ideLazyMode,
+    lazyMode,
     canUseFlowBin: Boolean(featureConfig.get('nuclide-flow.canUseFlowBin')),
     pathToFlow: ((featureConfig.get('nuclide-flow.pathToFlow'): any): string),
   };

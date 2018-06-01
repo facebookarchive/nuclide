@@ -388,13 +388,7 @@ export class FlowProcess {
       this._setServerStatus(ServerStatus.NOT_INSTALLED);
       return;
     }
-    const lazy = [];
-    if (getConfig('lazyServer')) {
-      lazy.push('--lazy');
-    }
-    if (getConfig('ideLazyMode')) {
-      lazy.push('--lazy-mode', 'ide');
-    }
+    const lazy = getConfig('lazyMode') === true ? ['--lazy-mode', 'ide'] : [];
     // `flow server` will start a server in the foreground. runCommand/runCommandDetailed
     // will not resolve the promise until the process exits, which in this
     // case is never. We need to use spawn directly to get access to the
