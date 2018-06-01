@@ -22,6 +22,12 @@ export default function rootReducer(state: AppState, action: Action): AppState {
       return _deleteWelcomePage(state, action.payload.topic);
     case ActionTypes.UPDATE_WELCOME_PAGE_VISIBILITY:
       return {...state, isWelcomePageVisible: action.payload.isVisible};
+    case ActionTypes.HIDE_UNHIDE_TOPICS:
+      return _hideUnhideTopics(
+        state,
+        action.payload.topicsToHide,
+        action.payload.topicsToUnhide,
+      );
   }
 
   return state;
@@ -44,4 +50,19 @@ function _deleteWelcomePage(state: AppState, topic: string): AppState {
   const welcomePages = new Map(state.welcomePages);
   welcomePages.delete(topic);
   return {...state, welcomePages};
+}
+
+function _hideUnhideTopics(
+  state: AppState,
+  topicsToHide: Set<string>,
+  topicsToUnhide: Set<string>,
+): AppState {
+  const hiddenTopics = new Set(state.hiddenTopics);
+  topicsToHide.forEach(topic => {
+    hiddenTopics.add(topic);
+  });
+  topicsToUnhide.forEach(topic => {
+    hiddenTopics.delete(topic);
+  });
+  return {...state, hiddenTopics};
 }

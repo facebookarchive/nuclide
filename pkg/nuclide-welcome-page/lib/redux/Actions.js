@@ -14,6 +14,7 @@ import type {
   WelcomePage,
   AddWelcomePageAction,
   DeleteWelcomePageAction,
+  HideUnhideTopicsAction,
 } from '../types';
 
 import * as ActionTypes from './ActionTypes';
@@ -38,5 +39,15 @@ export function updateWelcomePageVisibility(
   return {
     type: ActionTypes.UPDATE_WELCOME_PAGE_VISIBILITY,
     payload: {isVisible},
+  };
+}
+
+export function hideUnhideTopics(
+  topicsToHide: Set<string>,
+  topicsToUnhide: Set<string>,
+): HideUnhideTopicsAction {
+  return {
+    type: ActionTypes.HIDE_UNHIDE_TOPICS,
+    payload: {topicsToHide, topicsToUnhide},
   };
 }
