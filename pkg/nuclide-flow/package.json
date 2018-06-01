@@ -43,35 +43,11 @@
         "default": false,
         "description": "If checked, only autocomplete results from Flow will appear in JS files. Not recommended. Requires restart to take effect."
       },
-      "enableReferencesHighlight": {
-        "title": "Highlight identifier references (requires restart)",
-        "type": "boolean",
-        "default": true,
-        "description": "This feature requires flow >=0.55.0."
-      },
-      "enableFindReferences": {
-        "title": "Enable global find references (requires restart)",
-        "type": "boolean",
-        "default": false,
-        "description": "EXPERIMENTAL: Has limited support and requires using an unreleased version of Flow"
-      },
-      "enableTypeHints": {
-        "title": "Enable Type Hints",
-        "type": "boolean",
-        "default": true,
-        "description": "Display tooltips with Flow types (requires restart to take effect)"
-      },
       "warnOnNotInstalled": {
         "title": "Warn when Flow is not found",
         "type": "boolean",
         "default": true,
         "description": "If a .flowconfig file is found, but Flow itself cannot be found, pop up a warning explaining how to install Flow"
-      },
-      "enablePushDiagnostics": {
-        "title": "Receive push diagnostics over a persistent connection",
-        "type": "boolean",
-        "default": false,
-        "description": "EXPERIMENTAL: This feature is in very early development. Restart required for this setting to take effect."
       },
       "functionSnippetShouldIncludeArguments": {
         "title": "Autocompleted function snippets will include calling parens and arguments.",

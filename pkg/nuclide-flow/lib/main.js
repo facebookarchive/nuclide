@@ -416,30 +416,21 @@ async function allowFlowServerRestart(): Promise<void> {
 }
 
 async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
-  const enableHighlight = featureConfig.get(
-    'nuclide-flow.enableReferencesHighlight',
-  );
   const excludeLowerPriority = Boolean(
     featureConfig.get('nuclide-flow.excludeOtherAutocomplete'),
   );
   const flowResultsFirst = Boolean(
     featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'),
   );
-  const enableTypeHints = Boolean(
-    featureConfig.get('nuclide-flow.enableTypeHints'),
-  );
   const enableFindRefs = await shouldEnableFindRefs();
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
-    // flowlint-next-line sketchy-null-mixed:off
-    highlight: enableHighlight
-      ? {
-          version: '0.1.0',
-          priority: 1,
-          analyticsEventName: 'flow.codehighlight',
-        }
-      : undefined,
+    highlight: {
+      version: '0.1.0',
+      priority: 1,
+      analyticsEventName: 'flow.codehighlight',
+    },
     outline: {
       version: '0.1.0',
       priority: 1,
@@ -471,30 +462,21 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
         shouldLogInsertedSuggestion: false,
       },
       autocompleteCacherConfig: {
-        // TODO: update the ranges once Flow LSP starts returning TextEdits.
         updateResults: (_originalRequest, request, results) =>
           filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },
       supportsResolve: false,
     },
-    diagnostics: (await shouldUsePushDiagnostics())
-      ? {
-          version: '0.2.0',
-          analyticsEventName: 'flow.receive-push-diagnostics',
-        }
-      : {
-          version: '0.1.0',
-          shouldRunOnTheFly: false,
-          analyticsEventName: 'flow.run-diagnostics',
-        },
-    typeHint: enableTypeHints
-      ? {
-          version: '0.0.0',
-          priority: 1,
-          analyticsEventName: 'nuclide-flow.typeHint',
-        }
-      : undefined,
+    diagnostics: {
+      version: '0.2.0',
+      analyticsEventName: 'flow.receive-push-diagnostics',
+    },
+    typeHint: {
+      version: '0.0.0',
+      priority: 1,
+      analyticsEventName: 'nuclide-flow.typeHint',
+    },
     findReferences: enableFindRefs
       ? {
           version: '0.1.0',
@@ -504,37 +486,10 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   };
 }
 
-async function shouldUsePushDiagnostics(): Promise<boolean> {
-  const settingEnabled = Boolean(
-    featureConfig.get('nuclide-flow.enablePushDiagnostics'),
-  );
-
-  getLogger('nuclide-flow').info(
-    'Checking the Flow persistent connection gk...',
-  );
-
-  // Wait 15 seconds for the gk check
-  const doesPassGK = await passesGK(
-    'nuclide_flow_persistent_connection',
-    15 * 1000,
-  );
-  getLogger('nuclide-flow').info(
-    `Got Flow persistent connection gk: ${String(doesPassGK)}`,
-  );
-  const result = settingEnabled || doesPassGK;
-  getLogger('nuclide-flow').info(
-    `Enabling Flow persistent connection: ${String(result)}`,
-  );
-  return result;
-}
-
 async function shouldEnableFindRefs(): Promise<boolean> {
-  return (
-    Boolean(featureConfig.get('nuclide-flow.enableFindReferences')) ||
-    passesGK(
-      'nuclide_flow_find_refs',
-      // Wait 15 seconds for the gk check
-      15 * 1000,
-    )
+  return passesGK(
+    'nuclide_flow_find_refs',
+    // Wait 15 seconds for the gk check
+    15 * 1000,
   );
 }
