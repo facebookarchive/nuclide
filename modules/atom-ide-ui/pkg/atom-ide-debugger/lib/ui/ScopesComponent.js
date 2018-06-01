@@ -82,6 +82,7 @@ export default class ScopesComponent extends React.Component<Props, State> {
         ),
       )
         .debounceTime(100)
+        .startWith(null)
         .switchMap(() => this._getScopes())
         .subscribe(scopes => {
           this.setState({scopes});
