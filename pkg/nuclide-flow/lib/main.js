@@ -153,6 +153,14 @@ async function activateLsp(): Promise<UniversalDisposable> {
           // TODO(nmote): support indirect-find-refs here
         }
       : undefined,
+    status: {
+      version: '0.1.0',
+      priority: 1,
+      observeEventName: 'flow.status.observe',
+      clickEventName: 'flow.status.click',
+      icon: 'nuclicon-flow',
+      // TODO(hchau): bannerMarkdown: The flow language service provides autocomplete, hover, hyperclick for Flow.',
+    },
   };
 
   const languageServiceFactory: (
@@ -185,6 +193,8 @@ async function activateLsp(): Promise<UniversalDisposable> {
         logCategory: 'flow-language-server',
         logLevel: 'ALL',
         additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
+        waitForDiagnostics: true,
+        waitForStatus: true,
       },
     );
     return lspService || new NullLanguageService();
