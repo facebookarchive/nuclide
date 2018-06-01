@@ -8,7 +8,7 @@
 def foo(bar=27):
     return bar * 3
 
-
+# flake8: noqa
 def baz(test={
   'one': 'two'
 }):

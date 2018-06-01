@@ -8,7 +8,7 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-commons",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+    "test": "true"
   },
   "dependencies": {
     "domexception": "1.0.1",

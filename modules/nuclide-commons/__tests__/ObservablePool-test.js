@@ -13,21 +13,22 @@
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import ObservablePool from '../ObservablePool';
+import waitsFor from '../../../jest/waits_for';
 
 describe('ObservablePool', () => {
   it('limits the concurrency of observable values with cancellation', () => {
     const pool = new ObservablePool(2);
 
     const subject1 = new Subject();
-    const spy1 = jasmine.createSpy('1').andReturn(subject1);
+    const spy1 = jest.fn().mockReturnValue(subject1);
     const req1 = pool.schedule(spy1);
 
     const subject2 = new Subject();
-    const spy2 = jasmine.createSpy('2').andReturn(subject2);
+    const spy2 = jest.fn().mockReturnValue(subject2);
     const req2 = pool.schedule(spy2);
 
     const subject3 = new Subject();
-    const spy3 = jasmine.createSpy('3').andReturn(subject3);
+    const spy3 = jest.fn().mockReturnValue(subject3);
     const req3 = pool.schedule(Observable.defer(spy3));
 
     // Nothing should happen until subscription.
@@ -37,8 +38,8 @@ describe('ObservablePool', () => {
 
     const subscription = req1.subscribe();
     req2.subscribe();
-    const nextSpy = jasmine.createSpy('nextSpy');
-    const errorSpy = jasmine.createSpy('errorSpy');
+    const nextSpy = jest.fn();
+    const errorSpy = jest.fn();
     req3.subscribe(nextSpy, errorSpy);
 
     // Only the first two should be subscribed to.
@@ -60,27 +61,27 @@ describe('ObservablePool', () => {
     expect(errorSpy).toHaveBeenCalledWith('error');
   });
 
-  it('waits for promises, even on unsubscribe', () => {
+  it('waits for promises, even on unsubscribe', async () => {
     const pool = new ObservablePool(1);
     let resolve: ?Function;
     let reject: ?Function;
-    const spy1 = jasmine.createSpy('1').andReturn(
+    const spy1 = jest.fn().mockReturnValue(
       new Promise(r => {
         resolve = r;
       }),
     );
-    const spy2 = jasmine.createSpy('2').andReturn(
+    const spy2 = jest.fn().mockReturnValue(
       new Promise((_, r) => {
         reject = r;
       }),
     );
-    const errorSpy = jasmine.createSpy('errorSpy');
+    const errorSpy = jest.fn();
     const sub1 = pool.schedule(spy1).subscribe();
     pool.schedule(spy2).subscribe(() => {}, errorSpy);
 
     // Immediately subscribe & unsubscribe -
     // the request should never be scheduled.
-    const spy3 = jasmine.createSpy('3').andReturn(Promise.resolve());
+    const spy3 = jest.fn().mockReturnValue(Promise.resolve());
     pool
       .schedule(spy3)
       .subscribe()
@@ -97,20 +98,19 @@ describe('ObservablePool', () => {
     resolve();
 
     // Promise resolution is always async...
-    waitsFor(() => spy2.wasCalled, 'spy2 should be called');
+    await waitsFor(() => spy2.mock.calls.length > 0, 'spy2 should be called');
 
-    runs(() => {
-      invariant(reject != null, 'spy2 was called');
-      reject('test');
-    });
+    invariant(reject != null, 'spy2 was called');
+    reject('test');
 
-    waitsFor(() => errorSpy.wasCalled, 'errorSpy should be called');
+    await waitsFor(
+      () => errorSpy.mock.calls.length > 0,
+      'errorSpy should be called',
+    );
 
-    runs(() => {
-      expect(errorSpy).toHaveBeenCalledWith('test');
-      expect(pool._responseListeners.size).toBe(0);
-      expect(spy3).not.toHaveBeenCalled();
-    });
+    expect(errorSpy).toHaveBeenCalledWith('test');
+    expect(pool._responseListeners.size).toBe(0);
+    expect(spy3).not.toHaveBeenCalled();
   });
 
   it('catches executor errors', () => {
@@ -130,7 +130,7 @@ describe('ObservablePool', () => {
 
   it('errors on disposal', () => {
     const pool = new ObservablePool(1);
-    const errorSpy = jasmine.createSpy('errorSpy');
+    const errorSpy = jest.fn();
     pool.schedule(() => Promise.resolve()).subscribe({error: errorSpy});
     pool.dispose();
     expect(errorSpy).toHaveBeenCalled();

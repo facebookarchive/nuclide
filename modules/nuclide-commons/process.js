@@ -186,6 +186,7 @@ export function runCommandDetailed(
   options?: ObserveProcessOptions = {},
   rest: void,
 ): Observable<DetailedProcessResult> {
+  options.dontLogInNuclide = true;
   const maxBuffer = idx(options, _ => _.maxBuffer) || DEFAULT_MAX_BUFFER;
   return observeProcess(command, args, {...options, maxBuffer})
     .catch(error => {

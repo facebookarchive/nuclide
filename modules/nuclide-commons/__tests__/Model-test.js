@@ -25,8 +25,8 @@ describe('Model', () => {
     expect(model.state.other).toBe(true);
   });
 
-  it('can be converted to an observable', () => {
-    waitsForPromise(async () => {
+  it('can be converted to an observable', async () => {
+    await (async () => {
       const model = new Model({count: 0, other: true});
       const states = model
         .toObservable()
@@ -38,6 +38,6 @@ describe('Model', () => {
         {count: 0, other: true},
         {count: 5, other: true},
       ]);
-    });
+    })();
   });
 });

@@ -20,6 +20,7 @@ function javascriptFixtureDefinitionWithPoint(point: Point) {
   return {
     path: nuclideUri.join(
       __dirname,
+      '../__mocks__',
       'fixtures',
       'symbol-definition-preview-sample.js',
     ),
@@ -32,6 +33,7 @@ function pythonFixtureDefinitionWithPoint(point: Point) {
   return {
     path: nuclideUri.join(
       __dirname,
+      '../__mocks__',
       'fixtures',
       'symbol-definition-preview-sample.py',
     ),
@@ -42,8 +44,8 @@ function pythonFixtureDefinitionWithPoint(point: Point) {
 
 describe('getDefinitionPreview', () => {
   describe('Constant symbols', () => {
-    it('returns the only line of a one-line symbol', () => {
-      waitsForPromise(async () => {
+    it('returns the only line of a one-line symbol', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(11, 6)),
         );
@@ -51,11 +53,11 @@ describe('getDefinitionPreview', () => {
         expect(preview).not.toBeNull();
         invariant(preview != null);
         expect(preview.contents).toEqual('const A_CONSTANT = 42;');
-      });
+      })();
     });
 
-    it('returns the entire multi-line symbol', () => {
-      waitsForPromise(async () => {
+    it('returns the entire multi-line symbol', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(15, 6)),
         );
@@ -69,13 +71,13 @@ describe('getDefinitionPreview', () => {
                 lines
           \`;`,
         );
-      });
+      })();
     });
   });
 
   describe('Type symbols', () => {
-    it('returns an entire multi-line type', () => {
-      waitsForPromise(async () => {
+    it('returns an entire multi-line type', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(21, 5)),
         );
@@ -88,11 +90,11 @@ describe('getDefinitionPreview', () => {
             age?: number,
           };`,
         );
-      });
+      })();
     });
 
-    it('returns only the property from within a type', () => {
-      waitsForPromise(async () => {
+    it('returns only the property from within a type', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(44, 4)),
         );
@@ -100,11 +102,11 @@ describe('getDefinitionPreview', () => {
         expect(preview).not.toBeNull();
         invariant(preview != null);
         expect(preview.contents).toEqual('name: string,');
-      });
+      })();
     });
 
-    it('returns property and value of a complex type within a type', () => {
-      waitsForPromise(async () => {
+    it('returns property and value of a complex type within a type', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(43, 2)),
         );
@@ -117,13 +119,13 @@ describe('getDefinitionPreview', () => {
             age?: number,
           },`,
         );
-      });
+      })();
     });
   });
 
   describe('Function symbols', () => {
-    it('returns just one line if parens are balanced on the first line', () => {
-      waitsForPromise(async () => {
+    it('returns just one line if parens are balanced on the first line', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(26, 16)),
         );
@@ -133,11 +135,11 @@ describe('getDefinitionPreview', () => {
         expect(preview.contents).toEqual(
           'export function aSingleLineFunctionSignature() {',
         );
-      });
+      })();
     });
 
-    it('works without parentheses as with python', () => {
-      waitsForPromise(async () => {
+    it('works without parentheses as with python', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           pythonFixtureDefinitionWithPoint(new Point(7, 4)),
         );
@@ -145,11 +147,11 @@ describe('getDefinitionPreview', () => {
         expect(preview).not.toBeNull();
         invariant(preview != null);
         expect(preview.contents).toEqual('def foo(bar=27):');
-      });
+      })();
     });
 
-    it('works without parentheses but with braces as with python', () => {
-      waitsForPromise(async () => {
+    it('works without parentheses but with braces as with python', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           pythonFixtureDefinitionWithPoint(new Point(11, 4)),
         );
@@ -161,11 +163,11 @@ describe('getDefinitionPreview', () => {
             'one': 'two'
           }):`,
         );
-      });
+      })();
     });
 
-    it("doesn't dedent beyond the current lines indentation level", () => {
-      waitsForPromise(async () => {
+    it("doesn't dedent beyond the current lines indentation level", async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(36, 18)),
         );
@@ -179,11 +181,11 @@ describe('getDefinitionPreview', () => {
             ): number {
           `,
         );
-      });
+      })();
     });
 
-    it('reads until the indentation returns to initial and parens are balanced', () => {
-      waitsForPromise(async () => {
+    it('reads until the indentation returns to initial and parens are balanced', async () => {
+      await (async () => {
         const preview = await getDefinitionPreview(
           javascriptFixtureDefinitionWithPoint(new Point(30, 16)),
         );
@@ -197,7 +199,7 @@ describe('getDefinitionPreview', () => {
             ): number {
           `,
         );
-      });
+      })();
     });
   });
 });

@@ -9,20 +9,20 @@
  * @format
  */
 
-export const getLogger = (): log4js$Logger => {
-  return {
-    debug: jest.fn(),
-    error: jest.fn(),
-    fatal: jest.fn(),
-    info: jest.fn(),
-    isLevelEnabled: jest.fn(),
-    // $FlowFixMe
-    level: jest.fn(),
-    log: jest.fn(),
-    mark: jest.fn(),
-    removeLevel: jest.fn(),
-    setLevel: jest.fn(),
-    trace: jest.fn(),
-    warn: jest.fn(),
-  };
+const logger: log4js$Logger = {
+  debug: jest.fn(),
+  error: jest.fn(),
+  fatal: jest.fn(),
+  info: jest.fn(),
+  isLevelEnabled: jest.fn(),
+  // $FlowFixMe
+  level: jest.fn(),
+  log: jest.fn(),
+  mark: jest.fn(),
+  removeLevel: jest.fn(),
+  setLevel: jest.fn(),
+  trace: jest.fn(),
+  warn: jest.fn(),
 };
+
+export const getLogger = (name: string): log4js$Logger => logger;

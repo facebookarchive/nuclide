@@ -125,7 +125,7 @@ describe('arrayEqual', () => {
   });
 
   it("doesn't call the compare function if the same array is used", () => {
-    const compare = jasmine.createSpy().andReturn(true);
+    const compare = jest.fn().mockReturnValue(true);
     const a = [1, 2, 3];
     arrayEqual(a, a, compare);
     expect(compare).not.toHaveBeenCalled();
@@ -291,13 +291,13 @@ describe('collect', () => {
 
 describe('DefaultMap', () => {
   it('calls the factory each time you get a nonexistant key', () => {
-    const spy = jasmine.createSpy().andReturn('default');
+    const spy = jest.fn().mockReturnValue('default');
     const map = new DefaultMap(spy);
     expect(map.size).toBe(0);
     expect(map.get('a')).toBe('default');
     expect(map.get('b')).toBe('default');
     expect(map.size).toBe(2);
-    expect(spy.callCount).toBe(2);
+    expect(spy.mock.calls).toHaveLength(2);
   });
 
   it('can be cleared', () => {

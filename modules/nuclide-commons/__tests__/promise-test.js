@@ -28,9 +28,16 @@ import {
 } from '../promise';
 import invariant from 'assert';
 import {expectAsyncFailure} from '../test-helpers';
+import waitsFor from '../../../jest/waits_for';
+
+jest.useFakeTimers();
 
 describe('promises::asyncFind()', () => {
-  it('Empty list of items should resolve to null.', () => {
+  beforeEach(() => {
+    jest.useRealTimers();
+  });
+  it('Empty list of items should resolve to null.', async () => {
+    jest.useRealTimers();
     let isResolved = false;
     let observedResult;
     let isRejected = false;
@@ -41,29 +48,25 @@ describe('promises::asyncFind()', () => {
       throw new Error('Should not be called.');
     };
 
-    runs(() => {
-      asyncFind(args, test)
-        .then(result => {
-          observedResult = result;
-          isResolved = true;
-        })
-        .catch(error => {
-          observedError = error;
-          isRejected = true;
-        });
-    });
+    asyncFind(args, test)
+      .then(result => {
+        observedResult = result;
+        isResolved = true;
+      })
+      .catch(error => {
+        observedError = error;
+        isRejected = true;
+      });
 
-    waitsFor(() => isResolved || isRejected);
+    await waitsFor(() => isResolved || isRejected);
 
-    runs(() => {
-      expect(isResolved).toBe(true);
-      expect(observedResult).toBe(null);
-      expect(isRejected).toBe(false);
-      expect(observedError).toBe(undefined);
-    });
+    expect(isResolved).toBe(true);
+    expect(observedResult).toBe(null);
+    expect(isRejected).toBe(false);
+    expect(observedError).toBe(undefined);
   });
 
-  it('Last item in list resolves.', () => {
+  it('Last item in list resolves.', async () => {
     let isResolved = false;
     let observedResult;
     let isRejected = false;
@@ -80,26 +83,22 @@ describe('promises::asyncFind()', () => {
       }
     };
 
-    runs(() => {
-      asyncFind(args, test)
-        .then(result => {
-          observedResult = result;
-          isResolved = true;
-        })
-        .catch(error => {
-          observedError = error;
-          isRejected = true;
-        });
-    });
+    asyncFind(args, test)
+      .then(result => {
+        observedResult = result;
+        isResolved = true;
+      })
+      .catch(error => {
+        observedError = error;
+        isRejected = true;
+      });
 
-    waitsFor(() => isResolved || isRejected);
+    await waitsFor(() => isResolved || isRejected);
 
-    runs(() => {
-      expect(isResolved).toBe(true);
-      expect(observedResult).toBe('win');
-      expect(isRejected).toBe(false);
-      expect(observedError).toBe(undefined);
-    });
+    expect(isResolved).toBe(true);
+    expect(observedResult).toBe('win');
+    expect(isRejected).toBe(false);
+    expect(observedError).toBe(undefined);
   });
 });
 
@@ -129,27 +128,27 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  it('resolves Promise when callback succeeds', () => {
+  it('resolves Promise when callback succeeds', async () => {
     const denodeifiedAsyncProduct = denodeify(asyncProduct);
-    waitsForPromise(async () => {
+    await (async () => {
       const trivialProduct = await denodeifiedAsyncProduct();
       expect(trivialProduct).toBe(1);
 
       const product = await denodeifiedAsyncProduct(1, 2, 3, 4, 5);
       expect(product).toBe(120);
-    });
+    })();
   });
 
-  it('rejects Promise when callback fails', () => {
+  it('rejects Promise when callback fails', async () => {
     const denodeifiedAsyncProduct = denodeify(asyncProduct);
-    waitsForPromise(async () => {
+    await (async () => {
       await expectAsyncFailure(
         denodeifiedAsyncProduct('a', 'b'),
         (error: Error) => {
           expect(error.message).toBe('product was NaN');
         },
       );
-    });
+    })();
   });
 
   function checksReceiver(expectedReceiver, callback) {
@@ -160,16 +159,16 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  it('result of denodeify propagates receiver as expected', () => {
+  it('result of denodeify propagates receiver as expected', async () => {
     const denodeifiedChecksReceiver = denodeify(checksReceiver);
 
-    waitsForPromise(async () => {
+    await (async () => {
       const receiver = {denodeifiedChecksReceiver};
       const result = await receiver.denodeifiedChecksReceiver(receiver);
       expect(result).toBe('winner');
-    });
+    })();
 
-    waitsForPromise(async () => {
+    await (async () => {
       const receiver = {denodeifiedChecksReceiver};
       await expectAsyncFailure(
         receiver.denodeifiedChecksReceiver(null),
@@ -177,12 +176,13 @@ describe('promises::denodeify()', () => {
           expect(error.message).toBe('unexpected receiver');
         },
       );
-    });
+    })();
   });
 });
 
 describe('promises::serializeAsyncCall()', () => {
-  it('Returns the same result when called after scheduled', () => {
+  it('Returns the same result when called after scheduled', async () => {
+    jest.useRealTimers();
     let i = 0;
     const asyncFunSpy = jasmine.createSpy('async');
     const oneAsyncCallAtATime = serializeAsyncCall(() => {
@@ -197,76 +197,70 @@ describe('promises::serializeAsyncCall()', () => {
     const result2Promise = oneAsyncCallAtATime();
     // Reuse scheduled promise and resolve to 2 in 20 ms.
     const result3Promise = oneAsyncCallAtATime();
-
-    advanceClock(11);
+    await waitPromise(11);
     // Wait for the promise to call the next chain
     // That isn't synchrnously guranteed because it happens on `process.nextTick`.
     waitsFor(() => asyncFunSpy.callCount === 2);
-    waitsForPromise(async () => {
-      advanceClock(11);
-      const results = await Promise.all([
-        result1Promise,
-        result2Promise,
-        result3Promise,
-      ]);
-      expect(results).toEqual([1, 2, 2]);
-    });
+    await waitPromise(11);
+    const results = await Promise.all([
+      result1Promise,
+      result2Promise,
+      result3Promise,
+    ]);
+    expect(results).toEqual([1, 2, 2]);
   });
 
-  it('Calls and returns (even if errors) the same number of times if serially called', () => {
-    waitsForPromise(async () => {
-      let i = 0;
-      const oneAsyncCallAtATime = serializeAsyncCall(() => {
-        i++;
-        if (i === 4) {
-          return Promise.reject('ERROR');
-        }
-        return waitPromise(10, i);
-      });
-      const result1Promise = oneAsyncCallAtATime();
-      advanceClock(11);
-      const result1 = await result1Promise;
-
-      const result2Promise = oneAsyncCallAtATime();
-      advanceClock(11);
-      const result2 = await result2Promise;
-
-      const result3Promise = oneAsyncCallAtATime();
-      advanceClock(11);
-      const result3 = await result3Promise;
-
-      const errorPromoise = oneAsyncCallAtATime();
-      advanceClock(11);
-      await expectAsyncFailure(errorPromoise, error => {
-        expect(error).toBe('ERROR');
-      });
-
-      const result5Promise = oneAsyncCallAtATime();
-      advanceClock(11);
-      const result5 = await result5Promise;
-      expect([result1, result2, result3, result5]).toEqual([1, 2, 3, 5]);
+  it('Calls and returns (even if errors) the same number of times if serially called', async () => {
+    jest.useFakeTimers();
+    let i = 0;
+    const oneAsyncCallAtATime = serializeAsyncCall(() => {
+      i++;
+      if (i === 4) {
+        return Promise.reject('ERROR');
+      }
+      return waitPromise(10, i);
     });
+    const result1Promise = oneAsyncCallAtATime();
+    jest.advanceTimersByTime(11);
+    const result1 = await result1Promise;
+
+    const result2Promise = oneAsyncCallAtATime();
+    jest.advanceTimersByTime(11);
+    const result2 = await result2Promise;
+
+    const result3Promise = oneAsyncCallAtATime();
+    jest.advanceTimersByTime(11);
+    const result3 = await result3Promise;
+
+    const errorPromoise = oneAsyncCallAtATime();
+    jest.advanceTimersByTime(11);
+    await expectAsyncFailure(errorPromoise, error => {
+      expect(error).toBe('ERROR');
+    });
+
+    const result5Promise = oneAsyncCallAtATime();
+    jest.advanceTimersByTime(11);
+    const result5 = await result5Promise;
+    expect([result1, result2, result3, result5]).toEqual([1, 2, 3, 5]);
   });
 });
 
 describe('promises::asyncLimit()', () => {
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
   });
 
-  it('runs in series if limit is 1', () => {
-    waitsForPromise(async () => {
-      const {result, parallelismHistory} = await captureParallelismHistory(
-        asyncLimit,
-        [[1, 2, 3], 1, item => waitPromise(10, item + 1)],
-      );
-      expect(parallelismHistory).toEqual([1, 1, 1]);
-      expect(result).toEqual([2, 3, 4]);
-    });
+  it('runs in series if limit is 1', async () => {
+    const {result, parallelismHistory} = await captureParallelismHistory(
+      asyncLimit,
+      [[1, 2, 3], 1, item => waitPromise(10, item + 1)],
+    );
+    expect(parallelismHistory).toEqual([1, 1, 1]);
+    expect(result).toEqual([2, 3, 4]);
   });
 
-  it('runs with the specified limit, until finishing', () => {
-    waitsForPromise(async () => {
+  it('runs with the specified limit, until finishing', async () => {
+    await (async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
         asyncLimit,
         [
@@ -277,20 +271,20 @@ describe('promises::asyncLimit()', () => {
       );
       expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3]);
-    });
+    })();
   });
 
-  it('works when the limit is bigger than the array length', () => {
-    waitsForPromise(async () => {
+  it('works when the limit is bigger than the array length', async () => {
+    await (async () => {
       const result = await asyncLimit([1, 2, 3], 10, item =>
         waitPromise(10, item * 2),
       );
       expect(result).toEqual([2, 4, 6]);
-    });
+    })();
   });
 
-  it('a rejected promise rejects the whole call with the error', () => {
-    waitsForPromise(async () => {
+  it('a rejected promise rejects the whole call with the error', async () => {
+    await (async () => {
       await expectAsyncFailure(
         asyncLimit([1], 1, async item => {
           throw new Error('rejected iterator promise');
@@ -299,25 +293,25 @@ describe('promises::asyncLimit()', () => {
           expect(error.message).toBe('rejected iterator promise');
         },
       );
-    });
+    })();
   });
 
-  it('works when the array is empty', () => {
-    waitsForPromise(async () => {
+  it('works when the array is empty', async () => {
+    await (async () => {
       const result = await asyncLimit([], 1, () => Promise.resolve());
       expect(result).toEqual([]);
-    });
+    })();
   });
 });
 
 describe('promises::asyncFilter()', () => {
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
   });
 
   // eslint-disable-next-line max-len
-  it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
-    waitsForPromise(async () => {
+  it('filters an array with an async iterator and maximum parallelization when no limit is specified', async () => {
+    await (async () => {
       const {
         result: filtered,
         parallelismHistory,
@@ -327,11 +321,11 @@ describe('promises::asyncFilter()', () => {
       ]);
       expect(filtered).toEqual([3, 4, 5]);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
-    });
+    })();
   });
 
-  it('filters an array with a limit on parallelization', () => {
-    waitsForPromise(async () => {
+  it('filters an array with a limit on parallelization', async () => {
+    await (async () => {
       const {
         result: filtered,
         parallelismHistory,
@@ -343,18 +337,18 @@ describe('promises::asyncFilter()', () => {
       expect(filtered).toEqual([3, 4, 5]);
       // Increasing promise resolve time will gurantee maximum parallelization.
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
-    });
+    })();
   });
 });
 
 describe('promises::asyncObjFilter()', () => {
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
   });
 
   // eslint-disable-next-line max-len
-  it('filters an object with an async iterator and maximum parallelization when no limit is specified', () => {
-    waitsForPromise(async () => {
+  it('filters an object with an async iterator and maximum parallelization when no limit is specified', async () => {
+    await (async () => {
       const {
         result: filtered,
         parallelismHistory,
@@ -364,11 +358,11 @@ describe('promises::asyncObjFilter()', () => {
       ]);
       expect(filtered).toEqual({c: 3, d: 4, e: 5});
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
-    });
+    })();
   });
 
-  it('filters an array with a limit on parallelization', () => {
-    waitsForPromise(async () => {
+  it('filters an array with a limit on parallelization', async () => {
+    await (async () => {
       const {
         result: filtered,
         parallelismHistory,
@@ -380,78 +374,78 @@ describe('promises::asyncObjFilter()', () => {
       expect(filtered).toEqual({c: 3, d: 4, e: 5});
       // Increasing promise resolve time will gurantee maximum parallelization.
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
-    });
+    })();
   });
 });
 
 describe('promises::asyncSome()', () => {
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
   });
 
   // eslint-disable-next-line max-len
-  it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
-    waitsForPromise(async () => {
+  it('some an array with an async iterator and maximum parallelization when no limit is specified', async () => {
+    await (async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
         asyncSome,
         [[1, 2, 3, 4, 5], item => waitPromise(10, item === 6)],
       );
       expect(result).toEqual(false);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
-    });
+    })();
   });
 
-  it('some an array with a limit on parallelization', () => {
-    waitsForPromise(async () => {
+  it('some an array with a limit on parallelization', async () => {
+    await (async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
         asyncSome,
         [[1, 2, 3, 4, 5], item => waitPromise(10 + item, item === 5), 3],
       );
       expect(result).toEqual(true);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
-    });
+    })();
   });
 });
 
 describe('promises::lastly', () => {
-  it('executes after a resolved promise', () => {
-    waitsForPromise(async () => {
+  it('executes after a resolved promise', async () => {
+    await (async () => {
       const spy = jasmine.createSpy('spy');
       const result = await lastly(Promise.resolve(1), spy);
       expect(result).toBe(1);
       expect(spy).toHaveBeenCalled();
-    });
+    })();
   });
 
-  it('executes after a rejected promise', () => {
-    waitsForPromise(async () => {
+  it('executes after a rejected promise', async () => {
+    await (async () => {
       const spy = jasmine.createSpy('spy');
       await expectAsyncFailure(lastly(Promise.reject(2), spy), err => {
         expect(err).toBe(2);
       });
       expect(spy).toHaveBeenCalled();
-    });
+    })();
   });
 
-  it('works for async functions', () => {
-    waitsForPromise(async () => {
+  it('works for async functions', async () => {
+    await (async () => {
       const spy = jasmine.createSpy('spy');
       const result = await lastly(Promise.resolve(1), async () => {
         spy();
       });
       expect(result).toBe(1);
       expect(spy).toHaveBeenCalled();
-    });
+    })();
   });
 });
 
 describe('promises::retryLimit()', () => {
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
   });
 
-  it('retries and fails 2 times before resolving to an acceptable result where limit = 5', () => {
-    waitsForPromise(async () => {
+  it('retries and fails 2 times before resolving to an acceptable result where limit = 5', async () => {
+    await (async () => {
       let succeedAfter = 2;
       let calls = 0;
       let validationCalls = 0;
@@ -475,11 +469,11 @@ describe('promises::retryLimit()', () => {
       expect(calls).toBe(3);
       expect(validationCalls).toBe(1);
       expect(retrialsResult).toBe('RESULT');
-    });
+    })();
   });
 
-  it('retries and fails consistently', () => {
-    waitsForPromise(async () => {
+  it('retries and fails consistently', async () => {
+    await (async () => {
       let calls = 0;
       let validationCalls = 0;
       const failRetriesPromise = retryLimit(
@@ -498,11 +492,11 @@ describe('promises::retryLimit()', () => {
       });
       expect(calls).toBe(2);
       expect(validationCalls).toBe(0);
-    });
+    })();
   });
 
-  it('accepts a null response', () => {
-    waitsForPromise(async () => {
+  it('accepts a null response', async () => {
+    await (async () => {
       let succeedAfter = 2;
       let calls = 0;
       let validationCalls = 0;
@@ -524,11 +518,11 @@ describe('promises::retryLimit()', () => {
       expect(retryResult).toBe(null);
       expect(calls).toBe(3);
       expect(validationCalls).toBe(3);
-    });
+    })();
   });
 
-  it('no valid response is ever got', () => {
-    waitsForPromise(async () => {
+  it('no valid response is ever got', async () => {
+    await (async () => {
       const nonValidRetriesPromise = retryLimit(
         () => {
           return Promise.resolve('A');
@@ -541,7 +535,7 @@ describe('promises::retryLimit()', () => {
       await expectAsyncFailure(nonValidRetriesPromise, error => {
         expect(error.message).toBe('No valid response found!');
       });
-    });
+    })();
   });
 });
 
@@ -549,12 +543,12 @@ describe('promises::RequestSerializer()', () => {
   let requestSerializer: RequestSerializer<any> = (null: any);
 
   beforeEach(() => {
-    jasmine.useRealClock();
+    jest.useRealTimers();
     requestSerializer = new RequestSerializer();
   });
 
-  it('gets outdated result for old promises resolving after newer calls', () => {
-    waitsForPromise(async () => {
+  it('gets outdated result for old promises resolving after newer calls', async () => {
+    await (async () => {
       const oldPromise = requestSerializer.run(waitPromise(10, 'OLD'));
       const newPromise = requestSerializer.run(waitPromise(5, 'NEW'));
       const {status: oldStatus} = await oldPromise;
@@ -562,65 +556,64 @@ describe('promises::RequestSerializer()', () => {
       const newResult = await newPromise;
       invariant(newResult.status === 'success');
       expect(newResult.result).toBe('NEW');
-    });
+    })();
   });
 
-  it('waitForLatestResult: waits for the latest result', () => {
-    waitsForPromise(async () => {
+  it('waitForLatestResult: waits for the latest result', async () => {
+    await (async () => {
       requestSerializer.run(waitPromise(5, 'OLD'));
       requestSerializer.run(waitPromise(10, 'NEW'));
       const latestResult = await requestSerializer.waitForLatestResult();
       expect(latestResult).toBe('NEW');
-    });
+    })();
   });
 
-  it('waitForLatestResult: waits even if the first run did not kick off', () => {
-    waitsForPromise(async () => {
+  it('waitForLatestResult: waits even if the first run did not kick off', async () => {
+    await (async () => {
       const latestResultPromise = requestSerializer.waitForLatestResult();
       requestSerializer.run(waitPromise(10, 'RESULT'));
       const latestResult = await latestResultPromise;
       expect(latestResult).toBe('RESULT');
-    });
+    })();
   });
 
-  it('waitForLatestResult: does not wait for the first, if the second resolves faster', () => {
-    waitsForPromise(async () => {
+  it('waitForLatestResult: does not wait for the first, if the second resolves faster', async () => {
+    await (async () => {
       requestSerializer.run(waitPromise(1000000, 'OLD')); // This will never resolve.
       requestSerializer.run(waitPromise(10, 'NEW'));
       const latestResult = await requestSerializer.waitForLatestResult();
       expect(latestResult).toBe('NEW');
-    });
+    })();
   });
 });
 
 describe('timeoutPromise', () => {
-  it('should resolve normally if within the timeout', () => {
-    waitsForPromise(async () => {
+  it('should resolve normally if within the timeout', async () => {
+    await (async () => {
       const inputPromise = new Promise(resolve => resolve('foo'));
       const outputPromise = timeoutPromise(inputPromise, 1000);
       expect(await outputPromise).toBe('foo');
-    });
+    })();
   });
 
-  it('should reject if the given promise rejects', () => {
-    waitsForPromise(async () => {
+  it('should reject if the given promise rejects', async () => {
+    await (async () => {
       const inputPromise = new Promise((resolve, reject) => reject('foo'));
       const outputPromise = timeoutPromise(inputPromise, 1000).catch(
         value => `rejected with ${value}`,
       );
       expect(await outputPromise).toBe('rejected with foo');
-    });
+    })();
   });
 
-  it('should reject if the given promise takes too long', () => {
-    waitsForPromise(async () => {
-      const inputPromise = new Promise(resolve => setTimeout(resolve, 2000));
-      const outputPromise = timeoutPromise(inputPromise, 1000).catch(
-        value => value,
-      );
-      advanceClock(1500);
-      expect(await outputPromise).toEqual(new TimedOutError(1000));
-    });
+  it('should reject if the given promise takes too long', async () => {
+    jest.useFakeTimers();
+    const inputPromise = new Promise(resolve => setTimeout(resolve, 2000));
+    const outputPromise = timeoutPromise(inputPromise, 1000).catch(
+      value => value,
+    );
+    jest.advanceTimersByTime(1500);
+    expect(await outputPromise).toEqual(new TimedOutError(1000));
   });
 });
 

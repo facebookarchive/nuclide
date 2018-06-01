@@ -30,7 +30,7 @@ class Atom {
   async teardown() {}
 
   runScript(script: any): ?any {
-    // unfortunately electron clashes if we try to access anything
+    // unfortunately electron crashes if we try to access anything
     // on global from within a vm content. The only workaround i found
     // is to lose sandboxing and run everything in a single context.
     // We should look into using iframes/webviews in the future.

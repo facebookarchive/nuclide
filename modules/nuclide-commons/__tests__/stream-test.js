@@ -14,10 +14,11 @@ import {observeStream, observeRawStream, writeToStream} from '../stream';
 import fsPromise from '../fsPromise';
 import Stream from 'stream';
 import fs from 'fs';
+import path from 'path';
 
 describe('commons-node/stream', () => {
-  it('observeStream', () => {
-    waitsForPromise(async () => {
+  it('observeStream', async () => {
+    await (async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
       const stream = new Stream.PassThrough();
       const promise = observeStream(stream)
@@ -29,11 +30,11 @@ describe('commons-node/stream', () => {
       stream.end();
       const output = await promise;
       expect(output.join('')).toEqual(input.join(''));
-    });
+    })();
   });
 
-  it('observeStream - error', () => {
-    waitsForPromise(async () => {
+  it('observeStream - error', async () => {
+    await (async () => {
       const stream = new Stream.PassThrough();
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
       const output = [];
@@ -54,13 +55,16 @@ describe('commons-node/stream', () => {
       const result = await promise;
       expect(output).toEqual(input);
       expect(result).toBe(error);
-    });
+    })();
   });
 
-  it('writeToStream', () => {
-    waitsForPromise(async () => {
+  it('writeToStream', async () => {
+    await (async () => {
       const tempPath = await fsPromise.tempfile();
-      const fixturePath = 'spec/fixtures/lyrics';
+      const fixturePath = path.resolve(
+        __dirname,
+        '../__mocks__/fixtures/lyrics',
+      );
       const stream = fs.createWriteStream(tempPath, {highWaterMark: 10});
       // Read faster than we write to test buffering
       const observable = observeRawStream(
@@ -72,6 +76,6 @@ describe('commons-node/stream', () => {
       const writtenFile = await fsPromise.readFile(tempPath);
       const fixtureFile = await fsPromise.readFile(fixturePath);
       expect(writtenFile).toEqual(fixtureFile);
-    });
+    })();
   });
 });

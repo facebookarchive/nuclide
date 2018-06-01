@@ -13,19 +13,23 @@
 import invariant from 'assert';
 import debounce from '../debounce';
 
+const sleep = n => new Promise(resolve => setTimeout(resolve, n));
+
 describe('debounce()', () => {
-  it('only calls function once after time advances', () => {
+  it('only calls function once after time advances', async () => {
+    jest.useRealTimers();
     const timerCallback: any = jasmine.createSpy('timerCallback');
-    const debouncedFunc = debounce(timerCallback, 100, false);
+    const debouncedFunc = debounce(timerCallback, 10, false);
 
     debouncedFunc();
     expect(timerCallback).not.toHaveBeenCalled();
 
-    advanceClock(101);
+    await sleep(50);
     expect(timerCallback).toHaveBeenCalled();
   });
 
   it('disposes', () => {
+    jest.useFakeTimers();
     const timerCallback: any = jasmine.createSpy('timerCallback');
     const debouncedFunc = debounce(timerCallback, 100, false);
 
@@ -34,11 +38,12 @@ describe('debounce()', () => {
 
     debouncedFunc.dispose();
 
-    advanceClock(101);
+    jest.advanceTimersByTime(101);
     expect(timerCallback).not.toHaveBeenCalled();
   });
 
   it('does not swallow flow types', () => {
+    jest.useFakeTimers();
     const func = (a: string): number => 1;
     const debounced = debounce(func, 0);
     const ret = debounced('bar');

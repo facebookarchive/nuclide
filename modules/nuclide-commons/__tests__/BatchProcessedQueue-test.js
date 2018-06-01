@@ -12,6 +12,8 @@
 
 import BatchProcessedQueue from '../BatchProcessedQueue';
 
+jest.useFakeTimers();
+
 describe('analytics - BatchProcessedQueue', () => {
   it('regular operation', () => {
     const handler = jasmine.createSpy('handler');
@@ -24,13 +26,13 @@ describe('analytics - BatchProcessedQueue', () => {
     queue.add(5);
     expect(handler).not.toHaveBeenCalled();
 
-    advanceClock(4999);
+    jest.advanceTimersByTime(4999);
     expect(handler).not.toHaveBeenCalled();
-    advanceClock(1);
+    jest.advanceTimersByTime(1);
     expect(handler).toHaveBeenCalledWith([1, 2, 3, 4, 5]);
 
     queue.add(42);
-    advanceClock(10000);
+    jest.advanceTimersByTime(10000);
     expect(handler).toHaveBeenCalledWith([42]);
   });
 });

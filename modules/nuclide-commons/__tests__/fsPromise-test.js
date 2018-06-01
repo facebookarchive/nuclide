@@ -23,8 +23,8 @@ describe('fsPromise test suite', () => {
   describe('findNearestFile()', () => {
     let dirPath: string = (null: any);
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
+    beforeEach(async () => {
+      await (async () => {
         dirPath = await generateFixture(
           'nearest_test',
           new Map([
@@ -32,45 +32,45 @@ describe('fsPromise test suite', () => {
             ['nested_dir/.another_file', 'just another file'],
           ]),
         );
-      });
+      })();
     });
 
-    it('find the file if given the exact directory', () => {
-      waitsForPromise(async () => {
+    it('find the file if given the exact directory', async () => {
+      await (async () => {
         const foundPath = await fsPromise.findNearestFile(
           '.some_file',
           dirPath,
         );
         expect(foundPath).toBe(dirPath);
-      });
+      })();
     });
 
-    it('find the file if given a nested directory', () => {
-      waitsForPromise(async () => {
+    it('find the file if given a nested directory', async () => {
+      await (async () => {
         const foundPath = await fsPromise.findNearestFile(
           '.some_file',
           nuclideUri.join(dirPath, 'nested_dir'),
         );
         expect(foundPath).toBe(dirPath);
-      });
+      })();
     });
 
-    it('does not find the file if not existing', () => {
-      waitsForPromise(async () => {
+    it('does not find the file if not existing', async () => {
+      await (async () => {
         const foundPath = await fsPromise.findNearestFile(
           'non-existent.txt',
           nuclideUri.join(dirPath, 'nested_dir'),
         );
         expect(foundPath).toBe(null);
-      });
+      })();
     });
   });
 
   describe('findFurthestFile()', () => {
     let dirPath: string = (null: any);
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
+    beforeEach(async () => {
+      await (async () => {
         dirPath = await generateFixture(
           'furthest_test',
           new Map([
@@ -82,22 +82,22 @@ describe('fsPromise test suite', () => {
             ['0/1/2/3/4/.some_file', 'just f file'],
           ]),
         );
-      });
+      })();
     });
 
-    it('find the file if given the exact directory', () => {
-      waitsForPromise(async () => {
+    it('find the file if given the exact directory', async () => {
+      await (async () => {
         const expectedPath = nuclideUri.join(dirPath, '0');
         const foundPath = await fsPromise.findFurthestFile(
           '.some_file',
           expectedPath,
         );
         expect(foundPath).toBe(expectedPath);
-      });
+      })();
     });
 
-    it('finds the furthest file if given a nested directory', () => {
-      waitsForPromise(async () => {
+    it('finds the furthest file if given a nested directory', async () => {
+      await (async () => {
         const expectedPath = nuclideUri.join(dirPath, '0');
         const startPath = nuclideUri.join(dirPath, '0/1/2/3/4');
         const foundPath = await fsPromise.findFurthestFile(
@@ -105,11 +105,11 @@ describe('fsPromise test suite', () => {
           startPath,
         );
         expect(foundPath).toBe(expectedPath);
-      });
+      })();
     });
 
-    it('terminates search as soon as file is not found if given the stopOnMissing flag', () => {
-      waitsForPromise(async () => {
+    it('terminates search as soon as file is not found if given the stopOnMissing flag', async () => {
+      await (async () => {
         const expectedPath = nuclideUri.join(dirPath, '0/1/2/3');
         const startPath = nuclideUri.join(dirPath, '0/1/2/3/4');
         const foundPath = await fsPromise.findFurthestFile(
@@ -118,18 +118,18 @@ describe('fsPromise test suite', () => {
           true /* stopOnMissing */,
         );
         expect(foundPath).toBe(expectedPath);
-      });
+      })();
     });
 
-    it('does not find the file if not existing', () => {
-      waitsForPromise(async () => {
+    it('does not find the file if not existing', async () => {
+      await (async () => {
         const startPath = nuclideUri.join(dirPath, '0/1/2/3/4');
         const foundPath = await fsPromise.findFurthestFile(
           'non-existent.txt',
           startPath,
         );
         expect(foundPath).toBe(null);
-      });
+      })();
     });
   });
 
@@ -157,8 +157,8 @@ describe('fsPromise test suite', () => {
       pathToWriteFile = nuclideUri.join(tempDir, 'test');
     });
 
-    it('can write to a file', () => {
-      waitsForPromise(async () => {
+    it('can write to a file', async () => {
+      await (async () => {
         await fsPromise.writeFileAtomic(
           pathToWriteFile,
           "I'm a little teapot.\n",
@@ -170,32 +170,32 @@ describe('fsPromise test suite', () => {
         expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(
           0o666 & ~process.umask(), // eslint-disable-line no-bitwise
         );
-      });
+      })();
     });
 
-    it('calls mkdirp', () => {
-      waitsForPromise(async () => {
+    it('calls mkdirp', async () => {
+      await (async () => {
         const subPath = nuclideUri.join(pathToWriteFile, 'test');
         await fsPromise.writeFileAtomic(subPath, 'test1234\n');
         expect(fs.readFileSync(subPath).toString()).toEqual('test1234\n');
-      });
+      })();
     });
 
-    it('preserves permissions on files', () => {
+    it('preserves permissions on files', async () => {
       fs.writeFileSync(pathToWriteFile, 'test');
       fs.chmodSync(pathToWriteFile, 0o700);
 
-      waitsForPromise(async () => {
+      await (async () => {
         await fsPromise.writeFileAtomic(pathToWriteFile, 'test2');
         expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('test2');
         const stat = fs.statSync(pathToWriteFile);
         // eslint-disable-next-line no-bitwise
         expect(stat.mode & 0o777).toEqual(0o700);
-      });
+      })();
     });
 
-    it('errors if file cannot be written', () => {
-      waitsForPromise(async () => {
+    it('errors if file cannot be written', async () => {
+      await (async () => {
         let err;
         try {
           await fsPromise.writeFileAtomic(
@@ -206,7 +206,7 @@ describe('fsPromise test suite', () => {
           err = e;
         }
         invariant(err != null, 'Expected an error');
-      });
+      })();
     });
   });
 });

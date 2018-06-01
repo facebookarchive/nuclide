@@ -44,30 +44,30 @@ const diffsAreEqual = (a, b) =>
   setsAreEqual(a.added, b.added) && setsAreEqual(a.removed, b.removed);
 const createDisposable = () => {
   const disposable = new UniversalDisposable();
-  spyOn(disposable, 'dispose');
+  jest.spyOn(disposable, 'dispose');
   return disposable;
 };
 
 describe('nuclide-commons/observable', () => {
   describe('splitStream', () => {
-    it('splits streams', () => {
-      waitsForPromise(async () => {
+    it('splits streams', async () => {
+      await (async () => {
         const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
         const output = await splitStream(Observable.from(input))
           .toArray()
           .toPromise();
         expect(output).toEqual(['foo\n', 'bar\n', '\n', 'baz\n', 'blar']);
-      });
+      })();
     });
 
-    it('splits streams without the newline', () => {
-      waitsForPromise(async () => {
+    it('splits streams without the newline', async () => {
+      await (async () => {
         const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
         const output = await splitStream(Observable.from(input), false)
           .toArray()
           .toPromise();
         expect(output).toEqual(['foo', 'bar', '', 'baz', 'blar']);
-      });
+      })();
     });
   });
 
@@ -75,14 +75,14 @@ describe('nuclide-commons/observable', () => {
     it('completes the stream when something matches the predicate', () => {
       const source = new Subject();
       const result = source.let(takeWhileInclusive(x => x !== 2));
-      const next: (n: number) => mixed = jasmine.createSpy();
-      const complete: () => mixed = jasmine.createSpy();
+      const next: (n: number) => mixed = jest.fn();
+      const complete: () => mixed = jest.fn();
       result.subscribe({next, complete});
       source.next(1);
       source.next(2);
       source.next(3);
       expect(complete).toHaveBeenCalled();
-      expect(next.calls.map(call => call.args[0])).toEqual([1, 2]);
+      expect(next.mock.calls.map(call => call[0])).toEqual([1, 2]);
     });
   });
 
@@ -135,8 +135,8 @@ describe('nuclide-commons/observable', () => {
   });
 
   describe('diffSets', () => {
-    it('emits a diff for the first item', () => {
-      waitsForPromise(async () => {
+    it('emits a diff for the first item', async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets())
@@ -152,11 +152,11 @@ describe('nuclide-commons/observable', () => {
             removed: new Set(),
           }),
         ).toBe(true);
-      });
+      })();
     });
 
-    it('correctly identifies removed items', () => {
-      waitsForPromise(async () => {
+    it('correctly identifies removed items', async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets())
@@ -167,11 +167,11 @@ describe('nuclide-commons/observable', () => {
         source.complete();
         const diffs = await diffsPromise;
         expect(setsAreEqual(diffs[1].removed, new Set([3]))).toBe(true);
-      });
+      })();
     });
 
-    it('correctly identifies removed items when a hash function is used', () => {
-      waitsForPromise(async () => {
+    it('correctly identifies removed items when a hash function is used', async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets(x => x.key))
@@ -186,11 +186,11 @@ describe('nuclide-commons/observable', () => {
         expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(
           true,
         );
-      });
+      })();
     });
 
-    it('correctly identifies added items', () => {
-      waitsForPromise(async () => {
+    it('correctly identifies added items', async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets())
@@ -201,11 +201,11 @@ describe('nuclide-commons/observable', () => {
         source.complete();
         const diffs = await diffsPromise;
         expect(setsAreEqual(diffs[1].added, new Set([3]))).toBe(true);
-      });
+      })();
     });
 
-    it('correctly identifies added items when a hash function is used', () => {
-      waitsForPromise(async () => {
+    it('correctly identifies added items when a hash function is used', async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets(x => x.key))
@@ -220,11 +220,11 @@ describe('nuclide-commons/observable', () => {
         expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(
           true,
         );
-      });
+      })();
     });
 
-    it("doesn't emit a diff when nothing changes", () => {
-      waitsForPromise(async () => {
+    it("doesn't emit a diff when nothing changes", async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets())
@@ -236,11 +236,11 @@ describe('nuclide-commons/observable', () => {
         const diffs = await diffsPromise;
         // Make sure we only get one diff (from the implicit initial empty set).
         expect(diffs.length).toBe(1);
-      });
+      })();
     });
 
-    it("doesn't emit a diff when nothing changes and a hash function is used", () => {
-      waitsForPromise(async () => {
+    it("doesn't emit a diff when nothing changes and a hash function is used", async () => {
+      await (async () => {
         const source = new Subject();
         const diffsPromise = source
           .let(diffSets(x => x.key))
@@ -254,22 +254,20 @@ describe('nuclide-commons/observable', () => {
         const diffs = await diffsPromise;
         // Make sure we only get one diff (from the implicit initial empty set).
         expect(diffs.length).toBe(1);
-      });
+      })();
     });
   });
 
   describe('reconcileSetDiffs', () => {
     it("calls the add action for each item that's added", () => {
       const diffs = new Subject();
-      const addAction = jasmine
-        .createSpy()
-        .andReturn(new UniversalDisposable());
+      const addAction = jest.fn().mockReturnValue(new UniversalDisposable());
       reconcileSetDiffs(diffs, addAction);
       diffs.next({
         added: new Set(['a', 'b']),
         removed: new Set(),
       });
-      expect(addAction.calls.map(call => call.args[0])).toEqual(['a', 'b']);
+      expect(addAction.mock.calls.map(call => call[0])).toEqual(['a', 'b']);
     });
 
     it("disposes for each item that's removed", () => {
@@ -401,17 +399,17 @@ describe('nuclide-commons/observable', () => {
   });
 
   describe('concatLatest', () => {
-    it('should work with empty input', () => {
-      waitsForPromise(async () => {
+    it('should work with empty input', async () => {
+      await (async () => {
         const output = await concatLatest()
           .toArray()
           .toPromise();
         expect(output).toEqual([]);
-      });
+      })();
     });
 
-    it('should work with several observables', () => {
-      waitsForPromise(async () => {
+    it('should work with several observables', async () => {
+      await (async () => {
         const output = await concatLatest(
           Observable.of([], [1]),
           Observable.of([2]),
@@ -420,14 +418,14 @@ describe('nuclide-commons/observable', () => {
           .toArray()
           .toPromise();
         expect(output).toEqual([[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]);
-      });
+      })();
     });
   });
 
   describe('throttle', () => {
     it('emits the leading item immeditately by default', () => {
       const source = Observable.of(1, 2).merge(Observable.never());
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       source.let(throttle(Observable.never())).subscribe(spy);
       expect(spy).toHaveBeenCalledWith(1);
     });
@@ -435,37 +433,37 @@ describe('nuclide-commons/observable', () => {
     it("doesn't emit the leading item twice", () => {
       const source = Observable.of(1).merge(Observable.never());
       const notifier = Observable.of(null); // emits immediately on subscription.
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       source.let(throttle(notifier)).subscribe(spy);
-      expect(spy.callCount).toBe(1);
+      expect(spy.mock.calls.length).toBe(1);
     });
 
     it('throttles', () => {
       const source = new Subject();
       const notifier = new Subject();
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       source.let(throttle(notifier)).subscribe(spy);
       source.next(1);
-      spy.reset();
+      spy.mockClear();
       source.next(2);
       expect(spy).not.toHaveBeenCalled();
       notifier.next();
       expect(spy).toHaveBeenCalledWith(2);
-      spy.reset();
+      spy.mockClear();
       source.next(3);
       expect(spy).not.toHaveBeenCalled();
       source.next(4);
       expect(spy).not.toHaveBeenCalled();
       notifier.next();
       expect(spy).toHaveBeenCalledWith(4);
-      expect(spy.callCount).toBe(1);
+      expect(spy.mock.calls.length).toBe(1);
     });
 
     it('subscribes to the source once per subscription', () => {
-      const spy = jasmine.createSpy();
+      const spy = jest.fn();
       const source = Observable.create(spy);
       source.let(throttle(Observable.of(null))).subscribe();
-      expect(spy.callCount).toBe(1);
+      expect(spy.mock.calls.length).toBe(1);
     });
   });
 
@@ -475,8 +473,8 @@ describe('nuclide-commons/observable', () => {
     beforeEach(() => {
       oldRequestAnimationFrame = window.requestAnimationFrame;
       oldCancelAnimationFrame = window.cancelAnimationFrame;
-      window.requestAnimationFrame = jasmine.createSpy('requestAnimationFrame');
-      window.cancelAnimationFrame = jasmine.createSpy('cancelAnimationFrame');
+      window.requestAnimationFrame = jest.fn();
+      window.cancelAnimationFrame = jest.fn();
     });
 
     afterEach(() => {
@@ -499,30 +497,30 @@ describe('nuclide-commons/observable', () => {
   });
 
   describe('bufferUntil', () => {
-    it('buffers based on the predicate', () => {
-      waitsForPromise(async () => {
+    it('buffers based on the predicate', async () => {
+      await (async () => {
         const chunks = await Observable.of(1, 2, 3, 4)
           .let(bufferUntil(x => x % 2 === 0))
           .toArray()
           .toPromise();
         expect(chunks).toEqual([[1, 2], [3, 4]]);
-      });
+      })();
     });
 
-    it('provides the current buffer', () => {
-      waitsForPromise(async () => {
+    it('provides the current buffer', async () => {
+      await (async () => {
         const chunks = await Observable.of(1, 2, 3, 4)
           .let(bufferUntil((x, buffer) => buffer.length === 2))
           .toArray()
           .toPromise();
         expect(chunks).toEqual([[1, 2], [3, 4]]);
-      });
+      })();
     });
   });
 
   describe('completingSwitchMap', () => {
-    it('propagates completions to the inner observable', () => {
-      waitsForPromise(async () => {
+    it('propagates completions to the inner observable', async () => {
+      await (async () => {
         const results = await Observable.of(1, 2)
           .let(
             completingSwitchMap(x => {
@@ -535,47 +533,45 @@ describe('nuclide-commons/observable', () => {
           .toArray()
           .toPromise();
         expect(results).toEqual([2, 3]);
-      });
+      })();
     });
   });
 
   describe('fastDebounce', () => {
-    it('debounces events', () => {
-      waitsForPromise(async () => {
-        let nextSpy: JasmineSpy;
-        const originalCreate = Observable.create.bind(Observable);
-        // Spy on the created observer's next to ensure that we always cancel
-        // the last debounced timer on unsubscribe.
-        spyOn(Observable, 'create').andCallFake(callback => {
-          return originalCreate(observer => {
-            nextSpy = spyOn(observer, 'next').andCallThrough();
-            return callback(observer);
-          });
+    it('debounces events', async () => {
+      let nextSpy;
+      const originalCreate = Observable.create.bind(Observable);
+      // Spy on the created observer's next to ensure that we always cancel
+      // the last debounced timer on unsubscribe.
+      jest.spyOn(Observable, 'create').mockImplementation(callback => {
+        return originalCreate(observer => {
+          nextSpy = jest.spyOn(observer, 'next');
+          return callback(observer);
         });
-
-        const subject = new Subject();
-        const promise = subject
-          .let(fastDebounce(10))
-          .toArray()
-          .toPromise();
-
-        subject.next(1);
-        subject.next(2);
-        advanceClock(20);
-
-        subject.next(3);
-        advanceClock(5);
-
-        subject.next(4);
-        advanceClock(15);
-
-        subject.next(5);
-        subject.complete();
-        advanceClock(20);
-
-        expect(await promise).toEqual([2, 4]);
-        expect(nullthrows(nextSpy).callCount).toBe(2);
       });
+
+      const subject = new Subject();
+      const promise = subject
+        .let(fastDebounce(10))
+        .toArray()
+        .toPromise();
+
+      subject.next(1);
+      subject.next(2);
+      await sleep(20);
+
+      subject.next(3);
+      await sleep(5);
+
+      subject.next(4);
+      await sleep(15);
+
+      subject.next(5);
+      subject.complete();
+      await sleep(20);
+
+      expect(await promise).toEqual([2, 4]);
+      expect(nullthrows(nextSpy).mock.calls.length).toBe(2);
     });
 
     it('passes errors through immediately', () => {
@@ -592,9 +588,9 @@ describe('nuclide-commons/observable', () => {
   });
 
   describe('microtask', () => {
-    it('is cancelable', () => {
-      waitsForPromise(async () => {
-        const spy = jasmine.createSpy();
+    it('is cancelable', async () => {
+      await (async () => {
+        const spy = jest.fn();
         const sub = microtask.subscribe(spy);
         let resolve;
         const promise = new Promise(r => (resolve = r));
@@ -604,13 +600,13 @@ describe('nuclide-commons/observable', () => {
           resolve();
         });
         return promise;
-      });
+      })();
     });
   });
 
   describe('macrotask', () => {
     it('is cancelable', () => {
-      spyOn(global, 'clearImmediate').andCallThrough();
+      jest.spyOn(global, 'clearImmediate');
       const sub = macrotask.subscribe(() => {});
       sub.unsubscribe();
       expect(clearImmediate).toHaveBeenCalled();
@@ -619,7 +615,7 @@ describe('nuclide-commons/observable', () => {
 
   describe('fromAbortablePromise', () => {
     it('is able to cancel a promise after unsubscription', () => {
-      const spy = jasmine.createSpy('onabort');
+      const spy = jest.fn();
       function f(signal: AbortSignal) {
         expect(signal.aborted).toBe(false);
         signal.onabort = spy;
@@ -630,9 +626,9 @@ describe('nuclide-commons/observable', () => {
       expect(spy).toHaveBeenCalled();
     });
 
-    it('does not trigger an abort after normal completion', () => {
-      waitsForPromise(async () => {
-        const spy = jasmine.createSpy('onabort');
+    it('does not trigger an abort after normal completion', async () => {
+      await (async () => {
+        const spy = jest.fn();
         function f(signal: AbortSignal) {
           signal.onabort = spy;
           return Promise.resolve(1);
@@ -640,35 +636,33 @@ describe('nuclide-commons/observable', () => {
         const result = await fromAbortablePromise(f).toPromise();
         expect(result).toBe(1);
         expect(spy).not.toHaveBeenCalled();
-      });
+      })();
     });
   });
 
   describe('toAbortablePromise', () => {
-    it('rejects with a DOMException on abort', () => {
-      waitsForPromise(async () => {
-        const controller = new AbortController();
-        const spy = jasmine.createSpy('error');
-        const promise = toAbortablePromise(
-          Observable.never(),
-          controller.signal,
-        ).catch(spy);
-        controller.abort();
-        await promise;
+    it('rejects with a DOMException on abort', async () => {
+      const controller = new AbortController();
+      const spy = jest.fn();
+      const promise = toAbortablePromise(
+        Observable.never(),
+        controller.signal,
+      ).catch(spy);
+      controller.abort();
+      await promise;
 
-        expect(spy).toHaveBeenCalled();
-        const exception: any = spy.calls[0].args[0];
-        expect(exception.constructor.name).toBe('DOMException');
-        expect(exception.name).toBe('AbortError');
-        expect(exception.message).toBe('Aborted');
-      });
+      expect(spy).toHaveBeenCalled();
+      const exception: any = spy.mock.calls[0][0];
+      expect(exception.constructor.name).toBe('DOMException');
+      expect(exception.name).toBe('AbortError');
+      expect(exception.message).toBe('Aborted');
     });
 
     describe('takeUntilAbort', () => {
       it('completes on abort', () => {
         const controller = new AbortController();
 
-        const spy = jasmine.createSpy('completed');
+        const spy = jest.fn();
         Observable.never()
           .let(obs => takeUntilAbort(obs, controller.signal))
           .subscribe({complete: spy});
@@ -682,7 +676,7 @@ describe('nuclide-commons/observable', () => {
         const controller = new AbortController();
         controller.abort();
 
-        const spy = jasmine.createSpy('completed');
+        const spy = jest.fn();
         Observable.never()
           .let(obs => takeUntilAbort(obs, controller.signal))
           .subscribe({complete: spy});
@@ -691,11 +685,11 @@ describe('nuclide-commons/observable', () => {
       });
     });
 
-    it('works with no signal', () => {
-      waitsForPromise(async () => {
+    it('works with no signal', async () => {
+      await (async () => {
         const promise = toAbortablePromise(Observable.of(1));
         expect(await promise).toBe(1);
-      });
+      })();
     });
   });
 
@@ -713,8 +707,8 @@ describe('nuclide-commons/observable', () => {
       expect(executor.isExecuting()).toBe(false);
     });
 
-    it('completing task normally', () => {
-      waitsForPromise(async () => {
+    it('completing task normally', async () => {
+      await (async () => {
         const executor = new SingletonExecutor();
         const source = new Subject();
 
@@ -725,11 +719,11 @@ describe('nuclide-commons/observable', () => {
         source.complete();
         expect(await result).toBe(42);
         expect(executor.isExecuting()).toBe(false);
-      });
+      })();
     });
 
-    it('completing task by error', () => {
-      waitsForPromise(async () => {
+    it('completing task by error', async () => {
+      await (async () => {
         const executor = new SingletonExecutor();
         const source = new Subject();
 
@@ -746,11 +740,11 @@ describe('nuclide-commons/observable', () => {
         }
         expect(executor.isExecuting()).toBe(false);
         expect(thrown).toBe(true);
-      });
+      })();
     });
 
-    it('scheduling second task while first is in flight', () => {
-      waitsForPromise(async () => {
+    it('scheduling second task while first is in flight', async () => {
+      await (async () => {
         const executor = new SingletonExecutor();
 
         const source1 = new Subject();
@@ -776,82 +770,66 @@ describe('nuclide-commons/observable', () => {
 
         expect(await result2).toBe(42);
         expect(executor.isExecuting()).toBe(false);
-      });
+      })();
     });
   });
 
   describe('poll', () => {
-    beforeEach(() => {
-      jasmine.unspy(global, 'setTimeout');
-      jasmine.unspy(Date, 'now');
-    });
+    beforeEach(() => {});
 
     it('subscribes to the observable synchronously', () => {
       const source = Observable.never();
-      const spy = spyOn(source, 'subscribe').andCallThrough();
+      const spy = jest.spyOn(source, 'subscribe');
       const sub = source.let(poll(10)).subscribe();
-      expect(spy.callCount).toBe(1);
+      expect(spy.mock.calls.length).toBe(1);
       sub.unsubscribe();
     });
 
-    it('resubscribes when complete', () => {
-      let sub;
-      let spy;
+    it('resubscribes when complete', async () => {
       let mostRecentObserver;
-      runs(() => {
-        const source = Observable.create(observer => {
-          mostRecentObserver = observer;
-        });
-        spy = spyOn(source, 'subscribe').andCallThrough();
-        sub = source.let(poll(10)).subscribe();
-        expect(spy.callCount).toBe(1);
-        mostRecentObserver.next();
+      const source = Observable.create(observer => {
+        mostRecentObserver = observer;
       });
+      const spy = jest.spyOn(source, 'subscribe');
+      const sub = source.let(poll(10)).subscribe();
+      expect(spy.mock.calls.length).toBe(1);
+      (mostRecentObserver: any).next();
 
       // Even though we're waiting longer than the delay, it hasn't completed yet so we shouldn't
       // resubscribe.
-      waitsForPromise(() => sleep(30));
-      runs(() => {
-        expect(spy.callCount).toBe(1);
-        mostRecentObserver.complete();
-        expect(spy.callCount).toBe(1);
-      });
+      await sleep(30);
+      expect(spy.mock.calls.length).toBe(1);
+      (mostRecentObserver: any).complete();
+      expect(spy.mock.calls.length).toBe(1);
 
       // Now that the source has completed, we should subscribe again.
-      waitsForPromise(() => sleep(30));
-      runs(() => {
-        expect(spy.callCount).toBe(2);
-        sub.unsubscribe();
-      });
+      await sleep(30);
+      expect(spy.mock.calls.length).toBe(2);
+      sub.unsubscribe();
     });
 
-    it("doesn't resubscribe to the source when you unsubscribe", () => {
-      let spy;
-      runs(() => {
-        const source = new Subject();
-        spy = spyOn(source, 'subscribe').andCallThrough();
-        source
-          .let(poll(10))
-          .take(1) // This will unsubscribe after the first element.
-          .subscribe();
-        expect(spy.callCount).toBe(1);
-        source.next();
-      });
-      waitsForPromise(() => sleep(30));
-      runs(() => {
-        expect(spy.callCount).toBe(1);
-      });
+    it("doesn't resubscribe to the source when you unsubscribe", async () => {
+      const source = new Subject();
+      const spy = jest.spyOn(source, 'subscribe');
+      source
+        .let(poll(10))
+        .take(1) // This will unsubscribe after the first element.
+        .subscribe();
+      expect(spy.mock.calls.length).toBe(1);
+      source.next();
+      await sleep(30);
+      expect(spy.mock.calls.length).toBe(1);
     });
 
-    it('polls synchronously completing observables', () => {
-      waitsForPromise(async () => {
+    it('polls synchronously completing observables', async () => {
+      await (async () => {
         const result = await Observable.of('hi')
           .let(poll(10))
           .take(2)
           .toArray()
           .toPromise();
         expect(result).toEqual(['hi', 'hi']);
-      });
+      })();
     });
   });
 });

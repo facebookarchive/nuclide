@@ -14,18 +14,19 @@ import which from '../which';
 import {Observable} from 'rxjs';
 
 describe('which', () => {
-  let runCommand: JasmineSpy;
+  let runCommand;
   let runCommandReturn = '';
 
   beforeEach(() => {
     runCommandReturn = '';
-    runCommand = spyOn(require('../process'), 'runCommand').andCallFake(() =>
-      Observable.of(runCommandReturn),
-    );
+    runCommand = jest
+      .spyOn(require('../process'), 'runCommand')
+      .mockImplementation(() => Observable.of(runCommandReturn));
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../process'), 'runCommand');
+    // $FlowFixMe
+    require('../process').runCommand.mockRestore();
   });
 
   describe('on windows', () => {
@@ -48,12 +49,12 @@ describe('which', () => {
       expect(runCommand).toHaveBeenCalledWith('where', ['']);
     });
 
-    it('returns the first match', () => {
-      waitsForPromise(async () => {
+    it('returns the first match', async () => {
+      await (async () => {
         runCommandReturn = 'hello' + os.EOL + 'hello.exe' + os.EOL;
         const ret = await which('bla');
         expect(ret).toEqual('hello');
-      });
+      })();
     });
   });
 
@@ -77,12 +78,12 @@ describe('which', () => {
       expect(runCommand).toHaveBeenCalledWith('which', [param]);
     });
 
-    it('returns the first match', () => {
-      waitsForPromise(async () => {
+    it('returns the first match', async () => {
+      await (async () => {
         runCommandReturn = 'hello' + os.EOL + '/bin/hello' + os.EOL;
         const ret = await which('bla');
         expect(ret).toEqual('hello');
-      });
+      })();
     });
   });
 });

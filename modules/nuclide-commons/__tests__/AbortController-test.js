@@ -17,7 +17,7 @@ describe('AbortController', () => {
     const controller = new AbortController();
     expect(controller.signal.aborted).toBe(false);
 
-    const spy = jasmine.createSpy('onabort');
+    const spy = jest.fn();
     controller.signal.onabort = spy;
 
     controller.abort();
@@ -27,12 +27,12 @@ describe('AbortController', () => {
 
     // Ensure that we don't double-abort.
     controller.abort();
-    expect(spy.callCount).toBe(1);
+    expect(spy.mock.calls.length).toBe(1);
   });
 
   it('dispatches abort() events via addEventListener', () => {
     const controller = new AbortController();
-    const spy = jasmine.createSpy('onabort');
+    const spy = jest.fn();
     controller.signal.addEventListener('abort', spy);
 
     controller.abort();

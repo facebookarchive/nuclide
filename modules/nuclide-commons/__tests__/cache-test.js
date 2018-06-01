@@ -19,7 +19,7 @@ describe('Cache', () => {
 
   it('creates values on demand', () => {
     let callCount = 0;
-    const factory = jasmine.createSpy('factory').andCallFake(key => {
+    const factory = jest.fn().mockImplementation(key => {
       callCount += 1;
       expect(key).toEqual(key1);
       return value;
@@ -39,7 +39,7 @@ describe('Cache', () => {
   });
 
   it('delete', () => {
-    const factory = jasmine.createSpy('factory').andReturn(value);
+    const factory = jest.fn().mockReturnValue(value);
     const cache: Cache<string, string> = new Cache(factory);
 
     expect(cache.delete(key1)).toEqual(false);
@@ -50,8 +50,8 @@ describe('Cache', () => {
   });
 
   it('delete disposes values', () => {
-    const factory = jasmine.createSpy('factory').andReturn(value);
-    const dispose = jasmine.createSpy('dispose');
+    const factory = jest.fn().mockReturnValue(value);
+    const dispose = jest.fn();
     const cache: Cache<string, string> = new Cache(factory, dispose);
 
     cache.get(key1);
@@ -60,8 +60,8 @@ describe('Cache', () => {
   });
 
   it('clear disposes values', () => {
-    const factory = jasmine.createSpy('factory').andReturn(value);
-    const dispose = jasmine.createSpy('dispose');
+    const factory = jest.fn().mockReturnValue(value);
+    const dispose = jest.fn();
     const cache: Cache<string, string> = new Cache(factory, dispose);
 
     cache.get(key1);
@@ -70,8 +70,8 @@ describe('Cache', () => {
   });
 
   it('dispose disposes values', () => {
-    const factory = jasmine.createSpy('factory').andReturn(value);
-    const dispose = jasmine.createSpy('dispose');
+    const factory = jest.fn().mockReturnValue(value);
+    const dispose = jest.fn();
     const cache: Cache<string, string> = new Cache(factory, dispose);
 
     cache.get(key1);
@@ -79,9 +79,9 @@ describe('Cache', () => {
     expect(dispose).toHaveBeenCalledWith(value);
   });
 
-  it('observeValues sees existing and new values', () => {
-    waitsForPromise(async () => {
-      const factory = jasmine.createSpy('factory').andCallFake(key => key);
+  it('observeValues sees existing and new values', async () => {
+    await (async () => {
+      const factory = jest.fn().mockImplementation(key => key);
       const cache: Cache<string, string> = new Cache(factory);
 
       cache.get(key1);
@@ -92,12 +92,12 @@ describe('Cache', () => {
       cache.get(key2);
       cache.dispose();
       expect(await values).toEqual([key1, key2]);
-    });
+    })();
   });
 
-  it('observeKeys sees existing and new keys', () => {
-    waitsForPromise(async () => {
-      const factory = jasmine.createSpy('factory').andCallFake(key => value);
+  it('observeKeys sees existing and new keys', async () => {
+    await (async () => {
+      const factory = jest.fn().mockImplementation(key => value);
       const cache: Cache<string, string> = new Cache(factory);
 
       cache.get(key1);
@@ -108,6 +108,6 @@ describe('Cache', () => {
       cache.get(key2);
       cache.dispose();
       expect(await values).toEqual([key1, key2]);
-    });
+    })();
   });
 });

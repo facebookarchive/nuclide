@@ -42,7 +42,7 @@ describe('observableFromSubscribeFunction', () => {
         callback = null;
       },
     };
-    spyOn(disposable, 'dispose').andCallThrough();
+    jest.spyOn(disposable, 'dispose');
     return disposable;
   };
 
@@ -58,8 +58,8 @@ describe('observableFromSubscribeFunction', () => {
     expect(callback).not.toBeNull();
   });
 
-  it('should send events to the observable stream', () => {
-    waitsForPromise(async () => {
+  it('should send events to the observable stream', async () => {
+    await (async () => {
       const result = observableFromSubscribeFunction(subscribeFunction)
         .take(2)
         .toArray()
@@ -68,7 +68,7 @@ describe('observableFromSubscribeFunction', () => {
       callback(1);
       callback(2);
       expect(await result).toEqual([1, 2]);
-    });
+    })();
   });
 
   it('should properly unsubscribe and resubscribe', () => {

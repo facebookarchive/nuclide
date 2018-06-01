@@ -18,6 +18,7 @@ import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import {Observable, Scheduler, Subject} from 'rxjs';
+import waitsFor from '../../../jest/waits_for';
 
 import {
   spawn,
@@ -37,6 +38,12 @@ import {
   LOG_CATEGORY,
 } from '../process';
 
+jest.mock('../performanceNow');
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 describe('commons-node/process', () => {
   let origPlatform;
 
@@ -52,47 +59,44 @@ describe('commons-node/process', () => {
   });
 
   describe('process.killProcess', () => {
-    it('should only kill the process when `killTree` is false', () => {
-      waitsForPromise(async () => {
+    it('should only kill the process when `killTree` is false', async () => {
+      await (async () => {
         const proc = {
           kill: jasmine.createSpy(),
         };
-        spyOn(console, 'log'); // suppress log printing
+        jest.spyOn(console, 'log'); // suppress log printing
         await killProcess((proc: any), false);
         expect(proc.kill).toHaveBeenCalled();
-      });
+      })();
     });
 
-    it('should kill the process tree when `killTree` is true', () => {
-      waitsForPromise(async () => {
-        jasmine.useRealClock();
-        // Create a tree that's more than level child deep.
-        const proc = child_process.spawn('bash', [
-          '-c',
-          '( (sleep 1000)& sleep 1000 )& wait',
-        ]);
-        spyOn(console, 'log'); // suppress log printing
-        spyOn(process, 'kill').andCallThrough();
-        await sleep(250); // Give some time for the processes to spawn.
-        await killUnixProcessTree(proc);
-        expect(process.kill.callCount).toBeGreaterThan(2);
-      });
+    it('should kill the process tree when `killTree` is true', async () => {
+      // Create a tree that's more than level child deep.
+      const proc = child_process.spawn('bash', [
+        '-c',
+        '( (sleep 1000)& sleep 1000 )& wait',
+      ]);
+      jest.spyOn(console, 'log'); // suppress log printing
+      jest.spyOn(process, 'kill');
+      await sleep(250); // Give some time for the processes to spawn.
+      await killUnixProcessTree(proc);
+      expect(process.kill.mock.calls.length).toBeGreaterThan(2);
     });
 
-    it('should kill the process tree on windows when `killTree` is true', () => {
-      waitsForPromise(async () => {
+    it('should kill the process tree on windows when `killTree` is true', async () => {
+      await (async () => {
         const proc = {
           pid: 123,
         };
-        spyOn(console, 'log'); // suppress log printing
+        jest.spyOn(console, 'log'); // suppress log printing
         Object.defineProperty(process, 'platform', {value: 'win32'});
-        spyOn(child_process, 'exec');
+        jest.spyOn(child_process, 'exec');
         await killProcess((proc: any), true);
-        expect(child_process.exec.calls.length).toBe(1);
-        expect(child_process.exec.calls[0].args[0]).toBe(
+        expect(child_process.exec.mock.calls).toHaveLength(1);
+        expect(child_process.exec.mock.calls[0][0]).toBe(
           `taskkill /pid ${proc.pid} /T /F`,
         );
-      });
+      })();
     });
   });
 
@@ -172,8 +176,8 @@ describe('commons-node/process', () => {
   });
 
   describe('getOutputStream', () => {
-    it('captures stdout, stderr and exitCode', () => {
-      waitsForPromise(async () => {
+    it('captures stdout, stderr and exitCode', async () => {
+      await (async () => {
         const child = child_process.spawn(process.execPath, [
           '-e',
           'console.error("stderr"); console.log("std out"); process.exit(0);',
@@ -186,11 +190,11 @@ describe('commons-node/process', () => {
           {kind: 'stdout', data: 'std out\n'},
           {kind: 'exit', exitCode: 0, signal: null},
         ]);
-      });
+      })();
     });
 
-    it('errors on nonzero exit codes by default', () => {
-      waitsForPromise(async () => {
+    it('errors on nonzero exit codes by default', async () => {
+      await (async () => {
         const child = child_process.spawn(process.execPath, [
           '-e',
           'console.error("stderr"); console.log("std out"); process.exit(42);',
@@ -209,11 +213,11 @@ describe('commons-node/process', () => {
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
         expect(error.stderr).toBe('stderr\n');
-      });
+      })();
     });
 
-    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
-      waitsForPromise(async () => {
+    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', async () => {
+      await (async () => {
         let error;
         const child = child_process.spawn(process.execPath, [
           '-e',
@@ -232,58 +236,56 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error != null);
         expect(error.stderr).toBe('st');
-      });
+      })();
     });
   });
 
   describe('spawn', () => {
-    it('errors when the process does', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
-        const processStream = spawn('fakeCommand');
-        let error;
-        try {
-          await processStream.toPromise();
-        } catch (err) {
-          error = err;
-        }
-        expect(error).toBeDefined();
-        invariant(error);
-        expect(error.code).toBe('ENOENT');
-        expect(error.name).toBe('ProcessSystemError');
+    it('errors when the process does', async () => {
+      jest.spyOn(console, 'log'); // suppress log printing
+      const processStream = spawn('fakeCommand', undefined, {
+        dontLogInNuclide: true,
       });
+      let error;
+      try {
+        await processStream.toPromise();
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeDefined();
+      invariant(error);
+      expect(error.code).toBe('ENOENT');
+      expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
 
     // Node delays the emission of the error until after the process is returned so that you have a
     // chance to subscribe to the error event. Observables aren't bound by the same limitations as
     // event-emitter APIs, so we can do better and not emit the process if there was an error
     // spawning it.
-    it('errors before emitting the process', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
-        let proc;
-        await spawn('fakeCommand')
-          .do(p => {
-            proc = p;
-          })
-          .catch(err => {
-            expect(proc).toBeUndefined();
-            expect(err.code).toBe('ENOENT');
-            expect(err.name).toBe('ProcessSystemError');
-            return Observable.empty();
-          })
-          .toPromise();
-      });
+    it('errors before emitting the process', async () => {
+      jest.spyOn(console, 'log'); // suppress log printing
+      let proc;
+      await spawn('fakeCommand', undefined, {dontLogInNuclide: true})
+        .do(p => {
+          proc = p;
+        })
+        .catch(err => {
+          expect(proc).toBeUndefined();
+          expect(err.code).toBe('ENOENT');
+          expect(err.message).toBe('spawn fakeCommand ENOENT');
+          return Observable.empty();
+        })
+        .toPromise();
     });
 
-    it('leaves an error handler when you unsubscribe', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
+    it('leaves an error handler when you unsubscribe', async () => {
+      await (async () => {
+        jest.spyOn(console, 'log'); // suppress log printing
         let resolve;
         const promise = new Promise(r => {
           resolve = r;
         });
-        const sub = spawn('cat')
+        const sub = spawn('cat', undefined, {dontLogInNuclide: true})
           // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
           // assigned yet in our `subscribe()` callback, so we use the async scheduler.
           .subscribeOn(Scheduler.async)
@@ -299,42 +301,40 @@ describe('commons-node/process', () => {
             resolve();
           });
         await promise;
-      });
+      })();
     });
 
-    it('can be retried', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
-        spyOn(child_process, 'spawn');
-        try {
-          await spawn('fakeCommand')
-            .retryWhen(errors =>
-              errors.scan((errorCount, err) => {
-                // If this is the third time the process has errored (i.e. the have already been
-                // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
-                // have bugs with retrying shared observables that would give false negatives for
-                // this test if we only tried twice.)
-                if (errorCount === 2) {
-                  throw err;
-                }
-                return errorCount + 1;
-              }, 0),
-            )
-            .toPromise();
-        } catch (err) {}
-        expect(child_process.spawn.callCount).toBe(3);
-      });
+    it('can be retried', async () => {
+      jest.spyOn(console, 'log'); // suppress log printing
+      jest.spyOn(child_process, 'spawn');
+      try {
+        await spawn('fakeCommand', undefined, {dontLogInNuclide: true})
+          .retryWhen(errors =>
+            errors.scan((errorCount, err) => {
+              // If this is the third time the process has errored (i.e. the have already been
+              // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
+              // have bugs with retrying shared observables that would give false negatives for
+              // this test if we only tried twice.)
+              if (errorCount === 2) {
+                throw err;
+              }
+              return errorCount + 1;
+            }, 0),
+          )
+          .toPromise();
+      } catch (err) {}
+      expect(child_process.spawn.mock.calls).toHaveLength(3);
     });
 
-    it('can be timed out', () => {
-      waitsForPromise(async () => {
+    it('can be timed out', async () => {
+      await (async () => {
         let error;
         let proc;
         try {
           await spawn('sleep', ['10000'], {timeout: 1})
             .do(p => {
               proc = p;
-              spyOn(proc, 'kill');
+              jest.spyOn(proc, 'kill');
             })
             .toPromise();
         } catch (err) {
@@ -344,14 +344,14 @@ describe('commons-node/process', () => {
         invariant(error != null);
         expect(error.name).toBe('ProcessTimeoutError');
         expect(proc.kill).toHaveBeenCalled();
-      });
+      })();
     });
   });
 
   describe('observeProcess', () => {
-    it('errors when the process does', () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
+    it('errors when the process does', async () => {
+      await (async () => {
+        jest.spyOn(console, 'log'); // suppress log printing
         const processStream = observeProcess('fakeCommand', []);
         let error;
         try {
@@ -362,12 +362,12 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error);
         expect(error.code).toBe('ENOENT');
-        expect(error.name).toBe('ProcessSystemError');
-      });
+        expect(error.message).toBe('spawn fakeCommand ENOENT');
+      })();
     });
 
-    it('errors on nonzero exit codes by default', () => {
-      waitsForPromise(async () => {
+    it('errors on nonzero exit codes by default', async () => {
+      await (async () => {
         const results = await observeProcess(process.execPath, [
           '-e',
           'console.error("stderr"); console.log("std out"); process.exit(42);',
@@ -385,11 +385,11 @@ describe('commons-node/process', () => {
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
         expect(error.stderr).toBe('stderr\n');
-      });
+      })();
     });
 
-    it("doesn't get an exit message when there's an exit error", () => {
-      waitsForPromise(async () => {
+    it("doesn't get an exit message when there's an exit error", async () => {
+      await (async () => {
         const results = await observeProcess(process.execPath, [
           '-e',
           'process.exit(42);',
@@ -400,11 +400,11 @@ describe('commons-node/process', () => {
           .toPromise();
         expect(results.length).toBe(1);
         expect(results[0].kind).toBe('E');
-      });
+      })();
     });
 
-    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
-      waitsForPromise(async () => {
+    it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', async () => {
+      await (async () => {
         let error;
         try {
           await observeProcess(
@@ -420,14 +420,14 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error != null);
         expect(error.stderr).toBe('st');
-      });
+      })();
     });
   });
 
   describe('observeProcessRaw', () => {
-    it("doesn't split on line breaks", () => {
-      spyOn(console, 'log'); // suppress log printing
-      waitsForPromise({timeout: 1000}, async () => {
+    it("doesn't split on line breaks", async () => {
+      jest.spyOn(console, 'log'); // suppress log printing
+      await (async () => {
         const event = await observeProcessRaw(process.execPath, [
           '-e',
           'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)',
@@ -436,98 +436,76 @@ describe('commons-node/process', () => {
           .toPromise();
         invariant(event.kind === 'stdout');
         expect(event.data).toBe('stdout1\nstdout2\n');
-      });
+      })();
     });
   });
 
   describe('runCommand', () => {
     beforeEach(() => {
       // Suppress console spew.
-      spyOn(console, 'log'); // suppress log printing
+      jest.spyOn(console, 'log'); // suppress log printing
     });
 
     if (origPlatform === 'win32') {
       return;
     }
 
-    it('sends the stdin to the process', () => {
-      waitsForPromise(async () => {
-        const output = await runCommand('cat', [], {
-          input: 'hello',
-        }).toPromise();
-        expect(output).toBe('hello');
-      });
+    it('sends the stdin to the process', async () => {
+      const output = await runCommand('cat', [], {
+        input: 'hello',
+      }).toPromise();
+      expect(output).toBe('hello');
     });
 
-    it('sends a stream of stdin to the process', () => {
-      waitsForPromise(async () => {
-        const input = new Subject();
-        const outputPromise = runCommand('cat', [], {
-          input,
-        }).toPromise();
-        input.next('hello');
-        input.next(' ');
-        input.next('world');
-        input.complete();
-        expect(await outputPromise).toBe('hello world');
-      });
+    it('sends a stream of stdin to the process', async () => {
+      const input = new Subject();
+      const outputPromise = runCommand('cat', [], {
+        input,
+      }).toPromise();
+      input.next('hello');
+      input.next(' ');
+      input.next('world');
+      input.complete();
+      expect(await outputPromise).toBe('hello world');
     });
 
-    it('enforces maxBuffer', () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommand('yes', [], {maxBuffer: 100}).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.message).toContain('maxBuffer');
-      });
+    it('enforces maxBuffer', async () => {
+      let error;
+      try {
+        await runCommand('yes', [], {maxBuffer: 100}).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.message).toContain('maxBuffer');
     });
 
-    it('returns stdout of the running process', () => {
-      waitsForPromise(async () => {
-        const val = await runCommand('echo', ['-n', 'foo'], {
-          env: process.env,
-        }).toPromise();
-        expect(val).toEqual('foo');
-      });
+    it('returns stdout of the running process', async () => {
+      const val = await runCommand('echo', ['-n', 'foo'], {
+        env: process.env,
+      }).toPromise();
+      expect(val).toEqual('foo');
     });
 
-    it("throws an error if the process can't be spawned", () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommand('fakeCommand').toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.code).toBe('ENOENT');
-        expect(error.name).toBe('ProcessSystemError');
-      });
+    it("throws an error if the process can't be spawned", async () => {
+      let error;
+      try {
+        await runCommand('fakeCommand').toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.code).toBe('ENOENT');
+      expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
 
-    it('throws an error if the exit code !== 0', () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommand(process.execPath, [
-            '-e',
-            'process.exit(1)',
-          ]).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.exitCode).toBe(1);
-      });
+    it('throws an error if the exit code !== 0', async () => {
+      const cmd = runCommand(process.execPath, ['-e', 'process.exit(1)']);
+      await expect(cmd.toPromise()).rejects.toThrow('failed with exit code 1');
     });
 
-    it('includes stdout and stderr in ProcessExitErrors', () => {
-      waitsForPromise(async () => {
+    it('includes stdout and stderr in ProcessExitErrors', async () => {
+      await (async () => {
         let error;
         try {
           await runCommand(process.execPath, [
@@ -541,11 +519,11 @@ describe('commons-node/process', () => {
         expect(error.name).toBe('ProcessExitError');
         expect(error.stderr).toBe('oopsy');
         expect(error.stdout).toBe('daisy');
-      });
+      })();
     });
 
-    it('accumulates the stderr if the process exits with a non-zero code', () => {
-      waitsForPromise(async () => {
+    it('accumulates the stderr if the process exits with a non-zero code', async () => {
+      await (async () => {
         let error;
         try {
           await runCommand(process.execPath, [
@@ -557,39 +535,36 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.stderr).toBe('oopsy');
-      });
+      })();
     });
 
     // Previously we had a bug where we mutated the seed and subsequent subscriptions would use the
     // mutated value.
-    it("doesn't share a mutable seed (regression test)", () => {
-      waitsForPromise(async () => {
+    it("doesn't share a mutable seed (regression test)", async () => {
+      await (async () => {
         const observable = runCommand(process.execPath, [
           '-e',
           'process.stdout.write("hello"); process.exit(0)',
         ]);
         await observable.toPromise();
         expect(await observable.toPromise()).toBe('hello');
-      });
+      })();
     });
 
     describe('checkOutput compatibility', () => {
       if (origPlatform !== 'win32') {
-        it('returns stdout of the running process', () => {
-          waitsForPromise(async () => {
+        it('returns stdout of the running process', async () => {
+          await (async () => {
             const val = await runCommand('echo', ['-n', 'foo'], {
               env: process.env,
             }).toPromise();
             expect(val).toEqual('foo');
-          });
+          })();
         });
-        it('throws an error if the exit code !== 0', () => {
-          waitsForPromise({shouldReject: true}, async () => {
-            await runCommand(process.execPath, [
-              '-e',
-              'process.exit(1)',
-            ]).toPromise();
-          });
+        it('throws an error if the exit code !== 0', async () => {
+          await expect(
+            runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise(),
+          ).rejects.toThrow('failed with exit code 1');
         });
       }
     });
@@ -598,24 +573,24 @@ describe('commons-node/process', () => {
   describe('runCommandDetailed', () => {
     beforeEach(() => {
       // Suppress console spew.
-      spyOn(console, 'log'); // suppress log printing
+      jest.spyOn(console, 'log'); // suppress log printing
     });
 
     if (origPlatform === 'win32') {
       return;
     }
 
-    it('sends the stdin to the process', () => {
-      waitsForPromise(async () => {
+    it('sends the stdin to the process', async () => {
+      await (async () => {
         const output = await runCommandDetailed('cat', [], {
           input: 'hello',
         }).toPromise();
         expect(output.stdout).toBe('hello');
-      });
+      })();
     });
 
-    it('enforces maxBuffer', () => {
-      waitsForPromise(async () => {
+    it('enforces maxBuffer', async () => {
+      await (async () => {
         let error;
         try {
           await runCommandDetailed('yes', [], {maxBuffer: 100}).toPromise();
@@ -624,52 +599,48 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.message).toContain('maxBuffer');
-      });
+      })();
     });
 
-    it('returns stdout, stderr, and the exit code of the running process', () => {
-      waitsForPromise(async () => {
+    it('returns stdout, stderr, and the exit code of the running process', async () => {
+      await (async () => {
         const val = await runCommandDetailed(process.execPath, [
           '-e',
           'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)',
         ]).toPromise();
         expect(val).toEqual({stdout: 'out', stderr: 'err', exitCode: 0});
-      });
+      })();
     });
 
-    it("throws an error if the process can't be spawned", () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommandDetailed('fakeCommand').toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.code).toBe('ENOENT');
-        expect(error.name).toBe('ProcessSystemError');
-      });
+    it("throws an error if the process can't be spawned", async () => {
+      let error;
+      try {
+        await runCommandDetailed('fakeCommand').toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.code).toBe('ENOENT');
+      expect(error.message).toBe('spawn fakeCommand ENOENT');
     });
 
-    it('throws an error if the exit code !== 0', () => {
-      waitsForPromise(async () => {
-        let error;
-        try {
-          await runCommandDetailed(process.execPath, [
-            '-e',
-            'process.exit(1)',
-          ]).toPromise();
-        } catch (err) {
-          error = err;
-        }
-        invariant(error != null);
-        expect(error.name).toBe('ProcessExitError');
-        expect(error.exitCode).toBe(1);
-      });
+    it('throws an error if the exit code !== 0', async () => {
+      let error;
+      try {
+        await runCommandDetailed(process.execPath, [
+          '-e',
+          'process.exit(1)',
+        ]).toPromise();
+      } catch (err) {
+        error = err;
+      }
+      invariant(error != null);
+      expect(error.name).toBe('ProcessExitError');
+      expect(error.exitCode).toBe(1);
     });
 
-    it('accumulates the stderr if the process exits with a non-zero code', () => {
-      waitsForPromise(async () => {
+    it('accumulates the stderr if the process exits with a non-zero code', async () => {
+      await (async () => {
         let error;
         try {
           await runCommandDetailed(process.execPath, [
@@ -681,7 +652,7 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.stderr).toBe('oopsy');
-      });
+      })();
     });
   });
 
@@ -705,12 +676,12 @@ describe('commons-node/process', () => {
         stdout: new EventEmitter(),
         stderr: new EventEmitter(),
       }: any);
-      spyOn(proc.stdin, 'addListener').andCallThrough();
-      spyOn(proc.stdout, 'addListener').andCallThrough();
-      spyOn(proc.stderr, 'addListener').andCallThrough();
-      spyOn(proc.stdin, 'removeListener').andCallThrough();
-      spyOn(proc.stdout, 'removeListener').andCallThrough();
-      spyOn(proc.stderr, 'removeListener').andCallThrough();
+      jest.spyOn(proc.stdin, 'addListener');
+      jest.spyOn(proc.stdout, 'addListener');
+      jest.spyOn(proc.stderr, 'addListener');
+      jest.spyOn(proc.stdin, 'removeListener');
+      jest.spyOn(proc.stdout, 'removeListener');
+      jest.spyOn(proc.stderr, 'removeListener');
     });
 
     it('adds listeners', () => {
@@ -765,14 +736,12 @@ describe('commons-node/process', () => {
 
     it('logs errors', () => {
       logStreamErrors(proc, 'test', [], {});
-      spyOn(logger, 'error');
       proc.stderr.emit('error', new Error('Test error'));
       expect(logger.error).toHaveBeenCalled();
     });
 
     it("doesn't log when disposed", () => {
       const disposable = logStreamErrors(proc, 'test', [], {});
-      spyOn(logger, 'error');
       disposable.dispose();
       proc.stderr.emit('error', new Error('Test error'));
       expect(logger.error).not.toHaveBeenCalled();
@@ -799,8 +768,8 @@ describe('commons-node/process', () => {
 
   describe('scriptifyCommand', () => {
     if (process.platform === 'linux') {
-      it('escapes correctly on linux', () => {
-        waitsForPromise(async () => {
+      it('escapes correctly on linux', async () => {
+        await (async () => {
           const output = await runCommand(
             ...scriptifyCommand('echo', [
               'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'',
@@ -810,7 +779,7 @@ describe('commons-node/process', () => {
           expect(output.trim()).toBe(
             'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
           );
-        });
+        })();
       });
     }
   });
