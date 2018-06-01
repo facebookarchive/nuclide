@@ -279,7 +279,7 @@ export type TextDocumentClientCapabilities = {|
 |};
 
 export type WindowClientCapabilities = {|
-  //  Capabilities specific to the `window/status` notification.
+  //  Capabilities specific to the `window/showStatus` request.
   status?: {|
     //  Status requests supports dynamic registration.
     dynamicRegistration?: boolean,
@@ -850,8 +850,6 @@ export const MessageType = {
 };
 
 export type ShowMessageRequestParams = {
-  // Nuclide-specific: can be 'status'; or absent to show as a normal dialog
-  target?: string,
   // The message type. See {@link MessageType};
   type: number,
   // The actual message

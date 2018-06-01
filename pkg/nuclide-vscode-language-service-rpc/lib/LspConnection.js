@@ -303,6 +303,15 @@ export class LspConnection {
     );
   }
 
+  onShowStatusRequest(
+    callback: (
+      p.ShowMessageRequestParams,
+      CancellationToken,
+    ) => Promise<?p.MessageActionItem>,
+  ): void {
+    this._jsonRpcConnection.onRequest({method: 'window/showStatus'}, callback);
+  }
+
   onApplyEditRequest(
     callback: (
       p.ApplyWorkspaceEditParams,
