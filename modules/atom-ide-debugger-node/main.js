@@ -76,7 +76,7 @@ function getNodeConfig(): AutoGenConfig {
     name: 'runtimeExecutable',
     type: 'string',
     description:
-      "Runtime to use. Either an absolute path or the name of a runtime available on the PATH. If ommitted 'node' is assumed.",
+      '(Optional) Runtime to use, an absolute path or the name of a runtime available on PATH',
     required: false,
     visible: true,
   };
@@ -84,7 +84,7 @@ function getNodeConfig(): AutoGenConfig {
     name: 'env',
     type: 'object',
     description:
-      "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
+      '(Optional) Environment variables (e.g. SHELL=/bin/bash PATH=/bin)',
     defaultValue: {},
     required: false,
     visible: true,
@@ -94,7 +94,7 @@ function getNodeConfig(): AutoGenConfig {
     type: 'array',
     itemType: 'string',
     description:
-      "If source maps are enabled, these glob patterns specify the generated JavaScript files. If a pattern starts with '!' the files are excluded. If not specified, the generated code is expected in the same directory as its source.",
+      '(Optional) When source maps are enabled, these glob patterns specify the generated JavaScript files',
     defaultValue: [],
     required: false,
     visible: true,

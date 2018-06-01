@@ -32,8 +32,6 @@ import {
   isDebugTask,
   getBuckSubcommandForTaskType,
 } from '../../nuclide-buck/lib/BuckTaskRunner';
-import logger from './utils';
-import {getConfig} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -63,7 +61,6 @@ class Activation {
 
   constructor() {
     this._disposables = new UniversalDisposable();
-    logger.setLevel(getConfig().clientLogLevel);
     (this: any).createNativeDebuggerService = this.createNativeDebuggerService.bind(
       this,
     );

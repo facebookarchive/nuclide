@@ -67,7 +67,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
   const pythonPath = {
     name: 'pythonPath',
     type: 'string',
-    description: 'Path (fully qualified) to python executable.',
+    description: 'Path to python executable.',
     required: true,
     visible: true,
   };
@@ -75,7 +75,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     name: 'cwd',
     type: 'string',
     description:
-      'Absolute path to the working directory of the program being debugged. Default is the root directory of the file (leave empty).',
+      '(Optional) Absolute path to the working directory of the program being debugged. Default is the root directory of the file.',
     required: true,
     visible: true,
   };
@@ -109,7 +109,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
     name: 'env',
     type: 'object',
     description:
-      'Environment variables defined as a key value pair. Property ends up being the Environment Variable and the value of the property ends up being the value of the Env Variable.',
+      '(Optional) Environment variables (e.g. SHELL=/bin/bash PATH=/bin)',
     defaultValue: {},
     required: false,
     visible: true,
@@ -132,7 +132,7 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
       scriptPropertyName: 'program',
       scriptExtension: '.py',
       cwdPropertyName: 'cwd',
-      header: (
+      header: isNuclideEnvironment() ? (
         <p>
           This is intended to debug python script files.
           <br />
@@ -141,10 +141,14 @@ export function getPythonAutoGenConfig(): AutoGenConfig {
             use the buck toolbar instead
           </a>.
         </p>
-      ),
+      ) : null,
     },
     attach: null,
   };
+}
+
+function isNuclideEnvironment(): boolean {
+  return atom.packages.isPackageLoaded('nuclide');
 }
 
 createPackage(module.exports, Activation);

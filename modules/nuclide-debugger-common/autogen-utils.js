@@ -85,7 +85,7 @@ export function getNativeAutoGenConfig(
     name: 'args',
     type: 'array',
     itemType: 'string',
-    description: 'Arguments to the executable',
+    description: '(Optional) Arguments to the executable',
     required: false,
     defaultValue: '',
     visible: true,
@@ -94,7 +94,8 @@ export function getNativeAutoGenConfig(
     name: 'env',
     type: 'array',
     itemType: 'string',
-    description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
+    description:
+      '(Optional) Environment variables (e.g. SHELL=/bin/bash PATH=/bin)',
     required: false,
     defaultValue: '',
     visible: true,
@@ -102,7 +103,7 @@ export function getNativeAutoGenConfig(
   const sourcePath = {
     name: 'sourcePath',
     type: 'string',
-    description: 'Optional base path for sources',
+    description: '(Optional) base path for sources',
     required: false,
     defaultValue: '',
     visible: true,
