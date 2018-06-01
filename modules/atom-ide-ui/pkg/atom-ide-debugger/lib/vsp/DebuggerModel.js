@@ -1145,7 +1145,17 @@ export class Model implements IModel {
   }
 
   getBreakpointAtLine(uri: string, line: number): ?IBreakpoint {
-    return this._breakpoints.find(bp => bp.uri === uri && bp.line === line);
+    // Since we show calibrated breakpoints at their end line, prefer an end line
+    // match. If there is no such breakpoint, try a start line match.
+    let breakpoint = this._breakpoints.find(
+      bp => bp.uri === uri && bp.endLine === line,
+    );
+    if (breakpoint == null) {
+      breakpoint = this._breakpoints.find(
+        bp => bp.uri === uri && bp.line === line,
+      );
+    }
+    return breakpoint;
   }
 
   getBreakpointById(id: string): ?IBreakpoint {
@@ -1254,7 +1264,8 @@ export class Model implements IModel {
     });
     this._breakpoints = distinct(
       this._breakpoints,
-      bp => `${bp.uri}:${bp.line}:${bp.column}`,
+      bp =>
+        `${bp.uri}:${bp.endLine != null ? bp.endLine : bp.line}:${bp.column}`,
     );
   }
 
