@@ -27,6 +27,7 @@ import WelcomePageGadget from './ui/WelcomePageGadget';
 export type {WelcomePage};
 
 const SHOW_COMMAND_NAME = 'nuclide-welcome-page:show-welcome-page';
+const SHOW_ALL_COMMAND_NAME = 'nuclide-welcome-page:show-all-welcome-pages';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -65,6 +66,10 @@ class Activation {
         if (this._hasWelcomePagesToShow()) {
           goToLocation(WELCOME_PAGE_VIEW_URI);
         }
+      }),
+      atom.commands.add('atom-workspace', SHOW_ALL_COMMAND_NAME, () => {
+        this._store.dispatch(Actions.setShowAll());
+        atom.workspace.toggle(WELCOME_PAGE_VIEW_URI);
       }),
     );
   }

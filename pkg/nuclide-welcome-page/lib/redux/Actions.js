@@ -15,6 +15,8 @@ import type {
   AddWelcomePageAction,
   DeleteWelcomePageAction,
   HideUnhideTopicsAction,
+  SetShowAllAction,
+  ClearShowAllAction,
 } from '../types';
 
 import * as ActionTypes from './ActionTypes';
@@ -49,5 +51,19 @@ export function hideUnhideTopics(
   return {
     type: ActionTypes.HIDE_UNHIDE_TOPICS,
     payload: {topicsToHide, topicsToUnhide},
+  };
+}
+
+export function setShowAll(): SetShowAllAction {
+  return {
+    type: ActionTypes.SET_SHOW_ALL,
+    payload: {},
+  };
+}
+
+export function clearShowAll(): ClearShowAllAction {
+  return {
+    type: ActionTypes.CLEAR_SHOW_ALL,
+    payload: {},
   };
 }

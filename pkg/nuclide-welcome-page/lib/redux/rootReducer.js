@@ -28,6 +28,10 @@ export default function rootReducer(state: AppState, action: Action): AppState {
         action.payload.topicsToHide,
         action.payload.topicsToUnhide,
       );
+    case ActionTypes.SET_SHOW_ALL:
+      return _setShowAll(state);
+    case ActionTypes.CLEAR_SHOW_ALL:
+      return _clearShowAll(state);
   }
 
   return state;
@@ -65,4 +69,12 @@ function _hideUnhideTopics(
     hiddenTopics.delete(topic);
   });
   return {...state, hiddenTopics};
+}
+
+function _setShowAll(state: AppState): AppState {
+  return {...state, showAll: true};
+}
+
+function _clearShowAll(state: AppState): AppState {
+  return {...state, showAll: false};
 }

@@ -17,6 +17,7 @@ export type WelcomePage = {
 export type AppState = {
   welcomePages: Map<string, WelcomePage>,
   hiddenTopics: Set<string>,
+  showAll: boolean,
   isWelcomePageVisible: boolean,
 };
 
@@ -61,8 +62,20 @@ export type HideUnhideTopicsAction = {
   },
 };
 
+export type SetShowAllAction = {
+  type: 'SET_SHOW_ALL',
+  payload: {},
+};
+
+export type ClearShowAllAction = {
+  type: 'CLEAR_SHOW_ALL',
+  payload: {},
+};
+
 export type Action =
   | AddWelcomePageAction
   | DeleteWelcomePageAction
   | UpdateWelcomePageVisibilityAction
-  | HideUnhideTopicsAction;
+  | HideUnhideTopicsAction
+  | SetShowAllAction
+  | ClearShowAllAction;

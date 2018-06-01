@@ -20,6 +20,7 @@ type Props = {
   actionCreators: typeof ActionCreators,
   welcomePages: Map<string, WelcomePage>,
   hiddenTopics: Set<string>,
+  showAll: boolean,
 };
 
 // This state represents the request to hide (or to not hide) a given topic in
@@ -50,7 +51,11 @@ export default class WelcomePageComponent extends React.Component<
   }
 
   _topicFilter(): string => boolean {
-    return topic => !this.props.hiddenTopics.has(topic);
+    if (this.props.showAll) {
+      return topic => true;
+    } else {
+      return topic => !this.props.hiddenTopics.has(topic);
+    }
   }
 
   render(): React.Node {
@@ -91,6 +96,11 @@ export default class WelcomePageComponent extends React.Component<
   }
 
   componentWillUnmount(): void {
+    this._updateHiddenTopics();
+    this.props.actionCreators.clearShowAll();
+  }
+
+  _updateHiddenTopics(): void {
     const topics = this.state.topicsToHide;
     const hiddenTopics: Set<string> = new Set();
     const unhiddenTopics: Set<string> = new Set();
