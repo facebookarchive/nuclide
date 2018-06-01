@@ -39,12 +39,12 @@ describe('getSuggestions', () => {
 
   let trackSpy;
   beforeEach(() => {
-    jasmine.useRealClock();
-    trackSpy = spyOn(require('nuclide-commons/analytics'), 'track');
+    jest.restoreAllMocks();
+    trackSpy = jest.spyOn(require('nuclide-commons/analytics'), 'track');
   });
 
-  it('returns null when it throws an exception', () => {
-    waitsForPromise(async () => {
+  it('returns null when it throws an exception', async () => {
+    await (async () => {
       expect(
         await autocompleteProviderThatThrowsExecption.getSuggestions(
           ({activatedManually: false}: any),
@@ -55,28 +55,28 @@ describe('getSuggestions', () => {
           ({activatedManually: true}: any),
         ),
       ).toBe(null);
-    });
+    })();
   });
 
-  it('tracks when it throws an exception', () => {
-    waitsForPromise(async () => {
+  it('tracks when it throws an exception', async () => {
+    await (async () => {
       await autocompleteProviderThatThrowsExecption.getSuggestions(fakeRequest);
-      expect(trackSpy.calls.length).toBe(1);
-      expect(trackSpy.calls[0].args[0]).toBe(
+      expect(trackSpy.mock.calls).toHaveLength(1);
+      expect(trackSpy.mock.calls[0][0]).toBe(
         'test:autocomplete:error-on-get-suggestions',
       );
-    });
+    })();
   });
 
-  it('tracks when it times out', () => {
-    waitsForPromise(async () => {
+  it('tracks when it times out', async () => {
+    await (async () => {
       expect(
         await autocompleteProviderThatTimeOut.getSuggestions(fakeRequest),
       ).toBe(null);
-      expect(trackSpy.calls.length).toBe(1);
-      expect(trackSpy.calls[0].args[0]).toBe(
+      expect(trackSpy.mock.calls.length).toBe(1);
+      expect(trackSpy.mock.calls[0][0]).toBe(
         'test:autocomplete:timeout-on-get-suggestions',
       );
-    });
+    })();
   });
 });
