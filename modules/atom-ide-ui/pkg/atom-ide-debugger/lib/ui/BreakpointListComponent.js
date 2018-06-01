@@ -271,7 +271,9 @@ export default class BreakpointListComponent extends React.Component<
         );
       });
     const separator =
-      breakpoints.length !== 0 && !this.state.exceptionBreakpointsCollapsed ? (
+      breakpoints.length !== 0 &&
+      !this.state.exceptionBreakpointsCollapsed &&
+      exceptionBreakpoints.length !== 0 ? (
         <hr className="nuclide-ui-hr debugger-breakpoint-separator" />
       ) : null;
     return (
