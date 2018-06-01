@@ -19,7 +19,12 @@
 const rule = require('../no-commonjs');
 const RuleTester = require('eslint').RuleTester;
 
-const ruleTester = new RuleTester();
+const ruleTester = new RuleTester({
+  parser: 'babel-eslint',
+  parserOptions: {
+    sourceType: 'module',
+  },
+});
 
 ruleTester.run('no-commonjs', rule, {
   valid: [

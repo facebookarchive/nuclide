@@ -21,6 +21,9 @@ const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester({
   parser: 'babel-eslint',
+  'parserOptions': {
+    'sourceType': 'module',
+  },
 });
 
 ruleTester.run('prefer-nuclide-uri', rule, {

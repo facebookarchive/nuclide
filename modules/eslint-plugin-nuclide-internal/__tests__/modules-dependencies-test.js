@@ -23,6 +23,9 @@ const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester({
   parser: 'babel-eslint',
+  parserOptions: {
+    sourceType: 'module',
+  },
 });
 
 // This actually ends up checking the root package.json, but that's OK.

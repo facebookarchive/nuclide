@@ -25,7 +25,14 @@ const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester({
   parser: 'babel-eslint',
+  'parserOptions': {
+    'sourceType': 'module',
+  },
 });
+
+const getFullPath = relativePath => {
+  return path.join(__dirname, '../__mocks__', relativePath);
+};
 
 ruleTester.run('no-cross-atom-imports', rule, {
   valid: [
@@ -35,19 +42,19 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     {
       code: 'require("atom");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -57,54 +64,54 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-atom-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("./file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("./");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "./file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "./";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "./file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "./";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "./file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "./";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -114,70 +121,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-npm-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -187,70 +194,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-apm-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -259,19 +266,19 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     {
       code: 'require("atom");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -281,70 +288,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-apm-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-2/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-2/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-2/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-node-apm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-node-apm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -354,70 +361,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-npm-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -427,70 +434,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-npm-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-2/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-2/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("../nuclide-fake-node-npm-package-2/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // import
     {
       code: 'import "../nuclide-fake-node-npm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "../nuclide-fake-node-npm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "../nuclide-fake-node-npm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "../nuclide-fake-node-npm-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "../nuclide-fake-node-npm-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -500,70 +507,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("module-that-does-not-exit");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("eslint");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("eslint/lib/eslint.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'require("eslint/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // import
     {
       code: 'import "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export * from "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -573,70 +580,70 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("module-that-does-not-exit");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("eslint");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("eslint/lib/eslint.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'require("eslint/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // import
     {
       code: 'import "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export {} from "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export {} from "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export *
     {
       code: 'export * from "module-that-does-not-exit";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "eslint";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "eslint/lib/eslint.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export * from "eslint/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -645,15 +652,15 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     {
       code: 'import type x from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -663,53 +670,53 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import type
     {
       code: 'import type x from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // import typeof
     {
       code: 'import typeof x from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export type {} from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -719,53 +726,53 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import type
     {
       code: 'import type x from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // import typeof
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -775,53 +782,53 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import type
     {
       code: 'import type x from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // import typeof
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     // export {}
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -831,53 +838,53 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import type
     {
       code: 'import type x from "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import type x from "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // import typeof
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'import typeof x from "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     // export {}
     {
       code: 'export type {} from "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
     {
       code: 'export type {} from "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -886,12 +893,12 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     {
       code: 'require("../nuclide-fake-atom-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-atom-package-2']}],
     },
     {
       code: 'require("../nuclide-fake-atom-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-atom-package-2']}],
     },
 
@@ -904,7 +911,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     {
       code: 'require("atom");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom builtin package "atom" is not requireable from an npm package.',
@@ -914,7 +921,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom builtin package "atom" is not importable from an npm package.',
@@ -924,7 +931,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom builtin package "atom" is not exportable from an npm package.',
@@ -934,7 +941,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "atom";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom builtin package "atom" is not exportable from an npm package.',
@@ -950,7 +957,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-node-apm-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
@@ -960,7 +967,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
@@ -970,7 +977,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
@@ -980,7 +987,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-node-apm-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not requireable from an npm package.',
@@ -991,7 +998,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import
     {
       code: 'import "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
@@ -1001,7 +1008,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
@@ -1011,7 +1018,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
@@ -1021,7 +1028,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not importable from an npm package.',
@@ -1032,7 +1039,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export {}
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1042,7 +1049,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1052,7 +1059,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1062,7 +1069,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1073,7 +1080,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export *
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1083,7 +1090,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1093,7 +1100,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1103,7 +1110,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'apm package "nuclide-fake-node-apm-package-1" is not exportable from an npm package.',
@@ -1119,7 +1126,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-atom-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1129,7 +1136,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1139,7 +1146,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1149,7 +1156,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1160,7 +1167,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import
     {
       code: 'import "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1170,7 +1177,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1180,7 +1187,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1190,7 +1197,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1201,7 +1208,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export {}
     {
       code: 'export {} from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1211,7 +1218,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1221,7 +1228,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1231,7 +1238,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1242,7 +1249,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export *
     {
       code: 'export * from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1252,7 +1259,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1262,7 +1269,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1272,7 +1279,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-apm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1288,7 +1295,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-atom-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1298,7 +1305,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1308,7 +1315,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1318,7 +1325,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-1/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not requireable from other packages.',
@@ -1329,7 +1336,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import
     {
       code: 'import "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1339,7 +1346,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1349,7 +1356,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1359,7 +1366,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not importable from other packages.',
@@ -1370,7 +1377,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export {}
     {
       code: 'export {} from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1380,7 +1387,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1390,7 +1397,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1400,7 +1407,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1411,7 +1418,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export *
     {
       code: 'export * from "../nuclide-fake-atom-package-1";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1421,7 +1428,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1431,7 +1438,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1441,7 +1448,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-1/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-1" is not exportable from other packages.',
@@ -1457,7 +1464,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // require
     {
       code: 'require("../nuclide-fake-atom-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
@@ -1467,7 +1474,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-2/file.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
@@ -1477,7 +1484,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-2/index.js");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
@@ -1487,7 +1494,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require("../nuclide-fake-atom-package-2/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
@@ -1497,7 +1504,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'require.resolve("../nuclide-fake-atom-package-2/package.json");',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not requireable from other packages.',
@@ -1508,7 +1515,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // import
     {
       code: 'import "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
@@ -1518,7 +1525,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
@@ -1528,7 +1535,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
@@ -1538,7 +1545,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'import "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not importable from other packages.',
@@ -1549,7 +1556,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export {}
     {
       code: 'export {} from "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1559,7 +1566,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1569,7 +1576,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1579,7 +1586,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export {} from "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1590,7 +1597,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     // export *
     {
       code: 'export * from "../nuclide-fake-atom-package-2";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1600,7 +1607,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-2/file.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1610,7 +1617,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-2/index.js";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1620,7 +1627,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     {
       code: 'export * from "../nuclide-fake-atom-package-2/package.json";',
-      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-atom-package-1/index.js'),
       errors: [
         {
           message: 'Atom package "nuclide-fake-atom-package-2" is not exportable from other packages.',
@@ -1635,7 +1642,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
     { // whitelist does *not* apply to npm packages
       code: 'require("../nuclide-fake-atom-package-1");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-atom-package-1']}],
       errors: [
         {
@@ -1646,7 +1653,7 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
     { // whitelist does *not* apply to npm packages
       code: 'require("../nuclide-fake-node-apm-package-2");',
-      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      filename: getFullPath('nuclide-fake-node-npm-package-1/index.js'),
       options: [{whitelist: ['nuclide-fake-node-apm-package-2']}],
       errors: [
         {

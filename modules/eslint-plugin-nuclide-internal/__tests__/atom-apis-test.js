@@ -20,7 +20,17 @@ const path = require('path');
 const rule = require('../atom-apis');
 const RuleTester = require('eslint').RuleTester;
 
-const ruleTester = new RuleTester();
+const getFullPath = relativePath => {
+  return path.join(__dirname, '../__mocks__', relativePath);
+};
+
+const ruleTester = new RuleTester({
+  parser: 'babel-eslint',
+  parserOptions: {
+    sourceType: 'module',
+  },
+});
+
 
 ruleTester.run('atom-commands', rule, {
   valid: [
@@ -33,19 +43,19 @@ ruleTester.run('atom-commands', rule, {
     // these are contained in menus
     {
       code: 'atom.commands.add("atom-workspace", "good_command", null)',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
     },
     {
       code: 'atom.commands.add("atom-workspace", "good_command2", null)',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
     },
     {
       code: 'api.registerFactory({toggleCommand: "good_command"})',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
     },
     {
       code: 'registerFactory({toggleCommand: "bad_command"})',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
     },
     {
       code: 'atom.workspace.open()',
@@ -86,7 +96,7 @@ ruleTester.run('atom-commands', rule, {
     },
     {
       code: 'atom.commands.add("atom-workspace", "bad_command", null)',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
       errors: [{
         message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
         type: 'Literal',
@@ -94,7 +104,7 @@ ruleTester.run('atom-commands', rule, {
     },
     {
       code: 'atom.commands.add("atom-workspace", "bad_command2", null)',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
       errors: [{
         message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
         type: 'Literal',
@@ -102,7 +112,7 @@ ruleTester.run('atom-commands', rule, {
     },
     {
       code: 'api.registerFactory({toggleCommand: "bad_command"})',
-      filename: path.join(__dirname, 'test.js'),
+      filename: getFullPath('test.js'),
       errors: [{
         message: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
         type: 'Literal',
