@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {WelcomePage, Store} from './types';
+import type {WelcomePage, SerializedState, Store} from './types';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import * as React from 'react';
@@ -32,8 +32,11 @@ class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
 
-  constructor() {
-    this._store = createStore(rootReducer, createEmptyAppState());
+  constructor(serializedState: ?SerializedState) {
+    this._store = createStore(
+      rootReducer,
+      createEmptyAppState(serializedState),
+    );
     this._disposables = new UniversalDisposable(
       this._registerDisplayCommandAndOpener(),
     );
@@ -80,6 +83,12 @@ class Activation {
       }
     }
     return false;
+  }
+
+  serialize(): SerializedState {
+    return {
+      hiddenTopics: Array.from(this._store.getState().hiddenTopics),
+    };
   }
 }
 

@@ -20,6 +20,10 @@ export type AppState = {
   isWelcomePageVisible: boolean,
 };
 
+export type SerializedState = {
+  hiddenTopics: Array<string>,
+};
+
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
