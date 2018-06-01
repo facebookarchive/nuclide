@@ -14,6 +14,8 @@ import type {WelcomePage} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+export type {WelcomePage};
+
 const DISPLAY_COMMAND_NAME = 'nuclide-welcome-page:show-welcome-page';
 
 class Activation {
