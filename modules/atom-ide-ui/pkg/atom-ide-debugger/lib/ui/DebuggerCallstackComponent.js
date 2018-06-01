@@ -15,13 +15,12 @@ import * as React from 'react';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {UNKNOWN_SOURCE, DebuggerMode} from '../constants';
+import {DebuggerMode} from '../constants';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Observable} from 'rxjs';
 import {fastDebounce} from 'nuclide-commons/observable';
 import nullthrows from 'nullthrows';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
-import * as path from 'path';
 import classnames from 'classnames';
 import idx from 'idx';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -67,26 +66,6 @@ export default class DebuggerCallstackComponent extends React.Component<
       isFechingStackFrames: false,
     };
   }
-
-  _locationComponent = (props: {
-    // eslint-disable-next-line react/no-unused-prop-types
-    data: IStackFrame,
-  }): React.Element<any> => {
-    const {source, range} = props.data;
-    const name =
-      source.name != null
-        ? source.name
-        : path.basename(source.uri) || UNKNOWN_SOURCE;
-
-    // Note: IStackFrame ranges are 0-based.
-    return (
-      <div title={`${name}:${range.start.row + 1}`}>
-        <span>
-          {name}:{range.start.row + 1}
-        </span>
-      </div>
-    );
-  };
 
   componentDidMount(): void {
     const {service} = this.props;
@@ -150,11 +129,7 @@ export default class DebuggerCallstackComponent extends React.Component<
       {
         title: 'Address',
         key: 'address',
-      },
-      {
-        component: this._locationComponent,
-        title: 'File Location',
-        key: 'frame',
+        width: 0.95,
       },
     ];
 
