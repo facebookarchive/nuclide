@@ -83,6 +83,7 @@ describe('CodeFormatManager', () => {
               newText: 'def',
             },
           ]),
+        keepCursorPosition: false,
       };
       const spy = spyOn(provider, 'formatAtPosition').andCallThrough();
       manager.addOnTypeProvider(provider);

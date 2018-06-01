@@ -78,6 +78,7 @@ export type OnTypeCodeFormatProvider = {|
   ) => Promise<Array<TextEdit>>,
   priority: number,
   grammarScopes: Array<string>,
+  keepCursorPosition: boolean,
 |};
 
 /**

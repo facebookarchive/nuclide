@@ -12,23 +12,23 @@
 
 import type {BusySignalService} from '../../atom-ide-busy-signal/lib/types';
 import type {
-  RangeCodeFormatProvider,
   FileCodeFormatProvider,
-  OnTypeCodeFormatProvider,
   OnSaveCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+  RangeCodeFormatProvider,
 } from './types';
 
+import {getFormatOnSave, getFormatOnType} from './config';
 import {Range} from 'atom';
-import {Observable, Subject} from 'rxjs';
+import {getLogger} from 'log4js';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
+import {observeEditorDestroy} from 'nuclide-commons-atom/text-editor';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {completingSwitchMap, microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observeEditorDestroy} from 'nuclide-commons-atom/text-editor';
-import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
-import {getFormatOnSave, getFormatOnType} from './config';
-import {getLogger} from 'log4js';
+import {Observable, Subject} from 'rxjs';
 
 // Save events are critical, so don't allow providers to block them.
 const SAVE_TIMEOUT = 2500;
@@ -306,6 +306,7 @@ export default class CodeFormatManager {
       }
 
       const contents = editor.getText();
+      const cursorPosition = editor.getCursorBufferPosition().copy();
 
       // The bracket-matching package basically overwrites
       //
@@ -338,6 +339,11 @@ export default class CodeFormatManager {
           // your actual code by undoing again.
           if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
             throw new Error('Could not apply edits to text buffer.');
+          }
+        })
+        .finally(() => {
+          if (provider.keepCursorPosition) {
+            editor.setCursorBufferPosition(cursorPosition);
           }
         });
     });
