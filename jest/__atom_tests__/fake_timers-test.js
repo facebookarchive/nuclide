@@ -9,8 +9,8 @@
  * @format
  */
 
-// jest.useFakeTimers();
-
-test('fake timers dont throw', () => {
-  // jest.advanceTimersByTime(10);
+test('fake timers are not available yet', () => {
+  expect(() => {
+    jest.useFakeTimers();
+  }).toThrow('fakeTimers are not supproted in atom environment');
 });
