@@ -13,6 +13,7 @@ import type {AppState} from '../types';
 
 export function createEmptyAppState(overriddenDefaults: Object = {}): AppState {
   return {
+    welcomePages: new Map(),
     isWelcomePageVisible: false,
   };
 }

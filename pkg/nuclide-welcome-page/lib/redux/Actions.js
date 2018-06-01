@@ -9,9 +9,28 @@
  * @format
  */
 
-import type {UpdateWelcomePageVisibilityAction} from '../types';
+import type {
+  UpdateWelcomePageVisibilityAction,
+  WelcomePage,
+  AddWelcomePageAction,
+  DeleteWelcomePageAction,
+} from '../types';
 
 import * as ActionTypes from './ActionTypes';
+
+export function addWelcomePage(welcomePage: WelcomePage): AddWelcomePageAction {
+  return {
+    type: ActionTypes.ADD_WELCOME_PAGE,
+    payload: {welcomePage},
+  };
+}
+
+export function deleteWelcomePage(topic: string): DeleteWelcomePageAction {
+  return {
+    type: ActionTypes.DELETE_WELCOME_PAGE,
+    payload: {topic},
+  };
+}
 
 export function updateWelcomePageVisibility(
   isVisible: boolean,

@@ -15,6 +15,7 @@ export type WelcomePage = {
 };
 
 export type AppState = {
+  welcomePages: Map<string, WelcomePage>,
   isWelcomePageVisible: boolean,
 };
 
@@ -26,6 +27,20 @@ export type Store = {
   // subscribe(listener: () => mixed): () => void,
 };
 
+export type AddWelcomePageAction = {
+  type: 'ADD_WELCOME_PAGE',
+  payload: {
+    welcomePage: WelcomePage,
+  },
+};
+
+export type DeleteWelcomePageAction = {
+  type: 'DELETE_WELCOME_PAGE',
+  payload: {
+    topic: string,
+  },
+};
+
 export type UpdateWelcomePageVisibilityAction = {
   type: 'UPDATE_WELCOME_PAGE_VISIBILITY',
   payload: {
@@ -33,4 +48,7 @@ export type UpdateWelcomePageVisibilityAction = {
   },
 };
 
-export type Action = UpdateWelcomePageVisibilityAction;
+export type Action =
+  | AddWelcomePageAction
+  | DeleteWelcomePageAction
+  | UpdateWelcomePageVisibilityAction;

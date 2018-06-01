@@ -9,15 +9,41 @@
  * @format
  */
 
+import type {AppState, WelcomePage} from '../types';
+
 import * as React from 'react';
 import {connect} from 'react-redux';
 
-type Props = {};
+type Props = {
+  welcomePages: Map<string, WelcomePage>,
+};
 
 export default class WelcomePageComponent extends React.Component<Props> {
+  constructor(props: Props) {
+    super(props);
+  }
+
   render(): React.Node {
-    return <div>WELCOME TO NUCLIDE?</div>;
+    const entries = this._buildEntries(
+      Array.from(this.props.welcomePages.values()),
+    );
+    return <div className="welcome-page">{entries}</div>;
+  }
+
+  _buildEntries(pages: Array<WelcomePage>): Array<React$Node> {
+    const entries = [];
+    for (let i = 0; i < pages.length - 1; i++) {
+      entries.push(pages[i].content, <hr />);
+    }
+    entries.push(pages[pages.length - 1].content);
+    return entries;
   }
 }
 
-export const WelcomePageContainer = connect()(WelcomePageComponent);
+function mapStateToProps(state: AppState): Props {
+  return state;
+}
+
+export const WelcomePageContainer = connect(mapStateToProps)(
+  WelcomePageComponent,
+);

@@ -18,6 +18,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {createStore} from 'redux';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import * as Actions from './redux/Actions';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import rootReducer from './redux/rootReducer';
 import {WELCOME_PAGE_VIEW_URI} from './ui/WelcomePageGadget';
@@ -29,14 +30,11 @@ const SHOW_COMMAND_NAME = 'nuclide-welcome-page:show-welcome-page';
 
 class Activation {
   _disposables: UniversalDisposable;
-  _activeWelcomePages: Map<string, WelcomePage>;
   _store: Store;
 
   constructor() {
-    this._activeWelcomePages = new Map();
     this._store = createStore(rootReducer, createEmptyAppState());
     this._disposables = new UniversalDisposable(
-      () => this._activeWelcomePages.clear(),
       this._registerDisplayCommandAndOpener(),
     );
   }
@@ -46,10 +44,9 @@ class Activation {
   }
 
   consumeWelcomePage(welcomePage: WelcomePage): IDisposable {
-    const topic = welcomePage.topic;
-    this._activeWelcomePages.set(topic, welcomePage);
+    this._store.dispatch(Actions.addWelcomePage(welcomePage));
     return new UniversalDisposable(() => {
-      this._activeWelcomePages.delete(topic);
+      this._store.dispatch(Actions.deleteWelcomePage(welcomePage.topic));
     });
   }
 
