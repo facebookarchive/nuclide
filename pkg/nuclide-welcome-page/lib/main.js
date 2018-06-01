@@ -59,7 +59,9 @@ class Activation {
       }),
       () => destroyItemWhere(item => item instanceof WelcomePageGadget),
       atom.commands.add('atom-workspace', SHOW_COMMAND_NAME, () => {
-        goToLocation(WELCOME_PAGE_VIEW_URI);
+        if (this._hasWelcomePagesToShow()) {
+          goToLocation(WELCOME_PAGE_VIEW_URI);
+        }
       }),
     );
   }
@@ -67,6 +69,17 @@ class Activation {
   // TODO: is there a better place to put this?
   _createWelcomePageViewable(): atom$Pane {
     return viewableFromReactElement(<WelcomePageGadget store={this._store} />);
+  }
+
+  _hasWelcomePagesToShow(): boolean {
+    const {welcomePages, hiddenTopics} = this._store.getState();
+    for (const topic of welcomePages.keys()) {
+      if (!hiddenTopics.has(topic)) {
+        // if any topic is not hidden
+        return true;
+      }
+    }
+    return false;
   }
 }
 
