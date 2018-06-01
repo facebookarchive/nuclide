@@ -193,11 +193,12 @@ export default class VsDebugSession extends V8Protocol {
       // Babel Bug: `super` isn't working with `async`
       return super.send(command, args).then(
         (response: DebugProtocol.Response) => {
-          this._logger.info('Received response:', response);
+          const sanitizedResponse = this._sanitizeResponse(response);
+          this._logger.info('Received response:', sanitizedResponse);
           track('vs-debug-session:transaction', {
             ...this._adapterAnalyticsExtras,
             request: {command, arguments: args},
-            response,
+            response: sanitizedResponse,
           });
           return response;
         },
@@ -230,6 +231,53 @@ export default class VsDebugSession extends V8Protocol {
       operation,
       this._adapterAnalyticsExtras,
     );
+  }
+
+  _sanitizeResponse(
+    response: DebugProtocol.base$Response,
+  ): DebugProtocol.base$Response {
+    try {
+      if (response.command === 'variables') {
+        const varResponse = ((response: any): DebugProtocol.VariablesResponse);
+        const sanResponse = {
+          ...varResponse,
+          body: {
+            ...varResponse.body,
+            variables: varResponse.body.variables.map(v => ({
+              ...v,
+              value: '<elided>',
+            })),
+          },
+        };
+        // $FlowFixMe flow isn't recognizing that ...varResponse is filling in needed members
+        return sanResponse;
+      }
+      if (response.command === 'evaluate') {
+        const evalResponse = ((response: any): DebugProtocol.EvaluateResponse);
+        const sanResponse = {
+          ...evalResponse,
+          body: {
+            ...evalResponse.body,
+            result: '<elided>',
+          },
+        };
+        // $FlowFixMe flow isn't recognizing that ...evalResponse is filling in needed members
+        return sanResponse;
+      }
+      return response;
+    } catch (e) {
+      // Don't let a malformed response prevent the response from bubbling up
+      // to the debugger
+      return {
+        type: 'response',
+        seq: response.seq,
+        request_seq: response.request_seq,
+        success: false,
+        command: response.command,
+        error: 'Error sanitizing response.',
+        message: e.message,
+      };
+    }
   }
 
   onEvent(event: DebugProtocol.Event | AdapterExitedEvent): void {
