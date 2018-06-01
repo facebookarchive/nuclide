@@ -11,35 +11,38 @@
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ServiceTester} from './ServiceTester';
+import {ServiceTester} from '../__mocks__/ServiceTester';
+import waitsFor from '../../../jest/waits_for';
 
 describe('ErrorServer', () => {
   let testHelper;
   let service;
-  beforeEach(() => {
+  beforeEach(async () => {
     testHelper = new ServiceTester();
-    waitsForPromise(() => {
-      invariant(testHelper);
-      return testHelper.start(
-        [
-          {
-            name: 'ErrorService',
-            definition: nuclideUri.join(__dirname, 'ErrorService.def'),
-            implementation: nuclideUri.join(__dirname, 'ErrorService.js'),
-          },
-        ],
-        'error_protocol',
-      );
-    });
+    invariant(testHelper);
+    await testHelper.start(
+      [
+        {
+          name: 'ErrorService',
+          definition: nuclideUri.join(
+            __dirname,
+            '../__mocks__/ErrorService.def',
+          ),
+          implementation: nuclideUri.join(
+            __dirname,
+            '../__mocks__/ErrorService.js',
+          ),
+        },
+      ],
+      'error_protocol',
+    );
 
-    runs(() => {
-      invariant(testHelper);
-      service = testHelper.getRemoteService('ErrorService');
-    });
+    invariant(testHelper);
+    service = testHelper.getRemoteService('ErrorService');
   });
 
-  it('ErrorService - error message', () => {
-    waitsForPromise(async () => {
+  it('ErrorService - error message', async () => {
+    await (async () => {
       try {
         invariant(service);
         await service.promiseError('msg');
@@ -53,11 +56,11 @@ describe('ErrorServer', () => {
           ),
         ).toBe(true);
       }
-    });
+    })();
   });
 
-  it('ErrorService - error string', () => {
-    waitsForPromise(async () => {
+  it('ErrorService - error string', async () => {
+    await (async () => {
       try {
         invariant(service);
         await service.promiseErrorString('msg');
@@ -65,11 +68,11 @@ describe('ErrorServer', () => {
       } catch (e) {
         expect(e).toBe('msg');
       }
-    });
+    })();
   });
 
-  it('ErrorService - error undefined', () => {
-    waitsForPromise(async () => {
+  it('ErrorService - error undefined', async () => {
+    await (async () => {
       try {
         invariant(service);
         await service.promiseErrorUndefined();
@@ -77,11 +80,11 @@ describe('ErrorServer', () => {
       } catch (e) {
         expect(e).toBe(undefined);
       }
-    });
+    })();
   });
 
-  it('ErrorService - error code', () => {
-    waitsForPromise(async () => {
+  it('ErrorService - error code', async () => {
+    await (async () => {
       try {
         invariant(service);
         await service.promiseErrorCode(42);
@@ -90,7 +93,7 @@ describe('ErrorServer', () => {
         expect(e instanceof Error).toBe(true);
         expect(e.code).toBe(42);
       }
-    });
+    })();
   });
 
   it('ErrorService - observable error.message', () => {

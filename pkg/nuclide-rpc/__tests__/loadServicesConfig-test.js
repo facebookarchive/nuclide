@@ -17,8 +17,8 @@ import {generateFixture} from 'nuclide-commons/test-helpers';
 describe('loadServicesConfig()', () => {
   let configPath: ?string;
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       const services3json = [
         {
           implementation: './FooService.js',
@@ -44,7 +44,7 @@ describe('loadServicesConfig()', () => {
           ['fb-services-3.json', JSON.stringify(fbservices3json)],
         ]),
       );
-    });
+    })();
   });
 
   it('resolves absolute paths', () => {

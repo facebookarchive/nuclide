@@ -10,8 +10,8 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ServiceTester} from './ServiceTester';
-import typeof * as BidiServiceType from './BidiService';
+import {ServiceTester} from '../__mocks__/ServiceTester';
+import typeof * as BidiServiceType from '../__mocks__/BidiService';
 
 class I1 {
   async m(arg: string): Promise<string> {
@@ -32,25 +32,29 @@ class I2 {
 describe('BidiService', () => {
   let testHelper;
   let service: BidiServiceType = (null: any);
-  beforeEach(() => {
+  beforeEach(async () => {
     testHelper = new ServiceTester();
-    waitsForPromise(async () => {
-      await testHelper.start(
-        [
-          {
-            name: 'BidiService',
-            definition: nuclideUri.join(__dirname, 'BidiService.def'),
-            implementation: nuclideUri.join(__dirname, 'BidiService.js'),
-          },
-        ],
-        'bidi_protocol',
-      );
-      service = testHelper.getRemoteService('BidiService');
-    });
+    await testHelper.start(
+      [
+        {
+          name: 'BidiService',
+          definition: nuclideUri.join(
+            __dirname,
+            '../__mocks__/BidiService.def',
+          ),
+          implementation: nuclideUri.join(
+            __dirname,
+            '../__mocks__/BidiService.js',
+          ),
+        },
+      ],
+      'bidi_protocol',
+    );
+    service = testHelper.getRemoteService('BidiService');
   });
 
-  it('Test calls from server back to client', () => {
-    waitsForPromise(async () => {
+  it('Test calls from server back to client', async () => {
+    await (async () => {
       const i1 = new I1();
       const i2 = new I2();
 
@@ -59,7 +63,7 @@ describe('BidiService', () => {
 
       expect(r1).toBe('I1:call1');
       expect(r2).toBe('I2:call2');
-    });
+    })();
   });
 
   afterEach(() => testHelper.stop());

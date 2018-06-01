@@ -44,87 +44,85 @@ describe('TypeRegistry', () => {
     context = ({}: any);
   });
 
-  it('Can serialize / deserialize basic primitive types', () => {
-    waitsForPromise(async () => {
-      invariant(typeRegistry);
+  it('Can serialize / deserialize basic primitive types', async () => {
+    invariant(typeRegistry);
 
-      const expected1 = 'Hello World';
-      const str1 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected1, stringType),
-        stringType,
-      );
-      expect(str1).toBe(expected1);
+    const expected1 = 'Hello World';
+    const str1 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected1, stringType),
+      stringType,
+    );
+    expect(str1).toBe(expected1);
 
-      const expected2 = 312213;
-      const num2 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected2, numberType),
-        numberType,
-      );
-      expect(num2).toBe(expected2);
+    const expected2 = 312213;
+    const num2 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected2, numberType),
+      numberType,
+    );
+    expect(num2).toBe(expected2);
 
-      const expected3 = false;
-      const bool3 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected3, booleanType),
-        booleanType,
-      );
-      expect(bool3).toBe(expected3);
+    const expected3 = false;
+    const bool3 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected3, booleanType),
+      booleanType,
+    );
+    expect(bool3).toBe(expected3);
 
-      const expected4 = false;
-      const bool4 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected4, anyType),
-        anyType,
-      );
-      expect(bool4).toBe(expected4);
+    const expected4 = false;
+    const bool4 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected4, anyType),
+      anyType,
+    );
+    expect(bool4).toBe(expected4);
 
-      const expected5 = 42;
-      const num5 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected5, mixedType),
-        mixedType,
-      );
-      expect(num5).toBe(expected5);
+    const expected5 = 42;
+    const num5 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected5, mixedType),
+      mixedType,
+    );
+    expect(num5).toBe(expected5);
 
-      const expected6 = Number.NEGATIVE_INFINITY;
-      const num6 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected6, numberType),
-        numberType,
-      );
-      expect(num6).toBe(expected6);
+    const expected6 = Number.NEGATIVE_INFINITY;
+    const num6 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected6, numberType),
+      numberType,
+    );
+    expect(num6).toBe(expected6);
 
-      const expected7 = Number.POSITIVE_INFINITY;
-      const num7 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected7, numberType),
-        numberType,
-      );
-      expect(num7).toBe(expected7);
+    const expected7 = Number.POSITIVE_INFINITY;
+    const num7 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected7, numberType),
+      numberType,
+    );
+    expect(num7).toBe(expected7);
 
-      const expected8 = Number.POSITIVE_INFINITY;
-      const num8 = await typeRegistry.unmarshal(
-        context,
-        await typeRegistry.marshal(context, expected8, numberType),
-        numberType,
-      );
-      expect(num8).toBe(expected8);
+    const expected8 = Number.POSITIVE_INFINITY;
+    const num8 = await typeRegistry.unmarshal(
+      context,
+      await typeRegistry.marshal(context, expected8, numberType),
+      numberType,
+    );
+    expect(num8).toBe(expected8);
 
-      // Marshalling an unexpected value throws.
-      let thrown = false;
-      try {
-        await typeRegistry.marshal(context, null, numberType);
-      } catch (e) {
-        thrown = true;
-      }
-      expect(thrown).toBe(true);
-    });
+    // Marshalling an unexpected value throws.
+    let thrown = false;
+    try {
+      await typeRegistry.marshal(context, null, numberType);
+    } catch (e) {
+      thrown = true;
+    }
+    expect(thrown).toBe(true);
   });
 
-  it('Can serialize / deserialize literal types', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize literal types', async () => {
+    await (async () => {
       const stringLiteralType = {
         location: builtinLocation,
         kind: 'string-literal',
@@ -174,11 +172,11 @@ describe('TypeRegistry', () => {
         thrown = true;
       }
       expect(thrown).toBe(true);
-    });
+    })();
   });
 
-  it('Can serialize / deserialize complex types like Date, Regex and Buffer', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize complex types like Date, Regex and Buffer', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       const expected1 = {a: 42, b: {c: 'str'}};
@@ -212,11 +210,11 @@ describe('TypeRegistry', () => {
         bufferType,
       );
       expect(expected4.equals(buf4)).toBeTruthy();
-    });
+    })();
   });
 
-  it('Can serialize / deserialize parameterized types like Array and Object', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize parameterized types like Array and Object', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       // An array of buffers.
@@ -291,11 +289,11 @@ describe('TypeRegistry', () => {
       );
       expect(result3.a).toBe(undefined);
       expect(result3.b.equals(expected3.b)).toBeTruthy();
-    });
+    })();
   });
 
-  it('Can serialize / deserialize type aliases.', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize type aliases.', async () => {
+    await (async () => {
       invariant(typeRegistry);
       typeRegistry.registerAlias('ValueTypeA', builtinLocation, ValueTypeA);
 
@@ -313,11 +311,11 @@ describe('TypeRegistry', () => {
       expect(result.valueA).toBe(data.valueA);
       expect(result.valueB).toBeNull();
       expect(result.hasOwnProperty('valueC')).toBeFalsy();
-    });
+    })();
   });
 
-  it('Can serialize / deserialize named types with same name as type kinds.', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize named types with same name as type kinds.', async () => {
+    await (async () => {
       invariant(typeRegistry);
       typeRegistry.registerAlias('nullable', builtinLocation, numberType);
 
@@ -333,11 +331,11 @@ describe('TypeRegistry', () => {
         type,
       );
       expect(result).toBe(null);
-    });
+    })();
   });
 
-  it('Can serialize / deserialize union literal types.', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize union literal types.', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       const type: UnionType = {
@@ -378,11 +376,11 @@ describe('TypeRegistry', () => {
         thrown = true;
       }
       expect(thrown).toBe(true);
-    });
+    })();
   });
 
-  it('Can serialize / deserialize union object types.', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize union object types.', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       // {kind: 'bork'; n: number }
@@ -493,11 +491,11 @@ describe('TypeRegistry', () => {
         thrown = true;
       }
       expect(thrown).toBe(true);
-    });
+    })();
   });
 
-  it('can serialize/deserialize intersection object types', () => {
-    waitsForPromise(async () => {
+  it('can serialize/deserialize intersection object types', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       // { x: number, y: number }
@@ -561,11 +559,11 @@ describe('TypeRegistry', () => {
         type,
       );
       expect(result4).toEqual(data1);
-    });
+    })();
   });
 
-  it('Can serialize / deserialize undefined values', () => {
-    waitsForPromise(async () => {
+  it('Can serialize / deserialize undefined values', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       const data = undefined;
@@ -580,38 +578,35 @@ describe('TypeRegistry', () => {
         type,
       );
       expect(result).toBe(undefined);
-    });
+    })();
   });
 
-  it('works for very large values', () => {
-    waitsForPromise(async () => {
-      jasmine.unspy(Date, 'now');
-      const testArray = [];
-      for (let i = 0; i < 100000; i++) {
-        testArray.push('this is a test string');
-      }
-      const {heapUsed} = process.memoryUsage();
-      const startTime = Date.now();
-      const result = await typeRegistry.marshal(context, testArray, {
-        location: builtinLocation,
-        kind: 'array',
-        type: stringType,
-      });
-      const mem = process.memoryUsage().heapUsed - heapUsed;
-      // eslint-disable-next-line no-console
-      console.log('time taken: %d seconds', (Date.now() - startTime) / 1000);
-      // eslint-disable-next-line no-console
-      console.log('memory used: %d', mem);
-
-      // 10MB is a very reasonable upper bound.
-      // In contrast, using promises takes 152MB!
-      expect(result).toEqual(testArray);
-      expect(mem).toBeLessThan(10 * 1024 * 1024);
+  it('works for very large values', async () => {
+    const testArray = [];
+    for (let i = 0; i < 100000; i++) {
+      testArray.push('this is a test string');
+    }
+    const {heapUsed} = process.memoryUsage();
+    const startTime = Date.now();
+    const result = await typeRegistry.marshal(context, testArray, {
+      location: builtinLocation,
+      kind: 'array',
+      type: stringType,
     });
+    const mem = process.memoryUsage().heapUsed - heapUsed;
+    // eslint-disable-next-line no-console
+    console.log('time taken: %d seconds', (Date.now() - startTime) / 1000);
+    // eslint-disable-next-line no-console
+    console.log('memory used: %d', mem);
+
+    // 10MB is a very reasonable upper bound.
+    // In contrast, using promises takes 152MB!
+    expect(result).toEqual(testArray);
+    expect(mem).toBeLessThan(10 * 1024 * 1024);
   });
 
-  it('works for parameter names same name as members from Object.prototype', () => {
-    waitsForPromise(async () => {
+  it('works for parameter names same name as members from Object.prototype', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       const parameters = [
@@ -628,11 +623,11 @@ describe('TypeRegistry', () => {
         parameters,
       );
       expect(results).toEqual([expected]);
-    });
+    })();
   });
 
-  it('accepts undefined parameters for nullable/mixed/any types', () => {
-    waitsForPromise(async () => {
+  it('accepts undefined parameters for nullable/mixed/any types', async () => {
+    await (async () => {
       invariant(typeRegistry);
 
       const parameters = [
@@ -660,7 +655,7 @@ describe('TypeRegistry', () => {
         parameters,
       );
       expect(results).toEqual([undefined, undefined, undefined]);
-    });
+    })();
   });
 });
 

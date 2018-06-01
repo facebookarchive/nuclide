@@ -10,24 +10,24 @@
  */
 
 import {createProxyFactory, __test__} from '../lib/main';
-import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('Module public API.', () => {
-  beforeEach(function() {
+  beforeEach(() => {
     __test__.proxiesCache.clear();
-    addMatchers(this);
   });
 
   it('Creates a remote proxy for a module, caching the intermediate results.', () => {
     const fakeClient: any = {};
-    const defFile = require.resolve('./fixtures/FunctionService.def');
+    const defFile = require.resolve(
+      '../__mocks__/fixtures/FunctionService.def',
+    );
 
     expect(__test__.proxiesCache.size).toBe(0);
 
     const factory = createProxyFactory('FunctionService', false, defFile, []);
     const proxy = factory(fakeClient);
 
-    expect(Object.keys(proxy)).diffJson([
+    expect(Object.keys(proxy)).toEqual([
       'TestFunctionA',
       'TestFunctionB',
       'TestFunctionC',

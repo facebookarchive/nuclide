@@ -9,7 +9,7 @@
  * @format
  */
 
-import typeof * as DummyService from './fixtures/dummy-service/DummyService';
+import typeof * as DummyService from '../__mocks__/fixtures/dummy-service/DummyService';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
@@ -17,6 +17,7 @@ import {spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 import {Scheduler} from 'rxjs';
+import waitsFor from '../../../jest/waits_for';
 
 describe('RpcProcess', () => {
   let server: RpcProcess;
@@ -24,7 +25,7 @@ describe('RpcProcess', () => {
   beforeEach(() => {
     const PROCESS_PATH = nuclideUri.join(
       __dirname,
-      'fixtures/dummy-service/dummyioserver.py',
+      '../__mocks__/fixtures/dummy-service/dummyioserver.py',
     );
     const OPTS = {
       cwd: nuclideUri.dirname(PROCESS_PATH),
@@ -39,11 +40,11 @@ describe('RpcProcess', () => {
           name: 'dummy',
           definition: nuclideUri.join(
             __dirname,
-            'fixtures/dummy-service/DummyService.js',
+            '../__mocks__/fixtures/dummy-service/DummyService.js',
           ),
           implementation: nuclideUri.join(
             __dirname,
-            'fixtures/dummy-service/DummyService.js',
+            '../__mocks__/fixtures/dummy-service/DummyService.js',
           ),
           preserveFunctionNames: true,
         },
@@ -65,19 +66,19 @@ describe('RpcProcess', () => {
     return server.getService('dummy');
   }
 
-  it('should be able to complete calls', () => {
-    waitsForPromise(async () => {
+  it('should be able to complete calls', async () => {
+    await (async () => {
       // All methods except 'kill' and 'error' return the same result in our
       // dummy server.
       const response = await (await getService()).binarysystems();
       expect(response).toEqual({
         hello: 'Hello World',
       });
-    });
+    })();
   });
 
-  it('should be able to handle multiple calls', () => {
-    waitsForPromise(async () => {
+  it('should be able to handle multiple calls', async () => {
+    await (async () => {
       const service = await getService();
       const responses = await Promise.all([
         service.a(),
@@ -92,22 +93,22 @@ describe('RpcProcess', () => {
         {hello: 'Hello World'},
         {hello: 'Hello World'},
       ]);
-    });
+    })();
   });
 
-  it('should reject pending calls upon error', () => {
-    waitsForPromise(async () => {
+  it('should reject pending calls upon error', async () => {
+    await (async () => {
       try {
         await (await getService()).error();
         invariant(false, 'Fail - expected promise to reject');
       } catch (e) {
         expect(e).toEqual('Command to error received');
       }
-    });
+    })();
   });
 
-  it('should reject pending calls upon the child process exiting', () => {
-    waitsForPromise(async () => {
+  it('should reject pending calls upon the child process exiting', async () => {
+    await (async () => {
       const message = server
         .observeExitMessage()
         .take(1)
@@ -123,11 +124,11 @@ describe('RpcProcess', () => {
         ).toBeTruthy();
       }
       expect((await message).exitCode).toBe(0);
-    });
+    })();
   });
 
-  it('should recover gracefully after the child process exits', () => {
-    waitsForPromise(async () => {
+  it('should recover gracefully after the child process exits', async () => {
+    await (async () => {
       try {
         await (await getService()).kill();
         invariant(false, 'Fail - expected promise to reject');
@@ -142,11 +143,11 @@ describe('RpcProcess', () => {
         hello: 'Hello World',
       });
       expect(server.isDisposed()).toBe(false);
-    });
+    })();
   });
 
-  it('dispose should kill the process', () => {
-    waitsForPromise(async () => {
+  it('dispose should kill the process', async () => {
+    await (async () => {
       await getService();
       const process = server._process;
       invariant(process != null);
@@ -159,11 +160,11 @@ describe('RpcProcess', () => {
       server.observeExitMessage().subscribe(() => exitSpy());
       // Manual dispose should not trigger any side effects.
       expect(exitSpy).not.toHaveBeenCalled();
-    });
+    })();
   });
 
-  it('should respond to dispose immediately if the process is created asynchronously', () => {
-    waitsForPromise(async () => {
+  it('should respond to dispose immediately if the process is created asynchronously', async () => {
+    await (async () => {
       const service = getService();
       server.dispose();
       try {
@@ -172,6 +173,6 @@ describe('RpcProcess', () => {
         return;
       }
       throw new Error('should have thrown');
-    });
+    })();
   });
 });

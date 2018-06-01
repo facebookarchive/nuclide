@@ -13,7 +13,6 @@ import fs from 'fs';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
 import createProxyGenerator from '../lib/proxy-generator';
-import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import vm from 'vm';
@@ -25,14 +24,16 @@ import type {Type} from '../lib/types';
 import {builtinLocation} from '../lib/builtin-types';
 
 describe('Proxy generator test suite.', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
-  for (const file of fs.readdirSync(nuclideUri.join(__dirname, 'fixtures'))) {
+  for (const file of fs.readdirSync(
+    nuclideUri.join(__dirname, '../__mocks__/fixtures'),
+  )) {
     if (file.endsWith('.def')) {
       it(`Successfully generates proxy for ${file}`, () => {
-        const fixturePath = nuclideUri.join(__dirname, 'fixtures', file);
+        const fixturePath = nuclideUri.join(
+          __dirname,
+          '../__mocks__/fixtures',
+          file,
+        );
         const definitions = parseServiceDefinition(
           file,
           fs.readFileSync(fixturePath, 'utf8'),
@@ -46,11 +47,11 @@ describe('Proxy generator test suite.', () => {
         );
         const expected = fs.readFileSync(
           nuclideUri
-            .join(__dirname, 'fixtures', file)
+            .join(__dirname, '../__mocks__/fixtures', file)
             .replace('.def', '.proxy'),
           'utf8',
         );
-        expect(code.trim()).diffLines(expected.trim());
+        expect(code.trim()).toBe(expected.trim());
       });
     }
   }
@@ -71,10 +72,6 @@ const ArrayOfArrayOfNuclideUri: Type = {
 };
 
 describe('generateTransformStatement helper function', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   it('Generates a marshal statement.', () => {
     const code = generate(
       __test__.generateTransformStatement(
@@ -83,7 +80,7 @@ describe('generateTransformStatement helper function', () => {
         true,
       ),
     ).code;
-    expect(code).diffLines(marshalText);
+    expect(code).toBe(marshalText);
   });
 
   it('Generates an unmarshal statement.', () => {
@@ -94,7 +91,7 @@ describe('generateTransformStatement helper function', () => {
         false,
       ),
     ).code;
-    expect(code).diffLines(unmarshalText);
+    expect(code).toBe(unmarshalText);
   });
 });
 
@@ -139,53 +136,49 @@ const unmarshalText = `_client.unmarshal(value, {
 })`;
 
 describe('objectToLiteral helper function', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   it('works on numbers', () => {
-    expect(generate(__test__.objectToLiteral(1)).code).diffLines('1');
+    expect(generate(__test__.objectToLiteral(1)).code).toBe('1');
   });
 
   it('works on strings', () => {
-    expect(generate(__test__.objectToLiteral('1')).code).diffLines('"1"');
+    expect(generate(__test__.objectToLiteral('1')).code).toBe('"1"');
   });
 
   it('works on booleans', () => {
-    expect(generate(__test__.objectToLiteral(false)).code).diffLines('false');
+    expect(generate(__test__.objectToLiteral(false)).code).toBe('false');
   });
 
   it('works on Maps', () => {
-    expect(generate(__test__.objectToLiteral(new Map())).code).diffLines(
+    expect(generate(__test__.objectToLiteral(new Map())).code).toBe(
       'new Map()',
     );
   });
 
   it('works on objects with simple keys', () => {
-    expect(generate(__test__.objectToLiteral({a: 1})).code).diffLines(
+    expect(generate(__test__.objectToLiteral({a: 1})).code).toBe(
       '{\n  a: 1\n}',
     );
   });
 
   it('works on objects with complex keys', () => {
-    expect(generate(__test__.objectToLiteral({'.': 1})).code).diffLines(
+    expect(generate(__test__.objectToLiteral({'.': 1})).code).toBe(
       '{\n  ".": 1\n}',
     );
   });
 
   it('works on null', () => {
-    expect(generate(__test__.objectToLiteral(null)).code).diffLines('null');
+    expect(generate(__test__.objectToLiteral(null)).code).toBe('null');
   });
 
   it('works on undefined', () => {
-    expect(generate(__test__.objectToLiteral()).code).diffLines('undefined');
-    expect(generate(__test__.objectToLiteral(undefined)).code).diffLines(
+    expect(generate(__test__.objectToLiteral()).code).toBe('undefined');
+    expect(generate(__test__.objectToLiteral(undefined)).code).toBe(
       'undefined',
     );
   });
 
   it('works on arrays', () => {
-    expect(generate(__test__.objectToLiteral([])).code).diffLines('[]');
+    expect(generate(__test__.objectToLiteral([])).code).toBe('[]');
   });
 
   it('throws on unknown type function', () => {
@@ -206,22 +199,4 @@ describe('objectToLiteral helper function', () => {
       // Native classes also pass typeof === 'function'
     }).toThrow(new Error('Cannot convert unknown type function to literal.'));
   });
-
-  it('works on nested objects', () => {
-    const objValue = vm.runInThisContext(`(${objSrc})`);
-    const actual = generate(__test__.objectToLiteral(objValue)).code;
-    expect(actual).diffLines(objSrc);
-  });
 });
-
-const objSrc = `\
-{
-  a: 1,
-  b: true,
-  c: null,
-  d: undefined,
-  f: [],
-  g: {},
-  j: new Map([["array", [false, {}, [0], new Map()]]]),
-  ".": 1
-}`;
