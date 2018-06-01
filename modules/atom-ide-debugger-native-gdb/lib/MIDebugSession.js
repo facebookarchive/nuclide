@@ -91,6 +91,7 @@ class MIDebugSession extends LoggingDebugSession {
   _pauseQueue: Array<() => Promise<void>>;
   _continueOnAttach: boolean;
   _stepping: boolean;
+  _steppingThread: number = 0;
   _configurationDoneResponse: ?DebugProtocol.ConfigurationDoneResponse;
 
   constructor() {
@@ -307,6 +308,7 @@ class MIDebugSession extends LoggingDebugSession {
     request: DebugProtocol.DisconnectRequest,
   ): Promise<void> {
     this._stepping = false;
+    this._steppingThread = 0;
     this._runWhenStopped(async () => {
       if (this._attachPID != null) {
         await this._client.sendCommand('target-detach');
@@ -600,6 +602,7 @@ class MIDebugSession extends LoggingDebugSession {
     args: DebugProtocol.NextArguments,
   ): Promise<void> {
     this._stepping = true;
+    this._steppingThread = args.threadId;
     return this._executeCommon('exec-next', args.threadId, response);
   }
 
@@ -608,6 +611,7 @@ class MIDebugSession extends LoggingDebugSession {
     args: DebugProtocol.StepInArguments,
   ): Promise<void> {
     this._stepping = true;
+    this._steppingThread = args.threadId;
     return this._executeCommon('exec-step', args.threadId, response);
   }
 
@@ -616,6 +620,7 @@ class MIDebugSession extends LoggingDebugSession {
     args: DebugProtocol.StepOutArguments,
   ): Promise<void> {
     this._stepping = true;
+    this._steppingThread = args.threadId;
     return this._executeCommon('exec-finish', args.threadId, response);
   }
 
@@ -863,12 +868,21 @@ class MIDebugSession extends LoggingDebugSession {
 
     await this._processPauseQueue();
 
+    // if we're stepping and we get a signal in the stepping thread, then
+    // we shouldn't ignore the signal, even if exception breakpoints aren't
+    // enabled
+    const signalWhileStepping =
+      this._stepping &&
+      stopped.reason === 'signal-received' &&
+      stopped['thread-id'] === this._steppingThread;
+
     // A received signal means one of two things: SIGINT sent to gdb to drop
     // into command mode (pausing the target), or an unexpected signal which
     // is an exception to break on.
     if (
       !this._expectingPause &&
-      this._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped)
+      this._exceptionBreakpoints.shouldIgnoreBreakpoint(stopped) &&
+      !signalWhileStepping
     ) {
       this._running = true;
       await this._client.sendCommand('exec-continue');
@@ -899,6 +913,7 @@ class MIDebugSession extends LoggingDebugSession {
       reason = 'step';
       description = 'Execution stepped';
       this._stepping = false;
+      this._steppingThread = 0;
     } else if (stopped.reason === 'exited') {
       this._onTargetTerminated();
       return;
