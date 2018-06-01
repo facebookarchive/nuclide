@@ -15,7 +15,6 @@ import type WS from 'ws';
 import EventEmitter from 'events';
 import {WebSocketTransport} from '../../src/socket/WebSocketTransport';
 import {compress, decompress} from '../../src/socket/compression';
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
 
 function mockSocket(): WS {
   const result = (new EventEmitter(): any);

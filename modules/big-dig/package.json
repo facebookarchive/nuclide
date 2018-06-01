@@ -7,7 +7,8 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/big-dig",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "node ../nuclide-jest/bin/jest-node.js"
+    "test": "true",
+    "jest": "../../jest/fb-jest big-dig"
   },
   "dependencies": {
     "double-ended-queue": "2.1.0-0",

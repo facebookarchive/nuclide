@@ -10,12 +10,10 @@
  * @format
  */
 
-declare var jest;
-
 import type {Transport} from '../Proxy.js';
 
 import {Proxy} from '../Proxy.js';
-import {TestTransportFactory} from './util';
+import {TestTransportFactory} from '../__mocks__/util';
 import net from 'net';
 
 const TEST_PORT = 4321;

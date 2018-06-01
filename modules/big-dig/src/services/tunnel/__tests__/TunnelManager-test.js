@@ -10,10 +10,8 @@
  * @format
  */
 
-declare var jest;
-
 import {TunnelManager} from '../TunnelManager';
-import {TestTransportFactory} from './util';
+import {TestTransportFactory} from '../__mocks__/util';
 
 const TEST_PORT_1 = 8091;
 const TEST_PORT_2 = 8092;

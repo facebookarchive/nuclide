@@ -12,7 +12,6 @@
 
 import http from 'http';
 import asyncRequest from '../../../src/client/utils/asyncRequest';
-import {describe, expect, it} from 'nuclide-jest/globals';
 
 describe('asyncRequest', () => {
   let server;

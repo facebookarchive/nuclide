@@ -24,7 +24,6 @@ import {
 } from '../../src/socket/QueuedAckTransport';
 import {Emitter} from 'event-kit';
 import {Subject} from 'rxjs';
-import {describe, expect, it, jest} from 'nuclide-jest/globals';
 
 function makeUnreliableTransport(
   receiver: Subject<string> = new Subject(),
