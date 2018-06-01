@@ -95,7 +95,8 @@ export default class RevisionsCache {
       )
       .distinctUntilChanged(isEqualRevisions)
       .do(revisions => this._revisions.next(revisions))
-      .share();
+      // $FlowFixMe
+      .shareReplay(1);
   }
 
   _fetchSmartlogRevisions(): Observable<RevisionInfoFetched> {
