@@ -390,7 +390,7 @@ export class RpcConnection<TransportType: Transport> {
         args,
       ),
       returnType,
-      `Calling remote method ${methodName}.`,
+      `Calling remote method ${methodName}`,
     );
   }
 
