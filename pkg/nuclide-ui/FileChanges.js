@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nullthrows from 'nullthrows';
-import {pluralize} from 'nuclide-commons/string';
+import {pluralize, ZERO_WIDTH_SPACE} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -362,15 +362,17 @@ export default class FileChanges extends React.Component<Props> {
       </span>
     );
 
+    // insert zero-width spaces so filenames are wrapped at '/'
+    const breakableFilename = fileName.replace(/\//g, '/' + ZERO_WIDTH_SPACE);
     const renderedFilename =
       fullPath != null ? (
         <a
           className="nuclide-ui-file-changes-name"
           onClick={this._handleFilenameClick}>
-          {fileName}
+          {breakableFilename}
         </a>
       ) : (
-        fileName
+        breakableFilename
       );
 
     if (hideHeadline) {

@@ -267,3 +267,4 @@ export function escapeMarkdown(markdown: string): string {
 export const URL_REGEX = /(https?:\/\/(?:www\.)?[-\w@:%.+~#=]{2,256}\.[a-z]{2,6}\b[-\w@:%+.~#?&/=!]*|www\.[-\w@:%.+~#=]{2,256}\.[a-z]{2,6}\b[-\w@:%+.~#?&/=!]*)/;
 
 export const ELLIPSIS_CHAR = '\u2026';
+export const ZERO_WIDTH_SPACE = '\u200B';
