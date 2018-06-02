@@ -25,8 +25,14 @@ import {getHgServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import nullthrows from 'nullthrows';
 
+// A limit on size of buffer to diff
+// Value based on the constant of the same name from atom's git-diff package
+const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
+
+// TODO: cache fileContentsAtHead for files on _localService as they change
+// less frequently than bufferContents and we can avoid sending it over IPC
+// every time
 // TODO: handle file renames
-// TODO: handle (ignore) large files (particularly generated)
 // TODO: re-implement git-diff so it is push-based. git-diff currently only polls
 // for changes on buffer updates, so if you commit and all previous changes are
 // now part of head, highlights won't update until you type
@@ -205,6 +211,9 @@ class Activation {
                 return Observable.empty();
               }
               const newContents = buffer.getText();
+              if (newContents.length > MAX_BUFFER_LENGTH_TO_DIFF) {
+                return Observable.empty();
+              }
               return this._localService
                 .gitDiffStrings(oldContents, newContents)
                 .refCount()
