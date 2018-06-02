@@ -38,13 +38,14 @@ export default function rootReducer(state: AppState, action: Action): AppState {
 function _addWelcomePage(state: AppState, welcomePage: WelcomePage): AppState {
   const welcomePages = new Map(state.welcomePages);
   const {topic, content} = welcomePage;
+  const priority = welcomePage.priority != null ? welcomePage.priority : 1000;
   if (welcomePages.has(topic)) {
     getLogger('nuclide-welcome-page').warn(
       `Duplicate welcome page for topic '${topic}'`,
     );
     return state;
   }
-  welcomePages.set(topic, content);
+  welcomePages.set(topic, {content, priority});
   return {...state, welcomePages};
 }
 

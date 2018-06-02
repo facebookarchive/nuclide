@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, ShowOption} from '../types';
+import type {AppState, ShowOption, WelcomePageData} from '../types';
 
 import * as React from 'react';
 import {connect} from 'react-redux';
@@ -18,7 +18,7 @@ import WelcomePageSection from './WelcomePageSection';
 
 type Props = {
   actionCreators: typeof ActionCreators,
-  welcomePages: Map<string, React$Node>,
+  welcomePages: Map<string, WelcomePageData>,
   hiddenTopics: Set<string>,
   showOption: ShowOption,
 };
@@ -71,11 +71,14 @@ export default class WelcomePageComponent extends React.Component<
 
   _buildEntries(topicFilter: string => boolean): Array<React$Node> {
     const visiblePages = Array.from(this.props.welcomePages.entries()).filter(
-      ([topic, content]) => topicFilter(topic),
+      ([topic, data]) => topicFilter(topic),
+    );
+    visiblePages.sort(
+      ([topicA, dataA], [topicB, dataB]) => dataA.priority - dataB.priority,
     );
     const entries = [];
     for (let i = 0; i < visiblePages.length; i++) {
-      const [topic, content] = visiblePages[i];
+      const [topic, {content}] = visiblePages[i];
       entries.push(this._pageSection(topic, content), <hr />);
     }
     entries.pop(); // take off last separator

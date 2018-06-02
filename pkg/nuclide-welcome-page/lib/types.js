@@ -12,6 +12,7 @@
 export type WelcomePage = {
   topic: string,
   content: React$Node,
+  priority?: number,
 };
 
 export type ShowPageOptions = {
@@ -36,8 +37,13 @@ export type ShowOne = {
 
 export type ShowOption = ShowAll | ShowOne;
 
+export type WelcomePageData = {
+  content: React$Node,
+  priority: number,
+};
+
 export type AppState = {
-  welcomePages: Map<string, React$Node>,
+  welcomePages: Map<string, WelcomePageData>,
   hiddenTopics: Set<string>,
   showOption?: ShowOption,
   isWelcomePageVisible: boolean,
