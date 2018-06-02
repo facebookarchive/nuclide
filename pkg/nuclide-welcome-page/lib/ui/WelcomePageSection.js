@@ -9,13 +9,11 @@
  * @format
  */
 
-import type {WelcomePage} from '../types';
-
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import * as React from 'react';
 
 type Props = {
-  page: WelcomePage,
+  content: React$Node,
   toHide: boolean,
   onSetHide: boolean => void,
 };
@@ -24,7 +22,7 @@ export default class WelcomePageSection extends React.Component<Props> {
   render(): React.Node {
     return (
       <div>
-        <div>{this.props.page.content}</div>
+        {this.props.content}
         <div>
           <Checkbox
             checked={this.props.toHide}

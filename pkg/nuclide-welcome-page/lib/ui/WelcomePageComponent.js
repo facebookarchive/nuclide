@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, WelcomePage, ShowOption} from '../types';
+import type {AppState, ShowOption} from '../types';
 
 import * as React from 'react';
 import {connect} from 'react-redux';
@@ -18,7 +18,7 @@ import WelcomePageSection from './WelcomePageSection';
 
 type Props = {
   actionCreators: typeof ActionCreators,
-  welcomePages: Map<string, WelcomePage>,
+  welcomePages: Map<string, React$Node>,
   hiddenTopics: Set<string>,
   showOption: ShowOption,
 };
@@ -70,22 +70,22 @@ export default class WelcomePageComponent extends React.Component<
   }
 
   _buildEntries(topicFilter: string => boolean): Array<React$Node> {
-    const visiblePages = Array.from(this.props.welcomePages.values()).filter(
-      page => topicFilter(page.topic),
+    const visiblePages = Array.from(this.props.welcomePages.entries()).filter(
+      ([topic, content]) => topicFilter(topic),
     );
     const entries = [];
     for (let i = 0; i < visiblePages.length; i++) {
-      entries.push(this._pageSection(visiblePages[i]), <hr />);
+      const [topic, content] = visiblePages[i];
+      entries.push(this._pageSection(topic, content), <hr />);
     }
     entries.pop(); // take off last separator
     return entries;
   }
 
-  _pageSection(page: WelcomePage): React$Node {
-    const topic = page.topic;
+  _pageSection(topic: string, content: React$Node): React$Node {
     return (
       <WelcomePageSection
-        page={page}
+        content={content}
         toHide={this.state.topicsToHide[topic]}
         onSetHide={this._handleSetHide(topic)}
       />

@@ -33,7 +33,7 @@ export type ShowOne = {
 export type ShowOption = ShowAll | ShowOne;
 
 export type AppState = {
-  welcomePages: Map<string, WelcomePage>,
+  welcomePages: Map<string, React$Node>,
   hiddenTopics: Set<string>,
   showOption?: ShowOption,
   isWelcomePageVisible: boolean,
