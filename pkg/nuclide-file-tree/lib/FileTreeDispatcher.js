@@ -246,6 +246,10 @@ export type FileTreeAction =
       actionType: 'SET_TARGET_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
+    }
+  | {
+      actionType: 'UPDATE_GENERATED_STATUS',
+      filesToCheck: Iterable<NuclideUri>,
     };
 
 export const ActionTypes = Object.freeze({
@@ -306,6 +310,7 @@ export const ActionTypes = Object.freeze({
   SET_FOLDERS_EXPANDED: 'SET_FOLDERS_EXPANDED',
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
   SET_TARGET_NODE: 'SET_TARGET_NODE',
+  UPDATE_GENERATED_STATUS: 'UPDATE_GENERATED_STATUS',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.

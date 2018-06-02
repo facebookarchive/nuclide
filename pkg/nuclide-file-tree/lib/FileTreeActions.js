@@ -555,6 +555,13 @@ export default class FileTreeActions {
     });
   }
 
+  updateGeneratedStatus(filesToCheck: Iterable<NuclideUri>): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_GENERATED_STATUS,
+      filesToCheck,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<

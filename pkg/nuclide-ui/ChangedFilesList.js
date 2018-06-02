@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
 import {repositoryForPath} from '../nuclide-vcs-base';
@@ -97,6 +98,7 @@ type Props = {
   enableFileExpansion: boolean,
   enableInlineActions: boolean,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
+  generatedTypes?: Map<NuclideUri, GeneratedFileType>,
   hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
   onDeleteFile: (filePath: NuclideUri) => void,
@@ -135,6 +137,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       enableFileExpansion,
       enableInlineActions,
       fileStatuses,
+      generatedTypes,
       onAddFile,
       onDeleteFile,
       onFileChecked,
@@ -157,10 +160,13 @@ export default class ChangedFilesList extends React.Component<Props, State> {
     const displayPaths = computeDisplayPaths(filePaths);
     const sizeLimitedFileChanges = filePaths
       .map((filePath, index) => {
+        const generatedType =
+          generatedTypes != null ? generatedTypes.get(filePath) : null;
         return {
           filePath,
           displayPath: displayPaths[index],
           fileStatus: nullthrows(fileStatuses.get(filePath)),
+          generatedType,
         };
       })
       .sort((change1, change2) =>
@@ -211,7 +217,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
           ) : null}
           <ul className="list-tree has-flat-children">
             {sizeLimitedFileChanges.map(
-              ({displayPath, filePath, fileStatus}) => {
+              ({displayPath, filePath, fileStatus, generatedType}) => {
                 return (
                   <ChangedFile
                     commandPrefix={commandPrefix}
@@ -220,6 +226,7 @@ export default class ChangedFilesList extends React.Component<Props, State> {
                     enableInlineActions={enableInlineActions}
                     filePath={filePath}
                     fileStatus={fileStatus}
+                    generatedType={generatedType}
                     isChecked={
                       checkedFiles == null ? null : checkedFiles.has(filePath)
                     }

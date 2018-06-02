@@ -10,6 +10,7 @@
  */
 /* global HTMLElement */
 
+import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
@@ -77,6 +78,7 @@ type State = {|
     NuclideUri,
     Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
+  generatedOpenChangedFiles: Immutable.Map<NuclideUri, GeneratedFileType>,
   isCalculatingChanges: boolean,
   path: string,
   title: string,
@@ -124,6 +126,7 @@ export default class FileTreeSidebarComponent extends React.Component<
       modifiedUris: [],
       activeUri: null,
       uncommittedFileChanges: Immutable.Map(),
+      generatedOpenChangedFiles: Immutable.Map(),
       isCalculatingChanges: false,
       path: 'No Current Working Directory',
       title: 'File Tree',
@@ -278,61 +281,57 @@ export default class FileTreeSidebarComponent extends React.Component<
     }
   };
 
-  render() {
-    let toolbar;
-    const workingSetsStore = this.state.workingSetsStore;
-    if (this.state.shouldRenderToolbar && workingSetsStore != null) {
-      toolbar = (
-        <div className="nuclide-file-tree-fixed">
-          <FileTreeSideBarFilterComponent
-            key="filter"
-            filter={this.state.filter}
-            found={this.state.filterFound}
-          />
-          {this.state.foldersExpanded && (
-            <FileTreeToolbarComponent
-              key="toolbar"
-              workingSetsStore={workingSetsStore}
-            />
-          )}
-        </div>
-      );
-    }
-
-    let uncommittedChangesSection;
-    let uncommittedChangesHeadline;
-    if (this.state.showUncommittedChanges) {
-      const uncommittedChangesList = (
-        <div className="nuclide-file-tree-sidebar-uncommitted-changes">
-          <MultiRootChangedFilesView
-            analyticsSurface="file-tree-uncommitted-changes"
-            commandPrefix="file-tree-sidebar"
-            enableInlineActions={true}
-            fileStatuses={this._getFilteredUncommittedFileChanges(this.state)}
-            selectedFile={this.state.activeUri}
-            hideEmptyFolders={true}
-            onFileChosen={this._onFileChosen}
-            openInDiffViewOption={true}
-          />
-        </div>
-      );
-
-      const showDropdown = Array.from(
-        this.state.uncommittedFileChanges.keys(),
-      ).some(path => {
-        const repo = repositoryForPath(path);
-        return repo != null && repo.getType() === 'hg';
-      });
-
-      const dropdownIcon = !showDropdown ? null : (
-        <Icon
-          icon="triangle-down"
-          className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
-          onClick={this._handleUncommittedChangesKindDownArrow}
+  _renderToolbar(workingSetsStore: WorkingSetsStore): React.Node {
+    return (
+      <div className="nuclide-file-tree-fixed">
+        <FileTreeSideBarFilterComponent
+          key="filter"
+          filter={this.state.filter}
+          found={this.state.filterFound}
         />
-      );
+        {this.state.foldersExpanded && (
+          <FileTreeToolbarComponent
+            key="toolbar"
+            workingSetsStore={workingSetsStore}
+          />
+        )}
+      </div>
+    );
+  }
 
-      const dropdownTooltip = `<div style="text-align: left;">
+  _renderUncommittedChangesSection(): React.Node {
+    const uncommittedChangesList = (
+      <div className="nuclide-file-tree-sidebar-uncommitted-changes">
+        <MultiRootChangedFilesView
+          analyticsSurface="file-tree-uncommitted-changes"
+          commandPrefix="file-tree-sidebar"
+          enableInlineActions={true}
+          fileStatuses={this._getFilteredUncommittedFileChanges(this.state)}
+          generatedTypes={this.state.generatedOpenChangedFiles}
+          selectedFile={this.state.activeUri}
+          hideEmptyFolders={true}
+          onFileChosen={this._onFileChosen}
+          openInDiffViewOption={true}
+        />
+      </div>
+    );
+
+    const showDropdown = Array.from(
+      this.state.uncommittedFileChanges.keys(),
+    ).some(path => {
+      const repo = repositoryForPath(path);
+      return repo != null && repo.getType() === 'hg';
+    });
+
+    const dropdownIcon = !showDropdown ? null : (
+      <Icon
+        icon="triangle-down"
+        className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+        onClick={this._handleUncommittedChangesKindDownArrow}
+      />
+    );
+
+    const dropdownTooltip = `<div style="text-align: left;">
 This section shows the file changes you've made:<br />
 <br />
 <b>UNCOMMITTED</b><br />
@@ -345,89 +344,103 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
-      const calculatingChangesSpinner = !this.state
-        .isCalculatingChanges ? null : (
-        <span className="nuclide-file-tree-spinner">
-          &nbsp;
-          <LoadingSpinner
-            className="inline-block"
-            size={LoadingSpinnerSizes.EXTRA_SMALL}
-          />
+    const calculatingChangesSpinner = !this.state
+      .isCalculatingChanges ? null : (
+      <span className="nuclide-file-tree-spinner">
+        &nbsp;
+        <LoadingSpinner
+          className="inline-block"
+          size={LoadingSpinnerSizes.EXTRA_SMALL}
+        />
+      </span>
+    );
+
+    const uncommittedChangesHeadline = (
+      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+      <span ref={addTooltip({title: dropdownTooltip})}>
+        <span className="nuclide-dropdown-label-text-wrapper">
+          {this.state.showUncommittedChangesKind.toUpperCase()}
         </span>
-      );
+        {dropdownIcon}
+        {calculatingChangesSpinner}
+      </span>
+    );
 
-      uncommittedChangesHeadline = (
-        // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-        <span ref={addTooltip({title: dropdownTooltip})}>
-          <span className="nuclide-dropdown-label-text-wrapper">
-            {this.state.showUncommittedChangesKind.toUpperCase()}
-          </span>
-          {dropdownIcon}
-          {calculatingChangesSpinner}
-        </span>
-      );
-
-      uncommittedChangesSection = (
-        <div
-          className="nuclide-file-tree-uncommitted-changes-container"
-          data-show-uncommitted-changes-kind={
-            this.state.showUncommittedChangesKind
-          }>
-          <Section
-            className="nuclide-file-tree-section-caption"
-            collapsable={true}
-            collapsed={!this.state.uncommittedChangesExpanded}
-            headline={uncommittedChangesHeadline}
-            onChange={this._handleUncommittedFilesExpandedChange}
-            size="small">
-            <PanelComponentScroller>
-              {uncommittedChangesList}
-            </PanelComponentScroller>
-          </Section>
-        </div>
-      );
-    }
-
-    let openFilesSection = null;
-    let openFilesList = null;
-    if (this.state.showOpenFiles && this.state.openFilesUris.length > 0) {
-      if (this.state.openFilesExpanded) {
-        openFilesList = (
-          <OpenFilesListComponent
-            uris={this.state.openFilesUris}
-            modifiedUris={this.state.modifiedUris}
-            activeUri={this.state.activeUri}
-          />
-        );
-      }
-      openFilesSection = (
-        <LockableHeight isLocked={this.state.isFileTreeHovered}>
-          <Section
-            className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
-            collapsable={true}
-            collapsed={!this.state.openFilesExpanded}
-            headline="OPEN FILES"
-            onChange={this._handleOpenFilesExpandedChange}
-            size="small">
-            {openFilesList}
-          </Section>
-        </LockableHeight>
-      );
-    }
-
-    let foldersCaption;
-    if (uncommittedChangesSection != null || openFilesSection != null) {
-      foldersCaption = (
+    return (
+      <div
+        className="nuclide-file-tree-uncommitted-changes-container"
+        data-show-uncommitted-changes-kind={
+          this.state.showUncommittedChangesKind
+        }>
         <Section
           className="nuclide-file-tree-section-caption"
-          headline="FOLDERS"
           collapsable={true}
-          collapsed={!this.state.foldersExpanded}
-          onChange={this._handleFoldersExpandedChange}
-          size="small"
-        />
-      );
-    }
+          collapsed={!this.state.uncommittedChangesExpanded}
+          headline={uncommittedChangesHeadline}
+          onChange={this._handleUncommittedFilesExpandedChange}
+          size="small">
+          <PanelComponentScroller>
+            {uncommittedChangesList}
+          </PanelComponentScroller>
+        </Section>
+      </div>
+    );
+  }
+
+  _renderOpenFilesSection() {
+    const openFilesList = this.state.openFilesExpanded ? (
+      <OpenFilesListComponent
+        uris={this.state.openFilesUris}
+        modifiedUris={this.state.modifiedUris}
+        generatedTypes={this.state.generatedOpenChangedFiles}
+        activeUri={this.state.activeUri}
+      />
+    ) : null;
+    return (
+      <LockableHeight isLocked={this.state.isFileTreeHovered}>
+        <Section
+          className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
+          collapsable={true}
+          collapsed={!this.state.openFilesExpanded}
+          headline="OPEN FILES"
+          onChange={this._handleOpenFilesExpandedChange}
+          size="small">
+          {openFilesList}
+        </Section>
+      </LockableHeight>
+    );
+  }
+
+  _renderFoldersCaption(): React.Node {
+    return (
+      <Section
+        className="nuclide-file-tree-section-caption"
+        headline="FOLDERS"
+        collapsable={true}
+        collapsed={!this.state.foldersExpanded}
+        onChange={this._handleFoldersExpandedChange}
+        size="small"
+      />
+    );
+  }
+
+  render() {
+    const workingSetsStore = this.state.workingSetsStore;
+    const toolbar =
+      this.state.shouldRenderToolbar && workingSetsStore != null
+        ? this._renderToolbar(workingSetsStore)
+        : null;
+    const uncommittedChangesSection = this.state.showUncommittedChanges
+      ? this._renderUncommittedChangesSection()
+      : null;
+    const openFilesSection =
+      this.state.showOpenFiles && this.state.openFilesUris.length > 0
+        ? this._renderOpenFilesSection()
+        : null;
+    const foldersCaption =
+      uncommittedChangesSection != null || openFilesSection != null
+        ? this._renderFoldersCaption()
+        : null;
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.
     return (
@@ -468,6 +481,7 @@ All the changes across your entire stacked diff.
       .getOpenFilesWorkingSet()
       .getAbsoluteUris();
     const uncommittedFileChanges = this._store.getFileChanges();
+    const generatedOpenChangedFiles = this._store.getGeneratedOpenChangedFiles();
     const isCalculatingChanges = this._store.getIsCalculatingChanges();
     const title = this.getTitle();
     const path = this.getPath();
@@ -482,6 +496,7 @@ All the changes across your entire stacked diff.
       shouldRenderToolbar,
       openFilesUris,
       uncommittedFileChanges,
+      generatedOpenChangedFiles,
       isCalculatingChanges,
       title,
       path,

@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
@@ -24,6 +25,7 @@ import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
 import {createSelector} from 'reselect';
+import Immutable from 'immutable';
 
 const getActions = FileTreeActions.getInstance;
 const store = FileTreeStore.getInstance();
@@ -33,14 +35,13 @@ type OpenFileEntry = {
   uri: NuclideUri,
   isModified: boolean,
   isSelected: boolean,
+  generatedType: ?GeneratedFileType,
 };
 
 type Props = {
-  // these are processed in propsToEntries below
-  /* eslint-disable react/no-unused-prop-types */
   uris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
-  /* eslint-enable react/no-unused-prop-types */
+  generatedTypes: Immutable.Map<NuclideUri, GeneratedFileType>,
   activeUri: ?NuclideUri,
 };
 
@@ -150,11 +151,13 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     const entries = this.props.uris.map((uri, index) => {
       const isModified = this.props.modifiedUris.indexOf(uri) >= 0;
       const isSelected = uri === this.props.activeUri;
+      const generatedType = this.props.generatedTypes.get(uri);
       return {
         uri,
         name: displayPaths[index],
         isModified,
         isSelected,
+        generatedType,
       };
     });
 
@@ -163,6 +166,17 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
       nuclideUri.basename(e1.uri).localeCompare(nuclideUri.basename(e2.uri)),
     );
     return entries;
+  }
+
+  _generatedClass(generatedType: ?GeneratedFileType): ?string {
+    switch (generatedType) {
+      case 'generated':
+        return 'generated-fully';
+      case 'partial':
+        return 'generated-partly';
+      default:
+        return null;
+    }
   }
 
   render(): React.Node {
@@ -182,6 +196,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     className={classnames(
                       'file',
                       'nuclide-path-with-terminal',
+                      this._generatedClass(e.generatedType),
                       {
                         'text-highlight': isHoveredUri,
                       },

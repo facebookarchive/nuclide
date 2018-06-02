@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import {
   addPath,
@@ -28,6 +29,7 @@ import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
+import Immutable from 'immutable';
 
 type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
@@ -38,6 +40,7 @@ type Props = {
   enableFileExpansion?: true,
   enableInlineActions?: true,
   fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+  generatedTypes?: Immutable.Map<NuclideUri, GeneratedFileType>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
@@ -358,6 +361,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 enableFileExpansion={enableFileExpansion === true}
                 enableInlineActions={enableInlineActions === true}
                 fileStatuses={fileStatuses}
+                generatedTypes={this.props.generatedTypes}
                 hideEmptyFolders={hideEmptyFolders}
                 key={root}
                 onAddFile={this._handleAddFile}

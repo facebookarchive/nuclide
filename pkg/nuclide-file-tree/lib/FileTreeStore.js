@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {GeneratedFileType} from '../../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
@@ -140,6 +141,7 @@ export class FileTreeStore {
     Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >;
 
+  _generatedOpenChangedFiles: Immutable.Map<NuclideUri, GeneratedFileType>;
   _dispatcher: FileTreeDispatcher;
   _emitter: Emitter;
   _logger: any;
@@ -178,6 +180,7 @@ export class FileTreeStore {
     this._dispatcher.register(this._onDispatch.bind(this));
     this._logger = getLogger('nuclide-file-tree');
     this._fileChanges = Immutable.Map();
+    this._generatedOpenChangedFiles = Immutable.Map();
     this.reorderPreviewStatus = null;
 
     this._usePrefixNav = false;
@@ -505,6 +508,9 @@ export class FileTreeStore {
       case ActionTypes.SET_TARGET_NODE:
         this._setTargetNode(payload.rootKey, payload.nodeKey);
         break;
+      case ActionTypes.UPDATE_GENERATED_STATUS:
+        this._updateGeneratedStatus(payload.filesToCheck);
+        break;
     }
 
     const end = performance.now();
@@ -733,6 +739,10 @@ export class FileTreeStore {
     return this._fileChanges;
   }
 
+  getGeneratedOpenChangedFiles(): Immutable.Map<NuclideUri, GeneratedFileType> {
+    return this._generatedOpenChangedFiles;
+  }
+
   getIsCalculatingChanges(): boolean {
     return this._isCalculatingChanges;
   }
@@ -779,6 +789,7 @@ export class FileTreeStore {
     // in the terms used for status change, while uncommitted changes needs the HgStatusChange
     // codes the file tree doesn't.
     this._setFileChanges(rootKey, vcsStatuses);
+    this._updateGeneratedStatus(vcsStatuses.keys());
 
     // We can't build on the child-derived properties to maintain vcs statuses in the entire
     // tree, since the reported VCS status may be for a node that is not yet present in the
@@ -1307,6 +1318,33 @@ export class FileTreeStore {
   */
   _setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._targetNodeKeys = {rootKey, nodeKey};
+  }
+
+  _updateGeneratedStatus(filesToCheck: Iterable<NuclideUri>): void {
+    const generatedPromises: Map<
+      NuclideUri,
+      Promise<[NuclideUri, GeneratedFileType]>,
+    > = new Map();
+    const addGeneratedPromise: NuclideUri => void = file => {
+      if (!generatedPromises.has(file)) {
+        const promise = awaitGeneratedFileServiceByNuclideUri(file)
+          .then(gfs => gfs.getGeneratedFileType(file))
+          .then(type => [file, type]);
+        generatedPromises.set(file, promise);
+      }
+    };
+    for (const file of filesToCheck) {
+      addGeneratedPromise(file);
+    }
+    Promise.all(Array.from(generatedPromises.values())).then(
+      generatedOpenChangedFiles => {
+        this._generatedOpenChangedFiles = this._generatedOpenChangedFiles
+          .merge(generatedOpenChangedFiles)
+          // just drop any non-generated files from the map
+          .filter(value => value !== 'manual');
+        this._emitChange();
+      },
+    );
   }
 
   /**
@@ -2106,6 +2144,7 @@ export class FileTreeStore {
   }
 
   _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+    this._updateGeneratedStatus(openFilesWorkingSet.getUris());
     // Optimization: with an empty working set, we don't need a full tree refresh.
     if (this._conf.workingSet.isEmpty()) {
       this._conf.openFilesWorkingSet = openFilesWorkingSet;

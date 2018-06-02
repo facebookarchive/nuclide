@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {GeneratedFileType} from '../nuclide-generated-files-rpc';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
@@ -39,6 +40,7 @@ type Props = {
   enableInlineActions: boolean,
   filePath: NuclideUri,
   fileStatus: FileChangeStatusValue,
+  generatedType: ?GeneratedFileType,
   // Determines status of checkbox to left of the component. null -> no checkbox
   isChecked: ?boolean,
   isHgPath: boolean,
@@ -64,17 +66,35 @@ type Props = {
 
 export default class ChangedFile extends React.Component<Props> {
   _getFileClassname(): string {
-    const {commandPrefix, fileStatus, isHgPath, isSelected} = this.props;
+    const {
+      commandPrefix,
+      fileStatus,
+      generatedType,
+      isHgPath,
+      isSelected,
+    } = this.props;
     return classnames(
       'nuclide-changed-file',
       'list-item',
       'nuclide-path-with-terminal',
+      this._generatedClass(generatedType),
       {
         selected: isSelected,
         [`${commandPrefix}-file-entry`]: isHgPath,
       },
       FileChangeStatusToTextColor[fileStatus],
     );
+  }
+
+  _generatedClass(generatedType: ?GeneratedFileType): ?string {
+    switch (generatedType) {
+      case 'generated':
+        return 'generated-fully';
+      case 'partial':
+        return 'generated-partly';
+      default:
+        return null;
+    }
   }
 
   _renderAction(
