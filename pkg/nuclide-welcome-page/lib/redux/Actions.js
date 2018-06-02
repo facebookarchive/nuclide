@@ -15,10 +15,10 @@ import type {
   AddWelcomePageAction,
   DeleteWelcomePageAction,
   HideUnhideTopicsAction,
-  SetShowAllAction,
-  ClearShowAllAction,
+  SetShowOptionAction,
 } from '../types';
 
+import {showOne, showAll} from '../ShowOptions';
 import * as ActionTypes from './ActionTypes';
 
 export function addWelcomePage(welcomePage: WelcomePage): AddWelcomePageAction {
@@ -54,16 +54,29 @@ export function hideUnhideTopics(
   };
 }
 
-export function setShowAll(): SetShowAllAction {
+export function setShowAll(): SetShowOptionAction {
   return {
-    type: ActionTypes.SET_SHOW_ALL,
-    payload: {},
+    type: ActionTypes.SET_SHOW_OPTION,
+    payload: {
+      showOption: showAll(),
+    },
   };
 }
 
-export function clearShowAll(): ClearShowAllAction {
+export function setShowOne(topic: string): SetShowOptionAction {
   return {
-    type: ActionTypes.CLEAR_SHOW_ALL,
-    payload: {},
+    type: ActionTypes.SET_SHOW_OPTION,
+    payload: {
+      showOption: showOne(topic),
+    },
+  };
+}
+
+export function clearShowAll(): SetShowOptionAction {
+  return {
+    type: ActionTypes.SET_SHOW_OPTION,
+    payload: {
+      showOption: undefined,
+    },
   };
 }

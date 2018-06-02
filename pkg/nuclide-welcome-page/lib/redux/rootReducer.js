@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, Action, WelcomePage} from '../types';
+import type {AppState, Action, WelcomePage, ShowOption} from '../types';
 
 import {getLogger} from 'log4js';
 import * as ActionTypes from './ActionTypes';
@@ -28,10 +28,8 @@ export default function rootReducer(state: AppState, action: Action): AppState {
         action.payload.topicsToHide,
         action.payload.topicsToUnhide,
       );
-    case ActionTypes.SET_SHOW_ALL:
-      return _setShowAll(state);
-    case ActionTypes.CLEAR_SHOW_ALL:
-      return _clearShowAll(state);
+    case ActionTypes.SET_SHOW_OPTION:
+      return _setShowOption(state, action.payload.showOption);
   }
 
   return state;
@@ -71,10 +69,6 @@ function _hideUnhideTopics(
   return {...state, hiddenTopics};
 }
 
-function _setShowAll(state: AppState): AppState {
-  return {...state, showAll: true};
-}
-
-function _clearShowAll(state: AppState): AppState {
-  return {...state, showAll: false};
+function _setShowOption(state: AppState, showOption?: ShowOption): AppState {
+  return {...state, showOption};
 }

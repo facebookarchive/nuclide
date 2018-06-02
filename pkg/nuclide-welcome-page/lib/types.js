@@ -14,10 +14,28 @@ export type WelcomePage = {
   content: React$Node,
 };
 
+export type WelcomePageApi = {
+  +showPageForTopic: string => void,
+};
+
+export type ShowAll = {
+  type: 'SHOW_ALL',
+  args: {},
+};
+
+export type ShowOne = {
+  type: 'SHOW_ONE',
+  args: {
+    topic: string,
+  },
+};
+
+export type ShowOption = ShowAll | ShowOne;
+
 export type AppState = {
   welcomePages: Map<string, WelcomePage>,
   hiddenTopics: Set<string>,
-  showAll: boolean,
+  showOption?: ShowOption,
   isWelcomePageVisible: boolean,
 };
 
@@ -62,14 +80,9 @@ export type HideUnhideTopicsAction = {
   },
 };
 
-export type SetShowAllAction = {
-  type: 'SET_SHOW_ALL',
-  payload: {},
-};
-
-export type ClearShowAllAction = {
-  type: 'CLEAR_SHOW_ALL',
-  payload: {},
+export type SetShowOptionAction = {
+  type: 'SET_SHOW_OPTION',
+  payload: {showOption?: ShowOption},
 };
 
 export type Action =
@@ -77,5 +90,4 @@ export type Action =
   | DeleteWelcomePageAction
   | UpdateWelcomePageVisibilityAction
   | HideUnhideTopicsAction
-  | SetShowAllAction
-  | ClearShowAllAction;
+  | SetShowOptionAction;

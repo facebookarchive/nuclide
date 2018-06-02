@@ -9,7 +9,12 @@
  * @format
  */
 
-import type {WelcomePage, SerializedState, Store} from './types';
+import type {
+  WelcomePage,
+  SerializedState,
+  Store,
+  WelcomePageApi,
+} from './types';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import * as React from 'react';
@@ -24,7 +29,7 @@ import rootReducer from './redux/rootReducer';
 import {WELCOME_PAGE_VIEW_URI} from './ui/WelcomePageGadget';
 import WelcomePageGadget from './ui/WelcomePageGadget';
 
-export type {WelcomePage};
+export type {WelcomePage, WelcomePageApi};
 
 const SHOW_COMMAND_NAME = 'nuclide-welcome-page:show-welcome-page';
 const SHOW_ALL_COMMAND_NAME = 'nuclide-welcome-page:show-all-welcome-pages';
@@ -88,6 +93,19 @@ class Activation {
       }
     }
     return false;
+  }
+
+  provideWelcomePageApi(): WelcomePageApi {
+    return this;
+  }
+
+  showPageForTopic(topic: string): void {
+    const {welcomePages, hiddenTopics} = this._store.getState();
+    if (welcomePages.has(topic) && !hiddenTopics.has(topic)) {
+      // if the topic exists and isn't hidden
+      this._store.dispatch(Actions.setShowOne(topic));
+      atom.workspace.toggle(WELCOME_PAGE_VIEW_URI);
+    }
   }
 
   serialize(): SerializedState {

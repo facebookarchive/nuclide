@@ -9,6 +9,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "nuclide.welcome-page-api": {
+      "versions": {
+        "0.0.0": "provideWelcomePageApi"
+      }
+    }
+  },
   "consumedServices": {
     "nuclide.welcome-page": {
       "versions": {

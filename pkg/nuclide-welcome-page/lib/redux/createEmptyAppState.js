@@ -20,7 +20,6 @@ export function createEmptyAppState(
   return {
     welcomePages: new Map(),
     hiddenTopics,
-    showAll: false,
     isWelcomePageVisible: false,
   };
 }

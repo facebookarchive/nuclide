@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {AppState, WelcomePage} from '../types';
+import type {AppState, WelcomePage, ShowOption} from '../types';
 
 import * as React from 'react';
 import {connect} from 'react-redux';
@@ -20,7 +20,7 @@ type Props = {
   actionCreators: typeof ActionCreators,
   welcomePages: Map<string, WelcomePage>,
   hiddenTopics: Set<string>,
-  showAll: boolean,
+  showOption: ShowOption,
 };
 
 // This state represents the request to hide (or to not hide) a given topic in
@@ -51,11 +51,16 @@ export default class WelcomePageComponent extends React.Component<
   }
 
   _topicFilter(): string => boolean {
-    if (this.props.showAll) {
-      return topic => true;
-    } else {
-      return topic => !this.props.hiddenTopics.has(topic);
+    const option = this.props.showOption;
+    if (option != null) {
+      switch (option.type) {
+        case 'SHOW_ALL':
+          return topic => true;
+        case 'SHOW_ONE':
+          return topic => topic === option.args.topic;
+      }
     }
+    return topic => !this.props.hiddenTopics.has(topic);
   }
 
   render(): React.Node {
