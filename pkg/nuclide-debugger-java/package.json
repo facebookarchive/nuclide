@@ -31,12 +31,6 @@
         "0.0.0": "createDebuggerProvider"
       }
     },
-    "nuclide-java-debugger": {
-      "description": "Java debugger",
-      "versions": {
-        "0.0.0": "createJavaDebuggerProvider"
-      }
-    },
     "additional-log-files": {
       "description": "Java debugger log files",
       "versions": {

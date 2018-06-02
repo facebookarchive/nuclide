@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,45 +15,11 @@ import type {
   AdditionalLogFilesProvider,
   AdditionalLogFile,
 } from '../../nuclide-logging/lib/rpc-types';
-import type {NuclideJavaDebuggerProvider, JavaDebugInfo} from './types';
 
-import {createJavaVspProcessInfo} from 'atom-ide-debugger-java-android/AndroidJavaDebuggerHelpers';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Subject} from 'rxjs';
 import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider';
-
-export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
-  return {
-    createJavaLaunchInfo: async (
-      targetUri: string,
-      mainClass: string,
-      classPath: string,
-      runArgs: Array<string>,
-    ): Promise<JavaDebugInfo> => {
-      const subscriptions = new UniversalDisposable();
-      const clickEvents = new Subject();
-      const processInfo = await createJavaVspProcessInfo(
-        targetUri,
-        {
-          debugMode: 'launch',
-          entryPointClass: mainClass,
-          classPath,
-          runArgs,
-        },
-        clickEvents,
-      );
-      subscriptions.add(clickEvents);
-      processInfo.addCustomDisposable(subscriptions);
-      return {
-        subscriptions,
-        processInfo,
-      };
-    },
-  };
-}
 
 async function getAdditionalLogFilesOnLocalServer(
   deadline: DeadlineRequest,
