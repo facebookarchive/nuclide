@@ -14,6 +14,7 @@ import type {
   SerializedState,
   Store,
   WelcomePageApi,
+  ShowPageOptions,
 } from './types';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
@@ -102,9 +103,11 @@ class Activation {
     return this;
   }
 
-  showPageForTopic(topic: string): void {
+  showPageForTopic(topic: string, options?: ShowPageOptions = {}): void {
     const {welcomePages, hiddenTopics} = this._store.getState();
-    if (welcomePages.has(topic) && !hiddenTopics.has(topic)) {
+    const showAnyway =
+      options != null && options.override != null && options.override;
+    if (showAnyway || (welcomePages.has(topic) && !hiddenTopics.has(topic))) {
       // if the topic exists and isn't hidden
       this._store.dispatch(Actions.setShowOne(topic));
       goToLocation(WELCOME_PAGE_VIEW_URI);

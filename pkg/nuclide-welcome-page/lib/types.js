@@ -14,8 +14,12 @@ export type WelcomePage = {
   content: React$Node,
 };
 
+export type ShowPageOptions = {
+  override?: boolean,
+};
+
 export type WelcomePageApi = {
-  +showPageForTopic: string => void,
+  +showPageForTopic: (string, ShowPageOptions) => void,
 };
 
 export type ShowAll = {
