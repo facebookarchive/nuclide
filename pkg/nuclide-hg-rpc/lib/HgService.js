@@ -22,6 +22,7 @@ import {fastDebounce} from 'nuclide-commons/observable';
 import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from 'nuclide-watchman-helpers';
+import {gitDiffStrings as gitDiffStringsImpl} from './git-diff';
 import fs from 'fs';
 
 import {
@@ -1846,4 +1847,13 @@ export function observeExecution(
     cwd: workingDirectory,
   };
   return hgObserveExecution(args, execOptions).publish();
+}
+
+// not really Hg functionality, but this was chosen to be the best current home
+// for this method as it spawns processes and should live in an remote service
+export function gitDiffStrings(
+  oldContents: string,
+  newContents: string,
+): ConnectableObservable<string> {
+  return gitDiffStringsImpl(oldContents, newContents).publish();
 }

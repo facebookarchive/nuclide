@@ -12,20 +12,6 @@
 import fsPromise from 'nuclide-commons/fsPromise';
 import {Observable} from 'rxjs';
 import {runCommandDetailed} from 'nuclide-commons/process';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-export function gitDiffContentAgainstFile(
-  content: string,
-  filePath: string,
-): Observable<string> {
-  const service = getFileSystemServiceByNuclideUri(filePath);
-  const diff = Observable.fromPromise(service.readFile(filePath)).switchMap(
-    buffer => {
-      return gitDiffStrings(content, buffer.toString('utf8'));
-    },
-  );
-  return diff;
-}
 
 export function gitDiffStrings(
   oldString: string,

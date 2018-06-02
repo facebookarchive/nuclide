@@ -19,9 +19,9 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {nextTick} from 'nuclide-commons/promise';
 import {Observable, ReplaySubject} from 'rxjs';
-import {gitDiffStrings} from '../../nuclide-hg-repository-client/lib/utils';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
+import {getHgServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import nullthrows from 'nullthrows';
 
@@ -32,6 +32,7 @@ import nullthrows from 'nullthrows';
 // now part of head, highlights won't update until you type
 
 class Activation {
+  _localService = getHgServiceByNuclideUri('');
   _disposed: ReplaySubject<void> = new ReplaySubject(1);
 
   constructor() {
@@ -204,7 +205,9 @@ class Activation {
                 return Observable.empty();
               }
               const newContents = buffer.getText();
-              return gitDiffStrings(oldContents, newContents)
+              return this._localService
+                .gitDiffStrings(oldContents, newContents)
+                .refCount()
                 .map(diffOutput => parseHgDiffUnifiedOutput(diffOutput))
                 .do(diffInfo => {
                   repository.setDiffInfo(bufferPath, diffInfo);
