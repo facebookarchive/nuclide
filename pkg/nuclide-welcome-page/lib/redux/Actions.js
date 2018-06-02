@@ -72,7 +72,7 @@ export function setShowOne(topic: string): SetShowOptionAction {
   };
 }
 
-export function clearShowAll(): SetShowOptionAction {
+export function clearShowOption(): SetShowOptionAction {
   return {
     type: ActionTypes.SET_SHOW_OPTION,
     payload: {

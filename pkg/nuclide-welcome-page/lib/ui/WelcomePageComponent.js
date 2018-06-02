@@ -102,7 +102,7 @@ export default class WelcomePageComponent extends React.Component<
 
   componentWillUnmount(): void {
     this._updateHiddenTopics();
-    this.props.actionCreators.clearShowAll();
+    this.props.actionCreators.clearShowOption();
   }
 
   _updateHiddenTopics(): void {

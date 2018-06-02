@@ -67,14 +67,17 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof WelcomePageGadget),
+      // show non-hidden welcome page sections
       atom.commands.add('atom-workspace', SHOW_COMMAND_NAME, () => {
         if (this._hasWelcomePagesToShow()) {
+          this._store.dispatch(Actions.clearShowOption());
           goToLocation(WELCOME_PAGE_VIEW_URI);
         }
       }),
+      // show all welcome page sections, hidden or not
       atom.commands.add('atom-workspace', SHOW_ALL_COMMAND_NAME, () => {
         this._store.dispatch(Actions.setShowAll());
-        atom.workspace.toggle(WELCOME_PAGE_VIEW_URI);
+        goToLocation(WELCOME_PAGE_VIEW_URI);
       }),
     );
   }
@@ -104,7 +107,7 @@ class Activation {
     if (welcomePages.has(topic) && !hiddenTopics.has(topic)) {
       // if the topic exists and isn't hidden
       this._store.dispatch(Actions.setShowOne(topic));
-      atom.workspace.toggle(WELCOME_PAGE_VIEW_URI);
+      goToLocation(WELCOME_PAGE_VIEW_URI);
     }
   }
 

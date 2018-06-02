@@ -7,11 +7,7 @@
           "label": "Welcome Page",
           "submenu": [
             {
-              "label": "Show Welcome Page",
-              "command": "nuclide-welcome-page:show-welcome-page"
-            },
-            {
-              "label": "Show All Welcome Pages",
+              "label": "Show Welcome Pages",
               "command": "nuclide-welcome-page:show-all-welcome-pages"
             }
           ]
