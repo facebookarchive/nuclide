@@ -18,10 +18,6 @@ export type JavaDebugInfo = {|
 |};
 
 export type NuclideJavaDebuggerProvider = {|
-  createJavaTestAttachInfo(
-    targetUri: string,
-    attachPort: number,
-  ): Promise<JavaDebugInfo>,
   createJavaLaunchInfo(
     targetUri: string,
     mainClass: string,

@@ -27,30 +27,6 @@ import {JavaDebuggerDevicePanelProvider} from './JavaDebuggerDevicePanelProvider
 
 export function createJavaDebuggerProvider(): NuclideJavaDebuggerProvider {
   return {
-    createJavaTestAttachInfo: async (
-      targetUri: string,
-      attachPort: number,
-    ): Promise<JavaDebugInfo> => {
-      const subscriptions = new UniversalDisposable();
-      const clickEvents = new Subject();
-      const processInfo = await createJavaVspProcessInfo(
-        targetUri,
-        {
-          debugMode: 'attach',
-          machineName: nuclideUri.isRemote(targetUri)
-            ? nuclideUri.getHostname(targetUri)
-            : 'localhost',
-          port: attachPort,
-        },
-        clickEvents,
-      );
-      subscriptions.add(clickEvents);
-      processInfo.addCustomDisposable(subscriptions);
-      return {
-        subscriptions,
-        processInfo,
-      };
-    },
     createJavaLaunchInfo: async (
       targetUri: string,
       mainClass: string,
