@@ -12,7 +12,7 @@
 import createAutocompleteProvider from '../lib/createAutocompleteProvider';
 
 describe('getSuggestions', () => {
-  const fakeRequest: any = {};
+  const fakeRequest: any = {bufferPosition: {}};
   const autocompleteProviderThatThrowsExecption = createAutocompleteProvider({
     selector: '',
     getSuggestions() {
@@ -47,12 +47,12 @@ describe('getSuggestions', () => {
     await (async () => {
       expect(
         await autocompleteProviderThatThrowsExecption.getSuggestions(
-          ({activatedManually: false}: any),
+          ({...fakeRequest, activatedManually: false}: any),
         ),
       ).toBe(null);
       expect(
         await autocompleteProviderThatThrowsExecption.getSuggestions(
-          ({activatedManually: true}: any),
+          ({...fakeRequest, activatedManually: true}: any),
         ),
       ).toBe(null);
     })();

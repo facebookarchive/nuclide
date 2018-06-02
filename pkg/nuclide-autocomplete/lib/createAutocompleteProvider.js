@@ -16,8 +16,8 @@ import type {
 } from './types';
 
 import performanceNow from 'nuclide-commons/performanceNow';
-import {timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
-import {track, trackTiming} from '../../nuclide-analytics';
+import {sleep, TimedOutError} from 'nuclide-commons/promise';
+import {track, trackSampled, trackTiming} from '../../nuclide-analytics';
 
 /**
  * Autocomplete is extremely critical to the user experience!
@@ -29,6 +29,7 @@ import {track, trackTiming} from '../../nuclide-analytics';
  * have enough time to initialize.
  */
 const AUTOCOMPLETE_TIMEOUT = atom.inSpecMode() ? 3000 : 500;
+const E2E_SAMPLE_RATE = 10;
 
 const durationBySuggestion = new WeakMap();
 
@@ -66,12 +67,55 @@ export default function createAutocompleteProvider<
   return (proxy: any);
 }
 
+type RequestTracker = {|
+  // Share a single "timeout" promise among all fetches for the same request.
+  // The timeout doubles as the trigger to log the slowest provider time.
+  timeoutPromise: Promise<void>,
+  slowestProvider: AutocompleteProvider<any>,
+  slowestProviderTime: number,
+  pendingProviders: number,
+|};
+const requestTrackers: WeakMap<atom$Point, RequestTracker> = new WeakMap();
+
+function _getRequestTracker(
+  request: atom$AutocompleteRequest,
+  provider: AutocompleteProvider<any>,
+): RequestTracker {
+  // Kind of hacky.. but the bufferPosition is a unique object per request.
+  const key = request.bufferPosition;
+  const tracker = requestTrackers.get(key);
+  if (tracker != null) {
+    return tracker;
+  }
+  const startTime = performanceNow();
+  const newTracker = {
+    timeoutPromise: sleep(AUTOCOMPLETE_TIMEOUT).then(() => {
+      if (newTracker.pendingProviders) {
+        throw new TimedOutError(AUTOCOMPLETE_TIMEOUT);
+      }
+      const {slowestProvider, slowestProviderTime} = newTracker;
+      trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
+        path: request.editor.getPath(),
+        duration: Math.round(slowestProviderTime - startTime),
+        slowestProvider: slowestProvider.analytics.eventName,
+      });
+    }),
+    slowestProvider: provider,
+    slowestProviderTime: startTime,
+    pendingProviders: 0,
+  };
+  requestTrackers.set(key, newTracker);
+  return newTracker;
+}
+
 function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
   provider: AutocompleteProvider<Suggestion>,
   eventNames: AutocompleteAnalyticEventNames,
   request: atom$AutocompleteRequest,
 ): Promise<?Array<*>> | ?Array<*> {
   const logObject = {};
+  const requestTracker = _getRequestTracker(request, provider);
+  requestTracker.pendingProviders++;
 
   return trackTiming(
     eventNames.onGetSuggestions,
@@ -86,10 +130,10 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
         }
       } else {
         try {
-          result = await timeoutPromise(
+          result = await Promise.race([
             Promise.resolve(provider.getSuggestions(request)),
-            AUTOCOMPLETE_TIMEOUT,
-          );
+            requestTracker.timeoutPromise,
+          ]);
         } catch (e) {
           if (e instanceof TimedOutError) {
             track(eventNames.timeoutOnGetSuggestions);
@@ -100,6 +144,9 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
       }
       logObject.isEmpty = result == null || result.length === 0;
       const endTime = performanceNow();
+      requestTracker.slowestProvider = provider;
+      requestTracker.slowestProviderTime = endTime;
+      requestTracker.pendingProviders--;
       if (result) {
         result.forEach(suggestion =>
           durationBySuggestion.set(suggestion, endTime - startTime),
