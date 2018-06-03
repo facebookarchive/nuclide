@@ -21,7 +21,6 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import {Observable} from 'rxjs';
-import passesGK from '../../commons-node/passesGK';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -34,7 +33,6 @@ import * as React from 'react';
 import electron from 'electron';
 import {
   RemoteConnection,
-  SshHandshake,
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
 import {validateFormInputs} from './form-validation-utils';
@@ -449,32 +447,22 @@ export default class ConnectionDialog extends React.Component<Props, State> {
 
   _connect(connectionConfig: SshConnectionConfiguration): rxjs$ISubscription {
     return Observable.defer(() =>
-      Promise.all([
-        passesGK('nuclide_big_dig'),
-        RemoteConnection.reconnect(
-          connectionConfig.host,
-          connectionConfig.cwd,
-          connectionConfig.displayTitle,
-        ),
-      ]),
+      RemoteConnection.reconnect(
+        connectionConfig.host,
+        connectionConfig.cwd,
+        connectionConfig.displayTitle,
+      ),
     )
-      .switchMap(([useBigDig, existingConnection]) => {
+      .switchMap(existingConnection => {
         if (existingConnection != null) {
           this._delegate.onWillConnect(connectionConfig); // required for the API
           this._delegate.onDidConnect(existingConnection, connectionConfig);
           return Observable.empty();
         }
-        let sshHandshake;
-        if (useBigDig) {
-          logger.info('using BigDig for the SshHandshake');
-          sshHandshake = connectBigDigSshHandshake(
-            connectionConfig,
-            this._delegate,
-          );
-        } else {
-          sshHandshake = new SshHandshake(this._delegate);
-          sshHandshake.connect(connectionConfig);
-        }
+        const sshHandshake = connectBigDigSshHandshake(
+          connectionConfig,
+          this._delegate,
+        );
         return Observable.create(() => {
           return () => sshHandshake.cancel();
         });
