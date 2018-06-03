@@ -14,6 +14,7 @@ import type {Observable, Subscription} from 'rxjs';
 import type {TunnelMessage} from './types.js';
 
 import net from 'net';
+import Encoder from './Encoder';
 
 import {getLogger} from 'log4js';
 import invariant from 'assert';
@@ -75,7 +76,7 @@ export class Proxy {
           logger.trace('socket data: ', arg);
           this._sendMessage({
             event: 'data',
-            arg: arg.toString('base64'),
+            arg,
             clientId,
           });
         });
@@ -118,12 +119,12 @@ export class Proxy {
     invariant(arg != null);
 
     if (msg.event === 'data') {
-      socket.write(Buffer.from(arg, 'base64'));
+      socket.write(arg);
     }
   }
 
   _sendMessage(msg: TunnelMessage): void {
-    this._transport.send(JSON.stringify({tunnelId: this._tunnelId, ...msg}));
+    this._transport.send(Encoder.encode({tunnelId: this._tunnelId, ...msg}));
   }
 
   close(): void {

@@ -15,6 +15,7 @@ import type {Transport} from './Proxy';
 
 import net from 'net';
 import {getLogger} from 'log4js';
+import Encoder from './Encoder';
 
 const logger = getLogger('tunnel-socket-manager');
 
@@ -41,7 +42,6 @@ export class SocketManager {
   }
 
   _handleMessage(message: Object) {
-    logger.trace(`handling this message: ${JSON.stringify(message)}`);
     if (message.event === 'connection') {
       this._createConnection(message);
     } else if (message.event === 'data') {
@@ -59,7 +59,7 @@ export class SocketManager {
     socket.on('data', data => {
       this._sendMessage({
         event: 'data',
-        arg: data.toString('base64'),
+        arg: data,
         clientId: message.clientId,
         tunnelId: this._tunnelId,
       });
@@ -71,14 +71,14 @@ export class SocketManager {
   _forwardData(message: Object) {
     const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
-      socket.write(Buffer.from(message.arg, 'base64'));
+      socket.write(message.arg);
     } else {
       logger.error('no socket found for this data: ', message);
     }
   }
 
   _sendMessage(msg: Object): void {
-    this._transport.send(JSON.stringify(msg));
+    this._transport.send(Encoder.encode(msg));
   }
 
   close() {

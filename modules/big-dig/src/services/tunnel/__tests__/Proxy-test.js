@@ -10,11 +10,11 @@
  * @format
  */
 
-import type {Transport} from '../Proxy.js';
-
-import {Proxy} from '../Proxy.js';
+import type {Transport} from '../Proxy';
+import {Proxy} from '../Proxy';
 import {TestTransportFactory} from '../__mocks__/util';
 import net from 'net';
+import Encoder from '../Encoder';
 
 const TEST_PORT = 4321;
 
@@ -50,7 +50,7 @@ describe('Proxy', () => {
       socket.write(data);
       const message = (await waitsForMessage(transport, 'data'))[0];
       expect(message.event).toBe('data');
-      const buffer = Buffer.from(message.arg, 'base64');
+      const buffer = message.arg;
       expect(buffer.toString()).toBe(data);
     });
   });
@@ -109,7 +109,7 @@ function waitsForMessage(
   return new Promise(resolve => {
     const interval = setInterval(() => {
       const messages = transport.send.mock.calls
-        .map(message => JSON.parse(message))
+        .map(message => Encoder.decode(message))
         .filter(message => message.event === messageType);
       if (messages.length >= count) {
         clearInterval(interval);

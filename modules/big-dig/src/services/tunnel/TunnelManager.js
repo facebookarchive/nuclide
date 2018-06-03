@@ -15,6 +15,7 @@ import type {Transport} from './Proxy';
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
 import {Tunnel} from './Tunnel.js';
+import Encoder from './Encoder.js';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
@@ -55,7 +56,7 @@ export class TunnelManager {
     this._subscription = this._transport
       .onMessage()
       .map(msg => {
-        return JSON.parse(msg);
+        return Encoder.decode(msg);
       })
       .subscribe(msg => this._handleMessage(msg));
   }

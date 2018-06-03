@@ -10,10 +10,14 @@
  * @format
  */
 
+declare var jest;
+
 import type {Transport} from '../Proxy.js';
 
 import {SocketManager} from '../SocketManager.js';
 import {TestTransportFactory} from '../__mocks__/util';
+
+import Encoder from '../Encoder';
 import net from 'net';
 
 const TEST_PORT = 5678;
@@ -109,11 +113,10 @@ describe('SocketManager', () => {
 
   it('should send data back when data is written to the socket', async () => {
     const data = 'hello world';
-    const base64Data = Buffer.from(data).toString('base64');
 
     const messages = [
       {event: 'connection', port: TEST_PORT, clientId},
-      {event: 'data', TEST_PORT, clientId, arg: base64Data},
+      {event: 'data', TEST_PORT, clientId, arg: data},
     ];
     transport = TestTransportFactory();
     socketManager = new SocketManager('tunnel1', TEST_PORT, transport);
@@ -123,9 +126,10 @@ describe('SocketManager', () => {
     await waitsForSpy(dataSpy);
     await waitsForSpy(transport.send);
 
-    const parsedMessage = JSON.parse(transport.send.mock.calls[0].toString());
-    const buf = Buffer.from(parsedMessage.arg, 'base64');
-    expect(buf.toString()).toEqual(data);
+    const decodedMessage = Encoder.decode(
+      transport.send.mock.calls[0].toString(),
+    );
+    expect(decodedMessage.arg.toString()).toEqual(data);
   });
 });
 
