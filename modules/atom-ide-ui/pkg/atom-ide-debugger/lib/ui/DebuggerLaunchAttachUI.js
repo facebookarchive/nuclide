@@ -201,7 +201,9 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       .map(debuggerType => ({
         name: debuggerType.debuggerName,
         tabContent: (
-          <span title={debuggerType.debuggerName}>
+          <span
+            title={debuggerType.debuggerName}
+            className="debugger-provider-tab">
             {debuggerType.debuggerName}
           </span>
         ),

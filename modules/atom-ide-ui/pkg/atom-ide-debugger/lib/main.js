@@ -705,6 +705,7 @@ class Activation {
     const hostEl = document.createElement('div');
     const pane = atom.workspace.addModalPanel({
       item: hostEl,
+      className: 'debugger-config-dialog',
     });
 
     const parentEl: HTMLElement = (hostEl.parentElement: any);

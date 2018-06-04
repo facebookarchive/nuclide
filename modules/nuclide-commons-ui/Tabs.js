@@ -67,6 +67,7 @@ export default class Tabs extends React.Component<Props> {
             growable: this.props.growable,
           })}
           key={tab.name}
+          title={tab.name}
           {...handler}>
           <div className="title">
             {icon}
