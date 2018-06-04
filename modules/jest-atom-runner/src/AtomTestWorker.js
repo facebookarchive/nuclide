@@ -111,7 +111,14 @@ class AtomTestWorker {
       });
 
       this._childProcess = spawn('atom', ['-t', atomPathArg], {
-        stdio: ['inherit', 'inherit', 'inherit'],
+        stdio: [
+          'inherit',
+          // redirect child process' stdout to parent process stderr, so it
+          // doesn't break any tools that depend on stdout (like the ones
+          // that consume a generated JSON report from jest's stdout)
+          process.stderr,
+          'inherit',
+        ],
       });
 
       const crash = error => {
