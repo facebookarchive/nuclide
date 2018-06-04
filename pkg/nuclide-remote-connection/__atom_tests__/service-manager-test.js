@@ -13,11 +13,11 @@ import {getVersion} from '../../nuclide-version';
 import {getInfoServiceByNuclideUri} from '..';
 
 describe('setUseLocalRpc', () => {
-  it('successfully starts up a local RPC server', () => {
-    waitsForPromise({timeout: 15000}, async () => {
+  it('successfully starts up a local RPC server', async () => {
+    await (async () => {
       const infoService = getInfoServiceByNuclideUri('');
       const version = await infoService.getServerVersion();
       expect(version).toBe(getVersion());
-    });
+    })();
   });
 });

@@ -11,6 +11,7 @@
 
 import {fork} from 'nuclide-commons/process';
 import {IpcClientTransport} from '../lib/IpcTransports';
+import waitsFor from '../../../jest/waits_for';
 
 describe('IpcTransports', () => {
   let processStream;
@@ -19,7 +20,7 @@ describe('IpcTransports', () => {
       '--require',
       [
         require.resolve('../../commons-node/load-transpiler'),
-        require.resolve('./ipc_echo_process'),
+        require.resolve('../__mocks__/ipc_echo_process'),
       ],
       {
         stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'ipc'],
@@ -27,38 +28,32 @@ describe('IpcTransports', () => {
     );
   });
 
-  it('is able to communicate with a child process', () => {
+  it('is able to communicate with a child process', async () => {
     const transport = new IpcClientTransport(processStream);
-    const messageSpy = jasmine.createSpy('onMessage');
+    const messageSpy = jest.fn();
     transport.onMessage().subscribe(msg => messageSpy(msg));
 
-    runs(() => {
-      expect(!transport.isClosed());
-      transport.send('hello');
-    });
+    expect(!transport.isClosed());
+    transport.send('hello');
 
-    waitsFor(
-      () => messageSpy.callCount === 1,
+    await waitsFor(
+      () => messageSpy.mock.calls.length === 1,
       'a reply from the local server',
       10000,
     );
 
-    runs(() => {
-      expect(messageSpy).toHaveBeenCalledWith('HELLO');
-      transport.send('a'.repeat(99999));
-    });
+    expect(messageSpy).toHaveBeenCalledWith('HELLO');
+    transport.send('a'.repeat(99999));
 
-    waitsFor(
-      () => messageSpy.callCount === 2,
+    await waitsFor(
+      () => messageSpy.mock.calls.length === 2,
       'another reply from the local server',
       10000,
     );
 
-    runs(() => {
-      expect(messageSpy).toHaveBeenCalledWith('A'.repeat(99999));
-      transport.send('exit');
-    });
+    expect(messageSpy).toHaveBeenCalledWith('A'.repeat(99999));
+    transport.send('exit');
 
-    waitsFor(() => transport.isClosed());
+    await waitsFor(() => transport.isClosed());
   });
 });

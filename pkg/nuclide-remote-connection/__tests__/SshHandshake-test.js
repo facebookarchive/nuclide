@@ -16,6 +16,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {clearRequireCache, uncachedRequire} from 'nuclide-commons/test-helpers';
 import {SshHandshake} from '../lib/SshHandshake';
 import type {ExecOptions, SFTPWrapper, ClientChannel} from 'ssh2';
+import waitsFor from '../../../jest/waits_for';
 
 const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');
 
@@ -53,8 +54,9 @@ describe('SshHandshake', () => {
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');
-    spyOn(((dns: any): Object), 'lookup').andCallFake(
-      (host, family, callback) => {
+    jest
+      .spyOn(((dns: any): Object), 'lookup')
+      .mockImplementation((host, family, callback) => {
         process.nextTick(() => {
           callback(
             /* error */ null,
@@ -62,14 +64,13 @@ describe('SshHandshake', () => {
             /* family */ 4,
           );
         });
-      },
-    );
-    handshakeDelegate = jasmine.createSpyObj('delegate', [
-      'onKeyboardInteractive',
-      'onWillConnect',
-      'onDidConnect',
-      'onError',
-    ]);
+      });
+    handshakeDelegate = {
+      onKeyboardInteractive: jest.fn(),
+      onWillConnect: jest.fn(),
+      onDidConnect: jest.fn(),
+      onError: jest.fn(),
+    };
   });
 
   afterEach(() => {
@@ -89,16 +90,16 @@ describe('SshHandshake', () => {
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
 
-      expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
-      expect(handshakeDelegate.onError.callCount).toBe(1);
-      expect(handshakeDelegate.onError.calls[0].args[0]).toBe(
+      expect(handshakeDelegate.onWillConnect.mock.calls.length).toBe(1);
+      expect(handshakeDelegate.onError.mock.calls.length).toBe(1);
+      expect(handshakeDelegate.onError.mock.calls[0][0]).toBe(
         SshHandshake.ErrorType.UNKNOWN,
       );
-      expect(handshakeDelegate.onError.calls[0].args[1]).toBe(mockError);
-      expect(handshakeDelegate.onError.calls[0].args[2]).toBe(config);
+      expect(handshakeDelegate.onError.mock.calls[0][1]).toBe(mockError);
+      expect(handshakeDelegate.onError.mock.calls[0][2]).toBe(config);
     });
 
-    it('calls delegates onError when private key does not exist', () => {
+    it('calls delegates onError when private key does not exist', async () => {
       const sshConnection: any = new MockSshConnection();
       const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
       const config: SshConnectionConfiguration = ({
@@ -110,20 +111,18 @@ describe('SshHandshake', () => {
 
       let onErrorCalled = false;
 
-      handshakeDelegate.onError.andCallFake((errorType, e, _config) => {
+      handshakeDelegate.onError.mockImplementation((errorType, e, _config) => {
         expect(errorType).toBe(SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY);
         expect(e.code).toBe('ENOENT');
         expect(_config).toBe(config);
         onErrorCalled = true;
       });
 
-      waitsFor(() => {
+      await waitsFor(() => {
         return onErrorCalled;
       });
 
-      runs(() => {
-        expect(handshakeDelegate.onError.callCount).toBe(1);
-      });
+      expect(handshakeDelegate.onError.mock.calls.length).toBe(1);
     });
 
     it('retries with a password when authentication fails', () => {
@@ -141,22 +140,22 @@ describe('SshHandshake', () => {
       sshConnection.config = config;
       sshConnection.emit('error', mockError);
 
-      expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
-      expect(handshakeDelegate.onKeyboardInteractive.callCount).toBe(1);
-      let args = handshakeDelegate.onKeyboardInteractive.calls[0].args;
+      expect(handshakeDelegate.onWillConnect.mock.calls.length).toBe(1);
+      expect(handshakeDelegate.onKeyboardInteractive.mock.calls.length).toBe(1);
+      let args = handshakeDelegate.onKeyboardInteractive.mock.calls[0];
       expect(args[3][0].prompt).toContain('password');
 
       // Trigger the input callback.
-      spyOn(sshConnection, 'connect');
+      jest.spyOn(sshConnection, 'connect').mockImplementation(() => {});
       args[4](['test2']);
 
-      expect(sshConnection.connect.callCount).toBe(1);
-      expect(sshConnection.connect.calls[0].args[0].host).toBe('testhost');
-      expect(sshConnection.connect.calls[0].args[0].password).toBe('test2');
+      expect(sshConnection.connect.mock.calls.length).toBe(1);
+      expect(sshConnection.connect.mock.calls[0][0].host).toBe('testhost');
+      expect(sshConnection.connect.mock.calls[0][0].password).toBe('test2');
 
       sshConnection.emit('error', mockError);
-      expect(handshakeDelegate.onKeyboardInteractive.callCount).toBe(2);
-      args = handshakeDelegate.onKeyboardInteractive.calls[1].args;
+      expect(handshakeDelegate.onKeyboardInteractive.mock.calls.length).toBe(2);
+      args = handshakeDelegate.onKeyboardInteractive.mock.calls[1];
 
       sshHandshake.cancel();
     });
@@ -170,12 +169,12 @@ describe('SshHandshake', () => {
         pathToPrivateKey: pathToFakePk,
       }: any);
 
-      spyOn(sshConnection, 'end');
+      jest.spyOn(sshConnection, 'end').mockImplementation(() => {});
 
       sshHandshake.connect(config);
       sshHandshake.cancel();
 
-      expect(sshConnection.end.calls.length).toBe(1);
+      expect(sshConnection.end.mock.calls.length).toBe(1);
     });
   });
 });

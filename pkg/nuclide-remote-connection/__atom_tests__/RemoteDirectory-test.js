@@ -14,8 +14,9 @@ import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Directory} from 'atom';
 import {RemoteDirectory} from '../lib/RemoteDirectory';
-import connectionMock from './connection_mock';
+import connectionMock from '../__mocks__/connection_mock';
 import temp from 'temp';
+import waitsFor from '../../../jest/waits_for';
 
 temp.track();
 
@@ -111,59 +112,55 @@ describe('RemoteDirectory::relativize()', () => {
 });
 
 describe('RemoteDirectory::getEntries()', () => {
-  it('sorts directories then files alphabetically case insensitive', () => {
+  it('sorts directories then files alphabetically case insensitive', async () => {
     let complete = false;
 
-    runs(() => {
-      // Directories should sort first, then files, and case should be ignored
-      spyOn(connectionMock.getFsService(), 'readdir').andReturn([
+    // Directories should sort first, then files, and case should be ignored
+    jest
+      .spyOn(connectionMock.getFsService(), 'readdir')
+      .mockReturnValue([
         ['Aa', true],
         ['a', true],
         ['Bb', false],
         ['b', false],
       ]);
-      const remoteDirectory = new RemoteDirectory(
-        connectionMock,
-        'nuclide://example.com/',
-      );
+    const remoteDirectory = new RemoteDirectory(
+      connectionMock,
+      'nuclide://example.com/',
+    );
 
-      remoteDirectory.getEntries((err, entries) => {
-        expect(err).toBe(null);
-        invariant(entries);
-        const sortedEntries = entries.map(entry => entry.getBaseName());
-        expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
-        complete = true;
-      });
+    remoteDirectory.getEntries((err, entries) => {
+      expect(err).toBe(null);
+      invariant(entries);
+      const sortedEntries = entries.map(entry => entry.getBaseName());
+      expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
+      complete = true;
     });
 
-    waitsFor(() => {
-      return complete;
-    });
+    waitsFor(() => complete);
   });
 
-  it("calls the given callback with an error on failure to match node-path-watcher's API", () => {
+  it("calls the given callback with an error on failure to match node-path-watcher's API", async () => {
     let complete = false;
 
-    runs(() => {
-      spyOn(connectionMock.getFsService(), 'readdir').andCallFake(() => {
+    jest
+      .spyOn(connectionMock.getFsService(), 'readdir')
+      .mockImplementation(() => {
         throw new Error('ENOENT');
       });
 
-      const remoteDirectory = new RemoteDirectory(
-        connectionMock,
-        'nuclide://example.com/',
-      );
+    const remoteDirectory = new RemoteDirectory(
+      connectionMock,
+      'nuclide://example.com/',
+    );
 
-      remoteDirectory.getEntries((err, entries) => {
-        expect(err).not.toBe(null);
-        expect(entries).toBe(null);
-        complete = true;
-      });
+    remoteDirectory.getEntries((err, entries) => {
+      expect(err).not.toBe(null);
+      expect(entries).toBe(null);
+      complete = true;
     });
 
-    waitsFor(() => {
-      return complete;
-    });
+    await waitsFor(() => complete);
   });
 });
 
@@ -177,8 +174,10 @@ describe('RemoteDirectory::getParent()', () => {
   });
 
   it('a non-root has the expected parent', () => {
-    const parentDirectory = jasmine.createSpy('RemoteDirectory');
-    spyOn(connectionMock, 'createDirectory').andReturn(parentDirectory);
+    const parentDirectory = jest.fn();
+    jest
+      .spyOn(connectionMock, 'createDirectory')
+      .mockReturnValue(parentDirectory);
 
     const remoteDirectory = new RemoteDirectory(
       connectionMock,
@@ -248,8 +247,8 @@ describe('RemoteDirectory::contains()', () => {
 
 describe('RemoteDirectory::getFile()', () => {
   it('returns a RemoteFile under the directory', () => {
-    const remoteFile = jasmine.createSpy('RemoteFile');
-    spyOn(connectionMock, 'createFile').andReturn(remoteFile);
+    const remoteFile = jest.fn();
+    jest.spyOn(connectionMock, 'createFile').mockReturnValue(remoteFile);
 
     const remoteDirectory = new RemoteDirectory(
       connectionMock,
@@ -269,8 +268,8 @@ describe('RemoteDirectory::delete()', () => {
     tempDir = temp.mkdirSync('delete_test');
   });
 
-  it('deletes the existing directory', () => {
-    waitsForPromise(async () => {
+  it('deletes the existing directory', async () => {
+    await (async () => {
       const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
       fs.mkdirSync(directoryPath);
       fs.mkdirSync(nuclideUri.join(directoryPath, 'subdir'));
@@ -281,11 +280,11 @@ describe('RemoteDirectory::delete()', () => {
       expect(fs.existsSync(directoryPath)).toBe(true);
       await directory.delete();
       expect(fs.existsSync(directoryPath)).toBe(false);
-    });
+    })();
   });
 
-  it('deletes the non-existent directory', () => {
-    waitsForPromise(async () => {
+  it('deletes the non-existent directory', async () => {
+    await (async () => {
       const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
       const directory = new RemoteDirectory(
         connectionMock,
@@ -293,13 +292,13 @@ describe('RemoteDirectory::delete()', () => {
       );
       await directory.delete();
       expect(fs.existsSync(directoryPath)).toBe(false);
-    });
+    })();
   });
 });
 
 describe('RemoteDirectory::exists()', () => {
-  it('verifies existence', () => {
-    waitsForPromise(async () => {
+  it('verifies existence', async () => {
+    await (async () => {
       const directoryPath = temp.mkdirSync('exists_test');
       expect(fs.existsSync(directoryPath)).toBe(true);
 
@@ -309,11 +308,11 @@ describe('RemoteDirectory::exists()', () => {
       );
       const exists = await directory.exists();
       expect(exists).toBe(true);
-    });
+    })();
   });
 
-  it('verifies non-existence', () => {
-    waitsForPromise(async () => {
+  it('verifies non-existence', async () => {
+    await (async () => {
       const tempDir = temp.mkdirSync('exists_test');
       const directoryPath = nuclideUri.join(
         tempDir,
@@ -327,7 +326,7 @@ describe('RemoteDirectory::exists()', () => {
       );
       const exists = await directory.exists();
       expect(exists).toBe(false);
-    });
+    })();
   });
 });
 
@@ -376,27 +375,25 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
   let directoryPath;
   let filePath;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     directoryPath = temp.mkdirSync('on_did_change_test');
     filePath = nuclideUri.join(directoryPath, 'sample_file.txt');
     fs.writeFileSync(filePath, 'sample contents!');
-    waitsForPromise(() =>
-      connectionMock.getFsService().watchDirectoryRecursive(directoryPath),
-    );
+    await (() =>
+      connectionMock.getFsService().watchDirectoryRecursive(directoryPath))();
     // wait for the watchman to settle on the created directory and file.
     waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
   });
 
-  afterEach(() => {
-    waitsForPromise(() =>
-      connectionMock.getFsService().unwatchDirectoryRecursive(directoryPath),
-    );
+  afterEach(async () => {
+    await (() =>
+      connectionMock.getFsService().unwatchDirectoryRecursive(directoryPath))();
   });
 
   it('notifies onDidChange observers when a new file is added to the directory', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
-    const changeHandler = jasmine.createSpy();
+    const changeHandler = jest.fn();
     directory.onDidChange(changeHandler);
     runs(() =>
       fs.writeFileSync(
@@ -404,10 +401,10 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
         'new contents!',
       ),
     );
-    waitsFor(() => changeHandler.callCount > 0);
+    waitsFor(() => changeHandler.mock.calls.length > 0);
     runs(() => {
-      expect(changeHandler.callCount).toBe(1);
-      expect(changeHandler.argsForCall[0][0]).toEqual([
+      expect(changeHandler.mock.calls.length).toBe(1);
+      expect(changeHandler.mock.calls[0][0]).toEqual([
         {
           name: 'new_file.txt',
           mode: FILE_MODE,
@@ -420,13 +417,13 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
 
   it('notifies onDidChange observers when a file is removed from the directory', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
-    const changeHandler = jasmine.createSpy();
+    const changeHandler = jest.fn();
     directory.onDidChange(changeHandler);
     runs(() => fs.unlinkSync(filePath));
-    waitsFor(() => changeHandler.callCount > 0);
+    waitsFor(() => changeHandler.mock.calls.length > 0);
     runs(() => {
-      expect(changeHandler.callCount).toBe(1);
-      expect(changeHandler.argsForCall[0][0]).toEqual([
+      expect(changeHandler.mock.calls.length).toBe(1);
+      expect(changeHandler.mock.calls[0][0]).toEqual([
         {
           name: nuclideUri.basename(filePath),
           mode: FILE_MODE,
@@ -439,16 +436,16 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
 
   it("Doesn't notify observers when a file is changed contents inside the the directory", () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
-    const changeHandler = jasmine.createSpy();
+    const changeHandler = jest.fn();
     directory.onDidChange(changeHandler);
     fs.writeFileSync(filePath, 'new contents!');
     waits(1000);
-    runs(() => expect(changeHandler.callCount).toBe(0));
+    runs(() => expect(changeHandler.mock.calls.length).toBe(0));
   });
 
   it('batches change events into a single call', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
-    const changeHandler = jasmine.createSpy();
+    const changeHandler = jest.fn();
     directory.onDidChange(changeHandler);
     runs(() => {
       fs.writeFileSync(
@@ -460,11 +457,10 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
         'new contents 2!',
       );
     });
-    waitsFor(() => changeHandler.callCount > 0);
+    waitsFor(() => changeHandler.mock.calls.length > 0);
     runs(() => {
-      expect(changeHandler.callCount).toBe(1);
-      // $FlowFixMe - test disabled.
-      const sortedChange = changeHandler.argsForCall[0][0].sort(
+      expect(changeHandler.mock.calls.length).toBe(1);
+      const sortedChange = changeHandler.mock.calls[0][0].sort(
         (a, b) => a.name > b.name,
       );
       expect(sortedChange).toEqual([
@@ -482,17 +478,17 @@ describe('RemoteDirectory::onDidDelete()', () => {
     tempDir = temp.mkdirSync('on_did_delete');
   });
 
-  it('calls on delete', () => {
-    waitsForPromise(async () => {
+  it('calls on delete', async () => {
+    await (async () => {
       const dirPath = nuclideUri.join(tempDir, 'dir_to_delete');
       const dir = new RemoteDirectory(
         connectionMock,
         `nuclide://host13${dirPath}`,
       );
-      const callbackSpy = jasmine.createSpy();
+      const callbackSpy = jest.fn();
       dir.onDidDelete(callbackSpy);
       await dir.delete();
-      expect(callbackSpy.callCount).toBe(1);
-    });
+      expect(callbackSpy.mock.calls.length).toBe(1);
+    })();
   });
 });
