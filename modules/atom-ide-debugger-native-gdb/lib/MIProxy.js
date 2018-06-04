@@ -162,7 +162,7 @@ export default class MIProxy extends EventEmitter {
         this._pendingCommands.delete(token);
         return;
       }
-      throw new Error(
+      logVerbose(
         `Received response with token ${token} which matches no pending command`,
       );
     }
