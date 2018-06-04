@@ -20,6 +20,7 @@ import {Emitter} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
+import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable, Subject} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
@@ -379,9 +380,11 @@ All the changes across your entire stacked diff.
           headline={uncommittedChangesHeadline}
           onChange={this._handleUncommittedFilesExpandedChange}
           size="small">
-          <PanelComponentScroller>
-            {uncommittedChangesList}
-          </PanelComponentScroller>
+          <DragResizeContainer>
+            <PanelComponentScroller className="nuclide-file-tree-sidebar-uncommitted-changes-container">
+              {uncommittedChangesList}
+            </PanelComponentScroller>
+          </DragResizeContainer>
         </Section>
       </div>
     );

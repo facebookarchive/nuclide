@@ -15,6 +15,7 @@ import * as React from 'react';
 
 type Props = {
   children?: mixed,
+  className?: string,
   flexDirection?: 'column',
   overflowX?: string,
   onScroll?: (event: Event) => void,
@@ -25,10 +26,14 @@ export class PanelComponentScroller extends React.Component<Props> {
   render(): React.Node {
     const style =
       this.props.overflowX == null ? null : {overflowX: this.props.overflowX};
-    const className = classnames('nuclide-ui-panel-component-scroller', {
-      'nuclide-ui-panel-component-scroller--column':
-        this.props.flexDirection === 'column',
-    });
+    const className = classnames(
+      this.props.className,
+      'nuclide-ui-panel-component-scroller',
+      {
+        'nuclide-ui-panel-component-scroller--column':
+          this.props.flexDirection === 'column',
+      },
+    );
 
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress

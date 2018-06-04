@@ -21,6 +21,7 @@ import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
+import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
@@ -183,51 +184,53 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     const sortedEntries = this.propsToEntries();
 
     return (
-      <div className="nuclide-file-tree-open-files">
-        <PanelComponentScroller>
-          {/* simulate a once-nested list to share styles those with others
+      <DragResizeContainer>
+        <div className="nuclide-file-tree-open-files">
+          <PanelComponentScroller>
+            {/* simulate a once-nested list to share styles those with others
             that require a single level of indentation */}
-          <TreeList showArrows className="nuclide-file-tree-open-files-list">
-            <NestedTreeItem hasFlatChildren>
-              {sortedEntries.map(e => {
-                const isHoveredUri = this.state.hoveredUri === e.uri;
-                return (
-                  <TreeItem
-                    className={classnames(
-                      'file',
-                      'nuclide-path-with-terminal',
-                      this._generatedClass(e.generatedType),
-                      {
-                        'text-highlight': isHoveredUri,
-                      },
-                    )}
-                    selected={e.isSelected}
-                    key={e.uri}
-                    onConfirm={this._onConfirm.bind(this, e)}
-                    onSelect={this._onSelect.bind(this, e)}
-                    onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
-                    onMouseLeave={this._onListItemMouseLeave}
-                    onMouseDown={this._onMouseDown.bind(this, e)}
-                    path={e.uri}
-                    name={e.name}
-                    // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
-                    ref={e.isSelected ? this._handleSelectedRow : null}>
-                    <span
-                      className={classnames('icon', {
-                        'icon-primitive-dot': e.isModified && !isHoveredUri,
-                        'icon-x': isHoveredUri || !e.isModified,
-                        'text-info': e.isModified,
-                      })}
-                      onClick={this._onCloseClick.bind(this, e)}
-                    />
-                    <PathWithFileIcon path={e.name} />
-                  </TreeItem>
-                );
-              })}
-            </NestedTreeItem>
-          </TreeList>
-        </PanelComponentScroller>
-      </div>
+            <TreeList showArrows className="nuclide-file-tree-open-files-list">
+              <NestedTreeItem hasFlatChildren>
+                {sortedEntries.map(e => {
+                  const isHoveredUri = this.state.hoveredUri === e.uri;
+                  return (
+                    <TreeItem
+                      className={classnames(
+                        'file',
+                        'nuclide-path-with-terminal',
+                        this._generatedClass(e.generatedType),
+                        {
+                          'text-highlight': isHoveredUri,
+                        },
+                      )}
+                      selected={e.isSelected}
+                      key={e.uri}
+                      onConfirm={this._onConfirm.bind(this, e)}
+                      onSelect={this._onSelect.bind(this, e)}
+                      onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
+                      onMouseLeave={this._onListItemMouseLeave}
+                      onMouseDown={this._onMouseDown.bind(this, e)}
+                      path={e.uri}
+                      name={e.name}
+                      // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
+                      ref={e.isSelected ? this._handleSelectedRow : null}>
+                      <span
+                        className={classnames('icon', {
+                          'icon-primitive-dot': e.isModified && !isHoveredUri,
+                          'icon-x': isHoveredUri || !e.isModified,
+                          'text-info': e.isModified,
+                        })}
+                        onClick={this._onCloseClick.bind(this, e)}
+                      />
+                      <PathWithFileIcon path={e.name} />
+                    </TreeItem>
+                  );
+                })}
+              </NestedTreeItem>
+            </TreeList>
+          </PanelComponentScroller>
+        </div>
+      </DragResizeContainer>
     );
   }
 }
