@@ -93,6 +93,7 @@ export class BuckBuildSystem {
     processEventCallback: ?(
       processStream: Observable<LegacyProcessMessage>,
     ) => Observable<BuckEvent>,
+    skipLaunchAfterInstall?: boolean = false,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run a buck command.
     this._diagnosticInvalidations.next({scope: 'all'});
@@ -132,6 +133,7 @@ export class BuckBuildSystem {
           args,
           isDebug,
           udid,
+          skipLaunchAfterInstall,
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
 
@@ -273,6 +275,7 @@ function runBuckCommand(
   args: Array<string>,
   debug: boolean,
   simulator: ?string,
+  skipLaunchAfterInstall?: boolean = false,
 ): Observable<LegacyProcessMessage> {
   // TODO(T17463635)
   if (debug) {
@@ -287,7 +290,14 @@ function runBuckCommand(
   const targets = splitTargets(buildTarget);
   if (subcommand === 'install') {
     return buckService
-      .installWithOutput(buckRoot, targets, args, simulator, true, debug)
+      .installWithOutput(
+        buckRoot,
+        targets,
+        args,
+        simulator,
+        !skipLaunchAfterInstall,
+        debug,
+      )
       .refCount();
   } else if (subcommand === 'build') {
     return buckService.buildWithOutput(buckRoot, targets, args).refCount();
