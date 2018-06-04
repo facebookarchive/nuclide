@@ -44,7 +44,9 @@ module.exports = function(context) {
   const moduleName = relativePath.split(path.sep)[0];
   const moduleDir = path.join(MODULES_DIR, moduleName);
   const modulePkg = getPackage(moduleDir);
-  const isSpec = filename.indexOf('/spec/') !== -1;
+  const isSpec = filename.indexOf('/spec/') !== -1 ||
+    filename.indexOf('/__tests__/') !== -1 ||
+    filename.indexOf('/__atom_tests__/') !== -1;
   const allowDevDependencies = isSpec || idx(
     context,
     _ => _.options[0].allowDevDependencies

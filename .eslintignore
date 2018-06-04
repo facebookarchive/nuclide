@@ -3,3 +3,9 @@
 **/VendorLib/**
 **/flow-typed/**
 **/gen-nodejs/**
+**/build/**
+
+# TODO(dabramov): these have lint errors - fix them
+**/__tests__/**
+**/__atom_tests__/**
+**/__mocks__/**
