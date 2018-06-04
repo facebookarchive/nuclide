@@ -171,6 +171,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
           ) : (
             <Checkbox
               checked={this.state.stickyScript}
+              className="nuclide-hhvm-be-sticky-control"
               label="Sticky"
               onChange={isChecked => {
                 this.props.projectStore.setStickyCommand(
