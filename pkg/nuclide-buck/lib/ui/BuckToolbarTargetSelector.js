@@ -82,6 +82,12 @@ export default class BuckToolbarTargetSelector extends React.Component<Props> {
           ? Promise.resolve([])
           : buckService
               .listAliases(buckRoot)
+              .catch(e => {
+                atom.notifications.addError(
+                  `Error invoking Buck to list aliases:\n${e.toString()}`,
+                );
+                return [];
+              })
               // Sort in alphabetical order.
               .then(aliases =>
                 aliases.sort((a, b) =>
