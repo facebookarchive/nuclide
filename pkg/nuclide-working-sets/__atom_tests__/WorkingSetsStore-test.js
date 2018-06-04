@@ -13,7 +13,9 @@ import {WorkingSetsStore} from '../lib/WorkingSetsStore';
 
 describe('WorkingSetStore', () => {
   it('Aggregates all URIs of active defs', () => {
-    spyOn(atom.project, 'getDirectories').andReturn([{getPath: () => '/aaa'}]);
+    jest
+      .spyOn(atom.project, 'getDirectories')
+      .mockReturnValue([{getPath: () => '/aaa'}]);
 
     const store = new WorkingSetsStore();
     store.updateDefinitions([
@@ -28,7 +30,7 @@ describe('WorkingSetStore', () => {
   it('Updates the applicability', () => {
     let directories = ['/aaa/bbb1'];
 
-    spyOn(atom.project, 'getDirectories').andCallFake(() => {
+    jest.spyOn(atom.project, 'getDirectories').mockImplementation(() => {
       return directories.map(d => {
         return {getPath: () => d};
       });
