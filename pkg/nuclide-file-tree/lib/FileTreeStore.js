@@ -2144,7 +2144,7 @@ export class FileTreeStore {
   }
 
   _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
-    this._updateGeneratedStatus(openFilesWorkingSet.getUris());
+    this._updateGeneratedStatus(openFilesWorkingSet.getAbsoluteUris());
     // Optimization: with an empty working set, we don't need a full tree refresh.
     if (this._conf.workingSet.isEmpty()) {
       this._conf.openFilesWorkingSet = openFilesWorkingSet;
