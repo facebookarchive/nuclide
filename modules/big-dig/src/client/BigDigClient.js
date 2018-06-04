@@ -76,8 +76,16 @@ export class BigDigClient {
     return this._transport.onClose(callback);
   }
 
-  async createTunnel(localPort: number, remotePort: number): Promise<Tunnel> {
-    return this._tunnelManager.createTunnel(localPort, remotePort);
+  async createTunnel(
+    localPort: number,
+    remotePort: number,
+    useIPv4: ?boolean,
+  ): Promise<Tunnel> {
+    return this._tunnelManager.createTunnel(
+      localPort,
+      remotePort,
+      useIPv4 != null ? useIPv4 : false,
+    );
   }
 
   close(): void {

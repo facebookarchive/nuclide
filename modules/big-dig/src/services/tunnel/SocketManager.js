@@ -25,11 +25,18 @@ export class SocketManager {
   _subscription: Subscription;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
+  _useIPv4: boolean;
 
-  constructor(tunnelId: string, port: number, transport: Transport) {
+  constructor(
+    tunnelId: string,
+    port: number,
+    useIPv4: boolean,
+    transport: Transport,
+  ) {
     this._tunnelId = tunnelId;
     this._port = port;
     this._transport = transport;
+    this._useIPv4 = useIPv4;
     this._socketByClientId = new Map();
   }
 
@@ -50,7 +57,13 @@ export class SocketManager {
   }
 
   _createConnection(message: Object) {
-    const socket = net.createConnection({port: this._port});
+    const connectOptions = {
+      port: this._port,
+      family: this._useIPv4 ? 4 : 6,
+    };
+
+    logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
+    const socket = net.createConnection(connectOptions);
 
     socket.on('error', err => {
       logger.error(err);

@@ -51,7 +51,7 @@ describe('SocketManager', () => {
   it('should create a connection when requested', async () => {
     const messages = [{event: 'connection', port: TEST_PORT, clientId}];
     transport = TestTransportFactory();
-    socketManager = new SocketManager('tunnel1', TEST_PORT, transport);
+    socketManager = new SocketManager('tunnel1', TEST_PORT, false, transport);
     expect(socketManager).not.toBe(undefined);
 
     sendMessages(socketManager, messages);
@@ -75,7 +75,7 @@ describe('SocketManager', () => {
       {event: 'data', TEST_PORT, clientId, arg: 'hello world'},
     ];
     transport = TestTransportFactory();
-    socketManager = new SocketManager('tunnel1', TEST_PORT, transport);
+    socketManager = new SocketManager('tunnel1', TEST_PORT, false, transport);
     sendMessages(socketManager, messages);
 
     await waitsForSpy(dataSpy);
@@ -101,7 +101,7 @@ describe('SocketManager', () => {
       },
     ];
     transport = TestTransportFactory();
-    socketManager = new SocketManager('tunnel1', TEST_PORT, transport);
+    socketManager = new SocketManager('tunnel1', TEST_PORT, false, transport);
 
     sendMessages(socketManager, messages);
 
@@ -119,7 +119,7 @@ describe('SocketManager', () => {
       {event: 'data', TEST_PORT, clientId, arg: data},
     ];
     transport = TestTransportFactory();
-    socketManager = new SocketManager('tunnel1', TEST_PORT, transport);
+    socketManager = new SocketManager('tunnel1', TEST_PORT, false, transport);
 
     sendMessages(socketManager, messages);
 

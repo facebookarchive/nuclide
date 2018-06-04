@@ -22,6 +22,7 @@ import {getLogger} from 'log4js';
 export class Tunnel extends EventEmitter {
   _localPort: number;
   _remotePort: number;
+  _useIPv4: boolean;
   _transport: Transport;
   _proxy: ?Proxy;
   _id: string;
@@ -33,6 +34,7 @@ export class Tunnel extends EventEmitter {
     proxy: ?Proxy,
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ) {
     super();
@@ -40,6 +42,7 @@ export class Tunnel extends EventEmitter {
     this._proxy = proxy;
     this._localPort = localPort;
     this._remotePort = remotePort;
+    this._useIPv4 = useIPv4;
     this._transport = transport;
     this._isClosed = false;
     this._logger = getLogger('tunnel');
@@ -48,6 +51,7 @@ export class Tunnel extends EventEmitter {
   static async createTunnel(
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ): Promise<Tunnel> {
     const tunnelId = generateId();
@@ -55,24 +59,39 @@ export class Tunnel extends EventEmitter {
       tunnelId,
       localPort,
       remotePort,
+      useIPv4,
       transport,
     );
-    return new Tunnel(tunnelId, proxy, localPort, remotePort, transport);
+    return new Tunnel(
+      tunnelId,
+      proxy,
+      localPort,
+      remotePort,
+      useIPv4,
+      transport,
+    );
   }
 
   static async createReverseTunnel(
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ): Promise<Tunnel> {
     const tunnelId = generateId();
 
-    const socketManager = new SocketManager(tunnelId, localPort, transport);
+    const socketManager = new SocketManager(
+      tunnelId,
+      localPort,
+      useIPv4,
+      transport,
+    );
 
     transport.send(
       JSON.stringify({
         event: 'createProxy',
         tunnelId,
+        useIPv4,
         // NB: on the server, the remote port and local ports are reversed.
         // We want to start the proxy on the remote port (relative to the
         // client) and start the socket manager on the local port
@@ -85,6 +104,7 @@ export class Tunnel extends EventEmitter {
       socketManager,
       localPort,
       remotePort,
+      useIPv4,
       transport,
     );
   }
@@ -115,9 +135,10 @@ export class ReverseTunnel extends Tunnel {
     socketManager: SocketManager,
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ) {
-    super(id, null, localPort, remotePort, transport);
+    super(id, null, localPort, remotePort, useIPv4, transport);
     this._socketManager = socketManager;
   }
 

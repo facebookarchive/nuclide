@@ -34,17 +34,20 @@ export class Proxy {
   _subscription: ?Subscription;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
+  _useIPv4: boolean;
 
   constructor(
     tunnelId: string,
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ) {
     this._tunnelId = tunnelId;
     this._localPort = localPort;
     this._remotePort = remotePort;
     this._transport = transport;
+    this._useIPv4 = useIPv4;
     this._server = null;
     this._subscription = null;
     this._socketByClientId = new Map();
@@ -54,9 +57,16 @@ export class Proxy {
     tunnelId: string,
     localPort: number,
     remotePort: number,
+    useIPv4: boolean,
     transport: Transport,
   ): Promise<Proxy> {
-    const proxy = new Proxy(tunnelId, localPort, remotePort, transport);
+    const proxy = new Proxy(
+      tunnelId,
+      localPort,
+      remotePort,
+      useIPv4,
+      transport,
+    );
     await proxy.startListening();
 
     return proxy;
@@ -95,10 +105,11 @@ export class Proxy {
       });
 
       this._server.listen({port: this._localPort}, () => {
-        // send a message to create the connection manager
+        // send a message to create the SocketManager
         this._sendMessage({
           event: 'proxyCreated',
           port: this._localPort,
+          useIPv4: this._useIPv4,
           remotePort: this._remotePort,
         });
         resolve();

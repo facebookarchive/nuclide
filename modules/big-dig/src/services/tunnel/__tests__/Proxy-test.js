@@ -28,6 +28,7 @@ describe('Proxy', () => {
       'test-tunnel',
       TEST_PORT,
       5678,
+      false,
       transport,
     );
   });

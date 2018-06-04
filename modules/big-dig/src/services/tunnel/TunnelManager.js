@@ -61,7 +61,11 @@ export class TunnelManager {
       .subscribe(msg => this._handleMessage(msg));
   }
 
-  async createTunnel(localPort: number, remotePort: number): Promise<Tunnel> {
+  async createTunnel(
+    localPort: number,
+    remotePort: number,
+    useIPv4: ?boolean,
+  ): Promise<Tunnel> {
     invariant(
       !this._isClosed,
       'trying to create a tunnel with a closed tunnel manager',
@@ -70,6 +74,7 @@ export class TunnelManager {
     const tunnel = await Tunnel.createTunnel(
       localPort,
       remotePort,
+      useIPv4 != null ? useIPv4 : false,
       this._transport,
     );
     this._idToTunnel.set(tunnel.getId(), tunnel);
@@ -82,6 +87,7 @@ export class TunnelManager {
   async createReverseTunnel(
     localPort: number,
     remotePort: number,
+    useIPv4: ?boolean,
   ): Promise<Tunnel> {
     invariant(
       !this._isClosed,
@@ -91,6 +97,7 @@ export class TunnelManager {
     const tunnel = await Tunnel.createReverseTunnel(
       localPort,
       remotePort,
+      useIPv4 != null ? useIPv4 : false,
       this._transport,
     );
     this._idToTunnel.set(tunnel.getId(), tunnel);
@@ -120,6 +127,7 @@ export class TunnelManager {
         const socketManager = new SocketManager(
           msg.tunnelId,
           msg.remotePort,
+          msg.useIPv4,
           this._transport,
         );
 
@@ -134,6 +142,7 @@ export class TunnelManager {
         msg.tunnelId,
         msg.localPort,
         msg.remotePort,
+        msg.useIPv4,
         this._transport,
       );
       this._idToTunnel.set(msg.tunnelId, proxy);
