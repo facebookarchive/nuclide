@@ -184,8 +184,6 @@ async function getHgExecParams(
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     options.env.HGPLAIN = 1;
-    // hg plain will prevent the progress file working, add it as an exception
-    options.env.HGPLAINEXCEPT = 'progress';
   }
   if (options.HGEDITOR != null) {
     options.env.HGEDITOR = options.HGEDITOR;
