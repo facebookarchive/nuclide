@@ -111,6 +111,18 @@ export default class HhvmToolbar extends React.Component<Props, State> {
     const isDebugScript = store.getDebugMode() !== 'webserver';
     const isDisabled = !isDebugScript;
     const value = store.getDebugTarget();
+    const openFn = () => {
+      const browserUri =
+        (this._debugTarget != null
+          ? this._debugTarget.getText()
+          : store.getDebugTarget()) || '';
+      const address = browserUri.trim().toLowerCase();
+      if (!address.startsWith('http://') && !address.startsWith('https://')) {
+        shell.openExternal('https://' + browserUri);
+      } else {
+        shell.openExternal(browserUri);
+      }
+    };
 
     return (
       <div className="hhvm-toolbar">
@@ -131,17 +143,8 @@ export default class HhvmToolbar extends React.Component<Props, State> {
               this._debugTarget = input;
             }}
             value={value}
-            // Ugly hack: prevent people changing the value without disabling so
-            // that they can copy and paste.
-            onDidChange={
-              isDisabled
-                ? () => {
-                    if (nullthrows(this._debugTarget).getText() !== value) {
-                      nullthrows(this._debugTarget).setText(value);
-                    }
-                  }
-                : this._updateLastScriptCommand
-            }
+            onDidChange={isDisabled ? () => {} : this._updateLastScriptCommand}
+            onConfirm={openFn}
             size="sm"
           />
         </div>
@@ -162,12 +165,8 @@ export default class HhvmToolbar extends React.Component<Props, State> {
         ) : null}
         <div className="inline-block">
           {!isDebugScript ? (
-            <Button
-              size="SMALL"
-              onClick={() => {
-                shell.openExternal('https://' + store.getDebugTarget());
-              }}>
-              Open
+            <Button size="SMALL" onClick={openFn}>
+              Open In Browser
             </Button>
           ) : (
             <Checkbox

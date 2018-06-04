@@ -62,7 +62,7 @@ export default class Toolbar extends React.Component<Props> {
         const ExtraUi = this.props.extraUiComponent;
         const extraUi = ExtraUi ? <ExtraUi key="extraui" /> : null;
         const taskButtons = this._renderTaskButtons();
-        taskRunnerSpecificContent = [taskButtons, extraUi];
+        taskRunnerSpecificContent = [extraUi, taskButtons];
         dropdownVisibility = {};
       }
     }
@@ -102,7 +102,9 @@ export default class Toolbar extends React.Component<Props> {
   _renderTaskButtons(): ?React.Element<any> {
     const taskButtons = this._getButtonsForTasks();
     return (
-      <span className="inline-block" key="taskButtons">
+      <span
+        className="nuclide-task-button-container inline-block"
+        key="taskButtons">
         <ButtonGroup>
           {taskButtons}
           <Button
