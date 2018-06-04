@@ -34,7 +34,7 @@ export default function trackNewEditorLatency(): IDisposable {
   );
   // Attempt to ensure that this is the first listener that fires.
   const unshift = true;
-  let addPaneItemStart = 0;
+  let pendingEditors = 0;
   const disposables = new UniversalDisposable(
     openEditorTracking,
     switchEditorTracking,
@@ -44,10 +44,11 @@ export default function trackNewEditorLatency(): IDisposable {
       'did-add-pane-item',
       ({item}) => {
         if (item instanceof TextEditor) {
-          addPaneItemStart = performance.now();
+          const startTime = performance.now();
+          pendingEditors++;
           setImmediate(() => {
-            openEditorTracking.track(performance.now() - addPaneItemStart);
-            addPaneItemStart = 0;
+            openEditorTracking.track(performance.now() - startTime);
+            pendingEditors--;
           });
         }
       },
@@ -59,7 +60,7 @@ export default function trackNewEditorLatency(): IDisposable {
         'did-change-active-item',
         item => {
           // Adding a new pane item also triggers 'did-change-active-item'.
-          if (addPaneItemStart === 0 && item instanceof TextEditor) {
+          if (pendingEditors === 0 && item instanceof TextEditor) {
             const startTime = performance.now();
             setImmediate(() => {
               switchEditorTracking.track(performance.now() - startTime);
