@@ -22,11 +22,9 @@ import {
 
 describe('highlightCode', () => {
   let grammar: atom$Grammar;
-  beforeEach(() => {
-    waitsForPromise(() => atom.packages.activatePackage('language-gfm'));
-    runs(() => {
-      grammar = nullthrows(atom.grammars.grammarForScopeName('source.gfm'));
-    });
+  beforeEach(async () => {
+    await atom.packages.activatePackage('language-gfm');
+    grammar = nullthrows(atom.grammars.grammarForScopeName('source.gfm'));
   });
 
   it('is able to tokenize lines using a grammar', () => {

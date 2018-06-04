@@ -12,13 +12,13 @@
 import type {LazyTreeNode} from '../LazyTreeNode';
 
 import * as Immutable from 'immutable';
-import {LazyTestTreeNode} from './LazyTestTreeNode';
+import {LazyTestTreeNode} from '../__mocks__/LazyTestTreeNode';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 
 describe('LazyTreeNode', () => {
-  it('caches the fetched children', () => {
-    waitsForPromise(async () => {
+  it('caches the fetched children', async () => {
+    await (async () => {
       let children = null;
       async function fetchChildren(
         parentNode: LazyTreeNode,
@@ -38,12 +38,12 @@ describe('LazyTreeNode', () => {
 
       expect(await node.fetchChildren()).toEqual(children);
       expect(node.getCachedChildren()).toEqual(children);
-    });
+    })();
   });
 
   describe('isRoot', () => {
-    it('returns true for a root', () => {
-      waitsForPromise(async () => {
+    it('returns true for a root', async () => {
+      await (async () => {
         let children = null;
         async function fetchChildren(
           parentNode: LazyTreeNode,
@@ -62,10 +62,10 @@ describe('LazyTreeNode', () => {
         );
         expect(await node.fetchChildren()).toEqual(children);
         expect(node.isRoot()).toBe(true);
-      });
+      })();
     });
-    it('returns false for a fetched, non-root node', () => {
-      waitsForPromise(async () => {
+    it('returns false for a fetched, non-root node', async () => {
+      await (async () => {
         let children = null;
         async function fetchChildren(
           parentNode: LazyTreeNode,
@@ -86,7 +86,7 @@ describe('LazyTreeNode', () => {
         const cachedChildren = node.getCachedChildren();
         invariant(cachedChildren);
         expect(nullthrows(cachedChildren.first()).isRoot()).toBe(false);
-      });
+      })();
     });
   });
 });

@@ -65,7 +65,7 @@ describe('RadioGroup', () => {
   });
 
   it('calls its onSelectedChange handler when a radio input is changed', () => {
-    const onSelectedChange = jasmine.createSpy('onSelectedChange');
+    const onSelectedChange = jest.fn();
 
     const props = {
       optionLabels: ['foo', 'bar'],
@@ -80,6 +80,6 @@ describe('RadioGroup', () => {
     const foundRadio = ReactDOM.findDOMNode(secondRadioElement);
     invariant(foundRadio instanceof Element);
     Simulate.change(foundRadio);
-    expect(onSelectedChange.mostRecentCall.args[0]).toEqual(1);
+    expect(onSelectedChange.mock.calls[0][0]).toEqual(1);
   });
 });

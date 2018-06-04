@@ -33,7 +33,7 @@ describe('Checkbox', () => {
   });
 
   it('onChange handler fires when change event dispatched from checkbox', () => {
-    const onChange = jasmine.createSpy();
+    const onChange = jest.fn();
     const reactElement = createWithProps({
       checked: false,
       label: 'click me!',
@@ -45,7 +45,7 @@ describe('Checkbox', () => {
     );
     // Unfortunately, TestUtils does not seem to turn a click into a change event for a checkbox.
     TestUtils.Simulate.change(inputEl);
-    expect(onChange.callCount).toBe(1);
+    expect(onChange.mock.calls.length).toBe(1);
 
     // Nor does it seem to change the state of the checkbox, as the following fails:
     //   expect(inputEl.checked).toBe(true);

@@ -16,6 +16,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import invariant from 'assert';
+import path from 'path';
 
 describe('nuclide-ui-atom-text-editor', () => {
   describe('when its `path` is set', () => {
@@ -23,7 +24,9 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     beforeEach(() => {
       // Path is relative to the root of this package (where "package.json" lives).
-      grammar = atom.grammars.loadGrammarSync('spec/grammars/test1.cson');
+      grammar = atom.grammars.loadGrammarSync(
+        path.resolve(__dirname, '../__mocks__/grammars/test1.cson'),
+      );
     });
 
     afterEach(() => {
@@ -46,8 +49,12 @@ describe('nuclide-ui-atom-text-editor', () => {
     let grammar2;
 
     beforeEach(() => {
-      grammar1 = atom.grammars.loadGrammarSync('spec/grammars/test1.cson');
-      grammar2 = atom.grammars.loadGrammarSync('spec/grammars/test2.cson');
+      grammar1 = atom.grammars.loadGrammarSync(
+        path.resolve(__dirname, '../__mocks__/grammars/test1.cson'),
+      );
+      grammar2 = atom.grammars.loadGrammarSync(
+        path.resolve(__dirname, '../__mocks__/grammars/test2.cson'),
+      );
     });
 
     afterEach(() => {
@@ -172,18 +179,15 @@ describe('nuclide-ui-atom-text-editor', () => {
     });
   });
 
-  it('does not leak TextEditorComponent', () => {
-    waitsForPromise(async () => {
-      jasmine.useRealClock();
-      const hostEl = document.createElement('div');
-      const component = ReactDOM.render(<AtomTextEditor />, hostEl);
-      const textEditor = component.getModel();
-      const element = textEditor.getElement();
-      ReactDOM.unmountComponentAtNode(hostEl);
+  it('does not leak TextEditorComponent', async () => {
+    const hostEl = document.createElement('div');
+    const component = ReactDOM.render(<AtomTextEditor />, hostEl);
+    const textEditor = component.getModel();
+    const element = textEditor.getElement();
+    ReactDOM.unmountComponentAtNode(hostEl);
 
-      // Cleanup occurs during the next tick.
-      await sleep(0);
-      expect(element.component).toBe(null);
-    });
+    // Cleanup occurs during the next tick.
+    await sleep(0);
+    expect(element.component).toBe(null);
   });
 });

@@ -61,13 +61,14 @@ module.exports = async function(params: AtomParams) {
     workerID,
   });
 
-  global.atom = params.buildAtomEnvironment({
-    applicationDelegate: params.buildDefaultApplicationDelegate(),
-    window,
-    document: window.document,
-    configDirPath: os.tmpdir(),
-    enablePersistence: true,
-  });
+  global.__buildAtomGlobal = () =>
+    params.buildAtomEnvironment({
+      applicationDelegate: params.buildDefaultApplicationDelegate(),
+      window,
+      document: window.document,
+      configDirPath: os.tmpdir(),
+      enablePersistence: true,
+    });
 
   // We need to delete whatever is in `prepareStackTrace` to make source map work.
   // Right now Atom is overwriting it without an ability to reassign, so the only

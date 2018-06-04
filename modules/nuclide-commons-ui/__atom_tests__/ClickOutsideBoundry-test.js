@@ -49,7 +49,7 @@ describe('ClickOutsideBoundary - onClickOutside handler', () => {
   beforeEach(() => {
     app = document.createElement('div');
     window.document.body.appendChild(app);
-    onClickOutside = jasmine.createSpy('onClickOutside');
+    onClickOutside = jest.fn();
   });
 
   afterEach(() => {
@@ -115,7 +115,7 @@ describe('ClickOutsideBoundary - onClickOutside handler', () => {
 
     it('when the target leaves the DOM before the event reaches window.document', () => {
       // A simple approach: `this.rootNode.contains(e.target)` would fail this test.
-      const onClickInside = jasmine.createSpy('onClickInside');
+      const onClickInside = jest.fn();
       render(
         <ClickOutsideBoundary onClickOutside={onClickOutside}>
           <div onClick={onClickInside}>

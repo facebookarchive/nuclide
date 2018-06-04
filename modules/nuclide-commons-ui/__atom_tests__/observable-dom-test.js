@@ -76,7 +76,7 @@ describe('new DOMObserverObservable', () => {
   it(
     'by default (without a call to .flattenEntries()) creates an observable of ' +
       'the elements emitted from the DOM Observer',
-    () => {
+    async () => {
       class MockDOMObserverEmitsArray extends MockDOMObserver {
         observe(...args: Array<any>) {
           super.observe(...args);
@@ -87,7 +87,7 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      waitsForPromise(async () => {
+      await (async () => {
         const output = await new DOMObserverObservable(
           MockDOMObserverEmitsArray,
           'arg',
@@ -96,7 +96,7 @@ describe('new DOMObserverObservable', () => {
           .toArray()
           .toPromise();
         expect(output).toEqual([['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']]);
-      });
+      })();
     },
   );
 
@@ -178,7 +178,7 @@ describe('new DOMObserverObservable', () => {
       ).toBe(true);
     });
 
-    it('creates an observable of the individual elements of the array emitted from the DOM Observer', () => {
+    it('creates an observable of the individual elements of the array emitted from the DOM Observer', async () => {
       class MockDOMObserverEmitsArray extends MockDOMObserver {
         observe(...args: Array<any>) {
           super.observe(...args);
@@ -189,7 +189,7 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      waitsForPromise(async () => {
+      await (async () => {
         const output = await new DOMObserverObservable(
           MockDOMObserverEmitsArray,
           'arg',
@@ -199,13 +199,13 @@ describe('new DOMObserverObservable', () => {
           .toArray()
           .toPromise();
         expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
-      });
+      })();
     });
 
     it(
       'creates an observable of the individual elements of the array returned ' +
         'from the getEntries method of the entrylist emitted from the DOM Observer',
-      () => {
+      async () => {
         class MockDOMObserverEmitsEntryList extends MockDOMObserver {
           observe(...args: Array<any>) {
             super.observe(...args);
@@ -218,7 +218,7 @@ describe('new DOMObserverObservable', () => {
           }
         }
 
-        waitsForPromise(async () => {
+        await (async () => {
           const output = await new DOMObserverObservable(
             MockDOMObserverEmitsEntryList,
             'arg',
@@ -228,11 +228,11 @@ describe('new DOMObserverObservable', () => {
             .toArray()
             .toPromise();
           expect(output).toEqual(['foo', 'bar', 'baz', 'foo', 'bar', 'baz']);
-        });
+        })();
       },
     );
 
-    it('throws if neither an iterable nor an EntryList is emitted from the DOM Observer', () => {
+    it('throws if neither an iterable nor an EntryList is emitted from the DOM Observer', async () => {
       class MockDOMObserverEmitsNonStandard extends MockDOMObserver {
         observe(...args: Array<any>) {
           super.observe(...args);
@@ -242,7 +242,7 @@ describe('new DOMObserverObservable', () => {
         }
       }
 
-      waitsForPromise(async () => {
+      await (async () => {
         let error;
         try {
           await new DOMObserverObservable(
@@ -260,7 +260,7 @@ describe('new DOMObserverObservable', () => {
         expect(error.message).toEqual(
           'Tried to merge DOM Observer entries, but they were not iterable nor were they an EntryList.',
         );
-      });
+      })();
     });
   });
 });

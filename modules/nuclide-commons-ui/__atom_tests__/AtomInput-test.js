@@ -39,23 +39,9 @@ describe('AtomInput', () => {
     expect(reactElement.getTextEditor().getText()).toBe('some text');
   });
 
-  it('focus() focuses the end of the line', () => {
-    const initialValue = 'some text';
-    reactElement = createWithProps({initialValue});
-    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual([
-      0,
-      0,
-    ]);
-    reactElement.focus();
-    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual([
-      0,
-      initialValue.length,
-    ]);
-  });
-
   it('onDidChange() does not fire initially', () => {
     const initialValue = 'some text';
-    const onDidChange = jasmine.createSpy('onDidChange');
+    const onDidChange = jest.fn();
     reactElement = createWithProps({
       initialValue,
       onDidChange,
@@ -67,28 +53,28 @@ describe('AtomInput', () => {
   it('onDidChange() is fired when the text changes', () => {
     const initialValue = 'some text';
     reactElement = createWithProps({initialValue});
-    const onDidChange = jasmine.createSpy('onDidChange');
+    const onDidChange = jest.fn();
     const disposable = reactElement.onDidChange(onDidChange);
 
     reactElement.setText('the new text');
-    expect(onDidChange.calls.length).toBe(1);
+    expect(onDidChange.mock.calls.length).toBe(1);
 
     reactElement.setText('even more new text');
-    expect(onDidChange.calls.length).toBe(2);
+    expect(onDidChange.mock.calls.length).toBe(2);
 
     disposable.dispose();
     reactElement.setText('the last update');
-    expect(onDidChange.calls.length).toBe(2);
+    expect(onDidChange.mock.calls.length).toBe(2);
   });
 
   it('updates will stop firing when the component is unmounted', () => {
     const initialValue = 'some text';
-    const onDidChange = jasmine.createSpy('onDidChange');
+    const onDidChange = jest.fn();
     reactElement = createWithProps({initialValue, onDidChange});
 
     const textEditor = reactElement.getTextEditor();
     textEditor.setText('the new text');
-    expect(onDidChange.calls.length).toBe(1);
+    expect(onDidChange.mock.calls.length).toBe(1);
 
     ReactDOM.unmountComponentAtNode(
       // $FlowFixMe
@@ -97,21 +83,18 @@ describe('AtomInput', () => {
     reactElement = null;
 
     textEditor.setText('even more new text');
-    expect(onDidChange.calls.length).toBe(1);
+    expect(onDidChange.mock.calls.length).toBe(1);
   });
 
-  it('does not leak TextEditorComponent', () => {
-    waitsForPromise(async () => {
-      jasmine.useRealClock();
-      const hostEl = document.createElement('div');
-      const component = ReactDOM.render(<AtomInput />, hostEl);
-      const textEditor = component.getTextEditor();
-      const element = textEditor.getElement();
-      ReactDOM.unmountComponentAtNode(hostEl);
+  it('does not leak TextEditorComponent', async () => {
+    const hostEl = document.createElement('div');
+    const component = ReactDOM.render(<AtomInput />, hostEl);
+    const textEditor = component.getTextEditor();
+    const element = textEditor.getElement();
+    ReactDOM.unmountComponentAtNode(hostEl);
 
-      // Cleanup occurs during the next tick.
-      await sleep(0);
-      expect(element.component).toBe(null);
-    });
+    // Cleanup occurs during the next tick.
+    await sleep(0);
+    expect(element.component).toBe(null);
   });
 });

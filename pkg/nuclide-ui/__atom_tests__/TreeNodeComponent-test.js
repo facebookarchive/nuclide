@@ -11,7 +11,7 @@
 
 /* global Element */
 
-import {LazyTestTreeNode} from './LazyTestTreeNode';
+import {LazyTestTreeNode} from '../__mocks__/LazyTestTreeNode';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
@@ -43,9 +43,9 @@ describe('TreeNodeComponent', () => {
       rowClassName: '',
     };
 
-    spyOn(props, 'onClick');
-    spyOn(props, 'onClickArrow');
-    spyOn(props, 'onDoubleClick');
+    jest.spyOn(props, 'onClick').mockImplementation(() => {});
+    jest.spyOn(props, 'onClickArrow').mockImplementation(() => {});
+    jest.spyOn(props, 'onDoubleClick').mockImplementation(() => {});
 
     treeNodeComponent = TestUtils.renderIntoDocument(
       <TreeNodeComponent {...props} />,

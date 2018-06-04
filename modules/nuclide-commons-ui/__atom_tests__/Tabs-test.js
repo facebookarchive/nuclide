@@ -25,7 +25,7 @@ const {
 
 describe('Checkbox', () => {
   it('notifies callback of tab changes', () => {
-    const onChange = jasmine.createSpy('onChange');
+    const onChange = jest.fn();
 
     const props = {
       tabs: [
@@ -44,7 +44,7 @@ describe('Checkbox', () => {
   });
 
   it('should work with customized event types', () => {
-    const onChange = jasmine.createSpy('onChange');
+    const onChange = jest.fn();
 
     const props = {
       tabs: [

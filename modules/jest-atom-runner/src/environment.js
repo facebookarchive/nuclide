@@ -23,6 +23,9 @@ class Atom {
 
   constructor(config: ProjectConfig) {
     this.global = global;
+    // __buildAtomGlobal should be set at the atom entry point. It depends
+    // on the data Atom test runner provides.
+    global.atom = global.__buildAtomGlobal();
     this.moduleMocker = new mock.ModuleMocker(global);
     this.fakeTimers = {
       useFakeTimers() {
@@ -32,7 +35,8 @@ class Atom {
   }
 
   async setup() {
-    await this.global.atom.reset();
+    // make sure we start from a clean state
+    window.document.body.innerHTML = '';
   }
 
   async teardown() {}
