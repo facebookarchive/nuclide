@@ -24,7 +24,7 @@ atom.packages.serviceHub.consume('nuclide-rpc-services', '0.0.0', provider => {
 });
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
-  if (!nuclideUri.isRemote(uri)) {
+  if (rpcService == null && !nuclideUri.isRemote(uri)) {
     return AdbServiceLocal;
   }
   // nuclide-rpc-services should be available at this point.
