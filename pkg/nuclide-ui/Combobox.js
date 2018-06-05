@@ -212,7 +212,7 @@ export class Combobox extends React.Component<Props, State> {
 
   _getOptionsElement(): HTMLElement {
     if (this._optionsElement == null) {
-      const workspaceElement = atom.views.getView(atom.workspace);
+      const workspaceElement = document.body;
       invariant(workspaceElement != null);
 
       this._optionsElement = document.createElement('div');
