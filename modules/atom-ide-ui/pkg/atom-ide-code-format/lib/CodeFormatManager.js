@@ -324,7 +324,7 @@ export default class CodeFormatManager {
         .switchMap(() =>
           provider.formatAtPosition(
             editor,
-            editor.getCursorBufferPosition().translate([0, -1]),
+            editor.getCursorBufferPosition(),
             character,
           ),
         )
