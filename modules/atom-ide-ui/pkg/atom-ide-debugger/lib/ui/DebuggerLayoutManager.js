@@ -12,6 +12,7 @@
 /* global localStorage */
 
 import type {DebuggerModeType, IDebugService, SerializedState} from '../types';
+import type {GatekeeperService} from 'nuclide-commons-atom/types';
 
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -26,12 +27,14 @@ import nullthrows from 'nullthrows';
 // Debugger views
 import DebuggerControlsView from './DebuggerControlsView';
 import ThreadsView from './ThreadsView';
+import MultiTargettedDebuggingView from './MultiTargettedDebuggerView';
 import DebuggerCallstackComponent from './DebuggerCallstackComponent';
 import BreakpointsView from './BreakpointsView';
 import ScopesView from './ScopesView';
 import WatchView from './WatchView';
 
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+const DEBUGGER_URI_BASE = 'atom://nuclide/debugger-';
 
 export type DebuggerPaneLocation = {
   dock: string,
@@ -79,6 +82,8 @@ export type DebuggerPaneConfig = {
   // Optional callback to be invoked when the pane is being resized (flex scale changed).
   onPaneResize?: (pane: atom$Pane, newFlexScale: number) => boolean,
 };
+
+let _gkService: ?GatekeeperService;
 
 export default class DebuggerLayoutManager {
   _disposables: UniversalDisposable;
@@ -187,7 +192,6 @@ export default class DebuggerLayoutManager {
   }
 
   _initializeDebuggerPanes(): void {
-    const debuggerUriBase = 'atom://nuclide/debugger-';
     const getFocusedProcess = () => this._service.viewModel.focusedProcess;
 
     // This configures the debugger panes. By default, they'll appear below the stepping
@@ -195,7 +199,7 @@ export default class DebuggerLayoutManager {
     // user is free to move them around.
     this._debuggerPanes = [
       {
-        uri: debuggerUriBase + 'controls',
+        uri: DEBUGGER_URI_BASE + 'controls',
         isLifetimeView: true,
         title: () => 'Debugger',
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
@@ -217,7 +221,7 @@ export default class DebuggerLayoutManager {
         },
       },
       {
-        uri: debuggerUriBase + 'callstack',
+        uri: DEBUGGER_URI_BASE + 'callstack',
         isLifetimeView: false,
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () => 'Call Stack',
@@ -229,7 +233,7 @@ export default class DebuggerLayoutManager {
           mode !== DebuggerMode.STOPPED,
       },
       {
-        uri: debuggerUriBase + 'breakpoints',
+        uri: DEBUGGER_URI_BASE + 'breakpoints',
         isLifetimeView: false,
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () => 'Breakpoints',
@@ -237,7 +241,7 @@ export default class DebuggerLayoutManager {
         createView: () => <BreakpointsView service={this._service} />,
       },
       {
-        uri: debuggerUriBase + 'scopes',
+        uri: DEBUGGER_URI_BASE + 'scopes',
         isLifetimeView: false,
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () => 'Scopes',
@@ -247,7 +251,7 @@ export default class DebuggerLayoutManager {
           mode !== DebuggerMode.STOPPED,
       },
       {
-        uri: debuggerUriBase + 'watch-expressions',
+        uri: DEBUGGER_URI_BASE + 'watch-expressions',
         isLifetimeView: false,
         defaultLocation: 'bottom',
         previousDefaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
@@ -256,7 +260,7 @@ export default class DebuggerLayoutManager {
         createView: () => <WatchView service={this._service} />,
       },
       {
-        uri: debuggerUriBase + 'threads',
+        uri: DEBUGGER_URI_BASE + 'threads',
         isLifetimeView: false,
         defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
         title: () =>
@@ -378,6 +382,28 @@ export default class DebuggerLayoutManager {
     };
 
     return docks;
+  }
+
+  consumeGatekeeperService(service: GatekeeperService): IDisposable {
+    _gkService = service;
+    if (_gkService != null) {
+      _gkService.passesGK('nuclide_multitarget_debugging').then(passes => {
+        if (passes) {
+          this._debuggerPanes.splice(1, 0, {
+            uri: DEBUGGER_URI_BASE + 'multitargetteddebugging',
+            isLifetimeView: false,
+            defaultLocation: DEBUGGER_PANELS_DEFAULT_LOCATION,
+            title: () => 'Multi targetted debugging',
+            isEnabled: () => true,
+            createView: () => <MultiTargettedDebuggingView />,
+          });
+          if (this._debuggerVisible) {
+            this.showDebuggerViews();
+          }
+        }
+      });
+    }
+    return new UniversalDisposable(() => (_gkService = null));
   }
 
   _isDockEmpty(dock: atom$AbstractPaneContainer): boolean {
