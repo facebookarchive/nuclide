@@ -178,7 +178,7 @@ function findDuplicateAttachTargetIds(
 export function getRemoteDebuggerCommandServiceByNuclideUri(
   uri: NuclideUri,
 ): RemoteDebuggerCommandService {
-  if (!nuclideUri.isRemote(uri)) {
+  if (_rpcService == null && !nuclideUri.isRemote(uri)) {
     return RemoteDebuggerCommandServiceLocal;
   }
 

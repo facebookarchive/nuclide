@@ -28,9 +28,13 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 }
 
 export function getPtyServiceByNuclideUri(uri: ?NuclideUri): PtyService {
-  if (uri == null || !nuclideUri.isRemote(uri)) {
+  const serviceUri = uri || '';
+  if (_rpcService == null && !nuclideUri.isRemote(serviceUri)) {
     return PtyServiceLocal;
   }
 
-  return nullthrows(_rpcService).getServiceByNuclideUri('PtyService', uri);
+  return nullthrows(_rpcService).getServiceByNuclideUri(
+    'PtyService',
+    serviceUri,
+  );
 }

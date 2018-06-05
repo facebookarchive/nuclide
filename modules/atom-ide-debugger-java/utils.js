@@ -265,7 +265,7 @@ export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
 export function getJavaDebuggerHelpersServiceByNuclideUri(
   uri: NuclideUri,
 ): JavaDebuggerHelpersService {
-  if (!nuclideUri.isRemote(uri)) {
+  if (_rpcService == null && !nuclideUri.isRemote(uri)) {
     return JavaDebuggerHelpersServiceLocal;
   }
 
