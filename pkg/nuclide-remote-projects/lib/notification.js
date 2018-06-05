@@ -126,7 +126,8 @@ export function notifySshHandshakeError(
         `  3. If none of above works, ssh to ${
           config.host
         } and kill existing nuclide-server` +
-        ' by running "killall node", and reconnect.';
+        ' by running "killall node", and reconnect.\n\n\n' +
+        originalErrorDetail;
       break;
     case 'SERVER_CANNOT_CONNECT':
       message = 'Unable to connect to server';

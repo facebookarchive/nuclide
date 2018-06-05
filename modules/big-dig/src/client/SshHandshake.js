@@ -562,15 +562,21 @@ export class SshHandshake {
       }
 
       return [await this._onSshConnectionIsReady(), this._config];
-    } catch (innerError) {
-      const error = this._wrapError(innerError);
+    } catch (error) {
+      const wrappedError = this._wrapError(error);
 
       // eslint-disable-next-line no-console
       console.error(
-        `SshHandshake failed: ${error.errorType}, ${error.message}`,
-        error.innerError,
+        `SshHandshake failed: ${wrappedError.errorType}, ${
+          wrappedError.message
+        }`,
+        wrappedError.innerError,
       );
-      this._delegate.onError(error.errorType, innerError, this._config);
+      this._delegate.onError(
+        wrappedError.errorType,
+        wrappedError.innerError || error,
+        this._config,
+      );
 
       throw error;
     }
