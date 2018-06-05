@@ -196,7 +196,11 @@ class Activation {
       return;
     }
 
-    const result = await this._getDefinitionCached(editor, position);
+    // Datatips are debounced, so this request should always come in after the getDefinition request.
+    // Thus we should always be able to rely on the value being in the cache.
+    // If it's not in the cache, this implies that a newer getDefinition request came in,
+    // in which case the result of this function will be ignored anyway.
+    const result = await this._definitionCache.getCached(editor, position);
     if (result == null) {
       return null;
     }
