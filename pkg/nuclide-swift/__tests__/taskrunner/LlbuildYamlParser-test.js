@@ -89,44 +89,40 @@ describe('readCompileCommands', () => {
       path = nuclideUri.join(__dirname, '../fixtures/nonexistent.yaml');
     });
 
-    it('returns an empty mapping', () => {
-      waitsForPromise(async () => {
+    it('returns an empty mapping', async () => {
+      await (async () => {
         const commands = await readCompileCommands(path);
         expect(commands.size).toBe(0);
-      });
+      })();
     });
   });
 
   describe('when the YAML in the file cannot be parsed', () => {
     beforeEach(() => {
-      path = nuclideUri.join(__dirname, '../fixtures/invalid.yaml');
+      path = nuclideUri.join(
+        __dirname,
+        '../../__mocks__/fixtures/invalid.yaml',
+      );
     });
 
-    it('throws an error', () => {
-      waitsForPromise(async () => {
-        // Jasmine toThrow() does not support calling an async function using
-        // await, so manually checking for an exception instead.
-        let throws = false;
-        try {
-          await readCompileCommands(path);
-        } catch (e) {
-          throws = true;
-        }
-        expect(throws).toBe(true);
-      });
+    it('throws an error', async () => {
+      await expect(readCompileCommands(path)).rejects.toThrow(
+        'unexpected end of the stream',
+      );
     });
   });
 
   describe('when the YAML in the file does not contain a "commands" key', () => {
     beforeEach(() => {
-      path = nuclideUri.join(__dirname, '../fixtures/no-commands.yaml');
+      path = nuclideUri.join(
+        __dirname,
+        '../../__mocks__/fixtures/no-commands.yaml',
+      );
     });
 
-    it('returns an empty mapping', () => {
-      waitsForPromise(async () => {
-        const commands = await readCompileCommands(path);
-        expect(commands.size).toBe(0);
-      });
+    it('returns an empty mapping', async () => {
+      const commands = await readCompileCommands(path);
+      expect(commands.size).toBe(0);
     });
   });
 
@@ -135,59 +131,53 @@ describe('readCompileCommands', () => {
       path = nuclideUri.join(__dirname, '../fixtures/no-commands-sources.yaml');
     });
 
-    it('returns an empty mapping', () => {
-      waitsForPromise(async () => {
-        const commands = await readCompileCommands(path);
-        expect(commands.size).toBe(0);
-      });
+    it('returns an empty mapping', async () => {
+      const commands = await readCompileCommands(path);
+      expect(commands.size).toBe(0);
     });
   });
 
   describe('when the YAML in the file contains "commands.sources" keys', () => {
     beforeEach(() => {
-      path = nuclideUri.join(__dirname, '../fixtures/valid.yaml');
+      path = nuclideUri.join(__dirname, '../../__mocks__/fixtures/valid.yaml');
     });
 
-    it('returns a mapping of sources to "other-args"', () => {
-      waitsForPromise(async () => {
-        const commands = await readCompileCommands(path);
-        expect(commands.size).toBe(4);
-        expect(commands.get('/path/to/MyPackage/Sources/MyPackage.swift')).toBe(
-          [
-            '-D',
-            'SWIFT_PACKAGE',
-            '-g',
-            '/path/to/MyPackage/Sources/AnotherSource.swift',
-            '/path/to/MyPackage/Sources/MyPackage.swift',
-          ].join(' '),
-        );
-        expect(
-          commands.get('/path/to/MyPackage/Sources/AnotherSource.swift'),
-        ).toBe(
-          [
-            '-D',
-            'SWIFT_PACKAGE',
-            '-g',
-            '/path/to/MyPackage/Sources/AnotherSource.swift',
-            '/path/to/MyPackage/Sources/MyPackage.swift',
-          ].join(' '),
-        );
-        expect(
-          commands.get(
-            '/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift',
-          ),
-        ).toBe(
-          [
-            '-D',
-            'SWIFT_PACKAGE',
-            '-g',
-            '/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift',
-          ].join(' '),
-        );
-        expect(commands.get('/path/to/YetAnotherFile.swift')).toBe(
-          '/path/to/YetAnotherFile.swift',
-        );
-      });
+    it('returns a mapping of sources to "other-args"', async () => {
+      const commands = await readCompileCommands(path);
+      expect(commands.size).toBe(4);
+      expect(commands.get('/path/to/MyPackage/Sources/MyPackage.swift')).toBe(
+        [
+          '-D',
+          'SWIFT_PACKAGE',
+          '-g',
+          '/path/to/MyPackage/Sources/AnotherSource.swift',
+          '/path/to/MyPackage/Sources/MyPackage.swift',
+        ].join(' '),
+      );
+      expect(
+        commands.get('/path/to/MyPackage/Sources/AnotherSource.swift'),
+      ).toBe(
+        [
+          '-D',
+          'SWIFT_PACKAGE',
+          '-g',
+          '/path/to/MyPackage/Sources/AnotherSource.swift',
+          '/path/to/MyPackage/Sources/MyPackage.swift',
+        ].join(' '),
+      );
+      expect(
+        commands.get('/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift'),
+      ).toBe(
+        [
+          '-D',
+          'SWIFT_PACKAGE',
+          '-g',
+          '/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift',
+        ].join(' '),
+      );
+      expect(commands.get('/path/to/YetAnotherFile.swift')).toBe(
+        '/path/to/YetAnotherFile.swift',
+      );
     });
   });
 });
