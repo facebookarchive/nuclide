@@ -27,53 +27,57 @@ describe('QuickOpenHelpers', () => {
 
   beforeEach(() => {
     // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    spyOn(require('../../nuclide-hack/lib/config'), 'getConfig').andReturn({
-      hhClientPath: 'hh_client',
-      logLevel: 'OFF',
-    });
-    spyOn(
-      require('../../nuclide-remote-connection'),
-      'getServiceByNuclideUri',
-    ).andReturn({
-      async getCtagsService() {
-        return {
-          async findTags(path, query): Promise<Array<CtagsResult>> {
-            return [
-              {
-                resultType: 'FILE',
-                name: 'A',
-                file: '/path1/a',
-                lineNumber: 1,
-                kind: 'c',
-                pattern: '/^class A$/',
-              },
-              {
-                resultType: 'FILE',
-                name: 'test::A',
-                file: '/test/a',
-                lineNumber: 2,
-                kind: '',
-                pattern: '/^struct A$/',
-              },
-            ];
-          },
-          dispose() {},
-        };
-      },
-    });
-    spyOn(hackService, 'isFileInHackProject').andReturn(false);
+    jest
+      .spyOn(require('../../nuclide-hack/lib/config'), 'getConfig')
+      .mockReturnValue({
+        hhClientPath: 'hh_client',
+        logLevel: 'OFF',
+      });
+    jest
+      .spyOn(
+        require('../../nuclide-remote-connection'),
+        'getServiceByNuclideUri',
+      )
+      .mockReturnValue({
+        async getCtagsService() {
+          return {
+            async findTags(path, query): Promise<Array<CtagsResult>> {
+              return [
+                {
+                  resultType: 'FILE',
+                  name: 'A',
+                  file: '/path1/a',
+                  lineNumber: 1,
+                  kind: 'c',
+                  pattern: '/^class A$/',
+                },
+                {
+                  resultType: 'FILE',
+                  name: 'test::A',
+                  file: '/test/a',
+                  lineNumber: 2,
+                  kind: '',
+                  pattern: '/^struct A$/',
+                },
+              ];
+            },
+            dispose() {},
+          };
+        },
+      });
+    jest.spyOn(hackService, 'isFileInHackProject').mockReturnValue(false);
   });
 
-  it('it activates for valid directories', () => {
-    waitsForPromise(async () => {
+  it('it activates for valid directories', async () => {
+    await (async () => {
       const {isEligibleForDirectory} = QuickOpenHelpers;
       invariant(isEligibleForDirectory);
       expect(await isEligibleForDirectory(mockDirectory)).toBe(true);
-    });
+    })();
   });
 
-  it('is able to return and render tag results', () => {
-    waitsForPromise(async () => {
+  it('is able to return and render tag results', async () => {
+    await (async () => {
       const {executeQuery, getComponentForItem} = QuickOpenHelpers;
       let results = await executeQuery('', mockDirectory);
       expect(results).toEqual([]);
@@ -122,6 +126,6 @@ describe('QuickOpenHelpers', () => {
       ).toBe(1);
       // $FlowFixMe
       expect(renderedNode.querySelectorAll('.icon-code').length).toBe(1);
-    });
+    })();
   });
 });

@@ -23,6 +23,8 @@ import {
   uncachedRequire,
 } from '../test-helpers';
 
+jest.setTimeout(15000);
+
 describe('arePropertiesEqual', () => {
   it('correctly compares empty objects', () => {
     expect(arePropertiesEqual({}, {})).toBe(true);
@@ -156,7 +158,8 @@ describe('Mocking Imports test suite', () => {
   // Tests ToBeTested.functionToTest while mocking imported function toBeMocked.
   it('Mocking imported dependencies', () => {
     // 1 - First mock all functions imported by the module under test
-    const mock = jest.spyOn(require('../__mocks__/fixtures/toBeMocked'), 'importedFunction')
+    const mock = jest
+      .spyOn(require('../__mocks__/fixtures/toBeMocked'), 'importedFunction')
       .mockReturnValue(45);
 
     // 2 - Do an uncachedRequire of the module to test

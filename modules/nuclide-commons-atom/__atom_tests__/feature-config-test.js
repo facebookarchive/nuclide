@@ -24,28 +24,28 @@ describe('main', () => {
   });
 
   it('passes values to observers on change', () => {
-    const spy = jasmine.createSpy('spy');
+    const spy = jest.fn();
     featureConfig.observe('animal', spy);
     featureConfig.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('can observeAsStream', () => {
-    const spy = jasmine.createSpy('spy');
+    const spy = jest.fn();
     featureConfig.observeAsStream('animal').subscribe(spy);
     featureConfig.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('passes options to observe', () => {
-    const spy = jasmine.createSpy('spy');
+    const spy = jest.fn();
     featureConfig.observe('animal', {scope: []}, spy);
     featureConfig.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('calls callbacks passed to `onDidChange`', () => {
-    const spy = jasmine.createSpy('willis');
+    const spy = jest.fn();
     featureConfig.onDidChange('mars.attacks', spy);
     featureConfig.set('mars.attacks', 42);
     expect(spy).toHaveBeenCalled();

@@ -19,11 +19,11 @@ const fakeFile = '/tmp/file.txt';
 describe('applyTextEdits', () => {
   let editor: atom$TextEditor = (null: any);
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       editor = await atom.workspace.open(fakeFile);
       editor.setText('foo\nbar\nbaz\n');
-    });
+    })();
   });
 
   it('should apply a patch', () => {
@@ -42,7 +42,7 @@ describe('applyTextEdits', () => {
       newText: 'BAR',
     };
 
-    spyOn(editor.getBuffer(), 'setTextViaDiff').andCallThrough();
+    jest.spyOn(editor.getBuffer(), 'setTextViaDiff');
 
     expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
     expect(editor.getText()).toEqual('BAR');

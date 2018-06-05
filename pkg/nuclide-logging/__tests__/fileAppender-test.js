@@ -15,6 +15,8 @@ import temp from 'temp';
 
 temp.track();
 
+jest.unmock('log4js');
+
 describe('fileAppender', () => {
   let tempFile: string;
   beforeEach(() => {
@@ -36,8 +38,8 @@ describe('fileAppender', () => {
     });
   });
 
-  it('flushes immediately on shutdown', () => {
-    waitsForPromise(async () => {
+  it('flushes immediately on shutdown', async () => {
+    await (async () => {
       const times = 10;
       const logger = log4js.getLogger('testCategory');
       for (let i = 0; i < times; i++) {
@@ -48,6 +50,6 @@ describe('fileAppender', () => {
       expect(fs.readFileSync(tempFile, 'utf8')).toBe(
         'INFO testCategory - test1234\n'.repeat(times),
       );
-    });
+    })();
   });
 });

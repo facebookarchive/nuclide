@@ -26,8 +26,9 @@ describe('TextCallbackContainer', () => {
   let callback: any;
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     textCallbackContainer = new __TEST__.TextCallbackContainer();
-    callback = jasmine.createSpy();
+    callback = jest.fn();
   });
 
   function checkInvariant() {
@@ -133,38 +134,34 @@ describe('TextEventDispatcher', () => {
     fakeTextEditor = makeFakeEditor('foo');
     fakeTextEditor2 = makeFakeEditor('bar');
     activeEditor = fakeTextEditor;
-    spyOn(atom.workspace, 'isTextEditor').andReturn(true);
-    spyOn(atom.workspace, 'observeTextEditors').andCallFake(fakeObserveEditors);
-    spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(
-      () => activeEditor,
-    );
-    spyOn(atom.workspace, 'getTextEditors').andReturn([
-      fakeTextEditor,
-      fakeTextEditor2,
-    ]);
-    spyOn(atom.workspace, 'onDidChangeActivePaneItem').andCallFake(callback => {
-      paneSwitchCallbacks.add(callback);
-      return new UniversalDisposable(() => {});
-    });
+    jest.spyOn(atom.workspace, 'isTextEditor').mockReturnValue(true);
+    jest
+      .spyOn(atom.workspace, 'observeTextEditors')
+      .mockImplementation(fakeObserveEditors);
+    jest
+      .spyOn(atom.workspace, 'getActiveTextEditor')
+      .mockImplementation(() => activeEditor);
+    jest
+      .spyOn(atom.workspace, 'getTextEditors')
+      .mockReturnValue([fakeTextEditor, fakeTextEditor2]);
+    jest
+      .spyOn(atom.workspace, 'onDidChangeActivePaneItem')
+      .mockImplementation(callback => {
+        paneSwitchCallbacks.add(callback);
+        return new UniversalDisposable(() => {});
+      });
     textEventDispatcher = new TextEventDispatcher();
   });
 
-  afterEach(() => {
-    jasmine.unspy(atom.workspace, 'observeTextEditors');
-    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
-    jasmine.unspy(atom.workspace, 'getTextEditors');
-    jasmine.unspy(atom.workspace, 'onDidChangeActivePaneItem');
-  });
-
   it('should fire events', () => {
-    const callback = jasmine.createSpy();
+    const callback = jest.fn();
     textEventDispatcher.onFileChange([grammar], callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
   });
 
   it('should work with observeTextEditorEvents', () => {
-    const spy = jasmine.createSpy();
+    const spy = jest.fn();
     observeTextEditorEvents([grammar], 'changes').subscribe(editor =>
       spy(editor),
     );
@@ -173,7 +170,7 @@ describe('TextEventDispatcher', () => {
   });
 
   it('should debounce events', () => {
-    const callback = jasmine.createSpy();
+    const callback = jest.fn();
     textEventDispatcher.onFileChange([grammar], callback);
     // This test hinges on these two calls happening within 50 ms of each other.
     // An initial attempt to mock the clock was unsuccessful, probably because
@@ -182,11 +179,11 @@ describe('TextEventDispatcher', () => {
     // figure out how to mock the clock properly.
     triggerAtomEvent(fakeTextEditor);
     triggerAtomEvent(fakeTextEditor);
-    expect(callback.callCount).toBe(1);
+    expect(callback.mock.calls.length).toBe(1);
   });
 
   it('should dispatch pending events on a tab switch', () => {
-    const callback = jasmine.createSpy();
+    const callback = jest.fn();
     textEventDispatcher.onFileChange([grammar], callback);
     triggerAtomEvent(fakeTextEditor2);
     expect(callback).not.toHaveBeenCalled();
@@ -195,10 +192,9 @@ describe('TextEventDispatcher', () => {
     expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
   });
 
-  it('should register simultaneous open events as pending', () => {
-    jasmine.useRealClock();
-    waitsForPromise(async () => {
-      const callback = jasmine.createSpy();
+  it('should register simultaneous open events as pending', async () => {
+    await (async () => {
+      const callback = jest.fn();
 
       // Initially, both fakeTextEditor/fakeTextEditor2 are opened.
       textEventDispatcher.onFileChange([grammar], callback);
@@ -217,11 +213,11 @@ describe('TextEventDispatcher', () => {
       activeEditor = fakeTextEditor2;
       paneSwitchCallbacks.forEach(f => f());
       expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
-    });
+    })();
   });
 
   it('should always dispatch to clients that request all changes', () => {
-    const callback = jasmine.createSpy();
+    const callback = jest.fn();
     textEventDispatcher.onAnyFileChange(callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
@@ -229,7 +225,7 @@ describe('TextEventDispatcher', () => {
 
   it('should deregister from text editor events when it has no subscribers', () => {
     expect(textEventCallbacks.get(fakeTextEditor)).toBe(undefined);
-    const callback = jasmine.createSpy();
+    const callback = jest.fn();
     const disposable = textEventDispatcher.onAnyFileChange(callback);
     expect(textEventCallbacks.get(fakeTextEditor).size).toBeGreaterThan(0);
     disposable.dispose();

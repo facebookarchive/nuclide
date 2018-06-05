@@ -44,8 +44,8 @@ describe('ContextMenu', () => {
     expect(menu.isEmpty()).toBe(true);
   });
 
-  it('items added to a context menu appear in priority order', () => {
-    waitsForPromise(async () => {
+  it('items added to a context menu appear in priority order', async () => {
+    await (async () => {
       const options = {
         type: 'root',
         cssSelector,
@@ -65,11 +65,11 @@ describe('ContextMenu', () => {
         {label: 'third'},
         {label: 'fourth'},
       ]);
-    });
+    })();
   });
 
-  it('can handle a mix of menu and submenu items', () => {
-    waitsForPromise(async () => {
+  it('can handle a mix of menu and submenu items', async () => {
+    await (async () => {
       const options = {
         type: 'root',
         cssSelector,
@@ -103,11 +103,11 @@ describe('ContextMenu', () => {
         {label: 'three'},
         {label: 'four'},
       ]);
-    });
+    })();
   });
 
-  it('dispose() returned for an item can be used to remove a menu item', () => {
-    waitsForPromise(async () => {
+  it('dispose() returned for an item can be used to remove a menu item', async () => {
+    await (async () => {
       const options = {
         type: 'root',
         cssSelector,
@@ -171,11 +171,11 @@ describe('ContextMenu', () => {
         {label: 'three'},
         {label: 'four'},
       ]);
-    });
+    })();
   });
 
-  it('removing all submenu items should result in it being filtered from view', () => {
-    waitsForPromise(async () => {
+  it('removing all submenu items should result in it being filtered from view', async () => {
+    await (async () => {
       const options = {
         type: 'root',
         cssSelector,
@@ -235,7 +235,7 @@ describe('ContextMenu', () => {
         {label: 'three'},
         {label: 'four'},
       ]);
-    });
+    })();
   });
 
   it('.isEmpty()', () => {
@@ -258,8 +258,8 @@ describe('ContextMenu', () => {
     expect(menu.isEmpty()).toBe(true);
   });
 
-  it('.dispose() removes all items', () => {
-    waitsForPromise(async () => {
+  it('.dispose() removes all items', async () => {
+    await (async () => {
       const options = {
         type: 'root',
         cssSelector,
@@ -298,7 +298,7 @@ describe('ContextMenu', () => {
       menu.dispose();
       expect(menu.isEmpty()).toBe(true);
       expect(getTemplateForContextMenu()).toEqual([]);
-    });
+    })();
   });
 
   function getTemplateForContextMenu(): Array<atom$ContextMenuItem> {

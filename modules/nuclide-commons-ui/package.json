@@ -7,10 +7,9 @@
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-commons-ui",
   "scripts": {
-    "prepublish": "../scripts/prepublish.sh",
-    "test": "atom --dev --test spec"
+    "test": "true",
+    "prepublish": "../scripts/prepublish.sh"
   },
-  "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {
     "anser": "1.4.6",
     "classnames": "2.2.5",

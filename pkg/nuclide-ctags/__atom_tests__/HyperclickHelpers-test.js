@@ -28,45 +28,49 @@ describe('HyperclickHelpers', () => {
 
   beforeEach(() => {
     // HACK: goToLocation is a getter. Not too easy to mock out :(
-    goToLocationSpy = spyOn(
+    goToLocationSpy = jest.spyOn(
       require('nuclide-commons-atom/go-to-location'),
       'goToLocation',
-    ).andCallThrough();
+    );
 
     // Mock the services we use.
-    spyOn(
-      require('../../nuclide-remote-connection'),
-      'getCtagsServiceByNuclideUri',
-    ).andCallFake(service => {
-      return {
-        getCtagsService() {
-          return {
-            async getTagsPath() {
-              return '/tags';
-            },
-            async findTags(path, query) {
-              return findTagsResult;
-            },
-            dispose() {},
-          };
-        },
-      };
-    });
+    jest
+      .spyOn(
+        require('../../nuclide-remote-connection'),
+        'getCtagsServiceByNuclideUri',
+      )
+      .mockImplementation(service => {
+        return {
+          getCtagsService() {
+            return {
+              async getTagsPath() {
+                return '/tags';
+              },
+              async findTags(path, query) {
+                return findTagsResult;
+              },
+              dispose() {},
+            };
+          },
+        };
+      });
 
-    spyOn(
-      require('../../nuclide-remote-connection'),
-      'getFileSystemServiceByNuclideUri',
-    ).andCallFake(service => {
-      return {
-        readFile() {
-          return new Buffer('function A\ntest\nclass A\n');
-        },
-      };
-    });
+    jest
+      .spyOn(
+        require('../../nuclide-remote-connection'),
+        'getFileSystemServiceByNuclideUri',
+      )
+      .mockImplementation(service => {
+        return {
+          readFile() {
+            return new Buffer('function A\ntest\nclass A\n');
+          },
+        };
+      });
   });
 
-  it('works with multiple tag results', () => {
-    waitsForPromise(async () => {
+  it('works with multiple tag results', async () => {
+    await (async () => {
       findTagsResult = [
         {
           name: 'A',
@@ -128,11 +132,11 @@ describe('HyperclickHelpers', () => {
         line: 0,
         column: 0,
       });
-    });
+    })();
   });
 
-  it('directly jumps for single results', () => {
-    waitsForPromise(async () => {
+  it('directly jumps for single results', async () => {
+    await (async () => {
       findTagsResult = [
         {
           name: 'test',
@@ -156,11 +160,11 @@ describe('HyperclickHelpers', () => {
         line: 1,
         column: 0,
       });
-    });
+    })();
   });
 
-  it('returns null for no results', () => {
-    waitsForPromise(async () => {
+  it('returns null for no results', async () => {
+    await (async () => {
       findTagsResult = [];
       const result = await HyperclickHelpers.getSuggestionForWord(
         fakeEditor,
@@ -168,6 +172,6 @@ describe('HyperclickHelpers', () => {
         new Range([0, 0], [0, 1]),
       );
       expect(result).toBe(null);
-    });
+    })();
   });
 });

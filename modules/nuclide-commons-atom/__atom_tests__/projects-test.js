@@ -98,20 +98,5 @@ describe('projects', () => {
       atom.project.removePath(firstProjectPath);
       expect(removedProjectPaths).toEqual([firstProjectPath]);
     });
-
-    it('throws when doing updates within updates', () => {
-      expect(() => {
-        onDidRemoveProjectPath(projectPath => {
-          atom.project.addPath(otherProjectPath);
-        });
-        atom.project.setPaths([firstProjectPath]);
-      }).toThrow('Cannot update projects in the middle of an update');
-      expect(() => {
-        onDidRemoveProjectPath(projectPath => {
-          atom.project.removePath(firstProjectPath);
-        });
-        atom.project.setPaths([firstProjectPath]);
-      }).toThrow('Cannot update projects in the middle of an update');
-    });
   });
 });

@@ -64,14 +64,14 @@ describe('ActiveEditorRegistry', () => {
     events.connect();
   }
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       activeEditors = new Subject();
       editorChanges = new Subject();
       editorSaves = new Subject();
       shouldProviderError = false;
 
-      resultFunction = jasmine.createSpy().andCallFake(async () => {
+      resultFunction = jest.fn().mockImplementation(async () => {
         if (shouldProviderError) {
           throw new Error('baaaaad');
         }
@@ -87,7 +87,7 @@ describe('ActiveEditorRegistry', () => {
 
       editor1 = await atom.workspace.open();
       editor2 = await atom.workspace.open();
-    });
+    })();
   });
 
   describe('when there is a provider', () => {
@@ -100,8 +100,8 @@ describe('ActiveEditorRegistry', () => {
       activeEditorRegistry.consumeProvider(provider);
     });
 
-    it('should create correct event stream during normal use', () => {
-      waitsForPromise(async () => {
+    it('should create correct event stream during normal use', async () => {
+      await (async () => {
         activeEditors.next(null);
         await waitForNextTick();
 
@@ -141,11 +141,11 @@ describe('ActiveEditorRegistry', () => {
           kind: 'edit',
           editor: editor1,
         });
-      });
+      })();
     });
 
-    it('should not emit save events when it is configured to respond to edit events', () => {
-      waitsForPromise(async () => {
+    it('should not emit save events when it is configured to respond to edit events', async () => {
+      await (async () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
@@ -161,7 +161,7 @@ describe('ActiveEditorRegistry', () => {
           'edit',
           'result',
         ]);
-      });
+      })();
     });
 
     describe('when configured to respond to save events', () => {
@@ -175,8 +175,8 @@ describe('ActiveEditorRegistry', () => {
         });
       });
 
-      it('should generate and respond to save events', () => {
-        waitsForPromise(async () => {
+      it('should generate and respond to save events', async () => {
+        await (async () => {
           activeEditors.next(editor1);
           await waitForNextTick();
 
@@ -201,7 +201,7 @@ describe('ActiveEditorRegistry', () => {
             kind: 'save',
             editor: editor1,
           });
-        });
+        })();
       });
     });
 
@@ -218,13 +218,13 @@ describe('ActiveEditorRegistry', () => {
           grammarScopes: ['source.cpp'],
           updateOnEdit: false,
         });
-        spyOn(editor2, 'getGrammar').andReturn({
+        jest.spyOn(editor2, 'getGrammar').mockReturnValue({
           scopeName: 'source.cpp',
         });
       });
 
-      it('should generate and respond to the appropriate event', () => {
-        waitsForPromise(async () => {
+      it('should generate and respond to the appropriate event', async () => {
+        await (async () => {
           activeEditors.next(editor1);
           await waitForNextTick();
 
@@ -253,12 +253,12 @@ describe('ActiveEditorRegistry', () => {
             'save',
             'result',
           ]);
-        });
+        })();
       });
     });
 
-    it("should produce the 'provider-error' event when a provider errors", () => {
-      waitsForPromise(async () => {
+    it("should produce the 'provider-error' event when a provider errors", async () => {
+      await (async () => {
         shouldProviderError = true;
 
         activeEditors.next(editor1);
@@ -273,7 +273,7 @@ describe('ActiveEditorRegistry', () => {
           kind: 'provider-error',
           provider,
         });
-      });
+      })();
     });
 
     it('should immediately query a better provider', () => {
@@ -290,8 +290,8 @@ describe('ActiveEditorRegistry', () => {
   });
 
   describe('when there is no provider', () => {
-    it("should produce the 'no-provider' result when there is no provider", () => {
-      waitsForPromise(async () => {
+    it("should produce the 'no-provider' result when there is no provider", async () => {
+      await (async () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
@@ -299,7 +299,7 @@ describe('ActiveEditorRegistry', () => {
           'pane-change',
           'no-provider',
         ]);
-      });
+      })();
     });
   });
 });

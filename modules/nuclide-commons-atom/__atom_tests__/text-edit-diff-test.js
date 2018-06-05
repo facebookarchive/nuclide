@@ -14,7 +14,9 @@ import fs from 'fs';
 import {toUnifiedDiff} from '../text-edit-diff';
 import {Range, TextBuffer} from 'atom';
 
-const fixturePath = require.resolve('./fixtures/text-edit-diff-file.txt');
+const fixturePath = require.resolve(
+  '../__mocks__/fixtures/text-edit-diff-file.txt',
+);
 
 describe('toUnifiedDiff', () => {
   let buffer: atom$TextBuffer = (null: any);

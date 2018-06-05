@@ -9,6 +9,8 @@
  * @format
  */
 
+jest.unmock('log4js');
+
 import {
   deserializeLoggingEvent,
   patchErrorsOfLoggingEvent,

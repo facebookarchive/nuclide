@@ -8,7 +8,7 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-commons-atom",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
-    "test": "atom --dev --test spec"
+    "test": "true"
   },
   "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {

@@ -33,13 +33,13 @@ const SLEEP_INTERVAL_2 = 25;
 
 // eslint-disable-next-line jasmine/no-disabled-tests
 xdescribe('editorScrollTopDebounced', () => {
-  it('debounces scroll event', () => {
+  it('debounces scroll event', async () => {
     const LINES = 1000;
     const mockText = Array(LINES)
       .fill('MOCK LINE\n')
       .reduce((a, b) => a.concat(b));
 
-    waitsForPromise(async () => {
+    await (async () => {
       const editor = await atom.workspace.open();
       editor.setText(mockText);
 
@@ -60,7 +60,7 @@ xdescribe('editorScrollTopDebounced', () => {
       expect(events.length).toBe(1);
 
       editor.destroy();
-    });
+    })();
   });
 });
 
@@ -73,8 +73,8 @@ xdescribe('pane item change events', () => {
   let nonEditor: Object = (null: any);
   let activePaneItems: Observable<mixed> = (null: any);
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       // Since RX manages to dodge the built-in clock mocking we'll use the real clock for these
       // tests :(
       jasmine.useRealClock();
@@ -94,7 +94,7 @@ xdescribe('pane item change events', () => {
       };
       pane.addItem(nonEditor);
       pane.activateItem(editor1);
-    });
+    })();
   });
 
   describe('observeActivePaneItemDebounced', () => {
@@ -102,8 +102,8 @@ xdescribe('pane item change events', () => {
       activePaneItems = observeActivePaneItemDebounced(DEBOUNCE_INTERVAL);
     });
 
-    it('should issue an initial item', () => {
-      waitsForPromise(async () => {
+    it('should issue an initial item', async () => {
+      await (async () => {
         expect(
           await activePaneItems
             .first()
@@ -112,11 +112,11 @@ xdescribe('pane item change events', () => {
             .toArray()
             .toPromise(),
         ).toEqual([editor1]);
-      });
+      })();
     });
 
-    it('should debounce', () => {
-      waitsForPromise(async () => {
+    it('should debounce', async () => {
+      await (async () => {
         const itemsPromise = activePaneItems
           .take(2)
           .toArray()
@@ -128,7 +128,7 @@ xdescribe('pane item change events', () => {
         pane.activateItem(editor3);
 
         expect(await itemsPromise).toEqual([editor1, editor3]);
-      });
+      })();
     });
   });
 
@@ -138,8 +138,8 @@ xdescribe('pane item change events', () => {
       activeEditors = observeActiveEditorsDebounced(DEBOUNCE_INTERVAL);
     });
 
-    it('should return null if the item is not an editor', () => {
-      waitsForPromise(async () => {
+    it('should return null if the item is not an editor', async () => {
+      await (async () => {
         const itemsPromise = activeEditors
           .take(3)
           .toArray()
@@ -152,13 +152,13 @@ xdescribe('pane item change events', () => {
         pane.activateItem(editor2);
 
         expect(await itemsPromise).toEqual([editor1, null, editor2]);
-      });
+      })();
     });
   });
 
   describe('observeTextEditorsPositions', () => {
-    it('cursor moves and non-editors', () => {
-      waitsForPromise(async () => {
+    it('cursor moves and non-editors', async () => {
+      await (async () => {
         const itemsPromise = observeTextEditorsPositions(
           DEBOUNCE_INTERVAL,
           DEBOUNCE_INTERVAL,
@@ -199,7 +199,7 @@ xdescribe('pane item change events', () => {
             position: new Point(1, 1),
           },
         ]);
-      });
+      })();
     });
   });
 });
@@ -209,16 +209,16 @@ xdescribe('editorChangesDebounced', () => {
   let editor: atom$TextEditor = (null: any);
   let editorChanges: Observable<void> = (null: any);
 
-  beforeEach(() => {
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       jasmine.useRealClock();
       editor = await atom.workspace.open();
       editorChanges = editorChangesDebounced(editor, DEBOUNCE_INTERVAL);
-    });
+    })();
   });
 
-  it('debounces changes', () => {
-    waitsForPromise(async () => {
+  it('debounces changes', async () => {
+    await (async () => {
       const eventsPromise = editorChanges
         .takeUntil(Observable.of(null).delay(50))
         .toArray()
@@ -230,6 +230,6 @@ xdescribe('editorChangesDebounced', () => {
       editor.insertNewline();
 
       expect((await eventsPromise).length).toBe(1);
-    });
+    })();
   });
 });
