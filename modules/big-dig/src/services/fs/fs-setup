@@ -11,10 +11,43 @@ from __future__ import print_function
 import logging
 import optparse
 import os
-import shutil
-import subprocess
 import sys
-from datetime import datetime
+
+CODE_FOLDER_NAME_MAP = {
+    'js:node': 'gen-nodejs',
+    'java': 'gen-java',
+    'php': 'gen-php',
+}
+
+def add_header(fpath):
+    """
+    Add facebook copy right header and 'generated' tag for all code files
+    """
+    header = "/**\n" \
+             "* Copyright (c) 2017-present, Facebook, Inc.\n" \
+             "* All rights reserved.\n" \
+             "*\n" \
+             "* This source code is licensed under the BSD-style license found in the\n" \
+             "* LICENSE file in the root directory of this source tree. An additional grant\n" \
+             "* of patent rights can be found in the PATENTS file in the same directory.\n" \
+             "*\n" \
+             "* @{0}\n" \
+             "*/\n\n".format('generated')
+    # append header
+    with open(fpath, 'r+') as f:
+        content = f.read()
+        content = header + content
+        f.seek(0)
+        f.write(content)
+        f.truncate()
+
+def add_copyright_headers_to_code_files(folder_path):
+    for fname in os.listdir(folder_path):
+        fpath = os.path.join(folder_path, fname)
+        if os.path.isdir(fpath):
+            add_copyright_headers_to_code_files(fpath)
+        elif os.path.isfile(fpath):
+            add_header(fpath)
 
 def main():
     # Set up the logging early on in the process.
@@ -28,16 +61,17 @@ def main():
         choices=['js:node', 'java', 'php', 'python', 'perl', 'ruby',],
         default="js:node",
         help="Compile thrift to given language.",)
-    parser.add_option('--dev', action='store_true',
-        help='Generate code for development mode', default=False)
-    parser.add_option('--production', action='store_true',
-        help='Install only production dependencies', default=False)
 
     (options, args) = parser.parse_args()
 
     # compile thrift file and generate thrift code to target language
     print('\n Generating thrift file into source code ...')
     os.system('thrift --gen {0} -r filesystem.thrift'.format(options.language))
+
+    # make sure we add copyright header and the 'generated' file tags
+    folder_name = CODE_FOLDER_NAME_MAP[options.language]
+    add_copyright_headers_to_code_files(os.path.join(os.getcwd(), folder_name))
+
 
 if __name__ == '__main__':
     main()
