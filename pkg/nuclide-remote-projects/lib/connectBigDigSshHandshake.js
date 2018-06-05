@@ -21,6 +21,7 @@ import type {
 
 import {SshHandshake} from 'big-dig/src/client/index';
 import yargs from 'yargs';
+import fs from 'fs-plus';
 import {getNuclideVersion} from '../../commons-node/system-info';
 import {
   SshHandshake as NuclideSshHandshake,
@@ -131,6 +132,10 @@ export default function connectBigDigSshHandshake(
       exclusive = parsed.exclusive;
     }
   }
+
+  // We use fs-plus's normalize() function because it will expand the ~, if present.
+  const expandedPath = fs.normalize(pathToPrivateKey);
+
   // Add an extra flag to indicate the use of big-dig.
   remoteServerCommand += ' --big-dig';
   remoteServerCommand += ` --version=${version}`;
@@ -138,7 +143,7 @@ export default function connectBigDigSshHandshake(
     host,
     sshPort,
     username,
-    pathToPrivateKey,
+    pathToPrivateKey: expandedPath,
     remoteServer: {
       command: remoteServerCommand,
     },
