@@ -132,7 +132,7 @@ describe('generateFixture', () => {
         expect(fixtureFiles.length).toBe(10000);
       })();
     },
-    10000,
+    20000,
   );
 
   it('should work with no files', async () => {

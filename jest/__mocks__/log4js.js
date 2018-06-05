@@ -26,3 +26,11 @@ const logger: log4js$Logger = {
 };
 
 export const getLogger = (name: string): log4js$Logger => logger;
+
+const log4js = {
+  getLogger,
+  // $FlowFixMe
+  configure: jest.fn(),
+};
+
+export default log4js;
