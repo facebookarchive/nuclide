@@ -14,8 +14,8 @@ import type {Subscription} from 'rxjs';
 import type {Transport} from './Proxy';
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
-import {Tunnel} from './Tunnel.js';
-import Encoder from './Encoder.js';
+import {Tunnel} from './Tunnel';
+import Encoder from './Encoder';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';

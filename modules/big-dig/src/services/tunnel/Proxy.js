@@ -11,7 +11,7 @@
  */
 
 import type {Observable, Subscription} from 'rxjs';
-import type {TunnelMessage} from './types.js';
+import type {TunnelMessage} from './types';
 
 import net from 'net';
 import Encoder from './Encoder';

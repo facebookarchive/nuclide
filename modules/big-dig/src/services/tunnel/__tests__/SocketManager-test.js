@@ -12,9 +12,9 @@
 
 declare var jest;
 
-import type {Transport} from '../Proxy.js';
+import type {Transport} from '../Proxy';
 
-import {SocketManager} from '../SocketManager.js';
+import {SocketManager} from '../SocketManager';
 import {TestTransportFactory} from '../__mocks__/util';
 
 import Encoder from '../Encoder';

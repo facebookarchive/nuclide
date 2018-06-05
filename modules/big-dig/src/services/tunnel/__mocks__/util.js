@@ -12,7 +12,7 @@
 
 declare var jest;
 
-import type {Transport} from '../Proxy.js';
+import type {Transport} from '../Proxy';
 
 import {Observable} from 'rxjs';
 
