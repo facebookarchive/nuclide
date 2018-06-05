@@ -1,3 +1,19 @@
+'use strict';
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _ServiceTester;
+
+function _load_ServiceTester() {
+  return _ServiceTester = require('../__mocks__/ServiceTester');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,16 +21,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {ServiceTester} from '../__mocks__/ServiceTester';
-import typeof * as BidiServiceType from '../__mocks__/BidiService';
-
 class I1 {
-  async m(arg: string): Promise<string> {
+  async m(arg) {
     return 'I1:' + arg;
   }
 
@@ -22,7 +34,7 @@ class I1 {
 }
 
 class I2 {
-  async m(arg: string): Promise<string> {
+  async m(arg) {
     return 'I2:' + arg;
   }
 
@@ -31,25 +43,14 @@ class I2 {
 
 describe('BidiService', () => {
   let testHelper;
-  let service: BidiServiceType = (null: any);
+  let service = null;
   beforeEach(async () => {
-    testHelper = new ServiceTester();
-    await testHelper.start(
-      [
-        {
-          name: 'BidiService',
-          definition: nuclideUri.join(
-            __dirname,
-            '../__mocks__/BidiService.def',
-          ),
-          implementation: nuclideUri.join(
-            __dirname,
-            '../__mocks__/BidiService.js',
-          ),
-        },
-      ],
-      'bidi_protocol',
-    );
+    testHelper = new (_ServiceTester || _load_ServiceTester()).ServiceTester();
+    await testHelper.start([{
+      name: 'BidiService',
+      definition: (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/BidiService.def'),
+      implementation: (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/BidiService.js')
+    }], 'bidi_protocol');
     service = testHelper.getRemoteService('BidiService');
   });
 

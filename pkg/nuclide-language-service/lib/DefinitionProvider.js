@@ -1,41 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {DefinitionQueryResult} from 'atom-ide-ui';
-import type {LanguageService} from './LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DefinitionProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _nuclideRemoteConnection;
 
-export type DefinitionConfig = {|
-  version: '0.1.0',
-  priority: number,
-  definitionEventName: string,
-|};
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-export class DefinitionProvider<T: LanguageService> {
-  name: string;
-  priority: number;
-  grammarScopes: Array<string>;
-  _definitionEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+var _nuclideAnalytics;
 
-  constructor(
-    name: string,
-    grammars: Array<string>,
-    priority: number,
-    definitionEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+class DefinitionProvider {
+
+  constructor(name, grammars, priority, definitionEventName, connectionToLanguageService) {
     this.name = name;
     this.priority = priority;
     this.grammarScopes = grammars;
@@ -43,34 +33,14 @@ export class DefinitionProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: DefinitionConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'definitions',
-      config.version,
-      new DefinitionProvider(
-        name,
-        grammars,
-        config.priority,
-        config.definitionEventName,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammars, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('definitions', config.version, new DefinitionProvider(name, grammars, config.priority, config.definitionEventName, connectionToLanguageService));
   }
 
-  async getDefinition(
-    editor: TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return trackTiming(this._definitionEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  async getDefinition(editor, position) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._definitionEventName, async () => {
+      const fileVersion = await (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return null;
       }
@@ -78,3 +48,13 @@ export class DefinitionProvider<T: LanguageService> {
     });
   }
 }
+exports.DefinitionProvider = DefinitionProvider; /**
+                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                  * All rights reserved.
+                                                  *
+                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                  * the root directory of this source tree.
+                                                  *
+                                                  *  strict-local
+                                                  * @format
+                                                  */

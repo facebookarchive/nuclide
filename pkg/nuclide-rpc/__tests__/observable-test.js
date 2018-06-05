@@ -1,26 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 describe('ConnectableObservable', () => {
   it('connect', () => {
     let created = 0;
     let unsubscribed = 0;
-    const obs = Observable.create(observer => {
+    const obs = _rxjsBundlesRxMinJs.Observable.create(observer => {
       created += 1;
       return {
         unsubscribe: () => {
           unsubscribed += 1;
-        },
+        }
       };
     });
     const connectable = obs.publish();
@@ -61,12 +52,12 @@ describe('ConnectableObservable', () => {
   it('refcount', () => {
     let created = 0;
     let unsubscribed = 0;
-    const obs = Observable.create(observer => {
+    const obs = _rxjsBundlesRxMinJs.Observable.create(observer => {
       created += 1;
       return {
         unsubscribe: () => {
           unsubscribed += 1;
-        },
+        }
       };
     });
     const connectable = obs.publish();
@@ -95,4 +86,13 @@ describe('ConnectableObservable', () => {
   });
 
   // TODO: Test disconnect when a subscription is outstanding.
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict
+     * @format
+     */

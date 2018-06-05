@@ -1,48 +1,76 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NotifiersByConnection = undefined;
 
-import {
-  getServiceByConnection,
-  ServerConnection,
-  ConnectionCache,
-} from '../../nuclide-remote-connection';
+var _nuclideRemoteConnection;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
-import {getLogger} from 'log4js';
-import {FileEventKind} from '../../nuclide-open-files-rpc';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {areSetsEqual} from 'nuclide-commons/collection';
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-const logger = getLogger('nuclide-open-files');
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../../modules/nuclide-commons/event');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-open-files'); /**
+                                                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                  * All rights reserved.
+                                                                                  *
+                                                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                                                  * the root directory of this source tree.
+                                                                                  *
+                                                                                  * 
+                                                                                  * @format
+                                                                                  */
 
 const RESYNC_TIMEOUT_MS = 2000;
 
-function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
-  return getServiceByConnection(OPEN_FILES_SERVICE, connection);
+function getOpenFilesService(connection) {
+  return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)((_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).OPEN_FILES_SERVICE, connection);
 }
 
-function uriMatchesConnection(
-  uri: NuclideUri,
-  connection: ?ServerConnection,
-): boolean {
+function uriMatchesConnection(uri, connection) {
   if (connection == null) {
-    return nuclideUri.isLocal(uri);
+    return (_nuclideUri || _load_nuclideUri()).default.isLocal(uri);
   } else {
-    return connection.getRemoteHostname() === nuclideUri.getHostnameOpt(uri);
+    return connection.getRemoteHostname() === (_nuclideUri || _load_nuclideUri()).default.getHostnameOpt(uri);
   }
 }
 
@@ -51,20 +79,12 @@ function uriMatchesConnection(
 // Also handles sending 'close' events to the FileNotifier so that
 // the per-Buffer BufferSubscription does not need to live past
 // the buffer being destroyed.
-export class NotifiersByConnection {
-  _notifiers: ConnectionCache<FileNotifier>;
-  _subscriptions: ConnectionCache<IDisposable>;
-  _getService: (connection: ?ServerConnection) => OpenFilesService;
+class NotifiersByConnection {
 
-  constructor(
-    getService: (
-      connection: ?ServerConnection,
-    ) => OpenFilesService = getOpenFilesService,
-  ) {
+  constructor(getService = getOpenFilesService) {
     this._getService = getService;
-    const filterByConnection = (connection, dirs) =>
-      new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
-    this._notifiers = new ConnectionCache(connection => {
+    const filterByConnection = (connection, dirs) => new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
+    this._notifiers = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(connection => {
       const result = this._getService(connection).initialize();
       // NOTE: It's important to use `await` here rather than .then.
       // v8's native async/await implementation treats .then and await differently.
@@ -77,19 +97,12 @@ export class NotifiersByConnection {
       onDirectoriesChanged();
       return result;
     });
-    this._subscriptions = new ConnectionCache(connection => {
-      const subscription = observableFromSubscribeFunction(cb =>
-        atom.project.onDidChangePaths(cb),
-      )
-        .map(dirs => filterByConnection(connection, dirs))
-        .distinctUntilChanged(areSetsEqual)
-        .subscribe(async dirs => {
-          const notifier = await this._notifiers.get(connection);
-          notifier.onDirectoriesChanged(dirs);
-        });
-      return Promise.resolve(
-        new UniversalDisposable(() => subscription.unsubscribe()),
-      );
+    this._subscriptions = new (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).ConnectionCache(connection => {
+      const subscription = (0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.project.onDidChangePaths(cb)).map(dirs => filterByConnection(connection, dirs)).distinctUntilChanged((_collection || _load_collection()).areSetsEqual).subscribe(async dirs => {
+        const notifier = await this._notifiers.get(connection);
+        notifier.onDirectoriesChanged(dirs);
+      });
+      return Promise.resolve(new (_UniversalDisposable || _load_UniversalDisposable()).default(() => subscription.unsubscribe()));
     });
   }
 
@@ -100,24 +113,24 @@ export class NotifiersByConnection {
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  get(buffer: atom$TextBuffer): ?Promise<FileNotifier> {
+  get(buffer) {
     return this.getForUri(buffer.getPath());
   }
 
-  getForConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+  getForConnection(connection) {
     return this._notifiers.get(connection);
   }
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  getForUri(path: ?NuclideUri): ?Promise<FileNotifier> {
+  getForUri(path) {
     return this._notifiers.getForUri(path);
   }
 
   // Sends the close message to the appropriate FileNotifier.
   // Will keep trying to send until the send succeeds or
   // the corresponding ServerConnection is closed.
-  sendClose(filePath: NuclideUri, version: number): void {
+  sendClose(filePath, version) {
     if (filePath === '') {
       return;
     }
@@ -130,20 +143,17 @@ export class NotifiersByConnection {
         try {
           const n = await notifier;
           const message = {
-            kind: FileEventKind.CLOSE,
+            kind: (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.CLOSE,
             fileVersion: {
               notifier: n,
               filePath,
-              version,
-            },
+              version
+            }
           };
 
           await message.fileVersion.notifier.onFileEvent(message);
         } catch (e) {
-          logger.error(
-            `Error sending file close event: ${filePath} ${version}`,
-            e,
-          );
+          logger.error(`Error sending file close event: ${filePath} ${version}`, e);
           setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
         }
       }
@@ -152,3 +162,4 @@ export class NotifiersByConnection {
     sendMessage();
   }
 }
+exports.NotifiersByConnection = NotifiersByConnection;

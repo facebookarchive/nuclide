@@ -1,47 +1,56 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Subscription} from 'rxjs';
-import type {Transport} from './Proxy';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SocketManager = undefined;
 
-import net from 'net';
-import {getLogger} from 'log4js';
-import Encoder from './Encoder';
+var _net = _interopRequireDefault(require('net'));
 
-const logger = getLogger('tunnel-socket-manager');
+var _log4js;
 
-export class SocketManager {
-  _port: number;
-  _transport: Transport;
-  _subscription: Subscription;
-  _socketByClientId: Map<number, net.Socket>;
-  _tunnelId: string;
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
 
-  constructor(tunnelId: string, port: number, transport: Transport) {
+var _Encoder;
+
+function _load_Encoder() {
+  return _Encoder = _interopRequireDefault(require('./Encoder'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('tunnel-socket-manager'); /**
+                                                                                     * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                     * All rights reserved.
+                                                                                     *
+                                                                                     * This source code is licensed under the BSD-style license found in the
+                                                                                     * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                     * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                     *
+                                                                                     * 
+                                                                                     * @format
+                                                                                     */
+
+class SocketManager {
+
+  constructor(tunnelId, port, transport) {
     this._tunnelId = tunnelId;
     this._port = port;
     this._transport = transport;
     this._socketByClientId = new Map();
   }
 
-  receive(message: Object) {
+  receive(message) {
     this._handleMessage(message);
   }
 
-  getId(): string {
+  getId() {
     return this._tunnelId;
   }
 
-  _handleMessage(message: Object) {
+  _handleMessage(message) {
     if (message.event === 'connection') {
       this._createConnection(message);
     } else if (message.event === 'data') {
@@ -49,8 +58,8 @@ export class SocketManager {
     }
   }
 
-  _createConnection(message: Object) {
-    const socket = net.createConnection({port: this._port});
+  _createConnection(message) {
+    const socket = _net.default.createConnection({ port: this._port });
 
     socket.on('error', err => {
       logger.error(err);
@@ -61,14 +70,14 @@ export class SocketManager {
         event: 'data',
         arg: data,
         clientId: message.clientId,
-        tunnelId: this._tunnelId,
+        tunnelId: this._tunnelId
       });
     });
 
     this._socketByClientId.set(message.clientId, socket);
   }
 
-  _forwardData(message: Object) {
+  _forwardData(message) {
     const socket = this._socketByClientId.get(message.clientId);
     if (socket != null) {
       socket.write(message.arg);
@@ -77,8 +86,8 @@ export class SocketManager {
     }
   }
 
-  _sendMessage(msg: Object): void {
-    this._transport.send(Encoder.encode(msg));
+  _sendMessage(msg) {
+    this._transport.send((_Encoder || _load_Encoder()).default.encode(msg));
   }
 
   close() {
@@ -90,3 +99,4 @@ export class SocketManager {
     });
   }
 }
+exports.SocketManager = SocketManager;

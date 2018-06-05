@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.provideRaiseNativeNotification = provideRaiseNativeNotification;
+exports.deactivate = deactivate;
+
+var _electron = _interopRequireDefault(require('electron'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/feature-config'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,58 +30,38 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import electron from 'electron';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import featureConfig from 'nuclide-commons-atom/feature-config';
+const { remote } = _electron.default;
 
-const {remote} = electron;
-invariant(remote != null);
-
-let subscriptions: UniversalDisposable = (null: any);
-
-export function activate(state: ?Object): void {
-  subscriptions = new UniversalDisposable(
-    // Listen for Atom notifications:
-    atom.notifications.onDidAddNotification(proxyToNativeNotification),
-  );
+if (!(remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
 }
 
-function proxyToNativeNotification(notification: atom$Notification): void {
+let subscriptions = null;
+
+function activate(state) {
+  subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(
+  // Listen for Atom notifications:
+  atom.notifications.onDidAddNotification(proxyToNativeNotification));
+}
+
+function proxyToNativeNotification(notification) {
   const options = notification.getOptions();
 
   // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
-  if (
-    !options.nativeFriendly &&
-    featureConfig.get('nuclide-notifications.onlyNativeFriendly')
-  ) {
+  if (!options.nativeFriendly && (_featureConfig || _load_featureConfig()).default.get('nuclide-notifications.onlyNativeFriendly')) {
     return;
   }
 
-  raiseNativeNotification(
-    `${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`,
-    options.detail,
-    0,
-    false,
-  );
+  raiseNativeNotification(`${upperCaseFirst(notification.getType())}: ${notification.getMessage()}`, options.detail, 0, false);
 }
 
-function raiseNativeNotification(
-  title: string,
-  body: string,
-  timeout: number,
-  raiseIfAtomHasFocus: boolean = false,
-): ?IDisposable {
+function raiseNativeNotification(title, body, timeout, raiseIfAtomHasFocus = false) {
   const sendNotification = () => {
-    if (
-      raiseIfAtomHasFocus === false &&
-      !featureConfig.get('nuclide-notifications.whenFocused') &&
-      remote.getCurrentWindow().isFocused()
-    ) {
+    if (raiseIfAtomHasFocus === false && !(_featureConfig || _load_featureConfig()).default.get('nuclide-notifications.whenFocused') && remote.getCurrentWindow().isFocused()) {
       return;
     }
 
@@ -67,7 +72,7 @@ function raiseNativeNotification(
       onclick: () => {
         // Windows does not properly bring the window into focus.
         remote.getCurrentWindow().show();
-      },
+      }
     });
   };
 
@@ -84,22 +89,22 @@ function raiseNativeNotification(
         clearTimeout(timeoutId);
       });
 
-      return new UniversalDisposable(() => clearTimeout(timeoutId));
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => clearTimeout(timeoutId));
     }
   }
 
   return null;
 }
 
-export function provideRaiseNativeNotification(): typeof raiseNativeNotification {
+function provideRaiseNativeNotification() {
   return raiseNativeNotification;
 }
 
-export function deactivate(): void {
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-function upperCaseFirst(str: string): string {
+function upperCaseFirst(str) {
   return `${str[0].toUpperCase()}${str.slice(1)}`;
 }

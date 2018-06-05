@@ -1,101 +1,121 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ClangCompileResult} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {LinterMessage} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {track, trackTiming} from '../../nuclide-analytics';
-import {isHeaderFile} from '../../nuclide-clang-rpc/lib/utils';
-import {DEFAULT_FLAGS_WARNING, HEADER_DEFAULT_FLAGS_WARNING} from './constants';
-import {getDiagnostics} from './libclang';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
+var _nuclideAnalytics;
 
-const IDENTIFIER_REGEX = /[a-z0-9_]+/gi;
-
-function isValidRange(clangRange: atom$Range): boolean {
-  // Some ranges are unbounded/invalid (end with -1) or empty.
-  return (
-    clangRange.start.row !== -1 &&
-    clangRange.end.row !== -1 &&
-    !clangRange.start.isEqual(clangRange.end)
-  );
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
 }
 
-function getRangeFromPoint(
-  editor: atom$TextEditor,
-  location: atom$Point,
-): atom$Range {
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../../nuclide-clang-rpc/lib/utils');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _libclang;
+
+function _load_libclang() {
+  return _libclang = require('./libclang');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/feature-config'));
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../../modules/nuclide-commons-atom/range');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const IDENTIFIER_REGEX = /[a-z0-9_]+/gi; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
+
+function isValidRange(clangRange) {
+  // Some ranges are unbounded/invalid (end with -1) or empty.
+  return clangRange.start.row !== -1 && clangRange.end.row !== -1 && !clangRange.start.isEqual(clangRange.end);
+}
+
+function getRangeFromPoint(editor, location) {
   if (location.row < 0) {
     return editor.getBuffer().rangeForRow(0);
   }
   // Attempt to match a C/C++ identifier at the given location.
-  const word = wordAtPosition(editor, location, IDENTIFIER_REGEX);
+  const word = (0, (_range || _load_range()).wordAtPosition)(editor, location, IDENTIFIER_REGEX);
   if (word != null) {
     return word.range;
   }
   return editor.getBuffer().rangeForRow(location.row);
 }
 
-export default class ClangLinter {
-  static lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
-    return trackTiming('nuclide-clang-atom.fetch-diagnostics', () =>
-      ClangLinter._lint(textEditor),
-    );
+class ClangLinter {
+  static lint(textEditor) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-clang-atom.fetch-diagnostics', () => ClangLinter._lint(textEditor));
   }
 
-  static async _lint(
-    textEditor: atom$TextEditor,
-  ): Promise<Array<LinterMessage>> {
+  static async _lint(textEditor) {
     const filePath = textEditor.getPath();
     if (filePath == null) {
       return [];
     }
 
     try {
-      const diagnostics = await getDiagnostics(textEditor);
+      const diagnostics = await (0, (_libclang || _load_libclang()).getDiagnostics)(textEditor);
       // Editor may have been destroyed during the fetch.
       if (diagnostics == null || textEditor.isDestroyed()) {
         return [];
       }
 
-      track('nuclide-clang-atom.fetch-diagnostics', {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-clang-atom.fetch-diagnostics', {
         filePath,
         count: String(diagnostics.diagnostics.length),
-        accurateFlags: String(diagnostics.accurateFlags),
+        accurateFlags: String(diagnostics.accurateFlags)
       });
       return ClangLinter._processDiagnostics(diagnostics, textEditor);
     } catch (error) {
-      getLogger('nuclide-clang').error(
-        `ClangLinter: error linting ${filePath}`,
-        error,
-      );
+      (0, (_log4js || _load_log4js()).getLogger)('nuclide-clang').error(`ClangLinter: error linting ${filePath}`, error);
       return [];
     }
   }
 
-  static _processDiagnostics(
-    data: ClangCompileResult,
-    editor: atom$TextEditor,
-  ): Array<LinterMessage> {
+  static _processDiagnostics(data, editor) {
     const result = [];
     const buffer = editor.getBuffer();
     const bufferPath = buffer.getPath();
-    invariant(bufferPath != null);
-    if (
-      data.accurateFlags ||
-      featureConfig.get('nuclide-clang.defaultDiagnostics')
-    ) {
+
+    if (!(bufferPath != null)) {
+      throw new Error('Invariant violation: "bufferPath != null"');
+    }
+
+    if (data.accurateFlags || (_featureConfig || _load_featureConfig()).default.get('nuclide-clang.defaultDiagnostics')) {
       data.diagnostics.forEach(diagnostic => {
         // We show only warnings, errors and fatals (2, 3 and 4, respectively).
         if (diagnostic.severity < 2) {
@@ -121,7 +141,7 @@ export default class ClangLinter {
               text: child.spelling,
               // flowlint-next-line sketchy-null-string:off
               filePath: child.location.file || bufferPath,
-              range: getRangeFromPoint(editor, child.location.point),
+              range: getRangeFromPoint(editor, child.location.point)
             };
           });
         }
@@ -133,7 +153,7 @@ export default class ClangLinter {
           if (fixit != null) {
             fix = {
               range: fixit.range.range,
-              newText: fixit.value,
+              newText: fixit.value
             };
           }
         }
@@ -144,20 +164,19 @@ export default class ClangLinter {
           text: diagnostic.spelling,
           range,
           trace,
-          fix,
+          fix
         });
       });
     } else {
       result.push({
         type: 'Info',
         filePath: bufferPath,
-        text: isHeaderFile(bufferPath)
-          ? HEADER_DEFAULT_FLAGS_WARNING
-          : DEFAULT_FLAGS_WARNING,
-        range: buffer.rangeForRow(0),
+        text: (0, (_utils || _load_utils()).isHeaderFile)(bufferPath) ? (_constants || _load_constants()).HEADER_DEFAULT_FLAGS_WARNING : (_constants || _load_constants()).DEFAULT_FLAGS_WARNING,
+        range: buffer.rangeForRow(0)
       });
     }
 
     return result;
   }
 }
+exports.default = ClangLinter;

@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getInitializationOptions = getInitializationOptions;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,20 +28,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {CqueryProject} from './types';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import os from 'os';
-import fsPromise from 'nuclide-commons/fsPromise';
 
 const CQUERY_CACHE_DIR = '.cquery_cache';
 
 // TODO pelmers: expose some of these in the atom config
-function staticInitializationOptions(): Object {
+function staticInitializationOptions() {
   // Copied from the corresponding vs-code plugin
   return {
     indexWhitelist: [],
@@ -40,24 +57,16 @@ function staticInitializationOptions(): Object {
     codeLensOnLocalVariables: false,
     enableSnippetInsertion: true,
     progressReportFrequencyMs: 500,
-    clientVersion: 3,
+    clientVersion: 3
   };
 }
 
-export async function getInitializationOptions(
-  project: CqueryProject,
-): Promise<?Object> {
+async function getInitializationOptions(project) {
   let options;
   if (project.hasCompilationDb) {
-    options = await getInitializationOptionsWithCompilationDb(
-      project.projectRoot,
-      project.compilationDbDir,
-    );
+    options = await getInitializationOptionsWithCompilationDb(project.projectRoot, project.compilationDbDir);
   } else if (project.defaultFlags != null) {
-    options = await getInitializationOptionsWithoutCompilationDb(
-      project.projectRoot,
-      project.defaultFlags,
-    );
+    options = await getInitializationOptionsWithoutCompilationDb(project.projectRoot, project.defaultFlags);
   }
   if (options != null) {
     try {
@@ -68,35 +77,22 @@ export async function getInitializationOptions(
   return options;
 }
 
-async function getInitializationOptionsWithCompilationDb(
-  projectRoot: string,
-  compilationDbDir: string,
-): Promise<Object> {
-  return {
-    ...staticInitializationOptions(),
+async function getInitializationOptionsWithCompilationDb(projectRoot, compilationDbDir) {
+  return Object.assign({}, staticInitializationOptions(), {
     compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: await createCacheDir(compilationDbDir),
-  };
+    cacheDirectory: await createCacheDir(compilationDbDir)
+  });
 }
 
-async function getInitializationOptionsWithoutCompilationDb(
-  projectRoot: string,
-  defaultFlags: string[],
-): Promise<Object> {
-  return {
-    ...staticInitializationOptions(),
+async function getInitializationOptionsWithoutCompilationDb(projectRoot, defaultFlags) {
+  return Object.assign({}, staticInitializationOptions(), {
     extraClangArguments: defaultFlags,
-    cacheDirectory: await createCacheDir(projectRoot),
-  };
+    cacheDirectory: await createCacheDir(projectRoot)
+  });
 }
 
-async function createCacheDir(rootDir: string) {
-  const dir = nuclideUri.join(
-    os.tmpdir(),
-    'cquery',
-    nuclideUri.split(rootDir).join('@'),
-    CQUERY_CACHE_DIR,
-  );
-  await fsPromise.mkdirp(dir);
+async function createCacheDir(rootDir) {
+  const dir = (_nuclideUri || _load_nuclideUri()).default.join(_os.default.tmpdir(), 'cquery', (_nuclideUri || _load_nuclideUri()).default.split(rootDir).join('@'), CQUERY_CACHE_DIR);
+  await (_fsPromise || _load_fsPromise()).default.mkdirp(dir);
   return dir;
 }

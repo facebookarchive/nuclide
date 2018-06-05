@@ -1,38 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {LanguageStatusProvider} from './types';
+var _createPackage;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {LanguageStatusManager} from './LanguageStatusManager';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/createPackage'));
+}
+
+var _LanguageStatusManager;
+
+function _load_LanguageStatusManager() {
+  return _LanguageStatusManager = require('./LanguageStatusManager');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _languageStatusManager: LanguageStatusManager;
 
   constructor() {
-    this._languageStatusManager = new LanguageStatusManager();
+    this._languageStatusManager = new (_LanguageStatusManager || _load_LanguageStatusManager()).LanguageStatusManager();
   }
 
   dispose() {
     this._languageStatusManager.dispose();
   }
 
-  consumeLanguageStatusProvider(provider: LanguageStatusProvider): IDisposable {
+  consumeLanguageStatusProvider(provider) {
     return this._languageStatusManager.addProvider(provider);
   }
 
   // FOR TESTING
-  triggerProviderChange(): void {
+  triggerProviderChange() {
     this._languageStatusManager._providersChanged.next();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

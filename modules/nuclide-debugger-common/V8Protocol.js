@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,35 +20,18 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {MessageProcessor} from './types';
-import * as DebugProtocol from 'vscode-debugprotocol';
 
 const TWO_CRLF = '\r\n\r\n';
 
 /**
  * JSON-RPC protocol implementation over a read and write buffers.
  */
-export default class V8Protocol {
-  _id: string;
-  _output: (input: string) => mixed;
-  _sequence: number;
-  _pendingRequests: Map<number, (e: DebugProtocol.Response) => void>;
-  _rawData: Buffer;
-  _contentLength: number;
-  _logger: log4js$Logger;
-  _sendPreprocessors: MessageProcessor[];
-  _receivePreprocessors: MessageProcessor[];
+class V8Protocol {
 
-  constructor(
-    id: string,
-    logger: log4js$Logger,
-    sendPreprocessors: MessageProcessor[],
-    receivePreprocessors: MessageProcessor[],
-  ) {
+  constructor(id, logger, sendPreprocessors, receivePreprocessors) {
     this._id = id;
     this._logger = logger;
     this._sendPreprocessors = sendPreprocessors;
@@ -45,30 +42,27 @@ export default class V8Protocol {
     this._rawData = new Buffer(0);
   }
 
-  getId(): string {
+  getId() {
     return this._id;
   }
 
-  onServerError(error: Error): void {
+  onServerError(error) {
     throw new Error('No implementation found!');
   }
 
-  onEvent(event: DebugProtocol.Event): void {
+  onEvent(event) {
     throw new Error('No implementation found!');
   }
 
-  async dispatchRequest(
-    request: DebugProtocol.Request,
-    response: DebugProtocol.Response,
-  ): Promise<void> {
+  async dispatchRequest(request, response) {
     throw new Error('No implementation found!');
   }
 
-  setOutput(output: (input: string) => mixed): void {
+  setOutput(output) {
     this._output = output;
   }
 
-  send(command: string, args: any): Promise<DebugProtocol.Response> {
+  send(command, args) {
     return new Promise((resolve, reject) => {
       this._doSend(command, args, result => {
         if (result.success) {
@@ -80,25 +74,17 @@ export default class V8Protocol {
     });
   }
 
-  sendResponse(response: DebugProtocol.Response): void {
+  sendResponse(response) {
     if (response.seq > 0) {
-      this._logger.error(
-        `attempt to send more than one response for command ${
-          response.command
-        }`,
-      );
+      this._logger.error(`attempt to send more than one response for command ${response.command}`);
     } else {
       this._sendMessage('response', response);
     }
   }
 
-  _doSend(
-    command: string,
-    args: any,
-    clb: (result: DebugProtocol.Response) => void,
-  ): void {
-    const request: any = {
-      command,
+  _doSend(command, args, clb) {
+    const request = {
+      command
     };
     if (args && Object.keys(args).length > 0) {
       request.arguments = args;
@@ -112,11 +98,8 @@ export default class V8Protocol {
     }
   }
 
-  _sendMessage(
-    typ: 'request' | 'response' | 'event',
-    message: DebugProtocol.ProtocolMessage,
-  ): void {
-    message.type = (typ: any);
+  _sendMessage(typ, message) {
+    message.type = typ;
     message.seq = this._sequence++;
 
     this._sendPreprocessors.forEach(processor => processor(message));
@@ -126,16 +109,12 @@ export default class V8Protocol {
     this._output('Content-Length: ' + length.toString() + TWO_CRLF + json);
   }
 
-  handleData(data: Buffer): void {
+  handleData(data) {
     this._rawData = Buffer.concat([this._rawData, data]);
     while (true) {
       if (this._contentLength >= 0) {
         if (this._rawData.length >= this._contentLength) {
-          const message = this._rawData.toString(
-            'utf8',
-            0,
-            this._contentLength,
-          );
+          const message = this._rawData.toString('utf8', 0, this._contentLength);
           this._rawData = this._rawData.slice(this._contentLength);
           this._contentLength = -1;
           if (message.length > 0) {
@@ -159,17 +138,17 @@ export default class V8Protocol {
     }
   }
 
-  _dispatch(body: string): void {
+  _dispatch(body) {
     try {
       const rawData = JSON.parse(body);
       this._receivePreprocessors.forEach(processor => processor(rawData));
 
       switch (rawData.type) {
         case 'event':
-          this.onEvent((rawData: DebugProtocol.Event));
+          this.onEvent(rawData);
           break;
         case 'response':
-          const response: DebugProtocol.Response = rawData;
+          const response = rawData;
           const clb = this._pendingRequests.get(response.request_seq);
           if (clb) {
             this._pendingRequests.delete(response.request_seq);
@@ -177,13 +156,13 @@ export default class V8Protocol {
           }
           break;
         case 'request':
-          const request: DebugProtocol.Request = rawData;
-          const resp: DebugProtocol.Response = {
+          const request = rawData;
+          const resp = {
             type: 'response',
             seq: 0,
             command: request.command,
             request_seq: request.seq,
-            success: true,
+            success: true
           };
           this.dispatchRequest(request, resp);
           break;
@@ -193,3 +172,4 @@ export default class V8Protocol {
     }
   }
 }
+exports.default = V8Protocol;

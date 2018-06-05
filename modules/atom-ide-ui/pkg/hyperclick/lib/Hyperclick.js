@@ -1,3 +1,45 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _HyperclickForTextEditor;
+
+function _load_HyperclickForTextEditor() {
+  return _HyperclickForTextEditor = _interopRequireDefault(require('./HyperclickForTextEditor'));
+}
+
+var _SuggestionList;
+
+function _load_SuggestionList() {
+  return _SuggestionList = _interopRequireDefault(require('./SuggestionList'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../../../nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('../../../../nuclide-commons-atom/range');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Construct this object to enable Hyperclick in the Atom workspace.
+ * Call `dispose` to disable the feature.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,54 +48,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {HyperclickSuggestion, HyperclickProvider} from './types';
-
-import HyperclickForTextEditor from './HyperclickForTextEditor';
-import SuggestionList from './SuggestionList';
-
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
-
-/**
- * Construct this object to enable Hyperclick in the Atom workspace.
- * Call `dispose` to disable the feature.
- */
-export default class Hyperclick {
-  _providers: ProviderRegistry<HyperclickProvider>;
-  _suggestionList: SuggestionList;
-  _hyperclickForTextEditors: Set<HyperclickForTextEditor>;
-  _textEditorSubscription: IDisposable;
+class Hyperclick {
 
   constructor() {
-    this._providers = new ProviderRegistry();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
 
-    this._suggestionList = new SuggestionList();
+    this._suggestionList = new (_SuggestionList || _load_SuggestionList()).default();
     this._hyperclickForTextEditors = new Set();
-    this._textEditorSubscription = atom.workspace.observeTextEditors(
-      this.observeTextEditor.bind(this),
-    );
+    this._textEditorSubscription = atom.workspace.observeTextEditors(this.observeTextEditor.bind(this));
   }
 
-  observeTextEditor(textEditor: TextEditor): IDisposable {
-    const hyperclickForTextEditor = new HyperclickForTextEditor(
-      textEditor,
-      this,
-    );
+  observeTextEditor(textEditor) {
+    const hyperclickForTextEditor = new (_HyperclickForTextEditor || _load_HyperclickForTextEditor()).default(textEditor, this);
     this._hyperclickForTextEditors.add(hyperclickForTextEditor);
-    const disposable = new UniversalDisposable(() => {
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       hyperclickForTextEditor.dispose();
       this._hyperclickForTextEditors.delete(hyperclickForTextEditor);
     });
-    return new UniversalDisposable(
-      textEditor.onDidDestroy(() => disposable.dispose()),
-      disposable,
-    );
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(textEditor.onDidDestroy(() => disposable.dispose()), disposable);
   }
 
   dispose() {
@@ -63,13 +79,9 @@ export default class Hyperclick {
     this._hyperclickForTextEditors.clear();
   }
 
-  addProvider(
-    provider: HyperclickProvider | Array<HyperclickProvider>,
-  ): IDisposable {
+  addProvider(provider) {
     if (Array.isArray(provider)) {
-      return new UniversalDisposable(
-        ...provider.map(p => this._providers.addProvider(p)),
-      );
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(...provider.map(p => this._providers.addProvider(p)));
     }
     return this._providers.addProvider(provider);
   }
@@ -77,34 +89,28 @@ export default class Hyperclick {
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  async getSuggestion(
-    textEditor: TextEditor,
-    position: atom$Point,
-  ): Promise<?HyperclickSuggestion> {
-    for (const provider of this._providers.getAllProvidersForEditor(
-      textEditor,
-    )) {
+  async getSuggestion(textEditor, position) {
+    for (const provider of this._providers.getAllProvidersForEditor(textEditor)) {
       let result;
       if (provider.getSuggestion) {
         // eslint-disable-next-line no-await-in-loop
         result = await provider.getSuggestion(textEditor, position);
       } else if (provider.getSuggestionForWord) {
-        const match = wordAtPosition(textEditor, position, provider.wordRegExp);
+        const match = (0, (_range || _load_range()).wordAtPosition)(textEditor, position, provider.wordRegExp);
         if (match == null) {
           continue;
         }
-        const {wordMatch, range} = match;
-        invariant(provider.getSuggestionForWord);
+        const { wordMatch, range } = match;
+
+        if (!provider.getSuggestionForWord) {
+          throw new Error('Invariant violation: "provider.getSuggestionForWord"');
+        }
         // eslint-disable-next-line no-await-in-loop
-        result = await provider.getSuggestionForWord(
-          textEditor,
-          wordMatch[0],
-          range,
-        );
+
+
+        result = await provider.getSuggestionForWord(textEditor, wordMatch[0], range);
       } else {
-        throw new Error(
-          'Hyperclick must have either `getSuggestion` or `getSuggestionForWord`',
-        );
+        throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`');
       }
       if (result != null) {
         return result;
@@ -112,10 +118,8 @@ export default class Hyperclick {
     }
   }
 
-  showSuggestionList(
-    textEditor: TextEditor,
-    suggestion: HyperclickSuggestion,
-  ): void {
+  showSuggestionList(textEditor, suggestion) {
     this._suggestionList.show(textEditor, suggestion);
   }
 }
+exports.default = Hyperclick;

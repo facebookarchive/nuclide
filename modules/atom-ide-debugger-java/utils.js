@@ -1,3 +1,85 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NUCLIDE_DEBUGGER_DEV_GK = undefined;
+exports.getJavaConfig = getJavaConfig;
+exports.getCustomControlButtonsForJavaSourcePaths = getCustomControlButtonsForJavaSourcePaths;
+exports.getDefaultSourceSearchPaths = getDefaultSourceSearchPaths;
+exports.getSavedPathsFromConfig = getSavedPathsFromConfig;
+exports.persistSourcePathsToConfig = persistSourcePathsToConfig;
+exports.getDialogValues = getDialogValues;
+exports.getSourcePathString = getSourcePathString;
+exports.getSourcePathClickSubscriptionsOnVspInstance = getSourcePathClickSubscriptionsOnVspInstance;
+exports.getSourcePathClickSubscriptions = getSourcePathClickSubscriptions;
+exports.resolveConfiguration = resolveConfiguration;
+exports.setSourcePathsService = setSourcePathsService;
+exports.setRpcService = setRpcService;
+exports.getJavaDebuggerHelpersServiceByNuclideUri = getJavaDebuggerHelpersServiceByNuclideUri;
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('../nuclide-commons-atom/feature-config'));
+}
+
+var _showModal;
+
+function _load_showModal() {
+  return _showModal = _interopRequireDefault(require('../nuclide-commons-ui/showModal'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../nuclide-commons/UniversalDisposable'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../nuclide-debugger-common/constants');
+}
+
+var _JavaDebuggerHelpersService;
+
+function _load_JavaDebuggerHelpersService() {
+  return _JavaDebuggerHelpersService = _interopRequireWildcard(require('./JavaDebuggerHelpersService'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _SourceFilePathsModal;
+
+function _load_SourceFilePathsModal() {
+  return _SourceFilePathsModal = require('./SourceFilePathsModal');
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = require('../nuclide-commons/analytics');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,115 +88,78 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {ISession} from 'atom-ide-ui/pkg/atom-ide-debugger/lib/types';
-import type {
-  AutoGenConfig,
-  IProcessConfig,
-  ControlButtonSpecification,
-  IVspInstance,
-} from 'nuclide-debugger-common/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerSourcePathsService} from './types';
+let _sourcePathsService;
+let _rpcService = null;
 
-import typeof * as JavaDebuggerHelpersService from './JavaDebuggerHelpersService';
+const NUCLIDE_DEBUGGER_DEV_GK = exports.NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import showModal from 'nuclide-commons-ui/showModal';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Subject, Observable} from 'rxjs';
-import * as React from 'react';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import * as JavaDebuggerHelpersServiceLocal from './JavaDebuggerHelpersService';
-import nullthrows from 'nullthrows';
-import {SourceFilePathsModal} from './SourceFilePathsModal';
-import {track} from 'nuclide-commons/analytics';
-
-let _sourcePathsService: ?DebuggerSourcePathsService;
-let _rpcService: ?nuclide$RpcService = null;
-
-export const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
-
-export function getJavaConfig(): AutoGenConfig {
+function getJavaConfig() {
   const entryPointClass = {
     name: 'entryPointClass',
     type: 'string',
     description: 'Input the Java entry point name you want to launch',
     required: true,
-    visible: true,
+    visible: true
   };
   const classPath = {
     name: 'classPath',
     type: 'string',
     description: 'Java class path',
     required: true,
-    visible: true,
+    visible: true
   };
   const javaJdwpPort = {
     name: 'javaJdwpPort',
     type: 'number',
     description: 'Java debugger port',
     required: true,
-    visible: true,
+    visible: true
   };
   return {
     launch: {
       launch: true,
-      vsAdapterType: VsAdapterTypes.JAVA,
+      vsAdapterType: (_constants || _load_constants()).VsAdapterTypes.JAVA,
       threads: true,
       properties: [entryPointClass, classPath],
       cwdPropertyName: 'cwd',
-      header: null,
+      header: null
     },
     attach: {
       launch: false,
-      vsAdapterType: VsAdapterTypes.JAVA,
+      vsAdapterType: (_constants || _load_constants()).VsAdapterTypes.JAVA,
       threads: true,
       properties: [javaJdwpPort],
-      header: null,
-    },
+      header: null
+    }
   };
 }
 
-export function getCustomControlButtonsForJavaSourcePaths(
-  clickEvents: rxjs$Subject<void>,
-): ControlButtonSpecification[] {
-  return [
-    {
-      icon: 'file-code',
-      title: 'Set Source Path',
-      onClick: () => clickEvents.next(),
-    },
-  ];
+function getCustomControlButtonsForJavaSourcePaths(clickEvents) {
+  return [{
+    icon: 'file-code',
+    title: 'Set Source Path',
+    onClick: () => clickEvents.next()
+  }];
 }
 
-export function getDefaultSourceSearchPaths(
-  targetUri: NuclideUri,
-): Array<string> {
-  const searchPaths: Array<string> = [];
-  const remote = nuclideUri.isRemote(targetUri);
+function getDefaultSourceSearchPaths(targetUri) {
+  const searchPaths = [];
+  const remote = (_nuclideUri || _load_nuclideUri()).default.isRemote(targetUri);
 
   // Add all the project root paths as potential source locations the Java debugger server should
   // check for resolving source.
   // NOTE: the Java debug server will just ignore any directory path that doesn't exist.
   atom.project.getPaths().forEach(path => {
-    if (
-      (remote && nuclideUri.isRemote(path)) ||
-      (!remote && nuclideUri.isLocal(path))
-    ) {
-      const translatedPath = remote ? nuclideUri.getPath(path) : path;
+    if (remote && (_nuclideUri || _load_nuclideUri()).default.isRemote(path) || !remote && (_nuclideUri || _load_nuclideUri()).default.isLocal(path)) {
+      const translatedPath = remote ? (_nuclideUri || _load_nuclideUri()).default.getPath(path) : path;
       searchPaths.push(translatedPath);
 
       if (_sourcePathsService != null) {
-        _sourcePathsService.addKnownSubdirectoryPaths(
-          remote,
-          translatedPath,
-          searchPaths,
-        );
+        _sourcePathsService.addKnownSubdirectoryPaths(remote, translatedPath, searchPaths);
       }
     }
   });
@@ -122,48 +167,36 @@ export function getDefaultSourceSearchPaths(
   return searchPaths;
 }
 
-export function getSavedPathsFromConfig(): Array<string> {
-  const paths = featureConfig.get('nuclide-debugger-java.sourceFilePaths');
+function getSavedPathsFromConfig() {
+  const paths = (_featureConfig || _load_featureConfig()).default.get('nuclide-debugger-java.sourceFilePaths');
   // flowlint-next-line sketchy-null-mixed:off
   if (paths && typeof paths === 'string') {
-    return (paths: string).split(';');
+    return paths.split(';');
   } else {
-    featureConfig.set('nuclide-debugger-java.sourceFilePaths', '');
+    (_featureConfig || _load_featureConfig()).default.set('nuclide-debugger-java.sourceFilePaths', '');
   }
   return [];
 }
 
-export function persistSourcePathsToConfig(
-  newSourcePaths: Array<string>,
-): void {
-  featureConfig.set(
-    'nuclide-debugger-java.sourceFilePaths',
-    newSourcePaths.join(';'),
-  );
+function persistSourcePathsToConfig(newSourcePaths) {
+  (_featureConfig || _load_featureConfig()).default.set('nuclide-debugger-java.sourceFilePaths', newSourcePaths.join(';'));
 }
 
-export function getDialogValues(
-  clickEvents: rxjs$Subject<void>,
-): rxjs$Observable<Array<string>> {
+function getDialogValues(clickEvents) {
   let userSourcePaths = getSavedPathsFromConfig();
   return clickEvents.switchMap(() => {
-    return Observable.create(observer => {
-      const modalDisposable = showModal(
-        ({dismiss}) => (
-          <SourceFilePathsModal
-            initialSourcePaths={userSourcePaths}
-            sourcePathsChanged={(newPaths: Array<string>) => {
-              userSourcePaths = newPaths;
-              persistSourcePathsToConfig(newPaths);
-              observer.next(newPaths);
-            }}
-            onClosed={dismiss}
-          />
-        ),
-        {className: 'sourcepath-modal-container'},
-      );
+    return _rxjsBundlesRxMinJs.Observable.create(observer => {
+      const modalDisposable = (0, (_showModal || _load_showModal()).default)(({ dismiss }) => _react.createElement((_SourceFilePathsModal || _load_SourceFilePathsModal()).SourceFilePathsModal, {
+        initialSourcePaths: userSourcePaths,
+        sourcePathsChanged: newPaths => {
+          userSourcePaths = newPaths;
+          persistSourcePathsToConfig(newPaths);
+          observer.next(newPaths);
+        },
+        onClosed: dismiss
+      }), { className: 'sourcepath-modal-container' });
 
-      track('fb-java-debugger-source-dialog-shown');
+      (0, (_analytics || _load_analytics()).track)('fb-java-debugger-source-dialog-shown');
       return () => {
         modalDisposable.dispose();
       };
@@ -171,106 +204,67 @@ export function getDialogValues(
   });
 }
 
-export function getSourcePathString(searchPaths: Array<string>): string {
+function getSourcePathString(searchPaths) {
   return searchPaths.join(';');
 }
 
-export function getSourcePathClickSubscriptionsOnVspInstance(
-  targetUri: NuclideUri,
-  vspInstance: IVspInstance,
-  clickEvents: rxjs$Subject<void>,
-): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
+function getSourcePathClickSubscriptionsOnVspInstance(targetUri, vspInstance, clickEvents) {
   const defaultValues = getDefaultSourceSearchPaths(targetUri);
-  return [
-    getDialogValues(clickEvents)
-      .startWith(getSavedPathsFromConfig())
-      .subscribe(userValues => {
-        vspInstance.customRequest('setSourcePath', {
-          sourcePath: getSourcePathString(defaultValues.concat(userValues)),
-        });
-      }),
-    clickEvents,
-  ];
+  return [getDialogValues(clickEvents).startWith(getSavedPathsFromConfig()).subscribe(userValues => {
+    vspInstance.customRequest('setSourcePath', {
+      sourcePath: getSourcePathString(defaultValues.concat(userValues))
+    });
+  }), clickEvents];
 }
 
-export function getSourcePathClickSubscriptions(
-  targetUri: NuclideUri,
-  debugSession: ISession,
-  clickEvents: rxjs$Subject<void>,
-  additionalSourcePaths?: Array<NuclideUri> = [],
-): ((() => mixed) | rxjs$ISubscription | IDisposable)[] {
-  const defaultValues = getDefaultSourceSearchPaths(targetUri).concat(
-    additionalSourcePaths,
-  );
-  return [
-    getDialogValues(clickEvents)
-      .startWith(getSavedPathsFromConfig())
-      .subscribe(userValues => {
-        debugSession.custom('setSourcePath', {
-          sourcePath: getSourcePathString(defaultValues.concat(userValues)),
-        });
-      }),
-    clickEvents,
-  ];
+function getSourcePathClickSubscriptions(targetUri, debugSession, clickEvents, additionalSourcePaths = []) {
+  const defaultValues = getDefaultSourceSearchPaths(targetUri).concat(additionalSourcePaths);
+  return [getDialogValues(clickEvents).startWith(getSavedPathsFromConfig()).subscribe(userValues => {
+    debugSession.custom('setSourcePath', {
+      sourcePath: getSourcePathString(defaultValues.concat(userValues))
+    });
+  }), clickEvents];
 }
 
-export async function resolveConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
-  const {adapterExecutable, targetUri} = configuration;
+async function resolveConfiguration(configuration) {
+  const { adapterExecutable, targetUri } = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
 
-  const subscriptions = new UniversalDisposable();
-  const clickEvents = new Subject();
-  const customDisposable =
-    configuration.customDisposable || new UniversalDisposable();
+  const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  const clickEvents = new _rxjsBundlesRxMinJs.Subject();
+  const customDisposable = configuration.customDisposable || new (_UniversalDisposable || _load_UniversalDisposable()).default();
   customDisposable.add(subscriptions);
 
-  const javaAdapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
-    targetUri,
-  ).getJavaVSAdapterExecutableInfo(false);
-  return {
-    ...configuration,
-    properties: {
-      ...configuration.properties,
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-    },
+  const javaAdapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(targetUri).getJavaVSAdapterExecutableInfo(false);
+  return Object.assign({}, configuration, {
+    properties: Object.assign({}, configuration.properties, {
+      customControlButtons: getCustomControlButtonsForJavaSourcePaths(clickEvents)
+    }),
     adapterExecutable: javaAdapterExecutable,
     customDisposable,
     onInitializeCallback: async session => {
-      customDisposable.add(
-        ...getSourcePathClickSubscriptions(targetUri, session, clickEvents),
-      );
-    },
-  };
+      customDisposable.add(...getSourcePathClickSubscriptions(targetUri, session, clickEvents));
+    }
+  });
 }
 
-export function setSourcePathsService(
-  sourcePathsService: DebuggerSourcePathsService,
-) {
+function setSourcePathsService(sourcePathsService) {
   _sourcePathsService = sourcePathsService;
 }
 
-export function setRpcService(rpcService: nuclide$RpcService): IDisposable {
+function setRpcService(rpcService) {
   _rpcService = rpcService;
-  return new UniversalDisposable(() => {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     _rpcService = null;
   });
 }
 
-export function getJavaDebuggerHelpersServiceByNuclideUri(
-  uri: NuclideUri,
-): JavaDebuggerHelpersService {
-  if (!nuclideUri.isRemote(uri)) {
-    return JavaDebuggerHelpersServiceLocal;
+function getJavaDebuggerHelpersServiceByNuclideUri(uri) {
+  if (!(_nuclideUri || _load_nuclideUri()).default.isRemote(uri)) {
+    return _JavaDebuggerHelpersService || _load_JavaDebuggerHelpersService();
   }
 
-  return nullthrows(_rpcService).getServiceByNuclideUri(
-    'JavaDebuggerHelpersService',
-    uri,
-  );
+  return (0, (_nullthrows || _load_nullthrows()).default)(_rpcService).getServiceByNuclideUri('JavaDebuggerHelpersService', uri);
 }

@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _readline = _interopRequireDefault(require('readline'));
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,70 +24,48 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
-import type {ConsoleIO} from './ConsoleIO';
-
-import readline from 'readline';
-import CommandDispatcher from './CommandDispatcher';
-import {Observable, Subject} from 'rxjs';
-
 const PROMPT = 'fbdbg> ';
 
-export default class CommandLine implements ConsoleIO {
-  _dispatcher: CommandDispatcher;
-  _cli: readline$Interface;
-  _inputStopped = false;
-  _shouldPrompt = false;
-  _lastLine = '';
-  _overridePrompt: ?string = null;
+class CommandLine {
 
-  _interrupts: Subject<void>;
-  _lines: Subject<string>;
+  constructor(dispatcher) {
+    this._inputStopped = false;
+    this._shouldPrompt = false;
+    this._lastLine = '';
+    this._overridePrompt = null;
+    this._subscriptions = [];
 
-  _subscriptions: Array<rxjs$ISubscription> = [];
-
-  constructor(dispatcher: CommandDispatcher) {
     this._dispatcher = dispatcher;
-    this._cli = readline.createInterface({
+    this._cli = _readline.default.createInterface({
       input: process.stdin,
-      output: process.stdout,
+      output: process.stdout
     });
 
     this.setPrompt();
 
-    this._interrupts = new Subject();
-    this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'SIGINT').subscribe(this._interrupts),
-    );
+    this._interrupts = new _rxjsBundlesRxMinJs.Subject();
+    this._subscriptions.push(_rxjsBundlesRxMinJs.Observable.fromEvent(this._cli, 'SIGINT').subscribe(this._interrupts));
 
-    this._lines = new Subject();
-    this._subscriptions.push(
-      Observable.fromEvent(this._cli, 'line')
-        .takeUntil(Observable.fromEvent(this._cli, 'close'))
-        .subscribe(this._lines),
-    );
+    this._lines = new _rxjsBundlesRxMinJs.Subject();
+    this._subscriptions.push(_rxjsBundlesRxMinJs.Observable.fromEvent(this._cli, 'line').takeUntil(_rxjsBundlesRxMinJs.Observable.fromEvent(this._cli, 'close')).subscribe(this._lines));
 
-    this._subscriptions.push(
-      this._lines
-        .filter(_ => !this._inputStopped)
-        .switchMap(_ => {
-          this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
-          return this._dispatcher.execute(this._lastLine);
-        })
-        .subscribe(_ => {
-          if (_ != null) {
-            this.outputLine(_.message);
-          }
-          if (!this._inputStopped) {
-            this._cli.prompt();
-          } else {
-            this._shouldPrompt = true;
-          }
-        }),
-    );
+    this._subscriptions.push(this._lines.filter(_ => !this._inputStopped).switchMap(_ => {
+      this._lastLine = _.trim() === '' ? this._lastLine : _.trim();
+      return this._dispatcher.execute(this._lastLine);
+    }).subscribe(_ => {
+      if (_ != null) {
+        this.outputLine(_.message);
+      }
+      if (!this._inputStopped) {
+        this._cli.prompt();
+      } else {
+        this._shouldPrompt = true;
+      }
+    }));
 
     this._shouldPrompt = true;
   }
@@ -78,31 +74,29 @@ export default class CommandLine implements ConsoleIO {
     this._subscriptions.forEach(_ => _.unsubscribe());
   }
 
-  observeInterrupts(): Observable<void> {
+  observeInterrupts() {
     return this._interrupts;
   }
 
-  observeLines(): Observable<string> {
+  observeLines() {
     return this._lines;
   }
 
-  setPrompt(prompt: ?string): void {
+  setPrompt(prompt) {
     this._overridePrompt = prompt;
     this._updatePrompt();
   }
 
-  _updatePrompt(): void {
+  _updatePrompt() {
     if (this._inputStopped) {
       this._cli.setPrompt('');
     } else {
-      this._cli.setPrompt(
-        this._overridePrompt != null ? this._overridePrompt : PROMPT,
-      );
+      this._cli.setPrompt(this._overridePrompt != null ? this._overridePrompt : PROMPT);
     }
   }
 
   // $TODO handle paging long output (more) if termcap allows us to know the screen height
-  output(text: string): void {
+  output(text) {
     if (!this._inputStopped) {
       if (!text.startsWith('\n')) {
         process.stdout.write('\n');
@@ -114,20 +108,20 @@ export default class CommandLine implements ConsoleIO {
     process.stdout.write(text);
   }
 
-  outputLine(line?: string = ''): void {
+  outputLine(line = '') {
     process.stdout.write(`${line}\n`);
   }
 
-  prompt(): void {
+  prompt() {
     this._cli.prompt();
   }
 
-  stopInput(): void {
+  stopInput() {
     this._inputStopped = true;
     this._updatePrompt();
   }
 
-  startInput(): void {
+  startInput() {
     this._inputStopped = false;
     this._updatePrompt();
     if (this._shouldPrompt) {
@@ -136,7 +130,8 @@ export default class CommandLine implements ConsoleIO {
     }
   }
 
-  close(): void {
+  close() {
     this._cli.close();
   }
 }
+exports.default = CommandLine;

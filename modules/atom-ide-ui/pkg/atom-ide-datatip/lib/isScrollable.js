@@ -1,3 +1,9 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = isScrollable;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +12,17 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-export default function isScrollable(
-  element: Element,
-  wheelEvent: WheelEvent,
-): boolean {
-  let node: ?Element = ((wheelEvent.target: any): Element);
+function isScrollable(element, wheelEvent) {
+  let node = wheelEvent.target;
   while (node != null && node !== element) {
-    if (
-      node.scrollHeight > node.clientHeight ||
-      node.scrollWidth > node.clientWidth
-    ) {
+    if (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth) {
       return true;
     }
-    node = ((node.parentNode: any): Element);
+    node = node.parentNode;
   }
   return false;
 }

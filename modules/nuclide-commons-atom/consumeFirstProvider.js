@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = consumeFirstProvider;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +12,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -15,20 +21,13 @@
  * https://github.com/atom/service-hub/issues/6
  */
 
-export default function consumeFirstProvider(
-  keyPath: string,
-  version: string = '0.0.0',
-): Promise<any> {
+function consumeFirstProvider(keyPath, version = '0.0.0') {
   return new Promise((resolve, reject) => {
-    const subscription = atom.packages.serviceHub.consume(
-      keyPath,
-      version,
-      provider => {
-        process.nextTick(() => {
-          resolve(provider);
-          subscription.dispose();
-        });
-      },
-    );
+    const subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
+      process.nextTick(() => {
+        resolve(provider);
+        subscription.dispose();
+      });
+    });
   });
 }

@@ -1,3 +1,27 @@
+'use strict';
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _serviceParser;
+
+function _load_serviceParser() {
+  return _serviceParser = require('../lib/service-parser');
+}
+
+var _location;
+
+function _load_location() {
+  return _location = require('../lib/location');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,39 +29,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import fs from 'fs';
-import {parseServiceDefinition, _clearFileParsers} from '../lib/service-parser';
-import {stripLocationsFileName} from '../lib/location';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
 describe('Nuclide service parser test suite.', () => {
   afterEach(() => {
-    _clearFileParsers();
+    (0, (_serviceParser || _load_serviceParser())._clearFileParsers)();
   });
 
-  for (const file of fs.readdirSync(
-    nuclideUri.join(__dirname, '../__mocks__/fixtures'),
-  )) {
+  for (const file of _fs.default.readdirSync((_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully parses ${file}`, () => {
-        const fixturePath = nuclideUri.join(
-          __dirname,
-          '../__mocks__/fixtures',
-          file,
-        );
-        const code = fs.readFileSync(fixturePath, 'utf8');
-        const expected = JSON.parse(
-          fs.readFileSync(
-            nuclideUri.join(__dirname, '../__mocks__/fixtures', file) + '.json',
-            'utf8',
-          ),
-        );
-        const definitions = parseServiceDefinition(fixturePath, code, []);
-        stripLocationsFileName(definitions);
+        const fixturePath = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', file);
+        const code = _fs.default.readFileSync(fixturePath, 'utf8');
+        const expected = JSON.parse(_fs.default.readFileSync((_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', file) + '.json', 'utf8'));
+        const definitions = (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)(fixturePath, code, []);
+        (0, (_location || _load_location()).stripLocationsFileName)(definitions);
         expect(definitions).toEqual(expected);
       });
     }
@@ -51,7 +59,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -63,7 +71,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -73,7 +81,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(x: int): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -83,7 +91,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): int {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -93,7 +101,7 @@ describe('Nuclide service parser test suite.', () => {
         m(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -104,7 +112,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -115,7 +123,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -127,7 +135,7 @@ describe('Nuclide service parser test suite.', () => {
       export function f(p: UsesMissingType): void {}
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -138,7 +146,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -148,7 +156,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(p: Promise<string>): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -159,7 +167,7 @@ describe('Nuclide service parser test suite.', () => {
         dispose(): void {}
       }`;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -168,7 +176,7 @@ describe('Nuclide service parser test suite.', () => {
       export type R = R;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -177,7 +185,7 @@ describe('Nuclide service parser test suite.', () => {
       export type R = Promise<R>;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -187,7 +195,7 @@ describe('Nuclide service parser test suite.', () => {
       export type B = A;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -198,7 +206,7 @@ describe('Nuclide service parser test suite.', () => {
       export type O = {f: A};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -208,7 +216,7 @@ describe('Nuclide service parser test suite.', () => {
       export function f(): A {};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -217,7 +225,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = B | 42;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -226,7 +234,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = 42 | A;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -235,7 +243,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = 42 | Promise<42>;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -244,7 +252,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = 42 | number;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -253,7 +261,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = 42 | 42;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -262,7 +270,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {kind: 'foo'} | '42';
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -271,7 +279,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {kind: 'foo'} | {kind: string};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -280,7 +288,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {kind1: 'foo'} | {kind2: 'bar'};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -289,7 +297,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {kind: 'foo'} | {kind: 'foo'};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -298,7 +306,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {x: string} & {y: string};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).not.toThrow();
   });
 
@@ -307,7 +315,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {x: string} & boolean;
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -316,7 +324,7 @@ describe('Nuclide service parser test suite.', () => {
       export type A = {x: string} & {x: string};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -326,7 +334,7 @@ describe('Nuclide service parser test suite.', () => {
       export f(p: T): void {};
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -335,7 +343,7 @@ describe('Nuclide service parser test suite.', () => {
       export function f(x: number = 1): void {}
     `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).not.toThrow();
   });
 
@@ -346,7 +354,7 @@ describe('Nuclide service parser test suite.', () => {
       };
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -358,7 +366,7 @@ describe('Nuclide service parser test suite.', () => {
       };
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).not.toThrow();
   });
 
@@ -369,7 +377,7 @@ describe('Nuclide service parser test suite.', () => {
       };
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -383,7 +391,7 @@ describe('Nuclide service parser test suite.', () => {
       };
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
@@ -397,21 +405,21 @@ describe('Nuclide service parser test suite.', () => {
       };
       `;
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
   it('re-exporting functions not supported', () => {
     const code = "export {getPreview} from 'symbol-definition-preview'";
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 
   it('exporting functions without declaration not supported', () => {
     const code = 'export {someFunction};';
     expect(() => {
-      parseServiceDefinition('fileName', code, []);
+      (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)('fileName', code, []);
     }).toThrow();
   });
 });

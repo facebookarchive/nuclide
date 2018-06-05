@@ -1,3 +1,11 @@
+'use strict';
+
+var _IpcTransports;
+
+function _load_IpcTransports() {
+  return _IpcTransports = require('../lib/IpcTransports');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +13,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import invariant from 'assert';
-import {IpcServerTransport} from '../lib/IpcTransports';
+const transport = new (_IpcTransports || _load_IpcTransports()).IpcServerTransport();
 
-const transport = new IpcServerTransport();
-invariant(!transport.isClosed());
+if (!!transport.isClosed()) {
+  throw new Error('Invariant violation: "!transport.isClosed()"');
+}
 
 transport.onMessage().subscribe(message => {
   if (message === 'exit') {

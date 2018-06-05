@@ -1,52 +1,87 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {Variable} from 'vscode-debugprotocol';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import HandleMap from './HandleMap';
-import MIProxy from './MIProxy';
-import ExpressionVariableReference from './ExpressionVariableReference';
-import {MIRegisterValue} from './MIRegisterValue';
-import NestedVariableReference from './NestedVariableReference';
-import RegisterElementVariableReference from './RegisterElementVariableReference';
-import RegistersVariableReference from './RegistersVariableReference';
-import ScopeVariableReference from './ScopeVariableReference';
-import StackFrames from './StackFrames';
-import VariableReference from './VariableReference';
+var _HandleMap;
 
-export default class Variables {
-  _client: MIProxy;
-  _frames: StackFrames;
-  _variables: HandleMap<VariableReference>;
-  _scopeIndex: Map<number, Map<number, number>>; // by thread, then frame index
-  _nestedReferenceIndex: Map<number, Map<number, Map<string, number>>>; // by thread, frame index, varname
-  _registerElementReferenceIndex: Map<string, number>; // by register expression
-  _varsNeedingDeletion: Set<VariableReference>;
-  _registersVariableReference: ?number;
+function _load_HandleMap() {
+  return _HandleMap = _interopRequireDefault(require('./HandleMap'));
+}
 
-  constructor(client: MIProxy, frames: StackFrames) {
+var _MIProxy;
+
+function _load_MIProxy() {
+  return _MIProxy = _interopRequireDefault(require('./MIProxy'));
+}
+
+var _ExpressionVariableReference;
+
+function _load_ExpressionVariableReference() {
+  return _ExpressionVariableReference = _interopRequireDefault(require('./ExpressionVariableReference'));
+}
+
+var _MIRegisterValue;
+
+function _load_MIRegisterValue() {
+  return _MIRegisterValue = require('./MIRegisterValue');
+}
+
+var _NestedVariableReference;
+
+function _load_NestedVariableReference() {
+  return _NestedVariableReference = _interopRequireDefault(require('./NestedVariableReference'));
+}
+
+var _RegisterElementVariableReference;
+
+function _load_RegisterElementVariableReference() {
+  return _RegisterElementVariableReference = _interopRequireDefault(require('./RegisterElementVariableReference'));
+}
+
+var _RegistersVariableReference;
+
+function _load_RegistersVariableReference() {
+  return _RegistersVariableReference = _interopRequireDefault(require('./RegistersVariableReference'));
+}
+
+var _ScopeVariableReference;
+
+function _load_ScopeVariableReference() {
+  return _ScopeVariableReference = _interopRequireDefault(require('./ScopeVariableReference'));
+}
+
+var _StackFrames;
+
+function _load_StackFrames() {
+  return _StackFrames = _interopRequireDefault(require('./StackFrames'));
+}
+
+var _VariableReference;
+
+function _load_VariableReference() {
+  return _VariableReference = _interopRequireDefault(require('./VariableReference'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Variables {
+  // by register expression
+  // by thread, then frame index
+  constructor(client, frames) {
     this._client = client;
     this._frames = frames;
-    this._variables = new HandleMap();
+    this._variables = new (_HandleMap || _load_HandleMap()).default();
     this._scopeIndex = new Map();
     this._nestedReferenceIndex = new Map();
     this._registerElementReferenceIndex = new Map();
     this._varsNeedingDeletion = new Set();
-  }
+  } // by thread, frame index, varname
 
-  async clearCachedVariables(): Promise<void> {
-    await Promise.all(
-      [...this._varsNeedingDeletion].map(async _ => _.deleteResources()),
-    );
+
+  async clearCachedVariables() {
+    await Promise.all([...this._varsNeedingDeletion].map(async _ => _.deleteResources()));
 
     this._varsNeedingDeletion.clear();
     this._variables.clear();
@@ -56,12 +91,10 @@ export default class Variables {
     this._registersVariableReference = null;
   }
 
-  variableReferenceForStackFrame(frameId: number): number {
+  variableReferenceForStackFrame(frameId) {
     const frame = this._frames.stackFrameByHandle(frameId);
     if (frame == null) {
-      throw new Error(
-        `Attempt to find or create varref for unknown stack frame ${frameId}`,
-      );
+      throw new Error(`Attempt to find or create varref for unknown stack frame ${frameId}`);
     }
 
     let threadMap = this._scopeIndex.get(frame.threadId);
@@ -72,12 +105,7 @@ export default class Variables {
 
     let varref = threadMap.get(frame.frameIndex);
     if (varref == null) {
-      const scopeVarRef = new ScopeVariableReference(
-        this._client,
-        this,
-        frame.threadId,
-        frame.frameIndex,
-      );
+      const scopeVarRef = new (_ScopeVariableReference || _load_ScopeVariableReference()).default(this._client, this, frame.threadId, frame.frameIndex);
       varref = this._variables.put(scopeVarRef);
       threadMap.set(frame.frameIndex, varref);
     }
@@ -85,50 +113,30 @@ export default class Variables {
     return varref;
   }
 
-  registersVariableReference(): ?number {
+  registersVariableReference() {
     if (this._registersVariableReference != null) {
       return this._registersVariableReference;
     }
 
-    const varref = this._variables.put(
-      new RegistersVariableReference(this._client, this),
-    );
+    const varref = this._variables.put(new (_RegistersVariableReference || _load_RegistersVariableReference()).default(this._client, this));
 
     this._registersVariableReference = varref;
     return varref;
   }
 
-  registerElementVariableReference(
-    value: MIRegisterValue,
-    name: string,
-    expression: string,
-  ): number {
+  registerElementVariableReference(value, name, expression) {
     let varref = this._registerElementReferenceIndex.get(expression);
 
     if (varref == null) {
-      varref = this._variables.put(
-        new RegisterElementVariableReference(
-          this._client,
-          this,
-          name,
-          expression,
-          value,
-        ),
-      );
+      varref = this._variables.put(new (_RegisterElementVariableReference || _load_RegisterElementVariableReference()).default(this._client, this, name, expression, value));
     }
 
     return varref;
   }
 
-  nestedVariableReference(
-    container: VariableReference,
-    exp: string,
-    name: ?string,
-  ): number {
-    const resolvedThreadId =
-      container.threadId == null ? -1 : container.threadId;
-    const resolvedFrameIndex =
-      container.frameIndex == null ? -1 : container.frameIndex;
+  nestedVariableReference(container, exp, name) {
+    const resolvedThreadId = container.threadId == null ? -1 : container.threadId;
+    const resolvedFrameIndex = container.frameIndex == null ? -1 : container.frameIndex;
 
     let threadMap = this._nestedReferenceIndex.get(resolvedThreadId);
     if (threadMap == null) {
@@ -148,13 +156,7 @@ export default class Variables {
       return handle;
     }
 
-    const varref = new NestedVariableReference(
-      this._client,
-      this,
-      container,
-      exp,
-      name,
-    );
+    const varref = new (_NestedVariableReference || _load_NestedVariableReference()).default(this._client, this, container, exp, name);
 
     if (varref.needsDeletion) {
       this._varsNeedingDeletion.add(varref);
@@ -166,11 +168,7 @@ export default class Variables {
     return handle;
   }
 
-  expressionVariableReference(
-    threadId: ?number,
-    frameIndex: ?number,
-    expression: string,
-  ): number {
+  expressionVariableReference(threadId, frameIndex, expression) {
     const resolvedThreadId = threadId == null ? -1 : threadId;
     const resolvedFrameIndex = frameIndex == null ? -1 : frameIndex;
 
@@ -192,13 +190,7 @@ export default class Variables {
       return handle;
     }
 
-    const varref = new ExpressionVariableReference(
-      this._client,
-      this,
-      threadId,
-      frameIndex,
-      expression,
-    );
+    const varref = new (_ExpressionVariableReference || _load_ExpressionVariableReference()).default(this._client, this, threadId, frameIndex, expression);
 
     if (varref.needsDeletion) {
       this._varsNeedingDeletion.add(varref);
@@ -210,15 +202,11 @@ export default class Variables {
     return handle;
   }
 
-  getVariableReference(handle: number): ?VariableReference {
+  getVariableReference(handle) {
     return this._variables.getObjectByHandle(handle);
   }
 
-  async getVariables(
-    varrefHandle: number,
-    start: ?number,
-    count: ?number,
-  ): Promise<Array<Variable>> {
+  async getVariables(varrefHandle, start, count) {
     const varref = this._variables.getObjectByHandle(varrefHandle);
     if (varref == null) {
       throw new Error(`Attempt to access invalid varref ${varrefHandle}`);
@@ -227,3 +215,14 @@ export default class Variables {
     return varref.getVariables(start, count);
   }
 }
+exports.default = Variables; /**
+                              * Copyright (c) 2017-present, Facebook, Inc.
+                              * All rights reserved.
+                              *
+                              * This source code is licensed under the BSD-style license found in the
+                              * LICENSE file in the root directory of this source tree. An additional grant
+                              * of patent rights can be found in the PATENTS file in the same directory.
+                              *
+                              *  strict-local
+                              * @format
+                              */

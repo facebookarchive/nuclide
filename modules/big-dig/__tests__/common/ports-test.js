@@ -1,16 +1,10 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import {parsePorts} from '../../src/common/ports';
+var _ports;
+
+function _load_ports() {
+  return _ports = require('../../src/common/ports');
+}
 
 describe('parsePorts', () => {
   it('empty ports', () => {
@@ -29,20 +23,7 @@ describe('parsePorts', () => {
     test('0-1', [0, 1]);
     test('0-4', [0, 1, 2, 3, 4]);
     test('22-25', [22, 23, 24, 25]);
-    test('  18-25 ,  9090-9093,  ', [
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      9090,
-      9091,
-      9092,
-      9093,
-    ]);
+    test('  18-25 ,  9090-9093,  ', [18, 19, 20, 21, 22, 23, 24, 25, 9090, 9091, 9092, 9093]);
     test('3141592653589793238462643', [3141592653589793238462643]);
   });
 
@@ -58,16 +39,7 @@ describe('parsePorts', () => {
   });
 
   it('mix of individuals and ranges', () => {
-    test('0, 8080-8083, 42, 10000-10001', [
-      0,
-      8080,
-      8081,
-      8082,
-      8083,
-      42,
-      10000,
-      10001,
-    ]);
+    test('0, 8080-8083, 42, 10000-10001', [0, 8080, 8081, 8082, 8083, 42, 10000, 10001]);
   });
 
   it('invalid patterns', () => {
@@ -78,24 +50,26 @@ describe('parsePorts', () => {
     testError('4.2', 'Could not parse ports from: "4.2".');
     testError('Infinity', 'Could not parse ports from: "Infinity".');
     testError('-Infinity', 'Could not parse ports from: "-Infinity".');
-    const shouldParseAsInfinity =
-      '314159265358979323846264338327950288419716939937510582097494459' +
-      '230781640628620899862803482534211706798214808651328230664709384' +
-      '460955058223172535940812848111745028410270193852110555964462294' +
-      '895493038196442881097566593344612847564823378678316527120190914' +
-      '5648566923460348610454326648213393607260249141273724587006';
-    testError(
-      shouldParseAsInfinity,
-      `${shouldParseAsInfinity} parses to an extrema: Infinity.`,
-    );
+    const shouldParseAsInfinity = '314159265358979323846264338327950288419716939937510582097494459' + '230781640628620899862803482534211706798214808651328230664709384' + '460955058223172535940812848111745028410270193852110555964462294' + '895493038196442881097566593344612847564823378678316527120190914' + '5648566923460348610454326648213393607260249141273724587006';
+    testError(shouldParseAsInfinity, `${shouldParseAsInfinity} parses to an extrema: Infinity.`);
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     *  strict
+     * @format
+     */
 
-function test(descriptor: string, ports: Array<number>) {
-  const iterable = parsePorts(descriptor);
+function test(descriptor, ports) {
+  const iterable = (0, (_ports || _load_ports()).parsePorts)(descriptor);
   expect(Array.from(iterable)).toEqual(ports);
 }
 
-function testError(descriptor: string, message: string) {
-  expect(() => parsePorts(descriptor)).toThrow(message);
+function testError(descriptor, message) {
+  expect(() => (0, (_ports || _load_ports()).parsePorts)(descriptor)).toThrow(message);
 }

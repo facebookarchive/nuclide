@@ -1,3 +1,19 @@
+'use strict';
+
+var _openPreview;
+
+function _load_openPreview() {
+  return _openPreview = _interopRequireDefault(require('../openPreview'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,23 +22,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import openPreview from '../openPreview';
-import fsPromise from 'nuclide-commons/fsPromise';
-import invariant from 'assert';
-
-function getActiveTextEditor(): atom$TextEditor {
+function getActiveTextEditor() {
   const activeTextEditor = atom.workspace.getActiveTextEditor();
-  invariant(activeTextEditor);
+
+  if (!activeTextEditor) {
+    throw new Error('Invariant violation: "activeTextEditor"');
+  }
+
   return activeTextEditor;
 }
 
-function getPendingItem(): atom$PaneItem {
+function getPendingItem() {
   const pane = atom.workspace.paneForItem(getActiveTextEditor());
-  invariant(pane);
+
+  if (!pane) {
+    throw new Error('Invariant violation: "pane"');
+  }
+
   return pane.getPendingItem();
 }
 
@@ -44,14 +64,14 @@ describe('openPreview', () => {
     let fileItem;
     beforeEach(async () => {
       await (async () => {
-        file = await fsPromise.tempfile();
-        await fsPromise.writeFile(file, 'foobarbaz\n'.repeat(1000));
+        file = await (_fsPromise || _load_fsPromise()).default.tempfile();
+        await (_fsPromise || _load_fsPromise()).default.writeFile(file, 'foobarbaz\n'.repeat(1000));
         fileItem = await atom.workspace.open(file);
       })();
     });
 
     afterEach(() => {
-      fsPromise.unlink(file);
+      (_fsPromise || _load_fsPromise()).default.unlink(file);
     });
 
     it('does not change the cursor position', async () => {
@@ -59,13 +79,13 @@ describe('openPreview', () => {
         expect(getActiveTextEditor().getURI()).toEqual(file);
         expect(getActiveTextEditor().getCursorBufferPosition()).toEqual({
           row: 0,
-          column: 0,
+          column: 0
         });
 
-        await openPreview(file, {
+        await (0, (_openPreview || _load_openPreview()).default)(file, {
           line: 700,
           column: 3,
-          center: true,
+          center: true
         })._promise;
 
         // this case shouldn't open any new editors
@@ -76,7 +96,7 @@ describe('openPreview', () => {
         expect(getActiveTextEditor().getURI()).toEqual(file);
         expect(getActiveTextEditor().getCursorBufferPosition()).toEqual({
           row: 0,
-          column: 0,
+          column: 0
         });
       })();
     });
@@ -88,20 +108,13 @@ describe('openPreview', () => {
 
     beforeEach(async () => {
       await (async () => {
-        [startingFile, previewingFile] = await Promise.all([
-          fsPromise.tempfile(),
-          fsPromise.tempfile(),
-        ]);
+        [startingFile, previewingFile] = await Promise.all([(_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile()]);
         await atom.workspace.open(startingFile);
       })();
     });
 
     afterEach(async () => {
-      await (() =>
-        Promise.all([
-          fsPromise.unlink(startingFile),
-          fsPromise.unlink(previewingFile),
-        ]))();
+      await (() => Promise.all([(_fsPromise || _load_fsPromise()).default.unlink(startingFile), (_fsPromise || _load_fsPromise()).default.unlink(previewingFile)]))();
     });
 
     it('opens a preview pane editor pointed at the previewFile', async () => {
@@ -109,10 +122,10 @@ describe('openPreview', () => {
         expect(getActiveTextEditor().getURI()).toEqual(startingFile);
         expect(getActiveTextEditor().getCursorBufferPosition()).toEqual({
           row: 0,
-          column: 0,
+          column: 0
         });
 
-        await openPreview(previewingFile)._promise;
+        await (0, (_openPreview || _load_openPreview()).default)(previewingFile)._promise;
         expect(getActiveTextEditor().getURI()).toBe(previewingFile);
         // $FlowFixMe
         expect(getPendingItem().getURI()).toBe(previewingFile);
@@ -124,10 +137,10 @@ describe('openPreview', () => {
         expect(getActiveTextEditor().getURI()).toEqual(startingFile);
         expect(getActiveTextEditor().getCursorBufferPosition()).toEqual({
           row: 0,
-          column: 0,
+          column: 0
         });
 
-        await openPreview(previewingFile)._promise;
+        await (0, (_openPreview || _load_openPreview()).default)(previewingFile)._promise;
         expect(getActiveTextEditor().getURI()).toEqual(previewingFile);
       })();
     });
@@ -140,36 +153,23 @@ describe('openPreview', () => {
 
     beforeEach(async () => {
       await (async () => {
-        [
-          startingFile,
-          firstPreviewingFile,
-          secondPreviewingFile,
-        ] = await Promise.all([
-          fsPromise.tempfile(),
-          fsPromise.tempfile(),
-          fsPromise.tempfile(),
-        ]);
+        [startingFile, firstPreviewingFile, secondPreviewingFile] = await Promise.all([(_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile()]);
         await atom.workspace.open(startingFile);
       })();
     });
 
     afterEach(async () => {
-      await (() =>
-        Promise.all([
-          fsPromise.unlink(startingFile),
-          fsPromise.unlink(firstPreviewingFile),
-          fsPromise.unlink(secondPreviewingFile),
-        ]))();
+      await (() => Promise.all([(_fsPromise || _load_fsPromise()).default.unlink(startingFile), (_fsPromise || _load_fsPromise()).default.unlink(firstPreviewingFile), (_fsPromise || _load_fsPromise()).default.unlink(secondPreviewingFile)]))();
     });
 
     it('reuses the preview pane when openPreview is called multiple times', async () => {
       await (async () => {
-        await openPreview(firstPreviewingFile)._promise;
+        await (0, (_openPreview || _load_openPreview()).default)(firstPreviewingFile)._promise;
         const firstPendingItem = getPendingItem();
         // $FlowFixMe
         expect(getPendingItem().getURI()).toBe(firstPreviewingFile);
 
-        await openPreview(secondPreviewingFile)._promise;
+        await (0, (_openPreview || _load_openPreview()).default)(secondPreviewingFile)._promise;
         const secondPendingItem = getPendingItem();
         // $FlowFixMe
         expect(getPendingItem().getURI()).toBe(secondPreviewingFile);
@@ -185,9 +185,9 @@ describe('openPreview', () => {
 
     it('destroys all previews once an openable is confirmed', async () => {
       await (async () => {
-        await openPreview(firstPreviewingFile)._promise;
+        await (0, (_openPreview || _load_openPreview()).default)(firstPreviewingFile)._promise;
         const firstPendingItem = getPendingItem();
-        const secondOpenable = openPreview(secondPreviewingFile);
+        const secondOpenable = (0, (_openPreview || _load_openPreview()).default)(secondPreviewingFile);
         await secondOpenable._promise;
         const secondPendingItem = getPendingItem();
 
@@ -205,66 +205,55 @@ describe('openPreview', () => {
 
   it('never reuses a non-pending pane', async () => {
     await (async () => {
-      const [startingFile, file1, file2] = await Promise.all([
-        fsPromise.tempfile(),
-        fsPromise.tempfile(),
-        fsPromise.tempfile(),
-      ]);
+      const [startingFile, file1, file2] = await Promise.all([(_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile()]);
       await atom.workspace.open(startingFile);
 
-      await openPreview(file1)._promise;
+      await (0, (_openPreview || _load_openPreview()).default)(file1)._promise;
       // Open a preview back in the originating file, which is not pending
-      await openPreview(startingFile)._promise;
+      await (0, (_openPreview || _load_openPreview()).default)(startingFile)._promise;
       expect(getActiveTextEditor()).not.toBe(getPendingItem());
 
       // ...and make sure requesting a new preview does *not* reuse the original
       // file's pane item
-      await openPreview(file2)._promise;
+      await (0, (_openPreview || _load_openPreview()).default)(file2)._promise;
       expect(getActiveTextEditor()).toBe(getPendingItem());
 
-      await Promise.all([
-        fsPromise.unlink(startingFile),
-        fsPromise.unlink(file1),
-        fsPromise.unlink(file2),
-      ]);
+      await Promise.all([(_fsPromise || _load_fsPromise()).default.unlink(startingFile), (_fsPromise || _load_fsPromise()).default.unlink(file1), (_fsPromise || _load_fsPromise()).default.unlink(file2)]);
     })();
   });
 
   it('throws when trying to confirm a preview that is not the latest', async () => {
     await (async () => {
-      const [file1, file2] = await Promise.all([
-        fsPromise.tempfile(),
-        fsPromise.tempfile(),
-      ]);
+      const [file1, file2] = await Promise.all([(_fsPromise || _load_fsPromise()).default.tempfile(), (_fsPromise || _load_fsPromise()).default.tempfile()]);
 
-      const preview1 = openPreview(file1);
-      openPreview(file2);
+      const preview1 = (0, (_openPreview || _load_openPreview()).default)(file1);
+      (0, (_openPreview || _load_openPreview()).default)(file2);
 
       expect(() => preview1.confirm()).toThrow();
 
-      await Promise.all([fsPromise.unlink(file1), fsPromise.unlink(file2)]);
+      await Promise.all([(_fsPromise || _load_fsPromise()).default.unlink(file1), (_fsPromise || _load_fsPromise()).default.unlink(file2)]);
     })();
   });
 
   it('throws when calling confirm after cancel', async () => {
     await (async () => {
-      const file = await fsPromise.tempfile();
-      const preview = openPreview(file);
+      const file = await (_fsPromise || _load_fsPromise()).default.tempfile();
+      const preview = (0, (_openPreview || _load_openPreview()).default)(file);
       preview.cancel();
       expect(() => preview.confirm()).toThrow();
 
-      await fsPromise.unlink(file);
+      await (_fsPromise || _load_fsPromise()).default.unlink(file);
     })();
   });
 
   it('throws when calling cancel after confirm', async () => {
     await (async () => {
-      const file = await fsPromise.tempfile();
-      const preview = openPreview(file);
+      const file = await (_fsPromise || _load_fsPromise()).default.tempfile();
+      const preview = (0, (_openPreview || _load_openPreview()).default)(file);
       preview.confirm();
       expect(() => preview.cancel()).toThrow();
 
-      await fsPromise.unlink(file);
+      await (_fsPromise || _load_fsPromise()).default.unlink(file);
     })();
   });
 });

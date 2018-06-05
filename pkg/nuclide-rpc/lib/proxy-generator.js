@@ -1,80 +1,32 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * NOTE: Keep this file free of runtime dependencies!
- * Dependencies should be injected into createProxyGenerator below.
- * This allows us to easily cache the result of this function during development
- * to minimize the impact on reload times.
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createProxyGenerator;
 
-import typeof * as babelTypes from '@babel/types';
 // This is in devDependencies. This file is only reachable in dev mode.
 // eslint-disable-next-line nuclide-internal/no-unresolved
-import typeof * as babelGenerator from '@babel/generator';
-
-import type {
-  Definitions,
-  FunctionType,
-  NamedType,
-  Type,
-  InterfaceDefinition,
-} from './types';
-
-export default function createProxyGenerator(
-  t: babelTypes,
-  generate: babelGenerator,
-) {
+function createProxyGenerator(t, generate) {
   const thenIdent = t.identifier('then');
 
-  const moduleDotExportsExpression = t.memberExpression(
-    t.identifier('module'),
-    t.identifier('exports'),
-  );
+  const moduleDotExportsExpression = t.memberExpression(t.identifier('module'), t.identifier('exports'));
   const clientIdentifier = t.identifier('_client');
 
   // Functions that are implemented at the connection layer.
-  const callRemoteFunctionExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('callRemoteFunction'),
-  );
-  const callRemoteMethodExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('callRemoteMethod'),
-  );
-  const disposeRemoteObjectExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('disposeRemoteObject'),
-  );
+  const callRemoteFunctionExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
+  const callRemoteMethodExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
+  const disposeRemoteObjectExpression = t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
 
   const remoteModule = t.identifier('remoteModule');
   const emptyObject = t.objectExpression([]);
 
-  const clientDotMarshalExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('marshal'),
-  );
-  const clientDotUnmarshalExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('unmarshal'),
-  );
-  const marshalCall = (...args) =>
-    t.callExpression(clientDotMarshalExpression, args);
-  const unmarshalCall = (...args) =>
-    t.callExpression(clientDotUnmarshalExpression, args);
+  const clientDotMarshalExpression = t.memberExpression(clientIdentifier, t.identifier('marshal'));
+  const clientDotUnmarshalExpression = t.memberExpression(clientIdentifier, t.identifier('unmarshal'));
+  const marshalCall = (...args) => t.callExpression(clientDotMarshalExpression, args);
+  const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, args);
 
-  const clientDotMarshalArgsExpression = t.memberExpression(
-    clientIdentifier,
-    t.identifier('marshalArguments'),
-  );
+  const clientDotMarshalArgsExpression = t.memberExpression(clientIdentifier, t.identifier('marshalArguments'));
   // const clientDotUnmarshalArgsExpression
   //   = t.memberExpression(clientIdentifier, t.identifier('unmarshalArguments'));
 
@@ -84,14 +36,7 @@ export default function createProxyGenerator(
    * @param argumentTypes - An array of the types of the function's arguments.
    * @returns An expression representing a promise that resolves to an array of the arguments.
    */
-  const marshalArgsCall = params =>
-    t.callExpression(clientDotMarshalArgsExpression, [
-      t.callExpression(
-        t.memberExpression(t.identifier('Array'), t.identifier('from')),
-        [t.identifier('arguments')],
-      ),
-      objectToLiteral(params),
-    ]);
+  const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpression, [t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('from')), [t.identifier('arguments')]), objectToLiteral(params)]);
 
   // const unmarshalArgsCall = params => t.callExpression(clientDotUnmarshalArgsExpression, [
   //   t.arguments,
@@ -99,18 +44,7 @@ export default function createProxyGenerator(
   // ]);
 
   // Generates `Object.defineProperty(module.exports, name, {value: …})`
-  const objectDefinePropertyCall = (name, value) =>
-    t.callExpression(
-      t.memberExpression(
-        t.identifier('Object'),
-        t.identifier('defineProperty'),
-      ),
-      [
-        moduleDotExportsExpression,
-        t.stringLiteral(name),
-        t.objectExpression([t.objectProperty(t.identifier('value'), value)]),
-      ],
-    );
+  const objectDefinePropertyCall = (name, value) => t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')), [moduleDotExportsExpression, t.stringLiteral(name), t.objectExpression([t.objectProperty(t.identifier('value'), value)])]);
 
   /**
    * Given the parsed result of a definition file, generate a remote proxy module
@@ -121,50 +55,24 @@ export default function createProxyGenerator(
    * @param defs - The result of parsing the definition file.
    * @returns The proxy factory method.
    */
-  function generateProxy(
-    serviceName: string,
-    preserveFunctionNames: boolean,
-    defs: Definitions,
-  ): string {
+  function generateProxy(serviceName, preserveFunctionNames, defs) {
     const statements = [];
 
     // Declare remoteModule as empty object.
-    statements.push(
-      t.variableDeclaration('const', [
-        t.variableDeclarator(t.identifier('remoteModule'), emptyObject),
-      ]),
-    );
+    statements.push(t.variableDeclaration('const', [t.variableDeclarator(t.identifier('remoteModule'), emptyObject)]));
 
     Object.keys(defs).forEach(defName => {
       const definition = defs[defName];
       const name = definition.name;
       switch (definition.kind) {
         case 'function':
-          const functionName = preserveFunctionNames
-            ? name
-            : `${serviceName}/${name}`;
+          const functionName = preserveFunctionNames ? name : `${serviceName}/${name}`;
           // Generate a remote proxy for each module-level function.
-          statements.push(
-            t.expressionStatement(
-              t.assignmentExpression(
-                '=',
-                t.memberExpression(remoteModule, t.identifier(name)),
-                generateFunctionProxy(functionName, definition.type),
-              ),
-            ),
-          );
+          statements.push(t.expressionStatement(t.assignmentExpression('=', t.memberExpression(remoteModule, t.identifier(name)), generateFunctionProxy(functionName, definition.type))));
           break;
         case 'interface':
           // Generate a remote proxy for each remotable interface.
-          statements.push(
-            t.expressionStatement(
-              t.assignmentExpression(
-                '=',
-                t.memberExpression(remoteModule, t.identifier(name)),
-                generateInterfaceProxy(definition),
-              ),
-            ),
-          );
+          statements.push(t.expressionStatement(t.assignmentExpression('=', t.memberExpression(remoteModule, t.identifier(name)), generateInterfaceProxy(definition))));
           break;
         case 'alias':
           // nothing
@@ -177,23 +85,11 @@ export default function createProxyGenerator(
 
     // Wrap the remoteModule construction in a function that takes a RpcConnection
     // object as an argument.
-    const func = t.arrowFunctionExpression(
-      [clientIdentifier],
-      t.blockStatement(statements),
-    );
-    const assignment = t.assignmentExpression(
-      '=',
-      moduleDotExportsExpression,
-      func,
-    );
+    const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
+    const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
     const program = t.program([
-      // !!!This module is not transpiled!!!
-      t.expressionStatement(t.stringLiteral('use strict')),
-      t.expressionStatement(assignment),
-      t.expressionStatement(
-        objectDefinePropertyCall('defs', objectToLiteral(defs)),
-      ),
-    ]);
+    // !!!This module is not transpiled!!!
+    t.expressionStatement(t.stringLiteral('use strict')), t.expressionStatement(assignment), t.expressionStatement(objectDefinePropertyCall('defs', objectToLiteral(defs)))]);
 
     // Use Babel to generate code from the AST.
     return generate(program).code;
@@ -205,25 +101,15 @@ export default function createProxyGenerator(
    * @returns The proxy function (as an arrow function) that should be assigned to
    *   a property of the remote module.
    */
-  function generateFunctionProxy(name: string, funcType: FunctionType): any {
+  function generateFunctionProxy(name, funcType) {
     // _client.callRemoteFunction(name, kind, args)
-    const callExpression = t.callExpression(callRemoteFunctionExpression, [
-      t.stringLiteral(name),
-      t.stringLiteral(funcType.returnType.kind),
-      marshalArgsCall(funcType.argumentTypes),
-    ]);
+    const callExpression = t.callExpression(callRemoteFunctionExpression, [t.stringLiteral(name), t.stringLiteral(funcType.returnType.kind), marshalArgsCall(funcType.argumentTypes)]);
 
     const result = generateUnmarshalResult(funcType.returnType, callExpression);
 
     // function(arg0, ... argN) { return ... }
-    const args = funcType.argumentTypes.map((arg, i) =>
-      t.identifier(`arg${i}`),
-    );
-    return t.functionExpression(
-      null,
-      args,
-      t.blockStatement([t.returnStatement(result)]),
-    );
+    const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+    return t.functionExpression(null, args, t.blockStatement([t.returnStatement(result)]));
   }
 
   /**
@@ -231,36 +117,26 @@ export default function createProxyGenerator(
    * @param def - The InterfaceDefinition object that encodes all if the interface's operations.
    * @returns An anonymous ClassExpression node that can be assigned to a module property.
    */
-  function generateInterfaceProxy(def: InterfaceDefinition): any {
+  function generateInterfaceProxy(def) {
     const methodDefinitions = [];
 
     // Generate proxies for static methods.
     Object.keys(def.staticMethods).forEach(methodName => {
       const funcType = def.staticMethods[methodName];
-      const funcProxy = generateFunctionProxy(
-        `${def.name}/${methodName}`,
-        funcType,
-      );
-      methodDefinitions.push(
-        t.classMethod(
-          'method',
-          t.identifier(methodName),
-          funcProxy.params,
-          funcProxy.body,
-          /* computed: */ false,
-          /* static: */ true,
-        ),
-      );
+      const funcProxy = generateFunctionProxy(`${def.name}/${methodName}`, funcType);
+      methodDefinitions.push(t.classMethod('method', t.identifier(methodName), funcProxy.params, funcProxy.body,
+      /* computed: */false,
+      /* static: */true));
     });
 
     // Generate a constructor stub.
     methodDefinitions.push(generateRemoteConstructor());
 
     // Generate proxies for instance methods.
-    const thisType: NamedType = {
+    const thisType = {
       kind: 'named',
       location: def.location,
-      name: def.name,
+      name: def.name
     };
     Object.keys(def.instanceMethods).forEach(methodName => {
       const funcType = def.instanceMethods[methodName];
@@ -268,11 +144,7 @@ export default function createProxyGenerator(
       if (methodName === 'dispose') {
         return;
       }
-      const methodDefinition = generateRemoteDispatch(
-        methodName,
-        thisType,
-        funcType,
-      );
+      const methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
       methodDefinitions.push(methodDefinition);
     });
 
@@ -289,19 +161,10 @@ export default function createProxyGenerator(
    */
   function generateRemoteConstructor() {
     // throw Error(...)
-    const throwStatement = t.throwStatement(
-      t.callExpression(t.identifier('Error'), [
-        t.stringLiteral('constructors are not supported for remote objects'),
-      ]),
-    );
+    const throwStatement = t.throwStatement(t.callExpression(t.identifier('Error'), [t.stringLiteral('constructors are not supported for remote objects')]));
 
     // constructor() { ... }
-    return t.classMethod(
-      'constructor',
-      t.identifier('constructor'),
-      [],
-      t.blockStatement([throwStatement]),
-    );
+    return t.classMethod('constructor', t.identifier('constructor'), [], t.blockStatement([throwStatement]));
   }
 
   /**
@@ -310,38 +173,19 @@ export default function createProxyGenerator(
    * @param funcType - The type information for the function.
    * @returns A MethodDefinition node that can be added to a ClassBody
    */
-  function generateRemoteDispatch(
-    methodName: string,
-    thisType: NamedType,
-    funcType: FunctionType,
-  ) {
+  function generateRemoteDispatch(methodName, thisType, funcType) {
     // _client.callRemoteMethod(id, methodName, returnType, args)
-    const callRemoteMethod = t.callExpression(callRemoteMethodExpression, [
-      generateTransformStatement(t.thisExpression(), thisType, true),
-      t.stringLiteral(methodName),
-      t.stringLiteral(funcType.returnType.kind),
-      marshalArgsCall(funcType.argumentTypes),
-    ]);
+    const callRemoteMethod = t.callExpression(callRemoteMethodExpression, [generateTransformStatement(t.thisExpression(), thisType, true), t.stringLiteral(methodName), t.stringLiteral(funcType.returnType.kind), marshalArgsCall(funcType.argumentTypes)]);
 
     // ... .then(value => _client.unmarshal(...))
-    const result = generateUnmarshalResult(
-      funcType.returnType,
-      callRemoteMethod,
-    );
+    const result = generateUnmarshalResult(funcType.returnType, callRemoteMethod);
 
     // methodName(arg0, ... argN) { return ... }
-    const funcTypeArgs = funcType.argumentTypes.map((arg, i) =>
-      t.identifier(`arg${i}`),
-    );
-    return t.classMethod(
-      'method',
-      t.identifier(methodName),
-      funcTypeArgs,
-      t.blockStatement([t.returnStatement(result)]),
-    );
+    const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+    return t.classMethod('method', t.identifier(methodName), funcTypeArgs, t.blockStatement([t.returnStatement(result)]));
   }
 
-  function generateUnmarshalResult(returnType: Type, valueExpression) {
+  function generateUnmarshalResult(returnType, valueExpression) {
     switch (returnType.kind) {
       case 'void':
         return valueExpression;
@@ -352,30 +196,19 @@ export default function createProxyGenerator(
         // Map the events through the appropriate marshaller.
         // ... .map(value => _client.unmarshal(value, returnType))
         const observableTransformer = generateValueTransformer(returnType.type);
-        const unmarshalledObservable = t.callExpression(
-          t.memberExpression(valueExpression, t.identifier('map')),
-          [observableTransformer],
-        );
+        const unmarshalledObservable = t.callExpression(t.memberExpression(valueExpression, t.identifier('map')), [observableTransformer]);
 
         // And finally, convert to a ConnectableObservable with publish.
-        return t.callExpression(
-          t.memberExpression(unmarshalledObservable, t.identifier('publish')),
-          [],
-        );
+        return t.callExpression(t.memberExpression(unmarshalledObservable, t.identifier('publish')), []);
       default:
         throw new Error(`Unknown return type ${returnType.kind}.`);
     }
   }
 
   // value => _client.unmarshal(value, type)
-  function generateValueTransformer(type: Type) {
+  function generateValueTransformer(type) {
     const value = t.identifier('value');
-    return t.arrowFunctionExpression(
-      [value],
-      t.blockStatement([
-        t.returnStatement(generateTransformStatement(value, type, false)),
-      ]),
-    );
+    return t.arrowFunctionExpression([value], t.blockStatement([t.returnStatement(generateTransformStatement(value, type, false))]));
   }
 
   /**
@@ -385,17 +218,10 @@ export default function createProxyGenerator(
    */
   function generateDisposeMethod() {
     // return _client.disposeRemoteObject(this);
-    const returnStatement = t.returnStatement(
-      t.callExpression(disposeRemoteObjectExpression, [t.thisExpression()]),
-    );
+    const returnStatement = t.returnStatement(t.callExpression(disposeRemoteObjectExpression, [t.thisExpression()]));
 
     // dispose() { ... }
-    return t.classMethod(
-      'method',
-      t.identifier('dispose'),
-      [],
-      t.blockStatement([returnStatement]),
-    );
+    return t.classMethod('method', t.identifier('dispose'), [], t.blockStatement([returnStatement]));
   }
 
   /**
@@ -406,11 +232,7 @@ export default function createProxyGenerator(
    * @param marshal {boolean} - If true, then we are trying to marshal the value. If false, then
    *   we are trying to unmarshal.
    */
-  function generateTransformStatement(
-    id: any,
-    type: Type,
-    marshal: boolean,
-  ): any {
+  function generateTransformStatement(id, type, marshal) {
     // The first argument is the value to be marshalled or unmarshalled.
     // The second argument is the type object, which encodes all of the information required
     // to marshal / unmarshal the value.
@@ -432,7 +254,7 @@ export default function createProxyGenerator(
    * @param obj - The object to convert.
    * @returns A babel AST node.
    */
-  function objectToLiteral(obj: any): any {
+  function objectToLiteral(obj) {
     if (typeof obj === 'string') {
       return t.stringLiteral(obj);
     } else if (typeof obj === 'number') {
@@ -449,24 +271,12 @@ export default function createProxyGenerator(
       // [...]
       return t.arrayExpression(obj.map(elem => objectToLiteral(elem)));
     } else if (obj instanceof Map) {
-      return t.newExpression(
-        t.identifier('Map'),
-        obj.size
-          ? // new Map([...])
-            [objectToLiteral(Array.from(obj.entries()))]
-          : // new Map()
-            [],
-      );
+      return t.newExpression(t.identifier('Map'), obj.size ? // new Map([...])
+      [objectToLiteral(Array.from(obj.entries()))] : // new Map()
+      []);
     } else if (typeof obj === 'object') {
       // {a: 1, b: 2}
-      return t.objectExpression(
-        Object.keys(obj).map(key =>
-          t.objectProperty(
-            t.isValidIdentifier(key) ? t.identifier(key) : t.stringLiteral(key),
-            objectToLiteral(obj[key]),
-          ),
-        ),
-      );
+      return t.objectExpression(Object.keys(obj).map(key => t.objectProperty(t.isValidIdentifier(key) ? t.identifier(key) : t.stringLiteral(key), objectToLiteral(obj[key]))));
     }
 
     throw new Error(`Cannot convert unknown type ${typeof obj} to literal.`);
@@ -478,10 +288,8 @@ export default function createProxyGenerator(
    * @param functionExpression - A function to pass as an argument to `.then`
    * @returns A CallExpression node that `.then`s on the provided promise.
    */
-  function thenPromise(promiseExpression, functionExpression): any {
-    return t.callExpression(t.memberExpression(promiseExpression, thenIdent), [
-      functionExpression,
-    ]);
+  function thenPromise(promiseExpression, functionExpression) {
+    return t.callExpression(t.memberExpression(promiseExpression, thenIdent), [functionExpression]);
   }
 
   return {
@@ -489,7 +297,23 @@ export default function createProxyGenerator(
     /** Export private functions for unit-testing. */
     __test__: {
       generateTransformStatement,
-      objectToLiteral,
-    },
+      objectToLiteral
+    }
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+/**
+ * NOTE: Keep this file free of runtime dependencies!
+ * Dependencies should be injected into createProxyGenerator below.
+ * This allows us to easily cache the result of this function during development
+ * to minimize the impact on reload times.
+ */

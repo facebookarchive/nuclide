@@ -1,30 +1,69 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {AgentOptions} from '../common/types';
-import type {ProtocolLogger} from './QueuedAckTransport';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ReliableSocket = undefined;
 
-import {Observable} from 'rxjs';
-import url from 'url';
-import WS from 'ws';
-import uuid from 'uuid';
-import {Emitter} from 'event-kit';
-import {WebSocketTransport} from './WebSocketTransport';
-import {QueuedAckTransport} from './QueuedAckTransport';
-import {XhrConnectionHeartbeat} from '../client/XhrConnectionHeartbeat';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-const logger = getLogger('nuclide-socket');
+var _url = _interopRequireDefault(require('url'));
+
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+var _uuid;
+
+function _load_uuid() {
+  return _uuid = _interopRequireDefault(require('uuid'));
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _WebSocketTransport;
+
+function _load_WebSocketTransport() {
+  return _WebSocketTransport = require('./WebSocketTransport');
+}
+
+var _QueuedAckTransport;
+
+function _load_QueuedAckTransport() {
+  return _QueuedAckTransport = require('./QueuedAckTransport');
+}
+
+var _XhrConnectionHeartbeat;
+
+function _load_XhrConnectionHeartbeat() {
+  return _XhrConnectionHeartbeat = require('../client/XhrConnectionHeartbeat');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-socket'); /**
+                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                              * All rights reserved.
+                                                                              *
+                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                              *
+                                                                              *  strict-local
+                                                                              * @format
+                                                                              */
 
 const PING_SEND_INTERVAL = 5000;
 const PING_WAIT_INTERVAL = 5000;
@@ -53,37 +92,19 @@ const MAX_RECONNECT_TIME_MS = 5000;
 //   - intransient-error: the server is reachable but refusing to respond to
 //     connections (i.e. ECONNREFUSED).
 //   - close: this socket has been closed by a call to `close()`.
-export class ReliableSocket {
-  id: string;
-
-  _serverUri: string;
-  _options: ?AgentOptions;
-  _pingTimer: ?TimeoutID;
-  _reconnectTime: number;
-  _reconnectTimer: ?TimeoutID; // ID from a setTimeout() call.
-  _previouslyConnected: boolean;
-  _websocketUri: string;
-  _emitter: Emitter;
-  _transport: ?QueuedAckTransport;
-  _heartbeat: XhrConnectionHeartbeat;
-  _heartbeatChannel: string;
-
-  constructor(
-    serverUri: string,
-    heartbeatChannel: string,
-    options: ?AgentOptions,
-    protocolLogger: ?ProtocolLogger,
-  ) {
-    this._emitter = new Emitter();
+class ReliableSocket {
+  // ID from a setTimeout() call.
+  constructor(serverUri, heartbeatChannel, options, protocolLogger) {
+    this._emitter = new (_eventKit || _load_eventKit()).Emitter();
     this._serverUri = serverUri;
     this._options = options;
     this._heartbeatChannel = heartbeatChannel;
-    this.id = uuid.v4();
+    this.id = (_uuid || _load_uuid()).default.v4();
     this._pingTimer = null;
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
-    this._transport = new QueuedAckTransport(this.id, null, protocolLogger);
+    this._transport = new (_QueuedAckTransport || _load_QueuedAckTransport()).QueuedAckTransport(this.id, null, protocolLogger);
 
     this._transport.onDisconnect(() => {
       if (this.isDisconnected()) {
@@ -93,20 +114,18 @@ export class ReliableSocket {
       }
     });
 
-    const {protocol, host, path} = url.parse(serverUri);
-    invariant(host != null);
+    const { protocol, host, path } = _url.default.parse(serverUri);
+
+    if (!(host != null)) {
+      throw new Error('Invariant violation: "host != null"');
+    }
+
     const pathString = path != null ? path : '';
-    this._websocketUri = `ws${
-      protocol === 'https:' ? 's' : ''
-    }://${host}${pathString}`;
+    this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}${pathString}`;
 
     logger.info(`websocket uri: ${this._websocketUri}`);
 
-    this._heartbeat = new XhrConnectionHeartbeat(
-      serverUri,
-      this._heartbeatChannel,
-      options,
-    );
+    this._heartbeat = new (_XhrConnectionHeartbeat || _load_XhrConnectionHeartbeat()).XhrConnectionHeartbeat(serverUri, this._heartbeatChannel, options);
     this._heartbeat.onConnectionRestored(() => {
       if (this.isDisconnected()) {
         this._scheduleReconnect();
@@ -116,21 +135,19 @@ export class ReliableSocket {
     this._reconnect();
   }
 
-  getHeartbeat(): XhrConnectionHeartbeat {
+  getHeartbeat() {
     return this._heartbeat;
   }
 
-  isConnected(): boolean {
+  isConnected() {
     return this._transport != null && this._transport.getState() === 'open';
   }
 
-  isDisconnected(): boolean {
-    return (
-      this._transport != null && this._transport.getState() === 'disconnected'
-    );
+  isDisconnected() {
+    return this._transport != null && this._transport.getState() === 'disconnected';
   }
 
-  waitForConnect(): Promise<void> {
+  waitForConnect() {
     return new Promise((resolve, reject) => {
       if (this.isConnected()) {
         return resolve();
@@ -142,14 +159,15 @@ export class ReliableSocket {
   }
 
   _reconnect() {
-    invariant(this.isDisconnected());
+    if (!this.isDisconnected()) {
+      throw new Error('Invariant violation: "this.isDisconnected()"');
+    }
 
-    const websocket = new WS(this._websocketUri, {
-      ...this._options,
+    const websocket = new (_ws || _load_ws()).default(this._websocketUri, Object.assign({}, this._options, {
       headers: {
-        client_id: this.id,
-      },
-    });
+        client_id: this.id
+      }
+    }));
 
     // Need to add this otherwise unhandled errors during startup will result
     // in uncaught exceptions. This is due to EventEmitter treating 'error'
@@ -171,8 +189,8 @@ export class ReliableSocket {
 
     const onSocketOpen = async () => {
       if (this.isDisconnected()) {
-        const ws = new WebSocketTransport(this.id, websocket);
-        const pingId = uuid.v4();
+        const ws = new (_WebSocketTransport || _load_WebSocketTransport()).WebSocketTransport(this.id, websocket);
+        const pingId = (_uuid || _load_uuid()).default.v4();
         ws.onClose(() => {
           this._clearPingTimer();
         });
@@ -190,7 +208,11 @@ export class ReliableSocket {
           this._schedulePing(pingId, ws);
         });
         this._schedulePing(pingId, ws);
-        invariant(this._transport != null);
+
+        if (!(this._transport != null)) {
+          throw new Error('Invariant violation: "this._transport != null"');
+        }
+
         this._transport.reconnect(ws);
         websocket.removeListener('error', onSocketError);
         this._emitter.emit('status', true);
@@ -208,7 +230,7 @@ export class ReliableSocket {
     websocket.on('open', onSocketOpen);
   }
 
-  _schedulePing(data: string, ws: WebSocketTransport): void {
+  _schedulePing(data, ws) {
     this._clearPingTimer();
     this._pingTimer = setTimeout(() => {
       ws.ping(data);
@@ -250,34 +272,30 @@ export class ReliableSocket {
     }
   }
 
-  send(message: string): void {
+  send(message) {
     // "this.isClosed()" but flow understands it
     if (this._transport == null) {
-      throw new Error(
-        `Sending message to server ${this._serverUri} on closed socket ${
-          this.id
-        }: ${message}`,
-      );
+      throw new Error(`Sending message to server ${this._serverUri} on closed socket ${this.id}: ${message}`);
     }
     this._transport.send(message);
   }
 
   // Resolves if the connection looks healthy.
   // Will reject quickly if the connection looks unhealthy.
-  testConnection(): Promise<string> {
+  testConnection() {
     return this._heartbeat.sendHeartBeat();
   }
 
-  getAddress(): string {
+  getAddress() {
     return this._serverUri;
   }
 
-  getServerUri(): string {
+  getServerUri() {
     return this._serverUri;
   }
 
-  getServerPort(): ?number {
-    const {port} = url.parse(this.getServerUri());
+  getServerPort() {
+    const { port } = _url.default.parse(this.getServerUri());
     if (port == null) {
       return null;
     }
@@ -296,33 +314,35 @@ export class ReliableSocket {
     this._heartbeat.close();
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._transport == null;
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     if (this.isClosed()) {
-      return Observable.throw(
-        `Socket ${this.id} to server ${this._serverUri} is closed`,
-      );
+      return _rxjsBundlesRxMinJs.Observable.throw(`Socket ${this.id} to server ${this._serverUri} is closed`);
     }
-    invariant(this._transport != null);
+
+    if (!(this._transport != null)) {
+      throw new Error('Invariant violation: "this._transport != null"');
+    }
+
     return this._transport.onMessage();
   }
 
-  onStatus(callback: (connected: boolean) => mixed): IDisposable {
+  onStatus(callback) {
     return this._emitter.on('status', callback);
   }
 
-  onConnect(callback: () => mixed): IDisposable {
+  onConnect(callback) {
     return this._emitter.on('connect', callback);
   }
 
-  onReconnect(callback: () => mixed): IDisposable {
+  onReconnect(callback) {
     return this._emitter.on('reconnect', callback);
   }
 
-  onDisconnect(callback: () => mixed): IDisposable {
+  onDisconnect(callback) {
     return this._emitter.on('disconnect', callback);
   }
 
@@ -331,7 +351,7 @@ export class ReliableSocket {
    * an error by attempting to reconnect. It is up to the listener to decide
    * whether to close this socket.
    */
-  onIntransientError(callback: (error: Error) => mixed): IDisposable {
+  onIntransientError(callback) {
     return this._emitter.on('intransient-error', callback);
   }
 
@@ -339,7 +359,8 @@ export class ReliableSocket {
    * Called just once if the state of this socket goes from opened to closed.
    * E.g. this socket is closed via its `close` method.
    */
-  onClose(callback: () => mixed): IDisposable {
+  onClose(callback) {
     return this._emitter.on('close', callback);
   }
 }
+exports.ReliableSocket = ReliableSocket;

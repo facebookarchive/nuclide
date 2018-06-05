@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEmptyAppState = createEmptyAppState;
+exports.serialize = serialize;
+exports.deserialize = deserialize;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../../modules/nuclide-commons/collection');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,37 +20,31 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AppState} from '../types';
-
-import {objectEntries, objectFromMap} from 'nuclide-commons/collection';
-
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     customAdbPaths: new Map(),
     customSdbPaths: new Map(),
-    adbPorts: new Map(),
+    adbPorts: new Map()
   };
 }
 
-export function serialize(state: AppState): Object {
+function serialize(state) {
   return {
-    customAdbPaths: objectFromMap(state.customAdbPaths),
-    customSdbPaths: objectFromMap(state.customSdbPaths),
-    adbPorts: objectFromMap(state.adbPorts),
+    customAdbPaths: (0, (_collection || _load_collection()).objectFromMap)(state.customAdbPaths),
+    customSdbPaths: (0, (_collection || _load_collection()).objectFromMap)(state.customSdbPaths),
+    adbPorts: (0, (_collection || _load_collection()).objectFromMap)(state.adbPorts)
   };
 }
 
-export function deserialize(rawState: ?Object): ?Object {
+function deserialize(rawState) {
   if (rawState != null) {
     ['customAdbPaths', 'customSdbPaths', 'adbPorts'].forEach(objectProp => {
       if (rawState.hasOwnProperty(objectProp)) {
-        rawState[objectProp] = new Map(
-          objectEntries(rawState[objectProp] || {}),
-        );
+        rawState[objectProp] = new Map((0, (_collection || _load_collection()).objectEntries)(rawState[objectProp] || {}));
       }
     });
   }

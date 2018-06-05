@@ -1,52 +1,76 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {setup} from '../__mocks__/file_tree_setup';
-import FileTreeActions from '../lib/FileTreeActions';
-import FileTreeController from '../lib/FileTreeController';
-import {FileTreeStore} from '../lib/FileTreeStore';
-import type {FileTreeNode} from '../lib/FileTreeNode';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import path from 'path';
+var _file_tree_setup;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'assert';
+function _load_file_tree_setup() {
+  return _file_tree_setup = require('../__mocks__/file_tree_setup');
+}
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
+
+var _FileTreeController;
+
+function _load_FileTreeController() {
+  return _FileTreeController = _interopRequireDefault(require('../lib/FileTreeController'));
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('../lib/FileTreeStore');
+}
+
+var _nuclideWorkingSetsCommon;
+
+function _load_nuclideWorkingSetsCommon() {
+  return _nuclideWorkingSetsCommon = require('../../nuclide-working-sets-common');
+}
+
+var _path = _interopRequireDefault(require('path'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('FileTreeController', () => {
-  const actions = FileTreeActions.getInstance();
-  const store = FileTreeStore.getInstance();
+  const actions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance();
+  const store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
 
-  let controller: FileTreeController = (null: any);
+  let controller = null;
   let workspaceElement;
 
-  function getNode(rootKey: string, nodeKey: string): FileTreeNode {
+  function getNode(rootKey, nodeKey) {
     const node = store.getNode(rootKey, nodeKey);
-    invariant(node);
+
+    if (!node) {
+      throw new Error('Invariant violation: "node"');
+    }
+
     return node;
   }
 
-  function isSelected(rootKey: string, nodeKey: string): boolean {
+  function isSelected(rootKey, nodeKey) {
     return getNode(rootKey, nodeKey).isSelected();
   }
 
-  function isExpanded(rootKey: string, nodeKey: string): boolean {
+  function isExpanded(rootKey, nodeKey) {
     return getNode(rootKey, nodeKey).isExpanded;
   }
 
-  function numSelected(): number {
+  function numSelected() {
     return store.getSelectedNodes().size;
   }
 
   beforeEach(() => {
-    ({controller} = setup());
+    ({ controller } = (0, (_file_tree_setup || _load_file_tree_setup()).setup)());
 
     // The controller uses the currently active file to decide when and what to reveal in the file
     // tree when revealActiveFile is called. Importantly, it also short-circuits in some cases if
@@ -55,28 +79,22 @@ describe('FileTreeController', () => {
     jest.spyOn(atom.workspace, 'getActiveTextEditor').mockReturnValue({
       getPath() {
         return 'foo';
-      },
+      }
     });
   });
 
   afterEach(() => {
     controller.destroy();
-    actions.updateWorkingSet(new WorkingSet([]));
+    actions.updateWorkingSet(new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet([]));
     store.reset();
   });
 
   describe('navigating with the keyboard', () => {
-    const rootKey = nuclideUri.join(__dirname, '../__mocks__/fixtures') + '/';
-    const dir0key =
-      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
-    const dir1Key =
-      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir1') + '/';
-    const fooTxtKey = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir1/foo.txt',
-    );
-    const dir2Key =
-      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir2') + '/';
+    const rootKey = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures') + '/';
+    const dir0key = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
+    const dir1Key = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir1') + '/';
+    const fooTxtKey = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir1/foo.txt');
+    const dir2Key = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir2') + '/';
 
     describe('with a collapsed root', () => {
       /*
@@ -303,9 +321,7 @@ describe('FileTreeController', () => {
         // Mimic the loading state where `dir1` reports itself as expanded but has no children
         // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
         // fetch and might populate the children of `dir1`. We don't want that.
-        store._updateNodeAtRoot(rootKey, dir1Key, node =>
-          node.set({isLoading: true, isExpanded: true}),
-        );
+        store._updateNodeAtRoot(rootKey, dir1Key, node => node.set({ isLoading: true, isExpanded: true }));
       });
 
       describe('via _moveDown expanded + loading', () => {
@@ -332,48 +348,19 @@ describe('FileTreeController', () => {
   });
 
   describe('multi-selection and range-selection', () => {
-    const rootKey = nuclideUri.join(__dirname, '../__mocks__/fixtures') + '/';
-    const dir0 = nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
-    const bar =
-      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0/bar') + '/';
-    const bar1 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/bar/bar1',
-    );
-    const bar2 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/bar/bar2',
-    );
-    const bar3 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/bar/bar3',
-    );
-    const foo =
-      nuclideUri.join(__dirname, '../__mocks__/fixtures/dir0/foo') + '/';
-    const foo1 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/foo/foo1',
-    );
-    const foo2 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/foo/foo2',
-    );
-    const foo3 = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/foo/foo3',
-    );
-    const afile = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/afile',
-    );
-    const bfile = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/bfile',
-    );
-    const zfile = nuclideUri.join(
-      __dirname,
-      '../__mocks__/fixtures/dir0/zfile',
-    );
+    const rootKey = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures') + '/';
+    const dir0 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0') + '/';
+    const bar = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/bar') + '/';
+    const bar1 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/bar/bar1');
+    const bar2 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/bar/bar2');
+    const bar3 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/bar/bar3');
+    const foo = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/foo') + '/';
+    const foo1 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/foo/foo1');
+    const foo2 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/foo/foo2');
+    const foo3 = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/foo/foo3');
+    const afile = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/afile');
+    const bfile = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/bfile');
+    const zfile = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures/dir0/zfile');
 
     beforeEach(async () => {
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -556,7 +543,7 @@ describe('FileTreeController', () => {
     });
 
     it('supports workingset', () => {
-      actions.updateWorkingSet(new WorkingSet([bar2, foo, zfile]));
+      actions.updateWorkingSet(new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet([bar2, foo, zfile]));
       actions.setSelectedNode(rootKey, foo3);
       actions.rangeSelectToNode(rootKey, zfile);
       expect(isSelected(rootKey, foo3)).toBe(true);
@@ -567,4 +554,13 @@ describe('FileTreeController', () => {
       expect(numSelected()).toBe(1);
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */

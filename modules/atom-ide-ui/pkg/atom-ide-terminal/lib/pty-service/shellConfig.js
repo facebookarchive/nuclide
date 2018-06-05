@@ -1,43 +1,56 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
-import os from 'os';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.readConfig = readConfig;
+exports.parseConfig = parseConfig;
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {shellParse} from 'nuclide-commons/string';
+var _os = _interopRequireDefault(require('os'));
 
-import type {Command} from './rpc-types';
+var _fsPromise;
 
-const CONFIG_BASENAME = '.nuclide-terminal.json';
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../../../nuclide-commons/fsPromise'));
+}
 
-export type Config = {
-  command?: Command,
-};
+var _nuclideUri;
 
-export async function readConfig(): Promise<?Config> {
-  let configContents = (null: ?string);
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../../../nuclide-commons/nuclideUri'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../../../../nuclide-commons/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const CONFIG_BASENAME = '.nuclide-terminal.json'; /**
+                                                   * Copyright (c) 2017-present, Facebook, Inc.
+                                                   * All rights reserved.
+                                                   *
+                                                   * This source code is licensed under the BSD-style license found in the
+                                                   * LICENSE file in the root directory of this source tree. An additional grant
+                                                   * of patent rights can be found in the PATENTS file in the same directory.
+                                                   *
+                                                   * 
+                                                   * @format
+                                                   */
+
+async function readConfig() {
+  let configContents = null;
   try {
-    const configFile = nuclideUri.expandHomeDir(`~/${CONFIG_BASENAME}`);
-    configContents = await fsPromise.readFile(configFile, 'utf-8');
+    const configFile = (_nuclideUri || _load_nuclideUri()).default.expandHomeDir(`~/${CONFIG_BASENAME}`);
+    configContents = await (_fsPromise || _load_fsPromise()).default.readFile(configFile, 'utf-8');
   } catch (error) {
     if (error.code === 'ENOENT') {
       // If the user has no config file, that is still success, just with empty result.
       return Promise.resolve(null);
     } else {
-      return Promise.reject(
-        new Error(`code='${error.code}', error='${error}'`),
-      );
+      return Promise.reject(new Error(`code='${error.code}', error='${error}'`));
     }
   }
 
@@ -48,14 +61,9 @@ export async function readConfig(): Promise<?Config> {
   }
 }
 
-export function parseConfig(configContents: string): Config {
-  function throwError(message: string): Error {
-    throw new Error(
-      `(${os.hostname()}) error parsing ~/${CONFIG_BASENAME}:\n` +
-        `  ${message}.\n` +
-        'Contents:\n' +
-        configContents,
-    );
+function parseConfig(configContents) {
+  function throwError(message) {
+    throw new Error(`(${_os.default.hostname()}) error parsing ~/${CONFIG_BASENAME}:\n` + `  ${message}.\n` + 'Contents:\n' + configContents);
   }
 
   let rawConfig = null;
@@ -68,12 +76,15 @@ export function parseConfig(configContents: string): Config {
   if (typeof rawConfig !== 'object') {
     throw throwError('Expected top-level to be an object.');
   }
-  invariant(rawConfig != null);
+
+  if (!(rawConfig != null)) {
+    throw new Error('Invariant violation: "rawConfig != null"');
+  }
 
   let argv = null;
   const command = rawConfig.command;
   if (typeof command === 'string') {
-    argv = shellParse(command);
+    argv = (0, (_string || _load_string()).shellParse)(command);
   } else if (Array.isArray(command)) {
     for (const arg of command) {
       if (typeof arg !== 'string') {
@@ -88,7 +99,7 @@ export function parseConfig(configContents: string): Config {
   return {
     command: {
       file: argv[0],
-      args: argv.slice(1),
-    },
+      args: argv.slice(1)
+    }
   };
 }

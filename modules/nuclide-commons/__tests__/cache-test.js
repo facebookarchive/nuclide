@@ -1,16 +1,10 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {Cache} from '../cache';
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../cache');
+}
 
 describe('Cache', () => {
   const key1 = 'key1';
@@ -24,7 +18,7 @@ describe('Cache', () => {
       expect(key).toEqual(key1);
       return value;
     });
-    const cache: Cache<string, string> = new Cache(factory);
+    const cache = new (_cache || _load_cache()).Cache(factory);
 
     expect(factory).not.toHaveBeenCalled();
     expect(cache.has(key1)).toEqual(false);
@@ -40,7 +34,7 @@ describe('Cache', () => {
 
   it('delete', () => {
     const factory = jest.fn().mockReturnValue(value);
-    const cache: Cache<string, string> = new Cache(factory);
+    const cache = new (_cache || _load_cache()).Cache(factory);
 
     expect(cache.delete(key1)).toEqual(false);
     cache.get(key1);
@@ -52,7 +46,7 @@ describe('Cache', () => {
   it('delete disposes values', () => {
     const factory = jest.fn().mockReturnValue(value);
     const dispose = jest.fn();
-    const cache: Cache<string, string> = new Cache(factory, dispose);
+    const cache = new (_cache || _load_cache()).Cache(factory, dispose);
 
     cache.get(key1);
     cache.delete(key1);
@@ -62,7 +56,7 @@ describe('Cache', () => {
   it('clear disposes values', () => {
     const factory = jest.fn().mockReturnValue(value);
     const dispose = jest.fn();
-    const cache: Cache<string, string> = new Cache(factory, dispose);
+    const cache = new (_cache || _load_cache()).Cache(factory, dispose);
 
     cache.get(key1);
     cache.clear();
@@ -72,7 +66,7 @@ describe('Cache', () => {
   it('dispose disposes values', () => {
     const factory = jest.fn().mockReturnValue(value);
     const dispose = jest.fn();
-    const cache: Cache<string, string> = new Cache(factory, dispose);
+    const cache = new (_cache || _load_cache()).Cache(factory, dispose);
 
     cache.get(key1);
     cache.dispose();
@@ -82,32 +76,36 @@ describe('Cache', () => {
   it('observeValues sees existing and new values', async () => {
     await (async () => {
       const factory = jest.fn().mockImplementation(key => key);
-      const cache: Cache<string, string> = new Cache(factory);
+      const cache = new (_cache || _load_cache()).Cache(factory);
 
       cache.get(key1);
-      const values = cache
-        .observeValues()
-        .toArray()
-        .toPromise();
+      const values = cache.observeValues().toArray().toPromise();
       cache.get(key2);
       cache.dispose();
-      expect(await values).toEqual([key1, key2]);
+      expect((await values)).toEqual([key1, key2]);
     })();
   });
 
   it('observeKeys sees existing and new keys', async () => {
     await (async () => {
       const factory = jest.fn().mockImplementation(key => value);
-      const cache: Cache<string, string> = new Cache(factory);
+      const cache = new (_cache || _load_cache()).Cache(factory);
 
       cache.get(key1);
-      const values = cache
-        .observeKeys()
-        .toArray()
-        .toPromise();
+      const values = cache.observeKeys().toArray().toPromise();
       cache.get(key2);
       cache.dispose();
-      expect(await values).toEqual([key1, key2]);
+      expect((await values)).toEqual([key1, key2]);
     })();
   });
-});
+}); /**
+     * Copyright (c) 2017-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the BSD-style license found in the
+     * LICENSE file in the root directory of this source tree. An additional grant
+     * of patent rights can be found in the PATENTS file in the same directory.
+     *
+     *  strict-local
+     * @format
+     */

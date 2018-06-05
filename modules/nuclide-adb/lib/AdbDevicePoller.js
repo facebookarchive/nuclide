@@ -1,37 +1,44 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {Expected} from 'nuclide-commons/expected';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Observable} from 'rxjs';
-import type {Device} from 'nuclide-debugger-common/types';
-import type {DBPlatform} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeAndroidDevices = observeAndroidDevices;
+exports.observeAndroidDevicesX = observeAndroidDevicesX;
 
-import {DevicePoller} from './DevicePoller';
-import {getAdbServiceByNuclideUri} from './utils';
+var _DevicePoller;
 
-const ADB_PLATFORM: DBPlatform = {
+function _load_DevicePoller() {
+  return _DevicePoller = require('./DevicePoller');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+const ADB_PLATFORM = {
   name: 'Android',
   type: 'adb',
   command: 'adb',
-  getService: getAdbServiceByNuclideUri,
-};
+  getService: (_utils || _load_utils()).getAdbServiceByNuclideUri
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    *  strict-local
+    * @format
+    */
 
-export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
+function observeAndroidDevices(host) {
   return observeAndroidDevicesX(host).map(devices => devices.getOrDefault([]));
 }
 
-export function observeAndroidDevicesX(
-  host: NuclideUri,
-): Observable<Expected<Device[]>> {
-  return DevicePoller.observeDevices(ADB_PLATFORM, host);
+function observeAndroidDevicesX(host) {
+  return (_DevicePoller || _load_DevicePoller()).DevicePoller.observeDevices(ADB_PLATFORM, host);
 }

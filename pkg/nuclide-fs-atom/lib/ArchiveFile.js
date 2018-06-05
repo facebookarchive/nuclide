@@ -1,137 +1,144 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ArchiveFileSystem} from './ArchiveFileSystem';
-import type {ParentDirectory} from './common';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ArchiveFile = undefined;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getParentDir, rejectWrite, rejectWriteSync} from './common';
-import Stream from 'stream';
+var _nuclideUri;
 
-export class ArchiveFile implements atom$Fileish {
-  _fs: ArchiveFileSystem;
-  _path: NuclideUri;
-  _encoding: string;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
 
-  constructor(path: NuclideUri, fs: ArchiveFileSystem) {
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _common;
+
+function _load_common() {
+  return _common = require('./common');
+}
+
+var _stream = _interopRequireDefault(require('stream'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ArchiveFile {
+
+  constructor(path, fs) {
     this._fs = fs;
     this._path = path;
     this._encoding = 'utf8';
   }
 
-  create(): Promise<boolean> {
-    return rejectWrite();
+  create() {
+    return (0, (_common || _load_common()).rejectWrite)();
   }
 
-  isFile(): boolean {
+  isFile() {
     return true;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return false;
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return this._fs.exists(this._path);
   }
 
-  existsSync(): boolean {
+  existsSync() {
     return true;
   }
 
-  setEncoding(encoding: string): void {
+  setEncoding(encoding) {
     this._encoding = encoding;
   }
 
-  getEncoding(): string {
+  getEncoding() {
     return this._encoding;
   }
 
-  onDidRename(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidRename(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  onDidDelete(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidDelete(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  onDidChange(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidChange(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  onWillThrowWatchError(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onWillThrowWatchError(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  getPath(): NuclideUri {
+  getPath() {
     return this._path;
   }
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._path);
+  getBaseName() {
+    return (_nuclideUri || _load_nuclideUri()).default.basename(this._path);
   }
 
-  getParent(): ParentDirectory {
-    return getParentDir(this._fs, this._path);
+  getParent() {
+    return (0, (_common || _load_common()).getParentDir)(this._fs, this._path);
   }
 
-  createReadStream(): stream$Readable {
+  createReadStream() {
     let started = false;
     const createStream = () => this._fs.createReadStream(this._path);
-    const stream = new Stream.Readable({
+    const stream = new _stream.default.Readable({
       read(size) {
         if (!started) {
           started = true;
-          const disposer = new UniversalDisposable();
+          const disposer = new (_UniversalDisposable || _load_UniversalDisposable()).default();
           const inner = createStream();
-          disposer.add(
-            inner.subscribe(
-              buffer => {
-                stream.push(buffer);
-              },
-              err => {
-                stream.emit('error', err);
-                disposer.dispose();
-              },
-              () => {
-                stream.push(null);
-                disposer.dispose();
-              },
-            ),
-            inner.connect(),
-          );
+          disposer.add(inner.subscribe(buffer => {
+            stream.push(buffer);
+          }, err => {
+            stream.emit('error', err);
+            disposer.dispose();
+          }, () => {
+            stream.push(null);
+            disposer.dispose();
+          }), inner.connect());
         }
-      },
+      }
     });
     return stream;
   }
 
-  createWriteStream(): stream$Writable {
+  createWriteStream() {
     throw new Error('Archive files do not support writing.');
   }
 
-  read(flushCache?: boolean): Promise<string> {
-    const encoding: any = this._encoding;
-    return this._fs
-      .readFile(this._path)
-      .then(buffer => buffer.toString(encoding));
+  read(flushCache) {
+    const encoding = this._encoding;
+    return this._fs.readFile(this._path).then(buffer => buffer.toString(encoding));
   }
 
-  write(text: string): Promise<void> {
-    return rejectWrite();
+  write(text) {
+    return (0, (_common || _load_common()).rejectWrite)();
   }
 
-  writeSync(text: string): void {
-    rejectWriteSync();
+  writeSync(text) {
+    (0, (_common || _load_common()).rejectWriteSync)();
   }
 }
+exports.ArchiveFile = ArchiveFile; /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    * @format
+                                    */
