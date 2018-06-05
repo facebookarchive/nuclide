@@ -186,15 +186,9 @@ export async function getHhvmStackTraces(): Promise<Array<string>> {
   return [];
 }
 
-export async function createLogFilePaste(): Promise<string> {
+export async function getDebugServerLog(): Promise<string> {
   try {
-    // $FlowFB
-    const fbPaste = require('../../fb-pastebin');
-    return fsPromise
-      .readFile(await _getHHVMLogFilePath(), 'utf8')
-      .then(contents =>
-        fbPaste.createPasteFromContents(contents, {title: 'HHVM-Debugger'}),
-      );
+    return fsPromise.readFile(await _getHHVMLogFilePath(), 'utf8');
   } catch (error) {
     return '';
   }

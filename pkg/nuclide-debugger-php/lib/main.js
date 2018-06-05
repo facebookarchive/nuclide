@@ -52,7 +52,7 @@ async function getAdditionalLogFiles(
         if (service != null) {
           return {
             title: `HHVM Debugger log for ${hostname}`,
-            data: await service.createLogFilePaste(),
+            data: await service.getDebugServerLog(),
           };
         }
 
