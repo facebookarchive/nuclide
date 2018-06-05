@@ -18,6 +18,9 @@ import * as Actions from './Actions';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
+import {getBigDigClientByNuclideUri} from '../../../nuclide-remote-connection';
+
+const useBigDigTunnel = false;
 
 export function subscribeToTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -133,54 +136,108 @@ export function requestTunnelEpic(
         return null;
       }
 
+      const remoteTunnelHost = from.host === 'localhost' ? to : from;
+      const localTunnelHost = from.host === 'localhost' ? from : to;
+      const isReverse = from.host !== 'localhost';
+      const useIPv4 = to.family === 4;
+
       const fromService = getSocketServiceByHost(from.host);
       const toService = getSocketServiceByHost(to.host);
+      const bigDigClient = getBigDigClientByNuclideUri(remoteTunnelHost.host);
+
       let clientCount = 0;
       const connectionFactory = await toService.getConnectionFactory();
 
       let subscription;
+      let newTunnelPromise;
 
       let isTunnelOpen = false;
       const open = () => {
-        const events = fromService.createTunnel(tunnel, connectionFactory);
-        subscription = events.refCount().subscribe({
-          next: event => {
-            if (event.type === 'server_started') {
-              const state = store.getState();
-              const activeTunnel = state.tunnels.get(tunnel);
-              invariant(activeTunnel);
-              const friendlyString = `${tunnelDescription(
-                tunnel,
-              )} (${activeTunnel.subscriptions
-                .map(s => s.description)
-                .join(', ')})`;
-              state.consoleOutput.next({
-                text: `Opened tunnel: ${friendlyString}`,
-                level: 'info',
-              });
-              isTunnelOpen = true;
-              store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
-              onOpen();
-            } else if (event.type === 'client_connected') {
-              clientCount++;
-              store.dispatch(Actions.setTunnelState(tunnel, 'active'));
-            } else if (event.type === 'client_disconnected') {
-              clientCount--;
-              if (clientCount === 0) {
+        if (!useBigDigTunnel) {
+          const events = fromService.createTunnel(tunnel, connectionFactory);
+          subscription = events.refCount().subscribe({
+            next: event => {
+              if (event.type === 'server_started') {
+                const state = store.getState();
+                const activeTunnel = state.tunnels.get(tunnel);
+                invariant(activeTunnel);
+                const friendlyString = `${tunnelDescription(
+                  tunnel,
+                )} (${activeTunnel.subscriptions
+                  .map(s => s.description)
+                  .join(', ')})`;
+                state.consoleOutput.next({
+                  text: `Opened tunnel: ${friendlyString}`,
+                  level: 'info',
+                });
+                isTunnelOpen = true;
                 store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
+                onOpen();
+              } else if (event.type === 'client_connected') {
+                clientCount++;
+                store.dispatch(Actions.setTunnelState(tunnel, 'active'));
+              } else if (event.type === 'client_disconnected') {
+                clientCount--;
+                if (clientCount === 0) {
+                  store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
+                }
               }
-            }
-          },
-          error: error => {
-            if (!isTunnelOpen) {
-              onOpen(error);
-            }
+            },
+            error: error => {
+              if (!isTunnelOpen) {
+                onOpen(error);
+              }
+              store.dispatch(Actions.closeTunnel(tunnel, error));
+            },
+          });
+        } else {
+          try {
+            newTunnelPromise = bigDigClient.createTunnel(
+              localTunnelHost.port,
+              remoteTunnelHost.port,
+              isReverse,
+              useIPv4,
+            );
+          } catch (error) {
+            onOpen(error);
             store.dispatch(Actions.closeTunnel(tunnel, error));
-          },
-        });
+            throw error;
+          }
+
+          newTunnelPromise.then(newTunnel => {
+            newTunnel.on('error', error => {
+              store.dispatch(Actions.closeTunnel(tunnel, error));
+            });
+            store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
+            onOpen();
+
+            const friendlyString = `${tunnelDescription(tunnel)}`;
+
+            const state = store.getState();
+            state.consoleOutput.next({
+              text: `Opened tunnel: ${friendlyString}`,
+              level: 'info',
+            });
+          });
+        }
       };
 
-      const close = () => subscription.unsubscribe();
+      let close;
+
+      if (!useBigDigTunnel) {
+        close = () => subscription.unsubscribe();
+      } else {
+        close = () => {
+          newTunnelPromise.then(newTunnel => newTunnel.close()).catch(e => {
+            const state = store.getState();
+            state.consoleOutput.next({
+              text: `Tunnel error on close: ${e}`,
+              level: 'error',
+            });
+          });
+        };
+      }
+
       return Actions.openTunnel(tunnel, open, close);
     })
     .mergeMap(action => {
