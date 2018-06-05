@@ -15,8 +15,8 @@ import {generateFixture} from 'nuclide-commons/test-helpers';
 import findHgRepository from '../lib/hg-repository';
 
 describe('findHgRepository', () => {
-  it('finds an hg repo without an hgrc', () => {
-    waitsForPromise(async () => {
+  it('finds an hg repo without an hgrc', async () => {
+    await (async () => {
       const fixturePath = await generateFixture(
         'hg-repo',
         new Map([['a/b/.hg/fakefile', ''], ['a/b/c/d/e', '']]),
@@ -28,11 +28,11 @@ describe('findHgRepository', () => {
           workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
         },
       );
-    });
+    })();
   });
 
-  it('finds an hg repo with an hgrc', () => {
-    waitsForPromise(async () => {
+  it('finds an hg repo with an hgrc', async () => {
+    await (async () => {
       const fixturePath = await generateFixture(
         'hg-repo',
         new Map([
@@ -47,11 +47,11 @@ describe('findHgRepository', () => {
           workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
         },
       );
-    });
+    })();
   });
 
-  it('finds the first hg repo', () => {
-    waitsForPromise(async () => {
+  it('finds the first hg repo', async () => {
+    await (async () => {
       const fixturePath = await generateFixture(
         'hg-repo',
         new Map([['a/b/.hg/hgrc', ''], ['a/.hg/hgrc', ''], ['a/b/c/d/e', '']]),
@@ -63,11 +63,11 @@ describe('findHgRepository', () => {
           workingDirectoryPath: nuclideUri.join(fixturePath, 'a/b'),
         },
       );
-    });
+    })();
   });
 
-  it('works with no hg repo', () => {
-    waitsForPromise(async () => {
+  it('works with no hg repo', async () => {
+    await (async () => {
       const fixturePath = await generateFixture(
         'hg-repo',
         new Map([['a/b/.git/fakefile', ''], ['a/b/c/d/e', '']]),
@@ -75,6 +75,6 @@ describe('findHgRepository', () => {
       expect(findHgRepository(nuclideUri.join(fixturePath, 'a/b/c/d'))).toBe(
         null,
       );
-    });
+    })();
   });
 });
