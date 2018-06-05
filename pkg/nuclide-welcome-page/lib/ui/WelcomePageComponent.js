@@ -88,6 +88,7 @@ export default class WelcomePageComponent extends React.Component<
   _pageSection(topic: string, content: React$Node): React$Node {
     return (
       <WelcomePageSection
+        key={topic}
         content={content}
         toHide={this.state.topicsToHide[topic]}
         onSetHide={this._handleSetHide(topic)}
