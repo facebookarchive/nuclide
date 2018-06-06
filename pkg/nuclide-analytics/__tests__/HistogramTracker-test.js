@@ -1,15 +1,10 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {HistogramTracker} from '../lib/HistogramTracker';
+var _HistogramTracker;
+
+function _load_HistogramTracker() {
+  return _HistogramTracker = require('../lib/HistogramTracker');
+}
 
 describe('HistogramTracker', () => {
   let trackSpy;
@@ -19,7 +14,7 @@ describe('HistogramTracker', () => {
     jest.useFakeTimers();
     const trackModule = require('../lib/track');
     trackSpy = jest.spyOn(trackModule, 'track');
-    tracker = new HistogramTracker('test', 100, 10, 5);
+    tracker = new (_HistogramTracker || _load_HistogramTracker()).HistogramTracker('test', 100, 10, 5);
   });
 
   afterEach(() => {
@@ -48,11 +43,7 @@ describe('HistogramTracker', () => {
     tracker.track(42);
     tracker.saveAnalytics();
 
-    expect(trackSpy.mock.calls.map(x => x)).toEqual([
-      ['performance-histogram', {average: 2, samples: 1, eventName: 'test'}],
-      ['performance-histogram', {average: 15, samples: 1, eventName: 'test'}],
-      ['performance-histogram', {average: 42, samples: 1, eventName: 'test'}],
-    ]);
+    expect(trackSpy.mock.calls.map(x => x)).toEqual([['performance-histogram', { average: 2, samples: 1, eventName: 'test' }], ['performance-histogram', { average: 15, samples: 1, eventName: 'test' }], ['performance-histogram', { average: 42, samples: 1, eventName: 'test' }]]);
   });
 
   it('can be cleared', () => {
@@ -66,26 +57,29 @@ describe('HistogramTracker', () => {
     tracker.track(2);
     jest.advanceTimersByTime(5 * 1000);
     expect(trackSpy.mock.calls.length).toBe(1);
-    expect(trackSpy.mock.calls[0]).toEqual([
-      'performance-histogram',
-      {average: 2, samples: 1, eventName: 'test'},
-    ]);
+    expect(trackSpy.mock.calls[0]).toEqual(['performance-histogram', { average: 2, samples: 1, eventName: 'test' }]);
 
     tracker.track(42);
     jest.advanceTimersByTime(5 * 1000);
     expect(trackSpy.mock.calls.length).toBe(2);
-    expect(trackSpy.mock.calls[1]).toEqual([
-      'performance-histogram',
-      {average: 42, samples: 1, eventName: 'test'},
-    ]);
+    expect(trackSpy.mock.calls[1]).toEqual(['performance-histogram', { average: 42, samples: 1, eventName: 'test' }]);
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     *  strict-local
+     * @format
+     */
 
 describe('Histogram.dispose', () => {
   it.skip('stops after dispose', () => {
     const trackModule = require('../lib/track');
     const trackSpy = jest.spyOn(trackModule, 'track');
-    const tracker = new HistogramTracker('test', 100, 10, 5);
+    const tracker = new (_HistogramTracker || _load_HistogramTracker()).HistogramTracker('test', 100, 10, 5);
     tracker.track(1);
     tracker.dispose();
     jest.advanceTimersByTime(5 * 1000);

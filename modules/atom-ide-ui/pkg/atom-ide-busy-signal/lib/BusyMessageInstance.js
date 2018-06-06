@@ -1,41 +1,29 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {BusyMessage} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BusyMessageInstance = undefined;
 
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _UniversalDisposable;
 
-export class BusyMessageInstance {
-  // These things are set at construction-time:
-  _publishCallback: () => void;
-  _creationOrder: number;
-  _waitingFor: 'computer' | 'user';
-  _onDidClick: ?() => void;
-  _disposables: UniversalDisposable;
-  _titleElement: HTMLElement = document.createElement('span');
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BusyMessageInstance {
   // These things might be modified afterwards:
-  _currentTitle: ?string = null;
-  _isVisibleForDebounce: boolean = true;
-  _isVisibleForFile: boolean = true;
-  _revealTooltip: boolean = false;
 
-  constructor(
-    publishCallback: () => void,
-    creationOrder: number,
-    waitingFor: 'computer' | 'user',
-    onDidClick: ?() => void,
-    disposables: UniversalDisposable,
-  ) {
+  // These things are set at construction-time:
+  constructor(publishCallback, creationOrder, waitingFor, onDidClick, disposables) {
+    this._titleElement = document.createElement('span');
+    this._currentTitle = null;
+    this._isVisibleForDebounce = true;
+    this._isVisibleForFile = true;
+    this._revealTooltip = false;
+
     this._publishCallback = publishCallback;
     this._creationOrder = creationOrder;
     this._waitingFor = waitingFor;
@@ -43,12 +31,15 @@ export class BusyMessageInstance {
     this._disposables = disposables;
   }
 
-  get waitingFor(): 'computer' | 'user' {
+  get waitingFor() {
     return this._waitingFor;
   }
 
-  setTitle(val: string): void {
-    invariant(!this._disposables.disposed);
+  setTitle(val) {
+    if (!!this._disposables.disposed) {
+      throw new Error('Invariant violation: "!this._disposables.disposed"');
+    }
+
     if (this._currentTitle === val) {
       return;
     }
@@ -69,49 +60,66 @@ export class BusyMessageInstance {
     }
   }
 
-  getTitleElement(): ?HTMLElement {
+  getTitleElement() {
     return this._titleElement;
   }
 
-  setIsVisibleForDebounce(val: boolean): void {
-    invariant(!this._disposables.disposed);
+  setIsVisibleForDebounce(val) {
+    if (!!this._disposables.disposed) {
+      throw new Error('Invariant violation: "!this._disposables.disposed"');
+    }
+
     this._isVisibleForDebounce = val;
     this._publishCallback();
   }
 
-  setIsVisibleForFile(val: boolean): void {
-    invariant(!this._disposables.disposed);
+  setIsVisibleForFile(val) {
+    if (!!this._disposables.disposed) {
+      throw new Error('Invariant violation: "!this._disposables.disposed"');
+    }
+
     this._isVisibleForFile = val;
     this._publishCallback();
   }
 
-  isVisible(): boolean {
-    invariant(!this._disposables.disposed);
-    return (
-      this._isVisibleForFile &&
-      this._isVisibleForDebounce &&
-      this._currentTitle != null
-    );
+  isVisible() {
+    if (!!this._disposables.disposed) {
+      throw new Error('Invariant violation: "!this._disposables.disposed"');
+    }
+
+    return this._isVisibleForFile && this._isVisibleForDebounce && this._currentTitle != null;
   }
 
-  setRevealTooltip(val: boolean): void {
+  setRevealTooltip(val) {
     this._revealTooltip = val;
   }
 
-  shouldRevealTooltip(): boolean {
+  shouldRevealTooltip() {
     return this._revealTooltip;
   }
 
-  compare(that: BusyMessageInstance): number {
+  compare(that) {
     return this._creationOrder - that._creationOrder;
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
     this._currentTitle = null;
     this._publishCallback();
   }
 }
 
-// This is how we declare that a type fulfills an interface in Flow:
-(((null: any): BusyMessageInstance): BusyMessage);
+exports.BusyMessageInstance = BusyMessageInstance; // This is how we declare that a type fulfills an interface in Flow:
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+null;

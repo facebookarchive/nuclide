@@ -1,3 +1,10 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.scrollIntoView = scrollIntoView;
+exports.scrollIntoViewIfNeeded = scrollIntoViewIfNeeded;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -41,20 +48,20 @@
  * [2]: https://drafts.csswg.org/cssom-view/#scrolling-box
  */
 
-export function scrollIntoView(el: Element, alignToTop?: boolean): void {
+function scrollIntoView(el, alignToTop) {
   const scrollTops = getScrollTops(el);
   el.scrollIntoView(alignToTop); // eslint-disable-line nuclide-internal/dom-apis
   restoreOverflowHiddenScrollTops(scrollTops);
 }
 
-export function scrollIntoViewIfNeeded(el: Element, center?: boolean): void {
+function scrollIntoViewIfNeeded(el, center) {
   const scrollTops = getScrollTops(el);
   // $FlowIgnore: This should be added to the element type.
   el.scrollIntoViewIfNeeded(center); // eslint-disable-line nuclide-internal/dom-apis
   restoreOverflowHiddenScrollTops(scrollTops);
 }
 
-function getScrollTops(el_: Element): Map<Element, number> {
+function getScrollTops(el_) {
   let el = el_;
   const scrollTops = new Map();
   while (el != null) {
@@ -64,9 +71,7 @@ function getScrollTops(el_: Element): Map<Element, number> {
   return scrollTops;
 }
 
-function restoreOverflowHiddenScrollTops(
-  scrollTops: Map<Element, number>,
-): void {
+function restoreOverflowHiddenScrollTops(scrollTops) {
   scrollTops.forEach((scrollTop, el) => {
     if (el.scrollTop !== scrollTop && isOverflowHidden(el)) {
       el.scrollTop = scrollTop;
@@ -74,9 +79,9 @@ function restoreOverflowHiddenScrollTops(
   });
 }
 
-function isOverflowHidden(el: Element): boolean {
+function isOverflowHidden(el) {
   // $FlowFixMe(>=0.68.0) Flow suppress (T27187857)
-  const overflowStyle = el.style == null ? null : (el.style: any).overflow;
+  const overflowStyle = el.style == null ? null : el.style.overflow;
   const overflow = overflowStyle || getComputedStyle(el).overflow;
   return overflow === 'hidden';
 }

@@ -1,3 +1,50 @@
+'use strict';
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _atom = require('atom');
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _testHelpers;
+
+function _load_testHelpers() {
+  return _testHelpers = require('../../../modules/nuclide-commons/test-helpers');
+}
+
+var _refactorStore;
+
+function _load_refactorStore() {
+  return _refactorStore = require('../lib/refactorStore');
+}
+
+var _refactorActions;
+
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('../lib/refactorActions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// sentinel value
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,110 +52,75 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AvailableRefactoring,
-  FreeformRefactorRequest,
-  RefactorProvider,
-  RefactorRequest,
-  RefactorResponse,
-  RenameRefactoring,
-  RenameRequest,
-} from '..';
-import type {Store, RefactorState} from '../lib/types';
-
-import {Observable, BehaviorSubject, Subject} from 'rxjs';
-import {Range, Point} from 'atom';
-import invariant from 'assert';
-
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Deferred, nextTick} from 'nuclide-commons/promise';
-import {expectObservableToStartWith} from 'nuclide-commons/test-helpers';
-
-import {getStore, getErrors} from '../lib/refactorStore';
-import * as Actions from '../lib/refactorActions';
-
-// sentinel value
 const NO_ERROR = {};
 
 // This tests the integration of the reducers and epics
 describe('refactorStore', () => {
-  let store: Store = (null: any);
-  let providers: ProviderRegistry<RefactorProvider> = (null: any);
-  let stateStream: Observable<RefactorState>;
-  let currentState: BehaviorSubject<RefactorState>;
+  let store = null;
+  let providers = null;
+  let stateStream;
+  let currentState;
 
-  let provider: RefactorProvider = (null: any);
-  let refactoringsAtPointReturn: Promise<
-    Array<AvailableRefactoring>,
-  > = (null: any);
-  let refactorReturn: Observable<RefactorResponse> = (null: any);
+  let provider = null;
+  let refactoringsAtPointReturn = null;
+  let refactorReturn = null;
 
-  let lastError: mixed = null;
-  function expectNoUncaughtErrors(): void {
+  let lastError = null;
+  function expectNoUncaughtErrors() {
     // expect(lastError).toBe(NO_ERROR) results in 'obj.hasOwnProperty is not a function' in some
     // cases...
     expect(lastError === NO_ERROR).toBeTruthy();
   }
 
-  let errorSubscription: rxjs$ISubscription = (null: any);
+  let errorSubscription = null;
 
-  const waitForPhase = (phaseType: string) => {
-    return currentState
-      .filter(s => {
-        return s.type === 'open' && s.phase.type === phaseType;
-      })
-      .first()
-      .toPromise();
+  const waitForPhase = phaseType => {
+    return currentState.filter(s => {
+      return s.type === 'open' && s.phase.type === phaseType;
+    }).first().toPromise();
   };
 
   const waitForClose = () => {
-    return currentState
-      .filter(s => s.type === 'closed')
-      .first()
-      .toPromise();
+    return currentState.filter(s => s.type === 'closed').first().toPromise();
   };
 
   beforeEach(() => {
     lastError = NO_ERROR;
-    errorSubscription = getErrors().subscribe(error => {
+    errorSubscription = (0, (_refactorStore || _load_refactorStore()).getErrors)().subscribe(error => {
       lastError = error;
     });
 
     provider = {
       grammarScopes: ['text.plain', 'text.plain.null-grammar'],
       priority: 1,
-      refactorings(
-        editor: atom$TextEditor,
-        range: atom$Range,
-      ): Promise<Array<AvailableRefactoring>> {
+      refactorings(editor, range) {
         return refactoringsAtPointReturn;
       },
-      refactor(request: RefactorRequest): Observable<RefactorResponse> {
+      refactor(request) {
         return refactorReturn;
-      },
+      }
     };
     // TODO spy on the provider and call through
     refactoringsAtPointReturn = Promise.resolve([]);
-    refactorReturn = Observable.empty();
+    refactorReturn = _rxjsBundlesRxMinJs.Observable.empty();
 
-    providers = new ProviderRegistry();
-    store = getStore(providers);
+    providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    store = (0, (_refactorStore || _load_refactorStore()).getStore)(providers);
     // $FlowIssue no symbol support
-    const stream: Observable<RefactorState> = Observable.from(store);
+    const stream = _rxjsBundlesRxMinJs.Observable.from(store);
     stateStream = stream
-      // Filter out duplicate states. This happens during error handling, for example.
-      .distinctUntilChanged()
-      // publishReplay() and connect means it will
-      .publishReplay();
+    // Filter out duplicate states. This happens during error handling, for example.
+    .distinctUntilChanged()
+    // publishReplay() and connect means it will
+    .publishReplay();
     stateStream.connect();
     // stateStream will replay, but it's also useful to be able to wait for particular states before
     // proceeding.
-    currentState = new BehaviorSubject(store.getState());
+    currentState = new _rxjsBundlesRxMinJs.BehaviorSubject(store.getState());
     stateStream.subscribe(currentState);
   });
 
@@ -117,26 +129,22 @@ describe('refactorStore', () => {
   });
 
   it('starts closed', () => {
-    expect(store.getState()).toEqual({type: 'closed'});
+    expect(store.getState()).toEqual({ type: 'closed' });
   });
 
   it('handles a missing editor', async () => {
     await (async () => {
-      store.dispatch(Actions.open('generic'));
-      await expectObservableToStartWith(stateStream, [
-        {type: 'closed'},
-        {
-          type: 'open',
-          ui: 'generic',
-          phase: {type: 'get-refactorings'},
-        },
-        {type: 'closed'},
-      ]);
+      store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
+      await (0, (_testHelpers || _load_testHelpers()).expectObservableToStartWith)(stateStream, [{ type: 'closed' }, {
+        type: 'open',
+        ui: 'generic',
+        phase: { type: 'get-refactorings' }
+      }, { type: 'closed' }]);
     })();
   });
 
   describe('with an open text editor', () => {
-    let openEditor: atom$TextEditor = (null: any);
+    let openEditor = null;
     beforeEach(async () => {
       await (async () => {
         openEditor = await atom.workspace.open(TEST_FILE);
@@ -144,16 +152,12 @@ describe('refactorStore', () => {
     });
     it('handles a missing provider', async () => {
       await (async () => {
-        store.dispatch(Actions.open('generic'));
-        await expectObservableToStartWith(stateStream, [
-          {type: 'closed'},
-          {
-            type: 'open',
-            ui: 'generic',
-            phase: {type: 'get-refactorings'},
-          },
-          {type: 'closed'},
-        ]);
+        store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
+        await (0, (_testHelpers || _load_testHelpers()).expectObservableToStartWith)(stateStream, [{ type: 'closed' }, {
+          type: 'open',
+          ui: 'generic',
+          phase: { type: 'get-refactorings' }
+        }, { type: 'closed' }]);
       })();
     });
 
@@ -165,23 +169,23 @@ describe('refactorStore', () => {
       it('runs the refactor', async () => {
         await (async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.of({
+          refactorReturn = _rxjsBundlesRxMinJs.Observable.of({
             type: 'edit',
-            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
+            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]])
           });
 
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
-          const rename: RenameRequest = {
+          const rename = {
             kind: 'rename',
             originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
-            newName: 'bar',
+            newName: 'bar'
           };
-          store.dispatch(Actions.execute(provider, rename));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, rename));
           await waitForClose();
           expect(openEditor.getText()).toEqual('bar\nbar\nbar\n');
         })();
@@ -190,60 +194,56 @@ describe('refactorStore', () => {
       it('does not allow refactoring of an unsaved file', async () => {
         await (async () => {
           await atom.workspace.open();
-          store.dispatch(Actions.open('generic'));
-          await expectObservableToStartWith(stateStream, [
-            {type: 'closed'},
-            {
-              type: 'open',
-              ui: 'generic',
-              phase: {type: 'get-refactorings'},
-            },
-            {type: 'closed'},
-          ]);
-          await nextTick();
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
+          await (0, (_testHelpers || _load_testHelpers()).expectObservableToStartWith)(stateStream, [{ type: 'closed' }, {
+            type: 'open',
+            ui: 'generic',
+            phase: { type: 'get-refactorings' }
+          }, { type: 'closed' }]);
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
 
       it('tolerates a provider returning available refactorings after a close action', async () => {
         await (async () => {
-          const deferred = new Deferred();
+          const deferred = new (_promise || _load_promise()).Deferred();
           refactoringsAtPointReturn = deferred.promise;
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('get-refactorings');
-          store.dispatch(Actions.close());
+          store.dispatch((_refactorActions || _load_refactorActions()).close());
           await waitForClose();
           deferred.resolve([]);
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
 
       it('tolerates a provider returning refactor results after a close action', async () => {
         await (async () => {
-          const deferred = new Subject();
+          const deferred = new _rxjsBundlesRxMinJs.Subject();
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
           refactorReturn = deferred;
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
-          const rename: RenameRequest = {
+          const rename = {
             kind: 'rename',
             originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
-            newName: 'bar',
+            newName: 'bar'
           };
-          store.dispatch(Actions.execute(provider, rename));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, rename));
           await waitForPhase('execute');
-          store.dispatch(Actions.close());
+          store.dispatch((_refactorActions || _load_refactorActions()).close());
           await waitForClose();
           deferred.next({
             type: 'edit',
-            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
+            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]])
           });
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
@@ -252,10 +252,10 @@ describe('refactorStore', () => {
       it('tolerates a provider throwing in refactoringsAtPoint', async () => {
         await (async () => {
           refactoringsAtPointReturn = Promise.reject(new Error());
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('get-refactorings');
           await waitForClose();
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
@@ -264,21 +264,21 @@ describe('refactorStore', () => {
       it('tolerates a provider throwing in refactor', async () => {
         await (async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.throw(new Error());
-          store.dispatch(Actions.open('generic'));
+          refactorReturn = _rxjsBundlesRxMinJs.Observable.throw(new Error());
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
-          const rename: RenameRequest = {
+          const rename = {
             kind: 'rename',
             originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
-            newName: 'bar',
+            newName: 'bar'
           };
-          store.dispatch(Actions.execute(provider, rename));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, rename));
           await waitForClose();
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
@@ -286,21 +286,21 @@ describe('refactorStore', () => {
       it('tolerates a provider returning empty from refactor', async () => {
         await (async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Observable.empty();
-          store.dispatch(Actions.open('generic'));
+          refactorReturn = _rxjsBundlesRxMinJs.Observable.empty();
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
-          const rename: RenameRequest = {
+          const rename = {
             kind: 'rename',
             originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
-            newName: 'bar',
+            newName: 'bar'
           };
-          store.dispatch(Actions.execute(provider, rename));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, rename));
           await waitForClose();
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
@@ -308,32 +308,30 @@ describe('refactorStore', () => {
       it('fails gracefully when the edits do not apply', async () => {
         await (async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          const edits = [
-            {
-              oldRange: new Range([0, 0], [0, 3]),
-              // intentionally not 'foo' in order to trigger a conflict when we attempt to apply this
-              // edit.
-              oldText: 'foz',
-              newText: 'bar',
-            },
-          ];
-          refactorReturn = Observable.of({
+          const edits = [{
+            oldRange: new _atom.Range([0, 0], [0, 3]),
+            // intentionally not 'foo' in order to trigger a conflict when we attempt to apply this
+            // edit.
+            oldText: 'foz',
+            newText: 'bar'
+          }];
+          refactorReturn = _rxjsBundlesRxMinJs.Observable.of({
             type: 'edit',
-            edits: new Map([[TEST_FILE, edits]]),
+            edits: new Map([[TEST_FILE, edits]])
           });
 
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(TEST_FILE_RENAME));
           await waitForPhase('rename');
-          const rename: RenameRequest = {
+          const rename = {
             kind: 'rename',
             originalPoint: TEST_FILE_POINT,
             symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
             editor: openEditor,
-            newName: 'bar',
+            newName: 'bar'
           };
-          store.dispatch(Actions.execute(provider, rename));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, rename));
           // TODO should display an error somewhere
           await waitForClose();
           expect(openEditor.getText()).toEqual('foo\nbar\nfoo\n');
@@ -342,27 +340,25 @@ describe('refactorStore', () => {
           // sure that we can apply the entire refactoring transactionally. this means if something
           // goes wrong we need to roll back the rest.
 
-          await nextTick();
+          await (0, (_promise || _load_promise()).nextTick)();
           expectNoUncaughtErrors();
         })();
       });
     });
 
     describe('with a freeform provider', () => {
-      const refactoring: AvailableRefactoring = {
+      const refactoring = {
         kind: 'freeform',
         id: 'asyncify',
         name: 'Asyncify',
         description: 'Convert this method to async',
-        range: new Range([0, 0], [0, 0]),
-        arguments: [
-          {
-            description: 'New name for method',
-            name: 'new_name',
-            type: 'string',
-            default: 'genKittensAndRainbows',
-          },
-        ],
+        range: new _atom.Range([0, 0], [0, 0]),
+        arguments: [{
+          description: 'New name for method',
+          name: 'new_name',
+          type: 'string',
+          default: 'genKittensAndRainbows'
+        }]
       };
 
       beforeEach(() => {
@@ -372,45 +368,53 @@ describe('refactorStore', () => {
           async refactorings() {
             return [refactoring];
           },
-          refactor(request: RefactorRequest) {
-            invariant(request.kind === 'freeform');
-            const edits = [
-              {
-                oldRange: new Range([0, 0], [0, 3]),
-                oldText: 'foo',
-                newText: String(request.arguments.get('new_name')),
-              },
-            ];
-            return Observable.of({
+          refactor(request) {
+            if (!(request.kind === 'freeform')) {
+              throw new Error('Invariant violation: "request.kind === \'freeform\'"');
+            }
+
+            const edits = [{
+              oldRange: new _atom.Range([0, 0], [0, 3]),
+              oldText: 'foo',
+              newText: String(request.arguments.get('new_name'))
+            }];
+            return _rxjsBundlesRxMinJs.Observable.of({
               type: 'edit',
-              edits: new Map([[TEST_FILE, edits]]),
+              edits: new Map([[TEST_FILE, edits]])
             });
-          },
+          }
         };
         providers.addProvider(provider);
       });
 
       it('runs the refactor', async () => {
         await (async () => {
-          store.dispatch(Actions.open('generic'));
+          store.dispatch((_refactorActions || _load_refactorActions()).open('generic'));
           await waitForPhase('pick');
-          store.dispatch(Actions.pickedRefactor(refactoring));
+          store.dispatch((_refactorActions || _load_refactorActions()).pickedRefactor(refactoring));
 
           await waitForPhase('freeform');
           const state = store.getState();
-          invariant(state.type === 'open');
-          invariant(state.phase.type === 'freeform');
+
+          if (!(state.type === 'open')) {
+            throw new Error('Invariant violation: "state.type === \'open\'"');
+          }
+
+          if (!(state.phase.type === 'freeform')) {
+            throw new Error('Invariant violation: "state.phase.type === \'freeform\'"');
+          }
+
           expect(state.phase.refactoring).toEqual(refactoring);
 
-          const asyncify: FreeformRefactorRequest = {
+          const asyncify = {
             kind: 'freeform',
-            originalRange: new Range(TEST_FILE_POINT, TEST_FILE_POINT),
+            originalRange: new _atom.Range(TEST_FILE_POINT, TEST_FILE_POINT),
             editor: openEditor,
             id: 'asyncify',
-            range: new Range([0, 0], [0, 0]),
-            arguments: new Map([['new_name', 'test']]),
+            range: new _atom.Range([0, 0], [0, 0]),
+            arguments: new Map([['new_name', 'test']])
           };
-          store.dispatch(Actions.execute(provider, asyncify));
+          store.dispatch((_refactorActions || _load_refactorActions()).execute(provider, asyncify));
           await waitForClose();
           expect(openEditor.getText()).toEqual('test\nbar\nfoo\n');
         })();
@@ -421,29 +425,22 @@ describe('refactorStore', () => {
 
 // This is all just dummy data, so I'm keeping it down here to avoid drawing attention to it over
 // the important test logic.
-const TEST_FILE = nuclideUri.join(
-  __dirname,
-  '../__mocks__/fixtures',
-  'refactor-fixture.txt',
-);
-const TEST_FILE_POINT = new Point(0, 1);
+const TEST_FILE = (_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../__mocks__/fixtures', 'refactor-fixture.txt');
+const TEST_FILE_POINT = new _atom.Point(0, 1);
 const TEST_FILE_SYMBOL_AT_POINT = {
   text: 'foo',
-  range: new Range([0, 0], [0, 3]),
+  range: new _atom.Range([0, 0], [0, 3])
 };
-const TEST_FILE_RENAME: RenameRefactoring = {
+const TEST_FILE_RENAME = {
   kind: 'rename',
-  symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+  symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT
 };
-const TEST_FILE_EDITS = [
-  {
-    oldRange: new Range([0, 0], [0, 3]),
-    oldText: 'foo',
-    newText: 'bar',
-  },
-  {
-    oldRange: new Range([2, 0], [2, 3]),
-    oldText: 'foo',
-    newText: 'bar',
-  },
-];
+const TEST_FILE_EDITS = [{
+  oldRange: new _atom.Range([0, 0], [0, 3]),
+  oldText: 'foo',
+  newText: 'bar'
+}, {
+  oldRange: new _atom.Range([2, 0], [2, 3]),
+  oldText: 'foo',
+  newText: 'bar'
+}];

@@ -1,25 +1,10 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict
- * @format
- */
+'use strict';
 
-import {Observable, Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Executor<T> = Observable<T> | (() => rxjs$ObservableInput<T>);
-
-type Request<T> = {tag: mixed, executor: Executor<T>};
-
-type Response<T> = {
-  observer: rxjs$Observer<T>,
-  unsubscribed: Subject<void>,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 /**
  * ObservablePool allows you to execute Observables or functions that return
@@ -52,23 +37,20 @@ type Response<T> = {
  * The output here is 1, 2, then 3. Despite the fact that the third observable
  * finishes more quickly, its execution is postponed until the first two finish.
  */
-export default class ObservablePool<T> {
-  _requests: Subject<Request<T>>;
-  _responseListeners: Map<mixed, Response<T>>;
-  _subscription: rxjs$ISubscription;
+class ObservablePool {
 
-  constructor(concurrency: number) {
-    this._requests = new Subject();
+  constructor(concurrency) {
+    this._requests = new _rxjsBundlesRxMinJs.Subject();
     this._responseListeners = new Map();
     this._subscription = this._handleEvents(concurrency);
   }
 
-  schedule(executor: Executor<T>): Observable<T> {
-    return Observable.create(observer => {
-      const unsubscribed = new Subject();
+  schedule(executor) {
+    return _rxjsBundlesRxMinJs.Observable.create(observer => {
+      const unsubscribed = new _rxjsBundlesRxMinJs.Subject();
       const tag = {}; // Just a unique object.
-      this._responseListeners.set(tag, {observer, unsubscribed});
-      this._requests.next({tag, executor});
+      this._responseListeners.set(tag, { observer, unsubscribed });
+      this._requests.next({ tag, executor });
       return () => {
         this._responseListeners.delete(tag);
         unsubscribed.next();
@@ -80,53 +62,55 @@ export default class ObservablePool<T> {
    * Warning: calling dispose() will error all executing requests.
    */
   dispose() {
-    this._responseListeners.forEach(({observer}) => {
+    this._responseListeners.forEach(({ observer }) => {
       observer.error(Error('ObservablePool was disposed'));
     });
     this._subscription.unsubscribe();
   }
 
-  _handleEvents(concurrency: number): rxjs$ISubscription {
-    return this._requests
-      .mergeMap(event => {
-        const {executor, tag} = event;
-        const listener = this._responseListeners.get(tag);
-        // unsubscribed before we could even get to it!
-        if (listener == null) {
-          return Observable.empty();
+  _handleEvents(concurrency) {
+    return this._requests.mergeMap(event => {
+      const { executor, tag } = event;
+      const listener = this._responseListeners.get(tag);
+      // unsubscribed before we could even get to it!
+      if (listener == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      const { observer, unsubscribed } = listener;
+      let result;
+      if (executor instanceof _rxjsBundlesRxMinJs.Observable) {
+        result = executor;
+      } else {
+        try {
+          result = executor();
+        } catch (err) {
+          // Catch errors from executor().
+          observer.error(err);
+          return _rxjsBundlesRxMinJs.Observable.empty();
         }
-        const {observer, unsubscribed} = listener;
-        let result;
-        if (executor instanceof Observable) {
-          result = executor;
-        } else {
-          try {
-            result = executor();
-          } catch (err) {
-            // Catch errors from executor().
-            observer.error(err);
-            return Observable.empty();
-          }
-        }
-        if (result instanceof Observable) {
-          // We can safely forward unsubscriptions!
-          return (
-            result
-              .takeUntil(unsubscribed)
-              // $FlowFixMe: Flow doesn't like this.
-              .do(observer)
-              .catch(() => Observable.empty())
-          );
-        } else {
-          // In the absence of cancellation, assume the worst.
-          return (
-            Observable.from(result)
-              // $FlowFixMe: Flow doesn't like this.
-              .do(observer)
-              .catch(() => Observable.empty())
-          );
-        }
-      }, concurrency)
-      .subscribe();
+      }
+      if (result instanceof _rxjsBundlesRxMinJs.Observable) {
+        // We can safely forward unsubscriptions!
+        return result.takeUntil(unsubscribed)
+        // $FlowFixMe: Flow doesn't like this.
+        .do(observer).catch(() => _rxjsBundlesRxMinJs.Observable.empty());
+      } else {
+        // In the absence of cancellation, assume the worst.
+        return _rxjsBundlesRxMinJs.Observable.from(result)
+        // $FlowFixMe: Flow doesn't like this.
+        .do(observer).catch(() => _rxjsBundlesRxMinJs.Observable.empty());
+      }
+    }, concurrency).subscribe();
   }
 }
+exports.default = ObservablePool; /**
+                                   * Copyright (c) 2017-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the BSD-style license found in the
+                                   * LICENSE file in the root directory of this source tree. An additional grant
+                                   * of patent rights can be found in the PATENTS file in the same directory.
+                                   *
+                                   *  strict
+                                   * @format
+                                   */

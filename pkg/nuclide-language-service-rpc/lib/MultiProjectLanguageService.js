@@ -1,68 +1,72 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {SearchStrategy} from 'nuclide-commons/ConfigCache';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {
-  DefinitionQueryResult,
-  FindReferencesReturn,
-  Outline,
-  CodeAction,
-  SignatureHelp,
-} from 'atom-ide-ui';
-import type {
-  AutocompleteRequest,
-  AutocompleteResult,
-  FileDiagnosticMap,
-  FileDiagnosticMessage,
-  FormatOptions,
-  LanguageService,
-  SymbolResult,
-  Completion,
-  CodeLensData,
-  StatusData,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MultiProjectLanguageService = undefined;
 
-import invariant from 'assert';
-import {timeoutAfterDeadline} from 'nuclide-commons/promise';
-import {stringifyError} from 'nuclide-commons/string';
-import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {Cache} from 'nuclide-commons/cache';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {compact} from 'nuclide-commons/observable';
-import {arrayCompact, arrayFlatten, collect} from 'nuclide-commons/collection';
-import {ConfigCache} from 'nuclide-commons/ConfigCache';
-import {ensureInvalidations, NullLanguageService} from '..';
+var _promise;
 
-export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
-  // Maps project dir => LanguageService
-  _processes: Cache<NuclideUri, Promise<?T>>;
-  _resources: UniversalDisposable;
-  _configCache: ConfigCache;
-  _logger: log4js$Logger;
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../../modules/nuclide-commons/string');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../../../modules/nuclide-commons/cache');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../modules/nuclide-commons/observable');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _ConfigCache;
+
+function _load_ConfigCache() {
+  return _ConfigCache = require('../../../modules/nuclide-commons/ConfigCache');
+}
+
+var _;
+
+function _load_() {
+  return _ = require('..');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class MultiProjectLanguageService {
   // Promises for when AtomLanguageService has called into this feature
-  _observeDiagnosticsPromise: Promise<void>;
-  _observeDiagnosticsPromiseResolver: () => void;
-  _observeStatusPromise: Promise<void>;
-  _observeStatusPromiseResolver: () => void;
 
+  // Maps project dir => LanguageService
   constructor() {
     this._observeDiagnosticsPromise = new Promise((resolve, reject) => {
       this._observeDiagnosticsPromiseResolver = resolve;
@@ -72,23 +76,12 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     });
   }
 
-  initialize(
-    logger: log4js$Logger,
-    fileCache: FileCache,
-    host: HostServices,
-    projectFileNames: Array<string>,
-    projectFileSearchStrategy: ?SearchStrategy,
-    fileExtensions: Array<NuclideUri>,
-    languageServiceFactory: (projectDir: NuclideUri) => Promise<?T>,
-  ) {
+  initialize(logger, fileCache, host, projectFileNames, projectFileSearchStrategy, fileExtensions, languageServiceFactory) {
     this._logger = logger;
-    this._resources = new UniversalDisposable();
-    this._configCache = new ConfigCache(
-      projectFileNames,
-      projectFileSearchStrategy != null ? projectFileSearchStrategy : undefined,
-    );
+    this._resources = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._configCache = new (_ConfigCache || _load_ConfigCache()).ConfigCache(projectFileNames, projectFileSearchStrategy != null ? projectFileSearchStrategy : undefined);
 
-    this._processes = new Cache(languageServiceFactory, value => {
+    this._processes = new (_cache || _load_cache()).Cache(languageServiceFactory, value => {
       value.then(process => {
         if (process != null) {
           process.dispose();
@@ -99,72 +92,50 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     this._resources.add(host, this._processes);
 
     // Observe projects as they are opened
-    const configObserver = new ConfigObserver(
-      fileCache,
-      fileExtensions,
-      filePath => this._configCache.getConfigDir(filePath),
-    );
-    this._resources.add(
-      configObserver,
-      configObserver.observeConfigs().subscribe(configs => {
-        this._ensureProcesses(configs);
-      }),
-    );
+    const configObserver = new (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).ConfigObserver(fileCache, fileExtensions, filePath => this._configCache.getConfigDir(filePath));
+    this._resources.add(configObserver, configObserver.observeConfigs().subscribe(configs => {
+      this._ensureProcesses(configs);
+    }));
     this._resources.add(() => {
       this._closeProcesses();
     });
 
     // Remove fileCache when the remote connection shuts down
-    this._resources.add(
-      fileCache
-        .observeFileEvents()
-        .ignoreElements()
-        .subscribe(
-          undefined, // next
-          undefined, // error
-          () => {
-            this._logger.info('fileCache shutting down.');
-            this._closeProcesses();
-          },
-        ),
-    );
+    this._resources.add(fileCache.observeFileEvents().ignoreElements().subscribe(undefined, // next
+    undefined, // error
+    () => {
+      this._logger.info('fileCache shutting down.');
+      this._closeProcesses();
+    }));
   }
 
-  findProjectDir(filePath: NuclideUri): Promise<?NuclideUri> {
+  findProjectDir(filePath) {
     return this._configCache.getConfigDir(filePath);
   }
 
-  async _getLanguageServiceForFile(filePath: string): Promise<LanguageService> {
+  async _getLanguageServiceForFile(filePath) {
     const service = await this.getLanguageServiceForFile(filePath);
     if (service != null) {
       return service;
     } else {
-      return new NullLanguageService();
+      return new (_ || _load_()).NullLanguageService();
     }
   }
 
-  async _getLanguageServicesForFiles(
-    filePaths: Array<string>,
-  ): Promise<Array<[LanguageService, Array<string>]>> {
-    const promises: Array<Promise<?[LanguageService, string]>> = filePaths.map(
-      async filePath => {
-        const service = await this._getLanguageServiceForFile(filePath);
-        return service ? [service, filePath] : null;
-      },
-    );
+  async _getLanguageServicesForFiles(filePaths) {
+    const promises = filePaths.map(async filePath => {
+      const service = await this._getLanguageServiceForFile(filePath);
+      return service ? [service, filePath] : null;
+    });
 
-    const fileServices: Array<?[LanguageService, string]> = await Promise.all(
-      promises,
-    );
+    const fileServices = await Promise.all(promises);
 
-    const results: Map<LanguageService, Array<string>> = collect(
-      arrayCompact(fileServices),
-    );
+    const results = (0, (_collection || _load_collection()).collect)((0, (_collection || _load_collection()).arrayCompact)(fileServices));
 
     return Array.from(results);
   }
 
-  async getLanguageServiceForFile(filePath: string): Promise<?T> {
+  async getLanguageServiceForFile(filePath) {
     const projectDir = await this.findProjectDir(filePath);
     if (projectDir == null) {
       return null;
@@ -184,342 +155,200 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   // for the given configPaths.
   // Closes all LanguageServices not in configPaths, and starts
   // new LanguageServices for any paths in configPaths.
-  _ensureProcesses(configPaths: Set<NuclideUri>): void {
-    this._logger.info(
-      `MultiProjectLanguageService ensureProcesses. ${Array.from(
-        configPaths,
-      ).join(', ')}`,
-    );
+  _ensureProcesses(configPaths) {
+    this._logger.info(`MultiProjectLanguageService ensureProcesses. ${Array.from(configPaths).join(', ')}`);
     this._processes.setKeys(configPaths);
   }
 
   // Closes all LanguageServices for this fileCache.
-  _closeProcesses(): void {
-    this._logger.info(
-      'Shutting down LanguageServices ' +
-        `${Array.from(this._processes.keys()).join(',')}`,
-    );
+  _closeProcesses() {
+    this._logger.info('Shutting down LanguageServices ' + `${Array.from(this._processes.keys()).join(',')}`);
     this._processes.clear();
   }
 
-  observeLanguageServices(): Observable<T> {
+  observeLanguageServices() {
     this._logger.info('observing connections');
-    return compact(
-      this._processes
-        .observeValues()
-        .switchMap(process => Observable.fromPromise(process)),
-    );
+    return (0, (_observable || _load_observable()).compact)(this._processes.observeValues().switchMap(process => _rxjsBundlesRxMinJs.Observable.fromPromise(process)));
   }
 
-  async getAllLanguageServices(): Promise<Array<T>> {
-    const lsPromises: Array<Promise<?T>> = [...this._processes.values()];
-    return arrayCompact(await Promise.all(lsPromises));
+  async getAllLanguageServices() {
+    const lsPromises = [...this._processes.values()];
+    return (0, (_collection || _load_collection()).arrayCompact)((await Promise.all(lsPromises)));
   }
 
-  async getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getDiagnostics(fileVersion);
+  async getDiagnostics(fileVersion) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getDiagnostics(fileVersion);
   }
 
-  hasObservedDiagnostics(): Promise<void> {
+  hasObservedDiagnostics() {
     return this._observeDiagnosticsPromise;
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
+  observeDiagnostics() {
     this._observeDiagnosticsPromiseResolver();
 
-    return this.observeLanguageServices()
-      .mergeMap((process: LanguageService) => {
-        this._logger.trace('observeDiagnostics');
-        return ensureInvalidations(
-          this._logger,
-          process
-            .observeDiagnostics()
-            .refCount()
-            .catch(error => {
-              this._logger.error('Error: observeDiagnostics', error);
-              return Observable.empty();
-            }),
-        );
-      })
-      .publish();
+    return this.observeLanguageServices().mergeMap(process => {
+      this._logger.trace('observeDiagnostics');
+      return (0, (_ || _load_()).ensureInvalidations)(this._logger, process.observeDiagnostics().refCount().catch(error => {
+        this._logger.error('Error: observeDiagnostics', error);
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }));
+    }).publish();
   }
 
-  hasObservedStatus(): Promise<void> {
+  hasObservedStatus() {
     return this._observeStatusPromise;
   }
 
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData> {
+  observeStatus(fileVersion) {
     this._observeStatusPromiseResolver();
-    return Observable.fromPromise(
-      this._getLanguageServiceForFile(fileVersion.filePath),
-    )
-      .flatMap(ls => ls.observeStatus(fileVersion).refCount())
-      .publish();
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(this._getLanguageServiceForFile(fileVersion.filePath)).flatMap(ls => ls.observeStatus(fileVersion).refCount()).publish();
   }
 
-  async clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).clickStatus(fileVersion, id, button);
+  async clickStatus(fileVersion, id, button) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).clickStatus(fileVersion, id, button);
   }
 
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getAutocompleteSuggestions(fileVersion, position, request);
+  async getAutocompleteSuggestions(fileVersion, position, request) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getAutocompleteSuggestions(fileVersion, position, request);
   }
 
-  async resolveAutocompleteSuggestion(
-    suggestion: Completion,
-  ): Promise<?Completion> {
-    invariant(
-      suggestion.remoteUri != null,
-      'remoteUri for autocomplete resolution should have been set by AutocompleteProvider.',
-    );
+  async resolveAutocompleteSuggestion(suggestion) {
+    if (!(suggestion.remoteUri != null)) {
+      throw new Error('remoteUri for autocomplete resolution should have been set by AutocompleteProvider.');
+    }
 
     // We're running this "locally" (from RPC point of view), so strip remote
     // URIs and just take the path.
-    const languageService = await this._getLanguageServiceForFile(
-      suggestion.remoteUri,
-    );
+
+
+    const languageService = await this._getLanguageServiceForFile(suggestion.remoteUri);
     return languageService.resolveAutocompleteSuggestion(suggestion);
   }
 
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getDefinition(fileVersion, position);
+  async getDefinition(fileVersion, position) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getDefinition(fileVersion, position);
   }
 
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): ConnectableObservable<?FindReferencesReturn> {
-    return Observable.fromPromise(
-      this._getLanguageServiceForFile(fileVersion.filePath),
-    )
-      .concatMap(ls => ls.findReferences(fileVersion, position).refCount())
-      .publish();
+  findReferences(fileVersion, position) {
+    return _rxjsBundlesRxMinJs.Observable.fromPromise(this._getLanguageServiceForFile(fileVersion.filePath)).concatMap(ls => ls.findReferences(fileVersion, position).refCount()).publish();
   }
 
-  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    return (await this._getLanguageServiceForFile(filePath)).getCoverage(
-      filePath,
-    );
+  async getCoverage(filePath) {
+    return (await this._getLanguageServiceForFile(filePath)).getCoverage(filePath);
   }
 
-  async onToggleCoverage(set: boolean): Promise<void> {
-    await Promise.all(
-      (await this.getAllLanguageServices()).map(async languageService => {
-        const ls = await languageService;
-        ls.onToggleCoverage(set);
-      }),
-    );
+  async onToggleCoverage(set) {
+    await Promise.all((await this.getAllLanguageServices()).map(async languageService => {
+      const ls = await languageService;
+      ls.onToggleCoverage(set);
+    }));
   }
 
-  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getOutline(fileVersion);
+  async getOutline(fileVersion) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getOutline(fileVersion);
   }
 
-  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getCodeLens(fileVersion);
+  async getCodeLens(fileVersion) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getCodeLens(fileVersion);
   }
 
-  async resolveCodeLens(
-    filePath: NuclideUri,
-    codeLens: CodeLensData,
-  ): Promise<?CodeLensData> {
-    return (await this._getLanguageServiceForFile(filePath)).resolveCodeLens(
-      filePath,
-      codeLens,
-    );
+  async resolveCodeLens(filePath, codeLens) {
+    return (await this._getLanguageServiceForFile(filePath)).resolveCodeLens(filePath, codeLens);
   }
 
-  async getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
-    const roots: Array<NuclideUri> = Array.from(this._processes.keys());
+  async getAdditionalLogFiles(deadline) {
+    const roots = Array.from(this._processes.keys());
 
-    const results = await Promise.all(
-      roots.map(async root => {
-        try {
-          const service = await timeoutAfterDeadline(
-            deadline,
-            this._processes.get(root),
-          );
-          if (service == null) {
-            return [{title: root, data: 'no language service'}];
-          } else {
-            return timeoutAfterDeadline(
-              deadline,
-              service.getAdditionalLogFiles(deadline - 1000),
-            );
-          }
-        } catch (e) {
-          return [{title: root, data: stringifyError(e)}];
+    const results = await Promise.all(roots.map(async root => {
+      try {
+        const service = await (0, (_promise || _load_promise()).timeoutAfterDeadline)(deadline, this._processes.get(root));
+        if (service == null) {
+          return [{ title: root, data: 'no language service' }];
+        } else {
+          return (0, (_promise || _load_promise()).timeoutAfterDeadline)(deadline, service.getAdditionalLogFiles(deadline - 1000));
         }
-      }),
-    );
-    return arrayFlatten(results);
+      } catch (e) {
+        return [{ title: root, data: (0, (_string || _load_string()).stringifyError)(e) }];
+      }
+    }));
+    return (0, (_collection || _load_collection()).arrayFlatten)(results);
   }
 
-  async getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getCodeActions(fileVersion, range, diagnostics);
+  async getCodeActions(fileVersion, range, diagnostics) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getCodeActions(fileVersion, range, diagnostics);
   }
 
-  async typeHint(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).typeHint(fileVersion, position);
+  async typeHint(fileVersion, position) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).typeHint(fileVersion, position);
   }
 
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).highlight(fileVersion, position);
+  async highlight(fileVersion, position) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).highlight(fileVersion, position);
   }
 
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).formatSource(fileVersion, range, options);
+  async formatSource(fileVersion, range, options) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).formatSource(fileVersion, range, options);
   }
 
-  async formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).formatEntireFile(fileVersion, range, options);
+  async formatEntireFile(fileVersion, range, options) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).formatEntireFile(fileVersion, range, options);
   }
 
-  async formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).formatAtPosition(fileVersion, position, triggerCharacter, options);
+  async formatAtPosition(fileVersion, position, triggerCharacter, options) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).formatAtPosition(fileVersion, position, triggerCharacter, options);
   }
 
-  async signatureHelp(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?SignatureHelp> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).signatureHelp(fileVersion, position);
+  async signatureHelp(fileVersion, position) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).signatureHelp(fileVersion, position);
   }
 
-  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    const serviceDirectories = await this._getLanguageServicesForFiles(
-      directories,
-    );
-    const eligibilities = await Promise.all(
-      serviceDirectories.map(([service, dirs]) =>
-        service.supportsSymbolSearch(dirs),
-      ),
-    );
+  async supportsSymbolSearch(directories) {
+    const serviceDirectories = await this._getLanguageServicesForFiles(directories);
+    const eligibilities = await Promise.all(serviceDirectories.map(([service, dirs]) => service.supportsSymbolSearch(dirs)));
     return eligibilities.some(e => e);
   }
 
-  async symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
+  async symbolSearch(query, directories) {
     if (query.length === 0) {
       return [];
     }
-    const serviceDirectories = await this._getLanguageServicesForFiles(
-      directories,
-    );
-    const results = await Promise.all(
-      serviceDirectories.map(([service, dirs]) =>
-        service.symbolSearch(query, dirs),
-      ),
-    );
-    return arrayFlatten(arrayCompact(results));
+    const serviceDirectories = await this._getLanguageServicesForFiles(directories);
+    const results = await Promise.all(serviceDirectories.map(([service, dirs]) => service.symbolSearch(query, dirs)));
+    return (0, (_collection || _load_collection()).arrayFlatten)((0, (_collection || _load_collection()).arrayCompact)(results));
   }
 
-  async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    return (await this._getLanguageServiceForFile(filePath)).getProjectRoot(
-      filePath,
-    );
+  async getProjectRoot(filePath) {
+    return (await this._getLanguageServiceForFile(filePath)).getProjectRoot(filePath);
   }
 
-  async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    return (await this._getLanguageServiceForFile(filePath)).isFileInProject(
-      filePath,
-    );
+  async isFileInProject(filePath) {
+    return (await this._getLanguageServiceForFile(filePath)).isFileInProject(filePath);
   }
 
-  async getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getExpandedSelectionRange(fileVersion, currentSelection);
+  async getExpandedSelectionRange(fileVersion, currentSelection) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getExpandedSelectionRange(fileVersion, currentSelection);
   }
 
-  async getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range> {
-    return (await this._getLanguageServiceForFile(
-      fileVersion.filePath,
-    )).getCollapsedSelectionRange(
-      fileVersion,
-      currentSelection,
-      originalCursorPosition,
-    );
+  async getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition) {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).getCollapsedSelectionRange(fileVersion, currentSelection, originalCursorPosition);
   }
 
-  dispose(): void {
+  dispose() {
     this._resources.dispose();
   }
 }
 
-// Enforces that an instance of MultiProjectLanguageService satisfies the LanguageService type
-(((null: any): MultiProjectLanguageService<>): LanguageService);
+exports.MultiProjectLanguageService = MultiProjectLanguageService; // Enforces that an instance of MultiProjectLanguageService satisfies the LanguageService type
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+null;

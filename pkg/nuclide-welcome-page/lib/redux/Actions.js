@@ -1,82 +1,90 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {
-  UpdateWelcomePageVisibilityAction,
-  WelcomePage,
-  AddWelcomePageAction,
-  DeleteWelcomePageAction,
-  HideUnhideTopicsAction,
-  SetShowOptionAction,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.addWelcomePage = addWelcomePage;
+exports.deleteWelcomePage = deleteWelcomePage;
+exports.updateWelcomePageVisibility = updateWelcomePageVisibility;
+exports.hideUnhideTopics = hideUnhideTopics;
+exports.setShowAll = setShowAll;
+exports.setShowOne = setShowOne;
+exports.clearShowOption = clearShowOption;
 
-import {showOne, showAll} from '../ShowOptions';
-import * as ActionTypes from './ActionTypes';
+var _ShowOptions;
 
-export function addWelcomePage(welcomePage: WelcomePage): AddWelcomePageAction {
+function _load_ShowOptions() {
+  return _ShowOptions = require('../ShowOptions');
+}
+
+var _ActionTypes;
+
+function _load_ActionTypes() {
+  return _ActionTypes = _interopRequireWildcard(require('./ActionTypes'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function addWelcomePage(welcomePage) {
   return {
-    type: ActionTypes.ADD_WELCOME_PAGE,
-    payload: {welcomePage},
+    type: (_ActionTypes || _load_ActionTypes()).ADD_WELCOME_PAGE,
+    payload: { welcomePage }
+  };
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   *  strict-local
+   * @format
+   */
+
+function deleteWelcomePage(topic) {
+  return {
+    type: (_ActionTypes || _load_ActionTypes()).DELETE_WELCOME_PAGE,
+    payload: { topic }
   };
 }
 
-export function deleteWelcomePage(topic: string): DeleteWelcomePageAction {
+function updateWelcomePageVisibility(isVisible) {
   return {
-    type: ActionTypes.DELETE_WELCOME_PAGE,
-    payload: {topic},
+    type: (_ActionTypes || _load_ActionTypes()).UPDATE_WELCOME_PAGE_VISIBILITY,
+    payload: { isVisible }
   };
 }
 
-export function updateWelcomePageVisibility(
-  isVisible: boolean,
-): UpdateWelcomePageVisibilityAction {
+function hideUnhideTopics(topicsToHide, topicsToUnhide) {
   return {
-    type: ActionTypes.UPDATE_WELCOME_PAGE_VISIBILITY,
-    payload: {isVisible},
+    type: (_ActionTypes || _load_ActionTypes()).HIDE_UNHIDE_TOPICS,
+    payload: { topicsToHide, topicsToUnhide }
   };
 }
 
-export function hideUnhideTopics(
-  topicsToHide: Set<string>,
-  topicsToUnhide: Set<string>,
-): HideUnhideTopicsAction {
+function setShowAll() {
   return {
-    type: ActionTypes.HIDE_UNHIDE_TOPICS,
-    payload: {topicsToHide, topicsToUnhide},
-  };
-}
-
-export function setShowAll(): SetShowOptionAction {
-  return {
-    type: ActionTypes.SET_SHOW_OPTION,
+    type: (_ActionTypes || _load_ActionTypes()).SET_SHOW_OPTION,
     payload: {
-      showOption: showAll(),
-    },
+      showOption: (0, (_ShowOptions || _load_ShowOptions()).showAll)()
+    }
   };
 }
 
-export function setShowOne(topic: string): SetShowOptionAction {
+function setShowOne(topic) {
   return {
-    type: ActionTypes.SET_SHOW_OPTION,
+    type: (_ActionTypes || _load_ActionTypes()).SET_SHOW_OPTION,
     payload: {
-      showOption: showOne(topic),
-    },
+      showOption: (0, (_ShowOptions || _load_ShowOptions()).showOne)(topic)
+    }
   };
 }
 
-export function clearShowOption(): SetShowOptionAction {
+function clearShowOption() {
   return {
-    type: ActionTypes.SET_SHOW_OPTION,
+    type: (_ActionTypes || _load_ActionTypes()).SET_SHOW_OPTION,
     payload: {
-      showOption: undefined,
-    },
+      showOption: undefined
+    }
   };
 }

@@ -1,59 +1,79 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {PipedMessage, ServiceConnection} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {getLogger} from 'log4js';
-import {DefaultMap} from 'nuclide-commons/collection';
-import {Observable, Subject} from 'rxjs';
-import * as jsonrpc from 'vscode-jsonrpc';
-import {AbstractMessageReader} from 'vscode-jsonrpc/lib/messageReader';
-import {AbstractMessageWriter} from 'vscode-jsonrpc/lib/messageWriter';
+var _log4js;
 
-// We'll represent sockets in pairs (numbers and their negatives).
-// After writing to a socket, the message may be read through its negative.
-// eslint-disable-next-line
-export opaque type Socket = number;
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
 
-type DataCallback = (data: PipedMessage) => mixed;
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../nuclide-commons/collection');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _vscodeJsonrpc;
+
+function _load_vscodeJsonrpc() {
+  return _vscodeJsonrpc = _interopRequireWildcard(require('vscode-jsonrpc'));
+}
+
+var _messageReader;
+
+function _load_messageReader() {
+  return _messageReader = require('vscode-jsonrpc/lib/messageReader');
+}
+
+var _messageWriter;
+
+function _load_messageWriter() {
+  return _messageWriter = require('vscode-jsonrpc/lib/messageWriter');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * In the new package model, communication between packages will be modeled as sockets.
  * For each producer <-> consumer pair, we will create a socket:
  * the consumer gets one end of the socket, while the producer gets the other end.
  */
-export default class MessageRouter {
-  _curSocketID = 1;
-  _sockets: Map<Socket, Subject<PipedMessage>> = new Map();
+
+
+// We'll represent sockets in pairs (numbers and their negatives).
+// After writing to a socket, the message may be read through its negative.
+// eslint-disable-next-line
+class MessageRouter {
+  constructor() {
+    this._curSocketID = 1;
+    this._sockets = new Map();
+    this._buffer = new (_collection || _load_collection()).DefaultMap(Array);
+  }
 
   // If messages are sent to a socket before a listener gets attached,
   // buffer it up here. The buffer will be cleared after the first getMessages call.
-  _buffer: DefaultMap<Socket, Array<PipedMessage>> = new DefaultMap(Array);
+
 
   /**
    * Returns a pair of sockets.
    */
-  getSocket(): [Socket, Socket] {
+  getSocket() {
     const socket = [this._curSocketID, -this._curSocketID];
     this._curSocketID++;
     return socket;
   }
 
-  reverseSocket(socket: Socket): Socket {
+  reverseSocket(socket) {
     return -socket;
   }
 
-  send(message: PipedMessage): void {
-    const {socket} = message;
+  send(message) {
+    const { socket } = message;
     const subject = this._sockets.get(socket);
     if (subject == null) {
       this._buffer.get(socket).push(message);
@@ -62,56 +82,62 @@ export default class MessageRouter {
     }
   }
 
-  getMessages(socket: Socket): Observable<PipedMessage> {
+  getMessages(socket) {
     let subject = this._sockets.get(socket);
     if (subject == null) {
-      subject = new Subject();
+      subject = new _rxjsBundlesRxMinJs.Subject();
       this._sockets.set(socket, subject);
       const buffered = this._buffer.get(socket);
       this._buffer.delete(socket);
-      return Observable.from(buffered).concat(subject);
+      return _rxjsBundlesRxMinJs.Observable.from(buffered).concat(subject);
     }
     return subject;
   }
 
-  createConnection(socket: Socket, config: ?Object): ServiceConnection {
-    const connection: ServiceConnection = (jsonrpc.createMessageConnection(
-      // Messages intended for socket actually come through -socket.
-      new SimpleReader(cb =>
-        this.getMessages(this.reverseSocket(socket)).subscribe(cb),
-      ),
-      // Tag each message with the socket it originated from.
-      new SimpleWriter(msg => this.send({...msg, socket})),
-      getLogger('ExperimentalMessageRouter-jsonrpc'),
-    ): any);
+  createConnection(socket, config) {
+    const connection = (_vscodeJsonrpc || _load_vscodeJsonrpc()).createMessageConnection(
+    // Messages intended for socket actually come through -socket.
+    new SimpleReader(cb => this.getMessages(this.reverseSocket(socket)).subscribe(cb)),
+    // Tag each message with the socket it originated from.
+    new SimpleWriter(msg => this.send(Object.assign({}, msg, { socket }))), (0, (_log4js || _load_log4js()).getLogger)('ExperimentalMessageRouter-jsonrpc'));
     connection.config = config || {};
     connection.listen();
     return connection;
   }
 }
 
-class SimpleReader extends AbstractMessageReader {
-  _subscribe: (callback: DataCallback) => mixed;
+exports.default = MessageRouter; /**
+                                  * Copyright (c) 2017-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the BSD-style license found in the
+                                  * LICENSE file in the root directory of this source tree. An additional grant
+                                  * of patent rights can be found in the PATENTS file in the same directory.
+                                  *
+                                  * 
+                                  * @format
+                                  */
 
-  constructor(subscribe: (callback: DataCallback) => mixed): void {
+class SimpleReader extends (_messageReader || _load_messageReader()).AbstractMessageReader {
+
+  constructor(subscribe) {
     super();
     this._subscribe = subscribe;
   }
 
-  listen(callback: (data: PipedMessage) => mixed): void {
+  listen(callback) {
     this._subscribe(callback);
   }
 }
 
-class SimpleWriter extends AbstractMessageWriter {
-  _write: (message: PipedMessage) => mixed;
+class SimpleWriter extends (_messageWriter || _load_messageWriter()).AbstractMessageWriter {
 
-  constructor(write: (message: PipedMessage) => mixed) {
+  constructor(write) {
     super();
     this._write = write;
   }
 
-  write(message: PipedMessage): void {
+  write(message) {
     this._write(message);
   }
 }

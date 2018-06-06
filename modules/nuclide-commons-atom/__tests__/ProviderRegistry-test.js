@@ -1,3 +1,13 @@
+'use strict';
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../ProviderRegistry'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,28 +16,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Provider} from '../ProviderRegistry';
-
-import ProviderRegistry from '../ProviderRegistry';
-
 describe('ProviderRegistry', () => {
-  let providerRegistry: ProviderRegistry<Provider> = (null: any);
-  let provider1: Provider;
-  let provider2: Provider;
+  let providerRegistry = null;
+  let provider1;
+  let provider2;
 
   beforeEach(() => {
-    providerRegistry = new ProviderRegistry();
+    providerRegistry = new (_ProviderRegistry || _load_ProviderRegistry()).default();
     provider1 = {
       priority: 10,
-      grammarScopes: ['foo', 'bar'],
+      grammarScopes: ['foo', 'bar']
     };
     provider2 = {
       priority: 9,
-      grammarScopes: ['bar', 'baz'],
+      grammarScopes: ['bar', 'baz']
     };
     providerRegistry.addProvider(provider1);
     providerRegistry.addProvider(provider2);
@@ -40,35 +46,33 @@ describe('ProviderRegistry', () => {
   });
 
   it('should return the provider for an editor', () => {
-    const editor: any = {
+    const editor = {
       getGrammar() {
         return {
-          scopeName: 'foo',
+          scopeName: 'foo'
         };
-      },
+      }
     };
     expect(providerRegistry.getProviderForEditor(editor)).toBe(provider1);
   });
 
   it('should treat null grammarScopes as all-inclusive', () => {
     const provider3 = {
-      priority: 0,
+      priority: 0
     };
     providerRegistry.addProvider(provider3);
     expect(providerRegistry.findProvider('asdf')).toBe(provider3);
   });
 
   it('can return all providers for an editor', () => {
-    const editor: any = {
+    const editor = {
       getGrammar() {
         return {
-          scopeName: 'bar',
+          scopeName: 'bar'
         };
-      },
+      }
     };
-    expect(
-      Array.from(providerRegistry.getAllProvidersForEditor(editor)),
-    ).toEqual([provider1, provider2]);
+    expect(Array.from(providerRegistry.getAllProvidersForEditor(editor))).toEqual([provider1, provider2]);
   });
 
   it('should return null if there is no provider', () => {

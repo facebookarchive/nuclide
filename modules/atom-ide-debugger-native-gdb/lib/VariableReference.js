@@ -1,3 +1,29 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _MIDebugSession;
+
+function _load_MIDebugSession() {
+  return _MIDebugSession = require('./MIDebugSession');
+}
+
+var _MITypes;
+
+function _load_MITypes() {
+  return _MITypes = require('./MITypes');
+}
+
+var _MIProxy;
+
+function _load_MIProxy() {
+  return _MIProxy = _interopRequireDefault(require('./MIProxy'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,58 +32,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Variable} from 'vscode-debugprotocol';
+class VariableReference {
 
-import {logVerbose} from './MIDebugSession';
-import invariant from 'assert';
-import {
-  toCommandError,
-  varAssignResult,
-  varCreateResult,
-  varEvaluateExpressionResult,
-  varInfoNumChildrenResult,
-  varInfoTypeResult,
-  varListChildrenResult,
-} from './MITypes';
-import MIProxy from './MIProxy';
-
-export type VariableTypeClass = 'simple' | 'named' | 'indexed';
-
-type VariableReferenceConstructorArgs = {
-  client: MIProxy,
-  variables: Variables,
-  expression: string,
-  threadId?: ?number,
-  frameIndex?: ?number,
-  typeClass?: ?VariableTypeClass,
-  type?: ?string,
-  varName?: ?string,
-};
-
-export type SetChildResponse = {
-  value: string,
-  type?: string,
-  variablesReference?: number,
-  namedVariables?: number,
-  indexedVariables?: number,
-};
-
-export default class VariableReference {
-  _client: MIProxy;
-  _variables: Variables;
-  _childCount: ?number;
-  _threadId: ?number;
-  _frameIndex: ?number;
-  _expression: string;
-  _varName: ?string;
-  _typeClass: ?VariableTypeClass;
-  _type: ?string;
-
-  constructor(args: VariableReferenceConstructorArgs) {
+  constructor(args) {
     this._client = args.client;
     this._variables = args.variables;
     this._expression = args.expression;
@@ -68,17 +49,15 @@ export default class VariableReference {
     this._varName = args.varName;
   }
 
-  async getVariables(start: ?number, count: ?number): Promise<Array<Variable>> {
-    throw new Error(
-      'Base class VariableReference.getVariables called (abstract method)',
-    );
+  async getVariables(start, count) {
+    throw new Error('Base class VariableReference.getVariables called (abstract method)');
   }
 
   // typeClass describes what type of container the variable's type is
   // simple variables are not containers
   // named variables have named members: struct, union, class
   // indexed variables are native arrays and pointers
-  async getTypeClass(value: string): Promise<VariableTypeClass> {
+  async getTypeClass(value) {
     // it would seem to make sense to infer the type class from the actual
     // type. but that doesn't work, because the actual type may be a typedef,
     // and that's what MI will return. we can't recover the underlying type
@@ -88,7 +67,7 @@ export default class VariableReference {
       return this._typeClass;
     }
 
-    let type: VariableTypeClass = 'simple';
+    let type = 'simple';
 
     if (value === '') {
       // For C++ code, gdb inserts an extra level of hierarchy that doesn't
@@ -117,7 +96,7 @@ export default class VariableReference {
     return type;
   }
 
-  async getType(): Promise<string> {
+  async getType() {
     if (this._type != null) {
       return this._type;
     }
@@ -125,33 +104,27 @@ export default class VariableReference {
     const varName = await this._getVarName();
     const result = await this._client.sendCommand(`var-info-type ${varName}`);
     if (result.error) {
-      throw new Error(
-        `Error determining variable's type (${toCommandError(result).msg})`,
-      );
+      throw new Error(`Error determining variable's type (${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg})`);
     }
 
-    this._type = varInfoTypeResult(result).type;
+    this._type = (0, (_MITypes || _load_MITypes()).varInfoTypeResult)(result).type;
     return this._type;
   }
 
   // The value of a container variable is a summary of the value
   // of its contents.
-  async getValue(): Promise<string> {
+  async getValue() {
     const varName = await this._getVarName();
-    const result = await this._client.sendCommand(
-      `var-evaluate-expression ${varName}`,
-    );
+    const result = await this._client.sendCommand(`var-evaluate-expression ${varName}`);
 
     if (result.error) {
-      throw new Error(
-        `Error determining variable's value (${toCommandError(result).msg})`,
-      );
+      throw new Error(`Error determining variable's value (${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg})`);
     }
 
-    return varEvaluateExpressionResult(result).value;
+    return (0, (_MITypes || _load_MITypes()).varEvaluateExpressionResult)(result).value;
   }
 
-  async getChildCount(): Promise<number> {
+  async getChildCount() {
     if (this._childCount != null) {
       return this._childCount;
     }
@@ -165,19 +138,16 @@ export default class VariableReference {
     }
 
     // otherwise, we have to ask
-    const result = await this._client.sendCommand(
-      `var-info-num-children ${varName}`,
-    );
+    const result = await this._client.sendCommand(`var-info-num-children ${varName}`);
     if (result.error) {
-      throw new Error(
-        `Error determining the number of children (${
-          toCommandError(result).msg
-        })`,
-      );
+      throw new Error(`Error determining the number of children (${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg})`);
     }
 
-    const childCountStr = varInfoNumChildrenResult(result).numchild;
-    invariant(childCountStr != null);
+    const childCountStr = (0, (_MITypes || _load_MITypes()).varInfoNumChildrenResult)(result).numchild;
+
+    if (!(childCountStr != null)) {
+      throw new Error('Invariant violation: "childCountStr != null"');
+    }
 
     const childCount = parseInt(childCountStr, 10);
     this._childCount = childCount;
@@ -185,157 +155,134 @@ export default class VariableReference {
     return childCount;
   }
 
-  async setChildValue(name: string, value: string): Promise<SetChildResponse> {
+  async setChildValue(name, value) {
     const varname = await this._getVarName();
-    const childrenResult = await this._client.sendCommand(
-      `var-list-children ${varname}`,
-    );
+    const childrenResult = await this._client.sendCommand(`var-list-children ${varname}`);
     if (childrenResult.error) {
-      throw new Error(
-        `Error getting the children of ${varname} ${
-          toCommandError(childrenResult).msg
-        }`,
-      );
+      throw new Error(`Error getting the children of ${varname} ${(0, (_MITypes || _load_MITypes()).toCommandError)(childrenResult).msg}`);
     }
 
-    const children = varListChildrenResult(childrenResult);
+    const children = (0, (_MITypes || _load_MITypes()).varListChildrenResult)(childrenResult);
     const child = children.children.find(_ => _.child.exp === name);
     if (child == null) {
       throw new Error(`Cannot find variable ${name} to modify`);
     }
 
-    const assignResult = await this._client.sendCommand(
-      `var-assign ${child.child.name} ${value}`,
-    );
+    const assignResult = await this._client.sendCommand(`var-assign ${child.child.name} ${value}`);
     if (assignResult.error) {
-      throw new Error(
-        `Unable to set ${name} to {$value}: ${
-          toCommandError(assignResult).msg
-        }`,
-      );
+      throw new Error(`Unable to set ${name} to {$value}: ${(0, (_MITypes || _load_MITypes()).toCommandError)(assignResult).msg}`);
     }
 
-    const assign = varAssignResult(assignResult);
+    const assign = (0, (_MITypes || _load_MITypes()).varAssignResult)(assignResult);
 
     return {
       value: assign.value,
       type: child.child.type,
-      variablesReference: 0,
+      variablesReference: 0
     };
   }
 
-  async deleteResources(): Promise<void> {
+  async deleteResources() {
     if (this.needsDeletion && this._varName != null) {
-      const result = await this._client.sendCommand(
-        `var-delete ${this._varName}`,
-      );
+      const result = await this._client.sendCommand(`var-delete ${this._varName}`);
       if (result.error) {
         // don't throw here, because we can still continue safely, but log the error.
-        logVerbose(`Error deleting variable ${toCommandError(result).msg}`);
+        (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`Error deleting variable ${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg}`);
       }
     }
   }
 
-  get qualifiedName(): string {
-    throw new Error(
-      'Base class VariableReference.getQualifiedName called (abstract method)',
-    );
+  get qualifiedName() {
+    throw new Error('Base class VariableReference.getQualifiedName called (abstract method)');
   }
 
-  get needsDeletion(): boolean {
+  get needsDeletion() {
     return false;
   }
 
-  get threadId(): ?number {
+  get threadId() {
     return this._threadId;
   }
 
-  get frameIndex(): ?number {
+  get frameIndex() {
     return this._frameIndex;
   }
 
-  async variableFromVarRefHandle(
-    handle: number,
-    name: string,
-    type: ?string,
-  ): Promise<Variable> {
+  async variableFromVarRefHandle(handle, name, type) {
     const varref = this._variables.getVariableReference(handle);
-    invariant(varref != null);
+
+    if (!(varref != null)) {
+      throw new Error('Invariant violation: "varref != null"');
+    }
 
     const value = await varref.getValue();
     const typeClass = await varref.getTypeClass(value);
 
     const resolvedType = type == null ? await varref.getType() : type;
 
-    logVerbose(
-      `name ${name} type ${resolvedType} value ${value} typeClass ${typeClass}`,
-    );
+    (0, (_MIDebugSession || _load_MIDebugSession()).logVerbose)(`name ${name} type ${resolvedType} value ${value} typeClass ${typeClass}`);
 
-    let variable: Variable = {
+    let variable = {
       name,
       value,
       type: resolvedType,
-      variablesReference: 0,
+      variablesReference: 0
     };
 
     if (typeClass !== 'simple') {
       const childCount = await varref.getChildCount();
 
       if (typeClass === 'indexed') {
-        variable = {
-          ...variable,
+        variable = Object.assign({}, variable, {
           indexedVariables: childCount,
-          variablesReference: handle,
-        };
+          variablesReference: handle
+        });
       } else if (typeClass === 'named') {
-        variable = {
-          ...variable,
+        variable = Object.assign({}, variable, {
           namedVariables: childCount,
-          variablesReference: handle,
-        };
+          variablesReference: handle
+        });
       }
     }
 
     return variable;
   }
 
-  async _createVariableBinding(expression: string): Promise<string> {
+  async _createVariableBinding(expression) {
     // '-' means to let gdb create a unique name for the binding
     // '*' means use the current frame (which we specify via --thread/--frame)
-    // '@' means a floating variable which should be evaluatable anywhere
-
-    let command: string;
+    let command;
     if (this.threadId != null && this.frameIndex != null) {
-      command = `var-create --thread ${this.threadId} --frame ${
-        this.frameIndex
-      } - * ${expression}`;
+      command = `var-create --thread ${this.threadId} --frame ${this.frameIndex} - * ${expression}`;
     } else {
       command = `var-create - @ ${expression}`;
     }
 
     const result = await this._client.sendCommand(command);
     if (result.error) {
-      throw new Error(
-        `Error creating variable binding (${toCommandError(result).msg})`,
-      );
+      throw new Error(`Error creating variable binding (${(0, (_MITypes || _load_MITypes()).toCommandError)(result).msg})`);
     }
 
-    const varResult = varCreateResult(result);
+    const varResult = (0, (_MITypes || _load_MITypes()).varCreateResult)(result);
     this._varName = varResult.name;
     this._childCount = parseInt(varResult.numchild, 10);
 
     return varResult.name;
   }
 
-  async _getVarName(): Promise<string> {
+  async _getVarName() {
     if (this._varName != null) {
       return this._varName;
     }
 
     await this._createVariableBinding(this._expression);
     const varName = this._varName;
-    invariant(varName != null);
+
+    if (!(varName != null)) {
+      throw new Error('Invariant violation: "varName != null"');
+    }
 
     return varName;
   }
 }
+exports.default = VariableReference;

@@ -1,37 +1,33 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
-import {BigDigClient} from './BigDigClient';
-import {ReliableSocket} from '../socket/ReliableSocket';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export type BigDigClientConfig = {
-  +host: string,
-  +port: number,
-  +family?: 4 | 6,
-  +certificateAuthorityCertificate?: Buffer | string,
-  +clientCertificate?: Buffer | string,
-  +clientKey?: Buffer | string,
-  +ignoreIntransientErrors: boolean,
-};
+var _BigDigServer;
+
+function _load_BigDigServer() {
+  return _BigDigServer = require('../server/BigDigServer');
+}
+
+var _BigDigClient;
+
+function _load_BigDigClient() {
+  return _BigDigClient = require('./BigDigClient');
+}
+
+var _ReliableSocket;
+
+function _load_ReliableSocket() {
+  return _ReliableSocket = require('../socket/ReliableSocket');
+}
 
 /**
  * Creates a Big Dig client that speaks the v1 protocol.
  */
-export default (async function createBigDigClient(
-  config: BigDigClientConfig,
-): Promise<BigDigClient> {
+exports.default = async function createBigDigClient(config) {
   const reliableSocket = createReliableSocket(config);
-  const client = new BigDigClient(reliableSocket);
+  const client = new (_BigDigClient || _load_BigDigClient()).BigDigClient(reliableSocket);
   try {
     // Make sure we're able to make the initial connection
     await reliableSocket.testConnection();
@@ -40,23 +36,29 @@ export default (async function createBigDigClient(
     client.close();
     throw error;
   }
-});
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    *  strict-local
+    * @format
+    */
 
-function createReliableSocket(config: BigDigClientConfig): ReliableSocket {
+function createReliableSocket(config) {
   const options = {
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
     key: config.clientKey,
-    family: config.family,
+    family: config.family
   };
 
   const serverUri = `https://${config.host}:${config.port}/v1`;
 
-  const reliableSocket = new ReliableSocket(
-    serverUri,
-    HEARTBEAT_CHANNEL,
-    options,
-  );
+  const reliableSocket = new (_ReliableSocket || _load_ReliableSocket()).ReliableSocket(serverUri, (_BigDigServer || _load_BigDigServer()).HEARTBEAT_CHANNEL, options);
 
   if (!config.ignoreIntransientErrors) {
     reliableSocket.onIntransientError(error => reliableSocket.close());

@@ -1,83 +1,105 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {trackTiming, track} from '../../nuclide-analytics';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getLogger} from 'log4js';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-const logger = getLogger('nuclide-file-watcher');
+var _UniversalDisposable;
 
-export default class FileWatcher {
-  _editor: TextEditor;
-  _subscriptions: ?UniversalDisposable;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
 
-  constructor(editor: TextEditor) {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-file-watcher'); /**
+                                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                    * All rights reserved.
+                                                                                    *
+                                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                                    * the root directory of this source tree.
+                                                                                    *
+                                                                                    * 
+                                                                                    * @format
+                                                                                    */
+
+class FileWatcher {
+
+  constructor(editor) {
     this._editor = editor;
     if (this._editor == null) {
       logger.warn('No editor instance on this._editor');
       return;
     }
-    const _subscriptions = new UniversalDisposable();
-    _subscriptions.add(
-      this._editor.onDidConflict(() => {
-        if (this._shouldPromptToReload()) {
-          logger.info(
-            `Conflict at file: ${this._editor.getPath() || 'File not found'}`,
-          );
-          this._promptReload();
-        }
-      }),
-    );
+    const _subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    _subscriptions.add(this._editor.onDidConflict(() => {
+      if (this._shouldPromptToReload()) {
+        logger.info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
+        this._promptReload();
+      }
+    }));
     this._subscriptions = _subscriptions;
   }
 
-  _shouldPromptToReload(): boolean {
+  _shouldPromptToReload() {
     return this._editor.getBuffer().isInConflict();
   }
 
-  _promptReload(): Promise<any> {
-    return trackTiming('file-watcher:promptReload', () =>
-      this.__promptReload(),
-    );
+  _promptReload() {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('file-watcher:promptReload', () => this.__promptReload());
   }
 
-  async __promptReload(): Promise<any> {
+  async __promptReload() {
     const filePath = this._editor.getPath();
     if (filePath == null) {
       return;
     }
     const encoding = this._editor.getEncoding();
-    const fileName = nuclideUri.basename(filePath);
+    const fileName = (_nuclideUri || _load_nuclideUri()).default.basename(filePath);
     const choice = atom.confirm({
       message: fileName + ' has changed on disk.',
-      buttons: ['Reload', 'Compare', 'Ignore'],
+      buttons: ['Reload', 'Compare', 'Ignore']
     });
     if (choice === 2) {
-      track('file-watcher:promptReload-ignoreChosen');
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-ignoreChosen');
       return;
     }
     if (choice === 0) {
-      track('file-watcher:promptReload-reloadChosen');
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-reloadChosen');
       const buffer = this._editor.getBuffer();
       if (buffer) {
         buffer.reload();
       }
       return;
     }
-    track('file-watcher:promptReload-compareChosen');
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('file-watcher:promptReload-compareChosen');
 
     // Load the file contents locally or remotely.
-    const service = getFileSystemServiceByNuclideUri(filePath);
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileSystemServiceByNuclideUri)(filePath);
     const contents = (await service.readFile(filePath)).toString(encoding);
 
     // Open a right split pane to compare the contents.
@@ -85,7 +107,7 @@ export default class FileWatcher {
     // TODO: Figure out wtf is going on here (why are we passing the empty string as a path) and
     // consider using goToLocation instead.
     // eslint-disable-next-line nuclide-internal/atom-apis
-    const splitEditor = await atom.workspace.open('', {split: 'right'});
+    const splitEditor = await atom.workspace.open('', { split: 'right' });
 
     splitEditor.insertText(contents);
     splitEditor.setGrammar(this._editor.getGrammar());
@@ -99,3 +121,4 @@ export default class FileWatcher {
     this._subscriptions = null;
   }
 }
+exports.default = FileWatcher;

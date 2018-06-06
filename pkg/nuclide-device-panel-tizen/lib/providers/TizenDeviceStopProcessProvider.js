@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TizenDeviceStopProcessProvider = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../../nuclide-remote-connection');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +20,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {
-  Device,
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from 'nuclide-debugger-common/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {Observable} from 'rxjs';
-import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-
-export class TizenDeviceStopProcessProvider
-  implements DeviceProcessTaskProvider {
-  getType(): string {
+class TizenDeviceStopProcessProvider {
+  getType() {
     return 'Tizen';
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'KILL';
   }
 
-  getName(): string {
+  getName() {
     return 'Stop process/package';
   }
 
-  isSupported(proc: Process): boolean {
+  isSupported(proc) {
     return true;
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: Device,
-    procs: Process[],
-  ): Observable<Set<number>> {
-    return Observable.of(new Set(procs.map(proc => proc.pid)));
+  getSupportedPIDs(host, device, procs) {
+    return _rxjsBundlesRxMinJs.Observable.of(new Set(procs.map(proc => proc.pid)));
   }
 
-  async run(host: NuclideUri, device: Device, proc: Process): Promise<void> {
-    return getSdbServiceByNuclideUri(host).stopProcess(
-      device,
-      proc.name,
-      proc.pid,
-    );
+  async run(host, device, proc) {
+    return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host).stopProcess(device, proc.name, proc.pid);
   }
 }
+exports.TizenDeviceStopProcessProvider = TizenDeviceStopProcessProvider;

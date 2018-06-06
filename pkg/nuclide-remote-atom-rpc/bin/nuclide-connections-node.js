@@ -1,26 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
-import os from 'os';
-import yargs from 'yargs';
-import {getCommands} from './CommandClient';
-import {
-  setupErrorHandling,
-  setupLogging,
-  EXIT_CODE_CONNECTION_ERROR,
-  EXIT_CODE_SUCCESS,
-  FailedConnectionError,
-} from './errors';
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../../modules/nuclide-commons/process');
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+var _CommandClient;
+
+function _load_CommandClient() {
+  return _CommandClient = require('./CommandClient');
+}
+
+var _errors;
+
+function _load_errors() {
+  return _errors = require('./errors');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /*
  * CLI for printing information about the Atom clients connected to the Nuclide
@@ -29,18 +41,29 @@ import {
  * stdout as JSON.
  */
 
-async function main(argv): Promise<number> {
-  setupLogging();
-  setupErrorHandling();
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+async function main(argv) {
+  (0, (_errors || _load_errors()).setupLogging)();
+  (0, (_errors || _load_errors()).setupErrorHandling)();
 
   // Connect to the Nuclide server running on this host, if it exists.
   let commands = null;
   try {
-    commands = await getCommands(argv, /* rejectIfZeroConnections */ false);
+    commands = await (0, (_CommandClient || _load_CommandClient()).getCommands)(argv, /* rejectIfZeroConnections */false);
   } catch (e) {
     // Only a FailedConnectionError is expected.
-    if (!(e instanceof FailedConnectionError)) {
-      return EXIT_CODE_CONNECTION_ERROR;
+    if (!(e instanceof (_errors || _load_errors()).FailedConnectionError)) {
+      return (_errors || _load_errors()).EXIT_CODE_CONNECTION_ERROR;
     }
   }
 
@@ -50,8 +73,8 @@ async function main(argv): Promise<number> {
     // We should print an empty array without any ceremony in this case.
     foldersArray = [];
   } else {
-    const hostname = os.hostname();
-    const isAliasForHostname = async function(alias: string): Promise<boolean> {
+    const hostname = _os.default.hostname();
+    const isAliasForHostname = async function (alias) {
       if (hostname === alias) {
         return true;
       } else {
@@ -66,11 +89,11 @@ async function main(argv): Promise<number> {
     const rootFolders = new Set();
     for (const projectState of projectStates) {
       for (const rootFolder of projectState.rootFolders) {
-        if (nuclideUri.isRemote(rootFolder)) {
-          const alias = nuclideUri.getHostname(rootFolder);
+        if ((_nuclideUri || _load_nuclideUri()).default.isRemote(rootFolder)) {
+          const alias = (_nuclideUri || _load_nuclideUri()).default.getHostname(rootFolder);
           // eslint-disable-next-line no-await-in-loop
           if (await isAliasForHostname(alias)) {
-            const path = nuclideUri.getPath(rootFolder);
+            const path = (_nuclideUri || _load_nuclideUri()).default.getPath(rootFolder);
             rootFolders.add(path);
           }
         }
@@ -82,13 +105,13 @@ async function main(argv): Promise<number> {
   foldersArray.sort();
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(foldersArray, null, 2));
-  return EXIT_CODE_SUCCESS;
+  return (_errors || _load_errors()).EXIT_CODE_SUCCESS;
 }
 
-async function resolveAlias(alias: string): Promise<?string> {
+async function resolveAlias(alias) {
   let stdout;
   try {
-    stdout = await runCommand('dig', ['+short', 'cname', alias]).toPromise();
+    stdout = await (0, (_process || _load_process()).runCommand)('dig', ['+short', 'cname', alias]).toPromise();
   } catch (e) {
     // Defend against the case where `dig` is not installed.
     return null;
@@ -111,22 +134,16 @@ async function resolveAlias(alias: string): Promise<?string> {
   return stdout;
 }
 
-async function run(): Promise<void> {
-  const {argv} = yargs
-    .usage('Usage: nuclide-connections')
-    .help('h')
-    .alias('h', 'help')
-    .option('p', {
-      alias: 'port',
-      describe: 'Port for connecting to nuclide',
-      type: 'number',
-    })
-    .option('f', {
-      alias: 'family',
-      describe:
-        'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
-      type: 'string',
-    });
+async function run() {
+  const { argv } = (_yargs || _load_yargs()).default.usage('Usage: nuclide-connections').help('h').alias('h', 'help').option('p', {
+    alias: 'port',
+    describe: 'Port for connecting to nuclide',
+    type: 'number'
+  }).option('f', {
+    alias: 'family',
+    describe: 'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
+    type: 'string'
+  });
 
   const exitCode = await main(argv);
   process.exit(exitCode);
