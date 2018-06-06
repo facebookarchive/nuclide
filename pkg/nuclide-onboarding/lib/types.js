@@ -18,17 +18,17 @@ export type OnboardingModelState = {
 };
 
 export type OnboardingFragment = {
-  taskComponent: React.ComponentType<OnboardingTaskMetadata>,
   description?: string,
+  taskComponent: React.ComponentType<OnboardingTaskMetadata>,
   taskKey: string,
   title: string,
 };
 
 export type OnboardingTaskMetadata = {
   description?: string,
+  isCompleted: boolean,
   taskKey: string,
   title: string,
-  isCompleted: boolean,
 };
 
 export type OnboardingTask = OnboardingFragment & {
