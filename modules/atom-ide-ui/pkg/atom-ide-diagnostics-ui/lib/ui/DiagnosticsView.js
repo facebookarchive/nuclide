@@ -169,7 +169,8 @@ export default class DiagnosticsView extends React.Component<Props> {
         </Toolbar>
         <div
           className="atom-ide-filterable"
-          ref={el => (this._diagnosticsTableWrapperEl = el)}>
+          ref={el => (this._diagnosticsTableWrapperEl = el)}
+          style={{display: 'flex', flexDirection: 'column'}}>
           <DiagnosticsTable
             ref={table => {
               this._table = table;
