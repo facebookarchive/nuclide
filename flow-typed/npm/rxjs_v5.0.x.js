@@ -49,6 +49,19 @@ type rxjs$OperatorFunctionLast<T, R: rxjs$Observable<*>> = (
   rxjs$Observable<T>
 ) => R;
 
+type rxjs$NotificationKind = 'N' | 'C' | 'E';
+type rxjs$Notification<T> = {
+  error: any,
+  hasValue: true,
+  kind: rxjs$NotificationKind,
+  value: T,
+} | {
+  error: any,
+  hasValue: false,
+  kind: rxjs$NotificationKind,
+  value: void,
+};
+
 declare class rxjs$Observable<+T> {
   static bindCallback(
     callbackFunc: (callback: (_: void) => any) => any,
@@ -566,6 +579,8 @@ declare class rxjs$Observable<+T> {
 
   switchMapTo<U>(innerObservable: rxjs$Observable<U>): rxjs$Observable<U>;
 
+  materialize(): rxjs$Observable<rxjs$Notification<T>>;
+
   map<U>(f: (value: T) => U): rxjs$Observable<U>;
 
   mapTo<U>(value: U): rxjs$Observable<U>;
@@ -695,6 +710,8 @@ declare class rxjs$Observable<+T> {
   subscribeOn(scheduler: rxjs$SchedulerClass): rxjs$Observable<T>;
 
   take(count: number): rxjs$Observable<T>;
+
+  takeLast(count: number): rxjs$Observable<T>;
 
   takeUntil(other: rxjs$Observable<any>): rxjs$Observable<T>;
 

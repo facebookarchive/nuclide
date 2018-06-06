@@ -16,6 +16,7 @@ import {
   bufferUntil,
   cacheWhileSubscribed,
   completingSwitchMap,
+  mergeUntilAnyComplete,
   concatLatest,
   diffSets,
   fastDebounce,
@@ -534,6 +535,27 @@ describe('nuclide-commons/observable', () => {
           .toPromise();
         expect(results).toEqual([2, 3]);
       })();
+    });
+  });
+
+  describe('mergeUntilAnyComplete', () => {
+    it('completes when the first inner observable completes', async () => {
+      const aDone = jest.fn();
+      const bDone = jest.fn();
+      const a = Observable.timer(0, 10)
+        .mapTo('A')
+        .take(100)
+        .finally(aDone);
+      const b = Observable.timer(5, 10)
+        .mapTo('B')
+        .take(3)
+        .finally(bDone);
+      const results = await mergeUntilAnyComplete(a, b)
+        .toArray()
+        .toPromise();
+      expect(results).toEqual(['A', 'B', 'A', 'B', 'A', 'B']);
+      expect(aDone).toHaveBeenCalled();
+      expect(bDone).toHaveBeenCalled();
     });
   });
 

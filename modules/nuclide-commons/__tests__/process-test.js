@@ -200,7 +200,6 @@ describe('commons-node/process', () => {
           'console.error("stderr"); console.log("std out"); process.exit(42);',
         ]);
         const results = await getOutputStream(child)
-          // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
           .toPromise();
@@ -372,7 +371,6 @@ describe('commons-node/process', () => {
           '-e',
           'console.error("stderr"); console.log("std out"); process.exit(42);',
         ])
-          // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
           .toPromise();
@@ -394,7 +392,6 @@ describe('commons-node/process', () => {
           '-e',
           'process.exit(42);',
         ])
-          // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
           .toPromise();

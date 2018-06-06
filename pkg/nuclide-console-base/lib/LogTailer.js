@@ -79,7 +79,6 @@ export class LogTailer {
       options.ready == null
         ? null
         : // Guard against a never-ending ready stream.
-          // $FlowFixMe: Add `materialize()` to Rx defs
           options.ready.takeUntil(messages.materialize().takeLast(1));
     this._runningCallbacks = [];
     this._startCount = 0;

@@ -370,6 +370,20 @@ export function completingSwitchMap<T, U>(
 }
 
 /**
+ * Returns a new observable consisting of the merged values from the passed
+ * observables and completes when the first inner observable completes.
+ */
+export function mergeUntilAnyComplete<T>(
+  ...observables: Array<Observable<T>>
+): Observable<T> {
+  const notifications = Observable.merge(
+    ...observables.map(o => o.materialize()),
+  );
+  // $FlowFixMe add dematerialize to rxjs Flow types
+  return notifications.dematerialize();
+}
+
+/**
  * RxJS's debounceTime is actually fairly inefficient:
  * on each event, it always clears its interval and [creates a new one][1].
  * Until this is fixed, this uses our debounce implementation which
