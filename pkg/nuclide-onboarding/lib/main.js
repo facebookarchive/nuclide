@@ -9,52 +9,61 @@
  * @format
  */
 
-import type {OnboardingFragment} from './types';
+import type {OnboardingModelState, OnboardingFragment} from './types';
 
+import Model from 'nuclide-commons/Model';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import OnboardingPaneItem, {WORKSPACE_VIEW_URI} from './OnboardingPaneItem';
 import * as Immutable from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import * as React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
 
 class Activation {
   // A stream of all of the fragments. This is essentially the state of our panel.
   _allOnboardingFragmentsStream: BehaviorSubject<
-    Immutable.Map<string, OnboardingFragment>,
-  > = new BehaviorSubject(Immutable.Map());
+    Immutable.OrderedMap<string, OnboardingFragment>,
+  > = new BehaviorSubject(Immutable.OrderedMap());
+
+  _model: Model<OnboardingModelState> = new Model({
+    activeTaskKey: null,
+    tasks: new Immutable.OrderedMap(),
+  });
 
   _subscriptions: UniversalDisposable;
 
   constructor(state: ?Object) {
     this._subscriptions = this._registerCommandAndOpener();
     this._considerDisplayingOnboarding();
+    this._model.setState({activeTaskKey: 'editor-ide-experience'});
+    // TODO: Go fetch activeTaskKey from disk? or fall back to first item
   }
 
   setOnboardingFragments(
-    onboardingFragment: OnboardingFragment,
+    onboardingFragments: Array<OnboardingFragment>,
   ): UniversalDisposable {
-    this._allOnboardingFragmentsStream.next(
-      this._allOnboardingFragmentsStream
-        .getValue()
-        .set(onboardingFragment.key, onboardingFragment),
-    );
+    let tasks = this._model.state.tasks;
+    for (const onboardingFragment of onboardingFragments) {
+      tasks = tasks.set(onboardingFragment.taskKey, {
+        ...onboardingFragment,
+        isCompleted: false, // TODO: Fetch isCompleted from disk
+      });
+    }
+    this._model.setState({tasks});
+
     return new UniversalDisposable(() => {
-      this._allOnboardingFragmentsStream.next(
-        this._allOnboardingFragmentsStream
-          .getValue()
-          .remove(onboardingFragment.key),
-      );
+      tasks = this._model.state.tasks;
+      for (const onboardingFragment of onboardingFragments) {
+        tasks = tasks.remove(onboardingFragment.taskKey);
+      }
+      this._model.setState({tasks});
     });
   }
 
   dispose(): void {
-    this._allOnboardingFragmentsStream.next(Immutable.Map());
     this._subscriptions.dispose();
   }
 
@@ -73,11 +82,7 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return viewableFromReactElement(
-            <OnboardingPaneItem
-              allOnboardingFragmentsStream={this._allOnboardingFragmentsStream}
-            />,
-          );
+          return new OnboardingPaneItem(this._model.toObservable());
         }
       }),
       () => destroyItemWhere(item => item instanceof OnboardingPaneItem),

@@ -15,12 +15,12 @@ import * as Immutable from 'immutable';
 import * as React from 'react';
 
 type Props = {
-  allOnboardingTasks: Immutable.Map<string, OnboardingTask>,
+  allOnboardingTasks: Immutable.OrderedMap<string, OnboardingTask>,
   selectedTaskKey: ?string,
 };
 
-const OnboardingTaskProgressBar = (props: Props) => {
-  const completedTasks: Immutable.Map<
+export default function OnboardingTaskProgressBar(props: Props) {
+  const completedTasks: Immutable.OrderedMap<
     string,
     OnboardingTask,
   > = props.allOnboardingTasks.filter(task => task.isCompleted);
@@ -30,11 +30,9 @@ const OnboardingTaskProgressBar = (props: Props) => {
     <div>
       {selectedTaskKey != null && <div>Selected Task: {selectedTaskKey}</div>}
       <div>
-        Completed Tasks:{' '}
+        Completed Tasks:
         {completedTasks.filter(task => !task.isCompleted).toArray()}
       </div>
     </div>
   );
-};
-
-export default OnboardingTaskProgressBar;
+}

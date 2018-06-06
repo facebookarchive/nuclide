@@ -58,6 +58,7 @@
     "nuclide-notifications",
     "nuclide-nux",
     "nuclide-onboarding",
+    "nuclide-onboarding-core-tasks",
     "nuclide-open-filenames-provider",
     "nuclide-outline-view-extras",
     "nuclide-project",

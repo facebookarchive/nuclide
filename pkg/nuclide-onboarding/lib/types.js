@@ -9,13 +9,28 @@
  * @format
  */
 
+import * as React from 'react';
+import * as Immutable from 'immutable';
+
+export type OnboardingModelState = {
+  activeTaskKey: ?string,
+  tasks: Immutable.OrderedMap<string, OnboardingTask>,
+};
+
 export type OnboardingFragment = {
+  taskComponent: React.ComponentType<OnboardingTaskMetadata>,
   description?: string,
-  key: string,
+  taskKey: string,
   title: string,
 };
 
-export type OnboardingTask = {
-  ...OnboardingFragment,
+export type OnboardingTaskMetadata = {
+  description?: string,
+  taskKey: string,
+  title: string,
+  isCompleted: boolean,
+};
+
+export type OnboardingTask = OnboardingFragment & {
   isCompleted: boolean,
 };
