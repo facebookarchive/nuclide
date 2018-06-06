@@ -113,9 +113,11 @@ export class RemoteConnection {
           directories.push(dirname);
         }
 
+        projectContents.paths = directories;
+        projectContents.originPath = serverConnection.getUriOfRemotePath(
+          realPath,
+        );
         if (atom.project.replace != null) {
-          projectContents.paths = directories;
-          projectContents.originPath = realPath;
           atom.project.replace(projectContents);
         }
       }
