@@ -134,9 +134,13 @@ export class TunnelManager {
         this._idToTunnel.set(msg.tunnelId, socketManager);
       }
     } else if (msg.event === 'proxyClosed') {
-      invariant(tunnelComponent);
-      tunnelComponent.close();
-      this._idToTunnel.delete(tunnelComponent.getId());
+      // in the case of a reverse tunnel, we get the proxyClosed event
+      // after we actually close the tunnel, so we ignore it.
+      if (tunnelComponent != null) {
+        invariant(tunnelComponent);
+        tunnelComponent.close();
+        this._idToTunnel.delete(tunnelComponent.getId());
+      }
     } else if (msg.event === 'createProxy') {
       const proxy = await Proxy.createProxy(
         msg.tunnelId,
