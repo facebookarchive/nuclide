@@ -17,6 +17,7 @@ import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import OnboardingPaneItem, {WORKSPACE_VIEW_URI} from './OnboardingPaneItem';
+import OnboardingTasksCompletedComponent from './OnboardingTasksCompletedComponent';
 import * as Immutable from 'immutable';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {shell} from 'electron';
@@ -229,4 +230,17 @@ export default class Activation {
       this._setActiveTaskKey(selectedTaskKey);
     }
   };
+
+  getOnboardingTasksCompletedFragment(): Array<OnboardingFragment> {
+    return [
+      {
+        priority: 11,
+        taskComponent: OnboardingTasksCompletedComponent,
+        description:
+          'Congratulations! You have completed all of the onboarding tasks!',
+        taskKey: 'onboarding-tasks-completed',
+        title: 'All Onboarding Tasks Completed',
+      },
+    ];
+  }
 }
