@@ -13,9 +13,9 @@ import type {OnboardingTask} from './types';
 
 import * as Immutable from 'immutable';
 import * as React from 'react';
+import NuclideLogo from 'nuclide-commons-ui/NuclideLogo';
 import OnboardingTaskComponentWrapper from './OnboardingTaskComponentWrapper';
 import OnboardingTasksProgressBar from './OnboardingTasksProgressBar';
-import NuclideLogo from './NuclideLogo';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/onboarding';
 
