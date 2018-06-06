@@ -246,6 +246,10 @@ export default class DebuggerSteppingComponent extends React.Component<
       playPauseTitle = 'Pause';
     }
 
+    const process = service.getModel().getProcesses()[0];
+    const attached =
+      process != null && process.configuration.debugMode === 'attach';
+
     return (
       <div className="debugger-stepping-component">
         <ButtonGroup className="debugger-stepping-buttongroup">
@@ -291,7 +295,7 @@ export default class DebuggerSteppingComponent extends React.Component<
             disabled={isStopped}
             tooltip={{
               ...defaultTooltipOptions,
-              title: 'Detach debugger',
+              title: attached ? 'Detach' : 'Terminate',
               keyBindingCommand: 'debugger:stop-debugging',
             }}
             onClick={() => service.stopProcess()}
