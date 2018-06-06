@@ -24,14 +24,15 @@ export default function OnboardingTaskComponentWrapper(props: OnboardingTask) {
     title,
   };
   return (
-    <div>
-      <div>
-        <div>Title: {title}</div>
-        {description != null && <div>Description: {description} </div>}
+    <div className="nuclide-onboarding-task-component-wrapper">
+      <div className="nuclide-onboarding-task-component-wrapper-header">
+        <h3 className="nuclide-onboarding-task-component-wrapper-title">
+          {title}
+        </h3>
+        <div className="nuclide-onboarding-task-component-wrapper-separator" />
+        {description != null ? <span>{description}</span> : null}
       </div>
-      <div>
-        <TaskComponent {...taskMetaData} />
-      </div>
+      <TaskComponent {...taskMetaData} />
     </div>
   );
 }

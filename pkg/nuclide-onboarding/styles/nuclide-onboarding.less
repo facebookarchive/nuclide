@@ -67,7 +67,27 @@
 }
 
 .nuclide-onboarding-section {
-  margin: 2em 1em 2em 3em;
+  margin: 2em 3em;
+  min-width: 280px;
+}
+
+.nuclide-onboarding-task-component-wrapper-header {
+  margin: 2em 0;
+}
+
+.nuclide-onboarding-task-component-wrapper-separator {
+  // dotted border spacing using background-image: https://stackoverflow.com/a/18064496
+  background-image: linear-gradient(to right, grey 33%, rgba(255,255,255,0) 0%);
+  background-position: bottom;
+  background-repeat: repeat-x;
+  background-size: 6px 1px;
+  height: 5px;
+  margin: 0.5em 0 1em 0;
+  width: 100%;
+}
+
+.nuclide-onboarding-task-component-wrapper-title {
+  margin-bottom: 0;
 }
 
 .nuclide-onboarding-tasks-progress-bar {
