@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Help",
+      "submenu": [
+        {
+          "label": "Nuclide Docs",
+          "command": "nuclide-docs:open"
+        },
+        {
+          "label": "Nuclide Onboarding",
+          "command": "nuclide-onboarding:toggle"
+        }
+      ]
+    },
+    {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "Toggle Nuclide Onboarding",
+          "command": "nuclide-onboarding:toggle"
+        }
+      ]
+    }
+  ]
+}

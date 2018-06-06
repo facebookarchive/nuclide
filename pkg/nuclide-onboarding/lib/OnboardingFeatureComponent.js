@@ -1,0 +1,67 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ * @format
+ */
+
+import * as React from 'react';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {track} from '../../nuclide-analytics';
+
+type Props = {
+  title: string,
+  icon: string,
+  description: string | React.Element<any>,
+  command: ?(string | (() => void)),
+};
+
+export default class OnboardingFeatureComponent extends React.Component<Props> {
+  _tryIt = (): void => {
+    const {command, title} = this.props;
+    if (command == null) {
+      return;
+    }
+    track('onboarding-feature-tried', {title});
+    switch (typeof command) {
+      case 'string':
+        atom.commands.dispatch(atom.views.getView(atom.workspace), command, {
+          _source: 'nuclide-onboarding',
+        });
+        return;
+      case 'function':
+        command();
+        return;
+      default:
+        throw new Error('Invalid command value');
+    }
+  };
+
+  render(): React.Node {
+    const {title, command} = this.props;
+    return (
+      <details className="nuclide-onboarding-card">
+        <summary
+          className={`nuclide-onboarding-summary icon icon-${this.props.icon}`}>
+          {title}
+          {// flowlint-next-line sketchy-null-string:off
+          command ? (
+            <Button
+              className="pull-right nuclide-onboarding-tryit"
+              size={ButtonSizes.SMALL}
+              onClick={this._tryIt}>
+              Try it
+            </Button>
+          ) : null}
+        </summary>
+        <div className="nuclide-onboarding-detail">
+          {this.props.description}
+        </div>
+      </details>
+    );
+  }
+}

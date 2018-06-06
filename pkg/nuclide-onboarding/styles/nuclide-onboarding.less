@@ -1,0 +1,95 @@
+@import "ui-variables";
+
+.nuclide-onboarding {
+  display: flex;
+  font-size: 1.25em;
+  line-height: 1.4;
+  color: @text-color;
+  background-color: @base-background-color;
+  overflow-x: auto;
+
+  // Overrides ----------------------
+
+  a {
+    color: @text-color-info;
+  }
+
+  // Components ----------------------
+
+  &-container {
+    width: 100%;
+    max-width: 450px;
+    min-width: 300px;
+    margin: auto;
+    padding: 3em 2em;
+  }
+
+  &-title {
+    font-size: 1.4em;
+    text-align: center;
+    line-height: 1.3;
+    margin: 1em 0;
+  }
+
+  &-card {
+    margin: 1em 0;
+
+    border-radius: @component-border-radius*2;
+    border: 1px solid @base-border-color;
+    background-color: lighten(@base-background-color, 3%);
+  }
+
+  &-summary {
+    padding: 1em 1.5em;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.2;
+    cursor: pointer;
+    &:hover {
+      color: lighten(@text-color, 4%);
+    }
+    &::-webkit-details-marker {
+      display: none
+    }
+    &:before {
+      width: 20px;
+      color: @text-color-subtle;
+      details[open] & {
+        color: @text-color-highlight;
+      }
+    }
+    details[open] & {
+      color: @text-color-highlight;
+    }
+  }
+
+  &-detail {
+    border-top: 1px solid @base-border-color;
+    padding: 1.5em;
+    .welcome-note {
+      margin-bottom: 0;
+    }
+  }
+
+}
+
+.nuclide-onboarding-logo {
+  height: 180px;
+  margin: 0 auto 2em;
+  width: 150px;
+}
+
+/* Contain the horizontal pair of sections for the welcome and feature list. */
+.nuclide-onboarding-containers {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  width: 100%;
+}
+
+/* Rebases button size in the enlarged detail summary. */
+.btn.btn-sm.nuclide-onboarding-tryit {
+  line-height: 1.8em;
+  margin-top: -0.3em;
+}
