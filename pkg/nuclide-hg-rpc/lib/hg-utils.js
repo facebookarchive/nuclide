@@ -160,6 +160,9 @@ async function getHgExecParams(
       // Without assuming hg is being run in a tty, the progress extension won't get used
       '--config',
       'progress.assume-tty=1',
+      // Never show progress bar in stdout since we use the progressfile
+      '--config',
+      'progress.renderer=none',
       // Prevent user-specified merge tools from attempting to
       // open interactive editors.
       '--config',
@@ -184,6 +187,8 @@ async function getHgExecParams(
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     options.env.HGPLAIN = 1;
+    // Make an exception for plain mode so the progress file gets written
+    options.env.HGPLAINEXCEPT = 'progress';
   }
   if (options.HGEDITOR != null) {
     options.env.HGEDITOR = options.HGEDITOR;
