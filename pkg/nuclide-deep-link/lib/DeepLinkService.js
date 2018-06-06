@@ -55,6 +55,20 @@ export function _openInNewWindow(uri: string): void {
   });
 }
 
+function isWindowBlank(lastDeepLinkUptime: ?number): boolean {
+  // A window is considered empty if:
+  // 1) it has no open projects
+  // 2) it has no visible modal panels
+  // 3) no deep link was opened recently
+  const BLANK_DEEP_LINK_EXPIRY = 3;
+  return (
+    atom.project.getPaths().length === 0 &&
+    !atom.workspace.getModalPanels().some(x => x.isVisible()) &&
+    (lastDeepLinkUptime == null ||
+      process.uptime() - lastDeepLinkUptime < BLANK_DEEP_LINK_EXPIRY)
+  );
+}
+
 export default class DeepLinkService {
   _disposable: UniversalDisposable;
   _observers: Map<string, rxjs$Observer<DeepLinkParams>>;
@@ -71,12 +85,13 @@ export default class DeepLinkService {
       }).share();
     });
 
+    let lastDeepLinkUptime = null;
     this._disposable = new UniversalDisposable(
       observeDeepLinks().subscribe(({message, params}) => {
         // This is a special feature that mimics the browser's target=_blank.
         // Opens up a new Atom window and sends it back to the Atom URI handler.
-        // (If the current window is already blank then we'll still use it though.)
-        if (params.target === '_blank' && atom.project.getPaths().length > 0) {
+        // If the current window is already 'blank' then we'll use the current one, though.
+        if (params.target === '_blank' && !isWindowBlank(lastDeepLinkUptime)) {
           // Can't recurse indefinitely!
           const {target, ...paramsWithoutTarget} = params;
           _openInNewWindow(
@@ -95,6 +110,7 @@ export default class DeepLinkService {
         if (observer != null) {
           observer.next(params);
         }
+        lastDeepLinkUptime = process.uptime();
       }),
       () => this._observers.forEach(observer => observer.complete()),
     );

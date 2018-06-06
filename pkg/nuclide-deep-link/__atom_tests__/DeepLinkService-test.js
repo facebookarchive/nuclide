@@ -44,13 +44,18 @@ describe('DeepLinkService', () => {
     // Make sure observers get cleaned up.
     disposables.dispose();
     expect(service._observers.size).toBe(0);
+    service.dispose();
   });
 
-  it.skip('opens target=_blank links in a new window', async () => {
+  it('opens target=_blank links in a new window', async () => {
     const service = new DeepLinkService();
     const windows = remote.BrowserWindow.getAllWindows();
 
     const browserWindow = remote.getCurrentWindow();
+    // Opening a modal marks the window as non-blank.
+    const panel = atom.workspace.addModalPanel({
+      item: document.createElement('div'),
+    });
     service.sendDeepLink(browserWindow, 'test1', {a: '1', target: '_blank'});
 
     await waitsFor(
@@ -59,5 +64,7 @@ describe('DeepLinkService', () => {
     );
 
     // Ideally we'd also check that the URL made it through.. but that's too difficult.
+    service.dispose();
+    panel.destroy();
   });
 });
