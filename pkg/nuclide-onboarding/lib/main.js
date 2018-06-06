@@ -82,7 +82,11 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return new OnboardingPaneItem(this._model.toObservable());
+          const onboardingPaneItemProps = {
+            taskDetails: this._model.toObservable(),
+            selectTaskHandler: this._handleTaskSelection,
+          };
+          return new OnboardingPaneItem(onboardingPaneItemProps);
         }
       }),
       () => destroyItemWhere(item => item instanceof OnboardingPaneItem),
@@ -103,6 +107,34 @@ class Activation {
       ),
     );
   }
+
+  _canBecomeActiveTask(selectedTaskKey: string) {
+    const currentActiveTaskKey = this._model.state.activeTaskKey;
+    const selectedTask = this._model.state.tasks.get(selectedTaskKey);
+
+    if (selectedTask == null || selectedTaskKey === currentActiveTaskKey) {
+      return false;
+    }
+
+    const firstIncompleteTask = this._model.state.tasks.find(
+      task => task.isCompleted === false,
+    );
+
+    let canBecomeActiveTask = selectedTask.isCompleted;
+
+    if (firstIncompleteTask != null) {
+      canBecomeActiveTask =
+        canBecomeActiveTask || firstIncompleteTask.taskKey === selectedTaskKey;
+    }
+
+    return canBecomeActiveTask;
+  }
+
+  _handleTaskSelection = (selectedTaskKey: string): void => {
+    if (this._canBecomeActiveTask(selectedTaskKey)) {
+      this._model.setState({activeTaskKey: selectedTaskKey});
+    }
+  };
 }
 
 createPackage(module.exports, Activation);

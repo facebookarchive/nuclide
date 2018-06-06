@@ -9,8 +9,9 @@
  * @format
  */
 
-import type {OnboardingModelState} from './types';
+import type {OnboardingTask} from './types';
 
+import * as Immutable from 'immutable';
 import * as React from 'react';
 import OnboardingTaskComponentWrapper from './OnboardingTaskComponentWrapper';
 import OnboardingTasksProgressBar from './OnboardingTasksProgressBar';
@@ -18,29 +19,30 @@ import NuclideLogo from './NuclideLogo';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/onboarding';
 
-export default function OnboardingPaneContents(
-  props: OnboardingModelState,
-): React.Node {
+export default function OnboardingPaneContents(props: {
+  activeTaskKey: ?string,
+  selectTaskHandler: string => void,
+  tasks: Immutable.OrderedMap<string, OnboardingTask>,
+}): React.Node {
   const {tasks, activeTaskKey} = props;
   const currentTask = activeTaskKey != null ? tasks.get(activeTaskKey) : null;
   return (
     // Re-use styles from the Atom welcome pane where possible.
-    <div className="nuclide-onboarding pane-item padded nuclide-onboarding-containers">
-      <div key="welcome" className="nuclide-onboarding-container">
-        <section className="text-left">
-          <h1 className="nuclide-onboarding-title">
-            Welcome to <NuclideLogo className="nuclide-onboarding-logo" />{' '}
-            Nuclide, let's get you set up!
-          </h1>
-        </section>
+    <div className="nuclide-onboarding pane-item padded">
+      <section className="nuclide-onboarding-section text-left">
+        <h1 className="nuclide-onboarding-title">
+          Welcome to <NuclideLogo className="nuclide-onboarding-logo" />{' '}
+          Nuclide, let's get you set up!
+        </h1>
+      </section>
+      <div className="nuclide-onboarding-section">
+        <OnboardingTasksProgressBar {...props} />
       </div>
-      <OnboardingTasksProgressBar
-        allOnboardingTasks={tasks}
-        selectedTaskKey={activeTaskKey}
-      />
-      {currentTask != null && (
-        <OnboardingTaskComponentWrapper {...currentTask} />
-      )}
+      {currentTask != null ? (
+        <div className="nuclide-onboarding-section">
+          <OnboardingTaskComponentWrapper {...currentTask} />
+        </div>
+      ) : null}
     </div>
   );
 }

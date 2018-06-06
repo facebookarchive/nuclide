@@ -19,19 +19,31 @@ import OnboardingPaneContents from './OnboardingPaneContents';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/onboarding';
 
-export default class OnboardingPaneItem {
-  _observableModel: Observable<OnboardingModelState>;
+type Props = {
+  taskDetails: Observable<OnboardingModelState>,
+  selectTaskHandler: string => void,
+};
 
-  constructor(observableModel: Observable<OnboardingModelState>) {
-    this._observableModel = observableModel;
+export default class OnboardingPaneItem {
+  _taskDetails: Observable<OnboardingModelState>;
+  _selectTaskHandler: string => void;
+
+  constructor(props: Props) {
+    this._taskDetails = props.taskDetails;
+    this._selectTaskHandler = props.selectTaskHandler;
   }
 
   getElement(): HTMLElement {
     const DecoratedOnboardingPaneContents = bindObservableAsProps(
-      this._observableModel,
+      this._taskDetails,
       OnboardingPaneContents,
     );
-    return renderReactRoot(<DecoratedOnboardingPaneContents />);
+
+    return renderReactRoot(
+      <DecoratedOnboardingPaneContents
+        selectTaskHandler={this._selectTaskHandler}
+      />,
+    );
   }
 
   getTitle(): string {
