@@ -16,11 +16,13 @@ import {getSocketServiceByHost} from '../Normalization';
 import {validateTunnel} from '../Whitelist';
 import * as Actions from './Actions';
 import {Observable} from 'rxjs';
+import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {tunnelDescription} from '../../../nuclide-socket-rpc/lib/Tunnel';
 import {getBigDigClientByNuclideUri} from '../../../nuclide-remote-connection';
+import passesGK from '../../../commons-node/passesGK';
 
-const useBigDigTunnel = false;
+const logger = getLogger('nuclide-ssh-tunnel');
 
 export function subscribeToTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -124,7 +126,12 @@ export function requestTunnelEpic(
       const {tunnel, onOpen} = action.payload;
       const {from, to} = tunnel;
 
-      if (!(await validateTunnel(tunnel))) {
+      const [useBigDigTunnel, isValidated] = await Promise.all([
+        passesGK('nuclide_big_dig_tunnel'),
+        validateTunnel(tunnel),
+      ]);
+
+      if (!isValidated) {
         onOpen(
           new Error(
             `Trying to open a tunnel on a non-whitelisted port: ${
@@ -191,6 +198,11 @@ export function requestTunnelEpic(
             },
           });
         } else {
+          logger.info(
+            `using Big Dig to create a tunnel: ${localTunnelHost.port}<=>${
+              remoteTunnelHost.port
+            }`,
+          );
           try {
             newTunnelPromise = bigDigClient.createTunnel(
               localTunnelHost.port,
@@ -206,6 +218,7 @@ export function requestTunnelEpic(
 
           newTunnelPromise.then(newTunnel => {
             newTunnel.on('error', error => {
+              logger.error('error from tunnel: ', error);
               store.dispatch(Actions.closeTunnel(tunnel, error));
             });
             store.dispatch(Actions.setTunnelState(tunnel, 'ready'));
@@ -229,11 +242,7 @@ export function requestTunnelEpic(
       } else {
         close = () => {
           newTunnelPromise.then(newTunnel => newTunnel.close()).catch(e => {
-            const state = store.getState();
-            state.consoleOutput.next({
-              text: `Tunnel error on close: ${e}`,
-              level: 'error',
-            });
+            logger.error('Tunnel error on close: ', e);
           });
         };
       }
