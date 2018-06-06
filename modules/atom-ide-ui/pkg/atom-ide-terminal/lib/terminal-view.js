@@ -208,33 +208,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
         this._addEscapePrefix.bind(this),
       ),
       atom.commands.add(div, 'atom-ide-terminal:clear', this._clear.bind(this)),
-      featureConfig
-        .observeAsStream(CURSOR_STYLE_CONFIG)
-        .skip(1)
-        .subscribe(cursorStyle =>
-          terminal.setOption('cursorStyle', cursorStyle),
-        ),
-      featureConfig
-        .observeAsStream(CURSOR_BLINK_CONFIG)
-        .skip(1)
-        .subscribe(cursorBlink =>
-          terminal.setOption('cursorBlink', cursorBlink),
-        ),
-      featureConfig
-        .observeAsStream(SCROLLBACK_CONFIG)
-        .skip(1)
-        .subscribe(scrollback => terminal.setOption('scrollback', scrollback)),
-      Observable.merge(
-        observableFromSubscribeFunction(cb =>
-          atom.config.onDidChange('editor.fontSize', cb),
-        ),
-        featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
-        featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
-        featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
-        Observable.fromEvent(this._terminal, 'focus'),
-        Observable.fromEvent(window, 'resize'),
-        new ResizeObservable(this._div),
-      ).subscribe(this._syncFontAndFit),
     );
 
     if (process.platform === 'win32') {
@@ -285,10 +258,45 @@ export class TerminalView implements PtyClient, TerminalInstance {
             terminal.writeln(`For more info check out the docs: ${docsUrl}`);
           }
           terminal.focus();
+          this._subscriptions.add(this._subscribeFitEvents());
           this._spawn(cwd)
             .then(pty => this._onPtyFulfill(pty))
             .catch(error => this._onPtyFail(error));
         }),
+    );
+  }
+
+  _subscribeFitEvents(): UniversalDisposable {
+    return new UniversalDisposable(
+      featureConfig
+        .observeAsStream(CURSOR_STYLE_CONFIG)
+        .skip(1)
+        .subscribe(cursorStyle =>
+          this._terminal.setOption('cursorStyle', cursorStyle),
+        ),
+      featureConfig
+        .observeAsStream(CURSOR_BLINK_CONFIG)
+        .skip(1)
+        .subscribe(cursorBlink =>
+          this._terminal.setOption('cursorBlink', cursorBlink),
+        ),
+      featureConfig
+        .observeAsStream(SCROLLBACK_CONFIG)
+        .skip(1)
+        .subscribe(scrollback =>
+          this._terminal.setOption('scrollback', scrollback),
+        ),
+      Observable.merge(
+        observableFromSubscribeFunction(cb =>
+          atom.config.onDidChange('editor.fontSize', cb),
+        ),
+        featureConfig.observeAsStream(FONT_SCALE_CONFIG).skip(1),
+        featureConfig.observeAsStream(FONT_FAMILY_CONFIG).skip(1),
+        featureConfig.observeAsStream(LINE_HEIGHT_CONFIG).skip(1),
+        Observable.fromEvent(this._terminal, 'focus'),
+        Observable.fromEvent(window, 'resize'),
+        new ResizeObservable(this._div),
+      ).subscribe(this._syncFontAndFit),
     );
   }
 
