@@ -278,6 +278,7 @@ declare class atom$Disposable {
 declare class atom$Emitter {
   dispose(): void,
   on(name: string, callback: (v: any) => mixed): IDisposable,
+  once(name: string, callback: (v: any) => mixed): IDisposable,
   preempt(name: string, callback: (v: any) => void): IDisposable,
   // This is a flow hack to prevent emitting more than one value.
   // `EventEmitter` allows emitting any number of values - making this a land
