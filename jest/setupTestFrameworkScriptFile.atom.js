@@ -12,3 +12,6 @@
 beforeEach(async () => {
   await global.atom.reset();
 });
+
+// Disable prompt to download react devtools in atom tests
+window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {isDisabled: true};
