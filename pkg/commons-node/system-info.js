@@ -35,13 +35,15 @@ export const OS_TYPE = {
 // ensures happens only once.
 //
 // [1]: https://github.com/atom/atom/blob/v1.6.2/src/window-load-settings-helpers.coffee#L10-L14
-export const isRunningInTest = once((): boolean => {
-  if (typeof atom === 'object') {
-    return atom.inSpecMode();
-  } else {
-    return process.env.NODE_ENV === 'test';
-  }
-});
+export const isRunningInTest = once(
+  (): boolean => {
+    if (typeof atom === 'object') {
+      return atom.inSpecMode();
+    } else {
+      return process.env.NODE_ENV === 'test';
+    }
+  },
+);
 
 // Nuclide code can run in one of three situations:
 //

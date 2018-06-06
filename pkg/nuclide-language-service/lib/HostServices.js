@@ -53,17 +53,18 @@ class RootHostServices {
     dispose: () => {},
   };
 
-  _getConsoleService = memoize((): Promise<ConsoleService> =>
-    consumeFirstProvider('console', '0.1.0'),
+  _getConsoleService = memoize(
+    (): Promise<ConsoleService> => consumeFirstProvider('console', '0.1.0'),
   );
 
   // This method creates registers sources with the atom-ide-console service, but never disposes
   // those registrations; there's not much point. The now-defunct sources will be visible in the
   // Sources UI.
-  _getConsoleApi = memoize((source: string): Promise<ConsoleApi> =>
-    this._getConsoleService().then(createApi =>
-      createApi({id: source, name: source}),
-    ),
+  _getConsoleApi = memoize(
+    (source: string): Promise<ConsoleApi> =>
+      this._getConsoleService().then(createApi =>
+        createApi({id: source, name: source}),
+      ),
   );
 
   consoleNotification(

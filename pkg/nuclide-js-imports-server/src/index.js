@@ -74,41 +74,49 @@ let commandExecuter = new CommandExecutor(
   documents,
 );
 
-connection.onInitialize((params): InitializeResult => {
-  const root = params.rootPath || process.cwd();
-  logger.debug('Server initialized.');
-  const eslintGlobals = getEslintGlobals(root);
-  const flowConfig = getConfigFromFlow(root);
-  shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
-  importFormatter = new ImportFormatter(
-    flowConfig.moduleDirs,
-    shouldUseRequires(params, root),
-  );
-  autoImportsManager = new AutoImportsManager(eslintGlobals);
-  autoImportsManager.indexAndWatchDirectory(root);
-  completion = new Completions(documents, autoImportsManager, importFormatter);
-  diagnostics = new Diagnostics(autoImportsManager, importFormatter);
-  codeActions = new CodeActions(autoImportsManager, importFormatter);
-  commandExecuter = new CommandExecutor(
-    connection,
-    autoImportsManager,
-    importFormatter,
-    documents,
-  );
-  return {
-    capabilities: {
-      textDocumentSync: documents.syncKind,
-      completionProvider: {
-        resolveProvider: true,
-        triggerCharacters: getAllTriggerCharacters(),
+connection.onInitialize(
+  (params): InitializeResult => {
+    const root = params.rootPath || process.cwd();
+    logger.debug('Server initialized.');
+    const eslintGlobals = getEslintGlobals(root);
+    const flowConfig = getConfigFromFlow(root);
+    shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
+    importFormatter = new ImportFormatter(
+      flowConfig.moduleDirs,
+      shouldUseRequires(params, root),
+    );
+    autoImportsManager = new AutoImportsManager(eslintGlobals);
+    autoImportsManager.indexAndWatchDirectory(root);
+    completion = new Completions(
+      documents,
+      autoImportsManager,
+      importFormatter,
+    );
+    diagnostics = new Diagnostics(autoImportsManager, importFormatter);
+    codeActions = new CodeActions(autoImportsManager, importFormatter);
+    commandExecuter = new CommandExecutor(
+      connection,
+      autoImportsManager,
+      importFormatter,
+      documents,
+    );
+    return {
+      capabilities: {
+        textDocumentSync: documents.syncKind,
+        completionProvider: {
+          resolveProvider: true,
+          triggerCharacters: getAllTriggerCharacters(),
+        },
+        codeActionProvider: true,
+        documentFormattingProvider: true,
+        executeCommandProvider: Array.from(
+          Object.keys(CommandExecutor.COMMANDS),
+        ),
+        workspaceSymbolProvider: true,
       },
-      codeActionProvider: true,
-      documentFormattingProvider: true,
-      executeCommandProvider: Array.from(Object.keys(CommandExecutor.COMMANDS)),
-      workspaceSymbolProvider: true,
-    },
-  };
-});
+    };
+  },
+);
 
 documents.onDidOpenTextDocument(params => {
   try {
@@ -161,34 +169,36 @@ connection.onCompletion(
   },
 );
 
-connection.onCodeAction((codeActionParams: CodeActionParams): Array<
-  Command,
-> => {
-  try {
-    const uri = nuclideUri.uriToNuclideUri(codeActionParams.textDocument.uri);
-    return uri != null
-      ? codeActions.provideCodeActions(
-          codeActionParams.context && codeActionParams.context.diagnostics,
-          uri,
-        )
-      : [];
-  } catch (error) {
-    logger.error(error);
-    return [];
-  }
-});
+connection.onCodeAction(
+  (codeActionParams: CodeActionParams): Array<Command> => {
+    try {
+      const uri = nuclideUri.uriToNuclideUri(codeActionParams.textDocument.uri);
+      return uri != null
+        ? codeActions.provideCodeActions(
+            codeActionParams.context && codeActionParams.context.diagnostics,
+            uri,
+          )
+        : [];
+    } catch (error) {
+      logger.error(error);
+      return [];
+    }
+  },
+);
 
-connection.onExecuteCommand((params: ExecuteCommandParams): any => {
-  const {command, arguments: args} = params;
-  logger.debug('Executing command', command, 'with args', args);
-  commandExecuter.executeCommand((command: any), args);
-});
+connection.onExecuteCommand(
+  (params: ExecuteCommandParams): any => {
+    const {command, arguments: args} = params;
+    logger.debug('Executing command', command, 'with args', args);
+    commandExecuter.executeCommand((command: any), args);
+  },
+);
 
-connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): Array<
-  SymbolInformation,
-> => {
-  return WorkspaceSymbols.getWorkspaceSymbols(autoImportsManager, params);
-});
+connection.onWorkspaceSymbol(
+  (params: WorkspaceSymbolParams): Array<SymbolInformation> => {
+    return WorkspaceSymbols.getWorkspaceSymbols(autoImportsManager, params);
+  },
+);
 
 connection.onDocumentFormatting(params => {
   const fileUri = nuclideUri.uriToNuclideUri(params.textDocument.uri);

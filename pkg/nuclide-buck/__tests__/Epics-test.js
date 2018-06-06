@@ -56,9 +56,9 @@ describe('setProjectRootEpic', () => {
 
   it('Gets the Buck root for a real project', async () => {
     await (async () => {
-      jest.spyOn(BuckBase, 'getBuckProjectRoot').mockReturnValue(
-        Promise.resolve('test_buck'),
-      );
+      jest
+        .spyOn(BuckBase, 'getBuckProjectRoot')
+        .mockReturnValue(Promise.resolve('test_buck'));
 
       const stream = await setProjectRootEpic(
         new ActionsObservable(Observable.of(Actions.setProjectRoot('test'))),
@@ -135,9 +135,9 @@ describe('setRuleTypeEpic', () => {
 
   it('sets platform groups to groups returned from platform service', async () => {
     await (async () => {
-      jest.spyOn(mockPlatformService, 'getPlatformGroups').mockReturnValue(
-        Observable.of('random platforms'),
-      );
+      jest
+        .spyOn(mockPlatformService, 'getPlatformGroups')
+        .mockReturnValue(Observable.of('random platforms'));
 
       const stream = await setRuleTypeEpic(
         new ActionsObservable(

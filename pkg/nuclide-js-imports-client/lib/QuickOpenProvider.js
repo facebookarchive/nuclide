@@ -40,16 +40,15 @@ export default class QuickOpenProvider {
       arrayCompact(
         await Promise.all(
           // Flow's inference engine blows up without the annotation :(
-          directories.map(async (directory): Promise<?[
-            LanguageService,
-            string,
-          ]> => {
-            const path = directory.getPath();
-            const service = await this._languageService.getLanguageServiceForUri(
-              path,
-            );
-            return service != null ? [service, path] : null;
-          }),
+          directories.map(
+            async (directory): Promise<?[LanguageService, string]> => {
+              const path = directory.getPath();
+              const service = await this._languageService.getLanguageServiceForUri(
+                path,
+              );
+              return service != null ? [service, path] : null;
+            },
+          ),
         ),
       ),
     );

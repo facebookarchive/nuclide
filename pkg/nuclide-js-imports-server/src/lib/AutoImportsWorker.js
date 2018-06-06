@@ -394,26 +394,28 @@ function getHasteNames(
   hasteSettings: HasteSettings,
 ): Array<ExportUpdateForFile> {
   return files
-    .map((file): ?ExportUpdateForFile => {
-      const hasteName = hasteReduceName(file, hasteSettings);
-      if (hasteName == null) {
-        return null;
-      }
-      return {
-        file,
-        updateType: 'setExports',
-        exports: [
-          {
-            id: idFromFileName(hasteName),
-            uri: nuclideUri.join(root, file),
-            line: 1,
-            hasteName,
-            isTypeExport: false,
-            isDefault: true,
-          },
-        ],
-      };
-    })
+    .map(
+      (file): ?ExportUpdateForFile => {
+        const hasteName = hasteReduceName(file, hasteSettings);
+        if (hasteName == null) {
+          return null;
+        }
+        return {
+          file,
+          updateType: 'setExports',
+          exports: [
+            {
+              id: idFromFileName(hasteName),
+              uri: nuclideUri.join(root, file),
+              line: 1,
+              hasteName,
+              isTypeExport: false,
+              isDefault: true,
+            },
+          ],
+        };
+      },
+    )
     .filter(Boolean);
 }
 export function indexNodeModules({

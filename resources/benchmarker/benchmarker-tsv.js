@@ -41,8 +41,7 @@ function readAllTsv(
 ): {columns: Array<string>, records: Array<Object>} {
   let columns = [];
   const records = [];
-  fs
-    .readFileSync(location, 'utf8')
+  fs.readFileSync(location, 'utf8')
     .split('\n')
     .forEach((row, r) => {
       if (r === 0) {

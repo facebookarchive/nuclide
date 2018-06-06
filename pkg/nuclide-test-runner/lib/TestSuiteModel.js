@@ -38,7 +38,7 @@ export default class TestSuiteModel {
     if (this.testClasses.size === 0) {
       return null;
     } else {
-      return this.testRuns.size / this.testClasses.size * 100;
+      return (this.testRuns.size / this.testClasses.size) * 100;
     }
   }
 }

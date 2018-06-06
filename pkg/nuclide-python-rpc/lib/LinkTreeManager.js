@@ -31,21 +31,27 @@ const LINK_TREE_SUFFIXES = Object.freeze({
 const logger = getLogger('LinkTreeManager');
 
 export default class LinkTreeManager {
-  getBuckRoot = memoize((src: string): Promise<?string> => {
-    return BuckService.getRootForPath(src);
-  });
+  getBuckRoot = memoize(
+    (src: string): Promise<?string> => {
+      return BuckService.getRootForPath(src);
+    },
+  );
 
-  getOwner = memoize(async (src: string): Promise<?string> => {
-    const buckRoot = await this.getBuckRoot(src);
-    if (buckRoot == null) {
-      return null;
-    }
-    const owners = await BuckService.getOwners(buckRoot, src, []).catch(err => {
-      logger.error(`Failed to get Buck owner for ${src}`, err);
-      return [];
-    });
-    return owners.length > 0 ? owners[0] : null;
-  });
+  getOwner = memoize(
+    async (src: string): Promise<?string> => {
+      const buckRoot = await this.getBuckRoot(src);
+      if (buckRoot == null) {
+        return null;
+      }
+      const owners = await BuckService.getOwners(buckRoot, src, []).catch(
+        err => {
+          logger.error(`Failed to get Buck owner for ${src}`, err);
+          return [];
+        },
+      );
+      return owners.length > 0 ? owners[0] : null;
+    },
+  );
 
   /**
    * For a given file, attempts to find python_binary/python_unittest dependents.
@@ -105,39 +111,41 @@ export default class LinkTreeManager {
     }
   }, (buckRoot, target) => `${buckRoot}/${target}`);
 
-  getLinkTreePaths = memoize(async (src: string): Promise<Array<string>> => {
-    const basename = nuclideUri.basename(src);
-    if (FILENAME_BLACKLIST.includes(basename)) {
-      return [];
-    }
+  getLinkTreePaths = memoize(
+    async (src: string): Promise<Array<string>> => {
+      const basename = nuclideUri.basename(src);
+      if (FILENAME_BLACKLIST.includes(basename)) {
+        return [];
+      }
 
-    const buckRoot = await this.getBuckRoot(src);
-    if (buckRoot == null) {
-      return [];
-    }
+      const buckRoot = await this.getBuckRoot(src);
+      if (buckRoot == null) {
+        return [];
+      }
 
-    return trackTiming(
-      'python.link-tree',
-      async () => {
-        const owner = await this.getOwner(src);
-        if (owner == null) {
-          return [];
-        }
-        const dependents = await this.getDependents(buckRoot, owner);
-        const paths = Array.from(dependents).map(([target, kind]) => {
-          const linkTreeSuffix = LINK_TREE_SUFFIXES[kind];
-          // Turn //test/target:a into test/target/a.
-          const binPath = target.substr(2).replace(':', '/');
-          return nuclideUri.join(
-            buckRoot,
-            BUCK_GEN_PATH,
-            binPath + linkTreeSuffix,
-          );
-        });
-        logger.info(`Resolved link trees for ${src}`, paths);
-        return paths;
-      },
-      {src},
-    );
-  });
+      return trackTiming(
+        'python.link-tree',
+        async () => {
+          const owner = await this.getOwner(src);
+          if (owner == null) {
+            return [];
+          }
+          const dependents = await this.getDependents(buckRoot, owner);
+          const paths = Array.from(dependents).map(([target, kind]) => {
+            const linkTreeSuffix = LINK_TREE_SUFFIXES[kind];
+            // Turn //test/target:a into test/target/a.
+            const binPath = target.substr(2).replace(':', '/');
+            return nuclideUri.join(
+              buckRoot,
+              BUCK_GEN_PATH,
+              binPath + linkTreeSuffix,
+            );
+          });
+          logger.info(`Resolved link trees for ${src}`, paths);
+          return paths;
+        },
+        {src},
+      );
+    },
+  );
 }

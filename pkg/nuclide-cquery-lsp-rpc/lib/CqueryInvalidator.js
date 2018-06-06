@@ -73,7 +73,7 @@ export class CqueryInvalidator {
   }
 
   async _checkMemoryUsageImpl(): Promise<void> {
-    const memoryLimit = os.totalmem() * DEFAULT_MEMORY_LIMIT / 100;
+    const memoryLimit = (os.totalmem() * DEFAULT_MEMORY_LIMIT) / 100;
     const priorityList = this._getMRUProjects();
     // Generate a map from project to its pid.
     const pidMap = new Map(

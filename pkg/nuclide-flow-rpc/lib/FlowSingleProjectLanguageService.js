@@ -476,7 +476,7 @@ export class FlowSingleProjectLanguageService {
       .map(range => ({range}));
 
     return {
-      percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
+      percentage: totalCount === 0 ? 100 : (coveredCount / totalCount) * 100,
       uncoveredRegions,
     };
   }

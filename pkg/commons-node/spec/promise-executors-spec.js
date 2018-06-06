@@ -100,7 +100,7 @@ describe('PromisePool', () => {
       await Promise.all(executors.map(executor => queue.submit(executor)));
       const end = Date.now();
       expect(end - start).toBeLessThan(
-        numDelayedExecutors * delayMs / (poolSize - 1),
+        (numDelayedExecutors * delayMs) / (poolSize - 1),
       );
     });
   });

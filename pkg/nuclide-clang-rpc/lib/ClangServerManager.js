@@ -26,7 +26,7 @@ import findClangServerArgs from './find-clang-server-args';
 const SERVER_LIMIT = 20;
 
 // Limit the total memory usage of all Clang servers.
-const DEFAULT_MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
+const DEFAULT_MEMORY_LIMIT = Math.round((os.totalmem() * 15) / 100);
 
 let _getDefaultFlags;
 async function augmentDefaultFlags(
@@ -73,7 +73,7 @@ export default class ClangServerManager {
   }
 
   setMemoryLimit(percent: number) {
-    this._memoryLimit = Math.round(Math.abs(os.totalmem() * percent / 100));
+    this._memoryLimit = Math.round(Math.abs((os.totalmem() * percent) / 100));
     this._checkMemoryUsage();
   }
 

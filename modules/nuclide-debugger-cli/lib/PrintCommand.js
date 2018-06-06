@@ -17,7 +17,8 @@ import {DebuggerInterface} from './DebuggerInterface';
 
 export default class PrintCommand implements Command {
   name = 'print';
-  helpText = 'expr: Prints the result of an expression in the context of the current stack frame.';
+  helpText =
+    'expr: Prints the result of an expression in the context of the current stack frame.';
   detailedHelpText = `
 print expression
 

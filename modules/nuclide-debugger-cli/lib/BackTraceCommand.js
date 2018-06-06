@@ -20,7 +20,8 @@ import Thread from './Thread';
 
 export default class BackTraceCommand implements Command {
   name = 'backtrace';
-  helpText = '[frame] Displays the call stack of the active thread. With optional frame index, sets the current frame for variable display.';
+  helpText =
+    '[frame] Displays the call stack of the active thread. With optional frame index, sets the current frame for variable display.';
   detailedHelpText = `
 backtrace [frame]
 

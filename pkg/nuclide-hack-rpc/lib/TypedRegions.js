@@ -149,8 +149,8 @@ export function convertTypedRegionsToCoverageResult(
     percentage:
       totalInterestingRegionCount === 0
         ? 100
-        : (checkedRegionCount + partialRegionCount / 2) /
-          totalInterestingRegionCount *
+        : ((checkedRegionCount + partialRegionCount / 2) /
+            totalInterestingRegionCount) *
           100,
     uncoveredRegions: filterResults(unfilteredResults),
   };

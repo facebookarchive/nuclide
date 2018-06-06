@@ -1736,49 +1736,50 @@ export class FileTreeStore {
     let beginIndex = 1;
 
     // traversing the tree, flip the isSelected flag when applicable.
-    const roots = this.roots.map((rootNode: FileTreeNode): FileTreeNode =>
-      rootNode.setRecursive(
-        // keep traversing the sub-tree,
-        // - if the node is shown, has children, and in the applicable range.
-        (node: FileTreeNode): ?FileTreeNode => {
-          if (!node.shouldBeShown) {
+    const roots = this.roots.map(
+      (rootNode: FileTreeNode): FileTreeNode =>
+        rootNode.setRecursive(
+          // keep traversing the sub-tree,
+          // - if the node is shown, has children, and in the applicable range.
+          (node: FileTreeNode): ?FileTreeNode => {
+            if (!node.shouldBeShown) {
+              return node;
+            }
+            if (node.shownChildrenCount === 1) {
+              beginIndex++;
+              return node;
+            }
+            const endIndex = beginIndex + node.shownChildrenCount - 1;
+            if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
+              beginIndex++;
+              return null;
+            }
+            beginIndex += node.shownChildrenCount;
             return node;
-          }
-          if (node.shownChildrenCount === 1) {
-            beginIndex++;
-            return node;
-          }
-          const endIndex = beginIndex + node.shownChildrenCount - 1;
-          if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
-            beginIndex++;
-            return null;
-          }
-          beginIndex += node.shownChildrenCount;
-          return node;
-        },
-        // flip the isSelected flag accordingly, based on previous and current range.
-        (node: FileTreeNode): FileTreeNode => {
-          if (!node.shouldBeShown) {
-            return node;
-          }
-          const curIndex = beginIndex - node.shownChildrenCount;
-          const inOldRange =
-            Math.sign(curIndex - anchorIndex) *
-              Math.sign(curIndex - rangeIndex) !==
-            1;
-          const inNewRange =
-            Math.sign(curIndex - anchorIndex) *
-              Math.sign(curIndex - nextRangeIndex) !==
-            1;
-          if ((inOldRange && inNewRange) || (!inOldRange && !inNewRange)) {
-            return node;
-          } else if (inOldRange && !inNewRange) {
-            return node.set({isSelected: false, isFocused: false});
-          } else {
-            return node.set({isSelected: true, isFocused: true});
-          }
-        },
-      ),
+          },
+          // flip the isSelected flag accordingly, based on previous and current range.
+          (node: FileTreeNode): FileTreeNode => {
+            if (!node.shouldBeShown) {
+              return node;
+            }
+            const curIndex = beginIndex - node.shownChildrenCount;
+            const inOldRange =
+              Math.sign(curIndex - anchorIndex) *
+                Math.sign(curIndex - rangeIndex) !==
+              1;
+            const inNewRange =
+              Math.sign(curIndex - anchorIndex) *
+                Math.sign(curIndex - nextRangeIndex) !==
+              1;
+            if ((inOldRange && inNewRange) || (!inOldRange && !inNewRange)) {
+              return node;
+            } else if (inOldRange && !inNewRange) {
+              return node.set({isSelected: false, isFocused: false});
+            } else {
+              return node.set({isSelected: true, isFocused: true});
+            }
+          },
+        ),
     );
     this._setRoots(roots);
 

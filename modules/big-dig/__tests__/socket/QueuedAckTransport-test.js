@@ -34,14 +34,18 @@ function makeUnreliableTransport(
     transport.emit('send', data);
     return Promise.resolve(true);
   });
-  transport.onClose = jest.fn((callback: () => mixed): IDisposable => {
-    return transport.on('close', callback);
-  });
+  transport.onClose = jest.fn(
+    (callback: () => mixed): IDisposable => {
+      return transport.on('close', callback);
+    },
+  );
   transport.onMessage = jest.fn(() => receiver);
-  transport.close = jest.fn((): void => {
-    isClosed = true;
-    transport.emit('close');
-  });
+  transport.close = jest.fn(
+    (): void => {
+      isClosed = true;
+      transport.emit('close');
+    },
+  );
   transport.isClosed = (): boolean => {
     return isClosed;
   };

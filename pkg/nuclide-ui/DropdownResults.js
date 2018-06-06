@@ -255,8 +255,8 @@ export default class DropdownResults extends React.Component<Props, State> {
       const optionsSize = this.props.options.length + 1;
       this.setState({
         selectedIndex:
-          (this.state.selectedIndex + increment + optionsSize + 1) %
-            optionsSize -
+          ((this.state.selectedIndex + increment + optionsSize + 1) %
+            optionsSize) -
           1,
       });
     }

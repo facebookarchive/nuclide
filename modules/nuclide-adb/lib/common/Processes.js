@@ -52,7 +52,7 @@ export class Processes {
   }
 
   fetch(timeout: number): Observable<Process[]> {
-    const internalTimeout = timeout * 2 / 3;
+    const internalTimeout = (timeout * 2) / 3;
     return Observable.forkJoin(
       this._db
         .getProcesses()
@@ -121,7 +121,7 @@ export class Processes {
           if (p0 != null) {
             const deltaProc = p1[0] - p0[0];
             const memUsage = p1[1];
-            cpuAndMemUsage.set(pid, [deltaProc / deltaCpu * 100, memUsage]);
+            cpuAndMemUsage.set(pid, [(deltaProc / deltaCpu) * 100, memUsage]);
           }
         });
         return cpuAndMemUsage;

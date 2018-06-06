@@ -91,9 +91,11 @@ export function createProxyFactory(
   return factory;
 }
 
-const memoizedReadFile = memoize((filename: string): string => {
-  return fs.readFileSync(filename, 'utf8');
-});
+const memoizedReadFile = memoize(
+  (filename: string): string => {
+    return fs.readFileSync(filename, 'utf8');
+  },
+);
 
 const memoizedGenerateProxy = memoizeWithDisk(
   function generateProxy(serviceName, preserveFunctionNames, defs) {

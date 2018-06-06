@@ -24,7 +24,8 @@ type SourceReference = {
 
 export default class ListCommand implements Command {
   name = 'list';
-  helpText = "[line | source[:line] | @[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
+  helpText =
+    "[line | source[:line] | @[:line]]: list source file contents. '@' may be used to refer to the source at the current stack frame.";
 
   detailedHelpText = `
 list [line | source[:line] | @[:line]]

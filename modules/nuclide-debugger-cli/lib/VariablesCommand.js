@@ -16,7 +16,8 @@ import {DebuggerInterface} from './DebuggerInterface';
 
 export default class VariablesCommand implements Command {
   name = 'variables';
-  helpText = '[scope] Display variables of the current stack frame, optionally for a single scope.';
+  helpText =
+    '[scope] Display variables of the current stack frame, optionally for a single scope.';
   detailedHelpText = `
 variables [scope]
 

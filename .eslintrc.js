@@ -210,7 +210,7 @@ module.exports = {
     'keyword-spacing': 1,
     'line-comment-position': 0,
     'linebreak-style': 1,
-    'lines-between-class-members': [1, 'always', { exceptAfterSingleLine: true }],
+    'lines-between-class-members': 0,
     'lines-around-comment': 0,
     'lines-around-directive': 0,
     'max-depth': 0,

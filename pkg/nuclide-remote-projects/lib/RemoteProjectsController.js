@@ -29,40 +29,42 @@ export function _observeConnectionState(
   connectionStream: Observable<Array<ServerConnection>>,
 ): Observable<StatusBarTilePropsType> {
   return connectionStream
-    .switchMap((connections): Observable<
-      Array<[string, $Values<typeof ConnectionState>]>,
-    > => {
-      if (connections.length === 0) {
-        return Observable.of([]);
-      }
-      // Observe the connection states of all connections simultaneously.
-      // $FlowFixMe: add array signature to combineLatest
-      return Observable.combineLatest(
-        connections.map(conn => {
-          const heartbeat = conn.getHeartbeat();
-          return (
-            Observable.of(
-              heartbeat.isAway()
-                ? ConnectionState.DISCONNECTED
-                : ConnectionState.CONNECTED,
-            )
-              .concat(
-                Observable.merge(
-                  observableFromSubscribeFunction(cb =>
-                    heartbeat.onHeartbeat(cb),
-                  ).mapTo(ConnectionState.CONNECTED),
-                  observableFromSubscribeFunction(cb =>
-                    heartbeat.onHeartbeatError(cb),
-                  ).mapTo(ConnectionState.DISCONNECTED),
-                ),
+    .switchMap(
+      (
+        connections,
+      ): Observable<Array<[string, $Values<typeof ConnectionState>]>> => {
+        if (connections.length === 0) {
+          return Observable.of([]);
+        }
+        // Observe the connection states of all connections simultaneously.
+        // $FlowFixMe: add array signature to combineLatest
+        return Observable.combineLatest(
+          connections.map(conn => {
+            const heartbeat = conn.getHeartbeat();
+            return (
+              Observable.of(
+                heartbeat.isAway()
+                  ? ConnectionState.DISCONNECTED
+                  : ConnectionState.CONNECTED,
               )
-              .distinctUntilChanged()
-              // Key the connection states by hostname.
-              .map(state => [conn.getRemoteHostname(), state])
-          );
-        }),
-      );
-    })
+                .concat(
+                  Observable.merge(
+                    observableFromSubscribeFunction(cb =>
+                      heartbeat.onHeartbeat(cb),
+                    ).mapTo(ConnectionState.CONNECTED),
+                    observableFromSubscribeFunction(cb =>
+                      heartbeat.onHeartbeatError(cb),
+                    ).mapTo(ConnectionState.DISCONNECTED),
+                  ),
+                )
+                .distinctUntilChanged()
+                // Key the connection states by hostname.
+                .map(state => [conn.getRemoteHostname(), state])
+            );
+          }),
+        );
+      },
+    )
     .map(states => ({
       connectionStates: new Map(states),
     }));

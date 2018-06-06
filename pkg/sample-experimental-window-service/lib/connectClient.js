@@ -60,29 +60,32 @@ export default function connectClient(
   connection: ServiceConnection,
 ): IDisposable {
   const disposables = new UniversalDisposable();
-  connection.onRequest({method: 'open'}, (params: OpenParams<*>): number => {
-    logger.info('got create request:', params);
-    if (disposables.disposed) {
-      throw new Error('attempted to open after dispose');
-    }
-    const windowId = windowCount++;
-    const windowManager = new WindowManager({
-      windowId,
-      openParams: params,
-      onDestroy: () => {
-        disposables.dispose();
-      },
-    });
-    windowManagers.set(windowId, windowManager);
-    windowManagersToConnections.set(windowManager, connection);
-    disposables.add(() => {
-      logger.info('disposing of connection to window client!');
-      windowManagers.delete(windowId);
-      windowManagersToConnections.delete(windowManager);
-      windowManager.destroy();
-    });
-    return windowId;
-  });
+  connection.onRequest(
+    {method: 'open'},
+    (params: OpenParams<*>): number => {
+      logger.info('got create request:', params);
+      if (disposables.disposed) {
+        throw new Error('attempted to open after dispose');
+      }
+      const windowId = windowCount++;
+      const windowManager = new WindowManager({
+        windowId,
+        openParams: params,
+        onDestroy: () => {
+          disposables.dispose();
+        },
+      });
+      windowManagers.set(windowId, windowManager);
+      windowManagersToConnections.set(windowManager, connection);
+      disposables.add(() => {
+        logger.info('disposing of connection to window client!');
+        windowManagers.delete(windowId);
+        windowManagersToConnections.delete(windowManager);
+        windowManager.destroy();
+      });
+      return windowId;
+    },
+  );
   connection.onNotification({method: 'update'}, (params: UpdateParams<*>) => {
     logger.info('got update request:', params);
     const windowManager = nullthrows(windowManagers.get(params.id));
