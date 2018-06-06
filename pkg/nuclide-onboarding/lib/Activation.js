@@ -74,6 +74,7 @@ export default class Activation {
               isCompleted,
             });
           }
+          tasks = tasks.sort((taskA, taskB) => taskA.priority - taskB.priority);
           this._model.setState({tasks});
           this._initializeActiveTaskKey();
         })
@@ -137,17 +138,25 @@ export default class Activation {
   }
 
   async _initializeActiveTaskKey() {
+    let activeTask;
     let activeTaskKey = await AsyncStorage.get(ACTIVE_TASK_KEY);
 
-    if (activeTaskKey == null) {
-      // fall back to first incomplete task
-      const firstIncompleteTask = this._model.state.tasks.find(
-        task => task.isCompleted === false,
-      );
+    if (activeTaskKey != null) {
+      activeTask = this._model.state.tasks.get(activeTaskKey);
+    }
 
-      if (firstIncompleteTask != null) {
+    const firstIncompleteTask = this._model.state.tasks.find(
+      task => task.isCompleted === false,
+    ); // Guaranteed non-null due to end state task
+
+    if (activeTask != null) {
+      // If new incomplete task is added with greater priority than stored
+      // active task, that task should become active
+      if (activeTask.priority > firstIncompleteTask.priority) {
         activeTaskKey = firstIncompleteTask.taskKey;
       }
+    } else {
+      activeTaskKey = firstIncompleteTask.taskKey;
     }
     this._model.setState({activeTaskKey});
   }

@@ -19,6 +19,7 @@ export type OnboardingModelState = {
 
 export type OnboardingFragment = {
   description?: string,
+  priority: number,
   taskComponent: React.ComponentType<OnboardingTaskMetadata>,
   taskKey: string,
   title: string,

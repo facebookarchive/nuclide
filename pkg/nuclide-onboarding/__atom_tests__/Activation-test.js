@@ -37,12 +37,14 @@ describe('Activation', () => {
   const mockFragments = [
     {
       description: 'Mock task 1',
+      priority: 1,
       taskComponent: mockComponent,
       taskKey: mockTask1Key,
       title: 'Mock Task 1',
     },
     {
       description: 'Mock task 2',
+      priority: 2,
       taskComponent: mockComponent,
       taskKey: mockTask2Key,
       title: 'Mock Task 2',
@@ -58,6 +60,26 @@ describe('Activation', () => {
       isCompleted: false,
     },
   };
+
+  const mockPriorityTask1Key = 'mock-priority-task-1';
+  const mockPriorityTask2Key = 'mock-priority-task-2';
+
+  const mockPriorityFragments = [
+    {
+      description: 'Mock priority task 1',
+      priority: 0,
+      taskComponent: mockComponent,
+      taskKey: mockPriorityTask1Key,
+      title: 'Mock Priority Task 1',
+    },
+    {
+      description: 'Mock priority task 2',
+      priority: 10,
+      taskComponent: mockComponent,
+      taskKey: mockPriorityTask2Key,
+      title: 'Mock Priority Task 2',
+    },
+  ];
 
   beforeEach(() => {
     jest.spyOn(Gatekeeper, 'default').mockImplementation(async gkKey => true);
@@ -91,6 +113,46 @@ describe('Activation', () => {
         isCompleted: false,
       },
       '_model.state.tasks should contain mockTask2 with isCompleted false',
+    );
+  });
+
+  it('orders the tasks by priority', async () => {
+    main.setOnboardingFragments(mockFragments.concat(mockPriorityFragments));
+    await main._getAllTasksCompletedStatuses();
+    expect(main._model.state.tasks.count()).toEqual(
+      4,
+      'there should be four tasks in _model.state.tasks',
+    );
+    const orderedTaskKeys = main._model.state.tasks.keySeq();
+    expect(orderedTaskKeys.indexOf(mockPriorityTask1Key)).toEqual(
+      0,
+      'mockPriorityTask1 should be the first task in the map',
+    );
+    expect(orderedTaskKeys.indexOf(mockTask1Key)).toEqual(
+      1,
+      'mockTask1 should be the second task in the map',
+    );
+    expect(orderedTaskKeys.indexOf(mockTask2Key)).toEqual(
+      2,
+      'mockTask2 should be the third task in the map',
+    );
+    expect(orderedTaskKeys.indexOf(mockPriorityTask2Key)).toEqual(
+      3,
+      'mockPriorityTask2 should be the fourth task in the map',
+    );
+  });
+
+  it('sets the active task to first incomplete task with greater priority than current active task', async () => {
+    main.setOnboardingFragments(mockFragments);
+    main.setOnboardingFragments(mockPriorityFragments);
+    await main._getAllTasksCompletedStatuses();
+    expect(main._model.state.tasks.count()).toEqual(
+      4,
+      'there should be four tasks in _model.state.tasks',
+    );
+    expect(main._model.state.activeTaskKey).toEqual(
+      mockPriorityTask1Key,
+      'mockPriorityTask1 should be the active task',
     );
   });
 

@@ -19,6 +19,7 @@ class Activation {
   getOnboardingFragments(): Array<OnboardingFragment> {
     return [
       {
+        priority: 1,
         taskComponent: EditorIDEExperienceComponent,
         description:
           'With which of the following editors/IDEs do you have the most experience?',
@@ -26,6 +27,7 @@ class Activation {
         title: 'Editor/IDE Experience',
       },
       {
+        priority: 2,
         taskComponent: EditorKeyBindingsComponent,
         description:
           'Placeholder key binding description. TODO: get description based on editor/IDE experience selection',
