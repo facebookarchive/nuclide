@@ -13,6 +13,7 @@ import type {OnboardingFragment} from '../../nuclide-onboarding/lib/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import EditorIDEExperienceComponent from './EditorIDEExperienceComponent';
+import EditorKeyBindingsComponent from './EditorKeyBindingsComponent';
 
 class Activation {
   getOnboardingFragments(): Array<OnboardingFragment> {
@@ -23,6 +24,13 @@ class Activation {
           'With which of the following editors/IDEs do you have the most experience?',
         taskKey: 'editor-ide-experience',
         title: 'Editor/IDE Experience',
+      },
+      {
+        taskComponent: EditorKeyBindingsComponent,
+        description:
+          'Placeholder key binding description. TODO: get description based on editor/IDE experience selection',
+        taskKey: 'editor-key-bindings',
+        title: 'Key Bindings',
       },
     ];
   }

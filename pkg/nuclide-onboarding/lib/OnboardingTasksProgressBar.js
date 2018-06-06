@@ -31,7 +31,18 @@ export default function OnboardingTaskProgressBar(props: Props) {
       {selectedTaskKey != null && <div>Selected Task: {selectedTaskKey}</div>}
       <div>
         Completed Tasks:
-        {completedTasks.filter(task => !task.isCompleted).toArray()}
+        {completedTasks
+          .keySeq()
+          .toArray()
+          .join(' ')}
+      </div>
+      <div>
+        Incomplete Tasks:
+        {props.allOnboardingTasks
+          .filter(task => !task.isCompleted)
+          .keySeq()
+          .toArray()
+          .join(' ')}
       </div>
     </div>
   );
