@@ -104,7 +104,7 @@ export async function launchAndroidServiceOrActivityAndGetPid(
   if (pid == null) {
     pid = await adbService.getPidFromPackageName(device, packageName);
     if (!Number.isInteger(pid)) {
-      throw Error(`Fail to get pid for package: ${packageName}`);
+      throw new Error(`Fail to get pid for package: ${packageName}`);
     }
   }
 

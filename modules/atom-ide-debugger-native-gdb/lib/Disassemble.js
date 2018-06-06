@@ -62,7 +62,7 @@ export default class Disassemble {
     const hexPattern = /^0x([0-9a-fA-F]+)$/;
     const match = startingAddress.match(hexPattern);
     if (match == null) {
-      throw Error(
+      throw new Error(
         `Failed to disassemble because value ${startingAddress} is not a valid hex address`,
       );
     }

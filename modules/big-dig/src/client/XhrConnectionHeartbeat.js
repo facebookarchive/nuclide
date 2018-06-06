@@ -88,7 +88,7 @@ export class XhrConnectionHeartbeat {
       }
     }
     // eslint-disable-next-line no-unreachable
-    throw Error('unreachable');
+    throw new Error('unreachable');
   }
 
   async _heartbeat(): Promise<void> {

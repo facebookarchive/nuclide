@@ -50,10 +50,10 @@ describe('SignatureHelpManager', () => {
       };
       mockDatatipService = {
         addProvider() {
-          throw Error();
+          throw new Error();
         },
         addModifierProvider() {
-          throw Error();
+          throw new Error();
         },
         createPinnedDataTip: jasmine
           .createSpy()

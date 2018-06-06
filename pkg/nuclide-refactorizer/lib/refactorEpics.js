@@ -164,7 +164,7 @@ function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
           return Actions.confirm(response);
         default:
           (response: empty);
-          throw Error();
+          throw new Error();
       }
     })
     .catch(e => Observable.of(Actions.error('execute', e)));

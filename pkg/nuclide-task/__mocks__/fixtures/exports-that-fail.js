@@ -14,7 +14,7 @@ module.exports = {
   throwsErrorSynchronously(): void {
     // TODO(mbolin): If throws a string rather than an Error, the unit test
     // fails.
-    throw Error('All I do is fail.');
+    throw new Error('All I do is fail.');
   },
 
   returnsRejectedPromise(): Promise<any> {
@@ -26,6 +26,6 @@ module.exports = {
   async asyncFunctionThatThrows(): Promise<void> {
     // TODO(mbolin): If throws a string rather than an Error, the unit test
     // fails.
-    throw Error('All I do is fail *asynchronously*.');
+    throw new Error('All I do is fail *asynchronously*.');
   },
 };

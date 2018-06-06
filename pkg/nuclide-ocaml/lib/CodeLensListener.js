@@ -118,7 +118,7 @@ function getCodeLensPositions(
         return Observable.defer(async () => {
           const codeLens = await languageService.getCodeLens(fileVersion);
           if (codeLens == null) {
-            throw Error('Could not retrieve code lenses.');
+            throw new Error('Could not retrieve code lenses.');
           }
           return {languageService, fileVersion, codeLens};
         })

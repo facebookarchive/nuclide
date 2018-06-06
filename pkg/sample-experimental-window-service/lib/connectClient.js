@@ -63,7 +63,7 @@ export default function connectClient(
   connection.onRequest({method: 'open'}, (params: OpenParams<*>): number => {
     logger.info('got create request:', params);
     if (disposables.disposed) {
-      throw Error('attempted to open after dispose');
+      throw new Error('attempted to open after dispose');
     }
     const windowId = windowCount++;
     const windowManager = new WindowManager({

@@ -54,7 +54,7 @@ export default function connectBigDigSshHandshake(
             break;
           default:
             // No need to handle update/install for unmanaged startups.
-            throw Error('Unexpected prompt kind');
+            throw new Error('Unexpected prompt kind');
         }
       });
     },

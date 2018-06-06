@@ -67,7 +67,7 @@ export async function launchServer(
     }
   }
   if (!found) {
-    throw Error(`All ports in range "${options.ports}" are already in use`);
+    throw new Error(`All ports in range "${options.ports}" are already in use`);
   }
 
   const webSocketServer = new WS.Server({

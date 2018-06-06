@@ -543,7 +543,7 @@ module.exports = {
     'unicorn/filename-case': 0,
     'unicorn/no-abusive-eslint-disable': 0,
     'unicorn/no-process-exit': 0,
-    'unicorn/throw-new-error': 0,
+    'unicorn/throw-new-error': 2,
     'unicorn/number-literal-case': 0,
     'unicorn/escape-case': 0,
     'unicorn/no-array-instanceof': 0,

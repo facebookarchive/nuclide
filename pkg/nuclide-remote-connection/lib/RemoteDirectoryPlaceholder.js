@@ -240,6 +240,6 @@ class RemoteFilePlaceholder implements atom$Fileish {
   }
 
   createWriteStream(): stream$Writable {
-    throw Error('Cannot write to a RemoteFilePlaceholder');
+    throw new Error('Cannot write to a RemoteFilePlaceholder');
   }
 }

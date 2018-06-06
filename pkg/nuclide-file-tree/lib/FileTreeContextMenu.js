@@ -445,7 +445,7 @@ export default class FileTreeContextMenu {
     priority: number,
   ): IDisposable {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
-      throw Error(`Illegal priority value: ${priority}`);
+      throw new Error(`Illegal priority value: ${priority}`);
     }
 
     const disposable = new UniversalDisposable();
@@ -472,7 +472,7 @@ export default class FileTreeContextMenu {
     priority: number,
   ): IDisposable {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
-      throw Error(`Illegal priority value: ${priority}`);
+      throw new Error(`Illegal priority value: ${priority}`);
     }
 
     return this._addItemToMenu(
@@ -511,7 +511,7 @@ export default class FileTreeContextMenu {
     priority: number,
   ): IDisposable {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
-      throw Error(`Illegal priority value: ${priority}`);
+      throw new Error(`Illegal priority value: ${priority}`);
     }
 
     const disposable = new UniversalDisposable();

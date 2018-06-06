@@ -44,7 +44,7 @@ export function parsePorts(portsDescriptor: string): Ports {
           length: delta + (delta < 0 ? -1 : 1),
         };
       } else {
-        throw Error(`Could not parse ports from: "${descriptor}".`);
+        throw new Error(`Could not parse ports from: "${descriptor}".`);
       }
     }
     ranges.push(range);
@@ -80,11 +80,11 @@ class Ports implements Iterable<number> {
 function parseNonNegativeIntOrThrow(str: string): number {
   const value = parseInt(str, 10);
   if (isNaN(value)) {
-    throw Error(`"${str}" could not be parsed as a valid integer.`);
+    throw new Error(`"${str}" could not be parsed as a valid integer.`);
   } else if (value === Infinity || value === -Infinity) {
-    throw Error(`${str} parses to an extrema: ${value}.`);
+    throw new Error(`${str} parses to an extrema: ${value}.`);
   } else if (value < 0) {
-    throw Error(`${str} parses to a negative number: ${value}.`);
+    throw new Error(`${str} parses to a negative number: ${value}.`);
   } else {
     return value;
   }

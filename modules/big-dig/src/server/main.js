@@ -84,7 +84,7 @@ export async function startServer({
       break;
     default:
       (certificateStrategy.type: empty);
-      throw Error('invalid certificate strategy');
+      throw new Error('invalid certificate strategy');
   }
 
   const [key, cert, ca] = await Promise.all([

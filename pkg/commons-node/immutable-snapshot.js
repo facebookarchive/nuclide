@@ -350,7 +350,7 @@ function _snapshotImpl(
     }
     return (snapshotObjects[id] = {type: 'record', id, value});
   } else {
-    throw Error(
+    throw new Error(
       `Serialization for ${object.constructor.name} is not implemented yet.`,
     );
   }
@@ -613,7 +613,7 @@ export class ImmutableSnapshotReader {
         return rec;
       default:
         (object.type: empty);
-        throw Error(`Unexpected type ${object.type}`);
+        throw new Error(`Unexpected type ${object.type}`);
     }
   }
 

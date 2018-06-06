@@ -59,7 +59,7 @@ export function isRunningInServer(): boolean {
 // This path may be a symlink.
 export function getAtomNuclideDir(): string {
   if (typeof atom !== 'object') {
-    throw Error('Not running in Atom.');
+    throw new Error('Not running in Atom.');
   }
   const nuclidePackageModule = atom.packages.getLoadedPackage('nuclide');
   invariant(nuclidePackageModule);
@@ -68,7 +68,7 @@ export function getAtomNuclideDir(): string {
 
 export function getAtomVersion(): string {
   if (typeof atom !== 'object') {
-    throw Error('Not running in Atom.');
+    throw new Error('Not running in Atom.');
   }
   return atom.getVersion();
 }

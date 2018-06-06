@@ -55,7 +55,7 @@ which query program state will use the selected frame for context; for example:
     const activeThread = this._debugger.getActiveThread();
 
     if (args.length > 1) {
-      throw Error(
+      throw new Error(
         "'backtrace' takes at most one argument -- the index of the frame to select",
       );
     }
@@ -78,7 +78,7 @@ which query program state will use the selected frame for context; for example:
     frameArg: string,
   ): Promise<void> {
     if (frameArg.match(/^\d+$/) == null) {
-      throw Error('Argument must be a numeric frame index.');
+      throw new Error('Argument must be a numeric frame index.');
     }
 
     const newSelectedFrame = parseInt(frameArg, 10);

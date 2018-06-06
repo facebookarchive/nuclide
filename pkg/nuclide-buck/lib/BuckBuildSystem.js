@@ -166,7 +166,7 @@ export class BuckBuildSystem {
                 .timeout(SOCKET_TIMEOUT)
                 .catch(err => {
                   if (err instanceof TimeoutError) {
-                    throw Error('Timed out connecting to Buck server.');
+                    throw new Error('Timed out connecting to Buck server.');
                   }
                   throw err;
                 })
@@ -259,7 +259,7 @@ export class BuckBuildSystem {
       }),
       Observable.defer(() => {
         if (errorMessage != null) {
-          throw Error(errorMessage);
+          throw new Error(errorMessage);
         }
         return Observable.empty();
       }),
@@ -308,7 +308,7 @@ function runBuckCommand(
   } else if (subcommand === 'run') {
     return buckService.runWithOutput(buckRoot, targets, args).refCount();
   } else {
-    throw Error(`Unknown subcommand: ${subcommand}`);
+    throw new Error(`Unknown subcommand: ${subcommand}`);
   }
 }
 

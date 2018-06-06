@@ -73,7 +73,7 @@ export default class BigDigServer {
       // entry for all valid tagToTransport maps.
       this._tagToSubscriber.set(tag, subscriber);
     } else {
-      throw Error(`subscriber is already registered for ${tag}`);
+      throw new Error(`subscriber is already registered for ${tag}`);
     }
   }
 

@@ -184,7 +184,7 @@ export async function _build(
     try {
       return JSON.parse(json);
     } catch (e) {
-      throw Error(`Failed to parse:\n${json}`);
+      throw new Error(`Failed to parse:\n${json}`);
     }
   } finally {
     fsPromise.unlink(report);

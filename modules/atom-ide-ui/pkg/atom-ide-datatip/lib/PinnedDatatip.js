@@ -247,7 +247,7 @@ export class PinnedDatatip {
         break;
       default:
         (_position: empty);
-        throw Error(`Unexpected PinnedDatatip position: ${this._position}`);
+        throw new Error(`Unexpected PinnedDatatip position: ${this._position}`);
     }
   }
 

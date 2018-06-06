@@ -248,7 +248,7 @@ export default class NuclideServer {
   callService(serviceName: string, args: Array<any>): Promise<any> {
     const serviceFunction = this._xhrServiceRegistry[serviceName];
     if (!serviceFunction) {
-      throw Error('No service registered with name: ' + serviceName);
+      throw new Error('No service registered with name: ' + serviceName);
     }
     return serviceFunction.apply(this, args);
   }

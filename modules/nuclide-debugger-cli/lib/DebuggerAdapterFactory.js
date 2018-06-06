@@ -93,7 +93,7 @@ export default class DebuggerAdapterFactory {
     const adapter = this._adapterFromCommandLine(args);
 
     if (adapter == null) {
-      throw Error(
+      throw new Error(
         'Debugger type not specified; please use "--type" to specify it.',
       );
     }

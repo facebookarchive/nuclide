@@ -149,14 +149,14 @@ function _convertArgsToMultiLineSnippet(
     const spacesCnt =
       index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
     if (spacesCnt < 0) {
-      throw Error('This is a bug! Spaces count is negative.');
+      throw new Error('This is a bug! Spaces count is negative.');
     }
 
     const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${
       arg.placeholder
     }}\n`;
     if (index > 0 && line[colonPosition - arg.offset] !== ':') {
-      throw Error('This is a bug! Colons are not aligned!');
+      throw new Error('This is a bug! Colons are not aligned!');
     }
     return body + line;
   }, '');

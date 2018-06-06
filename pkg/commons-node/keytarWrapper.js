@@ -103,7 +103,7 @@ function runScriptInApmNode(
     .catch(err => {
       if (err instanceof ProcessExitError) {
         // Unwrap underlying error from stderr (as it already has a stack!)
-        throw Error(err.stderr);
+        throw new Error(err.stderr);
       }
       throw err;
     });

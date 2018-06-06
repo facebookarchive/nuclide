@@ -67,10 +67,10 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
   } = params;
   let {ports, timeout} = params;
   if (cname != null && (typeof cname !== 'string' || cname.length === 0)) {
-    throw Error(`cname must be a non-empty string but was: '${cname}'`);
+    throw new Error(`cname must be a non-empty string but was: '${cname}'`);
   }
   if (typeof jsonOutputFile !== 'string') {
-    throw Error('Must specify jsonOutputFile');
+    throw new Error('Must specify jsonOutputFile');
   }
 
   // port arg validation
@@ -78,7 +78,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     ports = DEFAULT_PORTS;
   }
   if (typeof ports !== 'string') {
-    throw Error(`ports must be specified as string but was: '${ports}'`);
+    throw new Error(`ports must be specified as string but was: '${ports}'`);
   }
   // This will throw an exception if the ports string is invalid.
   parsePorts(ports);
@@ -87,29 +87,31 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
     timeout = DEFAULT_TIMEOUT;
   }
   if (typeof timeout !== 'number') {
-    throw Error(`timeout must be specified as number but was: '${timeout}'`);
+    throw new Error(
+      `timeout must be specified as number but was: '${timeout}'`,
+    );
   }
 
   // expiration arg validation
   if (typeof expiration !== 'string') {
-    throw Error(
+    throw new Error(
       `expiration must be specified as string but was: '${expiration}'`,
     );
   }
   const expirationMatch = expiration.match(/^(\d+)d$/);
   if (expirationMatch == null) {
-    throw Error(`expiration must be /(\\d+)d/ but was: '${expiration}'`);
+    throw new Error(`expiration must be /(\\d+)d/ but was: '${expiration}'`);
   }
   const expirationDays = parseInt(expirationMatch[1], 10);
   if (expirationDays <= 0) {
-    throw Error(`expiration must be >0 but was ${expirationDays}`);
+    throw new Error(`expiration must be >0 but was ${expirationDays}`);
   }
 
   if (
     exclusive != null &&
     (typeof exclusive !== 'string' || !exclusive.match(/^[\w\d][\w\d-]*$/))
   ) {
-    throw Error(`exclusive must be a valid identifier: '${exclusive}'`);
+    throw new Error(`exclusive must be a valid identifier: '${exclusive}'`);
   }
 
   let certificateStrategy;
@@ -119,7 +121,7 @@ export async function parseArgsAndRunMain(absolutePathToServerMain: string) {
       typeof serverCertPath !== 'string' ||
       typeof serverKeyPath !== 'string'
     ) {
-      throw Error(
+      throw new Error(
         'need either all or none of caPath, serverCertPath and serverKeyPath',
       );
     }
