@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OnboardingFragments} from './types';
+import type {OnboardingFragment} from './types';
 
 import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -26,8 +26,8 @@ import {shell} from 'electron';
 class Activation {
   // A stream of all of the fragments. This is essentially the state of our panel.
   _allOnboardingFragmentsStream: BehaviorSubject<
-    Immutable.Set<OnboardingFragments>,
-  > = new BehaviorSubject(Immutable.Set());
+    Immutable.Map<string, OnboardingFragment>,
+  > = new BehaviorSubject(Immutable.Map());
 
   _subscriptions: UniversalDisposable;
 
@@ -37,22 +37,24 @@ class Activation {
   }
 
   setOnboardingFragments(
-    onboardingFragments: OnboardingFragments,
+    onboardingFragment: OnboardingFragment,
   ): UniversalDisposable {
     this._allOnboardingFragmentsStream.next(
-      this._allOnboardingFragmentsStream.getValue().add(onboardingFragments),
+      this._allOnboardingFragmentsStream
+        .getValue()
+        .set(onboardingFragment.key, onboardingFragment),
     );
     return new UniversalDisposable(() => {
       this._allOnboardingFragmentsStream.next(
         this._allOnboardingFragmentsStream
           .getValue()
-          .remove(onboardingFragments),
+          .remove(onboardingFragment.key),
       );
     });
   }
 
   dispose(): void {
-    this._allOnboardingFragmentsStream.next(Immutable.Set());
+    this._allOnboardingFragmentsStream.next(Immutable.Map());
     this._subscriptions.dispose();
   }
 

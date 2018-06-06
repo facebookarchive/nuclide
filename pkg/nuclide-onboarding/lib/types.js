@@ -9,17 +9,13 @@
  * @format
  */
 
-import * as React from 'react';
+export type OnboardingFragment = {
+  description?: string,
+  key: string,
+  title: string,
+};
 
-export type OnboardingFragments = {
-  // A string that a package can publish to the main part of the onboarding panel. This allows for
-  // customized welcome messages, but should be used judiciously.
-  welcome?: React.Element<any>,
-  feature?: {
-    title: string,
-    icon: string,
-    description: React.Element<any> | string,
-    command?: string | (() => void),
-  },
-  priority?: number,
+export type OnboardingTask = {
+  ...OnboardingFragment,
+  isCompleted: boolean,
 };
