@@ -5,6 +5,9 @@
   "description": "Provides the new user experience for new Nuclide users.",
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
+  "activationHooks": [
+    "nuclide_onboarding:gk:nuclide"
+  ],
   "nuclide": {
     "configMetadata": {
       "pathComponents": [

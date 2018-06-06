@@ -34,13 +34,6 @@ class Activation {
   constructor(state: ?Object) {
     this._subscriptions = this._registerCommandAndOpener();
     this._considerDisplayingOnboarding();
-    this._subscriptions.add(
-      // eslint-disable-next-line nuclide-internal/atom-apis
-      atom.commands.add('atom-workspace', 'nuclide-onboarding:open-docs', e => {
-        const url = createUtmUrl('https://nuclide.io/docs', 'help');
-        shell.openExternal(url);
-      }),
-    );
   }
 
   setOnboardingFragments(
@@ -92,6 +85,15 @@ class Activation {
       atom.commands.add('atom-workspace', 'nuclide-docs:open', () => {
         shell.openExternal('https://nuclide.io/');
       }),
+      atom.commands.add(
+        'atom-workspace',
+        // eslint-disable-next-line nuclide-internal/atom-apis
+        'nuclide-onboarding:open-docs',
+        e => {
+          const url = createUtmUrl('https://nuclide.io/docs', 'help');
+          shell.openExternal(url);
+        },
+      ),
     );
   }
 }
