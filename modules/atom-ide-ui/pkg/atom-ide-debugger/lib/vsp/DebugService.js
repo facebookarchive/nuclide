@@ -505,9 +505,15 @@ export default class DebugService implements IDebugService {
                 // Disconnect the debug session on configuration done error #10596
                 this._onSessionEnd();
                 session.disconnect().catch(onUnexpectedError);
-                atom.notifications.addError('Failed to configure debugger', {
-                  detail: e.message,
-                });
+                atom.notifications.addError(
+                  'Failed to configure debugger. This is often because either ' +
+                    'the process you tried to attach to has already terminated, or ' +
+                    'you do not have permissions (the process is running as root or ' +
+                    'another user.)',
+                  {
+                    detail: e.message,
+                  },
+                );
               });
           }
         };
