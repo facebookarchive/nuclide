@@ -284,6 +284,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
             const docsUrl = 'https://nuclide.io/docs/features/terminal';
             terminal.writeln(`For more info check out the docs: ${docsUrl}`);
           }
+          terminal.focus();
           this._spawn(cwd)
             .then(pty => this._onPtyFulfill(pty))
             .catch(error => this._onPtyFail(error));
