@@ -25,7 +25,7 @@ const FILENAME_BLACKLIST = [
 ];
 const LINK_TREE_SUFFIXES = Object.freeze({
   python_binary: '#link-tree',
-  python_unittest: '#binary,link-tree',
+  python_test: '#binary,link-tree',
 });
 
 const logger = getLogger('LinkTreeManager');
@@ -65,9 +65,10 @@ export default class LinkTreeManager {
        * Buck 'rdeps' has a pretty slow implementation:
        * it crawls all transitive deps of the first argument looking for the second.
        * Without a more efficient solution we'll just crawl the surrounding targets.
-       * e.g. the universe for //a:b will just be //a:
+       * e.g. the universe for //a:b will just be //a/...
        */
-      const universe = target.substr(0, target.indexOf(':') + 1);
+      const targetDir = target.substr(0, target.indexOf(':'));
+      const universe = targetDir + '/...';
       // Quote kinds - the kind() operator takes a string.
       const kinds = JSON.stringify(Object.keys(LINK_TREE_SUFFIXES).join('|'));
       const dependents = await BuckService.queryWithAttributes(
@@ -86,9 +87,7 @@ export default class LinkTreeManager {
               return;
             }
             // Resolve relative dependencies, e.g. :dep
-            const resolvedDep = dep.startsWith(':')
-              ? universe + dep.slice(1)
-              : dep;
+            const resolvedDep = dep.startsWith(':') ? targetDir + dep : dep;
             nonToplevel.add(resolvedDep);
           });
         }

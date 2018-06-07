@@ -40,7 +40,7 @@ describe('LinkTreeManager', () => {
           'buck.type': 'python_binary',
         },
         '//test:y': {
-          'buck.type': 'python_unittest',
+          'buck.type': 'python_test',
         },
       });
       const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
@@ -54,7 +54,7 @@ describe('LinkTreeManager', () => {
       // the target's immediate neighbors.
       expect(spy).toHaveBeenCalledWith(
         projectDir,
-        'kind("python_binary|python_unittest", rdeps(//test:, //test:a))',
+        'kind("python_binary|python_test", rdeps(//test/..., //test:a))',
         ['buck.type', 'deps'],
       );
       // Properly resolve a link-tree path based on the source's firstly found
