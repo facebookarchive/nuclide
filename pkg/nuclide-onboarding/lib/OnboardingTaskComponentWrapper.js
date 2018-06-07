@@ -11,32 +11,38 @@
 
 import * as React from 'react';
 import nullthrows from 'nullthrows';
-import type {OnboardingTask, OnboardingTaskMetadata} from './types';
+import type {OnboardingTask, OnboardingTaskComponentProps} from './types';
 
-export default function OnboardingTaskComponentWrapper(props: OnboardingTask) {
+type Props = OnboardingTask & {
+  setTaskCompleted: () => Promise<mixed>,
+};
+
+export default function OnboardingTaskComponentWrapper(props: Props) {
   nullthrows(props);
-  const {description, isCompleted, taskKey, title} = props;
+  const {description, isCompleted, setTaskCompleted, taskKey, title} = props;
   const TaskComponent = props.taskComponent || DefaultTaskComponent;
-  const taskMetaData: OnboardingTaskMetadata = {
+  const taskComponentProps: OnboardingTaskComponentProps = {
+    // we don't want to pass the taskComponent prop to TaskComponent
     description,
     isCompleted,
+    setTaskCompleted,
     taskKey,
     title,
   };
   return (
     <div className="nuclide-onboarding-task-component-wrapper">
       <div className="nuclide-onboarding-task-component-wrapper-header">
-        <h3 className="nuclide-onboarding-task-component-wrapper-title">
+        <div className="nuclide-onboarding-task-component-wrapper-title">
           {title}
-        </h3>
+        </div>
         <div className="nuclide-onboarding-task-component-wrapper-separator" />
-        {description != null ? <span>{description}</span> : null}
+        {description != null && <div>{description}</div>}
       </div>
-      <TaskComponent {...taskMetaData} />
+      <TaskComponent {...taskComponentProps} />
     </div>
   );
 }
 
-function DefaultTaskComponent(props: OnboardingTaskMetadata) {
+function DefaultTaskComponent(props: OnboardingTaskComponentProps) {
   return <span>{props.title}</span>;
 }

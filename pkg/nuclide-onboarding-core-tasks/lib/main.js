@@ -21,8 +21,6 @@ class Activation {
       {
         priority: 1,
         taskComponent: EditorIDEExperienceComponent,
-        description:
-          'With which of the following editors/IDEs do you have the most experience?',
         taskKey: 'editor-ide-experience',
         title: 'Editor/IDE Experience',
       },

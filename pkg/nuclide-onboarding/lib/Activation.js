@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {OnboardingModelState, OnboardingFragment} from './types';
+import type {
+  OnboardingModelState,
+  OnboardingFragment,
+  OnboardingTask,
+} from './types';
 
 import AsyncStorage from 'idb-keyval';
 import Model from 'nuclide-commons/Model';
@@ -116,8 +120,10 @@ export default class Activation {
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           const onboardingPaneItemProps = {
-            taskDetails: this._model.toObservable(),
             selectTaskHandler: this._handleTaskSelection,
+            setTaskCompletedHandler: (taskKey: string) =>
+              this._setTaskIsCompleted(taskKey),
+            taskDetails: this._model.toObservable(),
           };
           return new OnboardingPaneItem(onboardingPaneItemProps);
         }
@@ -146,9 +152,7 @@ export default class Activation {
       activeTask = this._model.state.tasks.get(activeTaskKey);
     }
 
-    const firstIncompleteTask = this._model.state.tasks.find(
-      task => task.isCompleted === false,
-    ); // Guaranteed non-null due to end state task
+    const firstIncompleteTask = this._getFirstIncompleteTask();
 
     if (activeTask != null) {
       // If new incomplete task is added with greater priority than stored
@@ -164,6 +168,11 @@ export default class Activation {
 
   _getAllTasksCompletedStatuses(): Promise<any> {
     return Promise.all(this._allTasksCompletedStatuses);
+  }
+
+  // Guaranteed to return an OnboardingTask since the final task cannot have isComplete=true
+  _getFirstIncompleteTask(): OnboardingTask {
+    return this._model.state.tasks.find(task => task.isCompleted === false);
   }
 
   async _getInitialTaskIsCompleted(taskKey: string) {
@@ -184,16 +193,20 @@ export default class Activation {
     await AsyncStorage.set(ACTIVE_TASK_KEY, activeTaskKey);
   }
 
-  async _setTaskIsCompleted(taskKey: string, isCompleted: boolean) {
+  async _setTaskIsCompleted(taskKey: string) {
     const task = this._model.state.tasks.get(taskKey);
 
     if (task != null) {
-      task.isCompleted = isCompleted;
+      task.isCompleted = true;
       const tasks = this._model.state.tasks.set(taskKey, task);
-      this._model.setState({tasks});
+      const activeTaskKey = this._getFirstIncompleteTask().taskKey;
+      this._model.setState({activeTaskKey, tasks});
 
       const taskStorageKey = TASK_STORAGE_PREFIX + taskKey;
-      await AsyncStorage.set(taskStorageKey, {isCompleted});
+      await Promise.all([
+        AsyncStorage.set(taskStorageKey, {isCompleted: true}),
+        AsyncStorage.set(ACTIVE_TASK_KEY, activeTaskKey),
+      ]);
     } else {
       atom.notifications.addWarning(
         `Attempting to mark task ${taskKey} completed, but ${taskKey} is not a valid Onboarding task`,
@@ -209,11 +222,9 @@ export default class Activation {
       return false;
     }
 
-    const firstIncompleteTask = this._model.state.tasks.find(
-      task => task.isCompleted === false,
-    );
-
+    const firstIncompleteTask = this._getFirstIncompleteTask();
     let canBecomeActiveTask;
+
     if (firstIncompleteTask == null) {
       canBecomeActiveTask = selectedTask.isCompleted;
     } else {

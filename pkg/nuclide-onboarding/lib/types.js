@@ -20,18 +20,19 @@ export type OnboardingModelState = {
 export type OnboardingFragment = {
   description?: string,
   priority: number,
-  taskComponent: React.ComponentType<OnboardingTaskMetadata>,
-  taskKey: string,
-  title: string,
-};
-
-export type OnboardingTaskMetadata = {
-  description?: string,
-  isCompleted: boolean,
+  taskComponent: React.ComponentType<OnboardingTaskComponentProps>,
   taskKey: string,
   title: string,
 };
 
 export type OnboardingTask = OnboardingFragment & {
   isCompleted: boolean,
+};
+
+export type OnboardingTaskComponentProps = {
+  description?: string,
+  isCompleted: boolean,
+  setTaskCompleted: () => Promise<mixed>,
+  taskKey: string,
+  title: string,
 };

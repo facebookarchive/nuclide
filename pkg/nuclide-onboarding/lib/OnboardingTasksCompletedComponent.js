@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OnboardingTaskMetadata} from './types';
+import type {OnboardingTaskComponentProps} from './types';
 
 import * as React from 'react';
 import createUtmUrl from './createUtmUrl';
@@ -17,7 +17,7 @@ import createUtmUrl from './createUtmUrl';
 const NUCLIDE_DOCS_URL = createUtmUrl('http://nuclide.io', 'welcome');
 
 export default function OnboardingTasksCompletedComponent(
-  props: OnboardingTaskMetadata,
+  props: OnboardingTaskComponentProps,
 ) {
   return (
     <div>

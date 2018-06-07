@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {OnboardingTaskMetadata} from '../../nuclide-onboarding/lib/types';
+import type {OnboardingTaskComponentProps} from '../../nuclide-onboarding/lib/types';
 
 import AsyncStorage from 'idb-keyval';
 import * as React from 'react';
@@ -17,7 +17,7 @@ import Activation from '../lib/Activation';
 import {ACTIVE_TASK_KEY, TASK_STORAGE_PREFIX} from '../lib/Activation';
 import * as Gatekeeper from '../../commons-node/passesGK';
 
-function mockComponent(props: OnboardingTaskMetadata) {
+function mockComponent(props: OnboardingTaskComponentProps) {
   return (
     <div>
       <span>Title: {props.title}</span>

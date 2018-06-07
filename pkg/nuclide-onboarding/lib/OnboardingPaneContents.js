@@ -22,6 +22,7 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/onboarding';
 export default function OnboardingPaneContents(props: {
   activeTaskKey: ?string,
   selectTaskHandler: string => void,
+  setTaskCompletedHandler: string => Promise<mixed>,
   tasks: Immutable.OrderedMap<string, OnboardingTask>,
 }): React.Node {
   const {tasks, activeTaskKey} = props;
@@ -40,7 +41,12 @@ export default function OnboardingPaneContents(props: {
       </div>
       {currentTask != null ? (
         <div className="nuclide-onboarding-section">
-          <OnboardingTaskComponentWrapper {...currentTask} />
+          <OnboardingTaskComponentWrapper
+            {...currentTask}
+            setTaskCompleted={() =>
+              props.setTaskCompletedHandler(currentTask.taskKey)
+            }
+          />
         </div>
       ) : null}
     </div>

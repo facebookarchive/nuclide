@@ -10,10 +10,10 @@
  */
 
 import * as React from 'react';
-import type {OnboardingTaskMetadata} from '../../nuclide-onboarding/lib/types';
+import type {OnboardingTaskComponentProps} from '../../nuclide-onboarding/lib/types';
 
 export default class EditorKeyBindingsComponent extends React.Component<
-  OnboardingTaskMetadata,
+  OnboardingTaskComponentProps,
 > {
   render() {
     const {title, description, taskKey, isCompleted} = this.props;
