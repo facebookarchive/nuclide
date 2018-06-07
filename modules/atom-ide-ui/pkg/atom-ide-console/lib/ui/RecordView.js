@@ -41,7 +41,7 @@ type Props = {
 };
 
 const AnsiRenderSegment = ({key, style, content}: RenderSegmentProps) => (
-  <span key={key} style={style}>
+  <span key={key} style={style} className="nuclide-console-default-text-colors">
     {parseText(content)}
   </span>
 );

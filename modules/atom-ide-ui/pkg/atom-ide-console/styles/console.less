@@ -116,17 +116,8 @@
     content: '';
   }
 
-  background-color: @console-record-background-color-normal;
   border-radius: 0;
   border-top: @console-border-size solid @console-record-border-color-normal;
-  color: @console-record-text-color-normal;
-
-  &,
-  // Make sure the specificity is high enough to override list item styling.
-  // (List items are used in the debugger records.)
-  &.console-record.console-record .list-item {
-    color: @console-record-text-color-normal;
-  }
 
   cursor: text;
   border-left: (@component-padding / 2) solid transparent;
@@ -139,14 +130,7 @@
     white-space: pre-wrap;
   }
 
-  pre,
-  code,
-  pre a {
-    color: @console-record-text-color-normal;
-  }
-
   .icon {
-    color: fadeout(@console-record-text-color-normal, 70%);
     font-size: inherit;
     text-align: center;
   }
@@ -163,147 +147,77 @@
     border-bottom: @console-border-size solid @console-record-border-color-normal;
   }
 
+  .console-record-colors(
+    @console-record-text-color-normal;
+    @console-record-background-color-normal;
+  );
+
   &.level-info {
-    .icon {
-      color: @text-color-info;
-    }
+    .console-record-colors(
+      @console-record-text-color-normal;
+      @console-record-background-color-normal;
+      @text-color-info;
+    );
   }
 
   &.level-warning {
-    &::before {
-      background-color: @console-record-border-color-warning;
-    }
-
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-warning;
-    }
-
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-warning;
-    }
-
-    .icon {
-      color: @console-record-border-color-warning;
-    }
+    .console-record-colors(
+      @console-record-text-color-warning;
+      @console-record-background-color-normal;
+      @console-record-border-color-warning;
+      @console-record-border-color-warning;
+    );
   }
 
   &.level-success {
-    &::before {
-      background-color: @console-record-border-color-success;
-    }
-
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-success;
-    }
-
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-success;
-    }
-
-    .icon {
-      color: @console-record-border-color-success;
-    }
+    .console-record-colors(
+      @console-record-text-color-success;
+      @console-record-background-color-normal;
+      @console-record-border-color-success;
+      @console-record-border-color-success;
+    );
   }
 
   &.level-error {
-    &::before {
-      background-color: @console-record-border-color-error;
-    }
-
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-error;
-    }
-
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-error;
-    }
-
-    .icon {
-      color: @console-record-border-color-error;
-    }
-
+    .console-record-colors(
+      @console-record-text-color-error;
+      @console-record-background-color-normal;
+      @console-record-border-color-error;
+      @console-record-border-color-error;
+    );
   }
 
   // Console record colors for `level-color` classes.
   &.level-red {
-    background-color: @console-record-background-color-red;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-red;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-red;
-      color: @console-record-background-color-red;
-    }
+    .console-record-colors(@console-record-text-color-red; @console-record-background-color-red);
   }
 
   &.level-orange {
-    background-color: @console-record-background-color-orange;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-orange;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-orange;
-      color: @console-record-background-color-orange;
-    }
+    .console-record-colors(@console-record-text-color-orange; @console-record-background-color-orange);
   }
 
   &.level-yellow {
-    background-color: @console-record-background-color-yellow;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-yellow;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-yellow;
-      color: @console-record-background-color-yellow;
-    }
+    .console-record-colors(@console-record-text-color-yellow; @console-record-background-color-yellow);
   }
 
   &.level-green {
-    background-color: @console-record-background-color-green;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-green;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-green;
-      color: @console-record-background-color-green;
-    }
+    .console-record-colors(@console-record-text-color-green; @console-record-background-color-green);
   }
 
   &.level-blue {
-    background-color: @console-record-background-color-blue;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-blue;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-blue;
-      color: @console-record-background-color-blue;
-    }
+    .console-record-colors(@console-record-text-color-blue; @console-record-background-color-blue);
   }
 
   &.level-purple {
-    background-color: @console-record-background-color-purple;
-    pre, pre a, .console-lazy-nested-value div, .console-lazy-nested-value span {
-      color: @console-record-text-color-purple;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-purple;
-      color: @console-record-background-color-purple;
-    }
+    .console-record-colors(@console-record-text-color-purple, @console-record-background-color-purple);
   }
 
   &.level-violet {
-    background-color: @console-record-background-color-violet;
-    pre, pre a, .console-lazy-nested-value div, .ui-lazy-nested-value span {
-      color: @console-record-text-color-violet;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-violet;
-      color: @console-record-background-color-violet;
-    }
+    .console-record-colors(@console-record-text-color-violet; @console-record-background-color-violet);
   }
 
   &.level-rainbow {
-    background: #fff;
+    .console-record-colors(@console-record-text-color-rainbow; #fff);
     background-image: linear-gradient(
       to right,
       rgba(255, 0, 0, .4) 0%,
@@ -313,19 +227,16 @@
       rgba(0, 191, 255, .4) 80%,
       rgba(138, 43, 226, .4) 100%
     );
-    pre,
-    pre a,
-    .console-lazy-nested-value div,
-    .ui-lazy-nested-value span,
-    .list-group li:not(.list-nested-item),
-    .list-tree li:not(.list-nested-item),
-    .list-group li.list-nested-item > .list-item,
-    .list-tree li.list-nested-item > .list-item {
-      color: @console-record-text-color-rainbow;
-    }
-    .console-record-duplicate-number {
-      background-color: @console-record-text-color-rainbow;
-      color: #fff,
+    &:hover {
+      background-image: linear-gradient(
+        to right,
+        rgba(255, 0, 0, 0.45) 0%,
+        rgba(255, 165, 0, 0.45) 20%,
+        rgba(255, 255, 0, 0.45) 40%,
+        rgba(173, 255, 47, 0.45) 60%,
+        rgba(0, 191, 255, 0.45) 80%,
+        rgba(138, 43, 226, 0.45) 100%
+      );
     }
   }
 
@@ -339,17 +250,6 @@
     display: flex;
     background-color: @syntax-background-color;
   }
-
-  // Aid visual tracking while hovering over a record (esp. when the console window is very wide).
-  &:hover {
-    & when (lightness(@syntax-background-color) <= 50%) {
-      background-color: lighten(@syntax-background-color, 2%);
-    }
-    & when (lightness(@syntax-background-color) > 50%) {
-      background-color: darken(@syntax-background-color, 3%);
-    }
-  }
-
 }
 
 .console-record-content-wrapper {
@@ -408,7 +308,6 @@
 }
 
 .console-record-timestamp {
-  background-color: @console-record-background-color-normal;
   padding: 1px 2px;
 }
 
@@ -529,4 +428,55 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 3px;
+}
+
+// A mixin for coloring the record. By using this mixin, we can guarantee that
+// all of the different colors behave the same. All record coloring should go
+// through this!
+.console-record-colors(
+  @fg-color;
+  @bg-color;
+  @icon-color: fadeout(@fg-color, 70%);
+  @border-color: none;
+) {
+  background-color: @bg-color;
+
+  &,
+  // Make sure the specificity is high enough to override list item styling.
+  // (List items are used in the debugger records.)
+  &.console-record.console-record .list-item,
+  pre,
+  code,
+  pre a,
+  .console-lazy-nested-value div,
+  .console-lazy-nested-value span {
+    color: @fg-color;
+  }
+
+  .console-record-duplicate-number {
+    background-color: @fg-color;
+    color: @bg-color;
+  }
+
+  // Aid visual tracking while hovering over a record (esp. when the console window is very wide).
+  &:hover {
+    & when (lightness(@bg-color) <= 50%) {
+      background-color: lighten(@bg-color, 2%);
+    }
+    & when (lightness(@bg-color) > 50%) {
+      background-color: darken(@bg-color, 3%);
+    }
+  }
+
+  &::before {
+    background-color: @border-color;
+  }
+
+  .icon {
+    color: @icon-color;
+  }
+}
+
+.nuclide-console-default-text-colors {
+  color: @console-record-text-color-normal;
 }
