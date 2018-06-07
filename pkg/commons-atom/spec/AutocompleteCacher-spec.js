@@ -176,9 +176,12 @@ describe('AutocompleteCacher', () => {
       expect(await finalResult).toBe(secondMockedUpdateResults);
 
       expect(updateResults.callCount).toBe(2);
+
+      // We expect mockedRequest to always be the original request for these
+      // calls, since it completed with a non-null value.
       expect(updateResults.calls.map(call => call.args)).toEqual([
         [mockedRequest, mockedRequest2, await mockedSuggestions],
-        [mockedRequest2, mockedRequest3, await mockedSuggestions],
+        [mockedRequest, mockedRequest3, await mockedSuggestions],
       ]);
 
       expect(getSuggestions.callCount).toBe(3);

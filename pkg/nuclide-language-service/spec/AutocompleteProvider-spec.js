@@ -16,6 +16,8 @@ import {Point, Range} from 'atom';
 import {nextTick} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {jasmineAttachWorkspace} from 'nuclide-commons-atom/test-helpers';
+import {updateAutocompleteResults, updateAutocompleteFirstResults} from '..';
+import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
 import {
   AutocompleteProvider,
   updateAutocompleteResultRanges,
@@ -271,37 +273,48 @@ describe('AutocompleteProvider', () => {
 });
 
 describe('updateAutocompleteResultRanges', () => {
-  const withEditor = function(callback) {
+  function withEditor(callback: atom$TextEditor => Promise<void> | void) {
     waitsForPromise({timeout: 10000}, async () => {
       const editor = await atom.workspace.open('test.txt');
       await callback(editor);
     });
-  };
+  }
 
-  const makeRequest = (point, editor) => ({
-    bufferPosition: Point.fromObject(point),
-    editor,
-    prefix: '',
-    scopeDescriptor: '',
-  });
+  function makeRequest(
+    point: atom$PointLike,
+    editor: atom$TextEditor,
+  ): atom$AutocompleteRequest {
+    return {
+      bufferPosition: Point.fromObject(point),
+      editor,
+      prefix: '',
+      scopeDescriptor: '',
+    };
+  }
 
-  const makeResult = oldRangesList => ({
-    isIncomplete: false,
-    items: oldRangesList.map(oldRanges => {
-      if (oldRanges) {
-        return {
-          textEdits: oldRanges.map(oldRange => ({
-            oldRange,
-            newText: '',
-          })),
-        };
-      } else {
-        return {
-          insertText: '',
-        };
-      }
-    }),
-  });
+  function makeResult(
+    oldRangesList: Array<Array<atom$Range>>,
+    sortText: ?string,
+  ): AutocompleteResult {
+    return {
+      isIncomplete: false,
+      items: oldRangesList.map(oldRanges => {
+        if (oldRanges) {
+          return {
+            textEdits: oldRanges.map(oldRange => ({
+              oldRange,
+              newText: '',
+            })),
+            sortText: sortText == null ? undefined : sortText,
+          };
+        } else {
+          return {
+            insertText: '',
+          };
+        }
+      }),
+    };
+  }
 
   it('updates ranges that match', () =>
     withEditor(editor => {
@@ -358,6 +371,78 @@ describe('updateAutocompleteResultRanges', () => {
             Range.fromObject([[0, 2], [0, 5]]),
           ],
         ]),
+      );
+    }));
+
+  it('works with interleaved requests when caching is enabled', () =>
+    withEditor(async editor => {
+      function makeResponsePromise(
+        range: ?atom$Range,
+      ): {promise: Promise<?AutocompleteResult>, resolve: () => void} {
+        let resolvePromise;
+        const promise = new Promise(resolve => {
+          resolvePromise = resolve;
+        });
+        return {
+          promise,
+          resolve: () =>
+            range == null
+              ? resolvePromise(null)
+              : resolvePromise(makeResult([[range]])),
+        };
+      }
+
+      const request1 = makeRequest([0, 1], editor);
+      const request2 = makeRequest([0, 2], editor);
+      const request3 = makeRequest([0, 3], editor);
+      const request4 = makeRequest([0, 4], editor);
+      let resultValue: Promise<?AutocompleteResult> = (null: any);
+      const getSuggestions = jasmine
+        .createSpy('getSuggestions')
+        .andCallFake(() => resultValue);
+
+      const autocompleteCacher = new AutocompleteCacher(getSuggestions, {
+        updateResults: updateAutocompleteResults,
+        updateFirstResults: updateAutocompleteFirstResults,
+        shouldFilter: () => true,
+      });
+
+      // Return null from the first request to make sure that we're properly
+      // attaching requests to results.
+      const response1Promise = makeResponsePromise(null);
+      resultValue = response1Promise.promise;
+      autocompleteCacher.getSuggestions(request1);
+
+      const response2Promise = makeResponsePromise(
+        Range.fromObject([[0, 0], [0, 2]]),
+      );
+      resultValue = response2Promise.promise;
+      autocompleteCacher.getSuggestions(request2);
+      expect(getSuggestions.callCount).toBe(2);
+
+      // To hit this behavior we need to make at least two interleaved requests
+      // after the most recent request that returned null (or just at least two
+      // requests if none of them return null).
+      const response3Promise = makeResponsePromise(
+        Range.fromObject([[0, 0], [0, 3]]),
+      );
+      resultValue = response3Promise.promise;
+      autocompleteCacher.getSuggestions(request3);
+      expect(getSuggestions.callCount).toBe(3);
+
+      response1Promise.resolve();
+      response2Promise.resolve();
+      response3Promise.resolve();
+
+      resultValue = new Promise((resolve, reject) => {
+        reject(new Error('The third result should come from the cache.'));
+      });
+      const resultsFromUpdatedCache = await autocompleteCacher.getSuggestions(
+        request4,
+      );
+
+      expect(resultsFromUpdatedCache).toEqual(
+        makeResult([[Range.fromObject([[0, 0], [0, 4]])]], ''),
       );
     }));
 });

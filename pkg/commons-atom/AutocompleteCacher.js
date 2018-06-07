@@ -40,9 +40,19 @@ export type AutocompleteCacherConfig<T> = {|
   gatekeeper?: string,
 |};
 
+type TrackedResponse<T> = {request: atom$AutocompleteRequest, response: T};
+
+function track<T>(
+  request: atom$AutocompleteRequest,
+  responsePromise: Promise<?T>,
+): Promise<?TrackedResponse<T>> {
+  return responsePromise.then(
+    response => (response == null ? null : {request, response}),
+  );
+}
+
 type AutocompleteSession<T> = {
-  firstResultPromise: PromiseWithState<?T>,
-  originalRequest: atom$AutocompleteRequest,
+  firstResultPromise: PromiseWithState<?TrackedResponse<T>>,
   lastRequest: atom$AutocompleteRequest,
 };
 
@@ -92,9 +102,9 @@ export default class AutocompleteCacher<T> {
         // it right now, synchronously?
         const firstResult = state.value;
         const result = this._config.updateResults(
-          session.originalRequest,
+          firstResult.request,
           request,
-          firstResult,
+          firstResult.response,
         );
         if (result != null) {
           this._session = {...this._session, lastRequest: request};
@@ -118,17 +128,16 @@ export default class AutocompleteCacher<T> {
         firstResultPromise: new PromiseWithState(
           getNewFirstResult(
             session.firstResultPromise.getPromise(),
-            resultFromLanguageService,
+            track(request, resultFromLanguageService),
           ),
         ),
-        originalRequest: request,
         lastRequest: request,
       };
       return result;
     } else {
       const result = this._getSuggestions(request);
       this._session = {
-        firstResultPromise: new PromiseWithState(result),
+        firstResultPromise: new PromiseWithState(track(request, result)),
         originalRequest: request,
         lastRequest: request,
       };
@@ -144,9 +153,9 @@ export default class AutocompleteCacher<T> {
     const firstResult = await session.firstResultPromise.getPromise();
     if (firstResult != null) {
       const updated = this._config.updateResults(
-        session.originalRequest,
+        firstResult.request,
         request,
-        firstResult,
+        firstResult.response,
       );
       if (updated != null) {
         return updated;
@@ -177,9 +186,9 @@ export default class AutocompleteCacher<T> {
 }
 
 async function getNewFirstResult<T>(
-  firstResultPromise: Promise<?T>,
-  resultFromLanguageService: Promise<?T>,
-): Promise<?T> {
+  firstResultPromise: Promise<?TrackedResponse<T>>,
+  resultFromLanguageService: Promise<?TrackedResponse<T>>,
+): Promise<?TrackedResponse<T>> {
   const firstResult = await firstResultPromise;
   if (firstResult != null) {
     return firstResult;
