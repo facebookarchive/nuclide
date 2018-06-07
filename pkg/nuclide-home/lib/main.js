@@ -22,6 +22,9 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
+import passesGK from '../../commons-node/passesGK';
+
+const SHOW_NUCLIDE_ONBOARDING_GATEKEEPER = 'nuclide_onboarding';
 
 class Activation {
   // A stream of all of the fragments. This is essentially the state of our panel.
@@ -59,8 +62,11 @@ class Activation {
     this._subscriptions.dispose();
   }
 
-  _considerDisplayingHome() {
-    const showHome = featureConfig.get('nuclide-home.showHome');
+  async _considerDisplayingHome() {
+    const showHome =
+      featureConfig.get('nuclide-home.showHome') &&
+      (await !passesGK(SHOW_NUCLIDE_ONBOARDING_GATEKEEPER));
+
     // flowlint-next-line sketchy-null-mixed:off
     if (showHome) {
       // eslint-disable-next-line nuclide-internal/atom-apis
