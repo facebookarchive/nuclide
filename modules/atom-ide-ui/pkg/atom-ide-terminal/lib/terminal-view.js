@@ -23,14 +23,12 @@ import {
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
 import url from 'url';
-import {Terminal} from 'xterm';
-import * as Fit from 'xterm/lib/addons/fit/fit';
-import * as WebLinks from 'xterm/lib/addons/webLinks/webLinks';
 
 import {getPtyServiceByNuclideUri} from './AtomServiceContainer';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import performanceNow from 'nuclide-commons/performanceNow';
+import {createTerminal} from './createTerminal';
 import {infoFromUri, uriFromInfo} from './nuclide-terminal-uri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -39,6 +37,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 import {removePrefixSink, patternCounterSink} from './sink';
 
+import type {Terminal} from './createTerminal';
 import type {TerminalInstance} from './types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -71,9 +70,6 @@ const PRESERVED_COMMANDS_CONFIG = 'atom-ide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'atom-ide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'atom-ide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'atom-ide-terminal.cursorBlink';
-const OPTION_IS_META_CONFIG = 'atom-ide-terminal.optionIsMeta';
-const TRANSPARENCY_CONFIG = 'atom-ide-terminal.allowTransparency';
-const CHAR_ATLAS_CONFIG = 'atom-ide-terminal.charAtlas';
 const FONT_FAMILY_CONFIG = 'atom-ide-terminal.fontFamily';
 const FONT_SCALE_CONFIG = 'atom-ide-terminal.fontScale';
 const LINE_HEIGHT_CONFIG = 'atom-ide-terminal.lineHeight';
@@ -100,7 +96,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _emitter: Emitter;
   _preservedCommands: Set<string>;
   _div: HTMLDivElement;
-  _terminal: Object;
+  _terminal: Terminal;
   _pty: ?Pty;
   _processOutput: Sink;
   _startTime: number;
@@ -114,17 +110,6 @@ export class TerminalView implements PtyClient, TerminalInstance {
   _initialInput: string;
 
   constructor(paneUri: string) {
-    // Load the addons on-demand the first time we create a terminal.
-    if (Terminal.fit == null) {
-      // The 'fit' add-on resizes the terminal based on the container size
-      // and the font size such that the terminal fills the container.
-      Terminal.applyAddon(Fit);
-    }
-    if (Terminal.webLinksInit == null) {
-      // The 'webLinks' add-on linkifies http URL strings.
-      Terminal.applyAddon(WebLinks);
-    }
-
     this._paneUri = paneUri;
     const info = infoFromUri(paneUri);
     this._terminalInfo = info;
@@ -178,16 +163,7 @@ export class TerminalView implements PtyClient, TerminalInstance {
     div.classList.add('terminal-pane');
     subscriptions.add(() => div.remove());
 
-    const terminal = (this._terminal = new Terminal({
-      cols: 512,
-      rows: 512,
-      cursorBlink: featureConfig.get(CURSOR_BLINK_CONFIG),
-      cursorStyle: featureConfig.get(CURSOR_STYLE_CONFIG),
-      scrollback: featureConfig.get(SCROLLBACK_CONFIG),
-      macOptionIsMeta: featureConfig.get(OPTION_IS_META_CONFIG),
-      allowTransparency: featureConfig.get(TRANSPARENCY_CONFIG),
-      experimentalCharAtlas: featureConfig.get(CHAR_ATLAS_CONFIG),
-    }));
+    const terminal = (this._terminal = createTerminal());
     terminal.attachCustomKeyEventHandler(
       this._checkIfKeyBoundOrDivertToXTerm.bind(this),
     );
