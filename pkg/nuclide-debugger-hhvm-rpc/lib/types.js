@@ -23,6 +23,7 @@ export type HHVMLaunchConfig = {
   launchWrapperCommand?: string,
   cwd?: string,
   noDebug?: boolean,
+  warnOnInterceptedFunctions?: boolean,
 };
 
 export type HHVMAttachConfig = {
@@ -30,4 +31,5 @@ export type HHVMAttachConfig = {
   targetUri: NuclideUri,
   startupDocumentPath?: string,
   debugPort?: number,
+  warnOnInterceptedFunctions?: boolean,
 };

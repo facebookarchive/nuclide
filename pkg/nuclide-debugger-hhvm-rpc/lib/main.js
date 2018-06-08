@@ -17,6 +17,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import os from 'os';
 import {runCommand} from 'nuclide-commons/process';
 import fs from 'fs';
+import passesGK from '../../commons-node/passesGK';
 
 export type {HHVMAttachConfig, HHVMLaunchConfig} from './types';
 
@@ -108,6 +109,10 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
 
   const logFilePath = await _getHHVMLogFilePath();
 
+  const warnOnInterceptedFunctions = await passesGK(
+    'nuclide_debugger_hhvm_warn_on_intercept',
+  );
+
   return {
     hhvmPath,
     hhvmArgs,
@@ -115,6 +120,7 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
     logFilePath,
     debugPort,
     cwd,
+    warnOnInterceptedFunctions,
   };
 }
 
@@ -214,10 +220,15 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
     }
   }
 
+  const warnOnInterceptedFunctions = await passesGK(
+    'nuclide_debugger_hhvm_warn_on_intercept',
+  );
+
   return {
     debugPort,
     startupDocumentPath,
     logFilePath,
+    warnOnInterceptedFunctions,
   };
 }
 
