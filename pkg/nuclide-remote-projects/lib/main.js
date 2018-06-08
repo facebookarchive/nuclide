@@ -32,7 +32,6 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import loadingNotification from '../../commons-atom/loading-notification';
 import invariant from 'assert';
 import {TextEditor} from 'atom';
-import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   RemoteConnection,
@@ -467,12 +466,18 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
     // Add a custom serializer that deserializes to a placeholder TextEditor
     // that we have total control over. The usual Atom deserialization flow for editors
     // typically involves attempting to load the file from disk, which tends to throw.
+    const textEditorSerialize = textEditor.serialize;
     // $FlowIgnore
     textEditor.serialize = function(): RemoteTextEditorPlaceholderState {
+      const path = textEditor.getPath();
+      // It's possible for an editor's path to become local (via Save As).
+      if (path == null || !nuclideUri.isRemote(path)) {
+        return textEditorSerialize.call(textEditor);
+      }
       return {
         deserializer: 'RemoteTextEditorPlaceholder',
         data: {
-          uri: nullthrows(textEditor.getPath()),
+          uri: path,
           contents: textEditor.getText(),
           // If the editor was unsaved, we'll restore the unsaved contents after load.
           isModified: textEditor.isModified(),
@@ -485,7 +490,15 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
     // As of Atom 1.22 null just gets filtered out by the project serializer.
     // https://github.com/atom/atom/blob/master/src/project.js#L117
     // $FlowIgnore
-    buffer.serialize = () => null;
+    const bufferSerialize = buffer.serialize;
+    // $FlowIgnore
+    buffer.serialize = function() {
+      const path = buffer.getPath();
+      if (path == null || !nuclideUri.isRemote(path)) {
+        return bufferSerialize.call(buffer);
+      }
+      return null;
+    };
     return textEditor;
   } catch (err) {
     logger.warn('buffer load issue:', err);
