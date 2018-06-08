@@ -17,6 +17,8 @@ import {generateFixture} from 'nuclide-commons/test-helpers';
 import {fileSearchForDirectory} from '../lib/process/FileSearch';
 import * as watchmanHelpers from 'nuclide-watchman-helpers';
 
+jest.setTimeout(30000);
+
 function aFileSearchShould(typename, dirPathFn) {
   describe(`A ${typename} folder`, () => {
     let dirPath;
@@ -26,14 +28,14 @@ function aFileSearchShould(typename, dirPathFn) {
       startUpdatingPathSet: () => Promise.resolve({dispose: () => {}}),
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
       // Block Watchman usage by preventing client creation.
-      spyOn(watchmanHelpers, 'WatchmanClient').andCallFake(() => {
+      jest.spyOn(watchmanHelpers, 'WatchmanClient').mockImplementation(() => {
         throw new Error();
       });
-      waitsForPromise(async () => {
+      await (async () => {
         dirPath = await dirPathFn();
-      });
+      })();
     });
 
     // Score values are difficult to test.
@@ -50,24 +52,24 @@ function aFileSearchShould(typename, dirPathFn) {
 
     describe('a FileSearch at the root of a project', () => {
       let search;
-      beforeEach(() => {
-        waitsForPromise(async () => {
+      beforeEach(async () => {
+        await (async () => {
           search = await fileSearchForDirectory(dirPath, mockPathSetUpdater);
-        });
+        })();
       });
 
-      it('should return an easy match in the root directory', () => {
-        waitsForPromise(async () => {
+      it('should return an easy match in the root directory', async () => {
+        await (async () => {
           invariant(search);
           invariant(dirPath);
           const results = await search.query('test');
           expect(values(results)).toEqual([nuclideUri.join(dirPath, 'test')]);
           expect(indexes(results)).toEqual([[0, 1, 2, 3]]);
-        });
+        })();
       });
 
-      it('should return an easy match in the deeper directory', () => {
-        waitsForPromise(async () => {
+      it('should return an easy match in the deeper directory', async () => {
+        await (async () => {
           invariant(search);
           invariant(dirPath);
           const results = await search.query('deeper');
@@ -75,11 +77,11 @@ function aFileSearchShould(typename, dirPathFn) {
             nuclideUri.join(dirPath, 'deeper/deeper'),
           ]);
           expect(indexes(results)).toEqual([[7, 8, 9, 10, 11, 12]]);
-        });
+        })();
       });
 
-      it('should handle searches for full paths', () => {
-        waitsForPromise(async () => {
+      it('should handle searches for full paths', async () => {
+        await (async () => {
           const fullpath = nuclideUri.join(dirPath, 'deeper/deeper');
           let results = await search.query(fullpath);
           expect(values(results)).toEqual([fullpath]);
@@ -87,23 +89,23 @@ function aFileSearchShould(typename, dirPathFn) {
             nuclideUri.join(nuclideUri.basename(dirPath), 'deeper/deeper'),
           );
           expect(values(results)).toEqual([fullpath]);
-        });
+        })();
       });
     });
 
     describe('a subdirectory FileSearch', () => {
       let deeperSearch;
-      beforeEach(() => {
-        waitsForPromise(async () => {
+      beforeEach(async () => {
+        await (async () => {
           deeperSearch = await fileSearchForDirectory(
             nuclideUri.join(dirPath, 'deeper'),
             mockPathSetUpdater,
           );
-        });
+        })();
       });
 
-      it('should return results relative to the deeper path', () => {
-        waitsForPromise(async () => {
+      it('should return results relative to the deeper path', async () => {
+        await (async () => {
           invariant(deeperSearch);
           invariant(dirPath);
           const results = await deeperSearch.query('deeper');
@@ -111,36 +113,36 @@ function aFileSearchShould(typename, dirPathFn) {
             nuclideUri.join(dirPath, 'deeper/deeper'),
           ]);
           expect(indexes(results)).toEqual([[7, 8, 9, 10, 11, 12]]);
-        });
+        })();
       });
 
-      it('should not return results in a subdirectory', () => {
-        waitsForPromise(async () => {
+      it('should not return results in a subdirectory', async () => {
+        await (async () => {
           invariant(deeperSearch);
           const results = await deeperSearch.query('test');
           expect(results).toEqual([]);
-        });
+        })();
       });
     });
 
     describe('a FileSearch with ignoredNames', () => {
       let search;
-      beforeEach(() => {
-        waitsForPromise(async () => {
+      beforeEach(async () => {
+        await (async () => {
           search = await fileSearchForDirectory(dirPath, mockPathSetUpdater, [
             'deeper/**',
           ]);
-        });
+        })();
       });
 
-      it("should not match ignored patterns if it's not an exact-match", () => {
-        waitsForPromise(async () => {
+      it("should not match ignored patterns if it's not an exact-match", async () => {
+        await (async () => {
           const results = await search.query('');
           expect(values(results)).toEqual([nuclideUri.join(dirPath, 'test')]);
-        });
+        })();
       });
 
-      it('should match ignored patterns if it is an exact-match', () => {
+      it('should match ignored patterns if it is an exact-match', async () => {
         if (typename === 'Vanilla (No VCS)') {
           // This test makes no sense for Vanilla searches =)
           return;
@@ -152,12 +154,12 @@ function aFileSearchShould(typename, dirPathFn) {
           nuclideUri.join(dirPath, 'ignored'),
         ];
         for (const querySuite of querySuites) {
-          waitsForPromise(async () => {
+          await (async () => {
             const results = await search.query(querySuite);
             expect(values(results)).toEqual([
               nuclideUri.join(dirPath, 'ignored'),
             ]);
-          });
+          })();
         }
       });
     });

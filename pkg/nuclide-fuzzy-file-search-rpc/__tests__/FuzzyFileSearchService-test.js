@@ -23,30 +23,30 @@ pathSearch.fileSearchForDirectory = () => {
 };
 
 describe('FuzzyFileSearchService.isFuzzySearchAvailableFor', () => {
-  it('can search existing directories', () => {
-    waitsForPromise(async () => {
+  it('can search existing directories', async () => {
+    await (async () => {
       expect(await isFuzzySearchAvailableFor(__dirname)).toBe(true);
-    });
+    })();
   });
 
-  it('cant search non-existing directories', () => {
-    waitsForPromise(async () => {
+  it('cant search non-existing directories', async () => {
+    await (async () => {
       // eslint-disable-next-line no-path-concat
       const nonExistentPath = __dirname + 'xxx';
       expect(await isFuzzySearchAvailableFor(nonExistentPath)).toBe(false);
-    });
+    })();
   });
 
-  it("doesn't get confused by atom:// paths", () => {
-    waitsForPromise(async () => {
+  it("doesn't get confused by atom:// paths", async () => {
+    await (async () => {
       expect(await isFuzzySearchAvailableFor('atom://about')).toBe(false);
-    });
+    })();
   });
 });
 
 describe('FuzzyFileSearchService.queryFuzzyFile', () => {
-  it('finds a file in a directory that exists', () => {
-    waitsForPromise(async () => {
+  it('finds a file in a directory that exists', async () => {
+    await (async () => {
       // This test can't actually perform a search because path-search
       // uses watchman and we don't have a good way to mock dependencies.
       const fileSearchResults = await queryFuzzyFile({
@@ -56,6 +56,6 @@ describe('FuzzyFileSearchService.queryFuzzyFile', () => {
         preferCustomSearch: false,
       });
       expect(fileSearchResults).toEqual([]);
-    });
+    })();
   });
 });
