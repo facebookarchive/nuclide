@@ -36,19 +36,17 @@ class Activation {
         'nuclide-metro:start': ({
           detail,
         }: {
-          detail: {port?: number, tunnelBehavior?: TunnelBehavior},
+          detail: {
+            port?: number,
+            tunnelBehavior?: TunnelBehavior,
+            extraArgs?: Array<string>,
+          },
         }) => {
-          let tunnelBehavior = 'ask_about_tunnel';
-          let port = undefined;
-          if (detail != null) {
-            if (detail.port != null) {
-              port = detail.port;
-            }
-            if (detail.tunnelBehavior != null) {
-              tunnelBehavior = detail.tunnelBehavior;
-            }
-          }
-          this._metroAtomService.start(tunnelBehavior, port);
+          this._metroAtomService.start(
+            detail.tunnelBehavior || 'ask_about_tunnel',
+            detail.port,
+            detail.extraArgs,
+          );
         },
         'nuclide-metro:stop': () => this._metroAtomService.stop(),
         'nuclide-metro:restart': () => this._metroAtomService.restart(),

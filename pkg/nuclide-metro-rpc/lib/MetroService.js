@@ -53,6 +53,7 @@ export function startMetro(
   projectRoot: NuclideUri,
   editorArgs: Array<string>,
   port: number = 8081,
+  extraArgs: Array<string> = [],
 ): ConnectableObservable<MetroEvent> {
   const stdout = Observable.defer(() => getStartCommand(projectRoot))
     .switchMap(
@@ -62,17 +63,21 @@ export function startMetro(
           : Observable.of(commandInfo),
     )
     .switchMap(commandInfo => {
-      const {command, cwd, args = []} = commandInfo;
-      return observeProcess(command, args.concat([`--port=${port}`]), {
-        cwd,
-        env: {
-          ...process.env,
-          REACT_EDITOR: shellQuote(editorArgs),
-          // We don't want to pass the NODE_PATH from this process
-          NODE_PATH: null,
+      const {command, cwd} = commandInfo;
+      return observeProcess(
+        command,
+        extraArgs.concat(commandInfo.args || []).concat([`--port=${port}`]),
+        {
+          cwd,
+          env: {
+            ...process.env,
+            REACT_EDITOR: shellQuote(editorArgs),
+            // We don't want to pass the NODE_PATH from this process
+            NODE_PATH: null,
+          },
+          killTreeWhenDone: true,
         },
-        killTreeWhenDone: true,
-      }).catch(error => {
+      ).catch(error => {
         if (error.exitCode === 11) {
           return Observable.throw(metroPortBusyError());
         } else {

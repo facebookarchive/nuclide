@@ -38,6 +38,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
   _logTailer: LogTailer;
   _projectRootPath: BehaviorSubject<?NuclideUri>;
   _port: BehaviorSubject<number>;
+  _extraArgs: BehaviorSubject<Array<string>>;
   _disposables: UniversalDisposable;
   _currentTunnelSubscription: ?Subscription;
 
@@ -45,7 +46,12 @@ export class DefaultMetroAtomService implements MetroAtomService {
     this._projectRootPath = projectRootPath;
     this._disposables = new UniversalDisposable();
     this._port = new BehaviorSubject(8081);
-    this._logTailer = this._createLogTailer(projectRootPath, this._port);
+    this._extraArgs = new BehaviorSubject([]);
+    this._logTailer = this._createLogTailer(
+      projectRootPath,
+      this._port,
+      this._extraArgs,
+    );
 
     this._disposables.add(
       () => this.stop(),
@@ -60,8 +66,10 @@ export class DefaultMetroAtomService implements MetroAtomService {
   start = async (
     tunnelBehavior: TunnelBehavior,
     port: number = 8081,
+    extraArgs: Array<string> = [],
   ): Promise<void> => {
     this._port.next(port);
+    this._extraArgs.next(extraArgs);
     await new Promise((resolve, reject) => {
       this._logTailer.start({
         onRunning: error => {
@@ -172,6 +180,7 @@ export class DefaultMetroAtomService implements MetroAtomService {
   _createLogTailer = (
     projectRootPath: BehaviorSubject<?NuclideUri>,
     port: BehaviorSubject<number>,
+    extraArgs: BehaviorSubject<Array<string>>,
   ) => {
     const self = this;
 
@@ -182,7 +191,12 @@ export class DefaultMetroAtomService implements MetroAtomService {
       }
       const metroService = getMetroServiceByNuclideUri(path);
       return metroService
-        .startMetro(path, getEditorArgs(path), port.getValue())
+        .startMetro(
+          path,
+          getEditorArgs(path),
+          port.getValue(),
+          extraArgs.getValue(),
+        )
         .refCount();
     }).share();
 
