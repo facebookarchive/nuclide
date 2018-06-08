@@ -93,7 +93,6 @@ const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
 type Props = {
   // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
   checkedFiles: ?Set<NuclideUri>,
-  commandPrefix: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion: boolean,
   enableInlineActions: boolean,
@@ -133,7 +132,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
   render(): React.Node {
     const {
       checkedFiles,
-      commandPrefix,
       enableFileExpansion,
       enableInlineActions,
       fileStatuses,
@@ -220,7 +218,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
               ({displayPath, filePath, fileStatus, generatedType}) => {
                 return (
                   <ChangedFile
-                    commandPrefix={commandPrefix}
                     displayPath={displayPath}
                     enableFileExpansion={enableFileExpansion}
                     enableInlineActions={enableInlineActions}

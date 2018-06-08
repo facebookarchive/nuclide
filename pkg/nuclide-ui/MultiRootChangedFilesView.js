@@ -30,6 +30,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
 import Immutable from 'immutable';
+import classnames from 'classnames';
 
 type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
@@ -62,6 +63,15 @@ const DEFAULT_ANALYTICS_SOURCE_KEY = 'command';
 
 export class MultiRootChangedFilesView extends React.PureComponent<Props> {
   _subscriptions: UniversalDisposable;
+  _itemSelector: string;
+
+  constructor(props: Props) {
+    super(props);
+
+    this._itemSelector = `.${
+      props.commandPrefix
+    }.nuclide-ui-multi-root-file-tree-container .nuclide-changed-file`;
+  }
 
   static defaultProps: DefaultProps = {
     checkedFiles: null,
@@ -73,7 +83,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     const {commandPrefix, openInDiffViewOption} = this.props;
     this._subscriptions.add(
       atom.contextMenu.add({
-        [`.${commandPrefix}-file-entry`]: [
+        [this._itemSelector]: [
           {type: 'separator'},
           {
             label: 'Add file to Mercurial',
@@ -143,7 +153,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
 
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:goto-file`,
         event => {
           const filePath = this._getFilePathFromEvent(event);
@@ -156,7 +166,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
 
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:copy-full-path`,
         event => {
           atom.clipboard.write(
@@ -167,7 +177,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     );
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:delete-file`,
         event => {
           const nuclideFilePath = this._getFilePathFromEvent(event);
@@ -177,7 +187,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     );
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:copy-file-name`,
         event => {
           atom.clipboard.write(
@@ -187,20 +197,16 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
       ),
     );
     this._subscriptions.add(
-      atom.commands.add(
-        `.${commandPrefix}-file-entry`,
-        `${commandPrefix}:add`,
-        event => {
-          const filePath = this._getFilePathFromEvent(event);
-          if (filePath != null && filePath.length) {
-            this._handleAddFile(filePath);
-          }
-        },
-      ),
+      atom.commands.add(this._itemSelector, `${commandPrefix}:add`, event => {
+        const filePath = this._getFilePathFromEvent(event);
+        if (filePath != null && filePath.length) {
+          this._handleAddFile(filePath);
+        }
+      }),
     );
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:revert`,
         event => {
           const filePath = this._getFilePathFromEvent(event);
@@ -212,7 +218,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     );
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:open-in-diff-view`,
         event => {
           const filePath = this._getFilePathFromEvent(event);
@@ -224,7 +230,7 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     );
     this._subscriptions.add(
       atom.commands.add(
-        `.${commandPrefix}-file-entry`,
+        this._itemSelector,
         `${commandPrefix}:forget-file`,
         event => {
           const filePath = this._getFilePathFromEvent(event);
@@ -348,7 +354,11 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     }
     const shouldShowFolderName = fileStatusesByRoot.size > 1;
     return (
-      <div className="nuclide-ui-multi-root-file-tree-container">
+      <div
+        className={classnames(
+          commandPrefix,
+          'nuclide-ui-multi-root-file-tree-container',
+        )}>
         {Array.from(fileStatusesByRoot.entries()).map(
           ([root, fileStatuses]) => {
             const checkedFiles =
@@ -357,7 +367,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
               // $FlowFixMe(>=0.53.0) Flow suppress
               <ChangedFilesList
                 checkedFiles={checkedFiles}
-                commandPrefix={commandPrefix}
                 enableFileExpansion={enableFileExpansion === true}
                 enableInlineActions={enableInlineActions === true}
                 fileStatuses={fileStatuses}

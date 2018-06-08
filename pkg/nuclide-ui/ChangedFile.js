@@ -31,7 +31,6 @@ import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 const ANALYTICS_SOURCE_KEY = 'inline';
 const LF = '\u000A';
 type Props = {
-  commandPrefix: string,
   displayPath: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   // TODO: remove disable
@@ -66,13 +65,7 @@ type Props = {
 
 export default class ChangedFile extends React.Component<Props> {
   _getFileClassname(): string {
-    const {
-      commandPrefix,
-      fileStatus,
-      generatedType,
-      isHgPath,
-      isSelected,
-    } = this.props;
+    const {fileStatus, generatedType, isSelected} = this.props;
     return classnames(
       'nuclide-changed-file',
       'list-item',
@@ -80,7 +73,6 @@ export default class ChangedFile extends React.Component<Props> {
       this._generatedClass(generatedType),
       {
         selected: isSelected,
-        [`${commandPrefix}-file-entry`]: isHgPath,
       },
       FileChangeStatusToTextColor[fileStatus],
     );
