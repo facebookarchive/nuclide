@@ -242,7 +242,7 @@ class ScopeComponent extends React.Component<ScopeProps> {
   _renderVariable(expression: IVariable): ?React.Element<any> {
     return (
       <div
-        className="debugger-expression-value-row debugger-scope"
+        className="debugger-expression-value-row debugger-scope native-key-bindings"
         key={expression.getId()}>
         <div className="debugger-expression-value-content">
           <LazyNestedValueComponent
