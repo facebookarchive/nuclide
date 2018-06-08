@@ -358,6 +358,9 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
         )}>
         {Array.from(fileStatusesByRoot.entries()).map(
           ([root, fileStatuses]) => {
+            if (fileStatuses.size == null && hideEmptyFolders) {
+              return null;
+            }
             const checkedFiles =
               checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
             return (
@@ -367,7 +370,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
                 enableInlineActions={enableInlineActions === true}
                 fileStatuses={fileStatuses}
                 generatedTypes={this.props.generatedTypes}
-                hideEmptyFolders={hideEmptyFolders}
                 key={root}
                 onAddFile={this._handleAddFile}
                 onDeleteFile={this._handleDeleteFile}

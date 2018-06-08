@@ -96,7 +96,6 @@ type Props = {
   enableInlineActions: boolean,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   generatedTypes?: Map<NuclideUri, GeneratedFileType>,
-  hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
   onDeleteFile: (filePath: NuclideUri) => void,
   // Callback when a file's checkbox is toggled
@@ -145,9 +144,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       rootPath,
       selectedFile,
     } = this.props;
-    if (fileStatuses.size === 0 && this.props.hideEmptyFolders) {
-      return null;
-    }
 
     const filesToShow =
       FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
