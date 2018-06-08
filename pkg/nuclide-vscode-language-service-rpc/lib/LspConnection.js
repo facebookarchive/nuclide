@@ -141,7 +141,7 @@ export class LspConnection {
   gotoDefinition(
     params: p.TextDocumentPositionParams,
     token: CancellationToken,
-  ): Promise<p.Location | Array<p.Location>> {
+  ): Promise<p.LocationWithTitle | Array<p.LocationWithTitle>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/definition',
       params,

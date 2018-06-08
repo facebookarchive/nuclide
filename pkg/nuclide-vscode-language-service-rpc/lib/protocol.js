@@ -36,6 +36,12 @@ export type Location = {
   range: Range,
 };
 
+// Nuclide-only.
+export type LocationWithTitle = Location & {
+  // (Nuclide-only) A human readable name to use for display purposes.
+  title?: string,
+};
+
 export type Diagnostic = {
   // The range at which the message applies.
   range: Range,

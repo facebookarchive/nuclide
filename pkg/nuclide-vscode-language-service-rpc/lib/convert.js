@@ -26,6 +26,7 @@ import type {
   RelatedLocation,
   CodeLens,
   FileEvent,
+  LocationWithTitle,
 } from './protocol';
 import type {
   Completion,
@@ -110,8 +111,8 @@ export function lspLocation_atomFoundReference(location: Location): Reference {
   };
 }
 
-export function lspLocation_atomDefinition(
-  location: Location,
+export function lspLocationWithTitle_atomDefinition(
+  location: LocationWithTitle,
   projectRoot: NuclideUri,
 ): Definition {
   return {
@@ -119,6 +120,7 @@ export function lspLocation_atomDefinition(
     position: lspPosition_atomPoint(location.range.start),
     language: 'lsp', // pointless; only ever used to judge equality of two defs
     projectRoot, // used to relativize paths when showing multiple targets
+    name: location.title, // (Nuclide-only)
   };
 }
 

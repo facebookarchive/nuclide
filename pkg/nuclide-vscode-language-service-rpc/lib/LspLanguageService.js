@@ -1806,7 +1806,7 @@ export class LspLanguageService {
     return {
       queryRange: null, // editor uses wordAtPos to determine current identifier
       definitions: responseArray.map(d =>
-        convert.lspLocation_atomDefinition(d, this._projectRoot),
+        convert.lspLocationWithTitle_atomDefinition(d, this._projectRoot),
       ),
     };
   }
