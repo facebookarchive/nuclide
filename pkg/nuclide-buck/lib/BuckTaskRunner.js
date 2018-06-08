@@ -47,7 +47,7 @@ import * as React from 'react';
 import {arrayEqual} from 'nuclide-commons/collection';
 import shallowequal from 'shallowequal';
 
-const TASKS = [
+export const TASKS = [
   {
     type: 'build',
     label: 'Build',
@@ -69,13 +69,13 @@ const TASKS = [
   {
     type: 'debug',
     label: 'Debug',
-    description: 'Debug the specfied Buck target',
+    description: 'Launch and debug the specfied Buck target',
     icon: 'nuclicon-debugger',
   },
   {
     type: 'debug-attach',
-    label: 'Attach & Debug',
-    description: 'Attach and debug the specfied Buck target',
+    label: 'Attach Debugger',
+    description: 'Attach the debugger to the specfied Buck target',
     icon: 'nuclicon-debugger',
   },
 ];

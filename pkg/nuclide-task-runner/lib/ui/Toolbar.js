@@ -12,8 +12,14 @@
 import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
 import type {Option} from 'nuclide-commons-ui/Dropdown';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {isDebugTask, TASKS} from '../../../nuclide-buck/lib/BuckTaskRunner';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import nullthrows from 'nullthrows';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import {SplitButtonDropdown} from 'nuclide-commons-ui/SplitButtonDropdown';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import FullWidthProgressBar from '../../../nuclide-ui/FullWidthProgressBar';
@@ -21,6 +27,8 @@ import classnames from 'classnames';
 import * as React from 'react';
 import invariant from 'assert';
 import * as Immutable from 'immutable';
+
+const DEBUG_TASK_TYPE_KEY = 'nuclide-task-runner.debugTaskType';
 
 export type Props = {
   toolbarDisabled: boolean,
@@ -129,57 +137,97 @@ export default class Toolbar extends React.Component<Props> {
       return [];
     }
     invariant(state);
-    let debugAndAttachTask;
-    return state.tasks
-      .filter(task => {
-        if (task.type === 'debug-attach') {
-          debugAndAttachTask = task;
-          return false;
-        }
-        return task.hidden !== true;
-      })
-      .map(task => {
-        const taskTooltip = tooltip(task.label);
-        if (
-          task.type === 'debug' &&
-          debugAndAttachTask != null &&
-          !debugAndAttachTask.disabled
-        ) {
-          if (taskTooltip.title == null) {
-            taskTooltip.title = '';
+
+    const getTaskButton = (task: TaskMetadata): React.Element<any> => {
+      const taskTooltip = tooltip(task.description);
+      return (
+        <Button
+          className="nuclide-task-button"
+          key={task.type}
+          size={ButtonSizes.SMALL}
+          icon={task.icon}
+          tooltip={taskTooltip}
+          disabled={
+            task.disabled || this.props.runningTaskIsCancelable === false
           }
-          taskTooltip.title +=
-            '<br><br><strong>\u21E7 + Click</strong>: ' +
-            debugAndAttachTask.label;
-        }
-        return (
+          onClick={event => {
+            this.props.runTask({
+              ...task,
+              taskRunner: activeTaskRunner,
+            });
+          }}
+        />
+      );
+    };
+
+    const debugTasks = state.tasks.filter(task => isDebugTask(task.type));
+    const enabledDebugTasks = debugTasks.filter(t => !t.disabled);
+    let debugElement;
+    if (debugTasks.length === 0) {
+      debugElement = null;
+    } else if (enabledDebugTasks.length <= 1) {
+      debugElement = getTaskButton(enabledDebugTasks[0] || debugTasks[0]);
+    } else {
+      const tasksMetaByType = new Map(TASKS.map(t => [t.type, t]));
+      const debugDropdownOptions = enabledDebugTasks.map(t => ({
+        value: t.type,
+        label: nullthrows(tasksMetaByType.get(t.type)).label,
+      }));
+
+      // eslint-disable-next-line react/no-unused-prop-types
+      const DebugDropdownComponent = (props: {debugTaskType: string}) => {
+        const selectedDebugTask =
+          debugTasks.find(t => t.type === props.debugTaskType) || debugTasks[0];
+        const taskTooltip = tooltip(selectedDebugTask.description);
+
+        const buttonDisabled =
+          selectedDebugTask.disabled ||
+          this.props.runningTaskIsCancelable === false;
+
+        const debugButtonComponent = () => (
           <Button
-            className="nuclide-task-button"
-            key={task.type}
+            icon={selectedDebugTask.icon}
             size={ButtonSizes.SMALL}
-            icon={task.icon}
             tooltip={taskTooltip}
-            disabled={
-              task.disabled || this.props.runningTaskIsCancelable === false
-            }
-            onClick={event => {
-              let effectiveTask = task;
-              if (
-                task.type === 'debug' &&
-                Boolean(event.shiftKey) &&
-                debugAndAttachTask &&
-                !debugAndAttachTask.disabled
-              ) {
-                effectiveTask = debugAndAttachTask;
-              }
+            disabled={buttonDisabled}
+            onClick={() => {
               this.props.runTask({
-                ...effectiveTask,
+                ...selectedDebugTask,
                 taskRunner: activeTaskRunner,
               });
             }}
           />
         );
-      });
+
+        return (
+          <SplitButtonDropdown
+            className="nuclide-task-button"
+            buttonComponent={debugButtonComponent}
+            changeDisabled={false}
+            size={ButtonSizes.SMALL}
+            options={debugDropdownOptions}
+            value={selectedDebugTask.type}
+            onChange={value => {
+              featureConfig.set(DEBUG_TASK_TYPE_KEY, value);
+            }}
+            onConfirm={() => {}}
+          />
+        );
+      };
+
+      const DebugSectionComponent = bindObservableAsProps(
+        featureConfig
+          .observeAsStream(DEBUG_TASK_TYPE_KEY)
+          .map(debugTaskType => ({debugTaskType})),
+        DebugDropdownComponent,
+      );
+      debugElement = <DebugSectionComponent />;
+    }
+
+    return state.tasks
+      .filter(task => !isDebugTask(task.type) && task.hidden !== true)
+      .map(task => getTaskButton(task))
+      .concat([debugElement]);
   }
 }
 
