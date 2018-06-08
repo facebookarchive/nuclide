@@ -68,8 +68,14 @@ export const TASKS = [
   },
   {
     type: 'debug',
-    label: 'Debug',
-    description: 'Launch and debug the specfied Buck target',
+    label: 'Build and launch debugger',
+    description: 'Build, launch and debug the specfied Buck target',
+    icon: 'nuclicon-debugger',
+  },
+  {
+    type: 'debug-launch-no-build',
+    label: 'Launch debugger (skip build)',
+    description: 'Launch and debug the specfied Buck target (skip building)',
     icon: 'nuclicon-debugger',
   },
   {
@@ -92,6 +98,7 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
       return ruleType.endsWith('binary');
     case 'debug':
     case 'debug-attach':
+    case 'debug-launch-no-build':
       return ruleType.endsWith('binary') || ruleType.endsWith('test');
     default:
       return false;

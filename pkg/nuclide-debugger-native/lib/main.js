@@ -102,7 +102,13 @@ class Activation {
       return Observable.of(null);
     }
 
-    const availableActions = new Set(['build', 'run', 'test', 'debug']);
+    const availableActions = new Set([
+      'build',
+      'run',
+      'test',
+      'debug',
+      'debug-launch-no-build',
+    ]);
     return Observable.of({
       name: 'Native',
       platforms: [
@@ -187,8 +193,55 @@ class Activation {
     buckRoot: NuclideUri,
     ruleType: string,
   ): Observable<TaskEvent> {
-    invariant(taskType === 'debug');
+    const buckService = getBuckServiceByNuclideUri(buckRoot);
+    invariant(buckService != null);
 
+    const {qualifiedName, flavors} = buildTarget;
+    const separator = flavors.length > 0 ? '#' : '';
+    const targetString = `${qualifiedName}${separator}${flavors.join(',')}`;
+    const runArguments = taskSettings.runArguments || [];
+
+    const argString =
+      runArguments.length === 0
+        ? ''
+        : ` with arguments "${runArguments.join(' ')}"`;
+
+    const debugBuckTarget = Observable.defer(() =>
+      this._debugBuckTarget(buckService, buckRoot, targetString, runArguments),
+    )
+      .ignoreElements()
+      .catch(err => {
+        getLogger('nuclide-buck').error(
+          `Failed to launch debugger for ${targetString}`,
+          err,
+        );
+        return Observable.of({
+          type: 'message',
+          message: {
+            level: 'error',
+            text: `Failed to launch debugger: ${err.message}`,
+          },
+        });
+      })
+      .startWith(
+        {
+          type: 'message',
+          message: {
+            level: 'log',
+            text: `Launching debugger for ${targetString}${argString}...`,
+          },
+        },
+        {
+          type: 'progress',
+          progress: null,
+        },
+      );
+
+    if (taskType === 'debug-launch-no-build') {
+      return debugBuckTarget;
+    }
+
+    invariant(taskType === 'debug');
     return this._addModeDbgIfNoModeInBuildArguments(
       buckRoot,
       taskSettings,
@@ -196,68 +249,17 @@ class Activation {
       switch (ruleType) {
         case 'cxx_binary':
         case 'cxx_test':
-          return builder.runSubcommand(
-            buckRoot,
-            'build',
-            buildTarget,
-            settings,
-            false,
-            null,
-            (processStream: Observable<LegacyProcessMessage>) => {
-              const buckService = getBuckServiceByNuclideUri(buckRoot);
-              invariant(buckService != null);
-
-              const {qualifiedName, flavors} = buildTarget;
-              const separator = flavors.length > 0 ? '#' : '';
-              const targetString = `${qualifiedName}${separator}${flavors.join(
-                ',',
-              )}`;
-              const runArguments = settings.runArguments || [];
-              const argString =
-                runArguments.length === 0
-                  ? ''
-                  : ` with arguments "${runArguments.join(' ')}"`;
-              return Observable.concat(
-                processStream.ignoreElements(),
-                Observable.defer(() =>
-                  this._debugBuckTarget(
-                    buckService,
-                    buckRoot,
-                    targetString,
-                    runArguments,
-                  ),
-                )
-                  .ignoreElements()
-                  .map(path => ({
-                    type: 'log',
-                    message: `Launched debugger with ${path}`,
-                    level: 'info',
-                  }))
-                  .catch(err => {
-                    getLogger('nuclide-buck').error(
-                      `Failed to launch debugger for ${targetString}`,
-                      err,
-                    );
-                    return Observable.of({
-                      type: 'log',
-                      message: `Failed to launch debugger: ${err.message}`,
-                      level: 'error',
-                    });
-                  })
-                  .startWith(
-                    {
-                      type: 'log',
-                      message: `Launching debugger for ${targetString}${argString}...`,
-                      level: 'log',
-                    },
-                    {
-                      type: 'progress',
-                      progress: null,
-                    },
-                  ),
-              );
-            },
-          );
+          return builder
+            .runSubcommand(
+              buckRoot,
+              'build',
+              buildTarget,
+              settings,
+              false,
+              null,
+            )
+            .ignoreElements()
+            .concat(debugBuckTarget);
         default:
           invariant(false);
       }

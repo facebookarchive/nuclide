@@ -23,7 +23,13 @@ import type {
 
 import * as React from 'react';
 
-export type TaskType = 'build' | 'run' | 'test' | 'debug' | 'debug-attach';
+export type TaskType =
+  | 'build'
+  | 'run'
+  | 'test'
+  | 'debug'
+  | 'debug-launch-no-build'
+  | 'debug-attach';
 
 export type BuckSubcommand = 'build' | 'run' | 'install' | 'test';
 
