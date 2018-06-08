@@ -10,6 +10,12 @@
  * @format
  */
 
+import https from 'https';
+
+/* $FlowFixMe - need to add Thrift server type, currently can only use 'any'
+ * Add serverType in order to support multiple types of servers */
+type serverType = https.Server | any;
+
 /**
  * Represents a range of ports by an initial integer paired with the number of
  * elements in the range. If `length` is negative, then the range counts "down"
@@ -88,4 +94,46 @@ function parseNonNegativeIntOrThrow(str: string): number {
   } else {
     return value;
   }
+}
+
+/**
+ * Attempts to have the server listen to the specified port.
+ * Returns true if successful or false if the port is already in use.
+ * Any other errors result in a rejection.
+ */
+function tryListen(server: serverType, port: number): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    function onError(error) {
+      if (error.errno === 'EADDRINUSE') {
+        return resolve(false);
+      }
+      reject(error);
+    }
+
+    server.once('error', onError);
+    server.listen(port, () => {
+      // Let errors after the initial listen fall through to the global exception handler.
+      server.removeListener('error', onError);
+      resolve(true);
+    });
+  });
+}
+
+/**
+ * Scan ports to listen to an available port
+ * @param ports string  e.g. '8082, 8089, 10222-10234'
+ */
+export async function scanPortsToListen(
+  server: serverType,
+  ports: string,
+): Promise<boolean> {
+  let found = false;
+  for (const port of parsePorts(ports)) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await tryListen(server, port)) {
+      found = true;
+      break;
+    }
+  }
+  return found;
 }

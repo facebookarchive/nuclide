@@ -13,7 +13,7 @@
 import BigDigServer from './BigDigServer';
 import WS from 'ws';
 import https from 'https';
-import {parsePorts} from '../common/ports';
+import {scanPortsToListen} from '../common/ports';
 
 export type LauncherParameters = {
   server: BigDigServer,
@@ -58,15 +58,7 @@ export async function launchServer(
 ): Promise<number> {
   const webServer = https.createServer(options.webServer);
 
-  let found = false;
-  for (const port of parsePorts(options.ports)) {
-    // eslint-disable-next-line no-await-in-loop
-    if (await tryListen(webServer, port)) {
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
+  if (!(await scanPortsToListen(webServer, options.ports))) {
     throw new Error(`All ports in range "${options.ports}" are already in use`);
   }
 
@@ -94,27 +86,4 @@ export async function launchServer(
   });
 
   return webServer.address().port;
-}
-
-/**
- * Attempts to have the https server listen to the specified port.
- * Returns true if successful or false if the port is already in use.
- * Any other errors result in a rejection.
- */
-function tryListen(server: https.Server, port: number): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    function onError(error) {
-      if (error.errno === 'EADDRINUSE') {
-        return resolve(false);
-      }
-      reject(error);
-    }
-
-    server.once('error', onError);
-    server.listen(port, () => {
-      // Let errors after the initial listen fall through to the global exception handler.
-      server.removeListener('error', onError);
-      resolve(true);
-    });
-  });
 }
