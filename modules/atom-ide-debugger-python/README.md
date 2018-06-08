@@ -1,6 +1,6 @@
 # atom-ide-debugger-python
 
-NodeJS Debugger for Atom IDE.
+Python Debugger for Atom IDE.
 
 ## Usage
 
