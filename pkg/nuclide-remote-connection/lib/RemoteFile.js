@@ -19,7 +19,7 @@ import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import {getLogger} from 'log4js';
 import Stream from 'stream';
 

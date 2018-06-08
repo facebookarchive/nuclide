@@ -23,7 +23,7 @@ import season from 'season';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {ServerConnection} from './ServerConnection';
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {getLogger} from 'log4js';

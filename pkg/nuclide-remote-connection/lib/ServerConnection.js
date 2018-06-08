@@ -37,7 +37,7 @@ import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
 
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {timeoutPromise} from 'nuclide-commons/promise';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';

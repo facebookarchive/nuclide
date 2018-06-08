@@ -18,7 +18,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Emitter} from 'atom';
+import {Emitter} from 'event-kit';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('nuclide-remote-connection');
