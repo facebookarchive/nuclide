@@ -45,6 +45,7 @@ import {PinnedDatatip} from './PinnedDatatip';
 
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
 const DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY = 1000;
+const TRACK_SAMPLE_RATE = 10;
 
 type PinClickHandler = (editor: atom$TextEditor, datatip: Datatip) => void;
 
@@ -111,22 +112,20 @@ async function getDatatipResults<TProvider: AnyDatatipProvider>(
   const promises = filteredDatatipProviders.map(
     async (provider: TProvider): Promise<?DatatipResult> => {
       const name = getProviderName(provider);
-      const timingTracker = new analytics.TimingTracker(name + '.datatip', {});
       try {
-        const datatip: ?Datatip = await invoke(provider);
-        if (!datatip) {
-          return null;
-        }
-
-        timingTracker.onSuccess();
-
-        const result: DatatipResult = {
-          datatip,
-          provider,
-        };
-        return result;
+        return await analytics.trackTimingSampled(
+          name + '.datatip',
+          async (): Promise<?DatatipResult> => {
+            const datatip: ?Datatip = await invoke(provider);
+            if (!datatip) {
+              return null;
+            }
+            return {datatip, provider};
+          },
+          TRACK_SAMPLE_RATE,
+          {path: editor.getPath()},
+        );
       } catch (e) {
-        timingTracker.onError(e);
         getLogger('datatip').error(
           `Error getting datatip from provider ${name}`,
           e,
