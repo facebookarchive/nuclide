@@ -12,7 +12,12 @@
 import createAutocompleteProvider from '../lib/createAutocompleteProvider';
 
 describe('getSuggestions', () => {
-  const fakeRequest: any = {bufferPosition: {}};
+  const fakeRequest: any = {
+    bufferPosition: {},
+    editor: {
+      getPath: () => '',
+    },
+  };
   const autocompleteProviderThatThrowsExecption = createAutocompleteProvider({
     selector: '',
     getSuggestions() {

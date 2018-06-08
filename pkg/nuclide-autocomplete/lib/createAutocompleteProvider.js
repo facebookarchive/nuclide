@@ -91,6 +91,12 @@ function _getRequestTracker(
   const newTracker = {
     timeoutPromise: sleep(AUTOCOMPLETE_TIMEOUT).then(() => {
       if (newTracker.pendingProviders) {
+        trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
+          path: request.editor.getPath(),
+          duration: AUTOCOMPLETE_TIMEOUT,
+          slowestProvider: 'timeout',
+          pendingProviders: newTracker.pendingProviders,
+        });
         throw new TimedOutError(AUTOCOMPLETE_TIMEOUT);
       }
       const {slowestProvider, slowestProviderTime} = newTracker;
