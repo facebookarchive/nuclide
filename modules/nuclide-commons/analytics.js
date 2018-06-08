@@ -203,6 +203,21 @@ export function trackTiming<T>(
   }
 }
 
+/**
+ * A sampled version of trackTiming that only tracks every 1/sampleRate calls.
+ */
+export function trackTimingSampled<T>(
+  eventName: string,
+  operation: () => T,
+  sampleRate: number,
+  values?: {[key: string]: any} = {},
+): T {
+  if (Math.random() * sampleRate <= 1) {
+    return trackTiming(eventName, operation, values);
+  }
+  return operation();
+}
+
 export function setRawAnalyticsService(
   analyticsService: RawAnalyticsService,
 ): void {
@@ -211,8 +226,10 @@ export function setRawAnalyticsService(
 
 export default {
   track,
+  trackSampled,
   trackEvent,
   trackTiming,
+  trackTimingSampled,
   startTracking,
   TimingTracker,
 };

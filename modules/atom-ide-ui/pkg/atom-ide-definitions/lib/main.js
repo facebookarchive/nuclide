@@ -113,14 +113,12 @@ class Activation {
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
     return this._definitionCache.get(editor, position, () => {
-      if (Math.random() < TRACK_TIMING_SAMPLE_RATIO) {
-        return analytics.trackTiming(
-          'get-definition',
-          () => this._getDefinition(editor, position),
-          {path: editor.getPath()},
-        );
-      }
-      return this._getDefinition(editor, position);
+      return analytics.trackTimingSampled(
+        'get-definition',
+        () => this._getDefinition(editor, position),
+        TRACK_TIMING_SAMPLE_RATIO,
+        {path: editor.getPath()},
+      );
     });
   }
 

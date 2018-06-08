@@ -21,5 +21,6 @@ export {
   trackImmediate,
   trackSampled,
   trackTiming,
+  trackTimingSampled,
   isTrackSupported,
 } from 'nuclide-commons/analytics';
