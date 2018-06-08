@@ -32,10 +32,6 @@ const ANALYTICS_SOURCE_KEY = 'inline';
 const LF = '\u000A';
 type Props = {
   displayPath: string,
-  // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
-  // TODO: remove disable
-  // eslint-disable-next-line react/no-unused-prop-types
-  enableFileExpansion: boolean,
   enableInlineActions: boolean,
   filePath: NuclideUri,
   fileStatus: FileChangeStatusValue,

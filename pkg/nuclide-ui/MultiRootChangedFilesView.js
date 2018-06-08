@@ -37,8 +37,6 @@ type Props = {
   analyticsSurface?: string,
   // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
   checkedFiles: ?Map<NuclideUri, Set<NuclideUri>>,
-  // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
-  enableFileExpansion?: true,
   enableInlineActions?: true,
   fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   generatedTypes?: Immutable.Map<NuclideUri, GeneratedFileType>,
@@ -333,7 +331,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
     const {
       checkedFiles: checkedFilesByRoot,
       commandPrefix,
-      enableFileExpansion,
       enableInlineActions,
       fileStatuses: fileStatusesByRoot,
       hideEmptyFolders,
@@ -367,7 +364,6 @@ export class MultiRootChangedFilesView extends React.PureComponent<Props> {
               // $FlowFixMe(>=0.53.0) Flow suppress
               <ChangedFilesList
                 checkedFiles={checkedFiles}
-                enableFileExpansion={enableFileExpansion === true}
                 enableInlineActions={enableInlineActions === true}
                 fileStatuses={fileStatuses}
                 generatedTypes={this.props.generatedTypes}
