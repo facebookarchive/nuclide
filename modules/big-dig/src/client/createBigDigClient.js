@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {ProtocolLogger} from '../socket/QueuedAckTransport';
+
 import {HEARTBEAT_CHANNEL} from '../server/BigDigServer';
 import {BigDigClient} from './BigDigClient';
 import {ReliableSocket} from '../socket/ReliableSocket';
@@ -22,6 +24,7 @@ export type BigDigClientConfig = {
   +clientCertificate?: Buffer | string,
   +clientKey?: Buffer | string,
   +ignoreIntransientErrors: boolean,
+  +protocolLogger?: ProtocolLogger,
 };
 
 /**
@@ -56,6 +59,7 @@ function createReliableSocket(config: BigDigClientConfig): ReliableSocket {
     serverUri,
     HEARTBEAT_CHANNEL,
     options,
+    config.protocolLogger,
   );
 
   if (!config.ignoreIntransientErrors) {

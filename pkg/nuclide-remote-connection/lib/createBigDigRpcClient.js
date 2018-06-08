@@ -30,6 +30,7 @@ export default (async function createBigDigRpcClient(
   const bigDigClient = await createBigDigClient({
     ...config,
     ignoreIntransientErrors: true,
+    protocolLogger,
   });
   const bigDigTransport: Transport = {
     send(message: string) {
