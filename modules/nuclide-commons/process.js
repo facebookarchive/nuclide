@@ -66,6 +66,8 @@ import {shellQuote} from './string';
 
 export const LOG_CATEGORY = 'nuclide-commons/process';
 
+const NUCLIDE_DO_NOT_LOG = global.NUCLIDE_DO_NOT_LOG;
+
 const logger = getLogger(LOG_CATEGORY);
 
 /**
@@ -969,7 +971,7 @@ function createProcessStream(
         .filter(isRealExit)
         .take(1);
 
-      if (dontLogInNuclide !== true) {
+      if (dontLogInNuclide !== true && NUCLIDE_DO_NOT_LOG !== true) {
         // Log the completion of the process. Note that we intentionally don't merge this with the
         // returned observable because we don't want to cancel the side-effect when the user
         // unsubscribes or when the process exits ("close" events come after "exit" events).

@@ -13,7 +13,10 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import JediServerManager from '../lib/JediServerManager';
 
-const FIXTURE = nuclideUri.join(__dirname, 'fixtures/signature_help.py');
+const FIXTURE = nuclideUri.join(
+  __dirname,
+  '../__mocks__/fixtures/signature_help.py',
+);
 
 describe('PythonService', () => {
   let serverManager: JediServerManager = (null: any);
@@ -21,15 +24,15 @@ describe('PythonService', () => {
   beforeEach(() => {
     serverManager = new JediServerManager();
     // Don't try to retrieve additional paths from Buck/etc.
-    spyOn(serverManager, 'getSysPath').andReturn([]);
+    jest.spyOn(serverManager, 'getSysPath').mockReturnValue([]);
   });
 
   afterEach(() => {
     serverManager.reset();
   });
 
-  it('Returns signatures', () => {
-    waitsForPromise(async () => {
+  it('Returns signatures', async () => {
+    await (async () => {
       const contents = await fsPromise.readFile(FIXTURE, 'utf8');
       const jediService = await serverManager.getJediService();
 
@@ -110,6 +113,6 @@ describe('PythonService', () => {
         activeSignature: 0,
         activeParameter: 0,
       });
-    });
+    })();
   });
 });

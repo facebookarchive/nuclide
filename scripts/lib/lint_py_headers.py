@@ -5,7 +5,6 @@
 #
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
-
 """Python file license header linter."""
 
 from __future__ import print_function
@@ -21,6 +20,7 @@ from package_manager import NUCLIDE_PATH
 IGNORES = [
     # Test fixtures don't need the header.
     '*/spec/fixtures/*',
+    '*/__mocks__/fixtures/*',
 ]
 
 EXCLUDE_DIRS = ['node_modules', 'VendorLib']
@@ -82,8 +82,9 @@ def _find_py_files(basedir):
     for root, dirs, files in os.walk(basedir):
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
         files = [os.path.join(root, f) for f in files]
-        files = [f for f in files
-                 if f.endswith('.py') and not re.match(ignore, f)]
+        files = [
+            f for f in files if f.endswith('.py') and not re.match(ignore, f)
+        ]
         found += files
     return found
 
@@ -101,12 +102,15 @@ class LintPyHeaders(object):
         for path in self._py_files:
             with open(path, 'r') as read_f:
                 text = read_f.read()
-            if (text and not (
+            if (
+                text and not (
                     text.startswith(SIMPLE_HEADER) or
                     text.startswith(SHEBANG_HEADER) or
                     text.startswith(SHEBANG_HEADER2) or
                     text.startswith(SHEBANG_HEADER3) or
-                    text.startswith(SHEBANG_HEADER3_6))):
+                    text.startswith(SHEBANG_HEADER3_6)
+                )
+            ):
                 rel_path = os.path.relpath(path, self._basedir)
                 found.append(rel_path)
         return found

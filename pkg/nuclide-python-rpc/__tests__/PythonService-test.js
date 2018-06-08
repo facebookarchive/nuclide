@@ -12,7 +12,6 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {addMatchers} from '../../nuclide-test-helpers';
 import {_getReferences} from '../lib/PythonService';
 import {getDefinition} from '../lib/DefinitionHelpers';
 import {getCompletions} from '../lib/AutocompleteHelpers';
@@ -20,8 +19,15 @@ import JediServerManager from '../lib/JediServerManager';
 import TextBuffer from 'simple-text-buffer';
 import {Point} from 'simple-text-buffer';
 
+// make sure we don't save absolute paths in snapshots
+const replacePath = str => str.replace(/.*__mocks__/, '<REPLACED>/__mocks__');
+
 // Test python file located at fixtures/serverdummy.py
-const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'serverdummy.py');
+const TEST_FILE = nuclideUri.join(
+  __dirname,
+  '../__mocks__/fixtures',
+  'serverdummy.py',
+);
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // Disable buckd so it doesn't linger around after the test.
@@ -39,8 +45,7 @@ describe('PythonService', () => {
   beforeEach(function() {
     serverManager = new JediServerManager();
     // Don't try to retrieve additional paths from Buck/etc.
-    spyOn(serverManager, 'getSysPath').andReturn([]);
-    addMatchers(this);
+    jest.spyOn(serverManager, 'getSysPath').mockReturnValue([]);
   });
 
   afterEach(() => {
@@ -49,8 +54,8 @@ describe('PythonService', () => {
   });
 
   describe('Completions', () => {
-    it('gives a rejected promise when an invalid request is given', () => {
-      waitsForPromise(async () => {
+    it('gives a rejected promise when an invalid request is given', async () => {
+      await (async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
           await getCompletions(serverManager, 'potato', 'tomato', 6, 15);
@@ -61,11 +66,11 @@ describe('PythonService', () => {
           // processing the request.
           expect(e.startsWith('Traceback')).toBeTruthy();
         }
-      });
+      })();
     });
 
-    it('can make completion suggestions for imported module member functions', () => {
-      waitsForPromise(async () => {
+    it('can make completion suggestions for imported module member functions', async () => {
+      await (async () => {
         // line 12: def hello = os.path.isab
         const response = await getCompletions(
           serverManager,
@@ -82,11 +87,11 @@ describe('PythonService', () => {
         expect(completion.type).toEqual('function');
         // Check that description exists.
         expect(completion.description).toBeTruthy();
-      });
+      })();
     });
 
-    it('can make completion suggestions for locally defined variables', () => {
-      waitsForPromise(async () => {
+    it('can make completion suggestions for locally defined variables', async () => {
+      await (async () => {
         // line 14: potato2 = po
         const response = await getCompletions(
           serverManager,
@@ -101,11 +106,11 @@ describe('PythonService', () => {
         const completion = response[0];
         expect(completion.text).toEqual('potato');
         expect(completion.type).toEqual('statement');
-      });
+      })();
     });
 
-    it('does not return params for @property methods', () => {
-      waitsForPromise(async () => {
+    it('does not return params for @property methods', async () => {
+      await (async () => {
         // line 18: a.t
         const response = await getCompletions(
           serverManager,
@@ -121,11 +126,11 @@ describe('PythonService', () => {
         expect(completion.text).toEqual('test');
         expect(completion.type).toEqual('function');
         expect(completion.params).toBeFalsy();
-      });
+      })();
     });
 
-    it('includes parameters for assignment completions', () => {
-      waitsForPromise(async () => {
+    it('includes parameters for assignment completions', async () => {
+      await (async () => {
         // line 26: a = Tes
         const response = await getCompletions(
           serverManager,
@@ -141,11 +146,11 @@ describe('PythonService', () => {
         expect(completion.text).toEqual('Test');
         expect(completion.type).toEqual('class');
         expect(completion.params).toEqual([]);
-      });
+      })();
     });
 
-    it('does not include parameters for import statement completions', () => {
-      waitsForPromise(async () => {
+    it('does not include parameters for import statement completions', async () => {
+      await (async () => {
         // line 9: from decorated import Test
         const response = await getCompletions(
           serverManager,
@@ -161,13 +166,13 @@ describe('PythonService', () => {
         expect(completion.text).toEqual('Test');
         expect(completion.type).toEqual('class');
         expect(completion.params).toBeFalsy();
-      });
+      })();
     });
   });
 
   describe('Definitions', () => {
-    it('gives a rejected promise when an invalid request is given', () => {
-      waitsForPromise(async () => {
+    it('gives a rejected promise when an invalid request is given', async () => {
+      await (async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
           const service = await serverManager.getJediService();
@@ -179,11 +184,11 @@ describe('PythonService', () => {
           // processing the request.
           expect(e.startsWith('Traceback')).toBeTruthy();
         }
-      });
+      })();
     });
 
-    it('can find definitions for imported modules', () => {
-      waitsForPromise(async () => {
+    it('can find definitions for imported modules', async () => {
+      await (async () => {
         // line 9: import os
         const response = await getDefinition(
           serverManager,
@@ -198,11 +203,11 @@ describe('PythonService', () => {
         expect(definition.name).toEqual('os');
         // Path is machine dependent, so just check that it exists and isn't empty.
         expect(definition.path.length).toBeGreaterThan(0);
-      });
+      })();
     });
 
-    it('follows imports until a non-import definition when possible', () => {
-      waitsForPromise(async () => {
+    it('follows imports until a non-import definition when possible', async () => {
+      await (async () => {
         // line 17: a = Test()
         const response = await getDefinition(
           serverManager,
@@ -219,11 +224,11 @@ describe('PythonService', () => {
         expect(definition.path).toContain('decorated.py');
         expect(definition.position.row).toEqual(9);
         expect(definition.position.column).toEqual(6);
-      });
+      })();
     });
 
-    it('does not follow unresolvable imports', () => {
-      waitsForPromise(async () => {
+    it('does not follow unresolvable imports', async () => {
+      await (async () => {
         // line 27: b = Test2()
         const response = await getDefinition(
           serverManager,
@@ -232,11 +237,11 @@ describe('PythonService', () => {
           new Point(26, 7),
         );
         expect(response).toBe(null);
-      });
+      })();
     });
 
-    it('can find the definitions of locally defined variables', () => {
-      waitsForPromise(async () => {
+    it('can find the definitions of locally defined variables', async () => {
+      await (async () => {
         // line 15: potato3 = potato
         const response = await getDefinition(
           serverManager,
@@ -252,13 +257,13 @@ describe('PythonService', () => {
         expect(definition.position.row).toEqual(12);
         // Local variable definition should be within the same file.
         expect(definition.path).toEqual(TEST_FILE);
-      });
+      })();
     });
   });
 
   describe('References', () => {
-    it('can find the references of locally defined variables', () => {
-      waitsForPromise(async () => {
+    it('can find the references of locally defined variables', async () => {
+      await (async () => {
         // line 13: potato = 5
         const response = await _getReferences(
           serverManager,
@@ -269,7 +274,7 @@ describe('PythonService', () => {
         );
         invariant(response);
 
-        expect(response).diffJson([
+        expect(response).toEqual([
           {
             type: 'statement',
             text: 'potato',
@@ -285,84 +290,45 @@ describe('PythonService', () => {
             column: 10,
           },
         ]);
-      });
+      })();
     });
 
-    it('can find the references of imported modules', () => {
-      waitsForPromise(async () => {
-        // line 29: import decorated
-        const response = await _getReferences(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          28,
-          8,
-        );
-        invariant(response);
+    it('can find the references of imported modules', async () => {
+      // line 29: import decorated
+      const response = await _getReferences(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        28,
+        8,
+      );
+      invariant(response);
 
-        expect(response).diffJson([
-          {
-            type: 'module',
-            text: 'decorated',
-            file: nuclideUri.join(__dirname, 'fixtures', 'decorated.py'),
-            line: 0,
-            column: 0,
-          },
-          {
-            type: 'module',
-            text: 'decorated',
-            file: TEST_FILE,
-            line: 8,
-            column: 5,
-          },
-          {
-            type: 'module',
-            text: 'decorated',
-            file: TEST_FILE,
-            line: 28,
-            column: 7,
-          },
-          {
-            type: 'statement',
-            text: 'decorated',
-            file: TEST_FILE,
-            line: 30,
-            column: 4,
-          },
-        ]);
-      });
+      expect(
+        response.map(o => {
+          o.file = replacePath(o.file);
+          return o;
+        }),
+      ).toMatchSnapshot();
     });
 
-    it('displays the caller name for references within functions', () => {
-      waitsForPromise(async () => {
-        // line 13: potato = 5
-        const response = await _getReferences(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          19,
-          2,
-        );
-        invariant(response);
+    it('displays the caller name for references within functions', async () => {
+      // line 13: potato = 5
+      const response = await _getReferences(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        19,
+        2,
+      );
+      invariant(response);
 
-        expect(response).diffJson([
-          {
-            type: 'statement',
-            text: 'test_parent_name',
-            file: TEST_FILE,
-            line: 19,
-            column: 0,
-          },
-          {
-            type: 'statement',
-            text: 'test_parent_name',
-            file: TEST_FILE,
-            line: 23,
-            column: 10,
-            parentName: 'test_fn',
-          },
-        ]);
-      });
+      expect(
+        response.map(o => {
+          o.file = replacePath(o.file);
+          return o;
+        }),
+      ).toMatchSnapshot();
     });
   });
 
@@ -372,82 +338,69 @@ describe('PythonService', () => {
       return service.get_outline(src, contents);
     }
 
-    function checkOutlineTree(testName: string) {
-      waitsForPromise(async () => {
-        const dirName = nuclideUri.join(__dirname, 'fixtures', 'outline-tests');
+    async function checkOutlineTree(testName: string) {
+      const dirName = nuclideUri.join(
+        __dirname,
+        '../__mocks__/fixtures',
+        'outline-tests',
+      );
 
-        const srcPath = nuclideUri.join(dirName, testName + '.py');
-        const srcContents = fs.readFileSync(srcPath).toString('utf8');
+      const srcPath = nuclideUri.join(dirName, testName + '.py');
+      const srcContents = fs.readFileSync(srcPath).toString('utf8');
 
-        const jsonPath = nuclideUri.join(
-          dirName,
-          'expected',
-          testName + '.json',
-        );
-        const jsonContents = fs.readFileSync(jsonPath).toString('utf8');
-
-        const response = await getOutline(srcPath, srcContents);
-        expect(response).diffJson(JSON.parse(jsonContents));
-      });
+      const response = await getOutline(srcPath, srcContents);
+      expect(response).toMatchSnapshot();
     }
 
-    it('can generate an outline for a basic python script', () => {
-      checkOutlineTree('1');
+    it('can generate an outline for a basic python script', async () => {
+      await checkOutlineTree('1');
     });
 
-    it('can generate an outline when minor syntax errors exist', () => {
-      checkOutlineTree('2');
+    it('can generate an outline when minor syntax errors exist', async () => {
+      await checkOutlineTree('2');
     });
 
-    it('can generate an outline when decorated functions are present', () => {
-      checkOutlineTree('3');
+    it('can generate an outline when decorated functions are present', async () => {
+      await checkOutlineTree('3');
     });
 
-    it('properly includes multiple assignments in the outline', () => {
-      checkOutlineTree('4');
+    it('properly includes multiple assignments in the outline', async () => {
+      await checkOutlineTree('4');
     });
 
-    it('works with Python 3 features', () => {
-      checkOutlineTree('5');
+    it('works with Python 3 features', async () => {
+      await checkOutlineTree('5');
     });
   });
 
   describe('Module Resolution', () => {
-    it('can resolve imports that are relative to the top-level module', () => {
+    it('can resolve imports that are relative to the top-level module', async () => {
       const projectFile = nuclideUri.join(
         __dirname,
-        'fixtures/test-project/testdir/lib/test2.py',
+        '../__mocks__/fixtures/test-project/testdir/lib/test2.py',
       );
       const src = fs.readFileSync(projectFile).toString('utf8');
 
       // Test completion of a module name relative to the tlm.
-      waitsForPromise(async () => {
-        let response;
-        // Top-level module path may take some (short) amount of time to be
-        // found and added to paths.
-        while (response == null || response.length === 0) {
-          // line 7: from potato import h
-          // eslint-disable-next-line no-await-in-loop
-          response = await getCompletions(
-            serverManager,
-            projectFile,
-            src,
-            6,
-            28,
-          );
-        }
+      let response;
+      // Top-level module path may take some (short) amount of time to be
+      // found and added to paths.
+      while (response == null || response.length === 0) {
+        // line 7: from potato import h
+        // eslint-disable-next-line no-await-in-loop
+        response = await getCompletions(serverManager, projectFile, src, 6, 28);
+      }
 
-        invariant(response);
-        const completion = response[0];
-        expect(completion.text).toEqual('hello_world');
-        expect(completion.type).toEqual('function');
-      });
+      invariant(response);
+      const completion = response[0];
+      expect(completion.text).toEqual('hello_world');
+      expect(completion.type).toEqual('function');
     });
   });
 
   describe('Hover', () => {
-    it('displays the docblock for a definition', () => {
-      waitsForPromise(async () => {
+    it('displays the docblock for a definition', async () => {
+      await (async () => {
         const service = await serverManager.getJediService();
         const response = await service.get_hover(
           TEST_FILE,
@@ -459,7 +412,7 @@ describe('PythonService', () => {
         );
         invariant(response != null);
         expect(response).toBe('This is a \\*test class.');
-      });
+      })();
     });
   });
 });

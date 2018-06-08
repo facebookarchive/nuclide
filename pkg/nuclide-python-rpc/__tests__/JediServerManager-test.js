@@ -11,6 +11,7 @@
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import JediServerManager from '../lib/JediServerManager';
+import waitsFor from '../../../jest/waits_for';
 
 describe('JediServerManager', () => {
   let jediServerManager;
@@ -19,11 +20,11 @@ describe('JediServerManager', () => {
     jediServerManager = new JediServerManager();
   });
 
-  it('caches syspaths by file name', () => {
+  it('caches syspaths by file name', async () => {
     const mockPath = '/a/b/c';
-    const spy = spyOn(fsPromise, 'findFurthestFile').andReturn(
-      Promise.resolve(mockPath),
-    );
+    const spy = jest
+      .spyOn(fsPromise, 'findFurthestFile')
+      .mockReturnValue(Promise.resolve(mockPath));
 
     const sysPath = jediServerManager.getSysPath('/test/file.txt');
     expect(sysPath).toEqual([]);
@@ -31,10 +32,10 @@ describe('JediServerManager', () => {
 
     // Second call with the same source path should retrieve top-level module path
     // directly from cache.
-    (fsPromise.findFurthestFile: any).reset();
+    (fsPromise.findFurthestFile: any).mockReset();
     expect(spy).not.toHaveBeenCalled();
 
-    waitsFor(() =>
+    await waitsFor(() =>
       jediServerManager.getSysPath('/test/file.txt').includes(mockPath),
     );
   });
