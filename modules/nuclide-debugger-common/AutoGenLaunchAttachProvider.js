@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerConfigAction} from './types';
 import type {LaunchAttachProviderIsEnabled, AutoGenConfig} from './types';
 
@@ -25,7 +26,7 @@ const LaunchAttachProviderDefaultIsEnabled = (
   return Promise.resolve(config[action] != null);
 };
 
-export default class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachProvider {
+export class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _config: AutoGenConfig;
   _isEnabled: LaunchAttachProviderIsEnabled;
 
@@ -38,6 +39,29 @@ export default class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachPro
     super(debuggingTypeName, targetUri);
     this._config = config;
     this._isEnabled = isEnabled;
+  }
+
+  async _resolvePath(project: NuclideUri, filePath: string): Promise<string> {
+    let rpcService: ?nuclide$RpcService = null;
+    // Atom's service hub is synchronous.
+    atom.packages.serviceHub
+      .consume('nuclide-rpc-services', '0.0.0', provider => {
+        rpcService = provider;
+      })
+      .dispose();
+    if (rpcService != null) {
+      const fsService = rpcService.getServiceByNuclideUri(
+        'FileSystemService',
+        project,
+      );
+      if (fsService != null) {
+        try {
+          return fsService.expandHomeDir(filePath);
+        } catch (_) {}
+      }
+    }
+
+    return Promise.resolve(filePath);
   }
 
   getCallbacksForAction(action: DebuggerConfigAction) {
@@ -70,6 +94,7 @@ export default class AutoGenLaunchAttachProvider extends DebuggerLaunchAttachPro
             configIsValidChanged={configIsValidChanged}
             config={launchOrAttachConfig}
             debuggerTypeName={debuggerTypeName}
+            pathResolver={this._resolvePath}
           />
         );
       },

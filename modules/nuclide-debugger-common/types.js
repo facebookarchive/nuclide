@@ -105,7 +105,11 @@ export interface IVsAdapterSpawner {
 
 export type MessageProcessor = (message: Object) => void;
 
-export type AutoGenPropertyPrimitiveType = 'string' | 'number' | 'boolean';
+export type AutoGenPropertyPrimitiveType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'path';
 
 export type AutoGenPropertyType =
   | AutoGenPropertyPrimitiveType
@@ -172,6 +176,10 @@ export type LaunchAttachProviderIsEnabled = (
 export interface DebuggerConfigurationProvider {
   resolveConfiguration(configuration: IProcessConfig): Promise<IProcessConfig>;
   adapterType: VsAdapterType;
+}
+
+export interface DebuggerPathResolverProvider {
+  resolvePath(project: string, filePath: string): Promise<string>;
 }
 
 //

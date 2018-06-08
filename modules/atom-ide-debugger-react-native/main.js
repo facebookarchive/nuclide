@@ -23,7 +23,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 
 class Activation {

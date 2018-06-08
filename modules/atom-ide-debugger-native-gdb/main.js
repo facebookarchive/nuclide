@@ -15,7 +15,7 @@ import type {NuclideDebuggerProvider} from 'nuclide-debugger-common/types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 
 class Activation {
   constructor() {}

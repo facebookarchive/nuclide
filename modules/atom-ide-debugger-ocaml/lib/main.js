@@ -18,7 +18,7 @@ import type {
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
-import AutoGenLaunchAttachProvider from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {Logger} from 'vscode-debugadapter';
 
 class Activation {

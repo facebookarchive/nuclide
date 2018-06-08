@@ -161,6 +161,13 @@ export function resolveRealPath(path: string): Promise<string> {
 }
 
 /**
+ * Returns the specified file path with the home dir ~/ expanded.
+ */
+export function expandHomeDir(path: string): Promise<string> {
+  return Promise.resolve(nuclideUri.expandHomeDir(path));
+}
+
+/**
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
 export function rename(

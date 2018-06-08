@@ -45,6 +45,7 @@ type Props = {|
   +configIsValidChanged: (valid: boolean) => void,
   +config: AutoGenLaunchOrAttachConfig,
   +debuggerTypeName: string,
+  +pathResolver: (project: NuclideUri, filePath: string) => Promise<string>,
 |};
 
 type DeviceAndPackageType = {|
@@ -107,6 +108,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
   ): boolean {
     return (
       type === 'string' ||
+      type === 'path' ||
       (type === 'array' && itemType === 'string') ||
       type === 'object' ||
       type === 'number' ||
@@ -273,7 +275,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
 
   _valueExists(property: AutoGenProperty): boolean {
     const {name, type} = property;
-    if (type === 'string') {
+    if (type === 'string' || type === 'path') {
       const value = this.state.atomInputValues.get(name);
       return value != null && value !== '';
     } else if (type === 'number') {
@@ -477,31 +479,47 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
     const objectValues = new Map();
     const numberValues = new Map();
     const jsonValues = new Map();
-    this._getConfigurationProperties()
-      .filter(
-        property => property.visible && atomInputValues.has(property.name),
-      )
-      .forEach(property => {
-        const {name, type} = property;
-        const itemType = idx(property, _ => _.itemType);
-        const value = atomInputValues.get(name) || '';
-        if (type === 'string') {
-          stringValues.set(name, value);
-        } else if (type === 'array' && itemType === 'string') {
-          stringArrayValues.set(name, shellParse(value));
-        } else if (type === 'object') {
-          const objectValue = {};
-          shellParse(value).forEach(variable => {
-            const [lhs, rhs] = variable.split('=');
-            objectValue[lhs] = rhs;
-          });
-          objectValues.set(name, objectValue);
-        } else if (type === 'number') {
-          numberValues.set(name, Number(value));
-        } else if (type === 'json') {
-          jsonValues.set(name, JSON.parse(value));
-        }
-      });
+    await Promise.all(
+      Array.from(
+        this._getConfigurationProperties()
+          .filter(
+            property => property.visible && atomInputValues.has(property.name),
+          )
+          .map(async property => {
+            const {name, type} = property;
+            const itemType = idx(property, _ => _.itemType);
+            const value = atomInputValues.get(name) || '';
+            if (type === 'path') {
+              try {
+                const resolvedPath =
+                  this.props.pathResolver == null
+                    ? value
+                    : await this.props.pathResolver(targetUri, value);
+                stringValues.set(name, resolvedPath);
+              } catch (_) {
+                stringValues.set(name, value);
+              }
+            } else if (type === 'string') {
+              stringValues.set(name, value);
+            } else if (type === 'array' && itemType === 'string') {
+              stringArrayValues.set(name, shellParse(value));
+            } else if (type === 'object') {
+              const objectValue = {};
+              shellParse(value).forEach(variable => {
+                const [lhs, rhs] = variable.split('=');
+                objectValue[lhs] = rhs;
+              });
+              objectValues.set(name, objectValue);
+            } else if (type === 'number') {
+              numberValues.set(name, Number(value));
+            } else if (type === 'json') {
+              jsonValues.set(name, JSON.parse(value));
+            }
+
+            return value;
+          }),
+      ),
+    );
 
     const packageValues = new Map();
     this._getConfigurationProperties()

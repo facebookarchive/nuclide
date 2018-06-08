@@ -69,14 +69,14 @@ export function getNativeAutoGenConfig(
 ): AutoGenConfig {
   const program = {
     name: 'program',
-    type: 'string',
+    type: 'path',
     description: 'Input the program/executable you want to launch',
     required: true,
     visible: true,
   };
   const cwd = {
     name: 'cwd',
-    type: 'string',
+    type: 'path',
     description: 'Working directory for the launched executable',
     required: true,
     visible: true,
@@ -102,7 +102,7 @@ export function getNativeAutoGenConfig(
   };
   const sourcePath = {
     name: 'sourcePath',
-    type: 'string',
+    type: 'path',
     description: '(Optional) base path for sources',
     required: false,
     defaultValue: '',
