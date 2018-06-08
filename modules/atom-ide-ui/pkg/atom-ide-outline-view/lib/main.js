@@ -36,10 +36,7 @@ class Activation {
     );
 
     this._editorService = new ActiveEditorRegistry(
-      (provider, editor) => {
-        analytics.track('outline-view-getoutline');
-        return provider.getOutline(editor);
-      },
+      (provider, editor) => provider.getOutline(editor),
       {},
       getActiveEditorRegistryEventSources(),
     );
