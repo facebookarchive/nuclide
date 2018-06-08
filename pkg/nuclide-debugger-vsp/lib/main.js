@@ -49,7 +49,7 @@ class Activation {
   async _registerPrepackDebugProvider(isOpenSource: boolean): Promise<void> {
     if ((await passesGK('nuclide_debugger_prepack')) || isOpenSource) {
       this._registerDebugProvider({
-        name: 'Prepack',
+        type: VsAdapterTypes.PREPACK,
         getLaunchAttachProvider: connection => {
           return new AutoGenLaunchAttachProvider(
             'Prepack',
@@ -63,7 +63,7 @@ class Activation {
 
   _registerLLDBProvider() {
     this._registerDebugProvider({
-      name: 'Native - LLDB (C/C++)',
+      type: VsAdapterTypes.NATIVE_LLDB,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Native - LLDB (C/C++)',
@@ -76,7 +76,7 @@ class Activation {
 
   async _registerHHVMDebugProvider(): Promise<void> {
     this._registerDebugProvider({
-      name: 'Hack / PHP',
+      type: VsAdapterTypes.HHVM,
       getLaunchAttachProvider: connection => {
         return new HhvmLaunchAttachProvider('Hack / PHP', connection);
       },

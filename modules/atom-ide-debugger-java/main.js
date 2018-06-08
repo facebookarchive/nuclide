@@ -32,7 +32,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'Java - Desktop',
+      type: VsAdapterTypes.JAVA,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Java - Desktop',

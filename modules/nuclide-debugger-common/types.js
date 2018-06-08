@@ -56,7 +56,7 @@ export type VsAdapterType =
   | 'native_gdb';
 
 export type NuclideDebuggerProvider = {
-  name: string,
+  type: VsAdapterType,
   getLaunchAttachProvider(
     connection: NuclideUri,
   ): ?DebuggerLaunchAttachProvider,

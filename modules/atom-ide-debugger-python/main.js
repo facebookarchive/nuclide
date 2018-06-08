@@ -44,7 +44,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'Python',
+      type: VsAdapterTypes.PYTHON,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Python',

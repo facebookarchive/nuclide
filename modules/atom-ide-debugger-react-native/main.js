@@ -37,7 +37,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'React Native',
+      type: VsAdapterTypes.REACT_NATIVE,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'React Native',

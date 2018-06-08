@@ -26,7 +26,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'Java - Android',
+      type: VsAdapterTypes.JAVA_ANDROID,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Java - Android',

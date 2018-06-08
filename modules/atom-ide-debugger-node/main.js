@@ -26,7 +26,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'Node',
+      type: VsAdapterTypes.NODE,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Node',

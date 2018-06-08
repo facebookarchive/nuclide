@@ -27,7 +27,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'OCaml',
+      type: VsAdapterTypes.OCAML,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'OCaml',

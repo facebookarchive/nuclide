@@ -23,7 +23,7 @@ class Activation {
 
   createDebuggerProvider(): NuclideDebuggerProvider {
     return {
-      name: 'Native - GDB (C/C++)',
+      type: VsAdapterTypes.NATIVE_GDB,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
           'Native - GDB (C/C++)',
