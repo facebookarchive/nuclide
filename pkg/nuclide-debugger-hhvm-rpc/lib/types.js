@@ -24,6 +24,7 @@ export type HHVMLaunchConfig = {
   cwd?: string,
   noDebug?: boolean,
   warnOnInterceptedFunctions?: boolean,
+  notifyOnBpCalibration?: boolean,
 };
 
 export type HHVMAttachConfig = {
@@ -32,4 +33,5 @@ export type HHVMAttachConfig = {
   startupDocumentPath?: string,
   debugPort?: number,
   warnOnInterceptedFunctions?: boolean,
+  notifyOnBpCalibration?: boolean,
 };

@@ -121,6 +121,7 @@ export async function getLaunchArgs(config: HHVMLaunchConfig): Promise<Object> {
     debugPort,
     cwd,
     warnOnInterceptedFunctions,
+    notifyOnBpCalibration: true,
   };
 }
 
@@ -229,6 +230,7 @@ async function _getAttachArgs(config: HHVMAttachConfig): Promise<Object> {
     startupDocumentPath,
     logFilePath,
     warnOnInterceptedFunctions,
+    notifyOnBpCalibration: true,
   };
 }
 
