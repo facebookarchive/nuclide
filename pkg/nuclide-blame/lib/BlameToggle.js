@@ -12,6 +12,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 
 const GATEKEEPER_NAME = 'nuclide_blame_toggle_button';
@@ -68,19 +69,19 @@ class BlameToggleContainer extends React.Component<
   constructor(props) {
     super(props);
     this.state = {visible: false};
+    this._subscriptions = new UniversalDisposable();
   }
 
   componentDidMount() {
     this._setVisible();
-    this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
       // update visibility on editor changed (may now be modified, non-blamable)
-      this.props.editor.onDidStopChanging(this._setVisible.bind(this)),
+      this.props.editor.onDidStopChanging(this._setVisible),
       // update visibility on editor saved (may no longer be modiified)
-      this.props.editor.onDidSave(this._setVisible.bind(this)),
+      this.props.editor.onDidSave(this._setVisible),
       // update visibility on initial package load, this might have been
       // created before a BlameProvider was available.
-      atom.packages.onDidActivateInitialPackages(this._setVisible.bind(this)),
+      atom.packages.onDidActivateInitialPackages(this._setVisible),
     );
   }
 
@@ -92,20 +93,22 @@ class BlameToggleContainer extends React.Component<
     return <div>{this.state.visible && <BlameToggleComponent />}</div>;
   }
 
-  _setVisible() {
-    passesGK(GATEKEEPER_NAME).then(passed => {
-      // The blame toggle button is visible if:
-      //  - the use is in the Gatekeeper
-      //  - the editor is not modiified
-      //  - the editor is blamable (there is a blame provider for it)
-      this.setState({
-        visible:
-          passed &&
-          !this.props.editor.isModified() &&
-          this.props.canBlame(this.props.editor),
-      });
-    });
-  }
+  _setVisible = () => {
+    this._subscriptions.add(
+      Observable.fromPromise(passesGK(GATEKEEPER_NAME)).subscribe(passed => {
+        // The blame toggle button is visible if:
+        //  - the use is in the Gatekeeper
+        //  - the editor is not modiified
+        //  - the editor is blamable (there is a blame provider for it)
+        this.setState({
+          visible:
+            passed &&
+            !this.props.editor.isModified() &&
+            this.props.canBlame(this.props.editor),
+        });
+      }),
+    );
+  };
 }
 
 type ComponentProps = {};
