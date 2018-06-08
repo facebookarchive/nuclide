@@ -82,17 +82,8 @@ export class Proxy {
           clientId,
         });
 
-        socket.on('data', arg => {
-          logger.trace('socket data: ', arg);
-          this._sendMessage({
-            event: 'data',
-            arg,
-            clientId,
-          });
-        });
-
         // forward events over the transport
-        ['timeout', 'error', 'end', 'close'].forEach(event => {
+        ['timeout', 'error', 'end', 'close', 'data'].forEach(event => {
           socket.on(event, arg => {
             logger.trace(`socket ${event}: `, arg);
             this._sendMessage({
