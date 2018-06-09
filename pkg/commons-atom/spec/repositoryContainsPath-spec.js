@@ -14,7 +14,7 @@ import typeof * as HgServiceType from '../../nuclide-hg-rpc/lib/HgService';
 import {Directory, GitRepository} from 'atom';
 import {repositoryContainsPath} from '../../nuclide-vcs-base';
 import {runCommand} from 'nuclide-commons/process';
-import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
+import MockHgService from '../../nuclide-hg-rpc/__mocks__/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from 'nuclide-commons/test-helpers';

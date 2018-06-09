@@ -13,7 +13,7 @@ import typeof * as HgServiceType from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
 import {HgRepositoryClient} from '../lib/HgRepositoryClient';
-import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
+import MockHgService from '../../nuclide-hg-rpc/__mocks__/MockHgService';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';
