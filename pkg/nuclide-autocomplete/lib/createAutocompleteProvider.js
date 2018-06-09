@@ -17,7 +17,12 @@ import type {
 
 import performanceNow from 'nuclide-commons/performanceNow';
 import {sleep, TimedOutError} from 'nuclide-commons/promise';
-import {track, trackSampled, trackTiming} from '../../nuclide-analytics';
+import {
+  track,
+  trackSampled,
+  trackTiming,
+  trackTimingSampled,
+} from '../../nuclide-analytics';
 
 /**
  * Autocomplete is extremely critical to the user experience!
@@ -30,6 +35,7 @@ import {track, trackSampled, trackTiming} from '../../nuclide-analytics';
  */
 const AUTOCOMPLETE_TIMEOUT = atom.inSpecMode() ? 3000 : 500;
 const E2E_SAMPLE_RATE = 10;
+const ON_GET_SUGGESTIONS_SAMPLE_RATE = 10;
 
 const durationBySuggestion = new WeakMap();
 
@@ -123,7 +129,7 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
   const requestTracker = _getRequestTracker(request, provider);
   requestTracker.pendingProviders++;
 
-  return trackTiming(
+  return trackTimingSampled(
     eventNames.onGetSuggestions,
     async () => {
       let result = null;
@@ -160,6 +166,7 @@ function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
       }
       return result;
     },
+    ON_GET_SUGGESTIONS_SAMPLE_RATE,
     logObject,
   );
 }
