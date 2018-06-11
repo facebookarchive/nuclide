@@ -96,7 +96,10 @@ export function trackSampled(
   values?: {[key: string]: mixed},
 ): void {
   if (Math.random() * sampleRate <= 1) {
-    rawAnalyticsService.track(eventName, values || {});
+    rawAnalyticsService.track(eventName, {
+      ...values,
+      sample_rate: sampleRate,
+    });
   }
 }
 
@@ -213,7 +216,10 @@ export function trackTimingSampled<T>(
   values?: {[key: string]: any} = {},
 ): T {
   if (Math.random() * sampleRate <= 1) {
-    return trackTiming(eventName, operation, values);
+    return trackTiming(eventName, operation, {
+      ...values,
+      sample_rate: sampleRate,
+    });
   }
   return operation();
 }
