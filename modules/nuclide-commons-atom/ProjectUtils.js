@@ -16,11 +16,10 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from './feature-config';
 import invariant from 'assert';
 
-export function getLabelFromPath(path: string): ?string {
-  const parts = nuclideUri.basename(path).split('.');
-  if (parts.length > 0) {
-    return humanizeProjectName(parts[0]);
-  }
+export function getLabelFromPath(path: string): string {
+  const basename = nuclideUri.basename(path);
+  const parts = basename.split('.');
+  return humanizeProjectName(parts[0] || basename);
 }
 
 function formatProjectNameWord(word: string): string {
