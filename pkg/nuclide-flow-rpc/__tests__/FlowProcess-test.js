@@ -15,12 +15,6 @@ import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 import os from 'os';
 import {Observable} from 'rxjs';
 
-function resetModules() {
-  for (const key in require.cache) {
-    delete require.cache[key];
-  }
-}
-
 describe('FlowProcess', () => {
   let fakeRunCommandDetailed: () => Object = (null: any);
 
@@ -30,7 +24,7 @@ describe('FlowProcess', () => {
 
   let flowProcess: FlowProcessType = (null: any);
 
-  let niceSpy: JasmineSpy = (null: any);
+  let niceSpy;
   let root: string;
   let binary: string;
 
@@ -43,22 +37,25 @@ describe('FlowProcess', () => {
   let FlowExecInfoContainer;
 
   beforeEach(() => {
-    resetModules();
+    jest.resetModules();
 
     const processModule = require('nuclide-commons/process');
     const runCommand = processModule.runCommand;
 
-    spyOn(processModule, 'runCommand').andCallFake((command, args, options) => {
-      if (args && args[0] === 'version' && args[1] === '--json') {
-        return new Observable.of(JSON.stringify({binary}));
-      }
-      return runCommand.call(this, command, args, options);
-    });
+    jest
+      .spyOn(processModule, 'runCommand')
+      .mockImplementation((command, args, options) => {
+        if (args && args[0] === 'version' && args[1] === '--json') {
+          return new Observable.of(JSON.stringify({binary}));
+        }
+        return runCommand.call(this, command, args, options);
+      });
 
-    spyOn(processModule, 'runCommandDetailed')
+    jest
+      .spyOn(processModule, 'runCommandDetailed')
       // We need this level of indirection to ensure that if fakeRunCommandDetailed
       // is rebound, the new one gets executed.
-      .andCallFake((...args) => fakeRunCommandDetailed(...args));
+      .mockImplementation((...args) => fakeRunCommandDetailed(...args));
 
     childSpy = {
       stdout: {on() {}},
@@ -68,7 +65,7 @@ describe('FlowProcess', () => {
     };
 
     const niceModule = require('nuclide-commons/nice');
-    niceSpy = spyOn(niceModule, 'niceSafeSpawn').andCallFake(() => {
+    niceSpy = jest.spyOn(niceModule, 'niceSafeSpawn').mockImplementation(() => {
       return childSpy;
     });
 
@@ -83,9 +80,9 @@ describe('FlowProcess', () => {
     const FlowExecInfoContainerModule = require('../lib/FlowExecInfoContainer');
     FlowExecInfoContainer = FlowExecInfoContainerModule.FlowExecInfoContainer;
 
-    fakeRunCommandDetailed = jasmine
-      .createSpy()
-      .andReturn(Observable.of({exitCode: FLOW_RETURN_CODES.ok}));
+    fakeRunCommandDetailed = jest
+      .fn()
+      .mockReturnValue(Observable.of({exitCode: FLOW_RETURN_CODES.ok}));
 
     flowProcess = new FlowProcess(
       root,
@@ -94,12 +91,8 @@ describe('FlowProcess', () => {
     );
   });
 
-  afterEach(() => {
-    resetModules();
-  });
-
   describe('Server startup and teardown', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       let called = false;
       // we want runCommandDetailed to error the first time, to mimic Flow not
       // runinng. Then, it will spawn a new flow process, and we want that to be
@@ -116,19 +109,20 @@ describe('FlowProcess', () => {
         }
       };
 
-      spyOn(childSpy, 'kill');
-      spyOn(childSpy, 'on');
+      jest.spyOn(childSpy, 'kill').mockImplementation(() => {});
+      jest.spyOn(childSpy, 'on').mockImplementation(() => {});
 
-      waitsForPromise(async () => {
+      await (async () => {
         await execFlow();
-      });
+      })();
     });
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
         const cpus = os.cpus();
         const expectedWorkers = cpus ? cpus.length - 2 : 1;
-        const args: Array<any> = niceSpy.mostRecentCall.args;
+        const args: Array<any> =
+          niceSpy.mock.calls[niceSpy.mock.calls.length - 1];
         expect(args[0]).toEqual(binary);
         expect(args[1]).toEqual([
           'server',
@@ -148,35 +142,37 @@ describe('FlowProcess', () => {
       let handler;
 
       beforeEach(() => {
-        [event, handler] = childSpy.on.mostRecentCall.args;
+        [event, handler] = childSpy.on.mock.calls[
+          childSpy.on.mock.calls.length - 1
+        ];
         // simulate a Flow crash
         handler(2, null);
       });
 
-      it('should blacklist the root', () => {
-        waitsForPromise(async () => {
+      it('should blacklist the root', async () => {
+        await (async () => {
           expect(event).toBe('exit');
           expect(await execFlow()).toBeNull();
-        });
+        })();
       });
 
-      it('should allow the server to restart if allowServerRestart is called', () => {
-        waitsForPromise(async () => {
+      it('should allow the server to restart if allowServerRestart is called', async () => {
+        await (async () => {
           expect(event).toBe('exit');
 
           flowProcess.allowServerRestart();
 
           expect(await execFlow()).not.toBeNull();
-        });
+        })();
       });
     });
 
     describe('dispose', () => {
-      it('should kill flow server', () => {
-        waitsForPromise(async () => {
+      it('should kill flow server', async () => {
+        await (async () => {
           flowProcess.dispose();
           expect(childSpy.kill).toHaveBeenCalledWith('SIGKILL');
-        });
+        })();
       });
     });
   });
@@ -202,7 +198,7 @@ describe('FlowProcess', () => {
       expect(currentStatus).toEqual('unknown');
     });
 
-    resetModules();
+    jest.resetModules();
     FLOW_RETURN_CODES = require('../lib/FlowProcess').FLOW_RETURN_CODES;
 
     const exitCodeStatusPairs = [
@@ -215,65 +211,60 @@ describe('FlowProcess', () => {
       [FLOW_RETURN_CODES.buildIdMismatch, 'not running'],
     ];
     exitCodeStatusPairs.forEach(([exitCode, status]) => {
-      it(`should be ${status} when Flow returns ${exitCode}`, () => {
-        waitsForPromise(async () => {
+      it(`should be ${status} when Flow returns ${exitCode}`, async () => {
+        await (async () => {
           fakeRunCommandDetailed = () => Observable.of({exitCode});
           await execFlow(/* waitForServer */ false).catch(e => {
             expect(e.exitCode).toBe(exitCode);
           });
           expect(currentStatus).toEqual(status);
-        });
+        })();
       });
     });
 
-    it('should ping the server after it is started', () => {
-      waitsForPromise(async () => {
-        jasmine.useRealClock();
-        const states = statusUpdates
-          .take(4)
-          .toArray()
-          .toPromise();
-        fakeRunCommandDetailed = () => {
-          switch (currentStatus) {
-            case 'unknown':
-              return Observable.of({
-                exitCode: FLOW_RETURN_CODES.noServerRunning,
-              });
-            case 'not running':
-              return Observable.of({
-                exitCode: FLOW_RETURN_CODES.serverInitializing,
-              });
-            case 'init':
-              return Observable.of({exitCode: FLOW_RETURN_CODES.ok});
-            default:
-              throw new Error('should not happen');
-          }
-        };
-        await execFlow(/* waitForServer */ false).catch(e => {
-          expect(e.exitCode).toBe(FLOW_RETURN_CODES.noServerRunning);
-        });
-        expect(await states).toEqual([
-          'unknown',
-          'not running',
-          'init',
-          'ready',
-        ]);
+    it('should ping the server after it is started', async () => {
+      const states = statusUpdates
+        .take(4)
+        .toArray()
+        .toPromise();
+      fakeRunCommandDetailed = () => {
+        switch (currentStatus) {
+          case 'unknown':
+            return Observable.of({
+              exitCode: FLOW_RETURN_CODES.noServerRunning,
+            });
+          case 'not running':
+            return Observable.of({
+              exitCode: FLOW_RETURN_CODES.serverInitializing,
+            });
+          case 'init':
+            return Observable.of({exitCode: FLOW_RETURN_CODES.ok});
+          default:
+            throw new Error('should not happen');
+        }
+      };
+      await execFlow(/* waitForServer */ false).catch(e => {
+        expect(e.exitCode).toBe(FLOW_RETURN_CODES.noServerRunning);
       });
+      expect(await states).toEqual(['unknown', 'not running', 'init', 'ready']);
     });
   });
 
   describe('execFlowClient', () => {
-    it('should call runCommandDetailed', () => {
-      waitsForPromise(async () => {
+    it('should call runCommandDetailed', async () => {
+      await (async () => {
         await FlowProcess.execFlowClient(
           ['arg'],
           null,
           new FlowExecInfoContainer(),
         );
-        const [runCommandDetailedArgs] = fakeRunCommandDetailed.argsForCall;
-        expect(runCommandDetailedArgs[0]).toEqual(binary);
-        expect(runCommandDetailedArgs[1]).toEqual(['arg', '--from', 'nuclide']);
-      });
+        expect(fakeRunCommandDetailed.mock.calls[0][0]).toEqual(binary);
+        expect(fakeRunCommandDetailed.mock.calls[0][1]).toEqual([
+          'arg',
+          '--from',
+          'nuclide',
+        ]);
+      })();
     });
   });
 });

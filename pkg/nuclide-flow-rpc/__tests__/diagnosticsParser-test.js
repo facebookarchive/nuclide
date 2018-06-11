@@ -17,10 +17,9 @@ import {
   flowStatusOutputToDiagnostics,
   diagnosticToFix,
 } from '../lib/diagnosticsParser';
-import {addMatchers} from '../../nuclide-test-helpers';
 
-import flowChildrenOutput from './fixtures/flow-children-output.json';
-import flowChildrenDiagnostic from './fixtures/flow-children-diagnostic.json';
+import flowChildrenOutput from '../__mocks__/fixtures/flow-children-output.json';
+import flowChildrenDiagnostic from '../__mocks__/fixtures/flow-children-diagnostic.json';
 
 const flowOutput = {
   passed: false,
@@ -156,66 +155,9 @@ const flowOutput = {
   ],
 };
 
-const expected: Array<FileDiagnosticMessage> = [
-  {
-    type: 'Error',
-    providerName: 'Flow',
-    filePath: '/flow-test/src/test.js',
-    text: 'object literal',
-    range: new Range([12, 15], [12, 17]),
-    trace: [
-      {
-        type: 'Trace',
-        text: 'This type is incompatible with',
-      },
-      {
-        type: 'Trace',
-        text: 'union: object type(s)',
-        filePath: '/flow-test/src/test.js',
-        range: new Range([9, 7], [9, 10]),
-      },
-      {
-        type: 'Trace',
-        text: 'See also: assignment of property `bar`',
-        filePath: '/flow-test/src/test.js',
-        range: new Range([12, 4], [12, 12]),
-      },
-    ],
-  },
-  {
-    type: 'Warning',
-    providerName: 'Flow',
-    filePath: 'myPath',
-    text: 'message',
-    range: new Range([0, 2], [1, 4]),
-  },
-  {
-    type: 'Error',
-    providerName: 'Flow',
-    filePath: '/flow-test/src/test.js',
-    text: 'object type',
-    range: new Range([82, 8], [82, 12]),
-    trace: [
-      {
-        type: 'Trace',
-        text: 'This type is incompatible with an argument type of',
-      },
-      {
-        type: 'Trace',
-        text: 'global object',
-      },
-    ],
-  },
-  flowChildrenDiagnostic,
-];
-
 describe('flowStatusOutputToDiagnostics', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   it('converts the flow status output', () => {
-    expect(flowStatusOutputToDiagnostics(flowOutput)).diffJson(expected);
+    expect(flowStatusOutputToDiagnostics(flowOutput)).toMatchSnapshot();
   });
 
   it('converts the flow status output >=0.66.0', () => {
@@ -405,163 +347,11 @@ describe('flowStatusOutputToDiagnostics', () => {
         ],
         passed: false,
       }),
-    ).diffJson([
-      {
-        filePath: 'test.js',
-        providerName: 'Flow',
-        range: {
-          end: {
-            column: 4,
-            row: 8,
-          },
-          start: {
-            column: 2,
-            row: 8,
-          },
-        },
-        text:
-          'Cannot cast array literal to tuple type because number [1] is incompatible with empty [2] in property `p` of index 0.',
-        trace: [
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 17,
-                row: 6,
-              },
-              start: {
-                column: 15,
-                row: 6,
-              },
-            },
-            text: '[1]',
-            type: 'Trace',
-          },
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 18,
-                row: 5,
-              },
-              start: {
-                column: 13,
-                row: 5,
-              },
-            },
-            text: '[2]',
-            type: 'Trace',
-          },
-        ],
-        type: 'Error',
-      },
-      {
-        filePath: 'test.js',
-        providerName: 'Flow',
-        range: {
-          end: {
-            column: 5,
-            row: 9,
-          },
-          start: {
-            column: 1,
-            row: 9,
-          },
-        },
-        text:
-          'Cannot cast array literal to union type because:\n' +
-          ' - Either number [1] is incompatible with empty [2] in property `p` of index 0.\n' +
-          ' - Or number [1] is incompatible with empty [3] in property `p` of index 0.\n' +
-          ' - Or number [1] is incompatible with empty [4] in property `p` of index 0.\n' +
-          ' - Or number [1] is incompatible with empty [5] in property `p` of index 0.',
-        trace: [
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 17,
-                row: 7,
-              },
-              start: {
-                column: 15,
-                row: 7,
-              },
-            },
-            text: '[1]',
-            type: 'Trace',
-          },
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 17,
-                row: 9,
-              },
-              start: {
-                column: 12,
-                row: 9,
-              },
-            },
-            text: '[2]',
-            type: 'Trace',
-          },
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 25,
-                row: 9,
-              },
-              start: {
-                column: 20,
-                row: 9,
-              },
-            },
-            text: '[3]',
-            type: 'Trace',
-          },
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 40,
-                row: 9,
-              },
-              start: {
-                column: 35,
-                row: 9,
-              },
-            },
-            text: '[4]',
-            type: 'Trace',
-          },
-          {
-            filePath: 'test.js',
-            range: {
-              end: {
-                column: 48,
-                row: 9,
-              },
-              start: {
-                column: 43,
-                row: 9,
-              },
-            },
-            text: '[5]',
-            type: 'Trace',
-          },
-        ],
-        type: 'Error',
-      },
-    ]);
+    ).toMatchSnapshot();
   });
 });
 
 describe('diagnosticToFix', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   it('should provide a fix for an unused suppression comment', () => {
     const diagnostic: FileDiagnosticMessage = {
       filePath: 'foo',
@@ -577,7 +367,7 @@ describe('diagnosticToFix', () => {
       ],
     };
     const fix = diagnosticToFix(diagnostic);
-    expect(fix).diffJson({
+    expect(fix).toEqual({
       oldRange: new Range([5, 0], [5, 13]),
       newText: '',
       speculative: true,
@@ -601,7 +391,7 @@ describe('diagnosticToFix', () => {
       ],
     };
     const fix = diagnosticToFix(diagnostic);
-    expect(fix).diffJson({
+    expect(fix).toEqual({
       oldRange: new Range([2, 8], [2, 16]),
       oldText: 'FooBrBaaaaz',
       newText: 'foobar',

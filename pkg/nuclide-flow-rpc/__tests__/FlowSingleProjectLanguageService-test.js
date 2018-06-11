@@ -30,13 +30,8 @@ import {
   getDiagnosticUpdates,
 } from '../lib/FlowSingleProjectLanguageService';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
-import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('FlowSingleProjectLanguageService', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   const file = '/path/to/test.js';
   const root = '/path/to';
   const currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
@@ -61,7 +56,9 @@ describe('FlowSingleProjectLanguageService', () => {
     line = 2;
     column = 12;
     flowRoot = newFlowService();
-    spyOn(flowRoot._process, 'execFlow').andCallFake(() => fakeExecFlow());
+    jest
+      .spyOn(flowRoot._process, 'execFlow')
+      .mockImplementation(() => fakeExecFlow());
   });
 
   function mockExec(outputString) {
@@ -74,8 +71,8 @@ describe('FlowSingleProjectLanguageService', () => {
       return flowRoot.getDefinition(file, buffer, new Point(line, column));
     }
 
-    it('should return the location', () => {
-      waitsForPromise(async () => {
+    it('should return the location', async () => {
+      await (async () => {
         line = 2;
         column = 4;
         // Flow uses 1-based indexing, Atom uses 0-based.
@@ -86,16 +83,16 @@ describe('FlowSingleProjectLanguageService', () => {
           position: new Point(4, 7),
           language: 'Flow',
         });
-      });
+      })();
     });
 
-    it('should return null if no location is found', () => {
-      waitsForPromise(async () => {
+    it('should return null if no location is found', async () => {
+      await (async () => {
         line = 2;
         column = 4;
         expect(await runWith({})).toBe(null);
         expect(flowRoot._process.execFlow).toHaveBeenCalled();
-      });
+      })();
     });
   });
 
@@ -105,12 +102,15 @@ describe('FlowSingleProjectLanguageService', () => {
       return flowRoot.getDiagnostics(filePath, buffer);
     }
 
-    it('should call flow status', () => {
-      waitsForPromise(async () => {
+    it('should call flow status', async () => {
+      await (async () => {
         await runWith([], file);
-        const flowArgs = flowRoot._process.execFlow.mostRecentCall.args[0];
+        const flowArgs =
+          flowRoot._process.execFlow.mock.calls[
+            flowRoot._process.execFlow.mock.calls.length - 1
+          ][0];
         expect(flowArgs[0]).toBe('status');
-      });
+      })();
     });
   });
 
@@ -143,35 +143,35 @@ describe('FlowSingleProjectLanguageService', () => {
       );
     }
 
-    it('should return the type on success', () => {
-      waitsForPromise(async () => {
-        expect(await runWith('thisIsAType', 1, 1, 1, 4)).diffJson({
+    it('should return the type on success', async () => {
+      await (async () => {
+        expect(await runWith('thisIsAType', 1, 1, 1, 4)).toEqual({
           hint: [{type: 'snippet', value: 'thisIsAType'}],
           range: new Range([0, 0], [0, 4]),
         });
-      });
+      })();
     });
 
-    it('should return null if the type is unknown', () => {
-      waitsForPromise(async () => {
+    it('should return null if the type is unknown', async () => {
+      await (async () => {
         expect(await runWith('(unknown)', 1, 1, 1, 4)).toBe(null);
-      });
+      })();
     });
 
-    it('should return null if the type is empty', () => {
-      waitsForPromise(async () => {
+    it('should return null if the type is empty', async () => {
+      await (async () => {
         expect(await runWith('', 1, 1, 1, 4)).toBe(null);
-      });
+      })();
     });
 
-    it('should return null on failure', () => {
-      waitsForPromise(async () => {
+    it('should return null on failure', async () => {
+      await (async () => {
         expect(await runWithString('invalid json')).toBe(null);
-      });
+      })();
     });
 
-    it('should return null if the flow process fails', () => {
-      waitsForPromise(async () => {
+    it('should return null if the flow process fails', async () => {
+      await (async () => {
         fakeExecFlow = () => {
           throw new Error('error');
         };
@@ -180,7 +180,7 @@ describe('FlowSingleProjectLanguageService', () => {
         expect(
           await flowRoot.typeHint(file, buffer, new Point(line, column)),
         ).toBe(null);
-      });
+      })();
     });
   });
 
@@ -190,13 +190,13 @@ describe('FlowSingleProjectLanguageService', () => {
     let result: Array<Object>;
     let activatedManually: boolean = (undefined: any);
 
-    beforeEach(() => {
-      waitsForPromise(async () => {
+    beforeEach(async () => {
+      await (async () => {
         prefix = '';
         activatedManually = false;
         resultNames = ['Foo', 'foo', 'Bar', 'BigLongNameOne', 'BigLongNameTwo'];
         result = resultNames.map(name => ({name, type: 'foo'}));
-      });
+      })();
     });
 
     function run() {
@@ -234,33 +234,33 @@ describe('FlowSingleProjectLanguageService', () => {
       return true;
     }
 
-    it('should not provide suggestions when no characters have been typed', () => {
-      waitsForPromise(async () => {
+    it('should not provide suggestions when no characters have been typed', async () => {
+      await (async () => {
         expect(hasEqualElements(await getNameSet(), new Set())).toBe(true);
-      });
+      })();
     });
 
-    it('should always provide suggestions when activated manually', () => {
+    it('should always provide suggestions when activated manually', async () => {
       activatedManually = true;
-      waitsForPromise(async () => {
+      await (async () => {
         expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
           true,
         );
-      });
+      })();
     });
 
-    it('should always provide suggestions when the prefix contains .', () => {
+    it('should always provide suggestions when the prefix contains .', async () => {
       prefix = '   .   ';
-      waitsForPromise(async () => {
+      await (async () => {
         expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
           true,
         );
-      });
+      })();
     });
 
-    it('should expose extra information about a function', () => {
+    it('should expose extra information about a function', async () => {
       prefix = 'f';
-      waitsForPromise(async () => {
+      await (async () => {
         result = [
           {
             name: 'foo',
@@ -282,7 +282,7 @@ describe('FlowSingleProjectLanguageService', () => {
         expect(fooResult.type).toEqual('function');
         expect(fooResult.leftLabel).toEqual('ret');
         expect(fooResult.rightLabel).toEqual('(param1: type1, param2: type2)');
-      });
+      })();
     });
   });
 
@@ -317,15 +317,11 @@ describe('FlowSingleProjectLanguageService', () => {
 });
 
 // FYI, the order of the expected messages within the nested array is arbitrary, but deterministic.
-// However, using arrays makes it easy to compare output using diffJson. It would make sense to
-// switch to Sets as long as diffJson (or similar) is extended to compare Sets structurally.
+// However, using arrays makes it easy to compare output using toEqual. It would make sense to
+// switch to Sets as long as toEqual (or similar) is extended to compare Sets structurally.
 describe('push diagnostics collation', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
-  it('should clear all previous errors upon each message if we are not in a recheck', () => {
-    waitsForPromise(async () => {
+  it('should clear all previous errors upon each message if we are not in a recheck', async () => {
+    await (async () => {
       const messages = [
         {
           kind: 'errors',
@@ -350,12 +346,12 @@ describe('push diagnostics collation', () => {
         [{filePath: '/path1', messages: []}],
       ];
       const results = await getAbbreviatedResults(messages);
-      expect(results).diffJson(expected);
-    });
+      expect(results).toEqual(expected);
+    })();
   });
 
-  it('should accumulate errors during a recheck', () => {
-    waitsForPromise(async () => {
+  it('should accumulate errors during a recheck', async () => {
+    await (async () => {
       const messages = [
         {
           kind: 'errors',
@@ -407,12 +403,12 @@ describe('push diagnostics collation', () => {
         ],
       ];
       const results = await getAbbreviatedResults(messages);
-      expect(results).diffJson(expected);
-    });
+      expect(results).toEqual(expected);
+    })();
   });
 
-  it('should remove all diagnostics when the IDE connection is lost outside of a recheck', () => {
-    waitsForPromise(async () => {
+  it('should remove all diagnostics when the IDE connection is lost outside of a recheck', async () => {
+    await (async () => {
       const messages = [
         {
           kind: 'errors',
@@ -435,12 +431,12 @@ describe('push diagnostics collation', () => {
         ],
       ];
       const results = await getAbbreviatedResults(messages);
-      expect(results).diffJson(expected);
-    });
+      expect(results).toEqual(expected);
+    })();
   });
 
-  it('should remove all diagnostics when the IDE connection is lost during a recheck', () => {
-    waitsForPromise(async () => {
+  it('should remove all diagnostics when the IDE connection is lost during a recheck', async () => {
+    await (async () => {
       const messages = [
         {
           kind: 'errors',
@@ -480,8 +476,8 @@ describe('push diagnostics collation', () => {
         ],
       ];
       const results = await getAbbreviatedResults(messages);
-      expect(results).diffJson(expected);
-    });
+      expect(results).toEqual(expected);
+    })();
   });
 });
 
