@@ -92,6 +92,22 @@ async function findNearestFile(
   }
 }
 
+async function findNearestAncestorNamed(
+  fileName: string,
+  pathToDirectory: string,
+): Promise<?string> {
+  const directory = await findNearestFile(fileName, pathToDirectory);
+  if (directory != null) {
+    return nuclideUri.join(directory, fileName);
+  } else {
+    return null;
+  }
+}
+
+function resolveRealPath(path: string): Promise<string> {
+  return realpath(nuclideUri.expandHomeDir(path));
+}
+
 /**
  * Searches upward through the filesystem from pathToDirectory to find the furthest
  * file with fileName.
@@ -670,4 +686,7 @@ export default {
   utimes,
   rmdir,
   access,
+
+  findNearestAncestorNamed,
+  resolveRealPath,
 };
