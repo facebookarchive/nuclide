@@ -2100,7 +2100,7 @@ type atom$AutocompleteSuggestion = {
 type atom$AutocompleteRequest = {
   editor: TextEditor,
   bufferPosition: atom$Point,
-  scopeDescriptor: string,
+  scopeDescriptor: atom$ScopeDescriptor,
   prefix: string,
   activatedManually?: boolean,
 };

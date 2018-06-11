@@ -288,7 +288,7 @@ describe('updateAutocompleteResultRanges', () => {
       bufferPosition: Point.fromObject(point),
       editor,
       prefix: '',
-      scopeDescriptor: '',
+      scopeDescriptor: ('': any),
     };
   }
 

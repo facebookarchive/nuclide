@@ -49,7 +49,7 @@ describe('AutocompleteCacher', () => {
       mockedRequest = {
         editor: await atom.workspace.open(),
         bufferPosition: new Point(0, 0),
-        scopeDescriptor: 'foo',
+        scopeDescriptor: ('foo': any),
         prefix: '',
         activatedManually: false,
       };
