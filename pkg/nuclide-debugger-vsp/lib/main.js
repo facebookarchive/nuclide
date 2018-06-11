@@ -15,7 +15,7 @@ import type {
 } from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import passesGK from '../../commons-node/passesGK';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
@@ -52,7 +52,7 @@ class Activation {
         type: VsAdapterTypes.PREPACK,
         getLaunchAttachProvider: connection => {
           return new AutoGenLaunchAttachProvider(
-            'Prepack',
+            VsAdapterNames.PREPACK,
             connection,
             getPrepackAutoGenConfig(),
           );
@@ -66,7 +66,7 @@ class Activation {
       type: VsAdapterTypes.NATIVE_LLDB,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Native - LLDB (C/C++)',
+          VsAdapterNames.NATIVE_LLDB,
           connection,
           getNativeAutoGenConfig(VsAdapterTypes.NATIVE_LLDB),
         );
@@ -78,7 +78,7 @@ class Activation {
     this._registerDebugProvider({
       type: VsAdapterTypes.HHVM,
       getLaunchAttachProvider: connection => {
-        return new HhvmLaunchAttachProvider('Hack / PHP', connection);
+        return new HhvmLaunchAttachProvider(VsAdapterNames.HHVM, connection);
       },
     });
   }

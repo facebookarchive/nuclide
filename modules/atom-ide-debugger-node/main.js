@@ -17,8 +17,8 @@ import type {
 import * as React from 'react';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 
 class Activation {
   constructor() {}
@@ -29,7 +29,7 @@ class Activation {
       type: VsAdapterTypes.NODE,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Node',
+          VsAdapterNames.NODE,
           connection,
           getNodeConfig(),
         );

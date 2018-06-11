@@ -39,7 +39,7 @@ export {default as VsDebugSession} from './VsDebugSession';
 
 export {default as VspProcessInfo} from './VspProcessInfo';
 
-export {VsAdapterTypes} from './constants';
+export {VsAdapterTypes, VsAdapterNames} from './constants';
 
 export {
   deserializeDebuggerConfig,

@@ -17,8 +17,8 @@ import type {
 } from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
 import {Logger} from 'vscode-debugadapter';
 
 class Activation {
@@ -30,7 +30,7 @@ class Activation {
       type: VsAdapterTypes.OCAML,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'OCaml',
+          VsAdapterNames.OCAML,
           connection,
           getOCamlAutoGenConfig(),
         );

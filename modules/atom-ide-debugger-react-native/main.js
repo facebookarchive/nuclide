@@ -24,7 +24,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
+import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
 
 class Activation {
   _gkService: ?GatekeeperService;
@@ -40,7 +40,7 @@ class Activation {
       type: VsAdapterTypes.REACT_NATIVE,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'React Native',
+          VsAdapterNames.REACT_NATIVE,
           connection,
           getReactNativeConfig(),
           async () => {

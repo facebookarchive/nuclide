@@ -16,8 +16,8 @@ import type {
 } from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {resolveConfiguration} from './utils';
 
@@ -30,7 +30,7 @@ class Activation {
       type: VsAdapterTypes.NATIVE_GDB,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Native - GDB (C/C++)',
+          VsAdapterNames.NATIVE_GDB,
           connection,
           getNativeAutoGenConfig(VsAdapterTypes.NATIVE_GDB),
           async () => {

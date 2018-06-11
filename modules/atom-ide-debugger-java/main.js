@@ -17,7 +17,7 @@ import type {
 import type {DebuggerSourcePathsService} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {
   getJavaConfig,
@@ -35,7 +35,7 @@ class Activation {
       type: VsAdapterTypes.JAVA,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Java - Desktop',
+          VsAdapterNames.JAVA,
           connection,
           getJavaConfig(),
         );

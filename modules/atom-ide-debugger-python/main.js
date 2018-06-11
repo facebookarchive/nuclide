@@ -14,11 +14,11 @@ import type {
   AutoGenConfig,
   NuclideDebuggerProvider,
 } from 'nuclide-debugger-common/types';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import * as React from 'react';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {VsAdapterNames, VsAdapterTypes} from 'nuclide-debugger-common';
+import * as React from 'react';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {listenToRemoteDebugCommands, setRpcService} from './utils';
 
@@ -47,7 +47,7 @@ class Activation {
       type: VsAdapterTypes.PYTHON,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Python',
+          VsAdapterNames.PYTHON,
           connection,
           getPythonAutoGenConfig(),
         );

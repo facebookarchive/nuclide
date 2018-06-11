@@ -16,7 +16,7 @@ import type {
 } from 'nuclide-debugger-common';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
 import {getJavaAndroidConfig, resolveConfiguration} from './utils';
 
@@ -29,7 +29,7 @@ class Activation {
       type: VsAdapterTypes.JAVA_ANDROID,
       getLaunchAttachProvider: connection => {
         return new AutoGenLaunchAttachProvider(
-          'Java - Android',
+          VsAdapterNames.JAVA_ANDROID,
           connection,
           getJavaAndroidConfig(),
         );
