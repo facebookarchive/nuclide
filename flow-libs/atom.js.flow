@@ -1681,7 +1681,7 @@ declare class atom$MenuManager {
 }
 
 type atom$ProjectSpecification = {
-  originPath?: string,
+  originPath: string,
   paths?: Array<string>,
   config?: {[string]: mixed}
 };

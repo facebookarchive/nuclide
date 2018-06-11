@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 
+import ProjectManager from 'nuclide-commons-atom/ProjectManager';
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
 import typeof * as FileSystemServiceType from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
@@ -19,7 +20,6 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import type {ServerConnectionVersion} from './ServerConnection';
 
 import invariant from 'assert';
-import season from 'season';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {ServerConnection} from './ServerConnection';
@@ -27,7 +27,6 @@ import {Emitter} from 'event-kit';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {getLogger} from 'log4js';
-import toml from 'toml';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -77,16 +76,15 @@ export class RemoteConnection {
       const fsService: FileSystemServiceType = serverConnection.getService(
         FILE_SYSTEM_SERVICE,
       );
-
       const realPath = await fsService.resolveRealPath(path);
 
-      // realPath may actually be a project file.
-      const contents = hasAtomProjectFormat(realPath)
-        ? await fsService.readFile(realPath).catch(() => null)
-        : null;
-
-      // If the file is not a project file, initialize the connection.
-      if (contents == null) {
+      if (hasAtomProjectFormat(path)) {
+        await ProjectManager.open(
+          serverConnection.getUriOfRemotePath(realPath),
+        );
+        // $FlowFixMe: Upstream this and add to our type defs
+        roots = atom.project.getSpecification().paths;
+      } else {
         // Now that we know the real path, it's possible this collides with an existing connection.
         if (realPath !== path && nuclideUri.isRemote(path)) {
           const existingConnection = this.getByHostnameAndPath(
@@ -98,41 +96,6 @@ export class RemoteConnection {
           }
         }
         roots = [realPath];
-      } else {
-        const projectContents = parseProject(contents.toString());
-        const dirname = nuclideUri.dirname(realPath);
-
-        const rawPaths = projectContents.paths;
-        const projectFilePaths =
-          rawPaths != null && Array.isArray(rawPaths)
-            ? rawPaths.map(dirPath => nuclideUri.resolve(dirname, dirPath))
-            : [dirname];
-
-        // Even though the project may list a bunch of directories, we actually mount the repository
-        // root and then filter. This is a change from the normal Atom handling so we need to
-        // account for that.
-        const repoRoots = await getRepoRoots(
-          projectFilePaths.map(p => serverConnection.getUriOfRemotePath(p)),
-          fsService,
-        );
-        if (repoRoots.length === 0) {
-          projectContents.paths = projectFilePaths;
-        } else {
-          // As far as Atom is concerned, the repo root will be the path. However, we put the
-          // original paths on the project spec as `_paths` so we can use them to filter the file
-          // tree.
-          projectContents.paths = repoRoots;
-          projectContents._paths = projectFilePaths;
-        }
-
-        projectContents.originPath = serverConnection.getUriOfRemotePath(
-          realPath,
-        );
-        if (atom.project.replace != null) {
-          atom.project.replace(projectContents);
-        }
-
-        roots = projectContents.paths;
       }
     } catch (err) {
       // Don't leave server connections hanging:
@@ -483,33 +446,4 @@ export class RemoteConnection {
 function hasAtomProjectFormat(filepath) {
   const ext = nuclideUri.extname(filepath);
   return ext === '.json' || ext === '.cson' || ext === '.toml';
-}
-
-function parseProject(raw: string): any {
-  try {
-    return toml.parse(raw);
-  } catch (err) {
-    if (err.name === 'SyntaxError') {
-      return season.parse(raw);
-    }
-    throw err;
-  }
-}
-
-async function getRepoRoots(
-  paths: Array<NuclideUri>,
-  fsService: FileSystemServiceType,
-): Promise<Array<NuclideUri>> {
-  const repoRootUris = await Promise.all(
-    paths.map(async path => {
-      const hgRoot = await fsService.findNearestAncestorNamed('.hg', path);
-      return hgRoot == null
-        ? fsService.findNearestAncestorNamed('.git', path)
-        : hgRoot;
-    }),
-  );
-  const repoRoots = repoRootUris
-    .filter(Boolean)
-    .map(uri => nuclideUri.getPath(nuclideUri.dirname(uri)));
-  return Array.from(new Set(repoRoots));
 }
