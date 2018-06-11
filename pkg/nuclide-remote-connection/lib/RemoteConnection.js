@@ -71,7 +71,7 @@ export class RemoteConnection {
   ): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
     const {path, displayTitle, promptReconnectOnFailure} = config;
-    const directories = [];
+    let roots;
 
     try {
       const fsService: FileSystemServiceType = serverConnection.getService(
@@ -97,29 +97,42 @@ export class RemoteConnection {
             return existingConnection;
           }
         }
-        directories.push(realPath);
+        roots = [realPath];
       } else {
         const projectContents = parseProject(contents.toString());
         const dirname = nuclideUri.dirname(realPath);
 
-        const projectPaths = projectContents.paths;
-        if (projectPaths != null && Array.isArray(projectPaths)) {
-          directories.push(
-            ...projectPaths.map(dirPath =>
-              nuclideUri.resolve(dirname, dirPath),
-            ),
-          );
+        const rawPaths = projectContents.paths;
+        const projectFilePaths =
+          rawPaths != null && Array.isArray(rawPaths)
+            ? rawPaths.map(dirPath => nuclideUri.resolve(dirname, dirPath))
+            : [dirname];
+
+        // Even though the project may list a bunch of directories, we actually mount the repository
+        // root and then filter. This is a change from the normal Atom handling so we need to
+        // account for that.
+        const repoRoots = await getRepoRoots(
+          projectFilePaths.map(p => serverConnection.getUriOfRemotePath(p)),
+          fsService,
+        );
+        if (repoRoots.length === 0) {
+          projectContents.paths = projectFilePaths;
         } else {
-          directories.push(dirname);
+          // As far as Atom is concerned, the repo root will be the path. However, we put the
+          // original paths on the project spec as `_paths` so we can use them to filter the file
+          // tree.
+          projectContents.paths = repoRoots;
+          projectContents._paths = projectFilePaths;
         }
 
-        projectContents.paths = directories;
         projectContents.originPath = serverConnection.getUriOfRemotePath(
           realPath,
         );
         if (atom.project.replace != null) {
           atom.project.replace(projectContents);
         }
+
+        roots = projectContents.paths;
       }
     } catch (err) {
       // Don't leave server connections hanging:
@@ -131,7 +144,7 @@ export class RemoteConnection {
       throw err;
     }
     const connections = await Promise.all(
-      directories.map((dir, i) => {
+      roots.map((dir, i) => {
         const connection = new RemoteConnection(
           serverConnection,
           dir,
@@ -481,4 +494,22 @@ function parseProject(raw: string): any {
     }
     throw err;
   }
+}
+
+async function getRepoRoots(
+  paths: Array<NuclideUri>,
+  fsService: FileSystemServiceType,
+): Promise<Array<NuclideUri>> {
+  const repoRootUris = await Promise.all(
+    paths.map(async path => {
+      const hgRoot = await fsService.findNearestAncestorNamed('.hg', path);
+      return hgRoot == null
+        ? fsService.findNearestAncestorNamed('.git', path)
+        : hgRoot;
+    }),
+  );
+  const repoRoots = repoRootUris
+    .filter(Boolean)
+    .map(uri => nuclideUri.getPath(nuclideUri.dirname(uri)));
+  return Array.from(new Set(repoRoots));
 }
