@@ -15,6 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
+import idx from 'idx';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {enforceReadOnlyEditor} from 'nuclide-commons-atom/text-editor';
 import {
@@ -96,6 +97,10 @@ export type SerializableRemoteConnectionConfiguration = {
   promptReconnectOnFailure?: boolean,
 };
 
+type SerializedPackageState = {|
+  remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
+|};
+
 const CLOSE_PROJECT_DELAY_MS = 100;
 
 class Activation {
@@ -105,9 +110,7 @@ class Activation {
   _remoteProjectsService = new RemoteProjectsServiceImpl();
   _workingSetsStore: ?WorkingSetsStore;
 
-  constructor(
-    state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
-  ) {
+  constructor(state: ?mixed) {
     this._subscriptions.add(
       RemoteConnection.onDidAddRemoteConnection(connection => {
         this._subscriptions.add(addRemoteFolderToProject(connection));
@@ -158,7 +161,9 @@ class Activation {
 
     // Attempt to reload previously open projects.
     const remoteProjectsConfig = validateRemoteProjectConfig(
-      state && state.remoteProjectsConfig,
+      typeof state === 'object'
+        ? idx(state, _ => _.remoteProjectsConfig)
+        : null,
     );
     reloadRemoteProjects(remoteProjectsConfig, this._remoteProjectsService);
   }
@@ -183,19 +188,55 @@ class Activation {
     ]);
   }
 
-  serialize(): {
-    remoteProjectsConfig: Array<SerializableRemoteConnectionConfiguration>,
-  } {
-    const remoteProjectsConfig = getRemoteRootDirectories()
-      .map(directory => {
-        const connection = RemoteConnection.getForUri(directory.getPath());
-        return connection == null
-          ? null
-          : createSerializableRemoteConnectionConfiguration(
-              connection.getConfig(),
-            );
-      })
+  serialize(): SerializedPackageState {
+    const currentProjectSpec =
+      // $FlowIgnore: Add this to our types once we upstream
+      atom.project.getSpecification == null
+        ? null
+        : atom.project.getSpecification();
+    const projectFileUri = idx(currentProjectSpec, _ => _.originPath);
+    let remoteProjectSpecUris;
+    if (projectFileUri != null && nuclideUri.isRemote(projectFileUri)) {
+      const projectSpecPaths = idx(currentProjectSpec, _ => _.paths) || [];
+      remoteProjectSpecUris = new Set(
+        projectSpecPaths.map(path => nuclideUri.resolve(projectFileUri, path)),
+      );
+    } else {
+      remoteProjectSpecUris = new Set();
+    }
+
+    // Get the directories that aren't part of the project file. They were added by the user so we
+    // want to restore those too.
+    const remoteConnections = getRemoteRootDirectories()
+      .map(dir => RemoteConnection.getForUri(dir.getPath()))
       .filter(Boolean);
+    const projectConnections = remoteConnections.filter(conn =>
+      remoteProjectSpecUris.has(conn.getUri()),
+    );
+    const nonProjectConnections = remoteConnections.filter(
+      conn => !projectConnections.includes(conn),
+    );
+
+    const projectConfig =
+      projectConnections.length === 0
+        ? null
+        : projectConnections[0].getConfig();
+    const activeProject =
+      projectFileUri == null || projectConfig == null
+        ? null
+        : {
+            ...projectConfig,
+            host: nuclideUri.getHostname(projectFileUri),
+            path: nuclideUri.getPath(projectFileUri),
+          };
+
+    const remoteProjectsConfig = [
+      activeProject,
+      ...nonProjectConnections.map(conn =>
+        createSerializableRemoteConnectionConfiguration(conn.getConfig()),
+      ),
+    ].filter(Boolean);
+
     return {remoteProjectsConfig};
   }
 
