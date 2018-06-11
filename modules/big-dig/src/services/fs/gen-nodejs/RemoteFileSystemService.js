@@ -597,16 +597,12 @@ RemoteFileSystemService_createDirectory_args.prototype.write = function(output) 
 };
 
 var RemoteFileSystemService_createDirectory_result = function(args) {
-  this.success = null;
   this.error = null;
   if (args instanceof ttypes.Error) {
     this.error = args;
     return;
   }
   if (args) {
-    if (args.success !== undefined && args.success !== null) {
-      this.success = args.success;
-    }
     if (args.error !== undefined && args.error !== null) {
       this.error = args.error;
     }
@@ -626,13 +622,6 @@ RemoteFileSystemService_createDirectory_result.prototype.read = function(input) 
     }
     switch (fid)
     {
-      case 0:
-      if (ftype == Thrift.Type.STRING) {
-        this.success = input.readString();
-      } else {
-        input.skip(ftype);
-      }
-      break;
       case 1:
       if (ftype == Thrift.Type.STRUCT) {
         this.error = new ttypes.Error();
@@ -641,6 +630,9 @@ RemoteFileSystemService_createDirectory_result.prototype.read = function(input) 
         input.skip(ftype);
       }
       break;
+      case 0:
+        input.skip(ftype);
+        break;
       default:
         input.skip(ftype);
     }
@@ -652,11 +644,6 @@ RemoteFileSystemService_createDirectory_result.prototype.read = function(input) 
 
 RemoteFileSystemService_createDirectory_result.prototype.write = function(output) {
   output.writeStructBegin('RemoteFileSystemService_createDirectory_result');
-  if (this.success !== null && this.success !== undefined) {
-    output.writeFieldBegin('success', Thrift.Type.STRING, 0);
-    output.writeString(this.success);
-    output.writeFieldEnd();
-  }
   if (this.error !== null && this.error !== undefined) {
     output.writeFieldBegin('error', Thrift.Type.STRUCT, 1);
     this.error.write(output);
@@ -1598,10 +1585,7 @@ RemoteFileSystemServiceClient.prototype.recv_createDirectory = function(input,mt
   if (null !== result.error) {
     return callback(result.error);
   }
-  if (null !== result.success) {
-    return callback(null, result.success);
-  }
-  return callback('createDirectory failed: unknown result');
+  callback(null);
 };
 RemoteFileSystemServiceClient.prototype.readFile = function(uri, callback) {
   this._seqid = this.new_seqid();

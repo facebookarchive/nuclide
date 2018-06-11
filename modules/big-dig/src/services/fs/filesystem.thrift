@@ -182,7 +182,7 @@ service RemoteFileSystemService {
    *
    * @param uri The uri of the new folder.
    */
-  string createDirectory(1: string uri) throws(1: Error error);
+  void createDirectory(1: string uri) throws(1: Error error);
 
   /**
    * Read the entire contents of a file.
