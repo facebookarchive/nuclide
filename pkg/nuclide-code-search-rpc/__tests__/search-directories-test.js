@@ -11,7 +11,6 @@
 
 import type {search$FileResult} from '../lib/types';
 
-import {addMatchers} from '../../nuclide-test-helpers';
 import {remoteAtomSearch} from '../lib/CodeSearchService';
 import {POSIX_TOOLS} from '../lib/searchTools';
 import fs from 'fs';
@@ -21,18 +20,14 @@ import which from 'nuclide-commons/which';
 import {generateFixture} from 'nuclide-commons/test-helpers';
 
 describe('Remote Atom Search by directory', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   const tools = POSIX_TOOLS.map(t =>
     which(t).then(cmd => (cmd != null ? t : null)),
   );
 
   tools.forEach(toolPromise => {
     /* UNIX GREP TESTS */
-    it('Should recursively scan all files in a directory', () => {
-      waitsForPromise(async () => {
+    it('Should recursively scan all files in a directory', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -70,12 +65,12 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'basic.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
-    it('Can execute a case sensitive search', () => {
-      waitsForPromise(async () => {
+    it('Can execute a case sensitive search', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -107,12 +102,12 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'casesensitive.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
-    it('Does not crash with no results', () => {
-      waitsForPromise(async () => {
+    it('Does not crash with no results', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -126,11 +121,11 @@ describe('Remote Atom Search by directory', () => {
           .toPromise();
         const expected = [];
         expect(results).toEqual(expected);
-      });
+      })();
     });
 
-    it('Can execute a search of subdirectories.', () => {
-      waitsForPromise(async () => {
+    it('Can execute a search of subdirectories.', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -157,12 +152,12 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'subdirs.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
-    it('Should include results from files matching wildcard path name', () => {
-      waitsForPromise(async () => {
+    it('Should include results from files matching wildcard path name', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -189,12 +184,12 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'wildcard.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
-    it('Should include multiple results matching on the same line', () => {
-      waitsForPromise(async () => {
+    it('Should include multiple results matching on the same line', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -224,12 +219,12 @@ describe('Remote Atom Search by directory', () => {
         );
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
-    it('Should include results from hidden files.', () => {
-      waitsForPromise(async () => {
+    it('Should include results from hidden files.', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -256,13 +251,13 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'hiddenFiles.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
     /* GIT GREP TESTS */
-    it('Git repo: should ignore untracked files or files listed in .gitignore', () => {
-      waitsForPromise(async () => {
+    it('Git repo: should ignore untracked files or files listed in .gitignore', async () => {
+      await (async () => {
         const tool = await toolPromise;
         // Run this test once since it tests git grep only.
         if (tool == null || tool !== POSIX_TOOLS[0]) {
@@ -301,16 +296,16 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'repo.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
 
     // HG Grep test. This test is disabled due to differences in the behavior of
     // Mercurial between v3.3 (where hg grep searches the revision history), and v3.4
     // (where hg grep) searches the working directory.
     // eslint-disable-next-line jasmine/no-disabled-tests
-    xit('Hg repo: should ignore untracked files or files listed in .hgignore', () => {
-      waitsForPromise(async () => {
+    xit('Hg repo: should ignore untracked files or files listed in .hgignore', async () => {
+      await (async () => {
         const tool = await toolPromise;
         // Run this test once since it tests hg grep only.
         if (tool == null || tool !== POSIX_TOOLS[0]) {
@@ -358,8 +353,8 @@ describe('Remote Atom Search by directory', () => {
         const expected = loadExpectedFixture(folder, 'repo.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
   });
 });
@@ -385,7 +380,7 @@ function loadExpectedFixture(
 ): Array<search$FileResult> {
   const fixture = JSON.parse(
     fs.readFileSync(
-      nuclideUri.join(__dirname, 'fixtures', fixtureName),
+      nuclideUri.join(__dirname, '../__mocks__/fixtures', fixtureName),
       'utf8',
     ),
   );

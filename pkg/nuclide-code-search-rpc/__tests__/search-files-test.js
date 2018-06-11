@@ -11,7 +11,6 @@
 
 import type {CodeSearchResult} from '../lib/types';
 
-import {addMatchers} from '../../nuclide-test-helpers';
 import {POSIX_TOOLS, searchWithTool} from '../lib/searchTools';
 import fs from 'fs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -20,9 +19,8 @@ import {generateFixture} from 'nuclide-commons/test-helpers';
 
 describe('Code search in files', () => {
   let folder;
-  beforeEach(function() {
-    addMatchers(this);
-    waitsForPromise(async () => {
+  beforeEach(async () => {
+    await (async () => {
       // Setup the test folder.
       folder = await generateFixture(
         'grep-rpc',
@@ -48,7 +46,7 @@ describe('Code search in files', () => {
           ['file:1:2:3:::-1', '// filename has lots of colons'],
         ]),
       );
-    });
+    })();
   });
 
   const tools = POSIX_TOOLS.map(t =>
@@ -56,8 +54,8 @@ describe('Code search in files', () => {
   );
 
   tools.forEach(toolPromise => {
-    it('Should find results only in specified files', () => {
-      waitsForPromise(async () => {
+    it('Should find results only in specified files', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -72,7 +70,7 @@ describe('Code search in files', () => {
         const expected1 = loadExpectedFixture(folder, 'basic-files-1.json');
         sortResults(results1);
 
-        expect(results1).diffJson(expected1);
+        expect(results1).toEqual(expected1);
 
         const results2 = await searchWithTool(tool, {
           regex: /var\b/,
@@ -84,11 +82,11 @@ describe('Code search in files', () => {
         const expected2 = loadExpectedFixture(folder, 'basic-files-2.json');
         sortResults(results2);
 
-        expect(results2).diffJson(expected2);
-      });
+        expect(results2).toEqual(expected2);
+      })();
     });
-    it('Works with complicated regexes', () => {
-      waitsForPromise(async () => {
+    it('Works with complicated regexes', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -104,7 +102,7 @@ describe('Code search in files', () => {
         const expected1 = loadExpectedFixture(folder, 'regex-files-1.json');
         sortResults(results1);
 
-        expect(results1).diffJson(expected1);
+        expect(results1).toEqual(expected1);
 
         // Match comments with a space following a console.log.
         const results2 = await searchWithTool(tool, {
@@ -117,7 +115,7 @@ describe('Code search in files', () => {
         const expected2 = loadExpectedFixture(folder, 'regex-files-2.json');
         sortResults(results2);
 
-        expect(results2).diffJson(expected2);
+        expect(results2).toEqual(expected2);
 
         // Match any console.<method> calls (tests variable matchLength).
         const results3 = await searchWithTool(tool, {
@@ -130,11 +128,11 @@ describe('Code search in files', () => {
         const expected3 = loadExpectedFixture(folder, 'regex-files-3.json');
         sortResults(results3);
 
-        expect(results3).diffJson(expected3);
-      });
+        expect(results3).toEqual(expected3);
+      })();
     });
-    it('Respects result limits', () => {
-      waitsForPromise(async () => {
+    it('Respects result limits', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -153,11 +151,11 @@ describe('Code search in files', () => {
         ).slice(0, 2);
         sortResults(results1);
 
-        expect(results1).diffJson(expected1);
-      });
+        expect(results1).toEqual(expected1);
+      })();
     });
-    it('No results with no files', () => {
-      waitsForPromise(async () => {
+    it('No results with no files', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -169,11 +167,11 @@ describe('Code search in files', () => {
         })
           .toArray()
           .toPromise();
-        expect(results).diffJson([]);
-      });
+        expect(results).toEqual([]);
+      })();
     });
-    it('Parser does not fail when line contents look like grep result', () => {
-      waitsForPromise(async () => {
+    it('Parser does not fail when line contents look like grep result', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool === 'ack') {
           return;
@@ -188,11 +186,11 @@ describe('Code search in files', () => {
         const expected = loadExpectedFixture(folder, 'parser-files-1.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
-    it('Parser does not fail if filename has a colon', () => {
-      waitsForPromise(async () => {
+    it('Parser does not fail if filename has a colon', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool === 'ack') {
           return;
@@ -207,11 +205,11 @@ describe('Code search in files', () => {
         const expected = loadExpectedFixture(folder, 'parser-files-2.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
-    it('Can find context before and after matches', () => {
-      waitsForPromise(async () => {
+    it('Can find context before and after matches', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -228,11 +226,11 @@ describe('Code search in files', () => {
         const expected = loadExpectedFixture(folder, 'context-files-1.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
-    it('Leading context found for match near first line.', () => {
-      waitsForPromise(async () => {
+    it('Leading context found for match near first line.', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -249,11 +247,11 @@ describe('Code search in files', () => {
         const expected = loadExpectedFixture(folder, 'context-files-2.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
-    it('Trailing context found for match near last line.', () => {
-      waitsForPromise(async () => {
+    it('Trailing context found for match near last line.', async () => {
+      await (async () => {
         const tool = await toolPromise;
         if (tool == null) {
           return;
@@ -270,8 +268,8 @@ describe('Code search in files', () => {
         const expected = loadExpectedFixture(folder, 'context-files-3.json');
         sortResults(results);
 
-        expect(results).diffJson(expected);
-      });
+        expect(results).toEqual(expected);
+      })();
     });
   });
 });
@@ -301,7 +299,7 @@ function loadExpectedFixture(
 ): Array<CodeSearchResult> {
   const fixture = JSON.parse(
     fs.readFileSync(
-      nuclideUri.join(__dirname, 'fixtures', fixtureName),
+      nuclideUri.join(__dirname, '../__mocks__/fixtures', fixtureName),
       'utf8',
     ),
   );
