@@ -10,6 +10,7 @@
  */
 
 import {Emitter} from 'atom';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
@@ -31,16 +32,29 @@ export class WorkingSetsStore {
   _emitter: Emitter;
   _current: WorkingSet;
   _savedDefinitions: Array<WorkingSetDefinition>;
-  _applicableDefinitions: Array<WorkingSetDefinition>;
-  _notApplicableDefinitions: Array<WorkingSetDefinition>;
+  _prevApplicability: {|
+    applicable: Array<WorkingSetDefinition>,
+    notApplicable: Array<WorkingSetDefinition>,
+  |};
   _lastSelected: Array<string>;
+  _groupByApplicability: typeof groupByApplicability = memoizeUntilChanged(
+    groupByApplicability,
+    definitions => ({
+      definitions,
+      // Atom just keeps modifying the same array so we need to make a copy here if we want to
+      // compare to a later value.
+      projectRoots: atom.project.getDirectories().slice(),
+    }),
+    (a, b) =>
+      arrayEqual(a.definitions, b.definitions) &&
+      arrayEqual(a.projectRoots, b.projectRoots),
+  );
 
   constructor() {
     this._emitter = new Emitter();
     this._current = new WorkingSet();
     this._savedDefinitions = [];
-    this._applicableDefinitions = [];
-    this._notApplicableDefinitions = [];
+    this._prevApplicability = {applicable: [], notApplicable: []};
     this._lastSelected = [];
   }
 
@@ -53,11 +67,11 @@ export class WorkingSetsStore {
   }
 
   getApplicableDefinitions(): Array<WorkingSetDefinition> {
-    return this._applicableDefinitions;
+    return this._groupByApplicability(this.getDefinitions()).applicable;
   }
 
   getNotApplicableDefinitions(): Array<WorkingSetDefinition> {
-    return this._notApplicableDefinitions;
+    return this._groupByApplicability(this.getDefinitions()).notApplicable;
   }
 
   subscribeToCurrent(callback: (current: WorkingSet) => void): IDisposable {
@@ -80,23 +94,41 @@ export class WorkingSetsStore {
     if (arrayEqual(this._savedDefinitions, definitions)) {
       return;
     }
-    const {applicable, notApplicable} = groupByApplicability(definitions);
-    this._setDefinitions(applicable, notApplicable, definitions);
+    this._updateDefinitions(definitions);
   }
 
   updateApplicability(): void {
-    const {applicable, notApplicable} = groupByApplicability(
-      this._savedDefinitions,
+    const {
+      applicable: prevApplicableDefinitions,
+      notApplicable: prevNotApplicableDefinitions,
+    } = this._prevApplicability;
+    const {applicable, notApplicable} = this._groupByApplicability(
+      this.getDefinitions(),
     );
-    this._setDefinitions(applicable, notApplicable, this._savedDefinitions);
+
+    if (
+      arrayEqual(prevApplicableDefinitions, applicable) &&
+      arrayEqual(prevNotApplicableDefinitions, notApplicable)
+    ) {
+      return;
+    }
+
+    this._prevApplicability = {applicable, notApplicable};
+    const activeApplicable = applicable.filter(d => d.active);
+    if (activeApplicable.length > 0) {
+      this._lastSelected = activeApplicable.map(d => d.name);
+    }
+    this._emitter.emit(NEW_DEFINITIONS_EVENT, {applicable, notApplicable});
+
+    this._updateCurrentWorkingSet(activeApplicable);
   }
 
   saveWorkingSet(name: string, workingSet: WorkingSet): void {
-    this._saveDefinition(name, name, workingSet);
+    this._updateDefinition(name, name, workingSet);
   }
 
   update(name: string, newName: string, workingSet: WorkingSet): void {
-    this._saveDefinition(name, newName, workingSet);
+    this._updateDefinition(name, newName, workingSet);
   }
 
   activate(name: string): void {
@@ -110,32 +142,8 @@ export class WorkingSetsStore {
   deleteWorkingSet(name: string): void {
     track('working-sets-delete', {name});
 
-    const definitions = this._savedDefinitions.filter(d => d.name !== name);
-    this._saveDefinitions(definitions);
-  }
-
-  _setDefinitions(
-    applicable: Array<WorkingSetDefinition>,
-    notApplicable: Array<WorkingSetDefinition>,
-    definitions: Array<WorkingSetDefinition>,
-  ): void {
-    const somethingHasChanged =
-      !arrayEqual(this._applicableDefinitions, applicable) ||
-      !arrayEqual(this._notApplicableDefinitions, notApplicable);
-
-    if (somethingHasChanged) {
-      this._applicableDefinitions = applicable;
-      this._notApplicableDefinitions = notApplicable;
-      this._savedDefinitions = definitions;
-
-      const activeApplicable = applicable.filter(d => d.active);
-      if (activeApplicable.length > 0) {
-        this._lastSelected = activeApplicable.map(d => d.name);
-      }
-      this._emitter.emit(NEW_DEFINITIONS_EVENT, {applicable, notApplicable});
-
-      this._updateCurrentWorkingSet(activeApplicable);
-    }
+    const definitions = this.getDefinitions().filter(d => d.name !== name);
+    this._updateDefinitions(definitions);
   }
 
   _updateCurrentWorkingSet(
@@ -150,7 +158,11 @@ export class WorkingSetsStore {
     }
   }
 
-  _saveDefinition(name: string, newName: string, workingSet: WorkingSet): void {
+  _updateDefinition(
+    name: string,
+    newName: string,
+    workingSet: WorkingSet,
+  ): void {
     const definitions = this.getDefinitions();
 
     let nameIndex = -1;
@@ -202,7 +214,7 @@ export class WorkingSetsStore {
       );
     }
 
-    this._saveDefinitions(newDefinitions);
+    this._updateDefinitions(newDefinitions);
   }
 
   _activateDefinition(name: string, active: boolean): void {
@@ -216,7 +228,7 @@ export class WorkingSetsStore {
 
       return d;
     });
-    this._saveDefinitions(newDefinitions);
+    this._updateDefinitions(newDefinitions);
   }
 
   deactivateAll(): void {
@@ -227,7 +239,7 @@ export class WorkingSetsStore {
 
       return {...d, active: false};
     });
-    this._saveDefinitions(definitions);
+    this._updateDefinitions(definitions);
   }
 
   toggleLastSelected(): void {
@@ -242,13 +254,16 @@ export class WorkingSetsStore {
           active: d.active || this._lastSelected.indexOf(d.name) > -1,
         };
       });
-      this._saveDefinitions(newDefinitions);
+      this._updateDefinitions(newDefinitions);
     }
   }
 
-  _saveDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    this.updateSavedDefinitions(definitions);
+  // Update the working set definitions. All updates should go through this method! In other words,
+  // this should be the only place where `_savedDefinitions` is changed.
+  _updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    this._savedDefinitions = definitions;
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
+    this.updateApplicability();
   }
 }
 
