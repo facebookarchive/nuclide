@@ -10,12 +10,13 @@
  */
 
 jest.unmock('log4js');
+global.NUCLIDE_DO_NOT_LOG = false;
 
 import log4js from 'log4js';
 import {runCommand, LOG_CATEGORY} from 'nuclide-commons/process';
 import waitsFor from '../../../jest/waits_for';
 
-describe.skip('processTrackingAppender', () => {
+describe('processTrackingAppender', () => {
   const trackSpy = jest.spyOn(
     require('nuclide-commons/analytics'),
     'trackSampled',

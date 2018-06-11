@@ -82,7 +82,8 @@ describe('HistogramTracker', () => {
 });
 
 describe('Histogram.dispose', () => {
-  it.skip('stops after dispose', () => {
+  it('stops after dispose', () => {
+    jest.restoreAllMocks();
     const trackModule = require('../lib/track');
     const trackSpy = jest.spyOn(trackModule, 'track');
     const tracker = new HistogramTracker('test', 100, 10, 5);

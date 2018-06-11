@@ -17,7 +17,7 @@ import {getCtagsService, CtagsService} from '..';
 const TAGS_PATH = nuclideUri.join(__dirname, '../__mocks__/fixtures', 'tags');
 
 describe('getCtagsService', () => {
-  it.skip('can find the tags file from a path', async () => {
+  it('can find the tags file from a path', async () => {
     const filePath = nuclideUri.join(
       __dirname,
       '../__mocks__/fixtures',
@@ -44,7 +44,7 @@ describe('getCtagsService', () => {
 });
 
 describe('CtagsService.findTags', () => {
-  it.skip('can read a tags file', async () => {
+  it('can read a tags file', async () => {
     const svc = new CtagsService(TAGS_PATH);
     let tags = await svc.findTags('a');
     expect(tags).toEqual([
@@ -77,7 +77,7 @@ describe('CtagsService.findTags', () => {
     expect(tags).toEqual([]);
   });
 
-  it.skip('respects the given limit', async () => {
+  it('respects the given limit', async () => {
     const svc = new CtagsService(TAGS_PATH);
     const tags = await svc.findTags('', {partialMatch: true, limit: 1});
     expect(tags).toEqual([

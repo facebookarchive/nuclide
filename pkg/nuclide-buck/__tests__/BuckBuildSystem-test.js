@@ -42,11 +42,16 @@ describe('BuckBuildSystem', () => {
       })();
     });
 
-    it.skip('emits diagnostics', async () => {
-      const spy = jest.fn();
+    it('emits diagnostics', async () => {
+      const diagnostics = []
       const subscription = buckBuildSystem
         .getDiagnosticProvider()
-        .updates.subscribe(spy);
+        .updates.subscribe(update => {
+          // Make a deep copy (since the messages will change.)
+          const deepCopy = Array.from(update.entries())
+            .map(([key, value]) => [key, Array.from(value)]);
+          diagnostics.push(new Map(deepCopy));
+        });
 
       const diagnostic = {
         providerName: 'Buck',
@@ -83,11 +88,11 @@ describe('BuckBuildSystem', () => {
       expect(msg.message.level).toEqual('info');
       expect(msg.message.text).toContain('Diagnostics');
 
-      expect(spy.mock.calls.map(call => call[0])).toEqual([
+      expect(diagnostics).toEqual([
         new Map([['a', [diagnostic]]]),
         new Map([['a', [diagnostic, {...diagnostic, type: 'Warning'}]]]),
         // No need to emit diagnostics for 'a' again.
-        new Map([['b', {...diagnostic, filePath: 'b'}]]),
+        new Map([['b', [{...diagnostic, filePath: 'b'}]]]),
       ]);
 
       subscription.unsubscribe();
