@@ -134,31 +134,6 @@ class ProjectManager {
     atom.project.replace({...spec});
   }
 
-  async loadProjectFile(pathToProjectFile: string): Promise<boolean> {
-    const expandedPath = nuclideUri.expandHomeDir(pathToProjectFile);
-    let contents;
-    try {
-      contents = parseProject(await fsPromise.readFile(expandedPath, 'utf8'));
-    } catch (e) {
-      atom.notifications
-        .addError(`Unable to find or parse atomproject at ${expandedPath}, make sure that
-        the root repo (ie: fbsource, www) is in the correct location.`);
-      return false;
-    }
-    contents.originPath = expandedPath;
-    if (contents.paths != null) {
-      contents.paths = contents.paths.map(contentPath =>
-        nuclideUri.join(nuclideUri.dirname(expandedPath), contentPath),
-      );
-    }
-
-    if (atom.project.replace != null) {
-      atom.project.replace(contents);
-      return true;
-    }
-    return false;
-  }
-
   async addRecentProject(
     projectFile: ProjectFile,
     host: string,
