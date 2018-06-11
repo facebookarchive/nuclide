@@ -16,4 +16,5 @@ export type WorkingSetDefinition = {
   active: boolean,
   uris: Array<string>,
   originURLs?: Array<string>,
+  isActiveProject?: boolean, // Does this working set represent the currently active atom project?
 };

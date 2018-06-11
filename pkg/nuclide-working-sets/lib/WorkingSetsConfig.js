@@ -36,6 +36,6 @@ export class WorkingSetsConfig {
   }
 
   setDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    featureConfig.set(CONFIG_KEY, definitions);
+    featureConfig.set(CONFIG_KEY, definitions.filter(d => !d.isActiveProject));
   }
 }

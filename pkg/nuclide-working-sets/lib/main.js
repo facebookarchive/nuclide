@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import ProjectManager from 'nuclide-commons-atom/ProjectManager';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -37,6 +38,18 @@ class Activation {
     this._disposables.add(
       this._workingSetsConfig.observeDefinitions(definitions => {
         this.workingSetsStore.updateSavedDefinitions(definitions);
+      }),
+    );
+
+    this._disposables.add(
+      ProjectManager.observeActiveProjectSpec(spec => {
+        this.workingSetsStore.updateActiveProject(spec);
+      }),
+    );
+
+    this._disposables.add(
+      atom.project.onDidChangePaths(() => {
+        this.workingSetsStore.updateApplicability();
       }),
     );
 
