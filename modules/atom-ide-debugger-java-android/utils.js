@@ -14,9 +14,11 @@ import type {
   AutoGenConfig,
   IProcessConfig,
   ControlButtonSpecification,
+  DebuggerConfigAction,
 } from 'nuclide-debugger-common/types';
 import type {Device} from 'nuclide-debugger-common/types';
 
+import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -27,10 +29,10 @@ import {
 } from 'atom-ide-debugger-java/utils';
 import nullthrows from 'nullthrows';
 import {
-  launchAndroidServiceOrActivityAndGetPid,
   getAdbAttachPortTargetInfo,
+  launchAndroidServiceOrActivity,
+  getPidFromPackageName,
 } from './AndroidJavaDebuggerHelpers';
-import invariant from 'assert';
 
 export const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
 
@@ -103,68 +105,82 @@ export function getCustomControlButtonsForJavaSourcePaths(
   ];
 }
 
+function _getPackageName(debugMode: DebuggerConfigAction, config): string {
+  return nullthrows(
+    debugMode === 'launch'
+      ? (idx(config, _ => _.deviceAndPackage.selectedPackage): ?string)
+      : (idx(config, _ => _.deviceAndProcess.selectedProcess.name): ?string),
+  );
+}
+
+function _getDevice(debugMode: DebuggerConfigAction, config): Device {
+  return nullthrows(
+    debugMode === 'launch'
+      ? (idx(config, _ => _.deviceAndPackage.device): ?Device)
+      : (idx(config, _ => _.deviceAndProcess.device): ?Device),
+  );
+}
+
+async function _getPid(
+  debugMode: DebuggerConfigAction,
+  config,
+  adbServiceUri: string,
+  device: Device,
+  packageName: string,
+): Promise<number> {
+  const selectedProcessPidString = idx(
+    config,
+    _ => _.deviceAndProcess.selectedProcess.pid,
+  );
+  const selectedProcessPid = parseInt(selectedProcessPidString, 10);
+  const pid =
+    debugMode === 'attach' && selectedProcessPidString != null
+      ? selectedProcessPid
+      : await getPidFromPackageName(adbServiceUri, device, packageName);
+  if (isNaN(pid)) {
+    throw new Error(
+      'Selected process pid is not a number: ' +
+        JSON.stringify(selectedProcessPidString),
+    );
+  }
+  return pid;
+}
+
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
-  const {adapterExecutable, config, debugMode, targetUri} = configuration;
-  if (adapterExecutable == null) {
-    throw new Error('Cannot resolve configuration for unset adapterExecutable');
-  }
-  let pid = null;
-  let device: ?Device = null;
-  const subscriptions = new UniversalDisposable();
-  const clickEvents = new Subject();
-  const adbServiceUri =
-    config.adbServiceUri != null ? config.adbServiceUri : targetUri;
   // adapterType === VsAdapterTypes.JAVA_ANDROID
+  const {config, debugMode, targetUri} = configuration;
+  const adbServiceUri =
+    config.adbServiceUri != null ? (config.adbServiceUri: string) : targetUri;
+  const packageName = _getPackageName(debugMode, config);
+  const device = _getDevice(debugMode, config);
   if (debugMode === 'launch') {
-    const {service, intent, activity, deviceAndPackage} = config;
-    const {selectedPackage} = deviceAndPackage;
-    device = deviceAndPackage.device;
-
-    pid = (await launchAndroidServiceOrActivityAndGetPid(
-      null /* providedPid */,
+    const {service, intent, activity} = config;
+    await launchAndroidServiceOrActivity(
       adbServiceUri,
-      service || null,
-      activity || null,
-      intent || null /* intent and action are the same */,
+      (service: ?string),
+      (activity: ?string),
+      (intent: ?string) /* intent and action are the same */,
       device,
-      selectedPackage,
-    )).pid;
-  } else if (debugMode === 'attach') {
-    const {deviceAndProcess} = config;
-    const {selectedProcess} = deviceAndProcess;
-    device = deviceAndProcess.device;
-
-    const selectedProcessPid = parseInt(selectedProcess.pid, 10);
-    if (isNaN(selectedProcessPid)) {
-      throw new Error(
-        'Selected process pid is not a number: ' +
-          JSON.stringify(selectedProcess.pid),
-      );
-    }
-
-    pid = (await launchAndroidServiceOrActivityAndGetPid(
-      selectedProcessPid,
-      adbServiceUri,
-      null,
-      null,
-      null,
-      device,
-      selectedProcess.name,
-    )).pid;
+      packageName,
+    );
   }
 
-  invariant(
-    debugMode === 'attach' || debugMode === 'launch',
-    'Debug Mode was neither launch nor attach, debugMode: ' + debugMode,
+  const pid = await _getPid(
+    debugMode,
+    config,
+    adbServiceUri,
+    device,
+    packageName,
   );
 
+  const subscriptions = new UniversalDisposable();
   const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
-    nullthrows(device),
+    device,
     adbServiceUri,
     targetUri,
-    nullthrows(pid),
+    pid,
     subscriptions,
   );
 
@@ -183,6 +199,7 @@ export async function resolveConfiguration(
   const additionalSourcePaths =
     sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
 
+  const clickEvents = new Subject();
   const onInitializeCallback = async session => {
     customDisposable.add(
       ...getSourcePathClickSubscriptions(

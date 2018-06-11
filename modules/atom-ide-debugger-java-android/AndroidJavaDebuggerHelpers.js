@@ -23,7 +23,7 @@ import type {
 import type {Device} from 'nuclide-debugger-common/types';
 
 import {VsAdapterTypes} from 'nuclide-debugger-common';
-
+import nullthrows from 'nullthrows';
 import invariant from 'assert';
 import {
   getJavaDebuggerHelpersServiceByNuclideUri,
@@ -49,20 +49,16 @@ export type AndroidDebugTargetInfo = {
   attach: boolean,
 };
 
-export async function launchAndroidServiceOrActivityAndGetPid(
-  providedPid: ?number,
+export async function launchAndroidServiceOrActivity(
   adbServiceUri: NuclideUri,
   service: ?string,
   activity: ?string,
   action: ?string,
   device: Device,
   packageName: string,
-): Promise<AndroidDebugTargetInfo> {
-  let attach = true;
-  let pid = providedPid;
+): Promise<void> {
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
   if (service != null) {
-    attach = false;
     await adbService.launchService(device, packageName, service || '', true);
   } else if (activity != null && action != null) {
     // First query the device to be sure the activity exists in the specified package.
@@ -91,7 +87,6 @@ export async function launchAndroidServiceOrActivityAndGetPid(
       );
     }
 
-    attach = false;
     await adbService.launchActivity(
       device,
       packageName,
@@ -100,18 +95,19 @@ export async function launchAndroidServiceOrActivityAndGetPid(
       action,
     );
   }
+}
 
-  if (pid == null) {
-    pid = await adbService.getPidFromPackageName(device, packageName);
-    if (!Number.isInteger(pid)) {
-      throw new Error(`Fail to get pid for package: ${packageName}`);
-    }
+export async function getPidFromPackageName(
+  adbServiceUri: NuclideUri,
+  device: Device,
+  packageName: string,
+): Promise<number> {
+  const adbService = getAdbServiceByNuclideUri(adbServiceUri);
+  const pid = await adbService.getPidFromPackageName(device, packageName);
+  if (!Number.isInteger(pid)) {
+    throw new Error(`Fail to get pid for package: ${packageName}`);
   }
-
-  return {
-    pid,
-    attach,
-  };
+  return pid;
 }
 
 export async function getAdbAttachPortTargetInfo(
@@ -123,18 +119,15 @@ export async function getAdbAttachPortTargetInfo(
 ): Promise<JavaAttachPortTargetConfig> {
   const tunnelRequired =
     nuclideUri.isLocal(adbServiceUri) && nuclideUri.isRemote(targetUri);
+  const tunnelService = tunnelRequired
+    ? (await consumeFirstProvider('nuclide.ssh-tunnel'): ?SshTunnelService)
+    : null;
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
-  let tunnelService: ?SshTunnelService;
-  let adbPort;
-  if (tunnelRequired) {
-    tunnelService = await consumeFirstProvider('nuclide.ssh-tunnel');
-    adbPort = await tunnelService.getAvailableServerPort(adbServiceUri);
-  } else {
-    tunnelService = null;
-    const service = getJavaDebuggerHelpersServiceByNuclideUri(adbServiceUri);
-    adbPort = await service.getPortForJavaDebugger();
-  }
-
+  const adbPort = tunnelRequired
+    ? await nullthrows(tunnelService).getAvailableServerPort(adbServiceUri)
+    : await getJavaDebuggerHelpersServiceByNuclideUri(
+        adbServiceUri,
+      ).getPortForJavaDebugger();
   const forwardSpec = await adbService.forwardJdwpPortToPid(
     device,
     adbPort,
@@ -144,7 +137,6 @@ export async function getAdbAttachPortTargetInfo(
   if (cleanupSubject != null) {
     await cleanupSubject.toPromise();
   }
-
   cleanupSubject = new Subject();
   subscriptions.add(async () => {
     const result = await adbService.removeJdwpForwardSpec(device, forwardSpec);
