@@ -120,14 +120,11 @@ class Activation {
         'atom-workspace',
         'nuclide-remote-projects:connect',
         event => {
-          let args;
-          if (event.detail != null) {
-            const {initialCwd} = event.detail;
-            if (initialCwd != null) {
-              args = {initialCwd};
-            }
-          }
-          openConnectionDialog(args);
+          const {initialCwd, project} = event.detail || {};
+          openConnectionDialog({
+            initialCwd,
+            project,
+          });
         },
       ),
       atom.commands.add(
