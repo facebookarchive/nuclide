@@ -33,7 +33,6 @@ export class WorkingSetsStore {
   _savedDefinitions: Array<WorkingSetDefinition>;
   _applicableDefinitions: Array<WorkingSetDefinition>;
   _notApplicableDefinitions: Array<WorkingSetDefinition>;
-  _prevCombinedUris: Array<string>;
   _lastSelected: Array<string>;
 
   constructor() {
@@ -42,7 +41,6 @@ export class WorkingSetsStore {
     this._savedDefinitions = [];
     this._applicableDefinitions = [];
     this._notApplicableDefinitions = [];
-    this._prevCombinedUris = [];
     this._lastSelected = [];
   }
 
