@@ -6,13 +6,13 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ * @flow
  * @format
  */
 
 import AsyncStorage from 'idb-keyval';
 import LRUCache from 'lru-cache';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 const RECENT_PROJECTS_KEY = 'nuclide_recent_projects';
 
@@ -26,7 +26,7 @@ type ProjectSession = {|
   host: string,
 |};
 
-type ProjectSessions = {|
+export type ProjectSessions = {|
   projectFile: ProjectFile,
   hosts: Array<string>,
   lastAccessed: number,
@@ -34,9 +34,13 @@ type ProjectSessions = {|
 
 class ProjectManager {
   _projects: BehaviorSubject<?ProjectSession> = new BehaviorSubject();
+  _recentProjects: Subject<Array<ProjectSessions>> = new Subject();
 
-  getProjects() {
-    return this._projects.asObservable();
+  getProjects(): Observable<Array<ProjectSessions>> {
+    return Observable.concat(
+      Observable.defer(() => this.getRecentProjects()),
+      this._recentProjects.asObservable(),
+    );
   }
 
   getActiveProject(): ?ProjectSession {
@@ -61,18 +65,25 @@ class ProjectManager {
     recentProjects.set(key, project);
     await saveRecentProjects(recentProjects);
     this._projects.next({projectFile, host});
+    this._recentProjects.next(projectsToList(recentProjects));
   }
 
   async getRecentProjects(): Promise<Array<ProjectSessions>> {
-    const recentProjects = await loadRecentProjects();
-    return recentProjects
-      .dump()
-      .map(pair => pair.v)
-      .sort((a, b) => b.lastAccessed - a.lastAccessed);
+    const recents = projectsToList(await loadRecentProjects());
+    return recents;
   }
 }
 
 export default new ProjectManager();
+
+function projectsToList(
+  projects: LRUCache<string, ProjectSessions>,
+): Array<ProjectSessions> {
+  return projects
+    .dump()
+    .map(pair => pair.v)
+    .sort((a, b) => b.lastAccessed - a.lastAccessed);
+}
 
 function projectFileToKey(projectFile: ProjectFile): string {
   return [projectFile.repo, projectFile.path].join('#');
