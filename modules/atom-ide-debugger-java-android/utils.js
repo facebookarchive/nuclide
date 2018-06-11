@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutoGenConfig,
   IProcessConfig,
@@ -73,13 +74,20 @@ export function getJavaAndroidConfig(): AutoGenConfig {
     required: true,
     visible: true,
   };
+  const selectSources = {
+    name: 'selectSources',
+    type: 'selectSources',
+    description: '',
+    required: true,
+    visible: true,
+  };
 
   return {
     launch: {
       launch: true,
       vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
       threads: true,
-      properties: [deviceAndPackage, activity, service, intent],
+      properties: [deviceAndPackage, activity, service, intent, selectSources],
       cwdPropertyName: 'cwd',
       header: null,
     },
@@ -87,7 +95,7 @@ export function getJavaAndroidConfig(): AutoGenConfig {
       launch: false,
       vsAdapterType: VsAdapterTypes.JAVA_ANDROID,
       threads: true,
-      properties: [deviceAndProcess],
+      properties: [deviceAndProcess, selectSources],
       header: null,
     },
   };
@@ -146,13 +154,23 @@ async function _getPid(
   return pid;
 }
 
+function _getResolvedTargetUri(targetUri: NuclideUri, config) {
+  const selectSources: ?string = idx(config, _ => _.selectSources);
+  return selectSources != null ? selectSources : targetUri;
+}
+
+function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
+  const adbServiceUri: ?string = idx(config, _ => _.adbServiceUri);
+  return adbServiceUri != null ? adbServiceUri : unresolvedTargetUri;
+}
+
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
   // adapterType === VsAdapterTypes.JAVA_ANDROID
   const {config, debugMode, targetUri} = configuration;
-  const adbServiceUri =
-    config.adbServiceUri != null ? (config.adbServiceUri: string) : targetUri;
+  const adbServiceUri = _getAdbServiceUri(targetUri, config);
+  const resolvedTargetUri = _getResolvedTargetUri(targetUri, config);
   const packageName = _getPackageName(debugMode, config);
   const device = _getDevice(debugMode, config);
   if (debugMode === 'launch') {
@@ -179,7 +197,7 @@ export async function resolveConfiguration(
   const attachPortTargetConfig = await getAdbAttachPortTargetInfo(
     device,
     adbServiceUri,
-    targetUri,
+    resolvedTargetUri,
     pid,
     subscriptions,
   );
@@ -191,7 +209,7 @@ export async function resolveConfiguration(
   const sdkSourcePath =
     config.sdkVersion != null
       ? await getJavaDebuggerHelpersServiceByNuclideUri(
-          targetUri,
+          resolvedTargetUri,
         ).getSdkVersionSourcePath(config.sdkVersion)
       : null;
   const sdkSourcePathResolved =
@@ -203,7 +221,7 @@ export async function resolveConfiguration(
   const onInitializeCallback = async session => {
     customDisposable.add(
       ...getSourcePathClickSubscriptions(
-        targetUri,
+        resolvedTargetUri,
         session,
         clickEvents,
         additionalSourcePaths,
@@ -213,9 +231,10 @@ export async function resolveConfiguration(
 
   return {
     ...configuration,
+    targetUri: resolvedTargetUri,
     debugMode: attachPortTargetConfig.debugMode,
     adapterExecutable: await getJavaDebuggerHelpersServiceByNuclideUri(
-      targetUri,
+      resolvedTargetUri,
     ).getJavaVSAdapterExecutableInfo(false),
     properties: {
       ...configuration.properties,

@@ -123,8 +123,12 @@ export async function getAdbAttachPortTargetInfo(
     ? (await consumeFirstProvider('nuclide.ssh-tunnel'): ?SshTunnelService)
     : null;
   const adbService = getAdbServiceByNuclideUri(adbServiceUri);
+  // tunnel Service's getAvailableServerPort does something weird where it
+  //   wants adbServiceUri to be either '' or 'localhost'
   const adbPort = tunnelRequired
-    ? await nullthrows(tunnelService).getAvailableServerPort(adbServiceUri)
+    ? await nullthrows(tunnelService).getAvailableServerPort(
+        nuclideUri.isLocal(adbServiceUri) ? 'localhost' : adbServiceUri,
+      )
     : await getJavaDebuggerHelpersServiceByNuclideUri(
         adbServiceUri,
       ).getPortForJavaDebugger();

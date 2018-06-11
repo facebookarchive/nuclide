@@ -37,6 +37,7 @@ import {
 import {DeviceAndPackage} from './DeviceAndPackage';
 import {DeviceAndProcess} from './DeviceAndProcess';
 import SelectableFilterableProcessTable from './SelectableFilterableProcessTable';
+import {SourceSelector} from './SourceSelector';
 
 type StringPair = [string, string];
 
@@ -65,6 +66,7 @@ type State = {
   processTableValues: Map<string, number>,
   deviceAndPackageValues: Map<string, DeviceAndPackageType>,
   deviceAndProcessValues: Map<string, DeviceAndProcessType>,
+  selectSourcesValues: Map<string, ?NuclideUri>,
 };
 
 // extension must be a string starting with a '.' like '.js' or '.py'
@@ -99,6 +101,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       processTableValues: new Map(),
       deviceAndPackageValues: new Map(),
       deviceAndProcessValues: new Map(),
+      selectSourcesValues: new Map(),
     };
   }
 
@@ -304,6 +307,9 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
         deviceAndProcessValue.device != null &&
         deviceAndProcessValue.selectedProcess != null
       );
+    } else if (type === 'selectSources') {
+      const selectSourcesValue = this.state.selectSourcesValues.get(name);
+      return selectSourcesValue != null;
     }
     return false;
   }
@@ -437,6 +443,31 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
           }}
         />
       );
+    } else if (type === 'selectSources') {
+      return (
+        <div>
+          {nameLabel}
+          <SourceSelector
+            deserialize={() => {
+              let selectSourcesValuesArray: Array<StringPair> = [];
+              deserializeDebuggerConfig(
+                ...this._getSerializationArgs(this.props),
+                (transientSettings, savedSettings) => {
+                  selectSourcesValuesArray =
+                    (savedSettings.selectSourcesValues: Array<StringPair>) ||
+                    [];
+                },
+              );
+              const selectSourcesValues = new Map(selectSourcesValuesArray);
+              return selectSourcesValues.get(name) || null;
+            }}
+            onSelect={selectedSource => {
+              this.state.selectSourcesValues.set(name, selectedSource);
+              this.props.configIsValidChanged(this._debugButtonShouldEnable());
+            }}
+          />
+        </div>
+      );
     }
     return (
       <div>
@@ -471,6 +502,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       processTableValues,
       deviceAndPackageValues,
       deviceAndProcessValues,
+      selectSourcesValues,
     } = this.state;
     const {launch, vsAdapterType, threads} = config;
 
@@ -560,6 +592,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       jsonValues,
       deviceAndPackageValues,
       deviceAndProcessValues,
+      selectSourcesValues,
     ].forEach(map => {
       map.forEach((value, key) => {
         values[key] = value;
@@ -596,6 +629,7 @@ export default class AutoGenLaunchAttachUiComponent extends React.Component<
       enumValues: Array.from(enumValues),
       packageValues: Array.from(packageValues),
       processValues: Array.from(processValues),
+      selectSourcesValues: Array.from(selectSourcesValues),
     });
   };
 }

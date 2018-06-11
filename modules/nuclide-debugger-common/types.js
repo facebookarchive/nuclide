@@ -119,6 +119,7 @@ export type AutoGenPropertyType =
   | 'json'
   | 'deviceAndPackage'
   | 'deviceAndProcess'
+  | 'selectSources'
   | 'process';
 
 export type AutoGenProperty = {
