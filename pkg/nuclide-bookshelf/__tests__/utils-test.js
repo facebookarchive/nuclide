@@ -19,7 +19,7 @@ import invariant from 'assert';
 import {
   getDummyBookShelfState,
   REPO_PATH_1 as DUMMY_REPO_PATH_1,
-} from '../__mocks__/dummy';
+} from '../__mocks__/dummy1';
 import {
   deserializeBookShelfState,
   getEmptBookShelfState,

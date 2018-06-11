@@ -14,7 +14,6 @@ import invariant from 'assert';
 import FileTreeContextMenu from '../lib/FileTreeContextMenu';
 import {EVENT_HANDLER_SELECTOR} from '../lib/FileTreeConstants';
 import waitsFor from '../../../jest/waits_for';
-
 import type {FileTreeContextMenuItem} from '../lib/FileTreeContextMenu';
 
 describe('FileTreeContextMenu', () => {

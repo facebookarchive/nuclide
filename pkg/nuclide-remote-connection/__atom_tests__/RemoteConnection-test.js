@@ -36,7 +36,7 @@ describe('RemoteConnection', () => {
   afterEach(() => {
     testConnections.delete(testHostname);
     if (fs.existsSync(pathToFakePk)) {
-      fs.unlink(pathToFakePk);
+      fs.unlinkSync(pathToFakePk);
     }
   });
 

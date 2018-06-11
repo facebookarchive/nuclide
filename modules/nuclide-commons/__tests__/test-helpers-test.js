@@ -23,8 +23,6 @@ import {
   uncachedRequire,
 } from '../test-helpers';
 
-jest.setTimeout(15000);
-
 describe('arePropertiesEqual', () => {
   it('correctly compares empty objects', () => {
     expect(arePropertiesEqual({}, {})).toBe(true);
@@ -118,19 +116,17 @@ describe('generateFixture', () => {
   it(
     'should work with lots of files',
     async () => {
-      await (async () => {
-        const files = new Map();
-        for (let i = 0; i < 10; i++) {
-          for (let j = 0; j < 1000; j++) {
-            files.set(`dir_${i}/file_${j}.txt`, `${i} + ${j} = ${i + j}`);
-          }
+      const files = new Map();
+      for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 300; j++) {
+          files.set(`dir_${i}/file_${j}.txt`, `${i} + ${j} = ${i + j}`);
         }
-        const fixturePath = await generateFixture('lots-of-files', files);
-        const fixtureFiles = glob.sync(
-          nuclideUri.join(fixturePath, 'dir_*/file_*.txt'),
-        );
-        expect(fixtureFiles.length).toBe(10000);
-      })();
+      }
+      const fixturePath = await generateFixture('lots-of-files', files);
+      const fixtureFiles = glob.sync(
+        nuclideUri.join(fixturePath, 'dir_*/file_*.txt'),
+      );
+      expect(fixtureFiles.length).toBe(3000);
     },
     20000,
   );
