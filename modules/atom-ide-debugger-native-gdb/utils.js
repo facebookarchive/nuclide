@@ -11,26 +11,33 @@
  */
 
 import type {IProcessConfig} from 'nuclide-debugger-common/types';
+
 import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'nuclide-debugger-common';
+import invariant from 'assert';
 
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
   let sourcePath: ?string = configuration.config.sourcePath;
 
-  if (sourcePath != null && sourcePath.trim() !== '') {
-    return configuration;
+  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
+    configuration.targetUri,
+  );
+
+  if (sourcePath == null || sourcePath.trim() === '') {
+    if (configuration.debugMode === 'launch') {
+      sourcePath = await debuggerService.getBuckRootFromUri(
+        configuration.config.program,
+      );
+    } else {
+      sourcePath = await debuggerService.getBuckRootFromPid(
+        configuration.config.pid,
+      );
+    }
   }
 
-  if (configuration.debugMode === 'launch') {
-    sourcePath = await getVSCodeDebuggerAdapterServiceByNuclideUri(
-      configuration.targetUri,
-    ).getBuckRootFromUri(configuration.config.program);
-  } else {
-    sourcePath = await getVSCodeDebuggerAdapterServiceByNuclideUri(
-      configuration.targetUri,
-    ).getBuckRootFromPid(configuration.config.pid);
-  }
+  invariant(sourcePath != null);
+  sourcePath = await debuggerService.realpath(sourcePath);
 
   return {
     ...configuration,

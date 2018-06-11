@@ -76,6 +76,10 @@ export async function getBuckRootFromPid(pid: number): Promise<?string> {
   return getBuckRootFromUri(path);
 }
 
+export async function realpath(path: string): Promise<string> {
+  return fsPromise.realpath(path);
+}
+
 export async function getAdapterExecutableInfo(
   adapterType: VsAdapterType,
 ): Promise<VSAdapterExecutableInfo> {

@@ -23,6 +23,7 @@ import {
   VspProcessInfo,
   getVSCodeDebuggerAdapterServiceByNuclideUri,
 } from 'nuclide-debugger-common';
+import invariant from 'assert';
 import * as React from 'react';
 
 export type VspNativeDebuggerLaunchBuilderParms = {
@@ -97,19 +98,25 @@ export async function resolveConfiguration(
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
 
+  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
+    configuration.targetUri,
+  );
   let sourcePath = configuration.config.sourcePath;
 
   if (sourcePath == null || sourcePath.trim() === '') {
     if (configuration.debugMode === 'launch') {
-      sourcePath = await getVSCodeDebuggerAdapterServiceByNuclideUri(
-        configuration.targetUri,
-      ).getBuckRootFromUri(configuration.config.program);
+      sourcePath = await debuggerService.getBuckRootFromUri(
+        configuration.config.program,
+      );
     } else {
-      sourcePath = await getVSCodeDebuggerAdapterServiceByNuclideUri(
-        configuration.targetUri,
-      ).getBuckRootFromPid(configuration.config.pid);
+      sourcePath = await debuggerService.getBuckRootFromPid(
+        configuration.config.pid,
+      );
     }
   }
+
+  invariant(sourcePath != null);
+  sourcePath = await debuggerService.realpath(sourcePath);
 
   adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
   return {
