@@ -28,7 +28,9 @@ export default class FileResultComponent {
     let matchIndexes = item.matchIndexes || [];
     if (filePath.startsWith(dirName)) {
       filePath = '.' + filePath.slice(dirName.length);
-      matchIndexes = matchIndexes.map(i => i - (dirName.length - 1));
+      matchIndexes = matchIndexes
+        .map(i => i - (dirName.length - 1))
+        .filter(i => i >= 0);
     }
 
     return (
