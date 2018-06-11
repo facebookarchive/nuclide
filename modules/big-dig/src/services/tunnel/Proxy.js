@@ -85,7 +85,6 @@ export class Proxy {
         // forward events over the transport
         ['timeout', 'error', 'end', 'close', 'data'].forEach(event => {
           socket.on(event, arg => {
-            logger.trace(`socket ${event}: `, arg);
             this._sendMessage({
               event,
               arg,
@@ -93,6 +92,9 @@ export class Proxy {
             });
           });
         });
+
+        socket.once('error', this.destroySocket.bind(this, clientId));
+        socket.once('close', this.closeSocket.bind(this, clientId));
       });
 
       this._server.listen({port: this._localPort}, () => {
@@ -123,6 +125,22 @@ export class Proxy {
     if (msg.event === 'data') {
       socket.write(arg);
     }
+  }
+
+  closeSocket(id: number) {
+    logger.info(`socket ${id} closed`);
+    const socket = this._socketByClientId.get(id);
+    invariant(socket);
+    socket.removeAllListeners();
+    this._socketByClientId.delete(id);
+  }
+
+  destroySocket(id: number, error: Error) {
+    logger.error('error on socket: ', error);
+    const socket = this._socketByClientId.get(id);
+    invariant(socket);
+    socket.destroy(error);
+    this.closeSocket(id);
   }
 
   _sendMessage(msg: TunnelMessage): void {
