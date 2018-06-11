@@ -11,14 +11,9 @@
 
 import type {HackDefinition} from '../lib/Definitions';
 
-import {addMatchers} from '../../nuclide-test-helpers';
 import {convertDefinitions} from '../lib/Definitions';
 
 describe('convertDefinitions', () => {
-  beforeEach(function() {
-    addMatchers(this);
-  });
-
   const filePath = '/tmp/file1';
   const defPath = '/tmp/file2';
   const projectRoot = '/tmp';
@@ -86,60 +81,12 @@ describe('convertDefinitions', () => {
   it('valid definition', () => {
     expect(
       convertDefinitions([filteredDef, def], filePath, projectRoot),
-    ).diffJson({
-      queryRange: [
-        {
-          start: {row: 0, column: 9},
-          end: {row: 0, column: 13},
-        },
-      ],
-      definitions: [
-        {
-          path: defPath,
-          position: {
-            row: 9,
-            column: 41,
-          },
-          range: {
-            start: {
-              row: 9,
-              column: 41,
-            },
-            end: {
-              row: 10,
-              column: 1,
-            },
-          },
-          id: 'hack-name',
-          name: 'hack-name',
-          language: 'php',
-          projectRoot,
-        },
-      ],
-    });
+    ).toMatchSnapshot();
   });
 
   it('default name definition', () => {
-    expect(convertDefinitions([defaultName], filePath, projectRoot)).diffJson({
-      queryRange: [
-        {
-          start: {row: 0, column: 9},
-          end: {row: 0, column: 13},
-        },
-      ],
-      definitions: [
-        {
-          path: filePath,
-          position: {
-            row: 9,
-            column: 41,
-          },
-          id: 'hack-name',
-          name: 'hack-name',
-          language: 'php',
-          projectRoot,
-        },
-      ],
-    });
+    expect(
+      convertDefinitions([defaultName], filePath, projectRoot),
+    ).toMatchSnapshot();
   });
 });

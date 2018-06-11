@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`convertDefinitions default name definition 1`] = `
+Object {
+  "definitions": Array [
+    Object {
+      "id": "hack-name",
+      "language": "php",
+      "name": "hack-name",
+      "path": "/tmp/file1",
+      "position": Point {
+        "column": 41,
+        "row": 9,
+      },
+      "projectRoot": "/tmp",
+      "range": undefined,
+    },
+  ],
+  "queryRange": Array [
+    Range {
+      "end": Point {
+        "column": 13,
+        "row": 0,
+      },
+      "start": Point {
+        "column": 9,
+        "row": 0,
+      },
+    },
+  ],
+}
+`;
+
+exports[`convertDefinitions valid definition 1`] = `
+Object {
+  "definitions": Array [
+    Object {
+      "id": "hack-name",
+      "language": "php",
+      "name": "hack-name",
+      "path": "/tmp/file2",
+      "position": Point {
+        "column": 41,
+        "row": 9,
+      },
+      "projectRoot": "/tmp",
+      "range": Range {
+        "end": Point {
+          "column": 1,
+          "row": 10,
+        },
+        "start": Point {
+          "column": 41,
+          "row": 9,
+        },
+      },
+    },
+  ],
+  "queryRange": Array [
+    Range {
+      "end": Point {
+        "column": 13,
+        "row": 0,
+      },
+      "start": Point {
+        "column": 9,
+        "row": 0,
+      },
+    },
+  ],
+}
+`;

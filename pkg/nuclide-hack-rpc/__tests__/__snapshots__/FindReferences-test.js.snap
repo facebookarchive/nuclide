@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FindReferences convertReferences 1`] = `
+Object {
+  "baseUri": "/test/",
+  "referencedSymbolName": "TestClass::testFunction",
+  "references": Array [
+    Object {
+      "name": null,
+      "range": Range {
+        "end": Point {
+          "column": 7,
+          "row": 12,
+        },
+        "start": Point {
+          "column": 4,
+          "row": 12,
+        },
+      },
+      "uri": "/test/file1.php",
+    },
+    Object {
+      "name": null,
+      "range": Range {
+        "end": Point {
+          "column": 3,
+          "row": 10,
+        },
+        "start": Point {
+          "column": 0,
+          "row": 10,
+        },
+      },
+      "uri": "/test/file2.php",
+    },
+  ],
+  "type": "data",
+}
+`;

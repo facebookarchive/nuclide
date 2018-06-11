@@ -1,0 +1,451 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`outlineFromHackIdeOutline class 1`] = `
+Object {
+  "outlineTrees": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 19,
+            "row": 10,
+          },
+          "representativeName": "Y",
+          "startPosition": Point {
+            "column": 13,
+            "row": 10,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "const",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "type",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "class-name",
+              "value": "Y",
+            },
+          ],
+        },
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 39,
+            "row": 11,
+          },
+          "representativeName": "x",
+          "startPosition": Point {
+            "column": 38,
+            "row": 11,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "private",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "property",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "x",
+            },
+          ],
+        },
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 2,
+            "row": 13,
+          },
+          "representativeName": "__construct",
+          "startPosition": Point {
+            "column": 18,
+            "row": 11,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "public",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "function",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "__construct",
+            },
+            Object {
+              "kind": "plain",
+              "value": "(",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "private",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "plain",
+              "value": "$x",
+            },
+            Object {
+              "kind": "plain",
+              "value": ")",
+            },
+          ],
+        },
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 17,
+            "row": 14,
+          },
+          "representativeName": "Z",
+          "startPosition": Point {
+            "column": 17,
+            "row": 14,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "abstract",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "const",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "Z",
+            },
+          ],
+        },
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 13,
+            "row": 15,
+          },
+          "representativeName": "X",
+          "startPosition": Point {
+            "column": 8,
+            "row": 15,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "const",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "X",
+            },
+          ],
+        },
+      ],
+      "endPosition": Point {
+        "column": 0,
+        "row": 16,
+      },
+      "representativeName": "D",
+      "startPosition": Point {
+        "column": 15,
+        "row": 9,
+      },
+      "tokenizedText": Array [
+        Object {
+          "kind": "keyword",
+          "value": "abstract",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "keyword",
+          "value": "class",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "class-name",
+          "value": "D",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`outlineFromHackIdeOutline enum 1`] = `
+Object {
+  "outlineTrees": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 6,
+            "row": 27,
+          },
+          "representativeName": "C",
+          "startPosition": Point {
+            "column": 2,
+            "row": 27,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "const",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "C",
+            },
+          ],
+        },
+      ],
+      "endPosition": Point {
+        "column": 0,
+        "row": 28,
+      },
+      "representativeName": "En",
+      "startPosition": Point {
+        "column": 5,
+        "row": 26,
+      },
+      "tokenizedText": Array [
+        Object {
+          "kind": "keyword",
+          "value": "enum",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "class-name",
+          "value": "En",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`outlineFromHackIdeOutline function 1`] = `
+Object {
+  "outlineTrees": Array [
+    Object {
+      "children": Array [],
+      "endPosition": Point {
+        "column": 0,
+        "row": 3,
+      },
+      "representativeName": "f",
+      "startPosition": Point {
+        "column": 9,
+        "row": 2,
+      },
+      "tokenizedText": Array [
+        Object {
+          "kind": "keyword",
+          "value": "function",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "method",
+          "value": "f",
+        },
+        Object {
+          "kind": "plain",
+          "value": "(",
+        },
+        Object {
+          "kind": "plain",
+          "value": "$x",
+        },
+        Object {
+          "kind": "plain",
+          "value": ",",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "plain",
+          "value": "$y",
+        },
+        Object {
+          "kind": "plain",
+          "value": ")",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`outlineFromHackIdeOutline interface 1`] = `
+Object {
+  "outlineTrees": Array [
+    Object {
+      "children": Array [],
+      "endPosition": Point {
+        "column": 13,
+        "row": 24,
+      },
+      "representativeName": "I",
+      "startPosition": Point {
+        "column": 10,
+        "row": 24,
+      },
+      "tokenizedText": Array [
+        Object {
+          "kind": "keyword",
+          "value": "interface",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "method",
+          "value": "I",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`outlineFromHackIdeOutline trait 1`] = `
+Object {
+  "outlineTrees": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "endPosition": Point {
+            "column": 2,
+            "row": 21,
+          },
+          "representativeName": "f",
+          "startPosition": Point {
+            "column": 18,
+            "row": 19,
+          },
+          "tokenizedText": Array [
+            Object {
+              "kind": "keyword",
+              "value": "public",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "keyword",
+              "value": "function",
+            },
+            Object {
+              "kind": "whitespace",
+              "value": " ",
+            },
+            Object {
+              "kind": "method",
+              "value": "f",
+            },
+            Object {
+              "kind": "plain",
+              "value": "(",
+            },
+            Object {
+              "kind": "plain",
+              "value": ")",
+            },
+          ],
+        },
+      ],
+      "endPosition": Point {
+        "column": 0,
+        "row": 22,
+      },
+      "representativeName": "T",
+      "startPosition": Point {
+        "column": 6,
+        "row": 18,
+      },
+      "tokenizedText": Array [
+        Object {
+          "kind": "keyword",
+          "value": "trait",
+        },
+        Object {
+          "kind": "whitespace",
+          "value": " ",
+        },
+        Object {
+          "kind": "method",
+          "value": "T",
+        },
+      ],
+    },
+  ],
+}
+`;
