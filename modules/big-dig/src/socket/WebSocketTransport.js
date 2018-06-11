@@ -64,45 +64,23 @@ export class WebSocketTransport {
     });
 
     socket.on('close', () => {
-      if (this._socket != null) {
-        invariant(this._socket === socket);
-        logger.info(
-          'Client #%s socket close received on open socket!',
-          this.id,
-        );
-        this._setClosed();
-      } else {
-        logger.info(
-          'Client #%s received socket close on already closed socket!',
-          this.id,
-        );
-      }
+      invariant(this._socket === socket);
+      logger.info('Client #%s socket close received on open socket!', this.id);
+      this._setClosed();
     });
 
     socket.on('error', e => {
-      if (this._socket != null) {
-        logger.error(`Client #${this.id} error: ${e.message}`);
-        this._emitter.emit('error', e);
-      } else {
-        logger.error(`Client #${this.id} error after close: ${e.message}`);
-      }
+      logger.error(`Client #${this.id} error: ${e.message}`);
+      this._emitter.emit('error', e);
     });
 
     socket.on('pong', data => {
-      if (this._socket != null) {
-        // data may be a Uint8Array
-        this._emitter.emit('pong', data != null ? String(data) : data);
-      } else {
-        logger.warn('Received socket pong after connection closed');
-      }
+      // data may be a Uint8Array
+      this._emitter.emit('pong', data != null ? String(data) : data);
     });
   }
 
   _onSocketMessage(message: string): void {
-    if (this._socket == null) {
-      logger.warn('Received socket message after connection closed');
-      return;
-    }
     this._messages.next(message);
   }
 
