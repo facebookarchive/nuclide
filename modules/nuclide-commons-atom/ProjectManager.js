@@ -12,8 +12,10 @@
 
 import AsyncStorage from 'idb-keyval';
 import LRUCache from 'lru-cache';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {without} from 'lodash';
 import toml from 'toml';
 import season from 'season';
@@ -51,6 +53,29 @@ class ProjectManager {
 
   getActiveProject(): ?ProjectSession {
     return this._projects.getValue();
+  }
+
+  observeActiveProjectSpec(
+    cb: (spec: ?atom$ProjectSpecification) => mixed,
+  ): IDisposable {
+    // TODO: Remove after `atom.project.getSpecification()` is upstreamed.
+    if (
+      typeof atom.project.onDidReplace !== 'function' ||
+      // $FlowFixMe: Add this to the typedef after we've upstreamed.
+      typeof atom.project.getSpecification !== 'function'
+    ) {
+      cb(null);
+      return new UniversalDisposable();
+    }
+
+    return new UniversalDisposable(
+      observableFromSubscribeFunction(callback =>
+        atom.project.onDidReplace(callback),
+      )
+        // $FlowFixMe: Add this to the typedef after we've upstreamed.
+        .startWith(atom.project.getSpecification())
+        .subscribe(cb),
+    );
   }
 
   async loadProjectFile(pathToProjectFile: string): Promise<boolean> {
