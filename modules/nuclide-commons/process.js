@@ -901,6 +901,57 @@ function logCall(duration: number, command: string, args: Array<string>) {
 }
 
 /**
+ * Attempt to get the fully qualified binary name from a process id. This is
+ * surprisingly tricky. 'ps' only reports the path as invoked, and in some cases
+ * not even that.
+ *
+ * On Linux, the /proc filesystem can be used to find it.
+ * macOS doesn't have /proc, so we rely on the fact that the process holds
+ * an open FD to the executable. This can fail for various reasons (mostly
+ * not having permissions to execute lsof on the pid.)
+ */
+export async function getAbsoluteBinaryPathForPid(
+  pid: number,
+): Promise<?string> {
+  if (process.platform === 'linux') {
+    return _getLinuxBinaryPathForPid(pid);
+  }
+
+  if (process.platform === 'darwin') {
+    return _getDarwinBinaryPathForPid(pid);
+  }
+
+  return null;
+}
+
+async function _getLinuxBinaryPathForPid(pid: number): Promise<?string> {
+  const exeLink = `/proc/${pid}/exe`;
+  // /proc/xxx/exe is a symlink to the real binary in the file system.
+  return runCommand('/bin/realpath', ['-q', '-e', exeLink])
+    .catch(_ => Observable.of(null))
+    .toPromise();
+}
+
+async function _getDarwinBinaryPathForPid(pid: number): Promise<?string> {
+  return runCommand('/usr/sbin/lsof', ['-p', `${pid}`])
+    .catch(_ => {
+      return Observable.of(null);
+    })
+    .map(
+      stdout =>
+        stdout == null
+          ? null
+          : stdout
+              .split('\n')
+              .map(line => line.trim().split(/\s+/))
+              .filter(line => line[3] === 'txt')
+              .map(line => line[8])[0],
+    )
+    .take(1)
+    .toPromise();
+}
+
+/**
  * Creates an observable with the following properties:
  *
  * 1. It contains a process that's created using the provided factory when you subscribe.

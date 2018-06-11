@@ -10,12 +10,16 @@
  * @format
  */
 
-import type {NuclideDebuggerProvider} from 'nuclide-debugger-common/types';
+import type {
+  NuclideDebuggerProvider,
+  DebuggerConfigurationProvider,
+} from 'nuclide-debugger-common/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {getNativeAutoGenConfig} from 'nuclide-debugger-common/autogen-utils';
 import {VsAdapterTypes} from 'nuclide-debugger-common/constants';
 import {AutoGenLaunchAttachProvider} from 'nuclide-debugger-common/AutoGenLaunchAttachProvider';
+import {resolveConfiguration} from './utils';
 
 class Activation {
   constructor() {}
@@ -35,6 +39,13 @@ class Activation {
           },
         );
       },
+    };
+  }
+
+  createDebuggerConfigurator(): DebuggerConfigurationProvider {
+    return {
+      resolveConfiguration,
+      adapterType: VsAdapterTypes.NATIVE_GDB,
     };
   }
 }

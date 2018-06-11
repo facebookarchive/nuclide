@@ -17,6 +17,9 @@ import type {ProcessInfo, ProcessMessage} from 'nuclide-commons/process';
 import {psTree} from 'nuclide-commons/process';
 import VsAdapterSpawner from './VsAdapterSpawner';
 import {getAdapterExecutable} from './debugger-registry';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import fsPromise from 'nuclide-commons/fsPromise';
+import {getAbsoluteBinaryPathForPid} from 'nuclide-commons/process';
 
 export class VsRawAdapterSpawnerService extends VsAdapterSpawner {
   spawnAdapter(
@@ -42,6 +45,35 @@ export async function createVsRawAdapterSpawnerService(): Promise<
 
 export async function getProcessTree(): Promise<Array<ProcessInfo>> {
   return psTree();
+}
+
+export async function getBuckRootFromUri(uri: string): Promise<?string> {
+  let path = uri;
+
+  while (true) {
+    const rootTest = nuclideUri.join(path, '.buckconfig');
+    // eslint-disable-next-line no-await-in-loop
+    if (await fsPromise.exists(rootTest)) {
+      return path;
+    }
+    const newPath = nuclideUri.getParent(path);
+    if (newPath === path) {
+      break;
+    }
+
+    path = newPath;
+  }
+
+  return null;
+}
+
+export async function getBuckRootFromPid(pid: number): Promise<?string> {
+  const path = await getAbsoluteBinaryPathForPid(pid);
+  if (path == null) {
+    return null;
+  }
+
+  return getBuckRootFromUri(path);
 }
 
 export async function getAdapterExecutableInfo(
