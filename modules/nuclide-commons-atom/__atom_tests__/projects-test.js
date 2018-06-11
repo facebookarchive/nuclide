@@ -18,6 +18,7 @@ import {
   observeProjectPaths,
   onDidAddProjectPath,
   onDidRemoveProjectPath,
+  observeProjectPathsAll,
 } from '../projects';
 
 describe('projects', () => {
@@ -49,10 +50,19 @@ describe('projects', () => {
   describe('observeProjectPaths()', () => {
     it('observes existing projects and future added projects', () => {
       const projectPaths: Array<string> = [];
+      observeProjectPaths(projectPath => projectPaths.push(projectPath));
       atom.project.setPaths([firstProjectPath]);
-      observeProjectPaths(projectPath => {
-        projectPaths.push(projectPath);
-      });
+      expect(projectPaths).toEqual([firstProjectPath]);
+      atom.project.addPath(otherProjectPath);
+      expect(projectPaths).toEqual([firstProjectPath, otherProjectPath]);
+    });
+  });
+
+  describe('observeProjectPathsAll()', () => {
+    it('observes all existing projects and future added projects', () => {
+      let projectPaths: Array<string> = [];
+      observeProjectPathsAll(newPaths => (projectPaths = newPaths));
+      atom.project.setPaths([firstProjectPath]);
       expect(projectPaths).toEqual([firstProjectPath]);
       atom.project.addPath(otherProjectPath);
       expect(projectPaths).toEqual([firstProjectPath, otherProjectPath]);

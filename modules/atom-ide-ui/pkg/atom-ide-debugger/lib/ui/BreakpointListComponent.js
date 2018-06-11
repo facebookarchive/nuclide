@@ -26,7 +26,7 @@ import {AnalyticsEvents} from '../constants';
 import {openSourceLocation} from '../utils';
 import {Section} from 'nuclide-commons-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {observeProjectPaths} from 'nuclide-commons-atom/projects';
+import {observeProjectPathsAll} from 'nuclide-commons-atom/projects';
 
 type Props = {|
   service: IDebugService,
@@ -88,18 +88,9 @@ export default class BreakpointListComponent extends React.Component<
       model.onDidChangeBreakpoints(() => {
         this.setState(this._computeState());
       }),
-      observeProjectPaths((projectPath, added) => {
-        const newProjects = this.state.activeProjects;
-        if (added) {
-          newProjects.push(projectPath);
-        } else {
-          const index = newProjects.indexOf(projectPath);
-          if (index >= 0) {
-            newProjects.splice(index, 1);
-          }
-        }
-        this.setState({activeProjects: newProjects});
-      }),
+      observeProjectPathsAll(projectPaths =>
+        this.setState({activeProjects: projectPaths}),
+      ),
     );
   }
 

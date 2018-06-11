@@ -92,17 +92,33 @@ export function observeProjectPaths(
   return onDidChangeProjectPath(callback);
 }
 
-export function onDidChangeProjectPath(
-  callback: (projectPath: string, added: boolean) => void,
+export function observeProjectPathsAll(
+  callback: (projectPaths: Array<string>) => any,
 ): IDisposable {
-  let projectPaths: Array<string> = getValidProjectPaths();
-  let changing: boolean = false;
+  let projectPaths = getValidProjectPaths();
+  let changing = false;
+  callback(projectPaths);
   return atom.project.onDidChangePaths(() => {
     if (changing) {
       throw new Error('Cannot update projects in the middle of an update');
     }
     changing = true;
-    const newProjectPaths = getValidProjectPaths();
+    projectPaths = getValidProjectPaths();
+    callback(projectPaths);
+    changing = false;
+  });
+}
+
+export function onDidChangeProjectPath(
+  callback: (projectPath: string, added: boolean) => void,
+): IDisposable {
+  let projectPaths = getValidProjectPaths();
+  let changing = false;
+  return observeProjectPathsAll(newProjectPaths => {
+    if (changing) {
+      throw new Error('Cannot update projects in the middle of an update');
+    }
+    changing = true;
     // Check to see if the change was the addition of a project.
     for (const newProjectPath of newProjectPaths) {
       if (!projectPaths.includes(newProjectPath)) {
@@ -123,42 +139,20 @@ export function onDidChangeProjectPath(
 export function onDidAddProjectPath(
   callback: (projectPath: string) => void,
 ): IDisposable {
-  let projectPaths: Array<string> = getValidProjectPaths();
-  let changing: boolean = false;
-  return atom.project.onDidChangePaths(() => {
-    if (changing) {
-      throw new Error('Cannot update projects in the middle of an update');
+  return onDidChangeProjectPath((projectPath, added) => {
+    if (added) {
+      callback(projectPath);
     }
-    changing = true;
-    const newProjectPaths = getValidProjectPaths();
-    for (const newProjectPath of newProjectPaths) {
-      if (!projectPaths.includes(newProjectPath)) {
-        callback(newProjectPath);
-      }
-    }
-    changing = false;
-    projectPaths = newProjectPaths;
   });
 }
 
 export function onDidRemoveProjectPath(
   callback: (projectPath: string) => void,
 ): IDisposable {
-  let projectPaths: Array<string> = getValidProjectPaths();
-  let changing: boolean = false;
-  return atom.project.onDidChangePaths(() => {
-    if (changing) {
-      throw new Error('Cannot update projects in the middle of an update');
+  return onDidChangeProjectPath((projectPath, added) => {
+    if (!added) {
+      callback(projectPath);
     }
-    changing = true;
-    const newProjectPaths = getValidProjectPaths();
-    for (const projectPath of projectPaths) {
-      if (!newProjectPaths.includes(projectPath)) {
-        callback(projectPath);
-      }
-    }
-    changing = false;
-    projectPaths = newProjectPaths;
   });
 }
 
