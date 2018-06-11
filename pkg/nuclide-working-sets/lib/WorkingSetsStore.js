@@ -30,7 +30,7 @@ const SAVE_DEFINITIONS_EVENT = 'save-definitions';
 export class WorkingSetsStore {
   _emitter: Emitter;
   _current: WorkingSet;
-  _definitions: Array<WorkingSetDefinition>;
+  _savedDefinitions: Array<WorkingSetDefinition>;
   _applicableDefinitions: Array<WorkingSetDefinition>;
   _notApplicableDefinitions: Array<WorkingSetDefinition>;
   _prevCombinedUris: Array<string>;
@@ -39,7 +39,7 @@ export class WorkingSetsStore {
   constructor() {
     this._emitter = new Emitter();
     this._current = new WorkingSet();
-    this._definitions = [];
+    this._savedDefinitions = [];
     this._applicableDefinitions = [];
     this._notApplicableDefinitions = [];
     this._prevCombinedUris = [];
@@ -51,7 +51,7 @@ export class WorkingSetsStore {
   }
 
   getDefinitions(): Array<WorkingSetDefinition> {
-    return this._definitions;
+    return this._savedDefinitions;
   }
 
   getApplicableDefinitions(): Array<WorkingSetDefinition> {
@@ -78,8 +78,8 @@ export class WorkingSetsStore {
     return this._emitter.on(SAVE_DEFINITIONS_EVENT, callback);
   }
 
-  updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    if (arrayEqual(this._definitions, definitions)) {
+  updateSavedDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    if (arrayEqual(this._savedDefinitions, definitions)) {
       return;
     }
     const {applicable, notApplicable} = sortOutApplicability(definitions);
@@ -87,8 +87,10 @@ export class WorkingSetsStore {
   }
 
   updateApplicability(): void {
-    const {applicable, notApplicable} = sortOutApplicability(this._definitions);
-    this._setDefinitions(applicable, notApplicable, this._definitions);
+    const {applicable, notApplicable} = sortOutApplicability(
+      this._savedDefinitions,
+    );
+    this._setDefinitions(applicable, notApplicable, this._savedDefinitions);
   }
 
   saveWorkingSet(name: string, workingSet: WorkingSet): void {
@@ -110,7 +112,7 @@ export class WorkingSetsStore {
   deleteWorkingSet(name: string): void {
     track('working-sets-delete', {name});
 
-    const definitions = this._definitions.filter(d => d.name !== name);
+    const definitions = this._savedDefinitions.filter(d => d.name !== name);
     this._saveDefinitions(definitions);
   }
 
@@ -126,7 +128,7 @@ export class WorkingSetsStore {
     if (somethingHasChanged) {
       this._applicableDefinitions = applicable;
       this._notApplicableDefinitions = notApplicable;
-      this._definitions = definitions;
+      this._savedDefinitions = definitions;
 
       const activeApplicable = applicable.filter(d => d.active);
       if (activeApplicable.length > 0) {
@@ -247,7 +249,7 @@ export class WorkingSetsStore {
   }
 
   _saveDefinitions(definitions: Array<WorkingSetDefinition>): void {
-    this.updateDefinitions(definitions);
+    this.updateSavedDefinitions(definitions);
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
   }
 }

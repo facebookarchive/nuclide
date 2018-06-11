@@ -36,7 +36,7 @@ class Activation {
 
     this._disposables.add(
       this._workingSetsConfig.observeDefinitions(definitions => {
-        this.workingSetsStore.updateDefinitions(definitions);
+        this.workingSetsStore.updateSavedDefinitions(definitions);
       }),
     );
 

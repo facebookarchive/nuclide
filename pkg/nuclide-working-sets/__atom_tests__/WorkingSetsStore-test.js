@@ -18,7 +18,7 @@ describe('WorkingSetStore', () => {
       .mockReturnValue([{getPath: () => '/aaa'}]);
 
     const store = new WorkingSetsStore();
-    store.updateDefinitions([
+    store.updateSavedDefinitions([
       {name: '1', active: true, uris: ['/aaa/bbb1']},
       {name: '2', active: true, uris: ['/aaa/bbb2']},
       {name: '3', active: false, uris: ['/aaa/bbb3']},
@@ -41,7 +41,7 @@ describe('WorkingSetStore', () => {
     const d3 = {name: '3', active: false, uris: ['/aaa/bbb3/ccc']};
 
     const store = new WorkingSetsStore();
-    store.updateDefinitions([d1, d2, d3]);
+    store.updateSavedDefinitions([d1, d2, d3]);
 
     expect(store.getApplicableDefinitions()).toEqual([d1]);
     expect(store.getNotApplicableDefinitions()).toEqual([d2, d3]);
