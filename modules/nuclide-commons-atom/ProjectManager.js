@@ -12,13 +12,19 @@
 
 import AsyncStorage from 'idb-keyval';
 import LRUCache from 'lru-cache';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {without} from 'lodash';
+import toml from 'toml';
+import season from 'season';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 const RECENT_PROJECTS_KEY = 'nuclide_recent_projects';
 
 type ProjectFile = {|
   repo: string,
   path: string,
+  originPath?: string,
 |};
 
 type ProjectSession = {|
@@ -47,6 +53,31 @@ class ProjectManager {
     return this._projects.getValue();
   }
 
+  async loadProjectFile(pathToProjectFile: string): Promise<boolean> {
+    const expandedPath = nuclideUri.expandHomeDir(pathToProjectFile);
+    let contents;
+    try {
+      contents = parseProject(await fsPromise.readFile(expandedPath, 'utf8'));
+    } catch (e) {
+      atom.notifications
+        .addError(`Unable to find or parse atomproject at ${expandedPath}, make sure that
+        the root repo (ie: fbsource, www) is in the correct location.`);
+      return false;
+    }
+    contents.originPath = expandedPath;
+    if (contents.paths != null) {
+      contents.paths = contents.paths.map(contentPath =>
+        nuclideUri.join(nuclideUri.dirname(expandedPath), contentPath),
+      );
+    }
+
+    if (atom.project.replace != null) {
+      atom.project.replace(contents);
+      return true;
+    }
+    return false;
+  }
+
   async addRecentProject(
     projectFile: ProjectFile,
     host: string,
@@ -58,9 +89,8 @@ class ProjectManager {
       projectFile,
       hosts: [],
     };
-    if (!project.hosts.includes(host)) {
-      project.hosts.push(host);
-    }
+    project.hosts = without(project.hosts, host);
+    project.hosts.unshift(host);
     project.lastAccessed = Date.now();
     recentProjects.set(key, project);
     await saveRecentProjects(recentProjects);
@@ -106,4 +136,15 @@ async function saveRecentProjects(
   recentProjects: LRUCache<string, ProjectSessions>,
 ): Promise<void> {
   await AsyncStorage.set(RECENT_PROJECTS_KEY, recentProjects.dump());
+}
+
+function parseProject(raw: string): any {
+  try {
+    return toml.parse(raw);
+  } catch (err) {
+    if (err.name === 'SyntaxError') {
+      return season.parse(raw);
+    }
+    throw err;
+  }
 }

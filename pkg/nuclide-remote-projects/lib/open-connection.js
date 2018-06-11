@@ -40,6 +40,7 @@ export type OpenConnectionDialogOptions = {
   project?: {|
     repo: string,
     path: string,
+    originPath?: string,
   |},
 };
 
