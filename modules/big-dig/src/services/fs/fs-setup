@@ -24,15 +24,15 @@ def add_header(fpath):
     Add facebook copy right header and 'generated' tag for all code files
     """
     header = "/**\n" \
-             "* Copyright (c) 2017-present, Facebook, Inc.\n" \
-             "* All rights reserved.\n" \
-             "*\n" \
-             "* This source code is licensed under the BSD-style license found in the\n" \
-             "* LICENSE file in the root directory of this source tree. An additional grant\n" \
-             "* of patent rights can be found in the PATENTS file in the same directory.\n" \
-             "*\n" \
-             "* @{0}\n" \
-             "*/\n\n".format('generated')
+             " * Copyright (c) 2017-present, Facebook, Inc.\n" \
+             " * All rights reserved.\n" \
+             " *\n" \
+             " * This source code is licensed under the BSD-style license found in the\n" \
+             " * LICENSE file in the root directory of this source tree. An additional grant\n" \
+             " * of patent rights can be found in the PATENTS file in the same directory.\n" \
+             " *\n" \
+             " * @{0}\n" \
+             " */\n\n".format('generated')
     # append header
     with open(fpath, 'r+') as f:
         content = f.read()
