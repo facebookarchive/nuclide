@@ -45,7 +45,8 @@ function runParent() {
 
   const developmentFilePath = path.join(__dirname, '../../../DEVELOPMENT');
 
-  const numWorkers = Math.max(os.cpus().length - 1, 1);
+  const cpus = os.cpus();
+  const numWorkers = cpus ? Math.max(cpus.length - 1, 1) : 1;
 
   const count = {
     skipped: 0,

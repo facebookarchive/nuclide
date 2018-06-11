@@ -44,7 +44,8 @@ const loadServicesConfig =
 const servicesConfigs = glob.sync(path.join(basedir, 'pkg/*'))
   .reduce((acc, dirname) => acc.concat(loadServicesConfig(dirname)), []);
 
-let numWorkers = Math.max(os.cpus().length - 1, 1);
+const cpus = os.cpus();
+let numWorkers = cpus ? Math.max(cpus.length - 1, 1) : 1;
 while (numWorkers--) {
   spawnWorker();
 }

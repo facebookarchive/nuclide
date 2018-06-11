@@ -561,7 +561,8 @@ export class FlowProcess {
   }
 
   _getMaxWorkers(): number {
-    return Math.max(os.cpus().length - 2, 1);
+    const cpus = os.cpus();
+    return cpus ? Math.max(cpus.length - 2, 1) : 1;
   }
 
   /**

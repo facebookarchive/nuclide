@@ -42,7 +42,8 @@ const CONCURRENCY = 1;
 // For this reason, it's very important to send updates in smaller batches.
 const BATCH_SIZE = 500;
 
-const MAX_WORKERS = Math.round(os.cpus().length / 2);
+const cpus = os.cpus();
+const MAX_WORKERS = cpus ? Math.max(1, Math.round(cpus.length / 2)) : 1;
 const MIN_FILES_PER_WORKER = 100;
 
 export type ExportUpdateForFile = {

@@ -143,6 +143,8 @@ export class PathSet {
       relQueryRoot = nuclideUri.relative(basePath, queryRoot);
     }
 
+    const cpus = os.cpus();
+
     // Start some promises used below to help parallelization
     const exactMatchPromise = this._getExactMatch(relQuery, rootPath);
 
@@ -151,7 +153,7 @@ export class PathSet {
     const matches = this._matcher
       .match(relQuery, {
         maxResults: 20,
-        numThreads: os.cpus().length,
+        numThreads: cpus ? Math.max(1, cpus.length) : 1,
         recordMatchIndexes: true,
         rootPath: relQueryRoot,
         smartCase,

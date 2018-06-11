@@ -126,7 +126,8 @@ describe('FlowProcess', () => {
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
-        const expectedWorkers = os.cpus().length - 2;
+        const cpus = os.cpus();
+        const expectedWorkers = cpus ? cpus.length - 2 : 1;
         const args: Array<any> = niceSpy.mostRecentCall.args;
         expect(args[0]).toEqual(binary);
         expect(args[1]).toEqual([

@@ -49,7 +49,7 @@ type BuckCommandAndOptions = {
  * TODO(hansonw): Buck seems to have some race conditions that prevent us
  * from running things in parallel :(
  */
-const MAX_CONCURRENT_READ_ONLY = 1; // Math.max(1, os.cpus().length - 1);
+const MAX_CONCURRENT_READ_ONLY = 1; // Math.max(1, os.cpus() ? os.cpus().length - 1 : 1);
 const pools = new Map();
 
 export function getPool(path: string, readOnly: boolean): PromisePool {

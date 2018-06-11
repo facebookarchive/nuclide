@@ -38,10 +38,11 @@ async function main() {
   const {hasteSettings} = configFromFlow;
 
   const index = await getFileIndex(root, configFromFlow);
+  const cpus = os.cpus();
   const indexDirStream = indexDirectory(
     index,
     hasteSettings,
-    os.cpus().length,
+    cpus ? Math.max(1, cpus.length) : 1,
   ).do({
     next: exportForFiles => {
       exportForFiles.forEach(exportForFile => {

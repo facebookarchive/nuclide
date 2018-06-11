@@ -154,9 +154,10 @@ async function getMainFiles(
   root: string,
   packageJsons: Array<string>,
 ): Promise<Map<string, string>> {
+  const cpus = os.cpus();
   const results = await asyncLimit(
     packageJsons,
-    os.cpus().length,
+    cpus ? Math.max(1, cpus.length) : 1,
     async packageJson => {
       try {
         const fullPath = nuclideUri.join(root, packageJson);
