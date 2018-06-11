@@ -10,10 +10,21 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+export type SuggestedProjectPath = {
+  projectPath: NuclideUri,
+  suggested: boolean,
+  hostLabel: string,
+};
+
 export interface DebuggerSourcePathsService {
   addKnownSubdirectoryPaths(
     remote: boolean,
     translatedPath: string,
     searchPaths: Array<string>,
   ): void;
+  observeSuggestedAndroidProjectPaths(
+    callback: (Array<SuggestedProjectPath>) => void,
+  ): IDisposable;
 }
