@@ -91,12 +91,6 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
       },
 
       /**
-       * Returns a list of supported debugger types + environments for the specified action.
-       */
-      getDebuggerTypeNames: super.getCallbacksForAction(action)
-        .getDebuggerTypeNames,
-
-      /**
        * Returns the UI component for configuring the specified debugger type and action.
        */
       getComponent: (
@@ -125,8 +119,6 @@ export default class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvid
       },
     };
   }
-
-  dispose(): void {}
 }
 
 function getConfig(): PhpDebuggerSessionConfig {

@@ -18,10 +18,10 @@ let uniqueKeySeed = 0;
 
 export type callbacksForAction = {
   isEnabled: () => Promise<boolean>,
-  getDebuggerTypeNames: () => Array<string>,
   getComponent: (
     debuggerTypeName: string,
     configIsValidChanged: (valid: boolean) => void,
+    defaultConfig: ?{[string]: mixed},
   ) => ?React.Element<any>,
 };
 
@@ -40,6 +40,10 @@ export default class DebuggerLaunchAttachProvider {
     this._uniqueKey = uniqueKeySeed++;
   }
 
+  getTabName(): string {
+    return this._debuggingTypeName;
+  }
+
   getCallbacksForAction(action: DebuggerConfigAction): callbacksForAction {
     return {
       /**
@@ -47,13 +51,6 @@ export default class DebuggerLaunchAttachProvider {
        */
       isEnabled: () => {
         return Promise.resolve(true);
-      },
-
-      /**
-       * Returns a list of supported debugger types + environments for the specified action.
-       */
-      getDebuggerTypeNames: () => {
-        return [this._debuggingTypeName];
       },
 
       /**
@@ -69,23 +66,9 @@ export default class DebuggerLaunchAttachProvider {
   }
 
   /**
-   * Returns a unique key which can be associated with the component.
-   */
-  getUniqueKey(): number {
-    return this._uniqueKey;
-  }
-
-  /**
    * Returns target uri for this provider.
    */
   getTargetUri(): NuclideUri {
     return this._targetUri;
-  }
-
-  /**
-   * Dispose any resource held by this provider.
-   */
-  dispose(): void {
-    throw new Error('abstract method');
   }
 }

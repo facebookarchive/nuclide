@@ -35,11 +35,13 @@ type ConnectionOption = {
 
 type EnabledProvider = {|
   provider: DebuggerLaunchAttachProvider,
-  debuggerName: string,
+  tabName: string,
 |};
 
 type Props = {|
   +dialogMode: DebuggerConfigAction,
+  +initialSelectedTabName: ?string,
+  +initialProviderConfig: ?{[string]: mixed},
   +connection: string,
   +connectionChanged: (newValue: ?string) => void,
   // $FlowFixMe
@@ -131,6 +133,16 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       ? nuclideUri.getHostname(this.props.connection)
       : 'local';
 
+    const selectedProvider = (this.props.providers.get(host) || []).find(
+      p => p.getTabName() === this.props.initialSelectedTabName,
+    );
+    if (selectedProvider != null) {
+      setLastUsedDebugger(
+        host,
+        this.props.dialogMode,
+        selectedProvider.getTabName(),
+      );
+    }
     this._filterProviders(host);
     this.setState({
       selectedProviderTab: getLastUsedDebugger(host, this.props.dialogMode),
@@ -174,15 +186,11 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       .filter(provider => provider != null)
       .map(provider => {
         invariant(provider != null);
-        return provider
-          .getCallbacksForAction(this.props.dialogMode)
-          .getDebuggerTypeNames()
-          .map(debuggerName => {
-            return {
-              provider,
-              debuggerName,
-            };
-          });
+        const tabName = provider.getTabName();
+        return {
+          provider,
+          tabName,
+        };
       })
       .scan((arr, provider) => arr.concat(provider), [])
       .subscribe(enabledProviders => {
@@ -199,12 +207,10 @@ export default class DebuggerLaunchAttachUI extends React.Component<
   _getTabsFromEnabledProviders(enabledProviders: EnabledProvider[]): Tab[] {
     const tabs = this.state.enabledProviders
       .map(debuggerType => ({
-        name: debuggerType.debuggerName,
+        name: debuggerType.tabName,
         tabContent: (
-          <span
-            title={debuggerType.debuggerName}
-            className="debugger-provider-tab">
-            {debuggerType.debuggerName}
+          <span title={debuggerType.tabName} className="debugger-provider-tab">
+            {debuggerType.tabName}
           </span>
         ),
       }))
@@ -243,18 +249,27 @@ export default class DebuggerLaunchAttachUI extends React.Component<
       let selectedTab =
         this.state.selectedProviderTab != null
           ? this.state.selectedProviderTab
-          : this.state.enabledProviders[0].debuggerName;
+          : this.state.enabledProviders[0].tabName;
       let provider = this.state.enabledProviders.find(
-        p => p.debuggerName === selectedTab,
+        p => p.tabName === selectedTab,
       );
       if (provider == null) {
         provider = this.state.enabledProviders[0];
-        selectedTab = provider.debuggerName;
+        selectedTab = provider.tabName;
       }
+
+      const defaultConfig =
+        selectedTab != null && selectedTab === this.props.initialSelectedTabName
+          ? this.props.initialProviderConfig
+          : null;
 
       const debuggerConfigPage = provider.provider
         .getCallbacksForAction(this.props.dialogMode)
-        .getComponent(selectedTab, valid => this._setConfigValid(valid));
+        .getComponent(
+          selectedTab,
+          valid => this._setConfigValid(valid),
+          defaultConfig,
+        );
 
       providerContent = (
         <div>

@@ -11,6 +11,7 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {VsAdapterType} from 'nuclide-debugger-common';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {PlatformGroup} from '../../nuclide-buck/lib/types';
 import {getDebuggerService} from 'nuclide-commons-atom/debugger';
@@ -39,7 +40,7 @@ import {
   getNativeVSPLaunchProcessInfo,
   getNativeVSPAttachProcessInfo,
 } from '../../nuclide-debugger-vsp/lib/utils';
-import {VsAdapterTypes} from 'nuclide-debugger-common';
+import {VsAdapterTypes, VsAdapterNames} from 'nuclide-debugger-common';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -108,6 +109,7 @@ class Activation {
       'test',
       'debug',
       'debug-launch-no-build',
+      'debug-attach',
     ]);
     return Observable.of({
       name: 'Native',
@@ -193,6 +195,23 @@ class Activation {
     buckRoot: NuclideUri,
     ruleType: string,
   ): Observable<TaskEvent> {
+    if (taskType === 'debug-attach') {
+      return Observable.defer(async () => {
+        const providerType = await this._getBuckNativeDebugAdapterType();
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'debugger:show-attach-dialog',
+          {
+            selectedTabName:
+              providerType === VsAdapterTypes.NATIVE_GDB
+                ? VsAdapterNames.NATIVE_GDB
+                : VsAdapterNames.NATIVE_LLDB,
+            config: {sourcePath: nuclideUri.getPath(buckRoot)},
+          },
+        );
+      }).ignoreElements();
+    }
+
     const buckService = getBuckServiceByNuclideUri(buckRoot);
     invariant(buckService != null);
 
@@ -319,14 +338,8 @@ class Activation {
       }
     }
 
-    let adapter = VsAdapterTypes.NATIVE_LLDB;
-
-    if (await passesGK('nuclide_buck_uses_gdb')) {
-      adapter = VsAdapterTypes.NATIVE_GDB;
-    }
-
     const info = await getNativeVSPLaunchProcessInfo(
-      adapter,
+      await this._getBuckNativeDebugAdapterType(),
       nuclideUri.join(buckRoot, relativeOutputPath),
       {
         args: (runArguments.length ? runArguments : targetOutput.args) || [],
@@ -339,6 +352,14 @@ class Activation {
     const debuggerService = await getDebuggerService();
     await debuggerService.startDebugging(info);
     return remoteOutputPath;
+  }
+
+  async _getBuckNativeDebugAdapterType(): Promise<VsAdapterType> {
+    if (await passesGK('nuclide_buck_uses_gdb')) {
+      return VsAdapterTypes.NATIVE_GDB;
+    } else {
+      return VsAdapterTypes.NATIVE_LLDB;
+    }
   }
 
   _addModeDbgIfNoModeInBuildArguments(
