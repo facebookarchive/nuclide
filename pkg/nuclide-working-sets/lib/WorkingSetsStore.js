@@ -80,12 +80,12 @@ export class WorkingSetsStore {
     if (arrayEqual(this._savedDefinitions, definitions)) {
       return;
     }
-    const {applicable, notApplicable} = sortOutApplicability(definitions);
+    const {applicable, notApplicable} = groupByApplicability(definitions);
     this._setDefinitions(applicable, notApplicable, definitions);
   }
 
   updateApplicability(): void {
-    const {applicable, notApplicable} = sortOutApplicability(
+    const {applicable, notApplicable} = groupByApplicability(
       this._savedDefinitions,
     );
     this._setDefinitions(applicable, notApplicable, this._savedDefinitions);
@@ -252,7 +252,7 @@ export class WorkingSetsStore {
   }
 }
 
-function sortOutApplicability(
+function groupByApplicability(
   definitions: Array<WorkingSetDefinition>,
 ): ApplicabilitySortedDefinitions {
   const applicable = [];
