@@ -295,7 +295,7 @@ export class WorkingSetsStore {
       d => (d.isActiveProject ? 'activeProject' : 'saved'),
     );
     this._activeProjectDefinition = idx(activeProject, _ => _[0]);
-    this._savedDefinitions = saved;
+    this._savedDefinitions = saved || [];
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, this.getDefinitions());
     this.updateApplicability();
   }
