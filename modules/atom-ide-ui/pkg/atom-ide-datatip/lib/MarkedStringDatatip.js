@@ -32,7 +32,11 @@ export default class MarkedStringDatatip extends React.PureComponent<Props> {
           <div
             className="datatip-marked-container"
             dangerouslySetInnerHTML={{
-              __html: domPurify.sanitize(marked(chunk.value)),
+              __html: domPurify.sanitize(
+                marked(chunk.value, {
+                  breaks: true,
+                }),
+              ),
             }}
             key={i}
           />
