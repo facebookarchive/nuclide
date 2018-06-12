@@ -633,6 +633,15 @@ export class FlowSingleProjectLanguageService {
     );
   }
 
+  rename(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    throw new Error('Not implemented');
+  }
+
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     throw new Error('Not Yet Implemented');
   }

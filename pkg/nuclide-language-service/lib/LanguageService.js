@@ -179,6 +179,12 @@ export interface LanguageService {
     position: atom$Point,
   ): ConnectableObservable<?FindReferencesReturn>;
 
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>>;
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>;

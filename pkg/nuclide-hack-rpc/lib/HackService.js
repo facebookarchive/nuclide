@@ -342,6 +342,15 @@ class HackSingleFileLanguageService {
     return convertReferences(result, projectRoot);
   }
 
+  rename(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    throw new Error('Not implemented');
+  }
+
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     const result: ?Array<HackTypedRegion> = (await callHHClient(
       /* args */ ['--colour', filePath],

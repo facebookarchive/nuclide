@@ -80,6 +80,14 @@ export class NullLanguageService {
     return Observable.of(null).publish();
   }
 
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    return Promise.resolve(null);
+  }
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     return Promise.resolve(null);
   }

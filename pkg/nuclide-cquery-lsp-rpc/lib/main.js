@@ -83,6 +83,12 @@ export interface CqueryLanguageService extends LanguageService {
     position: atom$Point,
   ): ConnectableObservable<?FindReferencesReturn>;
 
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>>;
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
 
   onToggleCoverage(set: boolean): Promise<void>;

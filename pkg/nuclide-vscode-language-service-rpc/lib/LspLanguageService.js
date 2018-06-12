@@ -1916,6 +1916,14 @@ export class LspLanguageService {
     };
   }
 
+  rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    return Promise.resolve(null);
+  }
+
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     if (
       this._state !== 'Running' ||

@@ -259,6 +259,15 @@ class PythonSingleFileLanguageService {
     };
   }
 
+  rename(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    throw new Error('Not Yet Implemented');
+  }
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     throw new Error('Not Yet Implemented');
   }

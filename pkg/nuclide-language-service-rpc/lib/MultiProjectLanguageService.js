@@ -315,6 +315,18 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       .publish();
   }
 
+  async rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    return (await this._getLanguageServiceForFile(fileVersion.filePath)).rename(
+      fileVersion,
+      position,
+      newName,
+    );
+  }
+
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     return (await this._getLanguageServiceForFile(filePath)).getCoverage(
       filePath,

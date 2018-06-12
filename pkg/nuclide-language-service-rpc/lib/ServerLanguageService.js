@@ -76,6 +76,13 @@ export type SingleFileLanguageService = {
     position: atom$Point,
   ): Observable<?FindReferencesReturn>,
 
+  rename(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>>,
+
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
   getOutline(
@@ -234,6 +241,19 @@ export class ServerLanguageService<
         return this._service.findReferences(filePath, buffer, position);
       })
       .publish();
+  }
+
+  async rename(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    newName: string,
+  ): Promise<?Map<NuclideUri, Array<TextEdit>>> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+    return this._service.rename(filePath, buffer, position, newName);
   }
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
