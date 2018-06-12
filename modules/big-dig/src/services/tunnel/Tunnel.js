@@ -125,6 +125,18 @@ export class Tunnel extends EventEmitter {
     return this._id;
   }
 
+  getLocalPort(): number {
+    return this._localPort;
+  }
+
+  getRemotePort(): number {
+    return this._remotePort;
+  }
+
+  getUseIPv4(): boolean {
+    return this._useIPv4;
+  }
+
   close() {
     this._isClosed = true;
     this.emit('close');

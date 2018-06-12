@@ -14,7 +14,7 @@ import type {Subscription} from 'rxjs';
 import type {Transport} from './Proxy';
 import {SocketManager} from './SocketManager';
 import {Proxy} from './Proxy';
-import {Tunnel} from './Tunnel';
+import {Tunnel, ReverseTunnel} from './Tunnel';
 import Encoder from './Encoder';
 
 import invariant from 'assert';
@@ -70,17 +70,30 @@ export class TunnelManager {
       !this._isClosed,
       'trying to create a tunnel with a closed tunnel manager',
     );
+
+    const localUseIPv4 = useIPv4 != null ? useIPv4 : false;
+
     this._logger.info(`creating tunnel ${localPort}->${remotePort}`);
-    const tunnel = await Tunnel.createTunnel(
+    let tunnel = this._checkForExistingTunnel(
       localPort,
       remotePort,
-      useIPv4 != null ? useIPv4 : false,
-      this._transport,
+      localUseIPv4,
+      false,
     );
-    this._idToTunnel.set(tunnel.getId(), tunnel);
-    tunnel.once('close', () => {
-      this._idToTunnel.delete(tunnel.getId());
-    });
+
+    if (tunnel == null) {
+      tunnel = await Tunnel.createTunnel(
+        localPort,
+        remotePort,
+        localUseIPv4,
+        this._transport,
+      );
+      this._idToTunnel.set(tunnel.getId(), tunnel);
+      tunnel.once('close', () => {
+        invariant(tunnel != null);
+        this._idToTunnel.delete(tunnel.getId());
+      });
+    }
     return tunnel;
   }
 
@@ -93,17 +106,30 @@ export class TunnelManager {
       !this._isClosed,
       'trying to create a reverse tunnel with a closed tunnel manager',
     );
+
+    const localUseIPv4 = useIPv4 != null ? useIPv4 : false;
+
     this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
-    const tunnel = await Tunnel.createReverseTunnel(
+    let tunnel = this._checkForExistingTunnel(
       localPort,
       remotePort,
-      useIPv4 != null ? useIPv4 : false,
-      this._transport,
+      localUseIPv4,
+      true,
     );
-    this._idToTunnel.set(tunnel.getId(), tunnel);
-    tunnel.once('close', () => {
-      this._idToTunnel.delete(tunnel.getId());
-    });
+
+    if (tunnel == null) {
+      tunnel = await Tunnel.createReverseTunnel(
+        localPort,
+        remotePort,
+        localUseIPv4,
+        this._transport,
+      );
+      this._idToTunnel.set(tunnel.getId(), tunnel);
+      tunnel.once('close', () => {
+        invariant(tunnel != null);
+        this._idToTunnel.delete(tunnel.getId());
+      });
+    }
     return tunnel;
   }
 
@@ -118,6 +144,42 @@ export class TunnelManager {
 
   get tunnels(): Array<Tunnel | SocketManager | Proxy> {
     return Array.from(this._idToTunnel.values());
+  }
+
+  _checkForExistingTunnel(
+    localPort: number,
+    remotePort: number,
+    useIPv4: boolean,
+    isReverse: boolean,
+  ): ?Tunnel {
+    for (const tunnel of this._idToTunnel.values()) {
+      if (tunnel instanceof Tunnel) {
+        if (
+          localPort === tunnel.getLocalPort() &&
+          remotePort === tunnel.getRemotePort() &&
+          useIPv4 === tunnel.getUseIPv4()
+        ) {
+          if (
+            (isReverse && tunnel instanceof ReverseTunnel) ||
+            (!isReverse && !(tunnel instanceof ReverseTunnel))
+          ) {
+            return tunnel;
+          } else {
+            throw new Error(
+              "there is already a tunnel with those ports, but it's in the wrong direction",
+            );
+          }
+        } else if (localPort === tunnel.getLocalPort()) {
+          throw new Error(
+            `there already exists a tunnel connecting to localPort ${localPort}`,
+          );
+        } else if (remotePort === tunnel.getRemotePort()) {
+          throw new Error(
+            `there already exists a tunnel connecting to remotePort ${remotePort}`,
+          );
+        }
+      }
+    }
   }
 
   async _handleMessage(msg: Object /* TunnelMessage? */): Promise<void> {
