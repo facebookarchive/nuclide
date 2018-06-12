@@ -9,6 +9,7 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-debugger-java",
   "scripts": {
     "prepublish": "../scripts/prepublish.sh",
+    "postinstall": "./javaDebuggerPostInstallSetup.sh",
     "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec",
     "lint": "../../node_modules/.bin/eslint .",
     "flow": "../../node_modules/.bin/flow"

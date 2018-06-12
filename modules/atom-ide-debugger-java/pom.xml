@@ -71,6 +71,11 @@
   </pluginRepositories>
   <dependencies>
     <dependency>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
+      <version>3.6.3</version>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.scout.sdk.deps</groupId>
       <artifactId>org.eclipse.jdt.core</artifactId>
       <version>3.12.0.v20160516-2131</version>

@@ -10,3 +10,6 @@ dependency-reduced-pom.xml
 *.jar
 plugin.xml
 pom.properties
+createdFiles.lst
+inputFiles.lst
+plugin.properties
