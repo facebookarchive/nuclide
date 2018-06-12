@@ -15,7 +15,7 @@
 export default (async function waitsFor(
   fn: () => boolean,
   message?: string,
-  timeout: number = 1000,
+  timeout: number = 4500,
 ) {
   const error = new Error(
     message != null
