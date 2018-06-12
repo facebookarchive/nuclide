@@ -15,13 +15,13 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type React from 'react';
 
 import {FileTreeNode} from './FileTreeNode';
-import FileTreeStore, {VERSION} from './FileTreeStore';
 import * as Immutable from 'immutable';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {ExportStoreData} from './FileTreeStore';
+import type FileTreeStore from './FileTreeStore';
 
 export const serialize = (state: FileTreeStore): ExportStoreData => {
   const rootKeys = state._roots
@@ -30,7 +30,7 @@ export const serialize = (state: FileTreeStore): ExportStoreData => {
     .map(root => root.uri);
 
   return {
-    version: VERSION,
+    version: state.VERSION,
     childKeyMap: {},
     expandedKeysByRoot: {},
     rootKeys,

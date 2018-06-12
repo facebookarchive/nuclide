@@ -39,9 +39,6 @@ import nullthrows from 'nullthrows';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-// Used to ensure the version we serialized is the same version we are deserializing.
-export const VERSION = 1;
-
 import type {FileTreeAction} from './FileTreeDispatcher';
 import type {Directory} from './FileTreeHelpers';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -124,6 +121,7 @@ const actionTrackers: Map<string, HistogramTracker> = new Map();
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
 export default class FileTreeStore {
+  VERSION: number;
   _roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
   _openFilesExpanded: boolean;
   _uncommittedChangesExpanded: boolean;
@@ -160,6 +158,9 @@ export default class FileTreeStore {
   _maxComponentWidth: number;
 
   constructor() {
+    // Used to ensure the version we serialized is the same version we are deserializing.
+    this.VERSION = 1;
+
     this._roots = Immutable.OrderedMap();
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
@@ -196,7 +197,7 @@ export default class FileTreeStore {
    */
   loadData(data: ExportStoreData): void {
     // Ensure we are not trying to load data from an earlier version of this package.
-    if (data.version !== VERSION) {
+    if (data.version !== this.VERSION) {
       return;
     }
 
