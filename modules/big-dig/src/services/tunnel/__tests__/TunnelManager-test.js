@@ -81,6 +81,30 @@ describe('TunnelManager', () => {
     tunnelManager.close();
   });
 
+  it('should not close a tunnel until all references are removed', async () => {
+    const tunnelA = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
+    const tunnelB = await tunnelManager.createReverseTunnel(
+      TEST_PORT_3,
+      TEST_PORT_4,
+    );
+    const tunnelC = await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_2);
+    const tunnelD = await tunnelManager.createReverseTunnel(
+      TEST_PORT_3,
+      TEST_PORT_4,
+    );
+
+    expect(tunnelManager.tunnels.length).toBe(2);
+    tunnelA.close();
+    expect(tunnelManager.tunnels.length).toBe(2);
+    tunnelC.close();
+    expect(tunnelManager.tunnels.length).toBe(1);
+    tunnelB.close();
+    expect(tunnelManager.tunnels.length).toBe(1);
+    tunnelD.close();
+    expect(tunnelManager.tunnels.length).toBe(0);
+    tunnelManager.close();
+  });
+
   it('should close all tunnels when closed', async () => {
     await tunnelManager.createTunnel(TEST_PORT_1, TEST_PORT_1);
     await tunnelManager.createTunnel(TEST_PORT_2, TEST_PORT_2);

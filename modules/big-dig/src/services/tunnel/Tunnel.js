@@ -28,6 +28,7 @@ export class Tunnel extends EventEmitter {
   _id: string;
   _isClosed: boolean;
   _logger: log4js$Logger;
+  _refCount: number;
 
   constructor(
     id: string,
@@ -46,6 +47,7 @@ export class Tunnel extends EventEmitter {
     this._transport = transport;
     this._isClosed = false;
     this._logger = getLogger('tunnel');
+    this._refCount = 1;
 
     if (this._proxy != null) {
       this._proxy.once('error', error => {
@@ -115,6 +117,14 @@ export class Tunnel extends EventEmitter {
     );
   }
 
+  incrementRefCount(): void {
+    this._refCount++;
+  }
+
+  hasReferences(): boolean {
+    return this._refCount > 0;
+  }
+
   receive(msg: Object): void {
     if (this._proxy != null) {
       this._proxy.receive(msg);
@@ -137,11 +147,23 @@ export class Tunnel extends EventEmitter {
     return this._useIPv4;
   }
 
+  getRefCount(): number {
+    return this._refCount;
+  }
+
+  forceClose(): void {
+    this._refCount = 0;
+    this.close();
+  }
+
   close() {
-    this._isClosed = true;
-    this.emit('close');
-    invariant(this._proxy);
-    this._proxy.close();
+    this._refCount--;
+    if (!this.hasReferences()) {
+      this._isClosed = true;
+      this.emit('close');
+      invariant(this._proxy);
+      this._proxy.close();
+    }
   }
 }
 
@@ -171,16 +193,19 @@ export class ReverseTunnel extends Tunnel {
   }
 
   close() {
-    this._isClosed = true;
-    this.emit('close');
-    invariant(this._socketManager);
-    this._socketManager.close();
-    this._transport.send(
-      JSON.stringify({
-        event: 'closeProxy',
-        tunnelId: this._id,
-      }),
-    );
+    this._refCount--;
+    if (!this.hasReferences()) {
+      this._isClosed = true;
+      this.emit('close');
+      invariant(this._socketManager);
+      this._socketManager.close();
+      this._transport.send(
+        JSON.stringify({
+          event: 'closeProxy',
+          tunnelId: this._id,
+        }),
+      );
+    }
   }
 }
 

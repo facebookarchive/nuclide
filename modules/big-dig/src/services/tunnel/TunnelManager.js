@@ -133,6 +133,8 @@ export class TunnelManager {
         invariant(tunnel != null);
         this._idToTunnel.delete(tunnel.getId());
       });
+    } else {
+      tunnel.incrementRefCount();
     }
     return tunnel;
   }
@@ -140,7 +142,11 @@ export class TunnelManager {
   close(): void {
     this._logger.trace('closing tunnel manager');
     this._idToTunnel.forEach(tunnel => {
-      tunnel.close();
+      if (tunnel instanceof SocketManager || tunnel instanceof Proxy) {
+        tunnel.close();
+      } else {
+        tunnel.forceClose();
+      }
     });
     this._idToTunnel.clear();
     this._isClosed = true;
