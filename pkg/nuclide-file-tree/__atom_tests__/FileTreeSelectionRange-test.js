@@ -99,7 +99,7 @@ describe('FileTreeSelectionRange', () => {
   });
 
   describe('RangeUtil', () => {
-    const store = FileTreeStore.getInstance();
+    const store = new FileTreeStore();
     const actions = new FileTreeActions(store);
 
     async function prepareFileTree(): Promise<Map<string, string>> {

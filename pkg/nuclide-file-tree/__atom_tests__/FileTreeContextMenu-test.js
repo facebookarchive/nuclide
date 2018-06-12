@@ -21,7 +21,7 @@ describe('FileTreeContextMenu', () => {
   let menu: FileTreeContextMenu;
 
   beforeEach(async () => {
-    menu = new FileTreeContextMenu(FileTreeStore.getInstance());
+    menu = new FileTreeContextMenu(new FileTreeStore());
     await waitsFor(() => fileTreeItemsOrNull() != null);
   });
 

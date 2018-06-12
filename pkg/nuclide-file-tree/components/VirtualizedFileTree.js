@@ -372,6 +372,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
         <div key={key} style={style}>
           <ProjectSelection
             ref={this._setFooterRef}
+            store={this.props.store}
             remeasureHeight={this._clearFooterHeight}
           />
         </div>

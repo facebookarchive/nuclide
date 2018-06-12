@@ -158,21 +158,6 @@ export default class FileTreeStore {
 
   _maxComponentWidth: number;
 
-  static getInstance(): FileTreeStore {
-    if (!instance) {
-      instance = new FileTreeStore();
-    }
-    return instance;
-  }
-
-  static dispose(): void {
-    if (instance != null) {
-      instance.dispose();
-    }
-
-    instance = null;
-  }
-
   constructor() {
     this.roots = Immutable.OrderedMap();
     this._dispatcher = FileTreeDispatcher.getInstance();

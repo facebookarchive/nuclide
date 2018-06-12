@@ -27,7 +27,7 @@ export const setup = () => {
   document.body.appendChild(testContainer);
   testContainer.appendChild(workspaceElement);
   // console.log(document.body.innerHTML);
-  const store = FileTreeStore.getInstance();
+  const store = new FileTreeStore();
   const controller = new FileTreeController(store, new FileTreeActions(store));
   return {controller};
 };

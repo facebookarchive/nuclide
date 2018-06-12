@@ -66,7 +66,7 @@ function renderEntryComponentIntoDocument(
 }
 
 describe('Directory FileTreeEntryComponent', () => {
-  const store = new FileTreeStore.getInstance();
+  const store = new FileTreeStore();
   const actions = new FileTreeActions(store);
 
   describe('when expanding/collapsing dir component', () => {
@@ -95,7 +95,7 @@ describe('Directory FileTreeEntryComponent', () => {
 });
 
 describe('File FileTreeEntryComponent', () => {
-  const store = new FileTreeStore.getInstance();
+  const store = new FileTreeStore();
   const actions = new FileTreeActions(store);
 
   describe('when expanding/collapsing file component', () => {

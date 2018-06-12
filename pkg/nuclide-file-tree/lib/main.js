@@ -109,7 +109,7 @@ class Activation {
       },
     );
 
-    this._store = FileTreeStore.getInstance();
+    this._store = new FileTreeStore();
     this._actions = new FileTreeActions(this._store);
     const initialState = state == null ? null : state.tree;
     if (initialState != null) {

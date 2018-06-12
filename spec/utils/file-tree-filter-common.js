@@ -24,7 +24,7 @@ import type {TestContext} from './remotable-tests';
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
-    const store = FileTreeStore.getInstance();
+    const store = new FileTreeStore();
     const actions = new FileTreeActions(store);
     let elem;
     waitsFor('DOM to load', 10000, () => {

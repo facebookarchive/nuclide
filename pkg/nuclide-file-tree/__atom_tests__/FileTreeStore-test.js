@@ -46,7 +46,7 @@ describe('FileTreeStore', () => {
   let fooTxt = '';
   let dir2 = '';
 
-  let store = FileTreeStore.getInstance();
+  const store = new FileTreeStore();
   const actions = new FileTreeActions(store);
 
   /*
@@ -79,7 +79,6 @@ describe('FileTreeStore', () => {
   }
 
   beforeEach(async () => {
-    store = FileTreeStore.getInstance();
     actions.reset();
     await tempCleanup();
     jest.clearAllMocks();

@@ -17,6 +17,7 @@ import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {|
   remeasureHeight: () => mixed,
+  store: FileTreeStore,
 |};
 
 type State = {|
@@ -24,12 +25,10 @@ type State = {|
 |};
 
 export class ProjectSelection extends React.Component<Props, State> {
-  _store: FileTreeStore;
   _disposables: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this._store = FileTreeStore.getInstance();
     this._disposables = new UniversalDisposable();
     this.state = {
       extraContent: this.calculateExtraContent(),
@@ -40,7 +39,7 @@ export class ProjectSelection extends React.Component<Props, State> {
     this._processExternalUpdate();
 
     this._disposables.add(
-      this._store.subscribe(this._processExternalUpdate.bind(this)),
+      this.props.store.subscribe(this._processExternalUpdate.bind(this)),
     );
   }
 
@@ -68,7 +67,7 @@ export class ProjectSelection extends React.Component<Props, State> {
   }
 
   calculateExtraContent() {
-    const list = this._store.getExtraProjectSelectionContent();
+    const list = this.props.store.getExtraProjectSelectionContent();
     if (list.isEmpty()) {
       return null;
     }
