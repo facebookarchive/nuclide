@@ -286,21 +286,21 @@ describe('FileTreeStore', () => {
       expect(store.getFilter()).toEqual('');
       actions.setRootKeys([dir1]);
       checkNode('', true);
-      store.addFilterLetter(node.name);
+      actions.addFilterLetter(node.name);
       expect(store.getFilter()).toEqual(node.name);
       checkNode(node.name, true);
     }
 
     function doubleFilter() {
       updateFilter();
-      store.addFilterLetter(node.name);
+      actions.addFilterLetter(node.name);
       expect(store.getFilter()).toEqual(node.name + node.name);
       checkNode('', false);
     }
 
     function clearFilter() {
       updateFilter();
-      store.addFilterLetter('t');
+      actions.addFilterLetter('t');
       checkNode('', false);
       actions.clearFilter();
       checkNode('', true);

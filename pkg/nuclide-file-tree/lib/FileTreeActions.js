@@ -562,6 +562,13 @@ export default class FileTreeActions {
     });
   }
 
+  addFilterLetter(letter: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.ADD_FILTER_LETTER,
+      letter,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<

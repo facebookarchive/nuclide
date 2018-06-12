@@ -511,6 +511,9 @@ export class FileTreeStore {
       case ActionTypes.UPDATE_GENERATED_STATUS:
         this._updateGeneratedStatus(payload.filesToCheck);
         break;
+      case ActionTypes.ADD_FILTER_LETTER:
+        this._addFilterLetter(payload.letter);
+        break;
     }
 
     const end = performance.now();
@@ -864,7 +867,7 @@ export class FileTreeStore {
    * return as promise, to make the caller oblivious to the way children were
    * fetched.
    */
-  async promiseNodeChildKeys(
+  async _promiseNodeChildKeys(
     rootKey: string,
     nodeKey: string,
   ): Promise<Array<NuclideUri>> {
@@ -886,7 +889,7 @@ export class FileTreeStore {
     }
 
     await this._fetchChildKeys(nodeKey);
-    return this.promiseNodeChildKeys(rootKey, nodeKey);
+    return this._promiseNodeChildKeys(rootKey, nodeKey);
   }
 
   getSelectedNodes(): Immutable.List<FileTreeNode> {
@@ -1190,7 +1193,7 @@ export class FileTreeStore {
     return this._filter;
   }
 
-  addFilterLetter(letter: string): void {
+  _addFilterLetter(letter: string): void {
     this._filter = this._filter + letter;
     this._updateRoots(root => {
       return root.setRecursive(
@@ -2343,7 +2346,7 @@ class FileTreeStoreBfsIterator {
     // flowlint-next-line sketchy-null-string:off
     if (!this._promise && currentlyTraversedNode) {
       this._promise = this._fileTreeStore
-        .promiseNodeChildKeys(this._rootKey, currentlyTraversedNode)
+        ._promiseNodeChildKeys(this._rootKey, currentlyTraversedNode)
         .then(this._handlePromiseResolution.bind(this));
     }
     return this._promise;

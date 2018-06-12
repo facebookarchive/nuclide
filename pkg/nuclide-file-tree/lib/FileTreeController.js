@@ -240,7 +240,7 @@ export default class FileTreeController {
       return;
     }
 
-    this._store.addFilterLetter(letter);
+    this._actions.addFilterLetter(letter);
   }
 
   _handleRemoveLetterKeypress(): void {

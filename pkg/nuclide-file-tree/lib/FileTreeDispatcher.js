@@ -250,6 +250,10 @@ export type FileTreeAction =
   | {
       actionType: 'UPDATE_GENERATED_STATUS',
       filesToCheck: Iterable<NuclideUri>,
+    }
+  | {
+      actionType: 'ADD_FILTER_LETTER',
+      letter: string,
     };
 
 export const ActionTypes = Object.freeze({
@@ -311,6 +315,7 @@ export const ActionTypes = Object.freeze({
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
   SET_TARGET_NODE: 'SET_TARGET_NODE',
   UPDATE_GENERATED_STATUS: 'UPDATE_GENERATED_STATUS',
+  ADD_FILTER_LETTER: 'ADD_FILTER_LETTER',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.
