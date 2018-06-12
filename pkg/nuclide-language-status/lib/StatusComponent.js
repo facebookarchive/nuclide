@@ -79,7 +79,7 @@ export default class StatusComponent extends React.Component<Props, State> {
     const message = (
       <div
         dangerouslySetInnerHTML={{
-          __html: marked(data.message),
+          __html: data.message == null ? '' : marked(data.message),
         }}
       />
     );
@@ -99,10 +99,10 @@ export default class StatusComponent extends React.Component<Props, State> {
   };
 
   _renderDetailsProgress(data: StatusData): ?React.Node {
-    if (data.kind !== 'yellow' || data.fraction == null) {
+    if (data.kind !== 'yellow' || data.shortMessage == null) {
       return null;
     }
-    return <div>Progress: {(data.fraction * 100).toFixed(2)}%</div>;
+    return <div>{data.shortMessage}</div>;
   }
 
   _renderDetailsButtons = (status: ServerStatus): ?React.Node => {

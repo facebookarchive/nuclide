@@ -305,7 +305,7 @@ export class LspConnection {
 
   onShowStatusRequest(
     callback: (
-      p.ShowMessageRequestParams,
+      p.ShowStatusParams,
       CancellationToken,
     ) => Promise<?p.MessageActionItem>,
   ): void {

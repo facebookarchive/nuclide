@@ -134,8 +134,13 @@ export type CodeLensData = {
 // Messages in StatusData are interpreted as Markdown.
 export type StatusData =
   | {|kind: 'null'|}
-  | {|kind: 'green', message: string|}
-  | {|kind: 'yellow', message: string, fraction?: number|}
+  | {|kind: 'green', message?: string|}
+  | {|
+      kind: 'yellow',
+      message: string,
+      shortMessage?: string,
+      progress?: {|numerator: number, denominator?: number|},
+    |}
   | {|
       kind: 'red',
       id?: string,

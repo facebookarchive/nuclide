@@ -54,6 +54,7 @@ import type {
   LogMessageParams,
   ShowMessageParams,
   ShowMessageRequestParams,
+  ShowStatusParams,
   MessageActionItem,
   ProgressParams,
   ActionRequiredParams,
@@ -1230,7 +1231,7 @@ export class LspLanguageService {
   }
 
   async _handleStatusRequest(
-    params: ShowMessageRequestParams,
+    params: ShowStatusParams,
     token: rpc.CancellationToken,
   ): Promise<?MessageActionItem> {
     // CARE! This method may be called before initialization has finished.
@@ -1242,12 +1243,23 @@ export class LspLanguageService {
       case LspMessageType.Error:
         status = {
           kind: 'red',
-          message: params.message,
+          message: params.message == null ? '' : params.message,
           buttons: actions.map(action => action.title),
         };
         break;
       case LspMessageType.Warning:
-        status = {kind: 'yellow', message: params.message};
+        status = {
+          kind: 'yellow',
+          message: params.message == null ? '' : params.message,
+          shortMessage: params.shortMessage,
+          progress:
+            params.progress == null
+              ? undefined
+              : {
+                  numerator: params.progress.numerator,
+                  denominator: params.progress.denominator,
+                },
+        };
         break;
       case LspMessageType.Info:
         status = {kind: 'green', message: params.message};
