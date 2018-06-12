@@ -13,6 +13,8 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import JediServerManager from '../lib/JediServerManager';
 
+jest.setTimeout(20000);
+
 const FIXTURE = nuclideUri.join(
   __dirname,
   '../__mocks__/fixtures/signature_help.py',

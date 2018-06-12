@@ -19,6 +19,8 @@ import JediServerManager from '../lib/JediServerManager';
 import TextBuffer from 'simple-text-buffer';
 import {Point} from 'simple-text-buffer';
 
+jest.setTimeout(20000);
+
 // make sure we don't save absolute paths in snapshots
 const replacePath = str => str.replace(/.*__mocks__/, '<REPLACED>/__mocks__');
 
@@ -55,242 +57,218 @@ describe('PythonService', () => {
 
   describe('Completions', () => {
     it('gives a rejected promise when an invalid request is given', async () => {
-      await (async () => {
-        // Basically everything is wrong here, but politely reject the promise.
-        try {
-          await getCompletions(serverManager, 'potato', 'tomato', 6, 15);
-          // Fail - this line should not be reachable.
-          invariant(false);
-        } catch (e) {
-          // Python process should respond with a Traceback for what went wrong while
-          // processing the request.
-          expect(e.startsWith('Traceback')).toBeTruthy();
-        }
-      })();
+      // Basically everything is wrong here, but politely reject the promise.
+      try {
+        await getCompletions(serverManager, 'potato', 'tomato', 6, 15);
+        // Fail - this line should not be reachable.
+        invariant(false);
+      } catch (e) {
+        // Python process should respond with a Traceback for what went wrong while
+        // processing the request.
+        expect(e.startsWith('Traceback')).toBeTruthy();
+      }
     });
 
     it('can make completion suggestions for imported module member functions', async () => {
-      await (async () => {
-        // line 12: def hello = os.path.isab
-        const response = await getCompletions(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          11,
-          20,
-        );
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+      // line 12: def hello = os.path.isab
+      const response = await getCompletions(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        11,
+        20,
+      );
+      invariant(response);
+      expect(response.length).toBeGreaterThan(0);
 
-        const completion = response[0];
-        expect(completion.text).toEqual('isabs');
-        expect(completion.type).toEqual('function');
-        // Check that description exists.
-        expect(completion.description).toBeTruthy();
-      })();
+      const completion = response[0];
+      expect(completion.text).toEqual('isabs');
+      expect(completion.type).toEqual('function');
+      // Check that description exists.
+      expect(completion.description).toBeTruthy();
     });
 
     it('can make completion suggestions for locally defined variables', async () => {
-      await (async () => {
-        // line 14: potato2 = po
-        const response = await getCompletions(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          13,
-          12,
-        );
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+      // line 14: potato2 = po
+      const response = await getCompletions(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        13,
+        12,
+      );
+      invariant(response);
+      expect(response.length).toBeGreaterThan(0);
 
-        const completion = response[0];
-        expect(completion.text).toEqual('potato');
-        expect(completion.type).toEqual('statement');
-      })();
+      const completion = response[0];
+      expect(completion.text).toEqual('potato');
+      expect(completion.type).toEqual('statement');
     });
 
     it('does not return params for @property methods', async () => {
-      await (async () => {
-        // line 18: a.t
-        const response = await getCompletions(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          17,
-          3,
-        );
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+      // line 18: a.t
+      const response = await getCompletions(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        17,
+        3,
+      );
+      invariant(response);
+      expect(response.length).toBeGreaterThan(0);
 
-        const completion = response[0];
-        expect(completion.text).toEqual('test');
-        expect(completion.type).toEqual('function');
-        expect(completion.params).toBeFalsy();
-      })();
+      const completion = response[0];
+      expect(completion.text).toEqual('test');
+      expect(completion.type).toEqual('function');
+      expect(completion.params).toBeFalsy();
     });
 
     it('includes parameters for assignment completions', async () => {
-      await (async () => {
-        // line 26: a = Tes
-        const response = await getCompletions(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          25,
-          7,
-        );
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+      // line 26: a = Tes
+      const response = await getCompletions(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        25,
+        7,
+      );
+      invariant(response);
+      expect(response.length).toBeGreaterThan(0);
 
-        const completion = response[0];
-        expect(completion.text).toEqual('Test');
-        expect(completion.type).toEqual('class');
-        expect(completion.params).toEqual([]);
-      })();
+      const completion = response[0];
+      expect(completion.text).toEqual('Test');
+      expect(completion.type).toEqual('class');
+      expect(completion.params).toEqual([]);
     });
 
     it('does not include parameters for import statement completions', async () => {
-      await (async () => {
-        // line 9: from decorated import Test
-        const response = await getCompletions(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          8,
-          26,
-        );
-        invariant(response);
-        expect(response.length).toBeGreaterThan(0);
+      // line 9: from decorated import Test
+      const response = await getCompletions(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        8,
+        26,
+      );
+      invariant(response);
+      expect(response.length).toBeGreaterThan(0);
 
-        const completion = response[0];
-        expect(completion.text).toEqual('Test');
-        expect(completion.type).toEqual('class');
-        expect(completion.params).toBeFalsy();
-      })();
+      const completion = response[0];
+      expect(completion.text).toEqual('Test');
+      expect(completion.type).toEqual('class');
+      expect(completion.params).toBeFalsy();
     });
   });
 
   describe('Definitions', () => {
     it('gives a rejected promise when an invalid request is given', async () => {
-      await (async () => {
-        // Basically everything is wrong here, but politely reject the promise.
-        try {
-          const service = await serverManager.getJediService();
-          await service.get_definitions('potato', 'tomato', [], 6, 15);
-          // Fail - this line should not be reachable.
-          invariant(false);
-        } catch (e) {
-          // Python process should respond with a Traceback for what went wrong while
-          // processing the request.
-          expect(e.startsWith('Traceback')).toBeTruthy();
-        }
-      })();
+      // Basically everything is wrong here, but politely reject the promise.
+      try {
+        const service = await serverManager.getJediService();
+        await service.get_definitions('potato', 'tomato', [], 6, 15);
+        // Fail - this line should not be reachable.
+        invariant(false);
+      } catch (e) {
+        // Python process should respond with a Traceback for what went wrong while
+        // processing the request.
+        expect(e.startsWith('Traceback')).toBeTruthy();
+      }
     });
 
     it('can find definitions for imported modules', async () => {
-      await (async () => {
-        // line 9: import os
-        const response = await getDefinition(
-          serverManager,
-          TEST_FILE,
-          bufferOfContents(FILE_CONTENTS),
-          new Point(7, 8),
-        );
-        invariant(response != null);
-        expect(response.definitions.length).toBeGreaterThan(0);
+      // line 9: import os
+      const response = await getDefinition(
+        serverManager,
+        TEST_FILE,
+        bufferOfContents(FILE_CONTENTS),
+        new Point(7, 8),
+      );
+      invariant(response != null);
+      expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
-        expect(definition.name).toEqual('os');
-        // Path is machine dependent, so just check that it exists and isn't empty.
-        expect(definition.path.length).toBeGreaterThan(0);
-      })();
+      const definition = response.definitions[0];
+      expect(definition.name).toEqual('os');
+      // Path is machine dependent, so just check that it exists and isn't empty.
+      expect(definition.path.length).toBeGreaterThan(0);
     });
 
     it('follows imports until a non-import definition when possible', async () => {
-      await (async () => {
-        // line 17: a = Test()
-        const response = await getDefinition(
-          serverManager,
-          TEST_FILE,
-          bufferOfContents(FILE_CONTENTS),
-          new Point(16, 7),
-        );
-        invariant(response != null);
-        expect(response.definitions.length).toBeGreaterThan(0);
+      // line 17: a = Test()
+      const response = await getDefinition(
+        serverManager,
+        TEST_FILE,
+        bufferOfContents(FILE_CONTENTS),
+        new Point(16, 7),
+      );
+      invariant(response != null);
+      expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
-        expect(definition.name).toEqual('Test');
-        // Result should be the class definition itself, not the import statement.
-        expect(definition.path).toContain('decorated.py');
-        expect(definition.position.row).toEqual(9);
-        expect(definition.position.column).toEqual(6);
-      })();
+      const definition = response.definitions[0];
+      expect(definition.name).toEqual('Test');
+      // Result should be the class definition itself, not the import statement.
+      expect(definition.path).toContain('decorated.py');
+      expect(definition.position.row).toEqual(9);
+      expect(definition.position.column).toEqual(6);
     });
 
     it('does not follow unresolvable imports', async () => {
-      await (async () => {
-        // line 27: b = Test2()
-        const response = await getDefinition(
-          serverManager,
-          TEST_FILE,
-          bufferOfContents(FILE_CONTENTS),
-          new Point(26, 7),
-        );
-        expect(response).toBe(null);
-      })();
+      // line 27: b = Test2()
+      const response = await getDefinition(
+        serverManager,
+        TEST_FILE,
+        bufferOfContents(FILE_CONTENTS),
+        new Point(26, 7),
+      );
+      expect(response).toBe(null);
     });
 
     it('can find the definitions of locally defined variables', async () => {
-      await (async () => {
-        // line 15: potato3 = potato
-        const response = await getDefinition(
-          serverManager,
-          TEST_FILE,
-          bufferOfContents(FILE_CONTENTS),
-          new Point(14, 12),
-        );
-        invariant(response != null);
-        expect(response.definitions.length).toBeGreaterThan(0);
+      // line 15: potato3 = potato
+      const response = await getDefinition(
+        serverManager,
+        TEST_FILE,
+        bufferOfContents(FILE_CONTENTS),
+        new Point(14, 12),
+      );
+      invariant(response != null);
+      expect(response.definitions.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
-        expect(definition.name).toEqual('potato');
-        expect(definition.position.row).toEqual(12);
-        // Local variable definition should be within the same file.
-        expect(definition.path).toEqual(TEST_FILE);
-      })();
+      const definition = response.definitions[0];
+      expect(definition.name).toEqual('potato');
+      expect(definition.position.row).toEqual(12);
+      // Local variable definition should be within the same file.
+      expect(definition.path).toEqual(TEST_FILE);
     });
   });
 
   describe('References', () => {
     it('can find the references of locally defined variables', async () => {
-      await (async () => {
-        // line 13: potato = 5
-        const response = await _getReferences(
-          serverManager,
-          TEST_FILE,
-          FILE_CONTENTS,
-          12,
-          2,
-        );
-        invariant(response);
+      // line 13: potato = 5
+      const response = await _getReferences(
+        serverManager,
+        TEST_FILE,
+        FILE_CONTENTS,
+        12,
+        2,
+      );
+      invariant(response);
 
-        expect(response).toEqual([
-          {
-            type: 'statement',
-            text: 'potato',
-            file: TEST_FILE,
-            line: 12,
-            column: 0,
-          },
-          {
-            type: 'statement',
-            text: 'potato',
-            file: TEST_FILE,
-            line: 14,
-            column: 10,
-          },
-        ]);
-      })();
+      expect(response).toEqual([
+        {
+          type: 'statement',
+          text: 'potato',
+          file: TEST_FILE,
+          line: 12,
+          column: 0,
+        },
+        {
+          type: 'statement',
+          text: 'potato',
+          file: TEST_FILE,
+          line: 14,
+          column: 10,
+        },
+      ]);
     });
 
     it('can find the references of imported modules', async () => {
@@ -400,19 +378,17 @@ describe('PythonService', () => {
 
   describe('Hover', () => {
     it('displays the docblock for a definition', async () => {
-      await (async () => {
-        const service = await serverManager.getJediService();
-        const response = await service.get_hover(
-          TEST_FILE,
-          FILE_CONTENTS,
-          [],
-          'Test',
-          30,
-          16,
-        );
-        invariant(response != null);
-        expect(response).toBe('This is a \\*test class.');
-      })();
+      const service = await serverManager.getJediService();
+      const response = await service.get_hover(
+        TEST_FILE,
+        FILE_CONTENTS,
+        [],
+        'Test',
+        30,
+        16,
+      );
+      invariant(response != null);
+      expect(response).toBe('This is a \\*test class.');
     });
   });
 });
