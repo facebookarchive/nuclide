@@ -10,11 +10,11 @@
  * @format
  */
 
-import type {IDebugService, IThread} from '../types';
+import type {IDebugService, IProcess} from '../types';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
-import {TreeList} from 'nuclide-commons-ui/Tree';
+import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
 import MultiTargettedDebuggerTreeNode from './MultiTargettedDebuggerTreeNode';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
@@ -38,7 +38,7 @@ type Props = {
 };
 
 type State = {
-  threadList: Array<IThread>,
+  processList: Array<IProcess>,
 };
 
 /*
@@ -159,7 +159,7 @@ export default class MultiTargettedDebuggerComponent extends React.PureComponent
   constructor(props: Props) {
     super(props);
     this.state = {
-      threadList: [],
+      processList: [],
     };
 
     this._disposables = new UniversalDisposable();
@@ -193,7 +193,7 @@ export default class MultiTargettedDebuggerComponent extends React.PureComponent
   _getState(): $Shape<State> {
     const {focusedProcess} = this.props.service.viewModel;
     return {
-      threadList: focusedProcess == null ? [] : focusedProcess.getAllThreads(),
+      processList: focusedProcess == null ? [] : [focusedProcess],
     };
   }
 
@@ -202,28 +202,45 @@ export default class MultiTargettedDebuggerComponent extends React.PureComponent
   //  Use handleConfirm() for double clicking.
 
   render(): React.Node {
-    const {threadList} = this.state;
-    const threadItems = threadList.map((thread, index) => {
+    const {processList} = this.state;
+
+    const processElements = processList.map((process, processIndex) => {
+      const threadElements = process
+        .getAllThreads()
+        .map((thread, threadIndex) => {
+          const stackFrameElements = thread
+            .getCallStack()
+            .map((frame, frameIndex) => {
+              return (
+                <TreeItem key={frameIndex}>
+                  {'Frame ID: ' + frame.frameId + ', Name: ' + frame.name}
+                </TreeItem>
+              );
+            });
+          return (
+            <MultiTargettedDebuggerTreeNode
+              title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}
+              key={threadIndex}
+              childItems={stackFrameElements}
+            />
+          );
+        });
       return (
         <MultiTargettedDebuggerTreeNode
-          title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}
-          key={index}
-          childItems={[]}
+          title={
+            'Process command: ' +
+            (process == null
+              ? ''
+              : process.configuration.adapterExecutable == null
+                ? 'Main Process'
+                : process.configuration.adapterExecutable.command)
+          }
+          key={processIndex}
+          childItems={threadElements}
         />
       );
     });
 
-    return (
-      <TreeList showArrows={true}>
-        <MultiTargettedDebuggerTreeNode
-          key={0}
-          title="Main Process"
-          childItems={threadItems}
-          ref={treeView => {
-            this._treeView = treeView;
-          }}
-        />
-      </TreeList>
-    );
+    return <TreeList showArrows={true}>{processElements}</TreeList>;
   }
 }
