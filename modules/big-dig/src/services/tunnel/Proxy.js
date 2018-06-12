@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Observable, Subscription} from 'rxjs';
+import type {Observable} from 'rxjs';
 import type {TunnelMessage} from './types';
 
 import net from 'net';
@@ -18,6 +18,7 @@ import Encoder from './Encoder';
 
 import {getLogger} from 'log4js';
 import invariant from 'assert';
+import EventEmitter from 'events';
 
 const logger = getLogger('tunnel-proxy');
 
@@ -26,12 +27,11 @@ export type Transport = {
   onMessage(): Observable<string>,
 };
 
-export class Proxy {
+export class Proxy extends EventEmitter {
   _localPort: number;
   _remotePort: number;
   _transport: Transport;
   _server: ?net.Server;
-  _subscription: ?Subscription;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
   _useIPv4: boolean;
@@ -43,13 +43,13 @@ export class Proxy {
     useIPv4: boolean,
     transport: Transport,
   ) {
+    super();
     this._tunnelId = tunnelId;
     this._localPort = localPort;
     this._remotePort = remotePort;
     this._transport = transport;
     this._useIPv4 = useIPv4;
     this._server = null;
-    this._subscription = null;
     this._socketByClientId = new Map();
   }
 
@@ -93,8 +93,11 @@ export class Proxy {
           });
         });
 
-        socket.once('error', this.destroySocket.bind(this, clientId));
-        socket.once('close', this.closeSocket.bind(this, clientId));
+        socket.once('error', error => {
+          this.emit('error', error);
+          this._destroySocket(clientId, error);
+        });
+        socket.once('close', this._closeSocket.bind(this, clientId));
       });
 
       this._server.listen({port: this._localPort}, () => {
@@ -127,7 +130,7 @@ export class Proxy {
     }
   }
 
-  closeSocket(id: number) {
+  _closeSocket(id: number) {
     logger.info(`socket ${id} closed`);
     const socket = this._socketByClientId.get(id);
     invariant(socket);
@@ -135,12 +138,12 @@ export class Proxy {
     this._socketByClientId.delete(id);
   }
 
-  destroySocket(id: number, error: Error) {
+  _destroySocket(id: number, error: Error) {
     logger.error('error on socket: ', error);
     const socket = this._socketByClientId.get(id);
     invariant(socket);
     socket.destroy(error);
-    this.closeSocket(id);
+    this._closeSocket(id);
   }
 
   _sendMessage(msg: TunnelMessage): void {
@@ -152,14 +155,10 @@ export class Proxy {
       this._server.close();
       this._server = null;
     }
-    if (this._subscription != null) {
-      this._subscription.unsubscribe();
-      this._subscription = null;
-    }
-    this._socketByClientId.forEach(socket => {
+    this._socketByClientId.forEach((socket, id) => {
       socket.end();
     });
-
+    this.removeAllListeners();
     this._sendMessage({event: 'proxyClosed'});
   }
 }

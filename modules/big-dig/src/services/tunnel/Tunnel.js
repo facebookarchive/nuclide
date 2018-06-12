@@ -46,6 +46,12 @@ export class Tunnel extends EventEmitter {
     this._transport = transport;
     this._isClosed = false;
     this._logger = getLogger('tunnel');
+
+    if (this._proxy != null) {
+      this._proxy.once('error', error => {
+        this.emit('error', error);
+      });
+    }
   }
 
   static async createTunnel(
