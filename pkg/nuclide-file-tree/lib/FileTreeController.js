@@ -84,9 +84,9 @@ export default class FileTreeController {
   _disposables: UniversalDisposable;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
-  constructor(store: FileTreeStore) {
+  constructor(store: FileTreeStore, actions: FileTreeActions) {
     this._store = store;
-    this._actions = FileTreeActions.getInstance();
+    this._actions = actions;
     this._fileSystemActions = new FileSystemActions(store);
     this._projectSelectionManager = new ProjectSelectionManager(
       this._store,

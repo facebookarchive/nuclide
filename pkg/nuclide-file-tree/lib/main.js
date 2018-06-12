@@ -38,6 +38,7 @@ import {
 } from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
+import FileTreeActions from './FileTreeActions';
 import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
@@ -112,7 +113,10 @@ class Activation {
     if (initialState != null) {
       this._store.loadData(initialState);
     }
-    this._fileTreeController = new FileTreeController(this._store);
+    this._fileTreeController = new FileTreeController(
+      this._store,
+      FileTreeActions.getInstance(),
+    );
     this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
