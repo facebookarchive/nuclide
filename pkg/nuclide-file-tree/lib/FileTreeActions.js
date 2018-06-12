@@ -569,6 +569,25 @@ export default class FileTreeActions {
     });
   }
 
+  removeFilterLetter(): mixed {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.REMOVE_FILTER_LETTER,
+    });
+  }
+
+  reset(): mixed {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.RESET,
+    });
+  }
+
+  updateMaxComponentWidth(width: ?number): mixed {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_MAX_COMPONENT_WIDTH,
+      width,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<

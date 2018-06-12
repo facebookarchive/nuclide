@@ -101,9 +101,6 @@ export type FileTreeAction =
       nodeKey: NuclideUri,
     }
   | {
-      actionType: 'SET_DROP_TARGET_NODE',
-    }
-  | {
       actionType: 'SET_USE_PREVIEW_TABS',
       usePreviewTabs: boolean,
     }
@@ -254,6 +251,16 @@ export type FileTreeAction =
   | {
       actionType: 'ADD_FILTER_LETTER',
       letter: string,
+    }
+  | {
+      actionType: 'REMOVE_FILTER_LETTER',
+    }
+  | {
+      actionType: 'RESET',
+    }
+  | {
+      actionType: 'UPDATE_MAX_COMPONENT_WIDTH',
+      width: ?number,
     };
 
 export const ActionTypes = Object.freeze({
@@ -277,7 +284,6 @@ export const ActionTypes = Object.freeze({
   REORDER_DRAG_INTO: 'REORDER_DRAG_INTO',
   REORDER_ROOTS: 'REORDER_ROOTS',
   MOVE_TO_NODE: 'MOVE_TO_NODE',
-  SET_DROP_TARGET_NODE: 'SET_DROP_TARGET_NODE',
   SET_USE_PREVIEW_TABS: 'SET_USE_PREVIEW_TABS',
   SET_USE_PREFIX_NAV: 'SET_USE_PREFIX_NAV',
   SET_AUTO_EXPAND_SINGLE_CHILD: 'SET_AUTO_EXPAND_SINGLE_CHILD',
@@ -316,6 +322,9 @@ export const ActionTypes = Object.freeze({
   SET_TARGET_NODE: 'SET_TARGET_NODE',
   UPDATE_GENERATED_STATUS: 'UPDATE_GENERATED_STATUS',
   ADD_FILTER_LETTER: 'ADD_FILTER_LETTER',
+  REMOVE_FILTER_LETTER: 'REMOVE_FILTER_LETTER',
+  RESET: 'RESET',
+  UPDATE_MAX_COMPONENT_WIDTH: 'UPDATE_MAX_COMPONENT_WIDTH',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.

@@ -62,7 +62,7 @@ describe('FileTreeController', () => {
   afterEach(() => {
     controller.destroy();
     actions.updateWorkingSet(new WorkingSet([]));
-    store.reset();
+    actions.reset();
   });
 
   describe('navigating with the keyboard', () => {

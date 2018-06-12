@@ -224,7 +224,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
           // eslint-disable-next-line nuclide-internal/jsx-simple-callback-refs
           ref={el => {
             this._arrowContainer = el;
-            store.updateMaxComponentWidth(this.props.node.name.length);
+            getActions().updateMaxComponentWidth(this.props.node.name.length);
           }}>
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {

@@ -235,7 +235,7 @@ export default class FileTreeController {
     if (!this._store.usePrefixNav()) {
       return;
     }
-    this._store.removeFilterLetter();
+    this._actions.removeFilterLetter();
   }
 
   _openAndRevealFilePath(filePath: ?string): void {
@@ -707,7 +707,7 @@ export default class FileTreeController {
     for (const disposable of this._disposableForRepository.values()) {
       disposable.dispose();
     }
-    this._store.reset();
+    this._actions.reset();
     this._contextMenu.dispose();
   }
 

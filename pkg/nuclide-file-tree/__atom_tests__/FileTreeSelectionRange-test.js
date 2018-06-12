@@ -134,7 +134,7 @@ describe('FileTreeSelectionRange', () => {
     afterEach(async () => {
       await (async () => {
         actions.updateWorkingSet(new WorkingSet([]));
-        store.reset();
+        actions.reset();
         await tempCleanup();
       })();
     });

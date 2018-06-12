@@ -514,6 +514,18 @@ export class FileTreeStore {
       case ActionTypes.ADD_FILTER_LETTER:
         this._addFilterLetter(payload.letter);
         break;
+      case ActionTypes.REMOVE_FILTER_LETTER:
+        this._removeFilterLetter();
+        break;
+      case ActionTypes.RESET:
+        this._reset();
+        break;
+      case ActionTypes.UPDATE_MAX_COMPONENT_WIDTH:
+        this._updateMaxComponentWidth(payload.width);
+        break;
+      default:
+        (payload.actionType: empty);
+        throw new Error(`Unknown actionType ${payload.actionType}`);
     }
 
     const end = performance.now();
@@ -1222,7 +1234,7 @@ export class FileTreeStore {
     });
   }
 
-  removeFilterLetter(): void {
+  _removeFilterLetter(): void {
     const oldLength = this._filter.length;
     this._filter = this._filter.substr(0, this._filter.length - 1);
     if (oldLength > 1) {
@@ -2254,7 +2266,7 @@ export class FileTreeStore {
     this._emitChange();
   }
 
-  reset(): void {
+  _reset(): void {
     this.roots.forEach(root => {
       root.traverse(n => {
         if (n.subscription != null) {
@@ -2282,7 +2294,7 @@ export class FileTreeStore {
     return this._maxComponentWidth;
   }
 
-  updateMaxComponentWidth(width: ?number): void {
+  _updateMaxComponentWidth(width: ?number): void {
     if (width != null) {
       this._maxComponentWidth = Math.max(this._maxComponentWidth, width);
     }

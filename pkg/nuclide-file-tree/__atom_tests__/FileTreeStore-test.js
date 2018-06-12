@@ -80,7 +80,7 @@ describe('FileTreeStore', () => {
 
   beforeEach(async () => {
     store = FileTreeStore.getInstance();
-    store.reset();
+    actions.reset();
     await tempCleanup();
     jest.clearAllMocks();
     jest.resetAllMocks();
@@ -323,7 +323,7 @@ describe('FileTreeStore', () => {
 
     it('should remove filter letter', () => {
       updateFilter();
-      store.removeFilterLetter();
+      actions.removeFilterLetter();
       checkNode(node.name.substr(0, node.name.length - 1), true);
       actions.clearFilter();
     });
