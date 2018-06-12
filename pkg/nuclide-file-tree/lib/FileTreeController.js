@@ -125,12 +125,24 @@ export default class FileTreeController {
     }
     this._disposables.add(
       atom.commands.add(COMMANDS_SELECTOR, {
-        'core:move-down': this._moveDown.bind(this),
-        'core:move-up': this._moveUp.bind(this),
-        'core:move-to-top': this._moveToTop.bind(this),
-        'core:move-to-bottom': this._moveToBottom.bind(this),
-        'core:select-up': this._rangeSelectUp.bind(this),
-        'core:select-down': this._rangeSelectDown.bind(this),
+        'core:move-down': () => {
+          this._actions.moveSelectionDown();
+        },
+        'core:move-up': () => {
+          this._actions.moveSelectionUp();
+        },
+        'core:move-to-top': () => {
+          this._actions.moveSelectionToTop();
+        },
+        'core:move-to-bottom': () => {
+          this._actions.moveSelectionToBottom();
+        },
+        'core:select-up': () => {
+          this._actions.rangeSelectUp();
+        },
+        'core:select-down': () => {
+          this._actions.rangeSelectDown();
+        },
         'tree-view:add-file': () => {
           FileSystemActions.openAddFileDialog(
             this._openAndRevealFilePath.bind(this),
@@ -201,30 +213,6 @@ export default class FileTreeController {
       this._store.loadData(state);
     }
     this._contextMenu = new FileTreeContextMenu();
-  }
-
-  _moveUp(): void {
-    this._actions.moveSelectionUp();
-  }
-
-  _moveDown(): void {
-    this._actions.moveSelectionDown();
-  }
-
-  _moveToTop(): void {
-    this._actions.moveSelectionToTop();
-  }
-
-  _moveToBottom(): void {
-    this._actions.moveSelectionToBottom();
-  }
-
-  _rangeSelectUp(): void {
-    this._actions.rangeSelectUp();
-  }
-
-  _rangeSelectDown(): void {
-    this._actions.rangeSelectDown();
   }
 
   getContextMenu(): FileTreeContextMenu {
