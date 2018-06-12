@@ -12,7 +12,7 @@
 import {Directory} from 'atom';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';

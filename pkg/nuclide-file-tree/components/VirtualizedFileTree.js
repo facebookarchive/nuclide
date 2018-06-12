@@ -18,7 +18,7 @@ import List from 'react-virtualized/dist/commonjs/List';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';

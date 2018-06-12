@@ -16,7 +16,7 @@ import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';

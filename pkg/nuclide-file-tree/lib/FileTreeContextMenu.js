@@ -21,7 +21,7 @@ import {
   OPEN_FILES_MENU_SELECTOR,
   COMMANDS_SELECTOR,
 } from './FileTreeConstants';
-import {FileTreeStore} from './FileTreeStore';
+import FileTreeStore from './FileTreeStore';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';

@@ -11,7 +11,7 @@
 
 import {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
-import {FileTreeStore} from './FileTreeStore';
+import FileTreeStore from './FileTreeStore';
 import * as Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import {repositoryForPath} from '../../nuclide-vcs-base';

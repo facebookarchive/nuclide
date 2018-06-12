@@ -20,7 +20,7 @@ import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import FileTreeHelpers from './FileTreeHelpers';
-import {FileTreeStore} from './FileTreeStore';
+import FileTreeStore from './FileTreeStore';
 import * as Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 import nullthrows from 'nullthrows';

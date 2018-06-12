@@ -12,7 +12,7 @@
 import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {|

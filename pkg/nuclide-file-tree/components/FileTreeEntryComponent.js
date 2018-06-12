@@ -23,7 +23,7 @@ import nullthrows from 'nullthrows';
 import {filterName} from '../lib/FileTreeFilterHelper';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';

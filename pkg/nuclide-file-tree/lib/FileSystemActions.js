@@ -19,7 +19,7 @@ import invariant from 'assert';
 import {openDialog, closeDialog} from '../../nuclide-ui/FileActionModal';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
-import {FileTreeStore} from './FileTreeStore';
+import FileTreeStore from './FileTreeStore';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {File} from 'atom';

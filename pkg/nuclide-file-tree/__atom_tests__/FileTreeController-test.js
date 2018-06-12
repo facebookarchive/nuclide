@@ -12,7 +12,7 @@
 import {setup} from '../__mocks__/file_tree_setup';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import path from 'path';

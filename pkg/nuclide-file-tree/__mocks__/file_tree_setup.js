@@ -15,7 +15,7 @@ import path from 'path';
 import invariant from 'assert';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 
 export const setup = () => {
   const fixturesPath = path.resolve(__dirname, './fixtures');

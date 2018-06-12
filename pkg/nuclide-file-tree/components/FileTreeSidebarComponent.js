@@ -45,7 +45,7 @@ import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import {LockableHeight} from './LockableHeightComponent';
 import FileTreeActions from '../lib/FileTreeActions';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';

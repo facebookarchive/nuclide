@@ -123,7 +123,7 @@ const actionTrackers: Map<string, HistogramTracker> = new Map();
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-export class FileTreeStore {
+export default class FileTreeStore {
   roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
   openFilesExpanded: boolean;
   uncommittedChangesExpanded: boolean;

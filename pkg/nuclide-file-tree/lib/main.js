@@ -46,7 +46,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
-import {FileTreeStore} from './FileTreeStore';
+import FileTreeStore from './FileTreeStore';
 
 type SerializedState = {
   tree: ExportStoreData,

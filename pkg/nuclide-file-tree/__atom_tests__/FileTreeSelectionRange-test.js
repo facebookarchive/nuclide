@@ -18,7 +18,7 @@ import {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import FileTreeActions from '../lib/FileTreeActions';
-import {FileTreeStore} from '../lib/FileTreeStore';
+import FileTreeStore from '../lib/FileTreeStore';
 import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 import {DEFAULT_CONF} from '../lib/FileTreeStore';
 import {WorkingSet} from '../../nuclide-working-sets-common';
