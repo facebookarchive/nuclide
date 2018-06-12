@@ -48,6 +48,10 @@ export async function registerCustomPath(path: ?string): Promise<void> {
   getStore(ADB).registerCustomPath(path);
 }
 
+export async function getAPIVersion(device: DeviceId): Promise<string> {
+  return new Adb(device).getAPIVersion().toPromise();
+}
+
 export function getDeviceInfo(
   device: DeviceId,
 ): ConnectableObservable<Map<string, string>> {

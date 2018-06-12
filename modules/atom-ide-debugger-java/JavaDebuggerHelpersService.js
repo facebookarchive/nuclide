@@ -223,53 +223,6 @@ async function _findJdwpProcess(jvmSuspendArgs: string): Promise<?string> {
   return line;
 }
 
-// If you run aapt list with the apk for fb4a, the output is larger than
-//   100 * 1024 * 1024 characters so we have increased the buffer size to this
-//   somewhat arbitrarily chosen value.
-const MAX_BUFFER_FOR_AAPT_CALL = 512 * 1024 * 1024;
-
-export async function getAndroidSDKVersionFromApk(
-  apkPath: string,
-): Promise<string> {
-  const androidHome = _getAndroidHomeDir();
-  const buildToolsDir = nuclideUri.join(androidHome, 'build-tools');
-  if (await fsPromise.exists(buildToolsDir)) {
-    const subDirs = await fsPromise.readdir(buildToolsDir);
-    if (subDirs.length !== 0) {
-      const aaptPath = nuclideUri.join(buildToolsDir, subDirs[0], 'aapt');
-      if (
-        (await fsPromise.exists(aaptPath)) &&
-        (await fsPromise.exists(apkPath))
-      ) {
-        const aaptListForApk = await runCommand(
-          aaptPath,
-          ['list', '-a', apkPath],
-          {maxBuffer: MAX_BUFFER_FOR_AAPT_CALL},
-        ).toPromise();
-        const lines = aaptListForApk.split('\n');
-        const targetSdkVersionLines = lines.filter(line =>
-          line.includes('targetSdkVersion'),
-        );
-        if (targetSdkVersionLines.length === 1) {
-          const targetSdkVersionLine = targetSdkVersionLines[0];
-          // targetSdkVersionLine is of the format:
-          // <WHITESPACE>A: android:targetSdkVersion(0x<NUMBER>)=(type 0x<NUMBER>)0x<NUMBER WE WANT>
-          // so we split by 'x' and take the 4th element
-          const decimalNumber = parseInt(
-            targetSdkVersionLine.split('x')[3],
-            16,
-          );
-          if (Number.isInteger(decimalNumber)) {
-            return String(decimalNumber);
-          }
-        }
-      }
-    }
-  }
-
-  return '';
-}
-
 export async function getSdkVersionSourcePath(
   sdkVersion: string,
 ): Promise<?NuclideUri> {

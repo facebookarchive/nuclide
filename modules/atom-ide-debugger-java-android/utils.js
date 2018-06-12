@@ -20,6 +20,7 @@ import type {
 import type {Device} from 'nuclide-debugger-common/types';
 
 import idx from 'idx';
+import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -164,6 +165,25 @@ function _getAdbServiceUri(unresolvedTargetUri: NuclideUri, config) {
   return adbServiceUri != null ? adbServiceUri : unresolvedTargetUri;
 }
 
+async function _getAndroidSdkSourcePaths(
+  targetUri: NuclideUri,
+  adbServiceUri: NuclideUri,
+  device: Device,
+): Promise<Array<string>> {
+  const sdkVersion = await getAdbServiceByNuclideUri(
+    adbServiceUri,
+  ).getAPIVersion(device);
+  const sdkSourcePath =
+    sdkVersion !== ''
+      ? await getJavaDebuggerHelpersServiceByNuclideUri(
+          targetUri,
+        ).getSdkVersionSourcePath(sdkVersion)
+      : null;
+  const sdkSourcePathResolved =
+    sdkSourcePath != null ? nuclideUri.getPath(sdkSourcePath) : null;
+  return sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
+}
+
 export async function resolveConfiguration(
   configuration: IProcessConfig,
 ): Promise<IProcessConfig> {
@@ -206,16 +226,11 @@ export async function resolveConfiguration(
     configuration.customDisposable || new UniversalDisposable();
   customDisposable.add(subscriptions);
 
-  const sdkSourcePath =
-    config.sdkVersion != null
-      ? await getJavaDebuggerHelpersServiceByNuclideUri(
-          resolvedTargetUri,
-        ).getSdkVersionSourcePath(config.sdkVersion)
-      : null;
-  const sdkSourcePathResolved =
-    sdkSourcePath != null ? nuclideUri.getPath(sdkSourcePath) : sdkSourcePath;
-  const additionalSourcePaths =
-    sdkSourcePathResolved != null ? [sdkSourcePathResolved] : [];
+  const androidSdkSourcePaths = await _getAndroidSdkSourcePaths(
+    resolvedTargetUri,
+    adbServiceUri,
+    device,
+  );
 
   const clickEvents = new Subject();
   const onInitializeCallback = async session => {
@@ -224,18 +239,20 @@ export async function resolveConfiguration(
         resolvedTargetUri,
         session,
         clickEvents,
-        additionalSourcePaths,
+        androidSdkSourcePaths,
       ),
     );
   };
 
+  const adapterExecutable = await getJavaDebuggerHelpersServiceByNuclideUri(
+    resolvedTargetUri,
+  ).getJavaVSAdapterExecutableInfo(false);
+
   return {
     ...configuration,
     targetUri: resolvedTargetUri,
-    debugMode: attachPortTargetConfig.debugMode,
-    adapterExecutable: await getJavaDebuggerHelpersServiceByNuclideUri(
-      resolvedTargetUri,
-    ).getJavaVSAdapterExecutableInfo(false),
+    debugMode: 'attach',
+    adapterExecutable,
     properties: {
       ...configuration.properties,
       customControlButtons: getCustomControlButtonsForJavaSourcePaths(
