@@ -34,6 +34,12 @@ type CopyPath = {
 };
 
 export default class FileSystemActions {
+  _store: FileTreeStore;
+
+  constructor(store: FileTreeStore) {
+    this._store = store;
+  }
+
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const node = this._getSelectedContainerNode();
     if (!node) {
@@ -100,7 +106,7 @@ export default class FileSystemActions {
     }
 
     const dirPath = FileTreeHelpers.getParentKey(filePath);
-    const rootNode = FileTreeStore.getInstance().getRootForPath(dirPath);
+    const rootNode = this._store.getRootForPath(dirPath);
 
     if (rootNode) {
       const localPath = nuclideUri.isRemote(dirPath)
@@ -340,8 +346,7 @@ export default class FileSystemActions {
   }
 
   openRenameDialog(): void {
-    const store = FileTreeStore.getInstance();
-    const targetNodes = store.getTargetNodes();
+    const targetNodes = this._store.getTargetNodes();
     if (targetNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
@@ -371,8 +376,7 @@ export default class FileSystemActions {
   }
 
   openDuplicateDialog(onDidConfirm: (filePaths: Array<string>) => mixed): void {
-    const store = FileTreeStore.getInstance();
-    const targetNodes = store.getTargetNodes();
+    const targetNodes = this._store.getTargetNodes();
     this.openNextDuplicateDialog(targetNodes, onDidConfirm);
   }
 
@@ -451,8 +455,7 @@ export default class FileSystemActions {
   }
 
   openPasteDialog(): void {
-    const store = FileTreeStore.getInstance();
-    const node = store.getSingleSelectedNode();
+    const node = this._store.getSingleSelectedNode();
     if (node == null) {
       // don't paste if unselected
       return;
@@ -493,13 +496,12 @@ export default class FileSystemActions {
   }
 
   _getSelectedContainerNode(): ?FileTreeNode {
-    const store = FileTreeStore.getInstance();
     /*
      * TODO: Choosing the last selected key is inexact when there is more than 1 root. The Set of
      * selected keys should be maintained as a flat list across all roots to maintain insertion
      * order.
      */
-    const node = store.getSelectedNodes().first();
+    const node = this._store.getSelectedNodes().first();
     if (node) {
       return node.isContainer ? node : node.parent;
     }

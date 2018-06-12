@@ -86,7 +86,7 @@ export default class FileTreeController {
 
   constructor(store: FileTreeStore) {
     this._actions = FileTreeActions.getInstance();
-    this._fileSystemActions = new FileSystemActions();
+    this._fileSystemActions = new FileSystemActions(store);
     this._store = store;
     this._projectSelectionManager = new ProjectSelectionManager();
     this._repositories = Immutable.Set();
