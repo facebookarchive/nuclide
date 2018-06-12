@@ -25,6 +25,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import {denodeify} from 'nuclide-commons/promise';
 import {buildTempDirTree} from '../__mocks__/helpers/BuildTempDirTree';
+import * as Selectors from '../lib/FileTreeSelectors';
 import tempModule from 'temp';
 tempModule.track();
 const tempCleanup = denodeify(tempModule.cleanup);
@@ -148,7 +149,7 @@ describe('FileTreeSelectionRange', () => {
         // flowlint-next-line sketchy-null-string:off
         invariant(bar1);
         actions.setSelectedNode(dir, bar1);
-        const node = store.getNode(dir, bar1);
+        const node = Selectors.getNode(store, dir, bar1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(node);
       });
@@ -164,9 +165,11 @@ describe('FileTreeSelectionRange', () => {
         // flowlint-next-line sketchy-null-string:off
         invariant(bar3);
         actions.setSelectedNode(dir, bar3);
-        const node = store.getNode(dir, bar1);
+        const node = Selectors.getNode(store, dir, bar1);
         invariant(node);
-        expect(RangeUtil.findSelectedNode(node)).toBe(store.getNode(dir, bar3));
+        expect(RangeUtil.findSelectedNode(node)).toBe(
+          Selectors.getNode(store, dir, bar3),
+        );
       });
 
       it('searches the prev selected node if nothing else is selected', () => {
@@ -180,9 +183,11 @@ describe('FileTreeSelectionRange', () => {
         // flowlint-next-line sketchy-null-string:off
         invariant(bar3);
         actions.setSelectedNode(dir, bar1);
-        const node = store.getNode(dir, bar3);
+        const node = Selectors.getNode(store, dir, bar3);
         invariant(node);
-        expect(RangeUtil.findSelectedNode(node)).toBe(store.getNode(dir, bar1));
+        expect(RangeUtil.findSelectedNode(node)).toBe(
+          Selectors.getNode(store, dir, bar1),
+        );
       });
 
       it('returns null if nothing is selected', () => {
@@ -192,7 +197,7 @@ describe('FileTreeSelectionRange', () => {
         invariant(dir);
         // flowlint-next-line sketchy-null-string:off
         invariant(bar1);
-        const node = store.getNode(dir, bar1);
+        const node = Selectors.getNode(store, dir, bar1);
         invariant(node);
         expect(RangeUtil.findSelectedNode(node)).toBe(null);
       });
@@ -212,9 +217,11 @@ describe('FileTreeSelectionRange', () => {
         invariant(bar1);
         actions.collapseNode(dir, foo);
         actions.setSelectedNode(dir, bar1);
-        const node = store.getNode(dir, foo1);
+        const node = Selectors.getNode(store, dir, foo1);
         invariant(node);
-        expect(RangeUtil.findSelectedNode(node)).toBe(store.getNode(dir, bar1));
+        expect(RangeUtil.findSelectedNode(node)).toBe(
+          Selectors.getNode(store, dir, bar1),
+        );
       });
 
       it('only searches the selected node within the working set', () => {
@@ -229,9 +236,11 @@ describe('FileTreeSelectionRange', () => {
         invariant(bar1);
         actions.updateWorkingSet(new WorkingSet([foo1, bar1]));
         actions.setSelectedNode(dir, bar1);
-        const node = store.getNode(dir, foo1);
+        const node = Selectors.getNode(store, dir, foo1);
         invariant(node);
-        expect(RangeUtil.findSelectedNode(node)).toBe(store.getNode(dir, bar1));
+        expect(RangeUtil.findSelectedNode(node)).toBe(
+          Selectors.getNode(store, dir, bar1),
+        );
       });
     });
   });

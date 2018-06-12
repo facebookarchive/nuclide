@@ -16,6 +16,8 @@ import FileTreeStore from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeActions from '../../pkg/nuclide-file-tree/lib/FileTreeActions';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import * as Selectors from '../../pkg/nuclide-file-tree/lib/FileTreeSelectors';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {WORKSPACE_VIEW_URI as FILE_TREE_VIEW_URI} from '../../pkg/nuclide-file-tree/lib/Constants';
@@ -53,7 +55,7 @@ export function runTest(context: TestContext) {
       actions.clearFilter();
 
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
-      expect(store.getFilter()).toEqual('a');
+      expect(Selectors.getFilter(store)).toEqual('a');
     });
 
     // Close and open file tree
@@ -61,10 +63,10 @@ export function runTest(context: TestContext) {
     open();
 
     runs(() => {
-      expect(store.getFilter()).toEqual('');
+      expect(Selectors.getFilter(store)).toEqual('');
       invariant(elem != null);
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
-      expect(store.getFilter()).toEqual('a');
+      expect(Selectors.getFilter(store)).toEqual('a');
     });
   });
 }

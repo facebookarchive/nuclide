@@ -24,14 +24,26 @@ import {Observable} from 'rxjs';
 import {mapEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import * as Selectors from './FileTreeSelectors';
+import {WORKSPACE_VIEW_URI} from './Constants';
+import removeProjectPath from '../../commons-atom/removeProjectPath';
+import {isRunningInWindows} from '../../commons-node/system-info';
+import os from 'os';
+import invariant from 'assert';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {FileTreeNode} from './FileTreeNode';
+
+const logger = getLogger('nuclide-file-tree');
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -40,10 +52,17 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 export default class FileTreeActions {
   _store: FileTreeStore;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
+  _disposables: UniversalDisposable;
+  _cwdApiSubscription: ?IDisposable;
 
   constructor(store: FileTreeStore) {
     this._store = store;
     this._disposableForRepository = Immutable.Map();
+    this._disposables = new UniversalDisposable(() => {
+      if (this._cwdApiSubscription != null) {
+        this._cwdApiSubscription.dispose();
+      }
+    });
   }
 
   setCwd(rootKey: ?string): void {
@@ -248,7 +267,7 @@ export default class FileTreeActions {
     nodeKey: string,
     pending: boolean = false,
   ): void {
-    const node = this._store.getNode(rootKey, nodeKey);
+    const node = Selectors.getNode(this._store, rootKey, nodeKey);
     if (node == null) {
       return;
     }
@@ -342,7 +361,7 @@ export default class FileTreeActions {
       ).map(v => Immutable.Set(v)),
     );
 
-    const prevRepos = this._store.getRepositories();
+    const prevRepos = Selectors.getRepositories(this._store);
 
     // Let the store know we have some new repos!
     const nextRepos: Immutable.Set<atom$Repository> = Immutable.Set(
@@ -709,6 +728,342 @@ export default class FileTreeActions {
     }
 
     return codePathStatuses;
+  }
+
+  revealNodeKey(nodeKey: ?string): void {
+    if (nodeKey == null) {
+      return;
+    }
+
+    this.ensureChildNode(nodeKey);
+  }
+
+  revealFilePath(filePath: ?string, showIfHidden?: boolean = true): void {
+    if (showIfHidden) {
+      // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
+      // active pane is not an ordinary editor, we still at least want to show the tree.
+      // eslint-disable-next-line nuclide-internal/atom-apis
+      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+      this.setFoldersExpanded(true);
+    }
+
+    // flowlint-next-line sketchy-null-string:off
+    if (!filePath) {
+      return;
+    }
+
+    this.revealNodeKey(filePath);
+  }
+
+  openAndRevealFilePath(filePath: ?string): void {
+    if (filePath != null) {
+      goToLocation(filePath);
+      this.revealNodeKey(filePath);
+    }
+  }
+
+  openAndRevealFilePaths(filePaths: Array<string>): void {
+    for (let i = 0; i < filePaths.length; i++) {
+      goToLocation(filePaths[i]);
+    }
+    if (filePaths.length !== 0) {
+      this.revealNodeKey(filePaths[filePaths.length - 1]);
+    }
+  }
+
+  _openAndRevealDirectoryPath(path: ?string): void {
+    if (path != null) {
+      this.revealNodeKey(FileTreeHelpers.dirPathToKey(path));
+    }
+  }
+
+  updateRootDirectories(): void {
+    // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
+    // local directories but with invalid paths. We need to exclude those.
+    const rootDirectories = atom.project
+      .getDirectories()
+      .filter(directory => FileTreeHelpers.isValidDirectory(directory));
+    const rootKeys = rootDirectories.map(directory =>
+      FileTreeHelpers.dirPathToKey(directory.getPath()),
+    );
+    this.setRootKeys(rootKeys);
+    this.updateRepositories(rootDirectories);
+  }
+
+  setCwdToSelection(): void {
+    const node = Selectors.getSingleSelectedNode(this._store);
+    if (node == null) {
+      return;
+    }
+    const path = FileTreeHelpers.keyToPath(node.uri);
+    const cwdApi = Selectors.getCwdApi(this._store);
+    if (cwdApi != null) {
+      cwdApi.setCwd(path);
+    }
+  }
+
+  setCwdApi(cwdApi: ?CwdApi): void {
+    if (cwdApi == null) {
+      this.setCwd(null);
+      this._cwdApiSubscription = null;
+    } else {
+      invariant(this._cwdApiSubscription == null);
+      this._cwdApiSubscription = cwdApi.observeCwd(directory => {
+        // flowlint-next-line sketchy-null-string:off
+        const rootKey = directory && FileTreeHelpers.dirPathToKey(directory);
+        this.setCwd(rootKey);
+      });
+    }
+
+    this._store.dispatch({
+      actionType: ActionTypes.SET_CWD_API,
+      cwdApi,
+    });
+  }
+
+  setRemoteProjectsService(service: ?RemoteProjectsService): void {
+    if (service != null) {
+      // This is to workaround the initialization order problem between the
+      // nuclide-remote-projects and nuclide-file-tree packages.
+      // The file-tree starts up and restores its state, which can have a (remote) project root.
+      // But at this point it's not a real directory. It is not present in
+      // atom.project.getDirectories() and essentially it's a fake, but a useful one, as it has
+      // the state (open folders, selection etc.) serialized in it. So we don't want to discard
+      // it. In most cases, after a successful reconnect the real directory instance will be
+      // added to the atom.project.directories and the previously fake root would become real.
+      // The problem happens when the connection fails, or is canceled.
+      // The fake root just stays in the file tree.
+      // After remote projects have been reloaded, force a refresh to clear out the fake roots.
+      this._disposables.add(
+        service.waitForRemoteProjectReload(() => {
+          this.updateRootDirectories();
+        }),
+      );
+    }
+  }
+
+  /**
+   * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
+   * directory, the selection is set to the directory's parent.
+   */
+  collapseSelection(deep: boolean = false): void {
+    const selectedNodes = Selectors.getSelectedNodes(this._store);
+    const firstSelectedNode = nullthrows(selectedNodes.first());
+    if (
+      selectedNodes.size === 1 &&
+      !firstSelectedNode.isRoot &&
+      !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded)
+    ) {
+      /*
+         * Select the parent of the selection if the following criteria are met:
+         *   * Only 1 node is selected
+         *   * The node is not a root
+         *   * The node is not an expanded directory
+        */
+
+      const parent = nullthrows(firstSelectedNode.parent);
+      this._selectAndTrackNode(parent);
+    } else {
+      selectedNodes.forEach(node => {
+        // Only directories can be expanded. Skip non-directory nodes.
+        if (!node.isContainer) {
+          return;
+        }
+
+        if (deep) {
+          this.collapseNodeDeep(node.rootUri, node.uri);
+        } else {
+          this.collapseNode(node.rootUri, node.uri);
+        }
+      });
+    }
+  }
+
+  _selectAndTrackNode(node: FileTreeNode): void {
+    this.setSelectedNode(node.rootUri, node.uri);
+  }
+
+  collapseAll(): void {
+    const roots = this._store._roots;
+    roots.forEach(root => this.collapseNodeDeep(root.uri, root.uri));
+  }
+
+  deleteSelection(): void {
+    const nodes = Selectors.getTargetNodes(this._store);
+    if (nodes.size === 0) {
+      return;
+    }
+
+    const rootPaths = nodes.filter(node => node.isRoot);
+    if (rootPaths.size === 0) {
+      const selectedPaths = nodes.map(node => {
+        const nodePath = FileTreeHelpers.keyToPath(node.uri);
+        const parentOfRoot = nuclideUri.dirname(node.rootUri);
+
+        // Fix Windows paths to avoid end of filename truncation
+        return isRunningInWindows()
+          ? nuclideUri.relative(parentOfRoot, nodePath).replace(/\//g, '\\')
+          : nuclideUri.relative(parentOfRoot, nodePath);
+      });
+      const message =
+        'Are you sure you want to delete the following ' +
+        (nodes.size > 1 ? 'items?' : 'item?');
+      atom.confirm({
+        buttons: {
+          Delete: () => {
+            this.deleteSelectedNodes();
+          },
+          Cancel: () => {},
+        },
+        detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(
+          os.EOL,
+        )}`,
+        message,
+      });
+    } else {
+      let message;
+      if (rootPaths.size === 1) {
+        message = `The root directory '${
+          nullthrows(rootPaths.first()).name
+        }' can't be removed.`;
+      } else {
+        const rootPathNames = rootPaths
+          .map(node => `'${node.name}'`)
+          .join(', ');
+        message = `The root directories ${rootPathNames} can't be removed.`;
+      }
+
+      atom.confirm({
+        buttons: ['OK'],
+        message,
+      });
+    }
+  }
+
+  /**
+   * Expands all selected directory nodes.
+   */
+  expandSelection(deep: boolean): void {
+    this.clearFilter();
+
+    Selectors.getSelectedNodes(this._store).forEach(node => {
+      // Only directories can be expanded. Skip non-directory nodes.
+      if (!node.isContainer) {
+        return;
+      }
+
+      if (deep) {
+        this.expandNodeDeep(node.rootUri, node.uri);
+        this.setTrackedNode(node.rootUri, node.uri);
+      } else {
+        if (node.isExpanded) {
+          // Node is already expanded; move the selection to the first child.
+          let firstChild = node.children.first();
+          if (firstChild != null && !firstChild.shouldBeShown) {
+            firstChild = firstChild.findNextShownSibling();
+          }
+
+          if (firstChild != null) {
+            this._selectAndTrackNode(firstChild);
+          }
+        } else {
+          this.expandNode(node.rootUri, node.uri);
+          this.setTrackedNode(node.rootUri, node.uri);
+        }
+      }
+    });
+  }
+
+  openSelectedEntry(): void {
+    this.clearFilter();
+    const singleSelectedNode = Selectors.getSingleSelectedNode(this._store);
+    // Only perform the default action if a single node is selected.
+    if (singleSelectedNode != null) {
+      this.confirmNode(singleSelectedNode.rootUri, singleSelectedNode.uri);
+    }
+  }
+
+  _openSelectedEntrySplit(
+    orientation: atom$PaneSplitOrientation,
+    side: atom$PaneSplitSide,
+  ): void {
+    const singleSelectedNode = Selectors.getSingleTargetNode(this._store);
+    // Only perform the default action if a single node is selected.
+    if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
+      // for: is this feature used enough to justify uncollapsing?
+      track('filetree-split-file', {
+        orientation,
+        side,
+      });
+      this.openSelectedEntrySplit(singleSelectedNode.uri, orientation, side);
+    }
+  }
+
+  openSelectedEntrySplitUp(): void {
+    this._openSelectedEntrySplit('vertical', 'before');
+  }
+
+  openSelectedEntrySplitDown(): void {
+    this._openSelectedEntrySplit('vertical', 'after');
+  }
+
+  openSelectedEntrySplitLeft(): void {
+    this._openSelectedEntrySplit('horizontal', 'before');
+  }
+
+  openSelectedEntrySplitRight(): void {
+    this._openSelectedEntrySplit('horizontal', 'after');
+  }
+
+  async removeRootFolderSelection(): Promise<void> {
+    const rootNode = Selectors.getSingleSelectedNode(this._store);
+    if (rootNode != null && rootNode.isRoot) {
+      logger.info('Removing project path via file tree', rootNode);
+      await removeProjectPath(rootNode.uri);
+    }
+  }
+
+  copyFilenamesWithDir(): void {
+    const nodes = Selectors.getSelectedNodes(this._store);
+    const dirs = [];
+    const files = [];
+    for (const node of nodes) {
+      const file = FileTreeHelpers.getFileByKey(node.uri);
+      if (file != null) {
+        files.push(file);
+      }
+      const dir = FileTreeHelpers.getDirectoryByKey(node.uri);
+      if (dir != null) {
+        dirs.push(dir);
+      }
+    }
+    const entries = dirs.concat(files);
+    if (entries.length === 0) {
+      // no valid files or directories found
+      return;
+    }
+    const dirPath = entries[0].getParent().getPath();
+    if (!entries.every(e => e.getParent().getPath() === dirPath)) {
+      // only copy if all selected files are in the same directory
+      return;
+    }
+
+    // copy this text in case user pastes into a text area
+    const copyNames = entries
+      .map(e => encodeURIComponent(e.getBaseName()))
+      .join();
+
+    atom.clipboard.write(copyNames, {
+      directory: FileTreeHelpers.dirPathToKey(dirPath),
+      filenames: files.map(f => f.getBaseName()),
+      dirnames: dirs.map(f => f.getBaseName()),
+    });
+  }
+
+  // This is really weird. Eventually (when we switch to redux-observable) this won't be necessary
+  // because subscriptions will be handled by the epics.
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 

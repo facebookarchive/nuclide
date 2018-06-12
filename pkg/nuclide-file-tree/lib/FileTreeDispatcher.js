@@ -12,6 +12,7 @@
 // $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type CwdApi from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
@@ -53,6 +54,10 @@ export type FileTreeAction =
   | {
       actionType: 'SET_CWD',
       rootKey: ?NuclideUri,
+    }
+  | {
+      actionType: 'SET_CWD_API',
+      cwdApi: ?CwdApi,
     }
   | {
       actionType: 'SET_HIDE_IGNORED_NAMES',
@@ -271,6 +276,7 @@ export const ActionTypes = Object.freeze({
   SET_EXCLUDE_VCS_IGNORED_PATHS: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
   EXPAND_NODE_DEEP: 'EXPAND_NODE_DEEP',
   SET_CWD: 'SET_CWD',
+  SET_CWD_API: 'SET_CWD_API',
   SET_HIDE_IGNORED_NAMES: 'SET_HIDE_IGNORED_NAMES',
   SET_HIDE_VCS_IGNORED_PATHS: 'SET_HIDE_VCS_IGNORED_PATHS',
   SET_IS_CALCULATING_CHANGES: 'SET_IS_CALCULATING_CHANGES',

@@ -14,6 +14,7 @@ import type Immutable from 'immutable';
 
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
+import * as Selectors from '../lib/FileTreeSelectors';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -189,7 +190,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
     let min_width = 'max-content';
     if (this.props.store != null) {
-      const size = this.props.store.getMaxComponentWidth();
+      const size = Selectors.getMaxComponentWidth(this.props.store);
       if (size != null && typeof size === 'number' && size > 0) {
         min_width = size * CHAR_EM_SCALE_FACTOR + 'em';
       }
@@ -391,7 +392,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   _onDragEnter = (event: DragEvent) => {
     event.stopPropagation();
 
-    const nodes = this.props.store.getSelectedNodes();
+    const nodes = Selectors.getSelectedNodes(this.props.store);
     if (
       !this.props.isPreview &&
       nodes.size === 1 &&
@@ -484,7 +485,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     event.preventDefault();
     event.stopPropagation();
 
-    const dragNode = this.props.store.getSingleSelectedNode();
+    const dragNode = Selectors.getSingleSelectedNode(this.props.store);
     if (dragNode != null && dragNode.isRoot) {
       this.props.actions.reorderRoots();
     } else {

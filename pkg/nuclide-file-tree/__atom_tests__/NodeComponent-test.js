@@ -26,6 +26,8 @@ import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 
 function renderEntryComponentIntoDocument(
   componentKlass: Object,
+  store,
+  actions,
   props: Object = {},
   conf: Object = {},
 ): React.Component<any, any> {
@@ -58,6 +60,8 @@ function renderEntryComponentIntoDocument(
   const node = new FileTreeNode(nodeProps, nodeConf);
   return TestUtils.renderIntoDocument(
     React.createElement(componentKlass, {
+      store,
+      actions,
       node,
       selectedNodes: selectionManager.selectedNodes(),
       focusedNodes: selectionManager.focusedNodes(),
@@ -77,6 +81,8 @@ describe('Directory FileTreeEntryComponent', () => {
     it('expands on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
+        store,
+        actions,
         {
           rootUri: '/a/',
           uri: '/a/b/',
@@ -106,6 +112,8 @@ describe('File FileTreeEntryComponent', () => {
     it('does not expand on click when node is selected', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
+        store,
+        actions,
         {
           rootUri: '/a/',
           uri: '/a/b',
@@ -128,6 +136,8 @@ describe('File FileTreeEntryComponent', () => {
     it('opens a file if a selected node is clicked', () => {
       const nodeComponent = renderEntryComponentIntoDocument(
         FileTreeEntryComponent,
+        store,
+        actions,
         {
           rootUri: '/a/',
           uri: '/a/b',

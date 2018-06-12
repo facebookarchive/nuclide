@@ -13,6 +13,7 @@ import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import FileTreeStore from '../lib/FileTreeStore';
+import * as Selectors from '../lib/FileTreeSelectors';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {|
@@ -67,7 +68,7 @@ export class ProjectSelection extends React.Component<Props, State> {
   }
 
   calculateExtraContent() {
-    const list = this.props.store.getExtraProjectSelectionContent();
+    const list = Selectors.getExtraProjectSelectionContent(this.props.store);
     if (list.isEmpty()) {
       return null;
     }

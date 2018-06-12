@@ -23,6 +23,7 @@ import {
 } from './FileTreeConstants';
 import FileTreeStore from './FileTreeStore';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
+import * as Selectors from './FileTreeSelectors';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -165,9 +166,12 @@ export default class FileTreeContextMenu {
     this._disposables.add(this._contextMenu);
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
-      const node = this._store.getSingleSelectedNode();
+      const node = Selectors.getSingleSelectedNode(this._store);
       return (
-        node != null && node.isContainer && this._store.hasCwd() && !node.isCwd
+        node != null &&
+        node.isContainer &&
+        Selectors.hasCwd(this._store) &&
+        !node.isCwd
       );
     };
 
@@ -194,7 +198,7 @@ export default class FileTreeContextMenu {
       label: 'New',
       parent: this._contextMenu,
       shouldDisplay: (e: MouseEvent) => {
-        return this._store.getSingleSelectedNode() != null;
+        return Selectors.getSingleSelectedNode(this._store) != null;
       },
     });
     this._newMenu.addItem({label: 'File', command: 'tree-view:add-file'}, 0);
@@ -236,7 +240,7 @@ export default class FileTreeContextMenu {
       shouldDisplay: (e: MouseEvent) => {
         return (
           !this._sourceControlMenu.isEmpty() &&
-          !this._store.getSelectedNodes().isEmpty()
+          !Selectors.getSelectedNodes(this._store).isEmpty()
         );
       },
     });
@@ -269,7 +273,7 @@ export default class FileTreeContextMenu {
         label: 'Rename',
         command: 'tree-view:rename-selection',
         shouldDisplay: () => {
-          const node = this._store.getSingleSelectedNode();
+          const node = Selectors.getSingleSelectedNode(this._store);
           // For now, rename does not apply to root nodes.
           return node != null && !node.isRoot;
         },
@@ -546,11 +550,11 @@ export default class FileTreeContextMenu {
   }
 
   getSelectedNodes(): Immutable.List<FileTreeNode> {
-    return this._store.getTargetNodes();
+    return Selectors.getTargetNodes(this._store);
   }
 
   getSingleSelectedNode(): ?FileTreeNode {
-    return this._store.getSingleTargetNode();
+    return Selectors.getSingleTargetNode(this._store);
   }
 
   dispose(): void {

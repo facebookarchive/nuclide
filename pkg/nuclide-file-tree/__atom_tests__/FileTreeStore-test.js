@@ -13,6 +13,7 @@ import {Directory} from 'atom';
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import FileTreeStore from '../lib/FileTreeStore';
+import * as Selectors from '../lib/FileTreeSelectors';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';
@@ -58,7 +59,7 @@ describe('FileTreeStore', () => {
   }
 
   function getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    const node = store.getNode(rootKey, nodeKey);
+    const node = Selectors.getNode(store, rootKey, nodeKey);
     invariant(node);
     return node;
   }
@@ -93,25 +94,25 @@ describe('FileTreeStore', () => {
   });
 
   it('should be initialized with no root keys', () => {
-    const rootKeys = store.getRootKeys();
+    const rootKeys = Selectors.getRootKeys(store);
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.length).toBe(0);
   });
 
   describe('isEmpty', () => {
     it('returns true when the store is empty, has no roots', () => {
-      expect(store.isEmpty()).toBe(true);
+      expect(Selectors.isEmpty(store)).toBe(true);
     });
 
     it('returns false when the store has data, has roots', () => {
       actions.setRootKeys([dir1]);
-      expect(store.isEmpty()).toBe(false);
+      expect(Selectors.isEmpty(store)).toBe(false);
     });
   });
 
   it('should update root keys via actions', () => {
     actions.setRootKeys([dir1, dir2]);
-    const rootKeys = store.getRootKeys();
+    const rootKeys = Selectors.getRootKeys(store);
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
   });
@@ -158,16 +159,14 @@ describe('FileTreeStore', () => {
       actions.addSelectedNode(dir2, dir2);
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      const selectedNodes = store
-        .getSelectedNodes()
+      const selectedNodes = Selectors.getSelectedNodes(store)
         .map(node => node.uri)
         .toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
-      const selectedNodes = store
-        .getSelectedNodes()
+      const selectedNodes = Selectors.getSelectedNodes(store)
         .map(node => node.uri)
         .toArray();
       expect(selectedNodes).toEqual([]);
@@ -186,18 +185,18 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null when no nodes are selected', () => {
-      expect(store.getSingleSelectedNode()).toBeNull();
+      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
     });
 
     it('returns null when more than 1 node is selected', () => {
       actions.addSelectedNode(dir1, dir1);
       actions.addSelectedNode(dir2, dir2);
-      expect(store.getSingleSelectedNode()).toBeNull();
+      expect(Selectors.getSingleSelectedNode(store)).toBeNull();
     });
 
     it('returns a node when only 1 is selected', () => {
       actions.setSelectedNode(dir2, dir2);
-      const singleSelectedNode = store.getSingleSelectedNode();
+      const singleSelectedNode = Selectors.getSingleSelectedNode(store);
       expect(singleSelectedNode).not.toBeNull();
       invariant(singleSelectedNode);
       expect(singleSelectedNode.uri).toEqual(dir2);
@@ -212,11 +211,13 @@ describe('FileTreeStore', () => {
     });
 
     it('returns null if path does not belong to any root', () => {
-      expect(store.getRootForPath('random/path/file.txt')).toBeNull();
+      expect(
+        Selectors.getRootForPath(store, 'random/path/file.txt'),
+      ).toBeNull();
     });
 
     it('returns a root node if path exists in a root', () => {
-      const node = store.getRootForPath(fooTxt);
+      const node = Selectors.getRootForPath(store, fooTxt);
       expect(node).not.toBeNull();
       invariant(node);
       expect(node.uri).toEqual(dir1);
@@ -229,13 +230,13 @@ describe('FileTreeStore', () => {
       actions.setTrackedNode(dir1, dir1);
 
       // Root is tracked after setting it.
-      const trackedNode = store.getTrackedNode();
+      const trackedNode = Selectors.getTrackedNode(store);
       expect(trackedNode && trackedNode.uri).toBe(dir1);
       actions.setSelectedNode(dir1, dir1);
 
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
-      expect(store.getTrackedNode()).toBe(getNode(dir1, dir1));
+      expect(Selectors.getTrackedNode(store)).toBe(getNode(dir1, dir1));
     });
   });
 
@@ -282,18 +283,18 @@ describe('FileTreeStore', () => {
     }
 
     function updateFilter() {
-      expect(store.getFilter()).toEqual('');
+      expect(Selectors.getFilter(store)).toEqual('');
       actions.setRootKeys([dir1]);
       checkNode('', true);
       actions.addFilterLetter(node.name);
-      expect(store.getFilter()).toEqual(node.name);
+      expect(Selectors.getFilter(store)).toEqual(node.name);
       checkNode(node.name, true);
     }
 
     function doubleFilter() {
       updateFilter();
       actions.addFilterLetter(node.name);
-      expect(store.getFilter()).toEqual(node.name + node.name);
+      expect(Selectors.getFilter(store)).toEqual(node.name + node.name);
       checkNode('', false);
     }
 
@@ -531,7 +532,7 @@ describe('FileTreeStore', () => {
     fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(store.getNode(dir1, foo2Txt)));
+    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
 
     // Ensure the child did not inherit the parent subscription.
     const child = getNode(dir1, foo2Txt);
@@ -539,12 +540,12 @@ describe('FileTreeStore', () => {
     fs.unlinkSync(foo2Txt);
 
     // Ensure that file disappears from the tree.
-    await waitsFor(() => store.getNode(dir1, foo2Txt) == null);
+    await waitsFor(() => Selectors.getNode(store, dir1, foo2Txt) == null);
 
     // Add the file back.
     fs.writeFileSync(foo2Txt, '');
 
     // Wait for the new file to be loaded.
-    await waitsFor(() => Boolean(store.getNode(dir1, foo2Txt)));
+    await waitsFor(() => Boolean(Selectors.getNode(store, dir1, foo2Txt)));
   });
 });

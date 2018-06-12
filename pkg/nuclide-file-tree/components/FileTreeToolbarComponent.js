@@ -18,6 +18,7 @@ import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import FileTreeStore from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
+import * as Selectors from '../lib/FileTreeSelectors';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
@@ -91,14 +92,16 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const workingSetsStore = this.props.store.getWorkingSetsStore();
+    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
     let shouldShowButtonLabel;
     if (workingSetsStore != null) {
       shouldShowButtonLabel = workingSetsStore.getDefinitions().length === 0;
     }
-    const workingSet = this.props.store.getWorkingSet();
-    const editedWorkingSetIsEmpty = this.props.store.isEditedWorkingSetEmpty();
-    const isEditingWorkingSet = this.props.store.isEditingWorkingSet();
+    const workingSet = Selectors.getWorkingSet(this.props.store);
+    const editedWorkingSetIsEmpty = Selectors.isEditedWorkingSetEmpty(
+      this.props.store,
+    );
+    const isEditingWorkingSet = Selectors.isEditingWorkingSet(this.props.store);
 
     let selectWorkingSetButton;
     if (!this.state.definitionsAreEmpty && !isEditingWorkingSet) {
@@ -131,7 +134,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
           'nuclide-file-tree-toolbar-fader':
             workingSet.isEmpty() &&
             !this.state.selectionIsActive &&
-            !this.props.store.isEditingWorkingSet(),
+            !Selectors.isEditingWorkingSet(this.props.store),
         })}>
         <ButtonGroup className="pull-right" size={ButtonGroupSizes.SMALL}>
           {selectWorkingSetButton}
@@ -191,7 +194,7 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   }
 
   _toggleWorkingSetEditMode = (): void => {
-    if (this.props.store.isEditingWorkingSet()) {
+    if (Selectors.isEditingWorkingSet(this.props.store)) {
       this._finishEditingWorkingSet();
     } else {
       this._startEditingWorkingSet(new WorkingSet());
@@ -199,19 +202,19 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
   };
 
   _saveWorkingSet = (name: string): void => {
-    const workingSetsStore = this.props.store.getWorkingSetsStore();
+    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
     invariant(workingSetsStore);
 
-    const editedWorkingSet = this.props.store.getEditedWorkingSet();
+    const editedWorkingSet = Selectors.getEditedWorkingSet(this.props.store);
     this._finishEditingWorkingSet();
     workingSetsStore.saveWorkingSet(name, editedWorkingSet);
     workingSetsStore.activate(name);
   };
 
   _updateWorkingSet = (prevName: string, name: string): void => {
-    const workingSetsStore = this.props.store.getWorkingSetsStore();
+    const workingSetsStore = Selectors.getWorkingSetsStore(this.props.store);
     invariant(workingSetsStore);
-    const editedWorkingSet = this.props.store.getEditedWorkingSet();
+    const editedWorkingSet = Selectors.getEditedWorkingSet(this.props.store);
     this._finishEditingWorkingSet();
 
     workingSetsStore.update(prevName, name, editedWorkingSet);

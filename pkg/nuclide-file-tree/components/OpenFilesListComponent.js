@@ -25,6 +25,7 @@ import {DragResizeContainer} from 'nuclide-commons-ui/DragResizeContainer';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
+import * as Selectors from '../lib/FileTreeSelectors';
 import {createSelector} from 'reselect';
 import Immutable from 'immutable';
 
@@ -77,7 +78,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
 
   _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent<>) {
     event.stopPropagation();
-    const rootNode = this.props.store.getRootForPath(entry.uri);
+    const rootNode = Selectors.getRootForPath(this.props.store, entry.uri);
     if (
       FileTreeHelpers.getSelectionMode(event) === 'single-select' &&
       !entry.isSelected &&

@@ -29,18 +29,18 @@
   "providedServices": {
     "nuclide-file-tree.context-menu": {
       "versions": {
-        "0.1.0": "getContextMenuForFileTree"
+        "0.1.0": "provideContextMenuForFileTree"
       }
     },
     "nuclide-file-tree.project-selection": {
       "versions": {
-        "0.0.0": "getProjectSelectionManagerForFileTree"
+        "0.0.0": "provideProjectSelectionManagerForFileTree"
       }
     },
     "additional-log-files": {
       "description": "File tree state files",
       "versions": {
-        "0.0.0": "getFileTreeAdditionalLogFilesProvider"
+        "0.0.0": "provideFileTreeAdditionalLogFilesProvider"
       }
     }
   },

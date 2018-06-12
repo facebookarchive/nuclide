@@ -27,6 +27,7 @@ import nullthrows from 'nullthrows';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import * as Immutable from 'immutable';
+import * as Selectors from './FileTreeSelectors';
 
 type CopyPath = {
   old: NuclideUri,
@@ -106,7 +107,7 @@ export default class FileSystemActions {
     }
 
     const dirPath = FileTreeHelpers.getParentKey(filePath);
-    const rootNode = this._store.getRootForPath(dirPath);
+    const rootNode = Selectors.getRootForPath(this._store, dirPath);
 
     if (rootNode) {
       const localPath = nuclideUri.isRemote(dirPath)
@@ -346,7 +347,7 @@ export default class FileSystemActions {
   }
 
   openRenameDialog(): void {
-    const targetNodes = this._store.getTargetNodes();
+    const targetNodes = Selectors.getTargetNodes(this._store);
     if (targetNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
@@ -376,7 +377,7 @@ export default class FileSystemActions {
   }
 
   openDuplicateDialog(onDidConfirm: (filePaths: Array<string>) => mixed): void {
-    const targetNodes = this._store.getTargetNodes();
+    const targetNodes = Selectors.getTargetNodes(this._store);
     this.openNextDuplicateDialog(targetNodes, onDidConfirm);
   }
 
@@ -455,7 +456,7 @@ export default class FileSystemActions {
   }
 
   openPasteDialog(): void {
-    const node = this._store.getSingleSelectedNode();
+    const node = Selectors.getSingleSelectedNode(this._store);
     if (node == null) {
       // don't paste if unselected
       return;
@@ -501,7 +502,7 @@ export default class FileSystemActions {
      * selected keys should be maintained as a flat list across all roots to maintain insertion
      * order.
      */
-    const node = this._store.getSelectedNodes().first();
+    const node = Selectors.getSelectedNodes(this._store).first();
     if (node) {
       return node.isContainer ? node : node.parent;
     }

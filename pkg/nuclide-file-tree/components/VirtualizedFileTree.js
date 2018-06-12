@@ -26,6 +26,7 @@ import {ProjectSelection} from './ProjectSelection';
 import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import * as Selectors from '../lib/FileTreeSelectors';
 
 type State = {|
   trackedIndex: ?number,
@@ -72,16 +73,18 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this._getNodeByIndex = this._buildGetNodeByIndex(this.props.store.roots);
+    this._getNodeByIndex = this._buildGetNodeByIndex(
+      Selectors.getRoots(this.props.store),
+    );
 
-    const shownNodes = countShownNodes(this.props.store.roots);
+    const shownNodes = countShownNodes(Selectors.getRoots(this.props.store));
     this.state = {
       trackedIndex: findIndexOfTheTrackedNode(this.props.store, shownNodes),
-      isEditingWorkingSet: this.props.store.isEditingWorkingSet(),
-      roots: this.props.store.roots,
+      isEditingWorkingSet: Selectors.isEditingWorkingSet(this.props.store),
+      roots: Selectors.getRoots(this.props.store),
       shownNodes,
-      selectedNodes: this.props.store.selectionManager.selectedNodes(),
-      focusedNodes: this.props.store.selectionManager.focusedNodes(),
+      selectedNodes: Selectors.getSelectedNodes(this.props.store).toSet(),
+      focusedNodes: Selectors.getFocusedNodes(this.props.store).toSet(),
       rootHeight: null,
       nodeHeight: null,
       footerHeight: null,
@@ -169,15 +172,15 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 
   _processStoreUpdate(): void {
-    const isEditingWorkingSet = this.props.store.isEditingWorkingSet();
-    const roots = this.props.store.roots;
+    const isEditingWorkingSet = Selectors.isEditingWorkingSet(this.props.store);
+    const roots = Selectors.getRoots(this.props.store);
     const shownNodes = countShownNodes(roots);
     const trackedIndex = findIndexOfTheTrackedNode(
       this.props.store,
       shownNodes,
     );
-    const selectedNodes = this.props.store.selectionManager.selectedNodes();
-    const focusedNodes = this.props.store.selectionManager.focusedNodes();
+    const selectedNodes = Selectors.getSelectedNodes(this.props.store).toSet();
+    const focusedNodes = Selectors.getFocusedNodes(this.props.store).toSet();
 
     this.setState({
       trackedIndex,
@@ -325,7 +328,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     const fallbackGetByIndex = index => {
       prevRoots = this.state.roots;
       prevIndexQuery = index;
-      prevNode = this.props.store.getNodeByIndex(index + 1);
+      prevNode = Selectors.getNodeByIndex(this.props.store)(index + 1);
       return prevNode;
     };
 
@@ -440,7 +443,7 @@ function findIndexOfTheTrackedNode(
   store: FileTreeStore,
   shownNodes: number,
 ): ?number {
-  const trackedNode = store.getTrackedNode();
+  const trackedNode = Selectors.getTrackedNode(store);
   if (trackedNode == null) {
     return null;
   }

@@ -13,13 +13,15 @@
 
 import path from 'path';
 import invariant from 'assert';
+import FileSystemActions from '../lib/FileSystemActions';
 import FileTreeActions from '../lib/FileTreeActions';
-import FileTreeController from '../lib/FileTreeController';
+import registerCommands from '../lib/registerCommands';
 import FileTreeStore from '../lib/FileTreeStore';
 
-export const setup = () => {
+export const setup = (store: FileTreeStore, actions: FileTreeActions) => {
   const fixturesPath = path.resolve(__dirname, './fixtures');
   atom.project.setPaths([fixturesPath]);
+  actions.updateRootDirectories();
   const workspaceElement = atom.views.getView(atom.workspace);
   // Attach the workspace to the DOM so focus can be determined in tests below.
   const testContainer = document.createElement('div');
@@ -27,7 +29,6 @@ export const setup = () => {
   document.body.appendChild(testContainer);
   testContainer.appendChild(workspaceElement);
   // console.log(document.body.innerHTML);
-  const store = new FileTreeStore();
-  const controller = new FileTreeController(store, new FileTreeActions(store));
-  return {controller};
+  const fileSystemActions = new FileSystemActions(store);
+  registerCommands(store, actions, fileSystemActions);
 };
