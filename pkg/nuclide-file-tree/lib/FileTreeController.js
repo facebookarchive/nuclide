@@ -111,7 +111,7 @@ export default class FileTreeController {
     );
     const letterKeyBindings = {
       'tree-view:remove-letter': this._handleRemoveLetterKeypress.bind(this),
-      'tree-view:clear-filter': this._handleClearFilter.bind(this),
+      'tree-view:clear-filter': () => this._actions.clearFilter(),
     };
     for (
       let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
@@ -233,10 +233,6 @@ export default class FileTreeController {
 
   getProjectSelectionManager(): ProjectSelectionManager {
     return this._projectSelectionManager;
-  }
-
-  _handleClearFilter(): void {
-    this._store.clearFilter();
   }
 
   _handlePrefixKeypress(letter: string): void {
@@ -530,7 +526,7 @@ export default class FileTreeController {
    * Expands all selected directory nodes.
    */
   _expandSelection(deep: boolean): void {
-    this._handleClearFilter();
+    this._actions.clearFilter();
 
     this._store.getSelectedNodes().forEach(node => {
       // Only directories can be expanded. Skip non-directory nodes.
@@ -561,7 +557,7 @@ export default class FileTreeController {
   }
 
   _openSelectedEntry(): void {
-    this._handleClearFilter();
+    this._actions.clearFilter();
     const singleSelectedNode = this._store.getSingleSelectedNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null) {

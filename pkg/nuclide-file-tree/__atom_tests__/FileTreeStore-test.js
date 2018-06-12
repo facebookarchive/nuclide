@@ -302,18 +302,18 @@ describe('FileTreeStore', () => {
       updateFilter();
       store.addFilterLetter('t');
       checkNode('', false);
-      store.clearFilter();
+      actions.clearFilter();
       checkNode('', true);
     }
 
     it('should update when a letter is added', () => {
       updateFilter();
-      store.clearFilter();
+      actions.clearFilter();
     });
 
     it('should not match when filter does not equal name', () => {
       doubleFilter();
-      store.clearFilter();
+      actions.clearFilter();
     });
 
     it('should clear the filter, and return matching to normal', () => {
@@ -325,7 +325,7 @@ describe('FileTreeStore', () => {
       updateFilter();
       store.removeFilterLetter();
       checkNode(node.name.substr(0, node.name.length - 1), true);
-      store.clearFilter();
+      actions.clearFilter();
     });
   });
 

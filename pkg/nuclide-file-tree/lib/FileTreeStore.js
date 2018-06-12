@@ -485,7 +485,7 @@ export class FileTreeStore {
         this._ensureChildNode(payload.nodeKey);
         break;
       case ActionTypes.CLEAR_FILTER:
-        this.clearFilter();
+        this._clearFilter();
         break;
       case ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
         this.addExtraProjectSelectionContent(payload.content);
@@ -1238,7 +1238,7 @@ export class FileTreeStore {
       });
       this._emitChange();
     } else if (oldLength === 1) {
-      this.clearFilter();
+      this._clearFilter();
     }
   }
 

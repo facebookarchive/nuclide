@@ -14,11 +14,15 @@ import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {FileTreeStore} from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import FileTreeActions from '../../pkg/nuclide-file-tree/lib/FileTreeActions';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {WORKSPACE_VIEW_URI as FILE_TREE_VIEW_URI} from '../../pkg/nuclide-file-tree/lib/Constants';
 
 import type {TestContext} from './remotable-tests';
+
+const actions = FileTreeActions.getInstance();
 
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
@@ -47,7 +51,7 @@ export function runTest(context: TestContext) {
 
     runs(() => {
       invariant(elem != null);
-      store.clearFilter();
+      actions.clearFilter();
 
       atom.commands.dispatch(elem, 'tree-view:go-to-letter-a');
       expect(store.getFilter()).toEqual('a');
