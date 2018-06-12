@@ -60,7 +60,7 @@ export class WebSocketTransport {
       if (typeof data !== 'string') {
         message = decompress(data);
       }
-      this._onSocketMessage(message);
+      this._messages.next(message);
     });
 
     socket.on('close', () => {
@@ -78,10 +78,6 @@ export class WebSocketTransport {
       // data may be a Uint8Array
       this._emitter.emit('pong', data != null ? String(data) : data);
     });
-  }
-
-  _onSocketMessage(message: string): void {
-    this._messages.next(message);
   }
 
   onMessage(): Observable<string> {
