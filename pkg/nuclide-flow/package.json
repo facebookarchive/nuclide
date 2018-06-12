@@ -54,6 +54,12 @@
         "type": "boolean",
         "default": true,
         "description": "If unchecked, functions will autocomplete as only their name, and not include their calling parens and arguments."
+      },
+      "liveSyntaxErrors": {
+        "title": "Live syntax errors",
+        "type": "boolean",
+        "default": true,
+        "description": "If checked, Flow will report syntax errors as you type; otherwise, and to see other errors, you have to trigger a flow check by saving any file. (requires restart)"
       }
     },
     "packageType": "Atom",

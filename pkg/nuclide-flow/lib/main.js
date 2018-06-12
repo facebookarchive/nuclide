@@ -180,6 +180,9 @@ async function activateLsp(): Promise<UniversalDisposable> {
     const autostop = Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit'))
       ? ['--autostop']
       : [];
+    const liveSyntaxErrors = Boolean(
+      featureConfig.get('nuclide-flow.liveSyntaxErrors'),
+    );
 
     const lspService = await service.createMultiLspLanguageService(
       'flow',
@@ -195,6 +198,9 @@ async function activateLsp(): Promise<UniversalDisposable> {
         additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
         waitForDiagnostics: true,
         waitForStatus: true,
+        initializationOptions: {
+          liveSyntaxErrors,
+        },
       },
     );
     return lspService || new NullLanguageService();
