@@ -360,11 +360,23 @@ export default class FileTreeActions {
     //       a side effect. The map can be created here with something like
     //       `subscriptions = Immutable.Map(repos).map(this._repositoryAdded)`. Since
     //       `_repositoryAdded` will no longer be about side effects, it should then be renamed.
-    //       `_repositoryRemoved` could probably be inlined here. That would leave this function as
-    //       the only one doing side-effects.
 
     // Unsubscribe from removedRepos.
-    removedRepos.forEach(repo => this._repositoryRemoved(repo));
+    removedRepos.forEach(repo => {
+      const disposable = this._disposableForRepository.get(repo);
+      if (disposable == null) {
+        // There is a small chance that the add/remove of the Repository could happen so quickly that
+        // the entry for the repo in _disposableForRepository has not been set yet.
+        // TODO: Report a soft error for this.
+        return;
+      }
+
+      this._disposableForRepository = this._disposableForRepository.delete(
+        repo,
+      );
+      this.invalidateRemovedFolder();
+      disposable.dispose();
+    });
 
     // Create subscriptions for addedRepos.
     addedRepos.forEach(repo =>
@@ -697,20 +709,6 @@ export default class FileTreeActions {
     }
 
     return codePathStatuses;
-  }
-
-  _repositoryRemoved(repo: atom$Repository) {
-    const disposable = this._disposableForRepository.get(repo);
-    if (disposable == null) {
-      // There is a small chance that the add/remove of the Repository could happen so quickly that
-      // the entry for the repo in _disposableForRepository has not been set yet.
-      // TODO: Report a soft error for this.
-      return;
-    }
-
-    this._disposableForRepository = this._disposableForRepository.delete(repo);
-    this.invalidateRemovedFolder();
-    disposable.dispose();
   }
 }
 
