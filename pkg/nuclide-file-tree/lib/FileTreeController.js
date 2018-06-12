@@ -52,9 +52,9 @@ class ProjectSelectionManager {
   _actions: FileTreeActions;
   _store: FileTreeStore;
 
-  constructor() {
-    this._actions = FileTreeActions.getInstance();
-    this._store = FileTreeStore.getInstance();
+  constructor(store: FileTreeStore, actions: FileTreeActions) {
+    this._store = store;
+    this._actions = actions;
   }
 
   addExtraContent(content: React.Element<any>): IDisposable {
@@ -85,10 +85,13 @@ export default class FileTreeController {
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
   constructor(store: FileTreeStore) {
+    this._store = store;
     this._actions = FileTreeActions.getInstance();
     this._fileSystemActions = new FileSystemActions(store);
-    this._store = store;
-    this._projectSelectionManager = new ProjectSelectionManager();
+    this._projectSelectionManager = new ProjectSelectionManager(
+      this._store,
+      this._actions,
+    );
     this._repositories = Immutable.Set();
     this._disposableForRepository = Immutable.Map();
     this._disposables = new UniversalDisposable(() => {
