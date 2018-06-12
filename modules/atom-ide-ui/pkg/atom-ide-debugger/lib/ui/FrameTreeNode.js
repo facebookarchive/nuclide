@@ -16,43 +16,35 @@ import * as React from 'react';
 import {TreeItem} from 'nuclide-commons-ui/Tree';
 
 type Props = {
-  frame: IStackFrame,
-  service: IDebugService,
+  frame: IStackFrame, // The frame that this node represents.
   text: string,
+  service: IDebugService,
 };
 
-type State = {
-  isSelected: boolean,
-};
-
-export default class FrameTreeNode extends React.Component<Props, State> {
-  constructor() {
-    super();
-    this.state = {
-      isSelected: false,
-    };
+export default class FrameTreeNode extends React.Component<Props> {
+  constructor(props: Props) {
+    super(props);
     this.handleSelect = this.handleSelect.bind(this);
   }
 
   handleSelect = () => {
-    this.setState({
-      isSelected: true,
-    });
     this.props.service.focusStackFrame(this.props.frame, null, null, true);
   };
 
   render(): React.Node {
+    const {frame, service} = this.props;
+    const activeFrame = service.viewModel.focusedStackFrame;
+    const className = (activeFrame == null
+    ? false
+    : frame.frameId === activeFrame.frameId)
+      ? 'debugger-tree-frame-selected'
+      : '';
+
     const treeItem = (
-      <TreeItem
-        className="debugger-callstack-item-selected"
-        onSelect={this.handleSelect}>
+      <TreeItem className={className} onSelect={this.handleSelect}>
         {this.props.text}
       </TreeItem>
     );
-    if (this.state.isSelected) {
-      // $FlowIssue className is an optional property of a table row
-      treeItem.className = 'debugger-callstack-item-selected';
-    }
 
     return treeItem;
   }

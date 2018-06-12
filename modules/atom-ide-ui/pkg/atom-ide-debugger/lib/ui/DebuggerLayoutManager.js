@@ -27,7 +27,7 @@ import nullthrows from 'nullthrows';
 // Debugger views
 import DebuggerControlsView from './DebuggerControlsView';
 import ThreadsView from './ThreadsView';
-import MultiTargettedDebuggerView from './MultitargettedDebuggerView';
+import DebuggerProcessTreeView from './DebuggerProcessTreeView';
 import DebuggerCallstackComponent from './DebuggerCallstackComponent';
 import BreakpointsView from './BreakpointsView';
 import ScopesView from './ScopesView';
@@ -396,7 +396,7 @@ export default class DebuggerLayoutManager {
             title: () => 'Multi-Targetted Debugger',
             isEnabled: () => true,
             createView: () => (
-              <MultiTargettedDebuggerView service={this._service} />
+              <DebuggerProcessTreeView service={this._service} />
             ),
           });
           if (this._debuggerVisible) {

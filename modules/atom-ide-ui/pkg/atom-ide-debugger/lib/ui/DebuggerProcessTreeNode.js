@@ -21,12 +21,12 @@ type State = {
   isCollapsed: boolean,
 };
 
-export default class MultiTargettedDebuggerTreeNode extends React.Component<
+export default class DebuggerProcessTreeNode extends React.Component<
   Props,
   State,
 > {
-  constructor() {
-    super();
+  constructor(props: Props) {
+    super(props);
     this.state = {
       isCollapsed: false,
     };
