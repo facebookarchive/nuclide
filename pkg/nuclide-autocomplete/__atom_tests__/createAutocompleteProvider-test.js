@@ -9,6 +9,8 @@
  * @format
  */
 
+jest.unmock('nuclide-commons/analytics');
+
 import createAutocompleteProvider from '../lib/createAutocompleteProvider';
 
 describe('getSuggestions', () => {
@@ -49,39 +51,33 @@ describe('getSuggestions', () => {
   });
 
   it('returns null when it throws an exception', async () => {
-    await (async () => {
-      expect(
-        await autocompleteProviderThatThrowsExecption.getSuggestions(
-          ({...fakeRequest, activatedManually: false}: any),
-        ),
-      ).toBe(null);
-      expect(
-        await autocompleteProviderThatThrowsExecption.getSuggestions(
-          ({...fakeRequest, activatedManually: true}: any),
-        ),
-      ).toBe(null);
-    })();
+    expect(
+      await autocompleteProviderThatThrowsExecption.getSuggestions(
+        ({...fakeRequest, activatedManually: false}: any),
+      ),
+    ).toBe(null);
+    expect(
+      await autocompleteProviderThatThrowsExecption.getSuggestions(
+        ({...fakeRequest, activatedManually: true}: any),
+      ),
+    ).toBe(null);
   });
 
   it('tracks when it throws an exception', async () => {
-    await (async () => {
-      await autocompleteProviderThatThrowsExecption.getSuggestions(fakeRequest);
-      expect(trackSpy.mock.calls).toHaveLength(1);
-      expect(trackSpy.mock.calls[0][0]).toBe(
-        'test:autocomplete:error-on-get-suggestions',
-      );
-    })();
+    await autocompleteProviderThatThrowsExecption.getSuggestions(fakeRequest);
+    expect(trackSpy.mock.calls).toHaveLength(1);
+    expect(trackSpy.mock.calls[0][0]).toBe(
+      'test:autocomplete:error-on-get-suggestions',
+    );
   });
 
   it('tracks when it times out', async () => {
-    await (async () => {
-      expect(
-        await autocompleteProviderThatTimeOut.getSuggestions(fakeRequest),
-      ).toBe(null);
-      expect(trackSpy.mock.calls.length).toBe(1);
-      expect(trackSpy.mock.calls[0][0]).toBe(
-        'test:autocomplete:timeout-on-get-suggestions',
-      );
-    })();
+    expect(
+      await autocompleteProviderThatTimeOut.getSuggestions(fakeRequest),
+    ).toBe(null);
+    expect(trackSpy.mock.calls.length).toBe(1);
+    expect(trackSpy.mock.calls[0][0]).toBe(
+      'test:autocomplete:timeout-on-get-suggestions',
+    );
   });
 });

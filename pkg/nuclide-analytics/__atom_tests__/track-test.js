@@ -9,6 +9,8 @@
  * @format
  */
 
+jest.unmock('nuclide-commons/analytics');
+
 import {setRawAnalyticsService} from 'nuclide-commons/analytics';
 import {startTracking, trackImmediate} from '..';
 import * as track from '../lib/track';

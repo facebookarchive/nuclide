@@ -10,6 +10,8 @@
  */
 
 jest.unmock('log4js');
+jest.unmock('nuclide-commons/analytics');
+
 global.NUCLIDE_DO_NOT_LOG = false;
 
 import log4js from 'log4js';
