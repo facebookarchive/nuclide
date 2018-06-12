@@ -309,6 +309,10 @@ export default class FileChanges extends React.Component<Props> {
       from: fromFileName,
       to: toFileName,
     } = diff;
+    if (toFileName == null || fromFileName == null) {
+      // sanity check: toFileName & fromFileName should always be given
+      return null;
+    }
     const fileName = toFileName !== '/dev/null' ? toFileName : fromFileName;
     const hunks = [];
     let i = 0;
