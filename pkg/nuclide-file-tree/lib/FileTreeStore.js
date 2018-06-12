@@ -2361,4 +2361,8 @@ class FileTreeStoreBfsIterator {
   traversedNode(): ?string {
     return this._currentlyTraversedNode;
   }
+
+  dispatch(action: FileTreeAction): mixed {
+    this._dispatcher.dispatch(action);
+  }
 }
