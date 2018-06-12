@@ -9,29 +9,29 @@
  * @format
  */
 
+jest.setTimeout(20000);
+
 import typeof * as InfoService from '../../lib/services/InfoService';
 
-import ServiceTestHelper from './ServiceTestHelper';
+import ServiceTestHelper from '../../__mocks__/services/ServiceTestHelper';
 import {getVersion} from '../../../nuclide-version';
 import invariant from 'assert';
 import servicesConfig from '../../lib/servicesConfig';
 
 describe('InfoService', () => {
   let testHelper;
-  beforeEach(() => {
+  beforeEach(async () => {
     testHelper = new ServiceTestHelper();
-    waitsForPromise(() => testHelper.start(servicesConfig));
+    await (() => testHelper.start(servicesConfig))();
   });
 
-  it('Returns the correct version number', () => {
-    waitsForPromise(async () => {
-      invariant(testHelper);
-      const service: InfoService = testHelper.getRemoteService('InfoService');
+  it('Returns the correct version number', async () => {
+    invariant(testHelper);
+    const service: InfoService = testHelper.getRemoteService('InfoService');
 
-      const version = await service.getServerVersion();
-      expect(version).toBe(getVersion());
-    });
+    const version = await service.getServerVersion();
+    expect(version).toBe(getVersion());
   });
 
-  afterEach(() => testHelper.stop());
+  afterEach(async () => await testHelper.stop());
 });

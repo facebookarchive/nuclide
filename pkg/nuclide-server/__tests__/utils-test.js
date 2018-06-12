@@ -13,12 +13,13 @@ import http from 'http';
 import querystring from 'querystring';
 import * as utils from '../lib/utils';
 import asyncRequest from 'big-dig/src/client/utils/asyncRequest';
+import waitsFor from '../../../jest/waits_for';
 
 describe('NuclideServer utils test', () => {
   let server;
   let customHandler;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     let connected = false;
     server = http.createServer((req, res) => {
       if (customHandler) {
@@ -31,7 +32,7 @@ describe('NuclideServer utils test', () => {
     server.listen(36845, '127.0.0.1', 511 /* backlog */, () => {
       connected = true;
     });
-    waitsFor(() => connected);
+    await waitsFor(() => connected);
   });
 
   afterEach(() => {
@@ -39,8 +40,8 @@ describe('NuclideServer utils test', () => {
     customHandler = null;
   });
 
-  it('parses the request body', () => {
-    const bodyHandler = jasmine.createSpy();
+  it('parses the request body', async () => {
+    const bodyHandler = jest.fn();
     customHandler = (req, res) => {
       utils
         // $FlowFixMe(asuarez): Use Flow builtin defs for IncomingMessage.
@@ -53,8 +54,8 @@ describe('NuclideServer utils test', () => {
       method: 'POST',
       body: 'string_abc',
     });
-    waitsFor(() => bodyHandler.callCount > 0);
-    runs(() => expect(bodyHandler.argsForCall[0][0]).toBe('string_abc'));
+    await waitsFor(() => bodyHandler.mock.calls.length > 0);
+    expect(bodyHandler.mock.calls[0][0]).toBe('string_abc');
   });
 
   it('gets query params', () => {

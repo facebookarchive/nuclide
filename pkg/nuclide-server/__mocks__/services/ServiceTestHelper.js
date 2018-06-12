@@ -36,9 +36,9 @@ export default class ServiceTestHelper {
     );
   }
 
-  stop(): void {
+  async stop() {
     this._client.dispose();
-    this._server.close();
+    await this._server.close();
   }
 
   getRemoteService(serviceName: string): any {

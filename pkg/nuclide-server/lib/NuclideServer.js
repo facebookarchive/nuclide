@@ -327,11 +327,15 @@ export default class NuclideServer {
   }
 
   close() {
-    invariant(NuclideServer._theServer === this);
-    NuclideServer._theServer = null;
+    return new Promise(resolve => {
+      invariant(NuclideServer._theServer === this);
+      NuclideServer._theServer = null;
 
-    this._disposables.dispose();
-    this._webSocketServer.close();
-    this._webServer.close();
+      this._disposables.dispose();
+      this._webSocketServer.close();
+      this._webServer.close(() => {
+        resolve();
+      });
+    });
   }
 }

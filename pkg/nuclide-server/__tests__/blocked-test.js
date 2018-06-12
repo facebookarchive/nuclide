@@ -18,10 +18,9 @@ describe('blocked()', () => {
   let intervalHandler;
 
   beforeEach(() => {
-    jasmine.useRealClock();
-    blockHandler = jasmine.createSpy();
-    jasmine.Clock.useMock();
-    spyOn(Date, 'now').andCallFake(() => now);
+    blockHandler = jest.fn();
+    jest.useFakeTimers();
+    jest.spyOn(Date, 'now').mockImplementation(() => now);
 
     intervalHandler = blocked(blockHandler, 100, 10);
   });
@@ -32,9 +31,9 @@ describe('blocked()', () => {
 
   it('reports blocking events over the threshold', () => {
     now = 150;
-    jasmine.Clock.tick(150);
+    jest.advanceTimersByTime(150);
 
-    expect(blockHandler.callCount).toBe(1);
-    expect(blockHandler.argsForCall[0][0]).toBe(50);
+    expect(blockHandler.mock.calls.length).toBe(1);
+    expect(blockHandler.mock.calls[0][0]).toBe(50);
   });
 });
