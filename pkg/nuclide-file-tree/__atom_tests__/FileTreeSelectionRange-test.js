@@ -99,8 +99,8 @@ describe('FileTreeSelectionRange', () => {
   });
 
   describe('RangeUtil', () => {
-    const actions: FileTreeActions = FileTreeActions.getInstance();
-    const store: FileTreeStore = FileTreeStore.getInstance();
+    const store = FileTreeStore.getInstance();
+    const actions = new FileTreeActions(store);
 
     async function prepareFileTree(): Promise<Map<string, string>> {
       const map: Map<string, string> = await buildTempDirTree(

@@ -46,8 +46,8 @@ describe('FileTreeStore', () => {
   let fooTxt = '';
   let dir2 = '';
 
-  const actions: FileTreeActions = FileTreeActions.getInstance();
-  let store: FileTreeStore = FileTreeStore.getInstance();
+  let store = FileTreeStore.getInstance();
+  const actions = new FileTreeActions(store);
 
   /*
    * Trigger the fetch through the **internal-only** API. Enables the

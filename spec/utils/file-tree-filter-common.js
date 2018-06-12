@@ -22,11 +22,10 @@ import {WORKSPACE_VIEW_URI as FILE_TREE_VIEW_URI} from '../../pkg/nuclide-file-t
 
 import type {TestContext} from './remotable-tests';
 
-const actions = FileTreeActions.getInstance();
-
 export function runTest(context: TestContext) {
   it('sets a filter and then clears it when the sidebar or file tree toggles', () => {
     const store = FileTreeStore.getInstance();
+    const actions = new FileTreeActions(store);
     let elem;
     waitsFor('DOM to load', 10000, () => {
       elem = document.querySelector(EVENT_HANDLER_SELECTOR);

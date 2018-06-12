@@ -12,6 +12,7 @@
 /* global Element */
 
 import FileTreeActions from '../lib/FileTreeActions';
+import {FileTreeStore} from '../lib/FileTreeStore';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
@@ -65,7 +66,8 @@ function renderEntryComponentIntoDocument(
 }
 
 describe('Directory FileTreeEntryComponent', () => {
-  const actions = FileTreeActions.getInstance();
+  const store = new FileTreeStore.getInstance();
+  const actions = new FileTreeActions(store);
 
   describe('when expanding/collapsing dir component', () => {
     beforeEach(() => {
@@ -93,7 +95,8 @@ describe('Directory FileTreeEntryComponent', () => {
 });
 
 describe('File FileTreeEntryComponent', () => {
-  const actions = FileTreeActions.getInstance();
+  const store = new FileTreeStore.getInstance();
+  const actions = new FileTreeActions(store);
 
   describe('when expanding/collapsing file component', () => {
     beforeEach(() => {

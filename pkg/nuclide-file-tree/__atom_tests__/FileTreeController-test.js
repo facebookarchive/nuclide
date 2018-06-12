@@ -21,8 +21,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
 describe('FileTreeController', () => {
-  const actions = FileTreeActions.getInstance();
   const store = FileTreeStore.getInstance();
+  const actions = new FileTreeActions(store);
 
   let controller: FileTreeController = (null: any);
   let workspaceElement;

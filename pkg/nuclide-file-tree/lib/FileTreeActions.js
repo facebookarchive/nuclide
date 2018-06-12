@@ -33,8 +33,6 @@ import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-let instance: ?FileTreeActions;
-
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions.
@@ -43,15 +41,8 @@ export default class FileTreeActions {
   _store: FileTreeStore;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
-  static getInstance(): FileTreeActions {
-    if (!instance) {
-      instance = new FileTreeActions();
-    }
-    return instance;
-  }
-
-  constructor() {
-    this._store = FileTreeStore.getInstance();
+  constructor(store: FileTreeStore) {
+    this._store = store;
     this._disposableForRepository = Immutable.Map();
   }
 

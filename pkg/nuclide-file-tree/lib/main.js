@@ -70,6 +70,7 @@ class Activation {
   _fileTreeComponent: ?FileTreeSidebarComponent;
   _restored: boolean; // Has the package state been restored from a previous session?
   _store: FileTreeStore;
+  _actions: FileTreeActions;
   _disposables: UniversalDisposable;
 
   constructor(rawState: ?SerializedState) {
@@ -109,13 +110,14 @@ class Activation {
     );
 
     this._store = FileTreeStore.getInstance();
+    this._actions = new FileTreeActions(this._store);
     const initialState = state == null ? null : state.tree;
     if (initialState != null) {
       this._store.loadData(initialState);
     }
     this._fileTreeController = new FileTreeController(
       this._store,
-      FileTreeActions.getInstance(),
+      this._actions,
     );
     this._restored = state.restored === true;
 
@@ -438,7 +440,7 @@ class Activation {
   _createView(): FileTreeSidebarComponent {
     // Currently, we assume that only one will be created.
     this._fileTreeComponent = viewableFromReactElement(
-      <FileTreeSidebarComponent />,
+      <FileTreeSidebarComponent store={this._store} actions={this._actions} />,
     );
     return this._fileTreeComponent;
   }

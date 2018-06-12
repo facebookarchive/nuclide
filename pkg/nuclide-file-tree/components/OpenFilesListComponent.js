@@ -28,9 +28,6 @@ import {computeDisplayPaths} from '../../nuclide-ui/ChangedFilesList';
 import {createSelector} from 'reselect';
 import Immutable from 'immutable';
 
-const getActions = FileTreeActions.getInstance;
-const store = FileTreeStore.getInstance();
-
 type OpenFileEntry = {
   name: string,
   uri: NuclideUri,
@@ -44,6 +41,8 @@ type Props = {
   modifiedUris: Array<NuclideUri>,
   generatedTypes: Immutable.Map<NuclideUri, GeneratedFileType>,
   activeUri: ?NuclideUri,
+  store: FileTreeStore,
+  actions: FileTreeActions,
 };
 
 type State = {
@@ -78,13 +77,13 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
 
   _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent<>) {
     event.stopPropagation();
-    const rootNode = store.getRootForPath(entry.uri);
+    const rootNode = this.props.store.getRootForPath(entry.uri);
     if (
       FileTreeHelpers.getSelectionMode(event) === 'single-select' &&
       !entry.isSelected &&
       rootNode != null
     ) {
-      getActions().setTargetNode(rootNode.rootUri, entry.uri);
+      this.props.actions.setTargetNode(rootNode.rootUri, entry.uri);
       this.setState({selectedUri: entry.uri});
     }
   }

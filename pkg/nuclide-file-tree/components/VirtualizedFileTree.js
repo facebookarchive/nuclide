@@ -46,6 +46,8 @@ type Props = {|
   height: number,
   width: number,
   initialScrollTop: number,
+  store: FileTreeStore,
+  actions: FileTreeActions,
 |};
 
 type RowType = 'root' | 'node' | 'footer';
@@ -56,9 +58,7 @@ const DEFAULT_NODE_HEIGHT = 24;
 const DEFAULT_FOOTER_HEIGHT = 74;
 
 export class VirtualizedFileTree extends React.Component<Props, State> {
-  _store: FileTreeStore;
   _disposables: UniversalDisposable;
-  _actions: FileTreeActions;
   _getNodeByIndex: (index: number) => ?FileTreeNode;
 
   _listRef: ?List;
@@ -72,18 +72,16 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this._store = FileTreeStore.getInstance();
-    this._actions = FileTreeActions.getInstance();
-    this._getNodeByIndex = this._buildGetNodeByIndex(this._store.roots);
+    this._getNodeByIndex = this._buildGetNodeByIndex(this.props.store.roots);
 
-    const shownNodes = countShownNodes(this._store.roots);
+    const shownNodes = countShownNodes(this.props.store.roots);
     this.state = {
-      trackedIndex: findIndexOfTheTrackedNode(this._store, shownNodes),
-      isEditingWorkingSet: this._store.isEditingWorkingSet(),
-      roots: this._store.roots,
+      trackedIndex: findIndexOfTheTrackedNode(this.props.store, shownNodes),
+      isEditingWorkingSet: this.props.store.isEditingWorkingSet(),
+      roots: this.props.store.roots,
       shownNodes,
-      selectedNodes: this._store.selectionManager.selectedNodes(),
-      focusedNodes: this._store.selectionManager.focusedNodes(),
+      selectedNodes: this.props.store.selectionManager.selectedNodes(),
+      focusedNodes: this.props.store.selectionManager.focusedNodes(),
       rootHeight: null,
       nodeHeight: null,
       footerHeight: null,
@@ -99,7 +97,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   componentDidMount(): void {
     this._processStoreUpdate();
     this._disposables.add(
-      this._store.subscribe(() => this._processStoreUpdate()),
+      this.props.store.subscribe(() => this._processStoreUpdate()),
     );
 
     this._remeasureHeights();
@@ -171,12 +169,15 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }
 
   _processStoreUpdate(): void {
-    const isEditingWorkingSet = this._store.isEditingWorkingSet();
-    const roots = this._store.roots;
+    const isEditingWorkingSet = this.props.store.isEditingWorkingSet();
+    const roots = this.props.store.roots;
     const shownNodes = countShownNodes(roots);
-    const trackedIndex = findIndexOfTheTrackedNode(this._store, shownNodes);
-    const selectedNodes = this._store.selectionManager.selectedNodes();
-    const focusedNodes = this._store.selectionManager.focusedNodes();
+    const trackedIndex = findIndexOfTheTrackedNode(
+      this.props.store,
+      shownNodes,
+    );
+    const selectedNodes = this.props.store.selectionManager.selectedNodes();
+    const focusedNodes = this.props.store.selectionManager.focusedNodes();
 
     this.setState({
       trackedIndex,
@@ -308,7 +309,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   }): void => {
     const {scrollTop} = args;
     if (!this._nextScrollingIsProgrammatic && this.state.trackedIndex != null) {
-      this._actions.clearTrackedNode();
+      this.props.actions.clearTrackedNode();
     }
     this._nextScrollingIsProgrammatic = false;
     this.props.onScroll(scrollTop);
@@ -324,7 +325,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     const fallbackGetByIndex = index => {
       prevRoots = this.state.roots;
       prevIndexQuery = index;
-      prevNode = this._store.getNodeByIndex(index + 1);
+      prevNode = this.props.store.getNodeByIndex(index + 1);
       return prevNode;
     };
 
@@ -389,6 +390,8 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
             node={node}
             selectedNodes={this.state.selectedNodes}
             focusedNodes={this.state.focusedNodes}
+            store={this.props.store}
+            actions={this.props.actions}
           />
         </div>
       );
@@ -410,7 +413,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       this.state.trackedIndex >= startIndex &&
       this.state.trackedIndex <= stopIndex
     ) {
-      this._actions.clearTrackedNodeIfNotLoading();
+      this.props.actions.clearTrackedNodeIfNotLoading();
     }
   };
 
