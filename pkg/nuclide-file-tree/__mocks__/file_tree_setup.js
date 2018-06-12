@@ -13,6 +13,7 @@
 
 import path from 'path';
 import invariant from 'assert';
+import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import {FileTreeStore} from '../lib/FileTreeStore';
 
@@ -26,6 +27,9 @@ export const setup = () => {
   document.body.appendChild(testContainer);
   testContainer.appendChild(workspaceElement);
   // console.log(document.body.innerHTML);
-  const controller = new FileTreeController(FileTreeStore.getInstance());
+  const controller = new FileTreeController(
+    FileTreeStore.getInstance(),
+    FileTreeActions.getInstance(),
+  );
   return {controller};
 };
