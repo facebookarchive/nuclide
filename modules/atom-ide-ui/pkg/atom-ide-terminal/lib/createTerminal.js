@@ -73,7 +73,7 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
     XTerminal.applyAddon(WebLinks);
   }
   // $FlowIgnore We know that TerminalClass is XTerminal + addons
-  return new XTerminal(
+  const terminal = new XTerminal(
     // $FlowIssue: xterms type needs to be updated to include experimentalCharAtlas
     assertTerminalOptionsInFeatureConfig({
       cols: 512,
@@ -87,4 +87,15 @@ export function createTerminal(options: TerminalOptions = {}): Terminal {
       ...options,
     }),
   );
+  // Patch into xterm Linkifier to catch errors on isWrapped property.
+  // Track issue at https://github.com/xtermjs/xterm.js/issues/1509
+  const linkifyRow = terminal.linkifier._linkifyRow;
+  terminal.linkifier._linkifyRow = row => {
+    try {
+      linkifyRow.call(terminal.linkifier, row);
+    } catch (e) {
+      // swallow errors to avoid red box because the linkifier runs on a timer.
+    }
+  };
+  return terminal;
 }
