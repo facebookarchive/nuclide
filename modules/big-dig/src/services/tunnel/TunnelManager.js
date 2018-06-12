@@ -71,30 +71,13 @@ export class TunnelManager {
       'trying to create a tunnel with a closed tunnel manager',
     );
 
-    const localUseIPv4 = useIPv4 != null ? useIPv4 : false;
-
     this._logger.info(`creating tunnel ${localPort}->${remotePort}`);
-    let tunnel = this._checkForExistingTunnel(
+    return this._createTunnel(
       localPort,
       remotePort,
-      localUseIPv4,
+      useIPv4 != null ? useIPv4 : false,
       false,
     );
-
-    if (tunnel == null) {
-      tunnel = await Tunnel.createTunnel(
-        localPort,
-        remotePort,
-        localUseIPv4,
-        this._transport,
-      );
-      this._idToTunnel.set(tunnel.getId(), tunnel);
-      tunnel.once('close', () => {
-        invariant(tunnel != null);
-        this._idToTunnel.delete(tunnel.getId());
-      });
-    }
-    return tunnel;
   }
 
   async createReverseTunnel(
@@ -107,23 +90,44 @@ export class TunnelManager {
       'trying to create a reverse tunnel with a closed tunnel manager',
     );
 
-    const localUseIPv4 = useIPv4 != null ? useIPv4 : false;
-
     this._logger.info(`creating reverse tunnel ${localPort}<-${remotePort}`);
+    return this._createTunnel(
+      localPort,
+      remotePort,
+      useIPv4 != null ? useIPv4 : false,
+      true,
+    );
+  }
+
+  async _createTunnel(
+    localPort: number,
+    remotePort: number,
+    useIPv4: boolean,
+    isReverse: boolean,
+  ) {
     let tunnel = this._checkForExistingTunnel(
       localPort,
       remotePort,
-      localUseIPv4,
-      true,
+      useIPv4,
+      isReverse,
     );
 
     if (tunnel == null) {
-      tunnel = await Tunnel.createReverseTunnel(
-        localPort,
-        remotePort,
-        localUseIPv4,
-        this._transport,
-      );
+      if (isReverse) {
+        tunnel = await Tunnel.createReverseTunnel(
+          localPort,
+          remotePort,
+          useIPv4,
+          this._transport,
+        );
+      } else {
+        tunnel = await Tunnel.createTunnel(
+          localPort,
+          remotePort,
+          useIPv4,
+          this._transport,
+        );
+      }
       this._idToTunnel.set(tunnel.getId(), tunnel);
       tunnel.once('close', () => {
         invariant(tunnel != null);
