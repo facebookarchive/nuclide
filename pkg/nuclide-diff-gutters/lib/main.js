@@ -113,6 +113,11 @@ class Activation {
         const fetchFileContentsAtHead = observeTextEditorsInRepo(repository)
           .flatMap(textEditor => {
             return observePaneItemVisibility(textEditor)
+              .takeUntil(
+                observableFromSubscribeFunction(
+                  textEditor.onDidDestroy.bind(textEditor),
+                ),
+              )
               .filter(isVisible => isVisible)
               .first()
               .flatMap(() => {
