@@ -1209,7 +1209,7 @@ export class FileTreeStore {
     this._emitChange();
   }
 
-  clearFilter(): void {
+  _clearFilter(): void {
     this._filter = '';
     this._updateRoots(root => {
       return root.setRecursive(
