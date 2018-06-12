@@ -14,8 +14,9 @@ import type {IDebugService, IProcess} from '../types';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
-import {TreeList, TreeItem} from 'nuclide-commons-ui/Tree';
+import {TreeList} from 'nuclide-commons-ui/Tree';
 import MultiTargettedDebuggerTreeNode from './MultiTargettedDebuggerTreeNode';
+import FrameTreeNode from './FrameTreeNode';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
@@ -212,9 +213,12 @@ export default class MultiTargettedDebuggerComponent extends React.PureComponent
             .getCallStack()
             .map((frame, frameIndex) => {
               return (
-                <TreeItem key={frameIndex}>
-                  {'Frame ID: ' + frame.frameId + ', Name: ' + frame.name}
-                </TreeItem>
+                <FrameTreeNode
+                  service={this.props.service}
+                  text={'Frame ID: ' + frame.frameId + ', Name: ' + frame.name}
+                  frame={frame}
+                  key={frameIndex}
+                />
               );
             });
           return (
@@ -228,7 +232,7 @@ export default class MultiTargettedDebuggerComponent extends React.PureComponent
       return (
         <MultiTargettedDebuggerTreeNode
           title={
-            'Process command: ' +
+            'Process: ' +
             (process == null
               ? ''
               : process.configuration.adapterExecutable == null
