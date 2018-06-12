@@ -379,9 +379,9 @@ export default class FileTreeActions {
     });
 
     // Create subscriptions for addedRepos.
-    addedRepos.forEach(repo =>
-      this._repositoryAdded(repo, rootKeysForRepository),
-    );
+    addedRepos.forEach(repo => {
+      this._repositoryAdded(repo, rootKeysForRepository);
+    });
   }
 
   updateWorkingSet(workingSet: WorkingSet): void {
@@ -588,13 +588,13 @@ export default class FileTreeActions {
     });
   }
 
-  async _repositoryAdded(
+  _repositoryAdded(
     repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<
       atom$Repository,
       Immutable.Set<string>,
     >,
-  ): Promise<void> {
+  ): void {
     // We support HgRepositoryClient and GitRepositoryAsync objects.
 
     // Observe the repository so that the VCS statuses are kept up to date.
