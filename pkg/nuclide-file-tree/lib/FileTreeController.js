@@ -707,8 +707,4 @@ export default class FileTreeController {
     this._actions.reset();
     this._contextMenu.dispose();
   }
-
-  serialize(): ExportStoreData {
-    return this._store.exportData();
-  }
 }

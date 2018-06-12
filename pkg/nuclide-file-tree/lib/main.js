@@ -266,7 +266,7 @@ class Activation {
 
   serialize(): ?SerializedState {
     return {
-      tree: this._fileTreeController.serialize(),
+      tree: this._store.serialize(),
       restored: true,
       // Scrap our serialization when docks become available. Technically, we only need to scrap
       // the "restored" value, but this is simpler.

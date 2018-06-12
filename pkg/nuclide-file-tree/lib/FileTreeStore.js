@@ -204,13 +204,7 @@ export class FileTreeStore {
     this._maxComponentWidth = -1;
   }
 
-  /**
-   * TODO: Move to a [serialization class][1] and use the built-in versioning mechanism. This might
-   * need to be done one level higher within main.js.
-   *
-   * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
-   */
-  exportData(): ExportStoreData {
+  serialize(): ExportStoreData {
     const rootKeys = this.roots
       .valueSeq()
       .toArray()
