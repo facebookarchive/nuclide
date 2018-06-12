@@ -155,13 +155,13 @@ export default class FileTreeContextMenu {
   _store: FileTreeStore;
   _disposables: UniversalDisposable;
 
-  constructor() {
+  constructor(store: FileTreeStore) {
     this._contextMenu = new ContextMenu({
       type: 'root',
       cssSelector: EVENT_HANDLER_SELECTOR,
     });
     this._disposables = new UniversalDisposable();
-    this._store = FileTreeStore.getInstance();
+    this._store = store;
     this._disposables.add(this._contextMenu);
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {

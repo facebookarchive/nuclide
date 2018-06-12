@@ -215,7 +215,7 @@ export default class FileTreeController {
         'file:show-in-file-manager': this._showInFileManager.bind(this),
       }),
     );
-    this._contextMenu = new FileTreeContextMenu();
+    this._contextMenu = new FileTreeContextMenu(this._store);
   }
 
   getContextMenu(): FileTreeContextMenu {
