@@ -10,19 +10,18 @@
  * @format
  */
 
-import type {Subscription} from 'rxjs';
 import type {Transport} from './Proxy';
 
 import net from 'net';
 import {getLogger} from 'log4js';
 import Encoder from './Encoder';
+import EventEmitter from 'events';
 
 const logger = getLogger('tunnel-socket-manager');
 
-export class SocketManager {
+export class SocketManager extends EventEmitter {
   _port: number;
   _transport: Transport;
-  _subscription: Subscription;
   _socketByClientId: Map<number, net.Socket>;
   _tunnelId: string;
   _useIPv4: boolean;
@@ -33,6 +32,7 @@ export class SocketManager {
     useIPv4: boolean,
     transport: Transport,
   ) {
+    super();
     this._tunnelId = tunnelId;
     this._port = port;
     this._transport = transport;
@@ -53,6 +53,8 @@ export class SocketManager {
       this._createConnection(message);
     } else if (message.event === 'data') {
       this._forwardData(message);
+    } else if (message.event === 'error') {
+      this._handleError(message);
     }
   }
 
@@ -65,8 +67,10 @@ export class SocketManager {
     logger.info(`creating socket with ${JSON.stringify(connectOptions)}`);
     const socket = net.createConnection(connectOptions);
 
-    socket.on('error', err => {
-      logger.error(err);
+    socket.on('error', error => {
+      this.emit('error', error);
+      logger.error(error);
+      socket.end();
     });
 
     socket.on('data', data => {
@@ -90,14 +94,15 @@ export class SocketManager {
     }
   }
 
+  _handleError(message: Object) {
+    this.emit('error', message.arg);
+  }
+
   _sendMessage(msg: Object): void {
     this._transport.send(Encoder.encode(msg));
   }
 
   close() {
-    if (this._subscription != null) {
-      this._subscription.unsubscribe();
-    }
     this._socketByClientId.forEach(socket => {
       socket.end();
     });

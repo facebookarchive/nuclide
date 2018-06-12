@@ -146,6 +146,10 @@ export class ReverseTunnel extends Tunnel {
   ) {
     super(id, null, localPort, remotePort, useIPv4, transport);
     this._socketManager = socketManager;
+
+    this._socketManager.on('error', error => {
+      this.emit('error', error);
+    });
   }
 
   receive(msg: Object): void {
