@@ -14,6 +14,7 @@
 import path from 'path';
 import invariant from 'assert';
 import FileTreeController from '../lib/FileTreeController';
+import {FileTreeStore} from '../lib/FileTreeStore';
 
 export const setup = () => {
   const fixturesPath = path.resolve(__dirname, './fixtures');
@@ -25,6 +26,6 @@ export const setup = () => {
   document.body.appendChild(testContainer);
   testContainer.appendChild(workspaceElement);
   // console.log(document.body.innerHTML);
-  const controller = new FileTreeController(null);
+  const controller = new FileTreeController(FileTreeStore.getInstance());
   return {controller};
 };

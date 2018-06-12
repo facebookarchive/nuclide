@@ -83,9 +83,9 @@ export default class FileTreeController {
   _disposables: UniversalDisposable;
   _disposableForRepository: Immutable.Map<atom$Repository, IDisposable>;
 
-  constructor(state: ?ExportStoreData) {
+  constructor(store: FileTreeStore) {
     this._actions = FileTreeActions.getInstance();
-    this._store = FileTreeStore.getInstance();
+    this._store = store;
     this._projectSelectionManager = new ProjectSelectionManager();
     this._repositories = Immutable.Set();
     this._disposableForRepository = Immutable.Map();
@@ -209,9 +209,6 @@ export default class FileTreeController {
         'file:show-in-file-manager': this._showInFileManager.bind(this),
       }),
     );
-    if (state != null) {
-      this._store.loadData(state);
-    }
     this._contextMenu = new FileTreeContextMenu();
   }
 

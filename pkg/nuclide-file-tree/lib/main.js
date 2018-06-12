@@ -45,6 +45,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
+import {FileTreeStore} from './FileTreeStore';
 
 type SerializedState = {
   tree: ExportStoreData,
@@ -67,6 +68,7 @@ class Activation {
   _fileTreeController: FileTreeController;
   _fileTreeComponent: ?FileTreeSidebarComponent;
   _restored: boolean; // Has the package state been restored from a previous session?
+  _store: FileTreeStore;
   _disposables: UniversalDisposable;
 
   constructor(rawState: ?SerializedState) {
@@ -105,9 +107,12 @@ class Activation {
       },
     );
 
-    this._fileTreeController = new FileTreeController(
-      state == null ? null : state.tree,
-    );
+    this._store = FileTreeStore.getInstance();
+    const initialState = state == null ? null : state.tree;
+    if (initialState != null) {
+      this._store.loadData(initialState);
+    }
+    this._fileTreeController = new FileTreeController(this._store);
     this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
