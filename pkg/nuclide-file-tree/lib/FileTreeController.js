@@ -73,6 +73,7 @@ export type FileTreeProjectSelectionManager = ProjectSelectionManager;
 
 export default class FileTreeController {
   _actions: FileTreeActions;
+  _fileSystemActions: FileSystemActions;
   _contextMenu: FileTreeContextMenu;
   _projectSelectionManager: ProjectSelectionManager;
   _cwdApi: ?CwdApi;
@@ -85,6 +86,7 @@ export default class FileTreeController {
 
   constructor(store: FileTreeStore) {
     this._actions = FileTreeActions.getInstance();
+    this._fileSystemActions = new FileSystemActions();
     this._store = store;
     this._projectSelectionManager = new ProjectSelectionManager();
     this._repositories = Immutable.Set();
@@ -103,7 +105,7 @@ export default class FileTreeController {
         'tree-view:reveal-active-file': this._revealFile.bind(this),
         'tree-view:recursive-collapse-all': this._collapseAll.bind(this),
         'tree-view:add-file-relative': () => {
-          FileSystemActions.openAddFileDialogRelative(
+          this._fileSystemActions.openAddFileDialogRelative(
             this._openAndRevealFilePath.bind(this),
           );
         },
@@ -144,12 +146,12 @@ export default class FileTreeController {
           this._actions.rangeSelectDown();
         },
         'tree-view:add-file': () => {
-          FileSystemActions.openAddFileDialog(
+          this._fileSystemActions.openAddFileDialog(
             this._openAndRevealFilePath.bind(this),
           );
         },
         'tree-view:add-folder': () => {
-          FileSystemActions.openAddFolderDialog(
+          this._fileSystemActions.openAddFolderDialog(
             this._openAndRevealDirectoryPath.bind(this),
           );
         },
@@ -188,14 +190,15 @@ export default class FileTreeController {
           this,
         ),
         'tree-view:rename-selection': () =>
-          FileSystemActions.openRenameDialog(),
+          this._fileSystemActions.openRenameDialog(),
         'tree-view:duplicate-selection': () => {
-          FileSystemActions.openDuplicateDialog(
+          this._fileSystemActions.openDuplicateDialog(
             this._openAndRevealFilePaths.bind(this),
           );
         },
         'tree-view:copy-selection': this._copyFilenamesWithDir.bind(this),
-        'tree-view:paste-selection': () => FileSystemActions.openPasteDialog(),
+        'tree-view:paste-selection': () =>
+          this._fileSystemActions.openPasteDialog(),
         'tree-view:search-in-directory': this._searchInDirectory.bind(this),
         'tree-view:set-current-working-root': this._setCwdToSelection.bind(
           this,

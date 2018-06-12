@@ -33,7 +33,7 @@ type CopyPath = {
   new: NuclideUri,
 };
 
-class FileSystemActions {
+export default class FileSystemActions {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const node = this._getSelectedContainerNode();
     if (!node) {
@@ -527,5 +527,3 @@ class FileSystemActions {
     });
   }
 }
-
-export default new FileSystemActions();
