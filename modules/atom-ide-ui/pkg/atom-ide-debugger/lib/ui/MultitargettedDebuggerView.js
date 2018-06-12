@@ -13,6 +13,7 @@
 import type {IDebugService} from '../types';
 
 import classnames from 'classnames';
+import {Block} from 'nuclide-commons-ui/Block';
 import * as React from 'react';
 import MultiTargettedDebuggerComponent from './MultiTargettedDebuggerComponent';
 
@@ -31,9 +32,12 @@ export default class MultiTargettedDebuggerView extends React.PureComponent<
         className={classnames(
           'debugger-container-new',
           'debugger-breakpoint-list',
+          'multitargetteddebuggertree',
         )}>
         <div className="debugger-pane-content ">
-          <MultiTargettedDebuggerComponent service={service} />
+          <Block>
+            <MultiTargettedDebuggerComponent service={service} />
+          </Block>
         </div>
       </div>
     );
