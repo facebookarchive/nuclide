@@ -2293,6 +2293,10 @@ export class FileTreeStore {
       this._maxComponentWidth = Math.max(this._maxComponentWidth, width);
     }
   }
+
+  dispatch(action: FileTreeAction): mixed {
+    this._dispatcher.dispatch(action);
+  }
 }
 
 /**
@@ -2360,9 +2364,5 @@ class FileTreeStoreBfsIterator {
 
   traversedNode(): ?string {
     return this._currentlyTraversedNode;
-  }
-
-  dispatch(action: FileTreeAction): mixed {
-    this._dispatcher.dispatch(action);
   }
 }
