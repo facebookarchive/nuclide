@@ -488,10 +488,10 @@ export class FileTreeStore {
         this._clearFilter();
         break;
       case ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
-        this.addExtraProjectSelectionContent(payload.content);
+        this._addExtraProjectSelectionContent(payload.content);
         break;
       case ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:
-        this.removeExtraProjectSelectionContent(payload.content);
+        this._removeExtraProjectSelectionContent(payload.content);
         break;
       case ActionTypes.SET_OPEN_FILES_EXPANDED:
         this._setOpenFilesExpanded(payload.openFilesExpanded);
@@ -1246,14 +1246,14 @@ export class FileTreeStore {
     return this._extraProjectSelectionContent;
   }
 
-  addExtraProjectSelectionContent(content: React.Element<any>) {
+  _addExtraProjectSelectionContent(content: React.Element<any>) {
     this._extraProjectSelectionContent = this._extraProjectSelectionContent.push(
       content,
     );
     this._emitChange();
   }
 
-  removeExtraProjectSelectionContent(content: React.Element<any>) {
+  _removeExtraProjectSelectionContent(content: React.Element<any>) {
     const index = this._extraProjectSelectionContent.indexOf(content);
     if (index === -1) {
       return;
