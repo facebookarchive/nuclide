@@ -110,7 +110,7 @@ export function getDefaultSourceSearchPaths(
       searchPaths.push(translatedPath);
 
       if (_sourcePathsService != null) {
-        _sourcePathsService.addKnownSubdirectoryPaths(
+        _sourcePathsService.addKnownJavaSubdirectoryPaths(
           remote,
           translatedPath,
           searchPaths,

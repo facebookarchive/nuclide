@@ -19,7 +19,7 @@ export type SuggestedProjectPath = {
 };
 
 export interface DebuggerSourcePathsService {
-  addKnownSubdirectoryPaths(
+  addKnownJavaSubdirectoryPaths(
     remote: boolean,
     translatedPath: string,
     searchPaths: Array<string>,
