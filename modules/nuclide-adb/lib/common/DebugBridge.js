@@ -16,7 +16,6 @@ import type {DebugBridgeConfig, DeviceId} from '../types';
 import {Observable} from 'rxjs';
 import {observeProcess, runCommand} from 'nuclide-commons/process';
 
-export const DEFAULT_ADB_PORT = 5037;
 const ADB_TIMEOUT = 5000; // 5s
 
 export type getDevicesOptions = {

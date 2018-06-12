@@ -16,7 +16,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MenuItem} from 'nuclide-commons-ui/Dropdown';
 
 import {observeAndroidDevicesX} from 'nuclide-adb/lib/AdbDevicePoller';
-import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
+import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/constants';
 import * as React from 'react';
 import {Dropdown} from 'nuclide-commons-ui/Dropdown';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

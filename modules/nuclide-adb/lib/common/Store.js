@@ -16,7 +16,7 @@ import type {
   DebugBridgeConfig,
 } from '../types';
 
-import {DEFAULT_ADB_PORT} from './DebugBridge';
+import {DEFAULT_ADB_PORT} from '../constants';
 import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';

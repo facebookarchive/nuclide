@@ -12,7 +12,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
+import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/constants';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 import invariant from 'assert';
 
