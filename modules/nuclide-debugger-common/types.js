@@ -94,6 +94,7 @@ export type IProcessConfig = {|
   +adapterPreprocessor?: ?MessageProcessor,
   +customDisposable?: UniversalDisposable,
   +onInitializeCallback?: (session: ISession) => Promise<void>,
+  // TODO(kevinjchen): Add callback to get process name.
 |};
 
 export interface IVsAdapterSpawner {

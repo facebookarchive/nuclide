@@ -16,6 +16,7 @@ import {NestedTreeItem} from 'nuclide-commons-ui/Tree';
 type Props = {
   title: string,
   childItems: Array<React.Element<any>>,
+  isFocused: boolean,
 };
 type State = {
   isCollapsed: boolean,
@@ -40,9 +41,15 @@ export default class DebuggerProcessTreeNode extends React.Component<
   };
 
   render(): React.Node {
+    const {title, isFocused} = this.props;
+    const formattedTitle = (
+      <span className={isFocused ? 'debugger-tree-frame-selected' : ''}>
+        {title}
+      </span>
+    );
     return (
       <NestedTreeItem
-        title={this.props.title}
+        title={formattedTitle}
         collapsed={this.state.isCollapsed}
         onSelect={this.handleSelect}>
         {this.props.childItems}

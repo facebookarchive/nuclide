@@ -10,16 +10,17 @@
  * @format
  */
 
-import type {IDebugService, IProcess, IThread} from '../types';
+import type {IDebugService, IProcess} from '../types';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as React from 'react';
 import {TreeList} from 'nuclide-commons-ui/Tree';
-import DebuggerProcessTreeNode from './DebuggerProcessTreeNode';
 import FrameTreeNode from './FrameTreeNode';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
+import ProcessTreeNode from './ProcessTreeNode';
+import ThreadTreeNode from './ThreadTreeNode';
 
 type Props = {
   service: IDebugService,
@@ -27,8 +28,6 @@ type Props = {
 
 type State = {
   processList: Array<IProcess>,
-  activeProcess: ?IProcess,
-  activeThread: ?IThread,
 };
 
 export default class DebuggerProcessComponent extends React.PureComponent<
@@ -70,11 +69,11 @@ export default class DebuggerProcessComponent extends React.PureComponent<
   };
 
   _getState(): $Shape<State> {
-    const {focusedProcess, focusedThread} = this.props.service.viewModel;
     return {
-      processList: focusedProcess == null ? [] : [focusedProcess],
-      activeProcess: focusedProcess,
-      activeThread: focusedThread,
+      processList: this.props.service
+        .getModel()
+        .getProcesses()
+        .slice(),
     };
   }
 
@@ -99,10 +98,12 @@ export default class DebuggerProcessComponent extends React.PureComponent<
               );
             });
           return (
-            <DebuggerProcessTreeNode
+            <ThreadTreeNode
               title={'Thread ID: ' + thread.threadId + ', Name: ' + thread.name}
               key={threadIndex}
               childItems={stackFrameElements}
+              thread={thread}
+              service={service}
             />
           );
         });
@@ -115,10 +116,12 @@ export default class DebuggerProcessComponent extends React.PureComponent<
         }
       }
       return (
-        <DebuggerProcessTreeNode
+        <ProcessTreeNode
           title={processTitle}
           key={processIndex}
           childItems={threadElements}
+          process={process}
+          service={service}
         />
       );
     });

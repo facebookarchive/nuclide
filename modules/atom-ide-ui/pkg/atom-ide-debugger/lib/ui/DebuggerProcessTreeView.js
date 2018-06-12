@@ -17,29 +17,21 @@ import {Block} from 'nuclide-commons-ui/Block';
 import * as React from 'react';
 import DebuggerProcessComponent from './DebuggerProcessComponent';
 
-type Props = {
+export default function DebuggerProcessTreeView(props: {
   service: IDebugService,
-};
-
-export default class DebuggerProcessTreeView extends React.PureComponent<
-  Props,
-> {
-  render(): React.Node {
-    const {service} = this.props;
-
-    return (
-      <div
-        className={classnames(
-          'debugger-container-new',
-          'debugger-breakpoint-list',
-          'debugger-tree',
-        )}>
-        <div className="debugger-pane-content ">
-          <Block>
-            <DebuggerProcessComponent service={service} />
-          </Block>
-        </div>
+}): React.Node {
+  return (
+    <div
+      className={classnames(
+        'debugger-container-new',
+        'debugger-breakpoint-list',
+        'debugger-tree',
+      )}>
+      <div className="debugger-pane-content ">
+        <Block>
+          <DebuggerProcessComponent service={props.service} />
+        </Block>
       </div>
-    );
-  }
+    </div>
+  );
 }
