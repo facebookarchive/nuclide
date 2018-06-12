@@ -12,37 +12,22 @@
 
 import type {SshTunnelService} from 'nuclide-adb/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  IProcessConfig,
-  VSAdapterExecutableInfo,
-} from 'nuclide-debugger-common';
-import type {
-  JavaTargetConfig,
-  JavaAttachPortTargetConfig,
-} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
+import type {JavaAttachPortTargetConfig} from 'atom-ide-debugger-java/JavaDebuggerHelpersService';
 import type {Device} from 'nuclide-debugger-common/types';
 
-import {VsAdapterTypes} from 'nuclide-debugger-common';
 import nullthrows from 'nullthrows';
 import invariant from 'assert';
-import {
-  getJavaDebuggerHelpersServiceByNuclideUri,
-  getCustomControlButtonsForJavaSourcePaths,
-  getSourcePathClickSubscriptionsOnVspInstance,
-} from 'atom-ide-debugger-java/utils';
+import {getJavaDebuggerHelpersServiceByNuclideUri} from 'atom-ide-debugger-java/utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {VspProcessInfo} from 'nuclide-debugger-common';
 import {getAdbServiceByNuclideUri} from 'nuclide-adb';
 
 // Only one AdbProcessInfo can be active at a time. Since it ties up a forwarded
 // adb port, new instances need to wait for the previous one to clean up before
 // they can begin debugging.
 let cleanupSubject: ?Subject<void> = null;
-
-const DEBUG_JAVA_DEBUGGER = false;
 
 export type AndroidDebugTargetInfo = {
   pid: number,
@@ -190,92 +175,3 @@ export async function getAdbAttachPortTargetInfo(
     port: attachPort,
   };
 }
-
-export async function createJavaVspProcessInfo(
-  targetUri: NuclideUri,
-  config: JavaTargetConfig,
-  clickEvents: rxjs$Subject<void>,
-): Promise<VspProcessInfo> {
-  const processConfig = await createJavaVspIProcessConfig(
-    targetUri,
-    config,
-    clickEvents,
-  );
-  const info = new VspProcessInfo(
-    processConfig.targetUri,
-    processConfig.debugMode,
-    processConfig.adapterType,
-    processConfig.adapterExecutable,
-    processConfig.config,
-    {threads: true},
-    {
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-      threadsComponentTitle: 'Threads',
-    },
-  );
-
-  const subscriptions = new UniversalDisposable();
-  subscriptions.add(
-    ...getSourcePathClickSubscriptionsOnVspInstance(
-      targetUri,
-      info,
-      clickEvents,
-    ),
-  );
-  info.addCustomDisposable(subscriptions);
-  return info;
-}
-
-async function getJavaVSAdapterExecutableInfo(
-  targetUri: NuclideUri,
-): Promise<VSAdapterExecutableInfo> {
-  return getJavaDebuggerHelpersServiceByNuclideUri(
-    targetUri,
-  ).getJavaVSAdapterExecutableInfo(DEBUG_JAVA_DEBUGGER);
-}
-
-export async function createJavaVspIProcessConfig(
-  targetUri: NuclideUri,
-  config: JavaTargetConfig,
-  clickEvents: rxjs$Subject<void>,
-): Promise<IProcessConfig> {
-  const adapterExecutable = await getJavaVSAdapterExecutableInfo(targetUri);
-  // If you have built using debug information, then print the debug server port:
-  if (DEBUG_JAVA_DEBUGGER) {
-    try {
-      const port = adapterExecutable.args[1].split(':')[2].split(',')[0];
-      /* eslint-disable no-console */
-      console.log('Java Debugger Debug Port:', port);
-    } catch (error) {
-      /* eslint-disable no-console */
-      console.log(
-        'Could not find debug server port from adapter executable',
-        adapterExecutable,
-      );
-    }
-  }
-
-  return {
-    targetUri,
-    debugMode: config.debugMode,
-    adapterType: VsAdapterTypes.JAVA,
-    adapterExecutable,
-    config,
-    capabilities: {threads: true},
-    properties: {
-      customControlButtons: getCustomControlButtonsForJavaSourcePaths(
-        clickEvents,
-      ),
-      threadsComponentTitle: 'Threads',
-    },
-  };
-}
-
-export type AndroidDebugInfo = {|
-  attach: boolean,
-  subscriptions: UniversalDisposable,
-  pid: number,
-  attachPortTargetInfo: JavaAttachPortTargetConfig,
-|};
