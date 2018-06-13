@@ -17,6 +17,7 @@ import * as React from 'react';
 import ManualTunnelSection from './ManualTunnelSection';
 import {TunnelsPanelTable} from './TunnelsPanelTable';
 import {List} from 'immutable';
+import {__DEV__} from '../../../commons-node/runtime-info';
 
 export type Props = {
   tunnels: List<ActiveTunnel>,
@@ -29,17 +30,28 @@ export class TunnelsPanelContents extends React.Component<Props> {
   props: Props;
 
   render(): React.Element<any> {
-    return (
-      <div className="nuclide-ssh-tunnels-panel-contents">
-        <TunnelsPanelTable
-          tunnels={this.props.tunnels}
-          closeTunnel={this.props.closeTunnel}
-        />
-        <ManualTunnelSection
-          workingDirectoryHost={this.props.workingDirectoryHost}
-          openTunnel={this.props.openTunnel}
-        />
-      </div>
-    );
+    if (__DEV__) {
+      return (
+        <div className="nuclide-ssh-tunnels-panel-contents">
+          <TunnelsPanelTable
+            tunnels={this.props.tunnels}
+            closeTunnel={this.props.closeTunnel}
+          />
+          <ManualTunnelSection
+            workingDirectoryHost={this.props.workingDirectoryHost}
+            openTunnel={this.props.openTunnel}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="nuclide-ssh-tunnels-panel-contents">
+          <TunnelsPanelTable
+            tunnels={this.props.tunnels}
+            closeTunnel={this.props.closeTunnel}
+          />
+        </div>
+      );
+    }
   }
 }
