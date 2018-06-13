@@ -12,6 +12,7 @@
 jest.unmock('nuclide-commons/analytics');
 
 import createAutocompleteProvider from '../lib/createAutocompleteProvider';
+import waitsFor from '../../../jest/waits_for';
 
 describe('getSuggestions', () => {
   const fakeRequest: any = {
@@ -65,6 +66,7 @@ describe('getSuggestions', () => {
 
   it('tracks when it throws an exception', async () => {
     await autocompleteProviderThatThrowsExecption.getSuggestions(fakeRequest);
+    waitsFor(() => trackSpy.mock.calls.length > 0);
     expect(trackSpy.mock.calls).toHaveLength(1);
     expect(trackSpy.mock.calls[0][0]).toBe(
       'test:autocomplete:error-on-get-suggestions',

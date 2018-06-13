@@ -11,6 +11,7 @@
 
 jest.unmock('log4js');
 jest.unmock('nuclide-commons/analytics');
+jest.unmock('../../nuclide-analytics');
 
 global.NUCLIDE_DO_NOT_LOG = false;
 

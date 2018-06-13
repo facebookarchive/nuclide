@@ -32,4 +32,4 @@ export const trackImmediate: any = jest.fn();
 
 export const setRawAnalyticsService: any = jest.fn();
 
-export const trackTimingSampled: any = jest.fn();
+export const trackTimingSampled: any = jest.fn((event, fn) => fn());

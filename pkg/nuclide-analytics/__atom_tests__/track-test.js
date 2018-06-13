@@ -10,13 +10,27 @@
  */
 
 jest.unmock('nuclide-commons/analytics');
+jest.mock('../lib/track', () => {
+  return {
+    track: jest.fn(() => Promise.resolve(1)),
+  };
+});
 
-import {setRawAnalyticsService} from 'nuclide-commons/analytics';
-import {startTracking, trackImmediate} from '..';
-import * as track from '../lib/track';
+import {
+  setRawAnalyticsService,
+  startTracking,
+  trackImmediate,
+} from 'nuclide-commons/analytics';
+import service from '../lib/track';
 import invariant from 'assert';
+import waitsFor from '../../../jest/waits_for';
 
 const sleep = n => new Promise(r => setTimeout(r, n));
+
+beforeEach(() => {
+  jest.restoreAllMocks();
+  setRawAnalyticsService(service);
+});
 
 describe('startTracking', () => {
   let trackKey;
@@ -24,7 +38,6 @@ describe('startTracking', () => {
   let startTime;
 
   beforeEach(() => {
-    setRawAnalyticsService(track);
     jest.spyOn(process, 'hrtime').mockImplementation(() => {
       if (startTime == null) {
         startTime = Date.now();
@@ -39,10 +52,10 @@ describe('startTracking', () => {
     trackKey = null;
     trackValues = null;
 
-    jest.spyOn(track, 'track').mockImplementation((key, values) => {
+    service.track.mockImplementation((key, values) => {
       trackKey = key;
       trackValues = values;
-      return Promise.resolve();
+      return Promise.resolve(1);
     });
   });
 
@@ -50,7 +63,7 @@ describe('startTracking', () => {
     const timer = startTracking('st-success');
     await sleep(10);
     timer.onSuccess();
-    expect(track.track).toHaveBeenCalled();
+    expect(service.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
@@ -63,7 +76,7 @@ describe('startTracking', () => {
     const timer = startTracking('st-success', {newValue: 'value'});
     await sleep(10);
     timer.onSuccess();
-    expect(track.track).toHaveBeenCalled();
+    expect(service.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(10);
@@ -77,7 +90,7 @@ describe('startTracking', () => {
     const timer = startTracking('st-error');
     await sleep(11);
     timer.onError(new Error());
-    expect(track.track).toHaveBeenCalled();
+    expect(service.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
@@ -90,7 +103,7 @@ describe('startTracking', () => {
     const timer = startTracking('st-error', {newValue: 'value'});
     await sleep(11);
     timer.onError(new Error());
-    expect(track.track).toHaveBeenCalled();
+    expect(service.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     invariant(trackValues != null);
     expect(Number(trackValues.duration)).toBeGreaterThanOrEqual(11);
@@ -102,18 +115,9 @@ describe('startTracking', () => {
 });
 
 describe('trackImmediate', () => {
-  let spy;
-  beforeEach(() => {
-    spy = jest.spyOn(track, 'track').mockImplementation((key, values) => {
-      return Promise.resolve(1);
-    });
-  });
-
-  it('should call track with immediate = true', async () => {
-    await (async () => {
-      const result = await trackImmediate('test', {});
-      expect(result).toBe(1);
-      expect(spy).toHaveBeenCalledWith('test', {}, true);
-    })();
+  it('calls track with immediate = true', async () => {
+    const result = await trackImmediate('test', {});
+    expect(result).toBe(1);
+    expect(service.track).toHaveBeenCalledWith('test', {}, true);
   });
 });
