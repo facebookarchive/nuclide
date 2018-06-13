@@ -15,29 +15,29 @@ import fsPromise from 'nuclide-commons/fsPromise';
 
 const CQUERY_CACHE_DIR = '.cquery_cache';
 
-// TODO pelmers: expose some of these in the atom config
 function staticInitializationOptions(): Object {
   // Copied from the corresponding vs-code plugin
   return {
-    indexWhitelist: [],
-    indexBlacklist: [],
     resourceDirectory: '',
-    maxWorkspaceSearchResults: 1000,
-    indexerCount: 0,
-    enableIndexing: true,
-    enableCacheWrite: true,
-    enableCacheRead: true,
-    includeCompletionMaximumPathLength: 37,
-    includeCompletionWhitelistLiteralEnding: ['.h', '.hpp', '.hh'],
-    includeCompletionWhitelist: [],
-    includeCompletionBlacklist: [],
-    showDocumentLinksOnIncludes: true,
-    diagnosticsOnParse: true,
-    diagnosticsOnCodeCompletion: true,
-    codeLensOnLocalVariables: false,
-    enableSnippetInsertion: true,
+    discoverSystemIncludes: false,
+    showDocumentLinksOnIncludes: false,
     progressReportFrequencyMs: 500,
     clientVersion: 3,
+    codeLens: {
+      localVariables: false,
+    },
+    completion: {
+      enableSnippets: true,
+      includeBlacklist: [],
+    },
+    diagnostics: {
+      blacklist: [],
+      onParse: true,
+      onType: false,
+    },
+    index: {
+      blacklist: [],
+    },
   };
 }
 
