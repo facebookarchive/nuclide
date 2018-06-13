@@ -11,16 +11,12 @@
 
 import {Range} from 'atom';
 import findWholeRangeOfSymbol from '../lib/findWholeRangeOfSymbol';
-import {rangeMatchers} from '../../commons-atom/testHelpers';
 
 describe('findWholeRangeOfSymbol', () => {
   let editor: atom$TextEditor = (null: any);
 
-  beforeEach(function() {
-    this.addMatchers(rangeMatchers);
-    waitsForPromise(async () => {
-      editor = await atom.workspace.open('sampleObjC.m');
-    });
+  beforeEach(async () => {
+    editor = await atom.workspace.open('sampleObjC.m');
   });
 
   it('finds the range of a non-selector symbol.', () => {
@@ -36,7 +32,7 @@ describe('findWholeRangeOfSymbol', () => {
       extent,
     );
     // The range returned should just be the range of the original text.
-    expect(ranges).toEqualAtomRanges([textRangeInSample]);
+    expect(ranges).toMatchSnapshot();
   });
 
   it('finds the range of a fully qualified non-selector symbol.', () => {
@@ -51,7 +47,7 @@ describe('findWholeRangeOfSymbol', () => {
       spelling,
       extent,
     );
-    expect(ranges).toEqualAtomRanges([textRangeInSample]);
+    expect(ranges).toMatchSnapshot();
   });
 
   it('finds the range of a selector with one argument.', () => {
@@ -66,9 +62,7 @@ describe('findWholeRangeOfSymbol', () => {
       spelling,
       extent,
     );
-    // The range returned should just be the range of the original text + 1 for the colon.
-    const expectedRange = new Range(textRangeInSample.start, [12, 60]);
-    expect(ranges).toEqualAtomRanges([expectedRange]);
+    expect(ranges).toMatchSnapshot();
   });
 
   it(
@@ -77,21 +71,6 @@ describe('findWholeRangeOfSymbol', () => {
     () => {
       const spelling =
         'createDirectoryAtPath:withIntermediateDirectories:attributes:error:';
-      // The ranges returned should be all the ranges of all the segments, including the colons.
-      // location of textRangeInSample1 + 1 colon
-      const expectedRange1 = new Range([17, 20], [17, 42]);
-      // location of textRangeInSample2 + 1 colon
-      const expectedRange2 = new Range([18, 14], [18, 42]);
-      // location of textRangeInSample3 + 1 colon
-      const expectedRange3 = new Range([19, 31], [19, 42]);
-      // location of textRangeInSample4 + 1 colon
-      const expectedRange4 = new Range([19, 46], [19, 52]);
-      const expectedRanges = [
-        expectedRange1,
-        expectedRange2,
-        expectedRange3,
-        expectedRange4,
-      ];
       const extent = Range.fromObject({
         start: {row: 17, column: 6},
         end: {row: 19, column: 56},
@@ -106,7 +85,7 @@ describe('findWholeRangeOfSymbol', () => {
         spelling,
         extent,
       );
-      expect(ranges1).toEqualAtomRanges(expectedRanges);
+      expect(ranges1).toMatchSnapshot();
 
       const text2 = 'withIntermediateDirectories';
       const textRangeInSample2 = new Range([18, 14], [18, 41]);
@@ -117,7 +96,7 @@ describe('findWholeRangeOfSymbol', () => {
         spelling,
         extent,
       );
-      expect(ranges2).toEqualAtomRanges(expectedRanges);
+      expect(ranges2).toMatchSnapshot();
 
       const text3 = 'attributes';
       const textRangeInSample3 = new Range([19, 31], [19, 41]);
@@ -128,7 +107,7 @@ describe('findWholeRangeOfSymbol', () => {
         spelling,
         extent,
       );
-      expect(ranges3).toEqualAtomRanges(expectedRanges);
+      expect(ranges3).toMatchSnapshot();
 
       const text4 = 'createDirectoryAtPath';
       const textRangeInSample4 = new Range([19, 46], [19, 51]);
@@ -139,7 +118,7 @@ describe('findWholeRangeOfSymbol', () => {
         spelling,
         extent,
       );
-      expect(ranges4).toEqualAtomRanges(expectedRanges);
+      expect(ranges4).toMatchSnapshot();
     },
   );
 });

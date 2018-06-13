@@ -26,7 +26,7 @@ describe('ClangDiagnosticsProvider', () => {
   };
 
   beforeEach(() => {
-    spyOn(range, 'wordAtPosition').andCallFake((editor, pos, regex) => {
+    jest.spyOn(range, 'wordAtPosition').mockImplementation((editor, pos, regex) => {
       return {
         range: new Range(pos, [pos.row, pos.column + 1]),
       };

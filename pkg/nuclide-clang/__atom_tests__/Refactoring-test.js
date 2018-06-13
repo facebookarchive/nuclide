@@ -13,11 +13,16 @@ import invariant from 'assert';
 import {Point, Range} from 'atom';
 import fs from 'fs';
 
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import Refactoring from '../lib/Refactoring';
 import {getDiagnostics} from '../lib/libclang';
 
-const TEST_PATH = nuclideUri.join(__dirname, 'fixtures', 'references.cpp');
+const TEST_PATH = nuclideUri.join(
+  __dirname,
+  '../__mocks__/fixtures',
+  'references.cpp',
+);
 
 const fakeEditor: any = {
   getPath: () => TEST_PATH,
@@ -25,16 +30,21 @@ const fakeEditor: any = {
 };
 
 describe('Refactoring', () => {
-  beforeEach(() => {
-    waitsForPromise({timeout: 15000}, async () => {
-      // Ensure that the file is compiled.
-      await getDiagnostics(fakeEditor);
+  beforeEach(async () => {
+    featureConfig.set('nuclide-clang', {
+      libclangPath: '',
+      enableDefaultFlags: true,
+      defaultFlags: ['-std=c++14', '-x', 'c++'],
+      defaultDiagnostics: false,
+      serverProcessMemoryLimit: 15,
     });
+    // Ensure that the file is compiled.
+    await getDiagnostics(fakeEditor);
   });
 
   describe('Refactoring.refactoringsAtPoint', () => {
-    it('returns refactorings for a variable', () => {
-      waitsForPromise({timeout: 15000}, async () => {
+    it('returns refactorings for a variable', async () => {
+      await (async () => {
         const point = new Point(2, 6);
         const refactorings = await Refactoring.refactorings(
           fakeEditor,
@@ -49,24 +59,24 @@ describe('Refactoring', () => {
             },
           },
         ]);
-      });
+      })();
     });
 
-    it('returns nothing for a function', () => {
-      waitsForPromise({timeout: 15000}, async () => {
+    it('returns nothing for a function', async () => {
+      await (async () => {
         const point = new Point(1, 5);
         const refactorings = await Refactoring.refactorings(
           fakeEditor,
           new Range(point, point),
         );
         expect(refactorings).toEqual([]);
-      });
+      })();
     });
   });
 
   describe('Refactoring.refactor', () => {
-    it('refactors a parameter', () => {
-      waitsForPromise({timeout: 15000}, async () => {
+    it('refactors a parameter', async () => {
+      await (async () => {
         const response = await Refactoring.refactor({
           editor: fakeEditor,
           kind: 'rename',
@@ -97,7 +107,7 @@ describe('Refactoring', () => {
             ],
           ],
         ]);
-      });
+      })();
     });
   });
 });
