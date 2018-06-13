@@ -144,6 +144,9 @@ export default class VspProcessInfo {
         this._preprocessors == null
           ? null
           : this._preprocessors.vspAdapterPreprocessor,
+      getProcessName() {
+        return this._adapterType;
+      },
     };
   }
 

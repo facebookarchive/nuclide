@@ -26,21 +26,13 @@ export default function ProcessTreeNode(props: Props): React.Node {
   const {process, service, title, childItems} = props;
   const focusedProcess = service.viewModel.focusedProcess;
 
-  // For now, simply check if command and adapter types are the same.
-  // Later, when process names are added to debuggers, we will use those instead.
-  const isFocused =
-    focusedProcess == null ||
-    focusedProcess.configuration.adapterExecutable == null ||
-    process.configuration.adapterExecutable == null
-      ? false
-      : process.configuration.adapterType ===
-          focusedProcess.configuration.adapterType &&
-        process.configuration.adapterExecutable.command ===
-          focusedProcess.configuration.adapterExecutable.command;
-
   return (
     <DebuggerProcessTreeNode
-      isFocused={isFocused}
+      isFocused={
+        focusedProcess == null
+          ? false
+          : process.configuration === focusedProcess.configuration
+      }
       title={title}
       childItems={childItems}
     />

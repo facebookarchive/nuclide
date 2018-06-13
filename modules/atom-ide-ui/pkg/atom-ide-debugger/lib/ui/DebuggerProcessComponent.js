@@ -107,17 +107,11 @@ export default class DebuggerProcessComponent extends React.PureComponent<
             />
           );
         });
-      let processTitle = 'Process';
-      if (process != null) {
-        processTitle += ' Adapter Type: ' + process.configuration.adapterType;
-        if (process.configuration.adapterExecutable != null) {
-          processTitle +=
-            ', Command: ' + process.configuration.adapterExecutable.command;
-        }
-      }
-      return (
+      return process == null ? (
+        'No processes are currently being debugged'
+      ) : (
         <ProcessTreeNode
-          title={processTitle}
+          title={process.configuration.getProcessName()}
           key={processIndex}
           childItems={threadElements}
           process={process}

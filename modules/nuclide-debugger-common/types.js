@@ -80,7 +80,7 @@ export type DebuggerProperties = {
   +threadsComponentTitle: string,
 };
 
-export type IProcessConfig = {|
+export type IProcessConfig = {
   +targetUri: NuclideUri,
   +debugMode: DebuggerConfigAction,
   +adapterType: VsAdapterType,
@@ -94,8 +94,8 @@ export type IProcessConfig = {|
   +adapterPreprocessor?: ?MessageProcessor,
   +customDisposable?: UniversalDisposable,
   +onInitializeCallback?: (session: ISession) => Promise<void>,
-  // TODO(kevinjchen): Add callback to get process name.
-|};
+  +getProcessName: () => string,
+};
 
 export interface IVsAdapterSpawner {
   spawnAdapter(

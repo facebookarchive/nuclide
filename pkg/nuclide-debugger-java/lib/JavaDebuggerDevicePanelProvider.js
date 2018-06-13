@@ -50,6 +50,9 @@ async function _createAndroidDebugAttachConfig(
       threadsComponentTitle: 'Threads',
     },
     customDisposable: new UniversalDisposable(),
+    getProcessName() {
+      return 'Process ' + pid + ' (Android Java ' + device.name + ')';
+    },
   };
 }
 
