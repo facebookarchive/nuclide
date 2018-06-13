@@ -21,6 +21,8 @@ function staticInitializationOptions(): Object {
     resourceDirectory: '',
     discoverSystemIncludes: false,
     showDocumentLinksOnIncludes: false,
+    // Nuclide-specific option.
+    disableInitialIndex: true,
     progressReportFrequencyMs: 500,
     clientVersion: 3,
     codeLens: {
