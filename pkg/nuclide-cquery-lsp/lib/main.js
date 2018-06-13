@@ -9,36 +9,16 @@
  * @format
  */
 
-import type {
-  FindReferencesReturn,
-  DefinitionQueryResult,
-  Outline,
-  CodeAction,
-  CodeFormatProvider,
-  SignatureHelp,
-} from 'atom-ide-ui';
+import type {CodeFormatProvider} from 'atom-ide-ui';
 import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-references/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {ConnectableObservable} from 'rxjs';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
-import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {
-  LanguageService,
-  SymbolResult,
-  FileDiagnosticMap,
-  AutocompleteResult,
-  AutocompleteRequest,
-  FileDiagnosticMessage,
-  Completion,
-  CodeLensData,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+  CqueryProject,
+  RequestLocationsResult,
+} from '../../nuclide-cquery-lsp-rpc/lib/types';
+import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 
@@ -78,254 +58,106 @@ type SaveState = {
   savedGkResult: boolean,
 };
 
-// Wrapper that queries for clang settings when new files seen.
-class CqueryLSPClient extends NullLanguageService {
-  _service: CqueryLanguageService;
-  _logger: log4js$Logger;
-  _subscriptions = new UniversalDisposable();
-
-  constructor(service: CqueryLanguageService) {
-    super();
-    this._service = service;
-    this._logger = getLogger('cquery-language-server');
-    this._subscriptions.add(service, this._addCommands());
+class CqueryNullLanguageService extends NullLanguageService
+  implements CqueryLanguageService {
+  async freshenIndexForFile(file: NuclideUri): Promise<void> {}
+  async requestLocationsCommand(
+    methodName: string,
+    path: NuclideUri,
+    point: atom$Point,
+  ): Promise<RequestLocationsResult> {
+    return [];
   }
 
-  dispose() {
-    this._subscriptions.dispose();
-  }
-
-  _addCommands(): IDisposable {
-    // This command just sends a notification to the server.
-    const notificationCommands = [
-      atom.commands.add('atom-text-editor', 'cquery:freshen-index', () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor) {
-          const path: ?NuclideUri = editor.getPath();
-          if (this._service && path != null) {
-            this._service.freshenIndexForFile(path);
-          }
-        }
-      }),
-      // Equivalent to 'clang:clean-and-rebuild'
-      atom.commands.add(
-        'atom-text-editor',
-        'cquery:clean-and-restart',
-        async () => {
-          const editor = atom.workspace.getActiveTextEditor();
-          if (editor) {
-            const path: ?NuclideUri = editor.getPath();
-            if (this._service && path != null) {
-              const project = await determineCqueryProject(path);
-              await resetForSource(editor);
-              await this._service.deleteProject(project);
-            }
-          }
-        },
-      ),
-    ];
-    // These commands all request locations in response to a position
-    // which we can display in a find references pane.
-    const requestCommands = [
-      {
-        command: 'cquery:find-variables',
-        methodName: '$cquery/vars',
-        title: 'Variables',
-      },
-      {
-        command: 'cquery:find-callers',
-        methodName: '$cquery/callers',
-        title: 'Callers',
-      },
-      {
-        command: 'cquery:find-base-class',
-        methodName: '$cquery/base',
-        title: 'Base classes',
-      },
-      {
-        command: 'cquery:find-derived-class',
-        methodName: '$cquery/derived',
-        title: 'Derived classes',
-      },
-    ].map(({command, methodName, title}) =>
-      atom.commands.add('atom-text-editor', command, () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (editor) {
-          const point = editor.getCursorBufferPosition();
-          const path: ?NuclideUri = editor.getPath();
-          const name = wordUnderPoint(editor, point);
-          if (this._service && path != null && name != null) {
-            this._service
-              .requestLocationsCommand(methodName, path, point)
-              .then(locations => {
-                if (_referencesViewService != null) {
-                  _referencesViewService.viewResults({
-                    type: 'data',
-                    baseUri: path,
-                    referencedSymbolName: name,
-                    title,
-                    references: locations.map(loc => ({...loc, name: ''})),
-                  });
-                }
-              });
-          }
-        }
-      }),
-    );
-    return new UniversalDisposable(...notificationCommands, ...requestCommands);
-  }
-
-  async ensureProject(file: string): Promise<?CqueryProject> {
-    const project = await determineCqueryProject(file);
-    return this._service
-      .associateFileWithProject(file, project)
-      .then(() => project, () => null);
-  }
-
-  async getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null ? null : this._service.getDiagnostics(fileVersion);
-  }
-
-  async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getAutocompleteSuggestions(
-          fileVersion,
-          position,
-          request,
-        );
-  }
-
-  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion> {
-    return Promise.resolve(null);
-  }
-
-  async getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>> {
-    return this._service.getAdditionalLogFiles(deadline);
-  }
-
-  async getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.getDefinition(fileVersion, position);
-  }
-
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): ConnectableObservable<?FindReferencesReturn> {
-    return Observable.fromPromise(this.ensureProject(fileVersion.filePath))
-      .concatMap(project => {
-        return project == null
-          ? Observable.of(null)
-          : this._service.findReferences(fileVersion, position).refCount();
-      })
-      .publish();
-  }
-
-  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    const project = await this.ensureProject(filePath);
-    return project == null ? null : this._service.getCoverage(filePath);
-  }
-
-  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null ? null : this._service.getOutline(fileVersion);
-  }
-
-  async getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null ? null : this._service.getCodeLens(fileVersion);
-  }
-
-  async resolveCodeLens(
-    filePath: NuclideUri,
-    codeLens: CodeLensData,
-  ): Promise<?CodeLensData> {
-    return null;
-  }
-
-  async getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? []
-      : this._service.getCodeActions(fileVersion, range, diagnostics);
-  }
-
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.highlight(fileVersion, position);
-  }
-
-  async getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    const project = await this.ensureProject(filePath);
-    return project == null ? null : this._service.getProjectRoot(filePath);
-  }
-
-  async isFileInProject(filePath: NuclideUri): Promise<boolean> {
-    const project = await this.ensureProject(filePath);
-    return project != null;
-  }
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
-    return this._service.observeDiagnostics();
-  }
-
-  async typeHint(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?TypeHint> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.typeHint(fileVersion, position);
-  }
-
-  async signatureHelp(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?SignatureHelp> {
-    const project = await this.ensureProject(fileVersion.filePath);
-    return project == null
-      ? null
-      : this._service.signatureHelp(fileVersion, position);
-  }
-
-  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    // TODO pelmers: wrap with ensure server
-    return this._service.supportsSymbolSearch(directories);
-  }
-
-  async symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>> {
-    return this._service.symbolSearch(query, directories);
-  }
+  async deleteProject(project: CqueryProject): Promise<void> {}
 }
 
-async function getConnection(connection): Promise<LanguageService> {
+function addCommands(
+  atomService: AtomLanguageService<CqueryLanguageService>,
+): IDisposable {
+  const notificationCommands = [
+    // This command just sends a notification to the server.
+    atom.commands.add('atom-text-editor', 'cquery:freshen-index', async () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        const path: ?NuclideUri = editor.getPath();
+        const service = await atomService.getLanguageServiceForUri(path);
+        if (path != null && service != null) {
+          service.freshenIndexForFile(path);
+        }
+      }
+    }),
+    // Equivalent to 'clang:clean-and-rebuild'
+    atom.commands.add(
+      'atom-text-editor',
+      'cquery:clean-and-restart',
+      async () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor) {
+          const path: ?NuclideUri = editor.getPath();
+          const service = await atomService.getLanguageServiceForUri(path);
+          if (path != null && service != null) {
+            const project = await determineCqueryProject(path);
+            await resetForSource(editor);
+            await service.deleteProject(project);
+          }
+        }
+      },
+    ),
+  ];
+  // These commands all request locations in response to a position
+  // which we can display in a find references pane.
+  const requestCommands = [
+    {
+      command: 'cquery:find-variables',
+      methodName: '$cquery/vars',
+      title: 'Variables',
+    },
+    {
+      command: 'cquery:find-callers',
+      methodName: '$cquery/callers',
+      title: 'Callers',
+    },
+    {
+      command: 'cquery:find-base-class',
+      methodName: '$cquery/base',
+      title: 'Base classes',
+    },
+    {
+      command: 'cquery:find-derived-class',
+      methodName: '$cquery/derived',
+      title: 'Derived classes',
+    },
+  ].map(({command, methodName, title}) =>
+    atom.commands.add('atom-text-editor', command, async () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor) {
+        const point = editor.getCursorBufferPosition();
+        const path: ?NuclideUri = editor.getPath();
+        const name = wordUnderPoint(editor, point);
+        const service = await atomService.getLanguageServiceForUri(path);
+        if (service != null && path != null && name != null) {
+          service
+            .requestLocationsCommand(methodName, path, point)
+            .then(locations => {
+              if (_referencesViewService != null) {
+                _referencesViewService.viewResults({
+                  type: 'data',
+                  baseUri: path,
+                  referencedSymbolName: name,
+                  title,
+                  references: locations.map(loc => ({...loc, name: ''})),
+                });
+              }
+            });
+        }
+      }
+    }),
+  );
+  return new UniversalDisposable(...notificationCommands, ...requestCommands);
+}
+
+async function getConnection(connection): Promise<CqueryLanguageService> {
   const [fileNotifier, host] = await Promise.all([
     getNotifierByConnection(connection),
     getHostServices(),
@@ -365,8 +197,8 @@ async function getConnection(connection): Promise<LanguageService> {
     );
   }
   return cqueryService != null
-    ? new CqueryLSPClient(cqueryService)
-    : new NullLanguageService();
+    ? cqueryService
+    : new CqueryNullLanguageService();
 }
 
 class Activation {
@@ -507,6 +339,7 @@ class Activation {
     languageService.activate();
     return new UniversalDisposable(
       languageService,
+      addCommands(languageService),
       atom.packages.onDidActivatePackage(disableNuclideClang),
       () => atom.packages.activatePackage(NUCLIDE_CLANG_PACKAGE_NAME),
     );

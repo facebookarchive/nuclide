@@ -60,10 +60,5 @@ export default class CqueryLanguageServer
     }
   }
 
-  async associateFileWithProject(
-    file: NuclideUri,
-    project: CqueryProject,
-  ): Promise<void> {}
-
   async deleteProject(project: CqueryProject): Promise<void> {}
 }

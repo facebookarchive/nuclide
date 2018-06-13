@@ -64,10 +64,6 @@ export interface CqueryLanguageService extends LanguageService {
     path: NuclideUri,
     point: atom$Point,
   ): Promise<RequestLocationsResult>;
-  associateFileWithProject(
-    file: NuclideUri,
-    project: CqueryProject,
-  ): Promise<void>;
   deleteProject(project: CqueryProject): Promise<void>;
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
