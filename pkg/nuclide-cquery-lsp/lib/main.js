@@ -52,6 +52,7 @@ import {
   registerClangProvider,
   formatCode,
   resetForSource,
+  getServerSettings,
 } from '../../nuclide-clang/lib/libclang';
 import passesGK from '../../commons-node/passesGK';
 import {
@@ -329,6 +330,7 @@ async function getConnection(connection): Promise<LanguageService> {
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
+  const {defaultFlags} = getServerSettings();
   const cqueryService = await getCqueryLSPServiceByConnection(
     connection,
   ).createCqueryService({
@@ -338,6 +340,7 @@ async function getConnection(connection): Promise<LanguageService> {
     logLevel: 'WARN',
     enableLibclangLogs:
       featureConfig.get('nuclide-cquery-lsp.enable-libclang-logs') === true,
+    defaultFlags: defaultFlags != null ? defaultFlags : [],
   });
   if (cqueryService == null && featureConfig.get(USE_CQUERY_CONFIG)) {
     const notification = atom.notifications.addWarning(

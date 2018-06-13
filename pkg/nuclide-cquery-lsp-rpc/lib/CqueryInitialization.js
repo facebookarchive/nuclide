@@ -21,7 +21,6 @@ function staticInitializationOptions(): Object {
   return {
     indexWhitelist: [],
     indexBlacklist: [],
-    extraClangArguments: [],
     resourceDirectory: '',
     maxWorkspaceSearchResults: 1000,
     indexerCount: 0,
@@ -45,11 +44,13 @@ function staticInitializationOptions(): Object {
 export function getInitializationOptions(
   cacheDirectory: string,
   compilationDatabaseDirectory: string,
+  extraClangArguments: Array<string> = [],
 ): Object {
   let options = {
     ...staticInitializationOptions(),
     cacheDirectory,
     compilationDatabaseDirectory,
+    extraClangArguments,
   };
   try {
     // $FlowFB

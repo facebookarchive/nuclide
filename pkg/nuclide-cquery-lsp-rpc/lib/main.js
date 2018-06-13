@@ -55,7 +55,7 @@ import {getInitializationOptions, createCacheDir} from './CqueryInitialization';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 import CqueryLanguageServer from './CqueryLanguageServer';
 
-const EXTENSIONS = ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'];
+const EXTENSIONS = ['.c', '.cpp', '.h', '.hpp', '.cc', '.tcc', '.m', 'mm'];
 
 export interface CqueryLanguageService extends LanguageService {
   freshenIndexForFile(file: NuclideUri): Promise<void>;
@@ -209,6 +209,7 @@ export async function createCqueryService(params: {|
   logCategory: string,
   logLevel: LogLevel,
   enableLibclangLogs: boolean,
+  defaultFlags: Array<string>,
 |}): Promise<?CqueryLanguageService> {
   const command = 'cquery';
   const languageId = 'cquery';
@@ -225,11 +226,13 @@ export async function createCqueryService(params: {|
   const multiLsp = new CqueryLanguageServer(forkedHost);
   const cqueryFactory = async (projectRoot: string) => {
     const cacheDirectory = await createCacheDir(projectRoot);
-    const initalizationOptions = getInitializationOptions(
+    const initializationOptions = getInitializationOptions(
       cacheDirectory,
       projectRoot,
+      params.defaultFlags,
     );
     const logFile = nuclideUri.join(cacheDirectory, '..', 'diagnostics');
+    const recordFile = nuclideUri.join(cacheDirectory, '..', 'record');
     const [, host] = await Promise.all([
       multiLsp.hasObservedDiagnostics(),
       forkHostServices(params.host, logger),
@@ -248,12 +251,17 @@ export async function createCqueryService(params: {|
       fileCache,
       host,
       command,
-      command,
-      ['--language-server', '--log-file', logFile],
+      process.execPath,
+      [
+        require.resolve('./child/main-entry'),
+        logFile,
+        recordFile,
+        String(params.enableLibclangLogs),
+      ],
       spawnOptions,
       projectRoot,
       EXTENSIONS,
-      initalizationOptions,
+      initializationOptions,
       5 * 60 * 1000, // 5 minutes
       logFile,
       {id: projectRoot, label: projectRoot},
