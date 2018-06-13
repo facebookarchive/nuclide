@@ -16,10 +16,13 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('ClangService.formatCode', () => {
-  it('uses clang-format correctly', () => {
-    waitsForPromise(async () => {
+  it('uses clang-format correctly', async () => {
+    await (async () => {
       const fixtureCode = await fsPromise.readFile(
-        nuclideUri.join(__dirname, 'fixtures/cpp_buck_project/test.cpp'),
+        nuclideUri.join(
+          __dirname,
+          '../__mocks__/fixtures/cpp_buck_project/test.cpp',
+        ),
         'utf8',
       );
       const projectDir = await generateFixture(
@@ -27,10 +30,11 @@ describe('ClangService.formatCode', () => {
         new Map([['test.cpp', fixtureCode]]),
       );
       const testFile = nuclideUri.join(projectDir, 'test.cpp');
-      const spy = spyOn(
-        require('nuclide-commons/process'),
-        'runCommand',
-      ).andReturn(Observable.of('{ "Cursor": 4, "Incomplete": false }\ntest2'));
+      const spy = jest
+        .spyOn(require('nuclide-commons/process'), 'runCommand')
+        .mockReturnValue(
+          Observable.of('{ "Cursor": 4, "Incomplete": false }\ntest2'),
+        );
       const result = await formatCode(testFile, 'test', 1, 2, 3);
       expect(result).toEqual({
         newCursor: 4,
@@ -47,6 +51,6 @@ describe('ClangService.formatCode', () => {
         ],
         {input: 'test'},
       );
-    });
+    })();
   });
 });

@@ -17,8 +17,8 @@ import {RelatedFileFinder} from '../lib/related-file/finders';
 describe('getRelatedSourceForHeader', () => {
   const finder = new RelatedFileFinder();
 
-  it('does not fall back to a source file when looking for a source in a non-buck project', () => {
-    waitsForPromise(async () => {
+  it('does not fall back to a source file when looking for a source in a non-buck project', async () => {
+    await (async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([['a/compile_commands.json', ''], ['a/source.cpp', '']]),
@@ -26,13 +26,15 @@ describe('getRelatedSourceForHeader', () => {
       const file = await finder.getRelatedSourceForHeader(
         nuclideUri.join(tmpdir, 'a/header.h'),
       );
-      expect(file).toBe(null);
-    });
+      expect(file).toBeFalsy();
+    })();
   });
 
-  it('is able to find an absolute include with project root but with a different real root', () => {
-    waitsForPromise(async () => {
-      spyOn(finder, '_getFBProjectRoots').andReturn(['project/subproject']);
+  it('is able to find an absolute include with project root but with a different real root', async () => {
+    await (async () => {
+      jest
+        .spyOn(finder, '_getFBProjectRoots')
+        .mockReturnValue(['project/subproject']);
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([
@@ -51,12 +53,14 @@ describe('getRelatedSourceForHeader', () => {
         nuclideUri.join(tmpdir, 'a/project/subproject/subroot'),
       );
       expect(file).toBe(sourceFile);
-    });
+    })();
   });
 
-  it('is able to find an absolute include without project root', () => {
-    spyOn(finder, '_getFBProjectRoots').andReturn(['project/subproject']);
-    waitsForPromise(async () => {
+  it('is able to find an absolute include without project root', async () => {
+    jest
+      .spyOn(finder, '_getFBProjectRoots')
+      .mockReturnValue(['project/subproject']);
+    await (async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([
@@ -74,11 +78,11 @@ describe('getRelatedSourceForHeader', () => {
         nuclideUri.join(tmpdir, 'a/project/subproject/subroot/boom/header.h'),
       );
       expect(file).toBe(sourceFile);
-    });
+    })();
   });
 
-  it('is able to find an absolute include', () => {
-    waitsForPromise(async () => {
+  it('is able to find an absolute include', async () => {
+    await (async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([['a/b.cpp', '#include <a/b.h>']]),
@@ -89,11 +93,11 @@ describe('getRelatedSourceForHeader', () => {
         tmpdir,
       );
       expect(file).toBe(sourceFile);
-    });
+    })();
   });
 
-  it('is able to find a relative include', () => {
-    waitsForPromise(async () => {
+  it('is able to find a relative include', async () => {
+    await (async () => {
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([['a/x.cpp', '#include <../x.h>']]),
@@ -104,39 +108,32 @@ describe('getRelatedSourceForHeader', () => {
         tmpdir,
       );
       expect(file).toBe(sourceFile);
-    });
+    })();
   });
 
-  it('rejects non-matching relative includes', () => {
-    waitsForPromise(async () => {
-      const tmpdir = await generateFixture(
-        'clang_rpc',
-        new Map([['a/b.cpp', '#include <../../x.h>']]),
-      );
-      const file = await finder.getRelatedSourceForHeader(
-        nuclideUri.join(tmpdir, 'x.h'),
-        tmpdir,
-      );
-      expect(file).toBeNull();
-    });
+  it('rejects non-matching relative includes', async () => {
+    const tmpdir = await generateFixture(
+      'clang_rpc',
+      new Map([['a/b.cpp', '#include <../../x.h>']]),
+    );
+    const file = await finder.getRelatedSourceForHeader(
+      nuclideUri.join(tmpdir, 'x.h'),
+      tmpdir,
+    );
+    expect(file).toBeFalsy();
   });
 
-  it('returns null for invalid paths', () => {
-    waitsForPromise(async () => {
-      const file = await finder.getRelatedSourceForHeader(
-        '/this/is/not/a/path',
-        '/lol',
-      );
-      expect(file).toBeNull();
-    });
+  it('returns null for invalid paths', async () => {
+    const file = await finder.getRelatedSourceForHeader(
+      '/this/is/not/a/path',
+      '/lol',
+    );
+    expect(file).toBeFalsy();
   });
 
-  it('caches results of finding source for header', () => {
-    waitsForPromise(async () => {
-      const implSpy = spyOn(
-        finder,
-        '_getRelatedSourceForHeaderImpl',
-      ).andCallThrough();
+  it('caches results of finding source for header', async () => {
+    await (async () => {
+      const implSpy = jest.spyOn(finder, '_getRelatedSourceForHeaderImpl');
       const tmpdir = await generateFixture(
         'clang_rpc',
         new Map([['a/x.cpp', '#include <../x.h>']]),
@@ -154,7 +151,7 @@ describe('getRelatedSourceForHeader', () => {
       for (const file of results) {
         expect(file).toBe(sourceFile);
       }
-      expect(implSpy.callCount).toBe(1);
-    });
+      expect(implSpy.mock.calls.length).toBe(1);
+    })();
   });
 });

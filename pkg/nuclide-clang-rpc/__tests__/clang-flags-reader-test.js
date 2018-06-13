@@ -9,6 +9,7 @@
  * @format
  */
 
+jest.setTimeout(40000);
 import {range} from 'nuclide-commons/collection';
 import nullthrows from 'nullthrows';
 
@@ -73,18 +74,18 @@ describe('unit tests for clang-flags-reader.js', () => {
     }
   }
 
-  it('works for a small file', () => {
-    waitsForPromise(async () => expectFallback(3, 3));
+  it('works for a small file', async () => {
+    await (async () => expectFallback(3, 3))();
   });
-  it('works for very long arguments list', () => {
-    waitsForPromise(async () => expectFallback(2, 40000));
+  it('works for very long arguments list', async () => {
+    await (async () => expectFallback(2, 40000))();
   });
-  it('works for a very large file', () => {
+  it('works for a very large file', async () => {
     // This file is around 250 megabytes (JSON.parse would fail).
-    waitsForPromise(async () => checkLengths(3000, 5000));
+    await (async () => checkLengths(3000, 5000))();
   });
-  it('fails with embedded braces, but fallback works', () => {
-    waitsForPromise(async () => {
+  it('fails with embedded braces, but fallback works', async () => {
+    await (async () => {
       const db = await generateDbFixture('/a/{b}', 3, 3);
       const fallbackEntries = await fallbackReadCompilationFlags(db);
       let hadError = false;
@@ -94,6 +95,6 @@ describe('unit tests for clang-flags-reader.js', () => {
       expect(hadError).toBeTruthy();
       // ...but the fallback should still work.
       expect(fallbackEntries.length).toEqual(3);
-    });
+    })();
   });
 });
