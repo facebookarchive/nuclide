@@ -32,7 +32,7 @@ export class TunnelsPanel {
   }
 
   getTitle() {
-    return 'SSH tunnels';
+    return 'Nuclide tunnels';
   }
 
   getIconName() {

@@ -61,7 +61,7 @@ class Activation {
       () => destroyItemWhere(item => item instanceof TunnelsPanel),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-ssh-tunnels-panel:toggle',
+        'nuclide-tunnels-panel:toggle',
         () => {
           atom.workspace.toggle(WORKSPACE_VIEW_URI);
         },
@@ -107,7 +107,7 @@ class Activation {
   consumeOutputService(api: OutputService): void {
     this._disposables.add(
       api.registerOutputProvider({
-        id: 'SSH tunnels',
+        id: 'Nuclide tunnels',
         messages: this._store.getState().consoleOutput,
       }),
     );

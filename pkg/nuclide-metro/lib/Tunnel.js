@@ -43,7 +43,7 @@ export function openTunnel(
           ) {
             throw new Error(
               `You have a tunnel open from \`localhost:${port}\` to a different host than your ` +
-                'Current Working Root. Close the tunnel in the SSH tunnels panel and try again.',
+                'Current Working Root. Close the tunnel in the Nuclide tunnels panel and try again.',
             );
           }
         }
