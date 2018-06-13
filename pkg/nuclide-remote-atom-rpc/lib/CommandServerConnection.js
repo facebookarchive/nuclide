@@ -1,45 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AtomCommands} from './rpc-types';
-import type {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CommandServerConnection = undefined;
 
-import {
-  iterableIsEmpty,
-  filterIterable,
-  iterableContains,
-} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _collection;
 
-export class CommandServerConnection {
-  _atomCommands: AtomCommands;
-  _fileCache: FileCache;
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
 
-  constructor(fileCache: FileCache, atomCommands: AtomCommands) {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CommandServerConnection {
+
+  constructor(fileCache, atomCommands) {
     this._atomCommands = atomCommands;
     this._fileCache = fileCache;
   }
 
-  getAtomCommands(): AtomCommands {
+  getAtomCommands() {
     return this._atomCommands;
   }
 
-  hasOpenPath(filePath: NuclideUri): boolean {
-    return (
-      !iterableIsEmpty(
-        filterIterable(this._fileCache.getOpenDirectories(), dir =>
-          nuclideUri.contains(dir, filePath),
-        ),
-      ) || iterableContains(this._fileCache.getOpenFiles(), filePath)
-    );
+  hasOpenPath(filePath) {
+    return !(0, (_collection || _load_collection()).iterableIsEmpty)((0, (_collection || _load_collection()).filterIterable)(this._fileCache.getOpenDirectories(), dir => (_nuclideUri || _load_nuclideUri()).default.contains(dir, filePath))) || (0, (_collection || _load_collection()).iterableContains)(this._fileCache.getOpenFiles(), filePath);
   }
 }
+exports.CommandServerConnection = CommandServerConnection; /**
+                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                            * All rights reserved.
+                                                            *
+                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                            * the root directory of this source tree.
+                                                            *
+                                                            * 
+                                                            * @format
+                                                            */

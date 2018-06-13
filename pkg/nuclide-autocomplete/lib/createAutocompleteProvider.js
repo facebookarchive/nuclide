@@ -1,28 +1,29 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  AutocompleteProvider,
-  AutocompleteAnalyticEventNames,
-  AtomSuggestionInsertedRequest,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createAutocompleteProvider;
 
-import performanceNow from 'nuclide-commons/performanceNow';
-import {sleep, TimedOutError} from 'nuclide-commons/promise';
-import {
-  track,
-  trackSampled,
-  trackTiming,
-  trackTimingSampled,
-} from '../../nuclide-analytics';
+var _performanceNow;
+
+function _load_performanceNow() {
+  return _performanceNow = _interopRequireDefault(require('../../../modules/nuclide-commons/performanceNow'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('../../../modules/nuclide-commons/promise');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Autocomplete is extremely critical to the user experience!
@@ -33,6 +34,17 @@ import {
  * autocomplete check happens right after you open the file and providers don't
  * have enough time to initialize.
  */
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
 const AUTOCOMPLETE_TIMEOUT = atom.inSpecMode() ? 3000 : 500;
 const E2E_SAMPLE_RATE = 10;
 const ON_GET_SUGGESTIONS_SAMPLE_RATE = 10;
@@ -43,9 +55,7 @@ const durationBySuggestion = new WeakMap();
  * Receives a provider and returns a proxy provider that applies time limit to
  * `getSuggestions` calls and stop unhandled exceptions on to cascade.
  */
-export default function createAutocompleteProvider<
-  Suggestion: atom$AutocompleteSuggestion,
->(provider: AutocompleteProvider<Suggestion>): atom$AutocompleteProvider {
+function createAutocompleteProvider(provider) {
   // The `eventNames` could be computed in deep functions, but we don't want
   // to change the logger if a provider decides to changes its name.
   const eventNames = getAnalytics(provider);
@@ -65,194 +75,139 @@ export default function createAutocompleteProvider<
         default:
           return Reflect.get(target, prop, receiver);
       }
-    },
+    }
   });
 
   // It is safe to cast it to any since AutocompleteProvider is a super type of
   // atom$AutocompleteProvider
-  return (proxy: any);
+  return proxy;
 }
 
-type RequestTracker = {|
-  // Share a single "timeout" promise among all fetches for the same request.
-  // The timeout doubles as the trigger to log the slowest provider time.
-  timeoutPromise: Promise<void>,
-  slowestProvider: AutocompleteProvider<any>,
-  slowestProviderTime: number,
-  pendingProviders: number,
-|};
-const requestTrackers: WeakMap<atom$Point, RequestTracker> = new WeakMap();
+const requestTrackers = new WeakMap();
 
-function _getRequestTracker(
-  request: atom$AutocompleteRequest,
-  provider: AutocompleteProvider<any>,
-): RequestTracker {
+function _getRequestTracker(request, provider) {
   // Kind of hacky.. but the bufferPosition is a unique object per request.
   const key = request.bufferPosition;
   const tracker = requestTrackers.get(key);
   if (tracker != null) {
     return tracker;
   }
-  const startTime = performanceNow();
+  const startTime = (0, (_performanceNow || _load_performanceNow()).default)();
   const newTracker = {
-    timeoutPromise: sleep(AUTOCOMPLETE_TIMEOUT).then(() => {
+    timeoutPromise: (0, (_promise || _load_promise()).sleep)(AUTOCOMPLETE_TIMEOUT).then(() => {
       if (newTracker.pendingProviders) {
-        trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackSampled)('e2e-autocomplete', E2E_SAMPLE_RATE, {
           path: request.editor.getPath(),
           duration: AUTOCOMPLETE_TIMEOUT,
           slowestProvider: 'timeout',
-          pendingProviders: newTracker.pendingProviders,
+          pendingProviders: newTracker.pendingProviders
         });
-        throw new TimedOutError(AUTOCOMPLETE_TIMEOUT);
+        throw new (_promise || _load_promise()).TimedOutError(AUTOCOMPLETE_TIMEOUT);
       }
-      const {slowestProvider, slowestProviderTime} = newTracker;
-      trackSampled('e2e-autocomplete', E2E_SAMPLE_RATE, {
+      const { slowestProvider, slowestProviderTime } = newTracker;
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackSampled)('e2e-autocomplete', E2E_SAMPLE_RATE, {
         path: request.editor.getPath(),
         duration: Math.round(slowestProviderTime - startTime),
-        slowestProvider: slowestProvider.analytics.eventName,
+        slowestProvider: slowestProvider.analytics.eventName
       });
     }),
     slowestProvider: provider,
     slowestProviderTime: startTime,
-    pendingProviders: 0,
+    pendingProviders: 0
   };
   requestTrackers.set(key, newTracker);
   return newTracker;
 }
 
-function getSuggestions<Suggestion: atom$AutocompleteSuggestion>(
-  provider: AutocompleteProvider<Suggestion>,
-  eventNames: AutocompleteAnalyticEventNames,
-  request: atom$AutocompleteRequest,
-): Promise<?Array<*>> | ?Array<*> {
+function getSuggestions(provider, eventNames, request) {
   const logObject = {};
   const requestTracker = _getRequestTracker(request, provider);
   requestTracker.pendingProviders++;
 
-  return trackTimingSampled(
-    eventNames.onGetSuggestions,
-    async () => {
-      let result = null;
-      const startTime = performanceNow();
-      if (request.activatedManually) {
-        try {
-          result = await provider.getSuggestions(request);
-        } catch (e) {
-          track(eventNames.errorOnGetSuggestions);
-        }
-      } else {
-        try {
-          result = await Promise.race([
-            Promise.resolve(provider.getSuggestions(request)),
-            requestTracker.timeoutPromise,
-          ]);
-        } catch (e) {
-          if (e instanceof TimedOutError) {
-            track(eventNames.timeoutOnGetSuggestions);
-          } else {
-            track(eventNames.errorOnGetSuggestions);
-          }
+  return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTimingSampled)(eventNames.onGetSuggestions, async () => {
+    let result = null;
+    const startTime = (0, (_performanceNow || _load_performanceNow()).default)();
+    if (request.activatedManually) {
+      try {
+        result = await provider.getSuggestions(request);
+      } catch (e) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventNames.errorOnGetSuggestions);
+      }
+    } else {
+      try {
+        result = await Promise.race([Promise.resolve(provider.getSuggestions(request)), requestTracker.timeoutPromise]);
+      } catch (e) {
+        if (e instanceof (_promise || _load_promise()).TimedOutError) {
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventNames.timeoutOnGetSuggestions);
+        } else {
+          (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventNames.errorOnGetSuggestions);
         }
       }
-      logObject.isEmpty = result == null || result.length === 0;
-      const endTime = performanceNow();
-      requestTracker.slowestProvider = provider;
-      requestTracker.slowestProviderTime = endTime;
-      requestTracker.pendingProviders--;
-      if (result) {
-        result.forEach(suggestion =>
-          durationBySuggestion.set(suggestion, endTime - startTime),
-        );
-      }
-      return result;
-    },
-    ON_GET_SUGGESTIONS_SAMPLE_RATE,
-    logObject,
-  );
+    }
+    logObject.isEmpty = result == null || result.length === 0;
+    const endTime = (0, (_performanceNow || _load_performanceNow()).default)();
+    requestTracker.slowestProvider = provider;
+    requestTracker.slowestProviderTime = endTime;
+    requestTracker.pendingProviders--;
+    if (result) {
+      result.forEach(suggestion => durationBySuggestion.set(suggestion, endTime - startTime));
+    }
+    return result;
+  }, ON_GET_SUGGESTIONS_SAMPLE_RATE, logObject);
 }
 
-function getSuggestionDetailsOnSelect<Suggestion: atom$AutocompleteSuggestion>(
-  provider: AutocompleteProvider<Suggestion>,
-  eventNames: AutocompleteAnalyticEventNames,
-  suggestion: Suggestion,
-): Promise<?Suggestion> {
+function getSuggestionDetailsOnSelect(provider, eventNames, suggestion) {
   const logObject = {};
 
-  return trackTiming(
-    eventNames.onGetSuggestionDetailsOnSelect,
-    async () => {
-      let result = null;
-      if (provider.getSuggestionDetailsOnSelect != null) {
-        try {
-          result = await provider.getSuggestionDetailsOnSelect(suggestion);
-        } catch (e) {
-          track(eventNames.errorOnGetSuggestionDetailsOnSelect);
-        }
+  return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(eventNames.onGetSuggestionDetailsOnSelect, async () => {
+    let result = null;
+    if (provider.getSuggestionDetailsOnSelect != null) {
+      try {
+        result = await provider.getSuggestionDetailsOnSelect(suggestion);
+      } catch (e) {
+        (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventNames.errorOnGetSuggestionDetailsOnSelect);
       }
-      logObject.isEmpty = result == null;
+    }
+    logObject.isEmpty = result == null;
 
-      return result;
-    },
-    logObject,
-  );
+    return result;
+  }, logObject);
 }
 
-function onDidInsertSuggestion<Suggestion: atom$AutocompleteSuggestion>(
-  provider: AutocompleteProvider<Suggestion>,
-  eventNames: AutocompleteAnalyticEventNames,
-  insertedSuggestionArgument: AtomSuggestionInsertedRequest<Suggestion>,
-): void {
-  trackOnDidInsertSuggestion(
-    eventNames.onDidInsertSuggestion,
-    provider.analytics.shouldLogInsertedSuggestion,
-    insertedSuggestionArgument,
-  );
+function onDidInsertSuggestion(provider, eventNames, insertedSuggestionArgument) {
+  trackOnDidInsertSuggestion(eventNames.onDidInsertSuggestion, provider.analytics.shouldLogInsertedSuggestion, insertedSuggestionArgument);
   if (provider.onDidInsertSuggestion) {
     provider.onDidInsertSuggestion(insertedSuggestionArgument);
   }
 }
 
-function trackOnDidInsertSuggestion<Suggestion: atom$AutocompleteSuggestion>(
-  eventName: string,
-  shouldLogInsertedSuggestion: boolean,
-  insertedSuggestionArgument: AtomSuggestionInsertedRequest<Suggestion>,
-) {
-  const duration = durationBySuggestion.get(
-    insertedSuggestionArgument.suggestion,
-  );
+function trackOnDidInsertSuggestion(eventName, shouldLogInsertedSuggestion, insertedSuggestionArgument) {
+  const duration = durationBySuggestion.get(insertedSuggestionArgument.suggestion);
   if (!shouldLogInsertedSuggestion) {
-    track(eventName, {
-      duration,
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventName, {
+      duration
     });
     return;
   }
 
-  const {suggestion} = insertedSuggestionArgument;
-  const suggestionText =
-    suggestion.text != null ? suggestion.text : suggestion.snippet;
-  track(eventName, {
+  const { suggestion } = insertedSuggestionArgument;
+  const suggestionText = suggestion.text != null ? suggestion.text : suggestion.snippet;
+  (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(eventName, {
     duration,
     replacementPrefix: suggestion.replacementPrefix,
-    suggestionText,
+    suggestionText
   });
 }
 
-function getAnalytics<Suggestion: atom$AutocompleteSuggestion>(
-  provider: AutocompleteProvider<Suggestion>,
-): AutocompleteAnalyticEventNames {
-  const eventNameFor = eventType =>
-    `${provider.analytics.eventName}:autocomplete:${eventType}`;
+function getAnalytics(provider) {
+  const eventNameFor = eventType => `${provider.analytics.eventName}:autocomplete:${eventType}`;
 
   return {
     errorOnGetSuggestions: eventNameFor('error-on-get-suggestions'),
     onDidInsertSuggestion: eventNameFor('on-did-insert-suggestion'),
     onGetSuggestions: eventNameFor('on-get-suggestions'),
     timeoutOnGetSuggestions: eventNameFor('timeout-on-get-suggestions'),
-    errorOnGetSuggestionDetailsOnSelect: eventNameFor(
-      'error-on-get-suggestion-details-on-select',
-    ),
-    onGetSuggestionDetailsOnSelect: eventNameFor(
-      'on-get-suggestion-details-on-select',
-    ),
+    errorOnGetSuggestionDetailsOnSelect: eventNameFor('error-on-get-suggestion-details-on-select'),
+    onGetSuggestionDetailsOnSelect: eventNameFor('on-get-suggestion-details-on-select')
   };
 }

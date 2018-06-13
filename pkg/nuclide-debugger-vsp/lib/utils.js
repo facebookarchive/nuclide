@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPrepackAutoGenConfig = getPrepackAutoGenConfig;
+exports.resolveConfiguration = resolveConfiguration;
+exports.getNativeAutoGenConfig = getNativeAutoGenConfig;
+exports.getNativeVSPLaunchProcessInfo = getNativeVSPLaunchProcessInfo;
+exports.getNativeVSPAttachProcessInfo = getNativeVSPAttachProcessInfo;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../../../modules/nuclide-debugger-common');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,54 +34,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {IProcessConfig, VsAdapterType} from 'nuclide-debugger-common';
-import type {
-  AutoGenConfig,
-  AutoGenLaunchConfig,
-  NativeVsAdapterType,
-  AutoGenAttachConfig,
-} from 'nuclide-debugger-common/types';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  VsAdapterTypes,
-  VspProcessInfo,
-  getVSCodeDebuggerAdapterServiceByNuclideUri,
-} from 'nuclide-debugger-common';
-import * as React from 'react';
-
-export type VspNativeDebuggerLaunchBuilderParms = {
-  args: Array<string>,
-  cwd: string,
-  env: Array<string>,
-  sourcePath: string,
-};
-
-export type VspNativeDebuggerAttachBuilderParms = {
-  pid?: number,
-  sourcePath: string,
-  stopCommands?: Array<string>,
-};
-
-export function getPrepackAutoGenConfig(): AutoGenConfig {
+function getPrepackAutoGenConfig() {
   const fileToPrepack = {
     name: 'sourceFile',
     type: 'string',
     description: 'Input the file you want to Prepack. Use absolute paths.',
     required: true,
-    visible: true,
+    visible: true
   };
   const prepackRuntimePath = {
     name: 'prepackRuntime',
     type: 'string',
-    description:
-      'Prepack executable path (e.g. lib/prepack-cli.js). Use absolute paths.',
+    description: 'Prepack executable path (e.g. lib/prepack-cli.js). Use absolute paths.',
     required: false,
-    visible: true,
+    visible: true
   };
   const argumentsProperty = {
     name: 'prepackArguments',
@@ -61,26 +60,26 @@ export function getPrepackAutoGenConfig(): AutoGenConfig {
     description: 'Arguments to start Prepack',
     required: false,
     defaultValue: '',
-    visible: true,
+    visible: true
   };
 
-  const autoGenLaunchConfig: AutoGenLaunchConfig = {
+  const autoGenLaunchConfig = {
     launch: true,
-    vsAdapterType: VsAdapterTypes.PREPACK,
+    vsAdapterType: (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.PREPACK,
     threads: false,
     properties: [fileToPrepack, prepackRuntimePath, argumentsProperty],
     scriptPropertyName: 'fileToPrepack',
     scriptExtension: '.js',
     cwdPropertyName: null,
-    header: null,
+    header: null
   };
   return {
     launch: autoGenLaunchConfig,
-    attach: null,
+    attach: null
   };
 }
 
-async function lldbVspAdapterWrapperPath(program: NuclideUri): Promise<string> {
+async function lldbVspAdapterWrapperPath(program) {
   try {
     // $FlowFB
     return require('./fb-LldbVspAdapterPath').getLldbVspAdapterPath(program);
@@ -89,28 +88,20 @@ async function lldbVspAdapterWrapperPath(program: NuclideUri): Promise<string> {
   }
 }
 
-export async function resolveConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
-  const {adapterExecutable, targetUri} = configuration;
+async function resolveConfiguration(configuration) {
+  const { adapterExecutable, targetUri } = configuration;
   if (adapterExecutable == null) {
     throw new Error('Cannot resolve configuration for unset adapterExecutable');
   }
 
-  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
-    configuration.targetUri,
-  );
+  const debuggerService = (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).getVSCodeDebuggerAdapterServiceByNuclideUri)(configuration.targetUri);
   let sourcePath = configuration.config.sourcePath;
 
   if (sourcePath == null || sourcePath.trim() === '') {
     if (configuration.debugMode === 'launch') {
-      sourcePath = await debuggerService.getBuckRootFromUri(
-        configuration.config.program,
-      );
+      sourcePath = await debuggerService.getBuckRootFromUri(configuration.config.program);
     } else if (configuration.config.pid != null) {
-      sourcePath = await debuggerService.getBuckRootFromPid(
-        configuration.config.pid,
-      );
+      sourcePath = await debuggerService.getBuckRootFromPid(configuration.config.pid);
     }
   }
 
@@ -121,29 +112,26 @@ export async function resolveConfiguration(
 
   adapterExecutable.command = await lldbVspAdapterWrapperPath(targetUri);
 
-  return {
-    ...configuration,
+  return Object.assign({}, configuration, {
     config,
-    adapterExecutable,
-  };
+    adapterExecutable
+  });
 }
 
-export function getNativeAutoGenConfig(
-  vsAdapterType: NativeVsAdapterType,
-): AutoGenConfig {
+function getNativeAutoGenConfig(vsAdapterType) {
   const program = {
     name: 'program',
     type: 'path',
     description: 'Input the program/executable you want to launch',
     required: true,
-    visible: true,
+    visible: true
   };
   const cwd = {
     name: 'cwd',
     type: 'path',
     description: 'Working directory for the launched executable',
     required: true,
-    visible: true,
+    visible: true
   };
   const args = {
     name: 'args',
@@ -152,7 +140,7 @@ export function getNativeAutoGenConfig(
     description: 'Arguments to the executable',
     required: false,
     defaultValue: '',
-    visible: true,
+    visible: true
   };
   const env = {
     name: 'env',
@@ -161,7 +149,7 @@ export function getNativeAutoGenConfig(
     description: 'Environment variables (e.g., SHELL=/bin/bash PATH=/bin)',
     required: false,
     defaultValue: '',
-    visible: true,
+    visible: true
   };
   const sourcePath = {
     name: 'sourcePath',
@@ -169,21 +157,25 @@ export function getNativeAutoGenConfig(
     description: 'Optional base path for sources',
     required: false,
     defaultValue: '',
-    visible: true,
+    visible: true
   };
 
-  const debugTypeMessage = `using ${
-    vsAdapterType === VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'
-  }`;
+  const debugTypeMessage = `using ${vsAdapterType === (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VsAdapterTypes.NATIVE_GDB ? 'gdb' : 'lldb'}`;
 
-  const autoGenLaunchConfig: AutoGenLaunchConfig = {
+  const autoGenLaunchConfig = {
     launch: true,
     vsAdapterType,
     threads: true,
     properties: [program, cwd, args, env, sourcePath],
     scriptPropertyName: 'program',
     cwdPropertyName: 'working directory',
-    header: <p>Debug native programs {debugTypeMessage}.</p>,
+    header: _react.createElement(
+      'p',
+      null,
+      'Debug native programs ',
+      debugTypeMessage,
+      '.'
+    )
   };
 
   const pid = {
@@ -191,45 +183,34 @@ export function getNativeAutoGenConfig(
     type: 'process',
     description: '',
     required: true,
-    visible: true,
+    visible: true
   };
-  const autoGenAttachConfig: AutoGenAttachConfig = {
+  const autoGenAttachConfig = {
     launch: false,
     vsAdapterType,
     threads: true,
     properties: [pid, sourcePath],
-    header: <p>Attach to a running native process {debugTypeMessage}</p>,
+    header: _react.createElement(
+      'p',
+      null,
+      'Attach to a running native process ',
+      debugTypeMessage
+    )
   };
   return {
     launch: autoGenLaunchConfig,
-    attach: autoGenAttachConfig,
+    attach: autoGenAttachConfig
   };
 }
 
-export async function getNativeVSPLaunchProcessInfo(
-  adapter: VsAdapterType,
-  program: NuclideUri,
-  args: VspNativeDebuggerLaunchBuilderParms,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(
-    program,
-    'launch',
-    adapter,
-    null,
-    {
-      program: nuclideUri.getPath(program),
-      ...args,
-    },
-    {threads: true},
-  );
+async function getNativeVSPLaunchProcessInfo(adapter, program, args) {
+  return new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VspProcessInfo(program, 'launch', adapter, null, Object.assign({
+    program: (_nuclideUri || _load_nuclideUri()).default.getPath(program)
+  }, args), { threads: true });
 }
 
-export async function getNativeVSPAttachProcessInfo(
-  adapter: VsAdapterType,
-  targetUri: NuclideUri,
-  args: VspNativeDebuggerAttachBuilderParms,
-): Promise<VspProcessInfo> {
-  return new VspProcessInfo(targetUri, 'attach', adapter, null, args, {
-    threads: true,
+async function getNativeVSPAttachProcessInfo(adapter, targetUri, args) {
+  return new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).VspProcessInfo(targetUri, 'attach', adapter, null, args, {
+    threads: true
   });
 }

@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeProjectPathsAllFromSourcePathsService = observeProjectPathsAllFromSourcePathsService;
+
+var _projects;
+
+function _load_projects() {
+  return _projects = require('../nuclide-commons-atom/projects');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,37 +19,22 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {
-  SuggestedProjectPath,
-  DebuggerSourcePathsService,
-} from 'atom-ide-debugger-java/types';
-
-import {observeProjectPathsAll} from 'nuclide-commons-atom/projects';
-
-export function observeProjectPathsAllFromSourcePathsService(
-  callback: (Array<SuggestedProjectPath>) => void,
-) {
-  let _sourcePathsService: ?DebuggerSourcePathsService;
-  atom.packages.serviceHub
-    .consume('debugger.sourcePaths', '0.0.0', provider => {
-      _sourcePathsService = provider;
-    })
-    .dispose();
-  return _sourcePathsService != null
-    ? _sourcePathsService.observeSuggestedAndroidProjectPaths(callback)
-    : observeProjectPathsAll(projectPaths => {
-        callback(
-          projectPaths.map(projectPath => {
-            return {
-              projectPath,
-              suggested: true,
-              hostLabel: projectPath,
-            };
-          }),
-        );
-      });
+function observeProjectPathsAllFromSourcePathsService(callback) {
+  let _sourcePathsService;
+  atom.packages.serviceHub.consume('debugger.sourcePaths', '0.0.0', provider => {
+    _sourcePathsService = provider;
+  }).dispose();
+  return _sourcePathsService != null ? _sourcePathsService.observeSuggestedAndroidProjectPaths(callback) : (0, (_projects || _load_projects()).observeProjectPathsAll)(projectPaths => {
+    callback(projectPaths.map(projectPath => {
+      return {
+        projectPath,
+        suggested: true,
+        hostLabel: projectPath
+      };
+    }));
+  });
 }

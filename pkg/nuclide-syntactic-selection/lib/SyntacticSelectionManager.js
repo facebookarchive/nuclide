@@ -1,69 +1,74 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SyntacticSelectionManager = undefined;
 
-import type {SyntacticSelectionProvider} from './types';
-import {Observable, Subject} from 'rxjs';
+var _ProviderRegistry;
 
-import {getLogger} from 'log4js';
-const logger = getLogger('nuclide-syntactic-selection');
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/ProviderRegistry'));
+}
 
-type TextEditorSelectionMonitor = {
-  editor: atom$TextEditor,
-  doExpand: () => mixed,
-  doCollapse: () => mixed,
-};
+var _UniversalDisposable;
 
-export class SyntacticSelectionManager {
-  _providerRegistry: ProviderRegistry<SyntacticSelectionProvider>;
-  _disposables: UniversalDisposable;
-  _textEditorMonitors: Map<TextEditor, TextEditorSelectionMonitor>;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('../../../modules/nuclide-commons/event');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-syntactic-selection'); /**
+                                                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                           * All rights reserved.
+                                                                                           *
+                                                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                                                           * the root directory of this source tree.
+                                                                                           *
+                                                                                           * 
+                                                                                           * @format
+                                                                                           */
+
+class SyntacticSelectionManager {
 
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
+    this._providerRegistry = new (_ProviderRegistry || _load_ProviderRegistry()).default();
     this._textEditorMonitors = new Map();
-    this._disposables = new UniversalDisposable(this._registerCommands());
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._registerCommands());
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  addProvider(provider: SyntacticSelectionProvider): IDisposable {
+  addProvider(provider) {
     this._disposables.add(this._providerRegistry.addProvider(provider));
 
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._providerRegistry.removeProvider(provider);
     });
   }
 
-  _registerCommands(): IDisposable {
-    return new UniversalDisposable(
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-syntactic-selection:expand',
-        () => this._expandSelection(),
-      ),
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-syntactic-selection:collapse',
-        () => this._collapseSelection(),
-      ),
-    );
+  _registerCommands() {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('atom-text-editor', 'nuclide-syntactic-selection:expand', () => this._expandSelection()), atom.commands.add('atom-text-editor', 'nuclide-syntactic-selection:collapse', () => this._collapseSelection()));
   }
 
-  _expandSelection(): void {
+  _expandSelection() {
     const monitor = this._getTextSelectionMonitor();
     if (monitor == null) {
       return;
@@ -72,7 +77,7 @@ export class SyntacticSelectionManager {
     monitor.doExpand();
   }
 
-  _collapseSelection(): void {
+  _collapseSelection() {
     const monitor = this._getTextSelectionMonitor();
     if (monitor == null) {
       return;
@@ -81,7 +86,7 @@ export class SyntacticSelectionManager {
     monitor.doCollapse();
   }
 
-  async _expandRange(editor: atom$TextEditor): Promise<?atom$Range> {
+  async _expandRange(editor) {
     try {
       const provider = this._providerRegistry.getProviderForEditor(editor);
       if (provider == null) {
@@ -91,19 +96,12 @@ export class SyntacticSelectionManager {
       return await provider.getExpandedSelectionRange(editor);
     } catch (e) {
       // Don't let error in one expand/collapse affect the others
-      logger.warn(
-        'Error processing syntactic selection expand in',
-        editor.getPath(),
-        e,
-      );
+      logger.warn('Error processing syntactic selection expand in', editor.getPath(), e);
       return null;
     }
   }
 
-  async _collapseRange(
-    editor: atom$TextEditor,
-    selectionAnchor: atom$Point,
-  ): Promise<?atom$Range> {
+  async _collapseRange(editor, selectionAnchor) {
     try {
       const provider = this._providerRegistry.getProviderForEditor(editor);
       if (provider == null) {
@@ -113,11 +111,7 @@ export class SyntacticSelectionManager {
       return await provider.getCollapsedSelectionRange(editor, selectionAnchor);
     } catch (e) {
       // Don't let error in one expand/collapse affect the others
-      logger.warn(
-        'Error processing syntactic selection collapse in',
-        editor.getPath(),
-        e,
-      );
+      logger.warn('Error processing syntactic selection collapse in', editor.getPath(), e);
       return null;
     }
   }
@@ -134,7 +128,7 @@ export class SyntacticSelectionManager {
    * user change the selection manually, the editor is removed from the cache
    * and any in-flight collapse/expand requests are abandoned (ignored).
    */
-  _getTextSelectionMonitor(): ?TextEditorSelectionMonitor {
+  _getTextSelectionMonitor() {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return null;
@@ -186,72 +180,53 @@ export class SyntacticSelectionManager {
     let changingNow = false;
 
     // There are multiple events that cover selection change.
-    const selectionChangeSignals = Observable.merge(
-      observableFromSubscribeFunction(editor.observeSelections.bind(editor)),
-      observableFromSubscribeFunction(
-        editor.onDidChangeSelectionRange.bind(editor),
-      ),
-    );
+    const selectionChangeSignals = _rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(editor.observeSelections.bind(editor)), (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidChangeSelectionRange.bind(editor)));
 
     // We want to stop listening (managing) an editor instance when it is
     // either closed or if its selection was manually changed by the user
-    const stopMonitorSignal = Observable.merge(
-      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-      selectionChangeSignals.filter(() => {
-        if (changingNow) {
-          return false;
-        }
-
-        const currentSelectedRanges = editor.getSelectedBufferRanges();
-        if (
-          currentSelectedRanges.length > 1 ||
-          (expectedSelection != null &&
-            !currentSelectedRanges[0].isEqual(expectedSelection))
-        ) {
-          // Stop monitoring
-          return true;
-        }
-
+    const stopMonitorSignal = _rxjsBundlesRxMinJs.Observable.merge((0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidDestroy.bind(editor)), selectionChangeSignals.filter(() => {
+      if (changingNow) {
         return false;
-      }),
-    );
+      }
+
+      const currentSelectedRanges = editor.getSelectedBufferRanges();
+      if (currentSelectedRanges.length > 1 || expectedSelection != null && !currentSelectedRanges[0].isEqual(expectedSelection)) {
+        // Stop monitoring
+        return true;
+      }
+
+      return false;
+    }));
 
     // Helps take care of racing requests
-    const runningRangeRequests: Subject<Promise<?atom$Range>> = new Subject();
+    const runningRangeRequests = new _rxjsBundlesRxMinJs.Subject();
 
     const monitor = {
       editor,
       doExpand: () => runningRangeRequests.next(this._expandRange(editor)),
-      doCollapse: () =>
-        runningRangeRequests.next(this._collapseRange(editor, selectionAnchor)),
+      doCollapse: () => runningRangeRequests.next(this._collapseRange(editor, selectionAnchor))
     };
 
     this._textEditorMonitors.set(editor, monitor);
 
-    const subscription = runningRangeRequests
-      .switchMap(p => p)
-      .takeUntil(stopMonitorSignal)
-      .finally(() => {
-        // Stop signal received - remove the monitor
-        this._textEditorMonitors.delete(editor);
-        // And do not leak the subscription object
-        this._disposables.remove(subscription);
-      })
-      .subscribe(
-        newExpected => {
-          expectedSelection = newExpected;
-          if (newExpected != null) {
-            changingNow = true;
-            editor.setSelectedBufferRange(newExpected);
-            changingNow = false;
-          }
-        },
-        err => {
-          logger.error('Unexpected error in sytnactic selection handling', err);
-        },
-      );
+    const subscription = runningRangeRequests.switchMap(p => p).takeUntil(stopMonitorSignal).finally(() => {
+      // Stop signal received - remove the monitor
+      this._textEditorMonitors.delete(editor);
+      // And do not leak the subscription object
+      this._disposables.remove(subscription);
+    }).subscribe(newExpected => {
+      expectedSelection = newExpected;
+      if (newExpected != null) {
+        changingNow = true;
+        editor.setSelectedBufferRange(newExpected);
+        changingNow = false;
+      }
+    }, err => {
+      logger.error('Unexpected error in sytnactic selection handling', err);
+    });
     this._disposables.add(subscription);
 
     return monitor;
   }
 }
+exports.SyntacticSelectionManager = SyntacticSelectionManager;

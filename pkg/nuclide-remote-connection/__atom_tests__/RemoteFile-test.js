@@ -1,33 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ServerConnection} from '..';
+var _fs = _interopRequireDefault(require('fs'));
 
-import invariant from 'assert';
-import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observeStream} from 'nuclide-commons/stream';
-import crypto from 'crypto';
-import {Subject} from 'rxjs';
-import temp from 'temp';
-import connectionMock from '../__mocks__/connection_mock';
-import {RemoteFile} from '../lib/RemoteFile';
-import waitsFor from '../../../jest/waits_for';
+var _nuclideUri;
 
-temp.track();
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('../../../modules/nuclide-commons/stream');
+}
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+var _connection_mock;
+
+function _load_connection_mock() {
+  return _connection_mock = _interopRequireDefault(require('../__mocks__/connection_mock'));
+}
+
+var _RemoteFile;
+
+function _load_RemoteFile() {
+  return _RemoteFile = require('../lib/RemoteFile');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+(_temp || _load_temp()).default.track(); /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
 
 describe('RemoteFile', () => {
   const computeDigest = contents => {
-    const hash = crypto.createHash('sha1').update(contents || '');
-    invariant(hash);
+    const hash = _crypto.default.createHash('sha1').update(contents || '');
+
+    if (!hash) {
+      throw new Error('Invariant violation: "hash"');
+    }
+
     return hash.digest('hex');
   };
 
@@ -36,25 +71,25 @@ describe('RemoteFile', () => {
     let symlinkedFilePath;
 
     beforeEach(() => {
-      const tempDir = temp.mkdirSync('realpath_test');
-      filePath = nuclideUri.join(tempDir, 'file.txt');
-      fs.writeFileSync(filePath, 'some contents');
-      filePath = fs.realpathSync(filePath);
+      const tempDir = (_temp || _load_temp()).default.mkdirSync('realpath_test');
+      filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
+      _fs.default.writeFileSync(filePath, 'some contents');
+      filePath = _fs.default.realpathSync(filePath);
       symlinkedFilePath = filePath + '.sym';
-      fs.symlinkSync(filePath, symlinkedFilePath, 'file');
+      _fs.default.symlinkSync(filePath, symlinkedFilePath, 'file');
     });
 
     it('gets realpath of a file', async () => {
       await (async () => {
-        const file = new RemoteFile(connectionMock, symlinkedFilePath);
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, symlinkedFilePath);
         const realpath = await file.getRealPath();
-        expect(realpath).toBe(fs.realpathSync(symlinkedFilePath));
+        expect(realpath).toBe(_fs.default.realpathSync(symlinkedFilePath));
       })();
     });
 
     it('caches the getRealPath result', async () => {
       await (async () => {
-        const file = new RemoteFile(connectionMock, symlinkedFilePath);
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, symlinkedFilePath);
         expect(file.getRealPathSync()).toBe(symlinkedFilePath);
         await file.getRealPath();
         expect(file.getRealPathSync()).toBe(filePath);
@@ -66,26 +101,26 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('delete_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('delete_test');
     });
 
     it('deletes the existing file', async () => {
       await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
-        fs.writeFileSync(filePath, '');
-        const file = new RemoteFile(connectionMock, filePath);
-        expect(fs.existsSync(filePath)).toBe(true);
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file_to_delete');
+        _fs.default.writeFileSync(filePath, '');
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
+        expect(_fs.default.existsSync(filePath)).toBe(true);
         await file.delete();
-        expect(fs.existsSync(filePath)).toBe(false);
+        expect(_fs.default.existsSync(filePath)).toBe(false);
       })();
     });
 
     it('deletes the non-existent file', async () => {
       await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
-        const file = new RemoteFile(connectionMock, filePath);
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file_to_delete');
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
         await file.delete();
-        expect(fs.existsSync(filePath)).toBe(false);
+        expect(_fs.default.existsSync(filePath)).toBe(false);
       })();
     });
   });
@@ -94,18 +129,18 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('on_did_create_and_delete_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('on_did_create_and_delete_test');
     });
 
     it('calls on delete', async () => {
-      const filePath = nuclideUri.join(tempDir, 'file_to_delete');
-      fs.writeFileSync(filePath, '');
-      const file = new RemoteFile(connectionMock, filePath);
+      const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file_to_delete');
+      _fs.default.writeFileSync(filePath, '');
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
       const callbackSpy = jest.fn();
       jest.spyOn(file, '_willAddSubscription').mockReturnValue(null);
       file.onDidDelete(callbackSpy);
       file.delete();
-      await waitsFor(() => callbackSpy.mock.calls.length > 0);
+      await (0, (_waits_for || _load_waits_for()).default)(() => callbackSpy.mock.calls.length > 0);
       expect(callbackSpy.mock.calls.length).toBe(1);
       expect(file._willAddSubscription).toHaveBeenCalled();
     });
@@ -115,35 +150,27 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('rename_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('rename_test');
     });
 
     it('verifies symlink', () => {
-      const targetFilePath = nuclideUri.join(tempDir, 'target');
-      const symLinkedFilePath = nuclideUri.join(tempDir, 'linked');
-      fs.writeFileSync(targetFilePath, '');
-      fs.symlinkSync(targetFilePath, symLinkedFilePath, 'file');
-      expect(fs.lstatSync(symLinkedFilePath).isSymbolicLink()).toBe(true);
+      const targetFilePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'target');
+      const symLinkedFilePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'linked');
+      _fs.default.writeFileSync(targetFilePath, '');
+      _fs.default.symlinkSync(targetFilePath, symLinkedFilePath, 'file');
+      expect(_fs.default.lstatSync(symLinkedFilePath).isSymbolicLink()).toBe(true);
 
-      const file = new RemoteFile(
-        connectionMock,
-        `nuclide://host13${symLinkedFilePath}`,
-        true,
-      );
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, `nuclide://host13${symLinkedFilePath}`, true);
       const symlink = file.isSymbolicLink();
       expect(symlink).toBe(true);
     });
 
     it('verifies non-symlink', () => {
-      const notLinkedFilePath = nuclideUri.join(tempDir, 'not_linked');
-      fs.writeFileSync(notLinkedFilePath, '');
-      expect(fs.lstatSync(notLinkedFilePath).isSymbolicLink()).toBe(false);
+      const notLinkedFilePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'not_linked');
+      _fs.default.writeFileSync(notLinkedFilePath, '');
+      expect(_fs.default.lstatSync(notLinkedFilePath).isSymbolicLink()).toBe(false);
 
-      const file = new RemoteFile(
-        connectionMock,
-        `nuclide://host13${notLinkedFilePath}`,
-        false,
-      );
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, `nuclide://host13${notLinkedFilePath}`, false);
       const symlink = file.isSymbolicLink();
       expect(symlink).toBe(false);
     });
@@ -153,7 +180,7 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('copy_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('copy_test');
     });
 
     // We only do this simple test to make sure it's delegating to the connection.
@@ -161,22 +188,20 @@ describe('RemoteFile', () => {
     // delegating to `fsPromise` here.
     it('copying existing files', async () => {
       await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file_to_copy');
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file_to_copy');
         const fileContents = 'copy me!';
-        fs.writeFileSync(filePath, fileContents);
-        const newFilePath = nuclideUri.join(tempDir, 'copied_file');
-        expect(fs.existsSync(filePath)).toBe(true);
-        expect(fs.existsSync(newFilePath)).toBe(false);
+        _fs.default.writeFileSync(filePath, fileContents);
+        const newFilePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'copied_file');
+        expect(_fs.default.existsSync(filePath)).toBe(true);
+        expect(_fs.default.existsSync(newFilePath)).toBe(false);
 
-        const file = new RemoteFile(connectionMock, filePath);
-        jest
-          .spyOn(file, '_subscribeToNativeChangeEvents')
-          .mockReturnValue(null);
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
+        jest.spyOn(file, '_subscribeToNativeChangeEvents').mockReturnValue(null);
         const result = await file.copy(newFilePath);
-        const newFile = new RemoteFile(connectionMock, newFilePath);
+        const newFile = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, newFilePath);
         const digest = await newFile.getDigest();
         expect(result).toBe(true);
-        expect(fs.existsSync(newFilePath)).toBe(true);
+        expect(_fs.default.existsSync(newFilePath)).toBe(true);
         expect(digest).toBe(computeDigest(fileContents));
       })();
     });
@@ -192,21 +217,20 @@ describe('RemoteFile', () => {
 
     beforeEach(async () => {
       jasmine.getEnv().defaultTimeoutInterval = 10000;
-      tempDir = temp.mkdirSync('on_did_change_test');
-      filePath = nuclideUri.join(tempDir, 'file.txt');
-      file = new RemoteFile(connectionMock, filePath);
-      fs.writeFileSync(filePath, 'sample contents');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('on_did_change_test');
+      filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
+      file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
+      _fs.default.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
-      await (() =>
-        connectionMock.getFsService().watchDirectoryRecursive(tempDir))();
+      await (() => (_connection_mock || _load_connection_mock()).default.getFsService().watchDirectoryRecursive(tempDir))();
       // wait for the watchman to settle on the created directory and file.
-      waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
+      waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */10);
     });
 
     afterEach(async () => {
       await (async () => {
         await file._unsubscribeFromNativeChangeEvents();
-        await connectionMock.getFsService().unwatchDirectoryRecursive(tempDir);
+        await (_connection_mock || _load_connection_mock()).default.getFsService().unwatchDirectoryRecursive(tempDir);
       })();
     });
 
@@ -214,8 +238,8 @@ describe('RemoteFile', () => {
       it('notifies ::onDidChange observers', () => {
         const changeHandler = jest.fn();
         file.onDidChange(changeHandler);
-        runs(() => fs.writeFileSync(filePath, 'this is new!'));
-        waitsFor(() => changeHandler.mock.calls.length > 0);
+        runs(() => _fs.default.writeFileSync(filePath, 'this is new!'));
+        (0, (_waits_for || _load_waits_for()).default)(() => changeHandler.mock.calls.length > 0);
         runs(() => expect(changeHandler.mock.calls.length).toBe(1));
       });
     });
@@ -224,8 +248,8 @@ describe('RemoteFile', () => {
       it('notifies ::onDidDelete observers', () => {
         const deletionHandler = jest.fn();
         file.onDidDelete(deletionHandler);
-        runs(() => fs.unlinkSync(filePath));
-        waitsFor(() => deletionHandler.mock.calls.length > 0);
+        runs(() => _fs.default.unlinkSync(filePath));
+        (0, (_waits_for || _load_waits_for()).default)(() => deletionHandler.mock.calls.length > 0);
         runs(() => expect(deletionHandler.mock.calls.length).toBe(1));
       });
     });
@@ -236,29 +260,24 @@ describe('RemoteFile', () => {
       it('notifies ::onDidRename observers', () => {
         const renameHandler = jest.fn();
         file.onDidRename(renameHandler);
-        runs(() => fs.renameSync(filePath, filePath + '_moved'));
+        runs(() => _fs.default.renameSync(filePath, filePath + '_moved'));
         waits(500); // wait for the rename event to emit.
         runs(() => advanceClock(150)); // pass the rename timeout.
-        waitsFor(() => renameHandler.mock.calls.length > 0);
+        (0, (_waits_for || _load_waits_for()).default)(() => renameHandler.mock.calls.length > 0);
         runs(() => {
           expect(renameHandler.mock.calls.length).toBe(1);
-          expect(renameHandler.mock.calls[0][0]).toBe(
-            nuclideUri.basename(filePath + '_moved'),
-          );
+          expect(renameHandler.mock.calls[0][0]).toBe((_nuclideUri || _load_nuclideUri()).default.basename(filePath + '_moved'));
         });
       });
     });
 
     describe('when a watch handling error happens', () => {
       it('notifies ::onWillThrowWatchError observers', async () => {
-        const notExistingFile = new RemoteFile(
-          connectionMock,
-          nuclideUri.join(tempDir, 'no_existing.txt'),
-        );
+        const notExistingFile = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'no_existing.txt'));
         let skippedError;
         let handleError;
         notExistingFile.onWillThrowWatchError(watchError => {
-          const {error, handle} = watchError;
+          const { error, handle } = watchError;
           skippedError = error;
           handle();
         });
@@ -270,7 +289,7 @@ describe('RemoteFile', () => {
             handleError = error;
           }
         })();
-        waitsFor(() => skippedError);
+        (0, (_waits_for || _load_waits_for()).default)(() => skippedError);
         runs(() => {
           expect(skippedError.code).toBe('ENOENT');
           expect(handleError).not.toBeDefined();
@@ -283,13 +302,13 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('create_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('create_test');
     });
 
     it('returns true when file creation is successful', async () => {
       await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'create.txt');
-        const remoteFile = new RemoteFile(connectionMock, filePath);
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'create.txt');
+        const remoteFile = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
         const wasCreated = await remoteFile.create();
         expect(wasCreated).toBe(true);
       })();
@@ -300,14 +319,14 @@ describe('RemoteFile', () => {
     let tempDir;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('on_did_change_test');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('on_did_change_test');
     });
 
     it('exists resolves to true when the file exists', async () => {
       await (async () => {
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'sample contents');
-        const existingFile = new RemoteFile(connectionMock, filePath);
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
+        _fs.default.writeFileSync(filePath, 'sample contents');
+        const existingFile = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
         const exists = await existingFile.exists();
         expect(exists).toBe(true);
       })();
@@ -315,10 +334,7 @@ describe('RemoteFile', () => {
 
     it('exists resolves to false when the file does not exist', async () => {
       await (async () => {
-        const notExistingFile = new RemoteFile(
-          connectionMock,
-          nuclideUri.join(tempDir, 'no_existing.txt'),
-        );
+        const notExistingFile = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'no_existing.txt'));
         const exists = await notExistingFile.exists();
         expect(exists).toBe(false);
       })();
@@ -332,11 +348,11 @@ describe('RemoteFile', () => {
     let fileContents;
 
     beforeEach(() => {
-      tempDir = temp.mkdirSync('on_did_change_test');
-      filePath = nuclideUri.join(tempDir, 'file.txt');
+      tempDir = (_temp || _load_temp()).default.mkdirSync('on_did_change_test');
+      filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
       fileContents = 'sample contents!';
-      fs.writeFileSync(filePath, fileContents);
-      file = new RemoteFile(connectionMock, filePath);
+      _fs.default.writeFileSync(filePath, fileContents);
+      file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
     });
 
     it('getDigest even if the file was not read before', async () => {
@@ -377,13 +393,13 @@ describe('RemoteFile', () => {
   });
 
   describe('RemoteFile::getParent()', () => {
-    let server: ServerConnection = (null: any);
+    let server = null;
 
     beforeEach(() => {
-      server = ({
+      server = {
         createDirectory: () => {},
-        getRemoteConnectionForUri: () => null,
-      }: any);
+        getRemoteConnectionForUri: () => null
+      };
     });
 
     it('gets the parent directory for a file in a root directory', () => {
@@ -391,12 +407,9 @@ describe('RemoteFile', () => {
       jest.spyOn(server, 'createDirectory').mockReturnValue(parentDirectory);
 
       const filePath = 'nuclide://foo.bar.com/foo.txt';
-      const file = new RemoteFile(server, filePath);
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
-      expect(server.createDirectory).toHaveBeenCalledWith(
-        'nuclide://foo.bar.com/',
-        null,
-      );
+      expect(server.createDirectory).toHaveBeenCalledWith('nuclide://foo.bar.com/', null);
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
@@ -404,12 +417,9 @@ describe('RemoteFile', () => {
       jest.spyOn(server, 'createDirectory').mockReturnValue(parentDirectory);
 
       const filePath = 'nuclide://foo.bar.com/a/foo.txt';
-      const file = new RemoteFile(server, filePath);
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
-      expect(server.createDirectory).toHaveBeenCalledWith(
-        'nuclide://foo.bar.com/a',
-        null,
-      );
+      expect(server.createDirectory).toHaveBeenCalledWith('nuclide://foo.bar.com/a', null);
     });
   });
 
@@ -417,9 +427,9 @@ describe('RemoteFile', () => {
     it('resubscribes after a rename', () => {
       const changeHandler = jest.fn();
       const deletionHandler = jest.fn();
-      const mockWatch = new Subject();
-      jest.spyOn(connectionMock, 'getFileWatch').mockReturnValue(mockWatch);
-      const file = new RemoteFile(connectionMock, 'test');
+      const mockWatch = new _rxjsBundlesRxMinJs.Subject();
+      jest.spyOn((_connection_mock || _load_connection_mock()).default, 'getFileWatch').mockReturnValue(mockWatch);
+      const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, 'test');
 
       file.onDidChange(changeHandler);
       file.onDidDelete(deletionHandler);
@@ -428,8 +438,8 @@ describe('RemoteFile', () => {
       file.setPath('test2');
 
       // Simulate a Watchman rename (delete + change)
-      mockWatch.next({type: 'delete', path: 'test'});
-      mockWatch.next({type: 'change', path: 'test2'});
+      mockWatch.next({ type: 'delete', path: 'test' });
+      mockWatch.next({ type: 'change', path: 'test2' });
       expect(deletionHandler).not.toHaveBeenCalled();
       expect(changeHandler).toHaveBeenCalled();
     });
@@ -438,27 +448,22 @@ describe('RemoteFile', () => {
   describe('RemoteFile::createReadStream()', () => {
     it('is able to read file contents', async () => {
       await (async () => {
-        const tempDir = temp.mkdirSync('stream_test');
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'test1234');
+        const tempDir = (_temp || _load_temp()).default.mkdirSync('stream_test');
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
+        _fs.default.writeFileSync(filePath, 'test1234');
 
-        const file = new RemoteFile(connectionMock, filePath);
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
         const readStream = file.createReadStream();
-        const data = await observeStream(readStream)
-          .toArray()
-          .toPromise();
+        const data = await (0, (_stream || _load_stream()).observeStream)(readStream).toArray().toPromise();
         expect(data).toEqual(['test1234']);
       })();
     });
 
     it('handles errors', async () => {
       await (async () => {
-        const file = new RemoteFile(connectionMock, 'test');
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, 'test');
         const readStream = file.createReadStream();
-        const data = await observeStream(readStream)
-          .toArray()
-          .toPromise()
-          .catch(e => e);
+        const data = await (0, (_stream || _load_stream()).observeStream)(readStream).toArray().toPromise().catch(e => e);
         expect(data instanceof Error).toBe(true);
       })();
     });
@@ -467,23 +472,23 @@ describe('RemoteFile', () => {
   describe('RemoteFile::createWriteStream()', () => {
     it('is able to write file contents', async () => {
       await (async () => {
-        const tempDir = temp.mkdirSync('stream_test');
-        const filePath = nuclideUri.join(tempDir, 'file.txt');
-        const file = new RemoteFile(connectionMock, filePath);
+        const tempDir = (_temp || _load_temp()).default.mkdirSync('stream_test');
+        const filePath = (_nuclideUri || _load_nuclideUri()).default.join(tempDir, 'file.txt');
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, filePath);
         const writeStream = file.createWriteStream();
         writeStream.write('test1234');
         await new Promise(resolve => writeStream.end(resolve));
-        expect(fs.readFileSync(filePath, 'utf8')).toBe('test1234');
+        expect(_fs.default.readFileSync(filePath, 'utf8')).toBe('test1234');
       })();
     });
 
     it('handles errors', async () => {
       await (async () => {
-        const file = new RemoteFile(connectionMock, 'a/');
+        const file = new (_RemoteFile || _load_RemoteFile()).RemoteFile((_connection_mock || _load_connection_mock()).default, 'a/');
         const writeStream = file.createWriteStream();
         writeStream.write('test1234');
-        let error: ?Error = null;
-        writeStream.on('error', e => (error = e));
+        let error = null;
+        writeStream.on('error', e => error = e);
         await new Promise(resolve => writeStream.end(resolve));
         expect(error).not.toBeNull();
       })();

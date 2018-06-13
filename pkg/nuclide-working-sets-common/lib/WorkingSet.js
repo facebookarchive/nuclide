@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WorkingSet = undefined;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _uri;
+
+function _load_uri() {
+  return _uri = require('./uri');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,29 +38,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {arrayEqual} from 'nuclide-commons/collection';
-import {dedupeUris} from './uri';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-const logger = getLogger('nuclide-working-sets-common');
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-type InnerNode = {
-  kind: 'inner',
-  children: Map<string, TreeNode>,
-};
-
-type LeafNode = {
-  kind: 'leaf',
-};
-
-type TreeNode = InnerNode | LeafNode;
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-working-sets-common');
 
 /**
  * WorkingSet is an implementation of a filter for files and directories.
@@ -45,92 +60,84 @@ type TreeNode = InnerNode | LeafNode;
  *   to know that it must include its parent directories.
  *   This kind of test is performed by the .containsDir() method.
  */
-export class WorkingSet {
-  _uris: Array<string>;
-  _absoluteUris: Array<string>;
-  _root: ?InnerNode;
+class WorkingSet {
 
-  constructor(uris: Array<NuclideUri> = []) {
+  constructor(uris = []) {
     try {
-      this._absoluteUris = dedupeUris(uris);
-      this._uris = this._absoluteUris.map(nuclideUri.getPath);
+      this._absoluteUris = (0, (_uri || _load_uri()).dedupeUris)(uris);
+      this._uris = this._absoluteUris.map((_nuclideUri || _load_nuclideUri()).default.getPath);
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
-      logger.error(
-        'Failed to initialize a WorkingSet with URIs ' +
-          uris.join(',') +
-          '. ' +
-          e.message,
-      );
+      logger.error('Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message);
       this._uris = [];
       this._root = null;
     }
   }
 
-  containsFile(uri: NuclideUri): boolean {
+  containsFile(uri) {
     if (this.isEmpty()) {
       return true;
     }
 
     try {
-      return this.containsFileBySplitPath(nuclideUri.split(uri));
+      return this.containsFileBySplitPath((_nuclideUri || _load_nuclideUri()).default.split(uri));
     } catch (e) {
       logger.error(e);
       return true;
     }
   }
 
-  containsFileBySplitPath(tokens: Array<string>): boolean {
+  containsFileBySplitPath(tokens) {
     if (this.isEmpty()) {
       return true;
     }
 
-    const uriTokens = tokens.map(nuclideUri.getPath);
-    return this._containsPathFor(uriTokens, /* mustHaveLeaf */ true);
+    const uriTokens = tokens.map((_nuclideUri || _load_nuclideUri()).default.getPath);
+    return this._containsPathFor(uriTokens, /* mustHaveLeaf */true);
   }
 
-  containsDir(uri: NuclideUri): boolean {
+  containsDir(uri) {
     if (this.isEmpty()) {
       return true;
     }
 
     try {
-      return this.containsDirBySplitPath(nuclideUri.split(uri));
+      return this.containsDirBySplitPath((_nuclideUri || _load_nuclideUri()).default.split(uri));
     } catch (e) {
       logger.error(e);
       return true;
     }
   }
 
-  containsDirBySplitPath(tokens: Array<string>): boolean {
+  containsDirBySplitPath(tokens) {
     if (this.isEmpty()) {
       return true;
     }
 
-    const uriTokens = tokens.map(nuclideUri.getPath);
-    return this._containsPathFor(uriTokens, /* mustHaveLeaf */ false);
+    const uriTokens = tokens.map((_nuclideUri || _load_nuclideUri()).default.getPath);
+    return this._containsPathFor(uriTokens, /* mustHaveLeaf */false);
   }
 
-  isEmpty(): boolean {
+  isEmpty() {
     return this._uris.length === 0;
   }
 
-  getUris(): Array<string> {
+  getUris() {
     return this._uris;
   }
 
-  getAbsoluteUris(): Array<string> {
+  getAbsoluteUris() {
     return this._absoluteUris;
   }
 
-  append(...uris: Array<NuclideUri>): WorkingSet {
+  append(...uris) {
     return new WorkingSet(this._uris.concat(uris));
   }
 
-  remove(rootUri: NuclideUri): WorkingSet {
+  remove(rootUri) {
     try {
-      const uriPath = nuclideUri.getPath(rootUri);
-      const uris = this._uris.filter(uri => !nuclideUri.contains(uriPath, uri));
+      const uriPath = (_nuclideUri || _load_nuclideUri()).default.getPath(rootUri);
+      const uris = this._uris.filter(uri => !(_nuclideUri || _load_nuclideUri()).default.contains(uriPath, uri));
       return new WorkingSet(uris);
     } catch (e) {
       logger.error(e);
@@ -138,34 +145,37 @@ export class WorkingSet {
     }
   }
 
-  equals(other: WorkingSet): boolean {
-    return arrayEqual(this._uris, other._uris);
+  equals(other) {
+    return (0, (_collection || _load_collection()).arrayEqual)(this._uris, other._uris);
   }
 
-  _buildDirTree(uris: Array<string>): ?InnerNode {
+  _buildDirTree(uris) {
     if (uris.length === 0) {
       return null;
     }
 
-    const root: InnerNode = newInnerNode();
+    const root = newInnerNode();
 
     for (const uri of uris) {
-      const tokens = nuclideUri.split(uri);
+      const tokens = (_nuclideUri || _load_nuclideUri()).default.split(uri);
       if (tokens.length === 0) {
         continue;
       }
 
-      let currentNode: InnerNode = root;
+      let currentNode = root;
 
       for (const token of tokens.slice(0, -1)) {
-        let tokenNode: ?TreeNode = currentNode.children.get(token);
+        let tokenNode = currentNode.children.get(token);
 
         if (!tokenNode) {
           tokenNode = newInnerNode();
           currentNode.children.set(token, tokenNode);
           currentNode = tokenNode;
         } else {
-          invariant(tokenNode.kind === 'inner');
+          if (!(tokenNode.kind === 'inner')) {
+            throw new Error('Invariant violation: "tokenNode.kind === \'inner\'"');
+          }
+
           currentNode = tokenNode;
         }
       }
@@ -177,7 +187,7 @@ export class WorkingSet {
     return root;
   }
 
-  _containsPathFor(tokens: Array<string>, mustHaveLeaf: boolean): boolean {
+  _containsPathFor(tokens, mustHaveLeaf) {
     let currentNode = this._root;
     if (currentNode == null) {
       // Empty set actually contains everything
@@ -199,10 +209,11 @@ export class WorkingSet {
   }
 }
 
-function newInnerNode(): InnerNode {
-  return {kind: 'inner', children: new Map()};
+exports.WorkingSet = WorkingSet;
+function newInnerNode() {
+  return { kind: 'inner', children: new Map() };
 }
 
-function newLeafNode(): LeafNode {
-  return {kind: 'leaf'};
+function newLeafNode() {
+  return { kind: 'leaf' };
 }

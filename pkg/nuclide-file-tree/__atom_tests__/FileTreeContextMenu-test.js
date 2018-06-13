@@ -1,3 +1,25 @@
+'use strict';
+
+var _FileTreeContextMenu;
+
+function _load_FileTreeContextMenu() {
+  return _FileTreeContextMenu = _interopRequireDefault(require('../lib/FileTreeContextMenu'));
+}
+
+var _FileTreeConstants;
+
+function _load_FileTreeConstants() {
+  return _FileTreeConstants = require('../lib/FileTreeConstants');
+}
+
+var _waits_for;
+
+function _load_waits_for() {
+  return _waits_for = _interopRequireDefault(require('../../../jest/waits_for'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,23 +27,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import invariant from 'assert';
-
-import FileTreeContextMenu from '../lib/FileTreeContextMenu';
-import {EVENT_HANDLER_SELECTOR} from '../lib/FileTreeConstants';
-import waitsFor from '../../../jest/waits_for';
-import type {FileTreeContextMenuItem} from '../lib/FileTreeContextMenu';
-
 describe('FileTreeContextMenu', () => {
-  let menu: FileTreeContextMenu;
+  let menu;
 
   beforeEach(async () => {
-    menu = new FileTreeContextMenu();
-    await waitsFor(() => fileTreeItemsOrNull() != null);
+    menu = new (_FileTreeContextMenu || _load_FileTreeContextMenu()).default();
+    await (0, (_waits_for || _load_waits_for()).default)(() => fileTreeItemsOrNull() != null);
   });
 
   afterEach(() => {
@@ -41,72 +56,70 @@ describe('FileTreeContextMenu', () => {
 
   it('puts ShowIn items in the same group', () => {
     const groups = itemGroups(fileTreeItems());
-    expect(groups.get('Copy Full Path')).toBe(
-      groups.get('Search in Directory'),
-    );
+    expect(groups.get('Copy Full Path')).toBe(groups.get('Search in Directory'));
   });
 
   it('has separators between groups', () => {
     const groups = itemGroups(fileTreeItems());
-    const distinct = [
-      getNonNull(groups, 'New'),
-      getNonNull(groups, 'Add Folder'),
-      getNonNull(groups, 'Rename'),
-      getNonNull(groups, 'Split'),
-      getNonNull(groups, 'Copy Full Path'),
-    ];
+    const distinct = [getNonNull(groups, 'New'), getNonNull(groups, 'Add Folder'), getNonNull(groups, 'Rename'), getNonNull(groups, 'Split'), getNonNull(groups, 'Copy Full Path')];
     expect(new Set(distinct).size).toEqual(distinct.length);
   });
 
   it('includes Source Control submenu on demand', async () => {
-    function includesSourceControl(): boolean {
+    function includesSourceControl() {
       return fileTreeItems().some(x => x.label === 'Source Control');
     }
     expect(includesSourceControl()).toBeFalsy();
     menu.addItemToSourceControlMenu(testItem(), 100);
-    await waitsFor(() => includesSourceControl());
+    await (0, (_waits_for || _load_waits_for()).default)(() => includesSourceControl());
   });
 
   it('supports addItemToShowInSection', async () => {
     const item = testItem();
     const label = item.label;
-    invariant(label != null);
+
+    if (!(label != null)) {
+      throw new Error('Invariant violation: "label != null"');
+    }
+
     menu.addItemToShowInSection(item, 100);
-    await waitsFor(() => fileTreeItems().some(x => x.label === label));
+    await (0, (_waits_for || _load_waits_for()).default)(() => fileTreeItems().some(x => x.label === label));
     const groups = itemGroups(fileTreeItems());
-    expect(getNonNull(groups, label)).toBe(
-      getNonNull(groups, 'Copy Full Path'),
-    );
+    expect(getNonNull(groups, label)).toBe(getNonNull(groups, 'Copy Full Path'));
   });
 });
 
-function testItem(): FileTreeContextMenuItem {
+function testItem() {
   return {
     label: 'Test Label',
     command: 'command-for-test',
     shouldDisplay() {
       return true;
-    },
+    }
   };
 }
 
-function fileTreeItems(): Array<atom$ContextMenuItem> {
+function fileTreeItems() {
   const items = fileTreeItemsOrNull();
-  invariant(items != null);
+
+  if (!(items != null)) {
+    throw new Error('Invariant violation: "items != null"');
+  }
+
   return items;
 }
 
-function fileTreeItemsOrNull(): ?Array<atom$ContextMenuItem> {
-  const itemSets = atom.contextMenu.itemSets.filter(
-    x => x.selector === EVENT_HANDLER_SELECTOR,
-  );
-  invariant(itemSets.length <= 1);
+function fileTreeItemsOrNull() {
+  const itemSets = atom.contextMenu.itemSets.filter(x => x.selector === (_FileTreeConstants || _load_FileTreeConstants()).EVENT_HANDLER_SELECTOR);
+
+  if (!(itemSets.length <= 1)) {
+    throw new Error('Invariant violation: "itemSets.length <= 1"');
+  }
+
   return itemSets.length === 0 ? null : itemSets[0].items;
 }
 
-function itemGroups(
-  items: Array<atom$ContextMenuItem>,
-): Map<string, Array<atom$ContextMenuItem>> {
+function itemGroups(items) {
   const map = new Map();
   let array = [];
   for (const item of items) {
@@ -120,8 +133,12 @@ function itemGroups(
   return map;
 }
 
-function getNonNull<K, V>(map: Map<K, V>, key: K): V {
+function getNonNull(map, key) {
   const value = map.get(key);
-  invariant(value != null, `Key not found: '${String(key)}'`);
+
+  if (!(value != null)) {
+    throw new Error(`Key not found: '${String(key)}'`);
+  }
+
   return value;
 }

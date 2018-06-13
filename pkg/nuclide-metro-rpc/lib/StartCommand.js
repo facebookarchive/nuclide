@@ -1,3 +1,37 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getStartCommandFromNodePackage = getStartCommandFromNodePackage;
+exports.getStartCommandFromBuck = getStartCommandFromBuck;
+
+var _nuclideBuckRpc;
+
+function _load_nuclideBuckRpc() {
+  return _nuclideBuckRpc = require('../../nuclide-buck-rpc');
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../../modules/nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _ini;
+
+function _load_ini() {
+  return _ini = _interopRequireDefault(require('ini'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,43 +39,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {MetroStartCommand} from './types';
-
-import {getRootForPath as getBuckRootForPath} from '../../nuclide-buck-rpc';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import ini from 'ini';
-
-type CommandWithoutProjectRoot = {
-  command: string,
-  args: Array<string>,
-};
-
-export async function getStartCommandFromNodePackage(
-  projectRoot: NuclideUri,
-): Promise<?MetroStartCommand> {
-  return (
-    (await getStartCommandFromNodeModules(projectRoot)) ||
-    getStartCommandFromReactNative(projectRoot)
-  );
+async function getStartCommandFromNodePackage(projectRoot) {
+  return (await getStartCommandFromNodeModules(projectRoot)) || getStartCommandFromReactNative(projectRoot);
 }
 
-export async function getStartCommandFromBuck(
-  projectRoot: NuclideUri,
-): Promise<?MetroStartCommand> {
-  const buckProjectRoot = await getBuckRootForPath(projectRoot);
+async function getStartCommandFromBuck(projectRoot) {
+  const buckProjectRoot = await (0, (_nuclideBuckRpc || _load_nuclideBuckRpc()).getRootForPath)(projectRoot);
   if (buckProjectRoot == null) {
     return null;
   }
   // TODO(matthewwithanm): Move this to BuckUtils?
-  const filePath = nuclideUri.join(buckProjectRoot, '.buckconfig');
-  const content = await fsPromise.readFile(filePath, 'utf8');
-  const parsed = ini.parse(`scope = global\n${content}`);
+  const filePath = (_nuclideUri || _load_nuclideUri()).default.join(buckProjectRoot, '.buckconfig');
+  const content = await (_fsPromise || _load_fsPromise()).default.readFile(filePath, 'utf8');
+  const parsed = (_ini || _load_ini()).default.parse(`scope = global\n${content}`);
   const section = parsed['react-native'];
   if (section == null || section.server == null) {
     return null;
@@ -49,7 +63,7 @@ export async function getStartCommandFromBuck(
   return {
     cwd: buckProjectRoot,
     args: ['--disable-global-hotkey'],
-    command: section.server,
+    command: section.server
   };
 }
 
@@ -57,42 +71,30 @@ export async function getStartCommandFromBuck(
  * Look in the nearest node_modules directory for react-native and extract the packager script if
  * it's found.
  */
-async function getStartCommandFromNodeModules(
-  projectRoot: NuclideUri,
-): Promise<?MetroStartCommand> {
-  const nodeModulesParent = await fsPromise.findNearestFile(
-    'node_modules',
-    projectRoot,
-  );
+async function getStartCommandFromNodeModules(projectRoot) {
+  const nodeModulesParent = await (_fsPromise || _load_fsPromise()).default.findNearestFile('node_modules', projectRoot);
   if (nodeModulesParent == null) {
     return null;
   }
 
-  const command = await getCommandForCli(
-    nuclideUri.join(nodeModulesParent, 'node_modules', 'react-native'),
-  );
+  const command = await getCommandForCli((_nuclideUri || _load_nuclideUri()).default.join(nodeModulesParent, 'node_modules', 'react-native'));
 
-  return command == null
-    ? null
-    : {
-        ...command,
-        cwd: nodeModulesParent,
-      };
+  return command == null ? null : Object.assign({}, command, {
+    cwd: nodeModulesParent
+  });
 }
 
 /**
  * See if this is React Native itself and, if so, return the command to run the packager. This is
  * special cased so that the bundled examples work out of the box.
  */
-async function getStartCommandFromReactNative(
-  dir: NuclideUri,
-): Promise<?MetroStartCommand> {
-  const projectRoot = await fsPromise.findNearestFile('package.json', dir);
+async function getStartCommandFromReactNative(dir) {
+  const projectRoot = await (_fsPromise || _load_fsPromise()).default.findNearestFile('package.json', dir);
   if (projectRoot == null) {
     return null;
   }
-  const filePath = nuclideUri.join(projectRoot, 'package.json');
-  const content = await fsPromise.readFile(filePath, 'utf8');
+  const filePath = (_nuclideUri || _load_nuclideUri()).default.join(projectRoot, 'package.json');
+  const content = await (_fsPromise || _load_fsPromise()).default.readFile(filePath, 'utf8');
   const parsed = JSON.parse(content);
   const isReactNative = parsed.name === 'react-native';
 
@@ -102,24 +104,19 @@ async function getStartCommandFromReactNative(
 
   const command = await getCommandForCli(projectRoot);
 
-  return command == null
-    ? null
-    : {
-        ...command,
-        cwd: projectRoot,
-      };
+  return command == null ? null : Object.assign({}, command, {
+    cwd: projectRoot
+  });
 }
 
-async function getCommandForCli(
-  pathToReactNative: NuclideUri,
-): Promise<?CommandWithoutProjectRoot> {
-  const cliPath = nuclideUri.join(pathToReactNative, 'local-cli', 'cli.js');
-  const cliExists = await fsPromise.exists(cliPath);
+async function getCommandForCli(pathToReactNative) {
+  const cliPath = (_nuclideUri || _load_nuclideUri()).default.join(pathToReactNative, 'local-cli', 'cli.js');
+  const cliExists = await (_fsPromise || _load_fsPromise()).default.exists(cliPath);
   if (!cliExists) {
     return null;
   }
   return {
     command: 'node',
-    args: [cliPath, 'start'],
+    args: [cliPath, 'start']
   };
 }

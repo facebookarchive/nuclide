@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = registerGrammar;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +11,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -24,10 +30,7 @@
  *   the grammar is available.
  * @return whether the extension was registered or not.
  */
-export default function registerGrammar(
-  scopeName: string,
-  extensions: Array<string>,
-): boolean {
+function registerGrammar(scopeName, extensions) {
   let customFileTypes = atom.config.get('core.customFileTypes');
   if (customFileTypes == null || typeof customFileTypes !== 'object') {
     customFileTypes = {};

@@ -1,62 +1,92 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {ConnectableObservable} from 'rxjs';
-import type {VSAdapterExecutableInfo, VsAdapterType} from './types';
-import type {ProcessInfo, ProcessMessage} from 'nuclide-commons/process';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.VsRawAdapterSpawnerService = undefined;
+exports.createVsRawAdapterSpawnerService = createVsRawAdapterSpawnerService;
+exports.getProcessTree = getProcessTree;
+exports.getBuckRootFromUri = getBuckRootFromUri;
+exports.getBuckRootFromPid = getBuckRootFromPid;
+exports.realpath = realpath;
+exports.getAdapterExecutableInfo = getAdapterExecutableInfo;
 
-import {psTree} from 'nuclide-commons/process';
-import VsAdapterSpawner from './VsAdapterSpawner';
-import {getAdapterExecutable} from './debugger-registry';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {getAbsoluteBinaryPathForPid} from 'nuclide-commons/process';
+var _process;
 
-export class VsRawAdapterSpawnerService extends VsAdapterSpawner {
-  spawnAdapter(
-    adapter: VSAdapterExecutableInfo,
-  ): ConnectableObservable<ProcessMessage> {
+function _load_process() {
+  return _process = require('../nuclide-commons/process');
+}
+
+var _VsAdapterSpawner;
+
+function _load_VsAdapterSpawner() {
+  return _VsAdapterSpawner = _interopRequireDefault(require('./VsAdapterSpawner'));
+}
+
+var _debuggerRegistry;
+
+function _load_debuggerRegistry() {
+  return _debuggerRegistry = require('./debugger-registry');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../nuclide-commons/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../nuclide-commons/fsPromise'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class VsRawAdapterSpawnerService extends (_VsAdapterSpawner || _load_VsAdapterSpawner()).default {
+  spawnAdapter(adapter) {
     return super.spawnAdapter(adapter);
   }
 
-  write(input: string): Promise<void> {
+  write(input) {
     return super.write(input);
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     return super.dispose();
   }
 }
 
-export async function createVsRawAdapterSpawnerService(): Promise<
-  VsRawAdapterSpawnerService,
-> {
+exports.VsRawAdapterSpawnerService = VsRawAdapterSpawnerService; /**
+                                                                  * Copyright (c) 2017-present, Facebook, Inc.
+                                                                  * All rights reserved.
+                                                                  *
+                                                                  * This source code is licensed under the BSD-style license found in the
+                                                                  * LICENSE file in the root directory of this source tree. An additional grant
+                                                                  * of patent rights can be found in the PATENTS file in the same directory.
+                                                                  *
+                                                                  *  strict-local
+                                                                  * @format
+                                                                  */
+
+async function createVsRawAdapterSpawnerService() {
   return new VsRawAdapterSpawnerService();
 }
 
-export async function getProcessTree(): Promise<Array<ProcessInfo>> {
-  return psTree();
+async function getProcessTree() {
+  return (0, (_process || _load_process()).psTree)();
 }
 
-export async function getBuckRootFromUri(uri: string): Promise<?string> {
+async function getBuckRootFromUri(uri) {
   let path = uri;
 
   while (true) {
-    const rootTest = nuclideUri.join(path, '.buckconfig');
+    const rootTest = (_nuclideUri || _load_nuclideUri()).default.join(path, '.buckconfig');
     // eslint-disable-next-line no-await-in-loop
-    if (await fsPromise.exists(rootTest)) {
+    if (await (_fsPromise || _load_fsPromise()).default.exists(rootTest)) {
       return path;
     }
-    const newPath = nuclideUri.getParent(path);
+    const newPath = (_nuclideUri || _load_nuclideUri()).default.getParent(path);
     if (newPath === path) {
       break;
     }
@@ -67,8 +97,8 @@ export async function getBuckRootFromUri(uri: string): Promise<?string> {
   return null;
 }
 
-export async function getBuckRootFromPid(pid: number): Promise<?string> {
-  const path = await getAbsoluteBinaryPathForPid(pid);
+async function getBuckRootFromPid(pid) {
+  const path = await (0, (_process || _load_process()).getAbsoluteBinaryPathForPid)(pid);
   if (path == null) {
     return null;
   }
@@ -76,12 +106,10 @@ export async function getBuckRootFromPid(pid: number): Promise<?string> {
   return getBuckRootFromUri(path);
 }
 
-export async function realpath(path: string): Promise<string> {
-  return fsPromise.realpath(path);
+async function realpath(path) {
+  return (_fsPromise || _load_fsPromise()).default.realpath(path);
 }
 
-export async function getAdapterExecutableInfo(
-  adapterType: VsAdapterType,
-): Promise<VSAdapterExecutableInfo> {
-  return getAdapterExecutable(adapterType);
+async function getAdapterExecutableInfo(adapterType) {
+  return (0, (_debuggerRegistry || _load_debuggerRegistry()).getAdapterExecutable)(adapterType);
 }

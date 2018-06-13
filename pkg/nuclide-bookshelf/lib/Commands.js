@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Commands = undefined;
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,57 +30,45 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Action, BookShelfState} from './types';
+class Commands {
 
-import {ActionType} from './constants';
-import {getRepoPathToEditors} from './utils';
-import {track} from '../../nuclide-analytics';
+  constructor(dispatch, getState) {
+    this.addProjectRepository = repository => {
+      this._dispatch({
+        payload: {
+          repository
+        },
+        type: (_constants || _load_constants()).ActionType.ADD_PROJECT_REPOSITORY
+      });
+    };
 
-export class Commands {
-  _dispatch: (action: Action) => void;
-  _getState: () => BookShelfState;
+    this.updatePaneItemState = () => {
+      this._dispatch({
+        type: (_constants || _load_constants()).ActionType.UPDATE_PANE_ITEM_STATE,
+        payload: {
+          repositoryPathToEditors: (0, (_utils || _load_utils()).getRepoPathToEditors)()
+        }
+      });
+    };
 
-  constructor(
-    dispatch: (action: Action) => void,
-    getState: () => BookShelfState,
-  ) {
+    this.restorePaneItemState = (repository, newShortHead) => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('bookshelf-restore-files');
+      this._dispatch({
+        payload: {
+          repository,
+          shortHead: newShortHead
+        },
+        type: (_constants || _load_constants()).ActionType.RESTORE_PANE_ITEM_STATE
+      });
+    };
+
     this._dispatch = dispatch;
     this._getState = getState;
   }
 
-  addProjectRepository = (repository: atom$Repository): void => {
-    this._dispatch({
-      payload: {
-        repository,
-      },
-      type: ActionType.ADD_PROJECT_REPOSITORY,
-    });
-  };
-
-  updatePaneItemState = (): void => {
-    this._dispatch({
-      type: ActionType.UPDATE_PANE_ITEM_STATE,
-      payload: {
-        repositoryPathToEditors: getRepoPathToEditors(),
-      },
-    });
-  };
-
-  restorePaneItemState = (
-    repository: atom$Repository,
-    newShortHead: string,
-  ): void => {
-    track('bookshelf-restore-files');
-    this._dispatch({
-      payload: {
-        repository,
-        shortHead: newShortHead,
-      },
-      type: ActionType.RESTORE_PANE_ITEM_STATE,
-    });
-  };
 }
+exports.Commands = Commands;

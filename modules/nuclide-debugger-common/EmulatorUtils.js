@@ -1,72 +1,80 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow strict-local
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NUCLIDE_ONE_WORLD_ADB_PATH_NAME = undefined;
+exports.getAdbPath = getAdbPath;
+exports.getAdbPorts = getAdbPorts;
+exports.addAdbPorts = addAdbPorts;
+exports.setAdbPath = setAdbPath;
 
-import {DEFAULT_ADB_PORT} from 'nuclide-adb/lib/common/DebugBridge';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import invariant from 'assert';
+var _DebugBridge;
 
-export const NUCLIDE_ONE_WORLD_ADB_PATH_NAME = 'NUCLIDE_ONE_WORLD_ADB_PATH';
+function _load_DebugBridge() {
+  return _DebugBridge = require('../nuclide-adb/lib/common/DebugBridge');
+}
 
-export function getAdbPath(): string {
-  const atomConfigAdbPathName = atom.config.get(
-    NUCLIDE_ONE_WORLD_ADB_PATH_NAME,
-  );
-  if (
-    atomConfigAdbPathName != null &&
-    typeof atomConfigAdbPathName === 'string'
-  ) {
+var _nuclideAdb;
+
+function _load_nuclideAdb() {
+  return _nuclideAdb = require('../nuclide-adb');
+}
+
+const NUCLIDE_ONE_WORLD_ADB_PATH_NAME = exports.NUCLIDE_ONE_WORLD_ADB_PATH_NAME = 'NUCLIDE_ONE_WORLD_ADB_PATH'; /**
+                                                                                                                 * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                 * All rights reserved.
+                                                                                                                 *
+                                                                                                                 * This source code is licensed under the BSD-style license found in the
+                                                                                                                 * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                 * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                 *
+                                                                                                                 *  strict-local
+                                                                                                                 * @format
+                                                                                                                 */
+
+function getAdbPath() {
+  const atomConfigAdbPathName = atom.config.get(NUCLIDE_ONE_WORLD_ADB_PATH_NAME);
+  if (atomConfigAdbPathName != null && typeof atomConfigAdbPathName === 'string') {
     return atomConfigAdbPathName;
   }
   return 'adb';
 }
 
-export async function getAdbPorts(
-  targetUri: NuclideUri,
-): Promise<Array<number>> {
-  const adbService = getAdbServiceByNuclideUri(targetUri);
+async function getAdbPorts(targetUri) {
+  const adbService = (0, (_nuclideAdb || _load_nuclideAdb()).getAdbServiceByNuclideUri)(targetUri);
   const ports = await adbService.getAdbPorts();
 
   // Don't show the user the default adb port. This should always be included.
-  return ports.filter(port => port !== DEFAULT_ADB_PORT);
+  return ports.filter(port => port !== (_DebugBridge || _load_DebugBridge()).DEFAULT_ADB_PORT);
 }
 
-export async function addAdbPorts(
-  targetUri: NuclideUri,
-  ports: Array<number>,
-): Promise<void> {
-  const adbService = getAdbServiceByNuclideUri(targetUri);
+async function addAdbPorts(targetUri, ports) {
+  const adbService = (0, (_nuclideAdb || _load_nuclideAdb()).getAdbServiceByNuclideUri)(targetUri);
   const existingPorts = await adbService.getAdbPorts();
 
   // Remove any ports that are no longer in the list, but never remove
   // the default adb server port.
   // NOTE: the list of ports is expected to be very short here (like 5 items or less)
   for (const oldPort of existingPorts) {
-    if (oldPort !== DEFAULT_ADB_PORT && !ports.includes(oldPort)) {
+    if (oldPort !== (_DebugBridge || _load_DebugBridge()).DEFAULT_ADB_PORT && !ports.includes(oldPort)) {
       adbService.removeAdbPort(oldPort);
     }
   }
 
   for (const newPort of ports) {
-    invariant(newPort != null);
+    if (!(newPort != null)) {
+      throw new Error('Invariant violation: "newPort != null"');
+    }
+
     if (!existingPorts.includes(newPort)) {
       adbService.addAdbPort(newPort);
     }
   }
 }
 
-export function setAdbPath(targetUri: NuclideUri, adbPath: string) {
-  const adbService = getAdbServiceByNuclideUri(targetUri);
+function setAdbPath(targetUri, adbPath) {
+  const adbService = (0, (_nuclideAdb || _load_nuclideAdb()).getAdbServiceByNuclideUri)(targetUri);
   if (adbPath != null) {
     adbService.registerCustomPath(adbPath);
   } else {

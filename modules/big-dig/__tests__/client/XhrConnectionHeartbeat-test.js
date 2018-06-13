@@ -1,3 +1,19 @@
+'use strict';
+
+var _asyncRequest;
+
+function _load_asyncRequest() {
+  return _asyncRequest = _interopRequireWildcard(require('../../src/client/utils/asyncRequest'));
+}
+
+var _XhrConnectionHeartbeat;
+
+function _load_XhrConnectionHeartbeat() {
+  return _XhrConnectionHeartbeat = require('../../src/client/XhrConnectionHeartbeat');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,27 +22,21 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
 jest.mock('../../src/client/utils/asyncRequest');
 jest.useFakeTimers();
 
-import asyncRequest from '../../src/client/utils/asyncRequest';
-import {XhrConnectionHeartbeat} from '../../src/client/XhrConnectionHeartbeat';
-import * as asyncRequestModule from '../../src/client/utils/asyncRequest';
-
-const mockAsyncRequest = jest.spyOn(asyncRequestModule, 'default');
+const mockAsyncRequest = jest.spyOn(_asyncRequest || _load_asyncRequest(), 'default');
 const serverUri = 'testserveruri';
 const heartbeatChannel = 'testheartbeatChannel';
 const options = {};
 // Same as in XhrConnectionHeartbeat
 const HEARTBEAT_INTERVAL_MS = 10000;
 
-class MyError extends Error {
-  code: string;
-}
+class MyError extends Error {}
 
 const err = new MyError('Connection Error');
 err.code = 'ECONNRESET';
@@ -35,29 +45,22 @@ describe('Check Connection Error Code', () => {
   test('Test mock asyncRequest behavior', () => {
     mockAsyncRequest.mockReturnValueOnce(Promise.reject(err));
     expect.assertions(1);
-    return asyncRequest({uri: 'http://127.0.0.1:36845/testendpoint'}).catch(
-      error => {
-        expect(error.code).toBe('ECONNRESET');
-      },
-    );
+    return (0, (_asyncRequest || _load_asyncRequest()).default)({ uri: 'http://127.0.0.1:36845/testendpoint' }).catch(error => {
+      expect(error.code).toBe('ECONNRESET');
+    });
   });
 
   test('Test heartbeat class _checkReconnectErrorType function', async () => {
-    mockAsyncRequest
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.resolve('Good')) // Good connection
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
-      .mockReturnValueOnce(Promise.reject(err)); // INVALID_CERTIFICATE
+    mockAsyncRequest.mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.resolve('Good')) // Good connection
+    .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.reject(err)) // ECONNRESET
+    .mockReturnValueOnce(Promise.reject(err)); // INVALID_CERTIFICATE
 
-    const heartbeat = new XhrConnectionHeartbeat(
-      serverUri,
-      heartbeatChannel,
-      options,
-    );
+    const heartbeat = new (_XhrConnectionHeartbeat || _load_XhrConnectionHeartbeat()).XhrConnectionHeartbeat(serverUri, heartbeatChannel, options);
 
     expect(heartbeat._connectionResetCount).toBe(0);
 

@@ -1,13 +1,36 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('../../../modules/nuclide-commons/string');
+}
+
+var _console = require('console');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Redirect `console` to output through to stdout/stderr.
+const outputConsole = new _console.Console(process.stdout, process.stderr); /**
+                                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                                             * All rights reserved.
+                                                                             *
+                                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                                             * the root directory of this source tree.
+                                                                             *
+                                                                             * 
+                                                                             * @format
+                                                                             */
 
 // PRO-TIP: To debug this file, open it in Atom, and from the console, run:
 //
@@ -20,40 +43,33 @@
 // process will have production options set - not test options like
 // `--user-data-dir`.
 
-import type {ExitCode, TestRunnerParams} from './types';
-
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {shellParse} from 'nuclide-commons/string';
-import {Console} from 'console';
-
-// Redirect `console` to output through to stdout/stderr.
-const outputConsole = new Console(process.stdout, process.stderr);
-
-export default (async function runTest(
-  params: TestRunnerParams,
-): Promise<ExitCode> {
+exports.default = async function runTest(params) {
   let exitCode = 0;
   try {
     const atomGlobal = params.buildAtomEnvironment({
       applicationDelegate: params.buildDefaultApplicationDelegate(),
       document,
-      window,
+      window
     });
     // This is the spec runner but Nuclide code shouldn't think this is a spec.
     // (This ensures that `atom.inSpecMode()` returns false.)
-    (atomGlobal: any).specMode = false;
+    atomGlobal.specMode = false;
     atomGlobal.atomScriptMode = true;
 
-    invariant(typeof process.env.FILE_ATOM_SCRIPT === 'string');
+    if (!(typeof process.env.FILE_ATOM_SCRIPT === 'string')) {
+      throw new Error('Invariant violation: "typeof process.env.FILE_ATOM_SCRIPT === \'string\'"');
+    }
+
     const fileAtomScript = process.env.FILE_ATOM_SCRIPT;
 
-    invariant(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
+    if (!(typeof process.env.ARGS_ATOM_SCRIPT === 'string')) {
+      throw new Error('Invariant violation: "typeof process.env.ARGS_ATOM_SCRIPT === \'string\'"');
+    }
+
     const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
 
-    const scriptPath = nuclideUri.resolve(fileAtomScript);
-    const scriptArgs =
-      argsAtomScript === "''" ? [] : shellParse(argsAtomScript);
+    const scriptPath = (_nuclideUri || _load_nuclideUri()).default.resolve(fileAtomScript);
+    const scriptArgs = argsAtomScript === "''" ? [] : (0, (_string || _load_string()).shellParse)(argsAtomScript);
 
     // Unfortunately we have to pollute our environment if we want to take
     // advantage of Atom's v8 cache. Ideally, we'd run the script file using
@@ -87,4 +103,4 @@ export default (async function runTest(
   });
 
   return exitCode;
-});
+};

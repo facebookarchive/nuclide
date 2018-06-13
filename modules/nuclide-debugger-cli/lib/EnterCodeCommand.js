@@ -1,94 +1,73 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
-import type {ConsoleIO} from './ConsoleIO';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {DebuggerInterface} from './DebuggerInterface';
-import {Observable} from 'rxjs';
-import nullthrows from 'nullthrows';
+var _DebuggerInterface;
 
-type InterruptEvent = {
-  type: 'interrupt',
-};
+function _load_DebuggerInterface() {
+  return _DebuggerInterface = require('./DebuggerInterface');
+}
 
-type LineEvent = {
-  type: 'line',
-  line: string,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-type Event = InterruptEvent | LineEvent;
+var _nullthrows;
 
-export default class EnterCode implements Command {
-  name = 'code';
-  helpText = 'Enter a multi-line code fragment for evaluation.';
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
 
-  _debugger: DebuggerInterface;
-  _console: ConsoleIO;
-  _pendingText: string = '';
-  _subscription: ?rxjs$ISubscription = null;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  constructor(console: ConsoleIO, debug: DebuggerInterface) {
+class EnterCode {
+
+  constructor(console, debug) {
+    this.name = 'code';
+    this.helpText = 'Enter a multi-line code fragment for evaluation.';
+    this._pendingText = '';
+    this._subscription = null;
+
     this._debugger = debug;
     this._console = console;
   }
 
-  async execute(): Promise<void> {
-    this._console.output(
-      "Enter code, end with a single dot '.'. Use ctrl+c to abort.\n",
-    );
+  async execute() {
+    this._console.output("Enter code, end with a single dot '.'. Use ctrl+c to abort.\n");
     this._pendingText = '';
     this._console.stopInput();
     this._console.setPrompt('... ');
 
     this._console.prompt();
-    this._subscription = Observable.merge(
-      this._console
-        .observeInterrupts()
-        .switchMap(_ => Observable.from([{type: 'interrupt'}])),
-      this._console
-        .observeLines()
-        .switchMap(line => Observable.from([{type: 'line', line}])),
-    )
-      .switchMap((event: Event) => {
-        switch (event.type) {
-          case 'interrupt':
-            this._console.outputLine('Code entry aborted.');
-            this._closeNestedInput();
-            break;
+    this._subscription = _rxjsBundlesRxMinJs.Observable.merge(this._console.observeInterrupts().switchMap(_ => _rxjsBundlesRxMinJs.Observable.from([{ type: 'interrupt' }])), this._console.observeLines().switchMap(line => _rxjsBundlesRxMinJs.Observable.from([{ type: 'line', line }]))).switchMap(event => {
+      switch (event.type) {
+        case 'interrupt':
+          this._console.outputLine('Code entry aborted.');
+          this._closeNestedInput();
+          break;
 
-          case 'line':
-            if (event.line === '.') {
-              return this._eval();
-            }
-            this._pendingText = `${this._pendingText}\n${event.line}`;
-            this._console.prompt();
-        }
-        return Observable.empty();
-      })
-      .subscribe(_ => this._closeNestedInput(), _ => this._closeNestedInput());
+        case 'line':
+          if (event.line === '.') {
+            return this._eval();
+          }
+          this._pendingText = `${this._pendingText}\n${event.line}`;
+          this._console.prompt();
+      }
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }).subscribe(_ => this._closeNestedInput(), _ => this._closeNestedInput());
   }
 
   _closeNestedInput() {
-    nullthrows(this._subscription).unsubscribe();
+    (0, (_nullthrows || _load_nullthrows()).default)(this._subscription).unsubscribe();
     this._subscription = null;
     this._console.setPrompt();
     this._console.startInput();
   }
 
-  async _eval(): Promise<void> {
+  async _eval() {
     try {
       const {
-        body: {result},
+        body: { result }
       } = await this._debugger.evaluateExpression(this._pendingText);
       this._console.outputLine(result);
     } catch (err) {
@@ -96,3 +75,14 @@ export default class EnterCode implements Command {
     }
   }
 }
+exports.default = EnterCode; /**
+                              * Copyright (c) 2017-present, Facebook, Inc.
+                              * All rights reserved.
+                              *
+                              * This source code is licensed under the BSD-style license found in the
+                              * LICENSE file in the root directory of this source tree. An additional grant
+                              * of patent rights can be found in the PATENTS file in the same directory.
+                              *
+                              * 
+                              * @format
+                              */

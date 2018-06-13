@@ -1,346 +1,145 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DeadlineRequest} from 'nuclide-commons/promise';
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.dispose = dispose;
+exports.initialize = initialize;
+exports.flowGetAst = flowGetAst;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  AutocompleteRequest,
-  AutocompleteResult,
-  FileDiagnosticMap,
-  FileDiagnosticMessage,
-  FormatOptions,
-  SymbolResult,
-  Completion,
-  CodeLensData,
-  StatusData,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {
-  FileVersion,
-  FileNotifier,
-} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {
-  DefinitionQueryResult,
-  FindReferencesReturn,
-  Outline,
-  CodeAction,
-  SignatureHelp,
-} from 'atom-ide-ui';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import invariant from 'assert';
+var _config;
 
-import {Observable} from 'rxjs';
-import {setConfig} from './config';
-import {
-  ServerLanguageService,
-  MultiProjectLanguageService,
-} from '../../nuclide-language-service-rpc';
-import {FileCache, getBufferAtVersion} from '../../nuclide-open-files-rpc';
+function _load_config() {
+  return _config = require('./config');
+}
 
-import {getLogger} from 'log4js';
+var _nuclideLanguageServiceRpc;
 
-export type Loc = {
-  file: NuclideUri,
-  point: atom$Point,
-};
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _FlowSingleProjectLanguageService;
+
+function _load_FlowSingleProjectLanguageService() {
+  return _FlowSingleProjectLanguageService = require('./FlowSingleProjectLanguageService');
+}
+
+var _FlowServiceState;
+
+function _load_FlowServiceState() {
+  return _FlowServiceState = require('./FlowServiceState');
+}
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
 // canonical type definition so that we can use these in the service framework.
-export type ServerStatusType =
-  | 'failed'
-  | 'unknown'
-  | 'not running'
-  | 'not installed'
-  | 'busy'
-  | 'init'
-  | 'ready';
+let state = null; /**
+                   * Copyright (c) 2015-present, Facebook, Inc.
+                   * All rights reserved.
+                   *
+                   * This source code is licensed under the license found in the LICENSE file in
+                   * the root directory of this source tree.
+                   *
+                   * 
+                   * @format
+                   */
 
-export type ServerStatusUpdate = {
-  pathToRoot: NuclideUri,
-  status: ServerStatusType,
-};
-
-export type FlowSettings = {
-  functionSnippetShouldIncludeArguments: boolean,
-  stopFlowOnExit: boolean,
-  lazyMode: boolean,
-  canUseFlowBin: boolean,
-  pathToFlow: string,
-};
-
-export type {FlowLocNoSource} from './flowOutputTypes';
-
-import {FlowSingleProjectLanguageService} from './FlowSingleProjectLanguageService';
-import {FlowServiceState} from './FlowServiceState';
-
-let state: ?FlowServiceState = null;
-
-function getState(): FlowServiceState {
+function getState() {
   if (state == null) {
-    state = new FlowServiceState();
+    state = new (_FlowServiceState || _load_FlowServiceState()).FlowServiceState();
   }
   return state;
 }
 
-export function dispose(): void {
+function dispose() {
   if (state != null) {
     state.dispose();
     state = null;
   }
 }
 
-export async function initialize(
-  fileNotifier: FileNotifier,
-  host: HostServices,
-  config: FlowSettings,
-): Promise<FlowLanguageServiceType> {
-  invariant(fileNotifier instanceof FileCache);
-  const fileCache: FileCache = fileNotifier;
+async function initialize(fileNotifier, host, config) {
+  if (!(fileNotifier instanceof (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileCache)) {
+    throw new Error('Invariant violation: "fileNotifier instanceof FileCache"');
+  }
+
+  const fileCache = fileNotifier;
   return new FlowLanguageService(fileCache, host, config);
 }
 
-class FlowLanguageService extends MultiProjectLanguageService<
-  ServerLanguageService<FlowSingleProjectLanguageService>,
-> {
-  constructor(fileCache: FileCache, host: HostServices, config: FlowSettings) {
-    const logger = getLogger('Flow');
+class FlowLanguageService extends (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).MultiProjectLanguageService {
+  constructor(fileCache, host, config) {
+    const logger = (0, (_log4js || _load_log4js()).getLogger)('Flow');
     super();
-    this.initialize(
-      logger,
-      fileCache,
-      host,
-      ['.flowconfig'],
-      'nearest',
-      ['.js', '.jsx'],
-      projectDir => {
-        const execInfoContainer = getState().getExecInfoContainer();
-        const singleProjectLS = new FlowSingleProjectLanguageService(
-          projectDir,
-          execInfoContainer,
-          fileCache,
-        );
-        const languageService = new ServerLanguageService(
-          fileCache,
-          singleProjectLS,
-        );
-        return Promise.resolve(languageService);
-      },
-    );
+    this.initialize(logger, fileCache, host, ['.flowconfig'], 'nearest', ['.js', '.jsx'], projectDir => {
+      const execInfoContainer = getState().getExecInfoContainer();
+      const singleProjectLS = new (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService(projectDir, execInfoContainer, fileCache);
+      const languageService = new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).ServerLanguageService(fileCache, singleProjectLS);
+      return Promise.resolve(languageService);
+    });
     for (const key of Object.keys(config)) {
-      setConfig(key, config[key]);
+      (0, (_config || _load_config()).setConfig)(key, config[key]);
     }
   }
 
-  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
+  async getOutline(fileVersion) {
     const ls = await this.getLanguageServiceForFile(fileVersion.filePath);
     if (ls != null) {
       return ls.getOutline(fileVersion);
     } else {
-      const buffer = await getBufferAtVersion(fileVersion);
+      const buffer = await (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
       if (buffer == null) {
         return null;
       }
-      return FlowSingleProjectLanguageService.getOutline(
-        fileVersion.filePath,
-        buffer,
-        null,
-        getState().getExecInfoContainer(),
-      );
+      return (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService.getOutline(fileVersion.filePath, buffer, null, getState().getExecInfoContainer());
     }
   }
 
-  customFindReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    global_: boolean,
-    multiHop: boolean,
-  ): ConnectableObservable<?FindReferencesReturn> {
-    return Observable.defer(async () => {
+  customFindReferences(fileVersion, position, global_, multiHop) {
+    return _rxjsBundlesRxMinJs.Observable.defer(async () => {
       const ls = await this.getLanguageServiceForFile(fileVersion.filePath);
       if (ls == null) {
         return;
       }
       const flowLs = ls.getSingleFileLanguageService();
-      const buffer = await getBufferAtVersion(fileVersion);
+      const buffer = await (0, (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).getBufferAtVersion)(fileVersion);
       if (buffer == null) {
         return null;
       }
-      return flowLs.customFindReferences(
-        fileVersion.filePath,
-        buffer,
-        position,
-        global_,
-        multiHop,
-      );
+      return flowLs.customFindReferences(fileVersion.filePath, buffer, position, global_, multiHop);
     }).publish();
   }
 
-  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
-    return this.observeLanguageServices()
-      .mergeMap(languageService => {
-        const singleProjectLS: FlowSingleProjectLanguageService = languageService.getSingleFileLanguageService();
-        const pathToRoot = singleProjectLS.getPathToRoot();
-        return singleProjectLS
-          .getServerStatusUpdates()
-          .map(status => ({pathToRoot, status}));
-      })
-      .publish();
+  getServerStatusUpdates() {
+    return this.observeLanguageServices().mergeMap(languageService => {
+      const singleProjectLS = languageService.getSingleFileLanguageService();
+      const pathToRoot = singleProjectLS.getPathToRoot();
+      return singleProjectLS.getServerStatusUpdates().map(status => ({ pathToRoot, status }));
+    }).publish();
   }
 
-  async allowServerRestart(): Promise<void> {
+  async allowServerRestart() {
     const languageServices = await this.getAllLanguageServices();
-    const flowLanguageServices = languageServices.map(ls =>
-      ls.getSingleFileLanguageService(),
-    );
+    const flowLanguageServices = languageServices.map(ls => ls.getSingleFileLanguageService());
     flowLanguageServices.forEach(ls => ls.allowServerRestart());
   }
 }
 
 // Unfortunately we have to duplicate a lot of things here to make FlowLanguageService remotable.
-export interface FlowLanguageServiceType {
-  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>;
-
-  getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    request: AutocompleteRequest,
-  ): Promise<?AutocompleteResult>;
-
-  resolveAutocompleteSuggestion(suggestion: Completion): Promise<?Completion>;
-
-  getDefinition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult>;
-
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): ConnectableObservable<?FindReferencesReturn>;
-
-  customFindReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    global_: boolean,
-    multiHop: boolean,
-  ): ConnectableObservable<?FindReferencesReturn>;
-
-  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>;
-
-  getOutline(fileVersion: FileVersion): Promise<?Outline>;
-
-  onToggleCoverage(set: boolean): Promise<void>;
-
-  getCodeLens(fileVersion: FileVersion): Promise<?Array<CodeLensData>>;
-  resolveCodeLens(
-    filePath: NuclideUri,
-    codeLens: CodeLensData,
-  ): Promise<?CodeLensData>;
-
-  getCodeActions(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>>;
-
-  getAdditionalLogFiles(
-    deadline: DeadlineRequest,
-  ): Promise<Array<AdditionalLogFile>>;
-
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>;
-
-  highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?Array<atom$Range>>;
-
-  formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>>;
-
-  formatEntireFile(
-    fileVersion: FileVersion,
-    range: atom$Range,
-    options: FormatOptions,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }>;
-
-  formatAtPosition(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    triggerCharacter: string,
-    options: FormatOptions,
-  ): Promise<?Array<TextEdit>>;
-
-  signatureHelp(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?SignatureHelp>;
-
-  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>;
-
-  symbolSearch(
-    query: string,
-    directories: Array<NuclideUri>,
-  ): Promise<?Array<SymbolResult>>;
-
-  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>;
-
-  isFileInProject(fileUri: NuclideUri): Promise<boolean>;
-
-  getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate>;
-
-  allowServerRestart(): Promise<void>;
-
-  getExpandedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-  ): Promise<?atom$Range>;
-
-  getCollapsedSelectionRange(
-    fileVersion: FileVersion,
-    currentSelection: atom$Range,
-    originalCursorPosition: atom$Point,
-  ): Promise<?atom$Range>;
-
-  observeStatus(fileVersion: FileVersion): ConnectableObservable<StatusData>;
-
-  clickStatus(
-    fileVersion: FileVersion,
-    id: string,
-    button: string,
-  ): Promise<void>;
-
-  dispose(): void;
-}
-
-export function flowGetAst(
-  file: ?NuclideUri,
-  currentContents: string,
-): Promise<?any> {
-  return FlowSingleProjectLanguageService.flowGetAst(
-    null,
-    currentContents,
-    getState().getExecInfoContainer(),
-  );
+function flowGetAst(file, currentContents) {
+  return (_FlowSingleProjectLanguageService || _load_FlowSingleProjectLanguageService()).FlowSingleProjectLanguageService.flowGetAst(null, currentContents, getState().getExecInfoContainer());
 }

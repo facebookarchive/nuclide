@@ -1,65 +1,150 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {IEvaluatableExpression, IStackFrame, IProcess} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Observable} from 'rxjs';
-import * as React from 'react';
-import classnames from 'classnames';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import nullthrows from 'nullthrows';
-import {LazyNestedValueComponent} from 'nuclide-commons-ui/LazyNestedValueComponent';
-import SimpleValueComponent from 'nuclide-commons-ui/SimpleValueComponent';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {
-  expressionAsEvaluationResultStream,
-  fetchChildrenForLazyComponent,
-} from '../utils';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-type Props = {
-  watchExpressions: Array<IEvaluatableExpression>,
-  focusedStackFrame: ?IStackFrame,
-  focusedProcess: ?IProcess,
-  onAddWatchExpression: (expression: string) => void,
-  onRemoveWatchExpression: (id: string) => void,
-  onUpdateWatchExpression: (id: string, newExpression: string) => void,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-type State = {
-  rowBeingEdited: ?string,
-};
+var _classnames;
 
-export default class WatchExpressionComponent extends React.Component<
-  Props,
-  State,
-> {
-  coreCancelDisposable: ?IDisposable;
-  _newExpressionEditor: ?AtomInput;
-  _editExpressionEditor: ?AtomInput;
-  _expansionStates: Map<
-    string /* expression */,
-    /* unique reference for expression */ Object,
-  >;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  constructor(props: Props) {
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('../../../../../nuclide-commons-ui/AtomInput');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('../../../../../nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../../../../nuclide-commons-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../../../../nuclide-commons-ui/SimpleValueComponent'));
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('../../../../../nuclide-commons-ui/Icon');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('../utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class WatchExpressionComponent extends _react.Component {
+
+  constructor(props) {
     super(props);
+
+    this._onConfirmNewExpression = () => {
+      const text = (0, (_nullthrows || _load_nullthrows()).default)(this._newExpressionEditor).getText();
+      this.addExpression(text);
+      (0, (_nullthrows || _load_nullthrows()).default)(this._newExpressionEditor).setText('');
+    };
+
+    this._resetExpressionEditState = () => {
+      if (this.coreCancelDisposable) {
+        this.coreCancelDisposable.dispose();
+        this.coreCancelDisposable = null;
+      }
+      this.setState({ rowBeingEdited: null });
+    };
+
+    this._renderExpression = watchExpression => {
+      const { focusedProcess, focusedStackFrame } = this.props;
+      const id = watchExpression.getId();
+      let evalResult;
+      if (id === this.state.rowBeingEdited) {
+        return _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          className: 'debugger-watch-expression-input',
+          autofocus: true,
+          startSelected: true,
+          key: id,
+          onConfirm: this._onConfirmExpressionEdit.bind(this, id),
+          onCancel: this._resetExpressionEditState,
+          onBlur: this._resetExpressionEditState,
+          ref: input => {
+            this._editExpressionEditor = input;
+          },
+          size: 'sm',
+          initialValue: watchExpression.name
+        });
+      } else if (focusedProcess == null) {
+        evalResult = _rxjsBundlesRxMinJs.Observable.of(null);
+      } else {
+        evalResult = (0, (_utils || _load_utils()).expressionAsEvaluationResultStream)(watchExpression, focusedProcess, focusedStackFrame, 'watch');
+      }
+      const ValueComponent = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(evalResult.map(evaluationResult => ({ evaluationResult })), (_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent);
+      return _react.createElement(
+        'div',
+        {
+          className: (0, (_classnames || _load_classnames()).default)('debugger-expression-value-row', 'debugger-watch-expression-row'),
+          key: id },
+        _react.createElement(
+          'div',
+          {
+            className: (0, (_classnames || _load_classnames()).default)('debugger-expression-value-content', 'debugger-watch-expression-value-content'),
+            onDoubleClick: this._setRowBeingEdited.bind(this, id) },
+          _react.createElement(ValueComponent, {
+            expression: watchExpression.name,
+            fetchChildren: (_utils || _load_utils()).fetchChildrenForLazyComponent,
+            simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default,
+            expansionStateId: this._getExpansionStateIdForExpression(watchExpression.name)
+          })
+        ),
+        _react.createElement(
+          'div',
+          { className: 'debugger-watch-expression-controls' },
+          _react.createElement((_Icon || _load_Icon()).Icon, {
+            icon: 'pencil',
+            className: 'debugger-watch-expression-control',
+            onClick: this._setRowBeingEdited.bind(this, id)
+          }),
+          _react.createElement((_Icon || _load_Icon()).Icon, {
+            icon: 'x',
+            className: 'debugger-watch-expression-control',
+            onClick: this.removeExpression.bind(this, id)
+          })
+        )
+      );
+    };
+
     this._expansionStates = new Map();
     this.state = {
-      rowBeingEdited: null,
+      rowBeingEdited: null
     };
   }
 
-  _getExpansionStateIdForExpression(expression: string): Object {
+  _getExpansionStateIdForExpression(expression) {
     let expansionStateId = this._expansionStates.get(expression);
     if (expansionStateId == null) {
       expansionStateId = {};
@@ -68,143 +153,60 @@ export default class WatchExpressionComponent extends React.Component<
     return expansionStateId;
   }
 
-  removeExpression(id: string, event: MouseEvent): void {
+  removeExpression(id, event) {
     event.stopPropagation();
     this.props.onRemoveWatchExpression(id);
   }
 
-  addExpression(expression: string): void {
+  addExpression(expression) {
     this.props.onAddWatchExpression(expression);
   }
 
-  _onConfirmNewExpression = (): void => {
-    const text = nullthrows(this._newExpressionEditor).getText();
-    this.addExpression(text);
-    nullthrows(this._newExpressionEditor).setText('');
-  };
-
-  _onConfirmExpressionEdit(id: string): void {
-    const text = nullthrows(this._editExpressionEditor).getText();
+  _onConfirmExpressionEdit(id) {
+    const text = (0, (_nullthrows || _load_nullthrows()).default)(this._editExpressionEditor).getText();
     this.props.onUpdateWatchExpression(id, text);
     this._resetExpressionEditState();
   }
 
-  _setRowBeingEdited(id: string): void {
+  _setRowBeingEdited(id) {
     this.setState({
-      rowBeingEdited: id,
+      rowBeingEdited: id
     });
     if (this.coreCancelDisposable) {
       this.coreCancelDisposable.dispose();
     }
     this.coreCancelDisposable = atom.commands.add('atom-workspace', {
-      'core:cancel': () => this._resetExpressionEditState(),
+      'core:cancel': () => this._resetExpressionEditState()
     });
   }
 
-  _resetExpressionEditState = (): void => {
-    if (this.coreCancelDisposable) {
-      this.coreCancelDisposable.dispose();
-      this.coreCancelDisposable = null;
-    }
-    this.setState({rowBeingEdited: null});
-  };
-
-  _renderExpression = (
-    watchExpression: IEvaluatableExpression,
-  ): React.Element<any> => {
-    const {focusedProcess, focusedStackFrame} = this.props;
-    const id = watchExpression.getId();
-    let evalResult;
-    if (id === this.state.rowBeingEdited) {
-      return (
-        <AtomInput
-          className="debugger-watch-expression-input"
-          autofocus={true}
-          startSelected={true}
-          key={id}
-          onConfirm={this._onConfirmExpressionEdit.bind(this, id)}
-          onCancel={this._resetExpressionEditState}
-          onBlur={this._resetExpressionEditState}
-          ref={input => {
-            this._editExpressionEditor = input;
-          }}
-          size="sm"
-          initialValue={watchExpression.name}
-        />
-      );
-    } else if (focusedProcess == null) {
-      evalResult = Observable.of(null);
-    } else {
-      evalResult = expressionAsEvaluationResultStream(
-        watchExpression,
-        focusedProcess,
-        focusedStackFrame,
-        'watch',
-      );
-    }
-    const ValueComponent = bindObservableAsProps(
-      evalResult.map(evaluationResult => ({evaluationResult})),
-      LazyNestedValueComponent,
-    );
-    return (
-      <div
-        className={classnames(
-          'debugger-expression-value-row',
-          'debugger-watch-expression-row',
-        )}
-        key={id}>
-        <div
-          className={classnames(
-            'debugger-expression-value-content',
-            'debugger-watch-expression-value-content',
-          )}
-          onDoubleClick={this._setRowBeingEdited.bind(this, id)}>
-          <ValueComponent
-            expression={watchExpression.name}
-            fetchChildren={(fetchChildrenForLazyComponent: any)}
-            simpleValueComponent={SimpleValueComponent}
-            expansionStateId={this._getExpansionStateIdForExpression(
-              watchExpression.name,
-            )}
-          />
-        </div>
-        <div className="debugger-watch-expression-controls">
-          <Icon
-            icon="pencil"
-            className="debugger-watch-expression-control"
-            onClick={this._setRowBeingEdited.bind(this, id)}
-          />
-          <Icon
-            icon="x"
-            className="debugger-watch-expression-control"
-            onClick={this.removeExpression.bind(this, id)}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  render(): React.Node {
+  render() {
     const expressions = this.props.watchExpressions.map(this._renderExpression);
-    const addNewExpressionInput = (
-      <AtomInput
-        className={classnames(
-          'debugger-watch-expression-input',
-          'debugger-watch-expression-add-new-input',
-        )}
-        onConfirm={this._onConfirmNewExpression}
-        ref={input => {
-          this._newExpressionEditor = input;
-        }}
-        size="sm"
-        placeholderText="Add new watch expression"
-      />
-    );
-    return (
-      <div className="debugger-expression-value-list">
-        {expressions}
-        {addNewExpressionInput}
-      </div>
+    const addNewExpressionInput = _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+      className: (0, (_classnames || _load_classnames()).default)('debugger-watch-expression-input', 'debugger-watch-expression-add-new-input'),
+      onConfirm: this._onConfirmNewExpression,
+      ref: input => {
+        this._newExpressionEditor = input;
+      },
+      size: 'sm',
+      placeholderText: 'Add new watch expression'
+    });
+    return _react.createElement(
+      'div',
+      { className: 'debugger-expression-value-list' },
+      expressions,
+      addNewExpressionInput
     );
   }
 }
+exports.default = WatchExpressionComponent; /**
+                                             * Copyright (c) 2017-present, Facebook, Inc.
+                                             * All rights reserved.
+                                             *
+                                             * This source code is licensed under the BSD-style license found in the
+                                             * LICENSE file in the root directory of this source tree. An additional grant
+                                             * of patent rights can be found in the PATENTS file in the same directory.
+                                             *
+                                             * 
+                                             * @format
+                                             */

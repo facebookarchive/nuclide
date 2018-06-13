@@ -1,82 +1,100 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {SwiftPMTaskRunner as SwiftPMTaskRunnerType} from './taskrunner/SwiftPMTaskRunner';
-import type {SwiftPMTaskRunnerStoreState} from './taskrunner/SwiftPMTaskRunnerStoreState';
-import type {AtomAutocompleteProvider} from '../../nuclide-autocomplete/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTaskRunnerServiceApi = consumeTaskRunnerServiceApi;
+exports.serialize = serialize;
+exports.createAutocompleteProvider = createAutocompleteProvider;
 
-import invariant from 'assert';
-import {SwiftPMTaskRunner} from './taskrunner/SwiftPMTaskRunner';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _SwiftPMTaskRunner;
 
-let _disposables: ?UniversalDisposable = null;
-let _taskRunner: ?SwiftPMTaskRunnerType = null;
-let _initialState: ?Object = null;
-
-export function activate(rawState: ?Object): void {
-  invariant(_disposables == null);
-  _initialState = rawState;
-  _disposables = new UniversalDisposable(
-    () => {
-      _taskRunner = null;
-    },
-    () => {
-      _initialState = null;
-    },
-  );
+function _load_SwiftPMTaskRunner() {
+  return _SwiftPMTaskRunner = require('./taskrunner/SwiftPMTaskRunner');
 }
 
-export function deactivate(): void {
-  invariant(_disposables != null);
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let _disposables = null; /**
+                          * Copyright (c) 2015-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the license found in the LICENSE file in
+                          * the root directory of this source tree.
+                          *
+                          * 
+                          * @format
+                          */
+
+let _taskRunner = null;
+let _initialState = null;
+
+function activate(rawState) {
+  if (!(_disposables == null)) {
+    throw new Error('Invariant violation: "_disposables == null"');
+  }
+
+  _initialState = rawState;
+  _disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
+    _taskRunner = null;
+  }, () => {
+    _initialState = null;
+  });
+}
+
+function deactivate() {
+  if (!(_disposables != null)) {
+    throw new Error('Invariant violation: "_disposables != null"');
+  }
+
   _disposables.dispose();
   _disposables = null;
 }
 
-export function consumeTaskRunnerServiceApi(
-  serviceApi: TaskRunnerServiceApi,
-): void {
-  invariant(_disposables != null);
+function consumeTaskRunnerServiceApi(serviceApi) {
+  if (!(_disposables != null)) {
+    throw new Error('Invariant violation: "_disposables != null"');
+  }
+
   _disposables.add(serviceApi.register(_getTaskRunner()));
 }
 
-export function serialize(): ?SwiftPMTaskRunnerStoreState {
+function serialize() {
   if (_taskRunner != null) {
     return _taskRunner.serialize();
   }
 }
 
-export function createAutocompleteProvider(): AtomAutocompleteProvider {
+function createAutocompleteProvider() {
   return {
     analytics: {
       eventName: 'nuclide-swift',
-      shouldLogInsertedSuggestion: false,
+      shouldLogInsertedSuggestion: false
     },
     selector: '.source.swift',
     inclusionPriority: 1,
     disableForSelector: '.source.swift .comment',
-    getSuggestions(
-      request: atom$AutocompleteRequest,
-    ): Promise<?Array<atom$AutocompleteSuggestion>> {
-      return _getTaskRunner()
-        .getAutocompletionProvider()
-        .getAutocompleteSuggestions(request);
-    },
+    getSuggestions(request) {
+      return _getTaskRunner().getAutocompletionProvider().getAutocompleteSuggestions(request);
+    }
   };
 }
 
-function _getTaskRunner(): SwiftPMTaskRunner {
+function _getTaskRunner() {
   if (_taskRunner == null) {
-    invariant(_disposables != null);
-    _taskRunner = new SwiftPMTaskRunner(_initialState);
+    if (!(_disposables != null)) {
+      throw new Error('Invariant violation: "_disposables != null"');
+    }
+
+    _taskRunner = new (_SwiftPMTaskRunner || _load_SwiftPMTaskRunner()).SwiftPMTaskRunner(_initialState);
     _disposables.add(_taskRunner);
   }
   return _taskRunner;

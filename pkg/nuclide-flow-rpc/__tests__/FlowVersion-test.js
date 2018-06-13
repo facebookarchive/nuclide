@@ -1,32 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {FlowVersion} from '../lib/FlowVersion';
+var _FlowVersion;
+
+function _load_FlowVersion() {
+  return _FlowVersion = require('../lib/FlowVersion');
+}
 
 describe('FlowVersion', () => {
-  let flowVersion: FlowVersion = (null: any);
+  let flowVersion = null;
   let getVersionSpy;
-  let fakeVersion: ?string = null;
+  let fakeVersion = null;
 
   beforeEach(() => {
     jest.useRealTimers();
-    getVersionSpy = jest
-      .fn()
-      .mockImplementation(() => Promise.resolve(fakeVersion));
-    flowVersion = new FlowVersion(getVersionSpy);
+    getVersionSpy = jest.fn().mockImplementation(() => Promise.resolve(fakeVersion));
+    flowVersion = new (_FlowVersion || _load_FlowVersion()).FlowVersion(getVersionSpy);
   });
 
   it('should return the version the first time', async () => {
     fakeVersion = 'foo';
-    expect(await flowVersion.getVersion()).toEqual('foo');
+    expect((await flowVersion.getVersion())).toEqual('foo');
     expect(getVersionSpy.mock.calls.length).toEqual(1);
   });
 
@@ -34,7 +27,7 @@ describe('FlowVersion', () => {
     fakeVersion = 'foo';
     await flowVersion.getVersion();
     fakeVersion = 'bar';
-    expect(await flowVersion.getVersion()).toEqual('foo');
+    expect((await flowVersion.getVersion())).toEqual('foo');
     expect(getVersionSpy.mock.calls.length).toEqual(1);
   });
 
@@ -43,7 +36,7 @@ describe('FlowVersion', () => {
     await flowVersion.getVersion();
     fakeVersion = 'bar';
     flowVersion.invalidateVersion();
-    expect(await flowVersion.getVersion()).toEqual('bar');
+    expect((await flowVersion.getVersion())).toEqual('bar');
     expect(getVersionSpy.mock.calls.length).toEqual(2);
   });
 
@@ -53,7 +46,7 @@ describe('FlowVersion', () => {
     await flowVersion.getVersion();
     fakeVersion = 'bar';
     jest.advanceTimersByTime(11 * 60 * 1000);
-    expect(await flowVersion.getVersion()).toEqual('bar');
+    expect((await flowVersion.getVersion())).toEqual('bar');
     expect(getVersionSpy.mock.calls.length).toEqual(2);
   });
 
@@ -70,4 +63,13 @@ describe('FlowVersion', () => {
       expect(satisfies).toEqual(true);
     });
   });
-});
+}); /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */

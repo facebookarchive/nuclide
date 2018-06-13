@@ -1,3 +1,42 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+class MockHgRepositorySubscriptions {
+  observeFilesDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeHgIgnoreFileDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeHgRepoStateDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeHgCommitsDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeHgConflictStateDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeActiveBookmarkDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+
+  observeBookmarksDidChange() {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
+  }
+}
+
+// This class is meant to be stubbed out.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,95 +44,53 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {ConnectableObservable, Observable, Subject} from 'rxjs';
-import type {DiffInfo, StatusCodeIdValue, BookmarkInfo} from '../lib/HgService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-class MockHgRepositorySubscriptions {
-  observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
-    return new Subject().publish();
-  }
-
-  observeHgIgnoreFileDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeHgRepoStateDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeHgCommitsDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeHgConflictStateDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-
-  observeBookmarksDidChange(): ConnectableObservable<void> {
-    return new Subject().publish();
-  }
-}
-
-// This class is meant to be stubbed out.
-export default class MockHgService {
-  createRepositorySubscriptions(): Promise<MockHgRepositorySubscriptions> {
+class MockHgService {
+  createRepositorySubscriptions() {
     return Promise.resolve(new MockHgRepositorySubscriptions());
   }
 
-  fetchStatuses(
-    filePaths: Array<NuclideUri>,
-    options: ?any,
-  ): ConnectableObservable<Map<string, StatusCodeIdValue>> {
-    return new Subject().publish();
+  fetchStatuses(filePaths, options) {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
   }
 
-  deleteBookmark(name: string): Promise<void> {
+  deleteBookmark(name) {
     return Promise.resolve();
   }
 
-  renameBookmark(name: string, nextName: string): Promise<void> {
+  renameBookmark(name, nextName) {
     return Promise.resolve();
   }
 
-  fetchDiffInfo(
-    filePaths: Array<NuclideUri>,
-  ): Promise<?Map<NuclideUri, DiffInfo>> {
+  fetchDiffInfo(filePaths) {
     return Promise.resolve(null);
   }
 
-  fetchActiveBookmark(): Promise<string> {
+  fetchActiveBookmark() {
     return Promise.resolve('');
   }
 
-  fetchBookmarks(): Promise<Array<BookmarkInfo>> {
+  fetchBookmarks() {
     return Promise.resolve([]);
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     return Promise.resolve();
   }
 
-  getHeadId(): Observable<string> {
-    return new Observable();
+  getHeadId() {
+    return new _rxjsBundlesRxMinJs.Observable();
   }
 
-  getFullHashForRevision(): Promise<?string> {
+  getFullHashForRevision() {
     return Promise.resolve(null);
   }
 
-  fetchFileContentAtRevision(
-    filePath: NuclideUri,
-    revision: string,
-  ): ConnectableObservable<string> {
-    return new Subject().publish();
+  fetchFileContentAtRevision(filePath, revision) {
+    return new _rxjsBundlesRxMinJs.Subject().publish();
   }
 }
+exports.default = MockHgService;

@@ -1,45 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NavigationStackService} from '../../nuclide-navigation-stack';
+var _UniversalDisposable;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {ReplaySubject} from 'rxjs';
-import {consumeStatusBar} from './StatusBar';
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('../../../modules/nuclide-commons-atom/createPackage'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _StatusBar;
+
+function _load_StatusBar() {
+  return _StatusBar = require('./StatusBar');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _disposables: UniversalDisposable;
-  _navigationStackSubject: ReplaySubject<?NavigationStackService>;
 
-  constructor(state: ?Object) {
-    this._disposables = new UniversalDisposable();
-    this._navigationStackSubject = new ReplaySubject(1);
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._navigationStackSubject = new _rxjsBundlesRxMinJs.ReplaySubject(1);
     this._disposables.add(this._navigationStackSubject);
   }
 
-  consumeNavigationStack(navigationStack: NavigationStackService): IDisposable {
+  consumeNavigationStack(navigationStack) {
     this._navigationStackSubject.next(navigationStack);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._navigationStackSubject.next(null);
     });
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const disposable = consumeStatusBar(
-      statusBar,
-      this._navigationStackSubject,
-    );
+  consumeStatusBar(statusBar) {
+    const disposable = (0, (_StatusBar || _load_StatusBar()).consumeStatusBar)(statusBar, this._navigationStackSubject);
     this._disposables.add(disposable);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       disposable.dispose();
       this._disposables.remove(disposable);
     });
@@ -48,6 +49,15 @@ class Activation {
   dispose() {
     this._disposables.dispose();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

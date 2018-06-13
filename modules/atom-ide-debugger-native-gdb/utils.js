@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.resolveConfiguration = resolveConfiguration;
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../nuclide-debugger-common');
+}
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +19,32 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {IProcessConfig} from 'nuclide-debugger-common/types';
+async function resolveConfiguration(configuration) {
+  let sourcePath = configuration.config.sourcePath;
 
-import {getVSCodeDebuggerAdapterServiceByNuclideUri} from 'nuclide-debugger-common';
-import invariant from 'assert';
-
-export async function resolveConfiguration(
-  configuration: IProcessConfig,
-): Promise<IProcessConfig> {
-  let sourcePath: ?string = configuration.config.sourcePath;
-
-  const debuggerService = getVSCodeDebuggerAdapterServiceByNuclideUri(
-    configuration.targetUri,
-  );
+  const debuggerService = (0, (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).getVSCodeDebuggerAdapterServiceByNuclideUri)(configuration.targetUri);
 
   if (sourcePath == null || sourcePath.trim() === '') {
     if (configuration.debugMode === 'launch') {
-      sourcePath = await debuggerService.getBuckRootFromUri(
-        configuration.config.program,
-      );
+      sourcePath = await debuggerService.getBuckRootFromUri(configuration.config.program);
     } else {
-      sourcePath = await debuggerService.getBuckRootFromPid(
-        configuration.config.pid,
-      );
+      sourcePath = await debuggerService.getBuckRootFromPid(configuration.config.pid);
     }
   }
 
-  invariant(sourcePath != null);
+  if (!(sourcePath != null)) {
+    throw new Error('Invariant violation: "sourcePath != null"');
+  }
+
   sourcePath = await debuggerService.realpath(sourcePath);
 
-  return {
-    ...configuration,
-    config: {
-      ...configuration.config,
-      sourcePath,
-    },
-  };
+  return Object.assign({}, configuration, {
+    config: Object.assign({}, configuration.config, {
+      sourcePath
+    })
+  });
 }

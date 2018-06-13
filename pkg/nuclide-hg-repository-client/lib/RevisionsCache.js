@@ -1,3 +1,29 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../../modules/nuclide-commons/collection');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('../../../modules/nuclide-commons/observable');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,17 +31,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
-
-import type {RevisionInfoFetched} from '../../nuclide-hg-rpc/lib/HgService';
-import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-
-import {arrayEqual} from 'nuclide-commons/collection';
-import {fastDebounce} from 'nuclide-commons/observable';
-import {BehaviorSubject, Observable, Subject, TimeoutError} from 'rxjs';
-import {getLogger} from 'log4js';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
 // The request timeout is 60 seconds anyways.
@@ -26,17 +44,14 @@ const FETCH_REVISIONS_RETRY_COUNT = 2;
 // That's because commit ids are unique and incremental.
 // Also, any write operation will update them.
 // That way, we guarantee we only update the revisions state if the revisions are changed.
-function isEqualRevisions(
-  revisionsFetched1: RevisionInfoFetched,
-  revisionsFetched2: RevisionInfoFetched,
-): boolean {
+function isEqualRevisions(revisionsFetched1, revisionsFetched2) {
   const {
     revisions: revisions1,
-    fromFilesystem: fromFilesystem1,
+    fromFilesystem: fromFilesystem1
   } = revisionsFetched1;
   const {
     revisions: revisions2,
-    fromFilesystem: fromFilesystem2,
+    fromFilesystem: fromFilesystem2
   } = revisionsFetched2;
   const areBothFromFileSystem = fromFilesystem1 === fromFilesystem2;
   if (revisions1 === revisions2 && areBothFromFileSystem) {
@@ -45,91 +60,62 @@ function isEqualRevisions(
   if (revisions1 == null || revisions2 == null) {
     return false;
   }
-  return (
-    areBothFromFileSystem &&
-    arrayEqual(revisions1, revisions2, (revision1, revision2) => {
-      return (
-        revision1.id === revision2.id &&
-        revision1.isHead === revision2.isHead &&
-        arrayEqual(revision1.tags, revision2.tags) &&
-        arrayEqual(revision1.bookmarks, revision2.bookmarks)
-      );
-    })
-  );
+  return areBothFromFileSystem && (0, (_collection || _load_collection()).arrayEqual)(revisions1, revisions2, (revision1, revision2) => {
+    return revision1.id === revision2.id && revision1.isHead === revision2.isHead && (0, (_collection || _load_collection()).arrayEqual)(revision1.tags, revision2.tags) && (0, (_collection || _load_collection()).arrayEqual)(revision1.bookmarks, revision2.bookmarks);
+  });
 }
 
-export default class RevisionsCache {
-  _workingDirectory: string;
-  _revisions: BehaviorSubject<RevisionInfoFetched>;
-  _lazyRevisionFetcher: Observable<RevisionInfoFetched>;
-  _fetchRevisionsRequests: Subject<null>;
-  _isFetchingRevisions: Subject<boolean>;
-  _service: HgService;
+class RevisionsCache {
 
-  constructor(workingDirectory: string, service: HgService) {
+  constructor(workingDirectory, service) {
     this._workingDirectory = workingDirectory;
-    this._revisions = new BehaviorSubject({
+    this._revisions = new _rxjsBundlesRxMinJs.BehaviorSubject({
       revisions: [],
-      fromFilesystem: false,
+      fromFilesystem: false
     });
-    this._fetchRevisionsRequests = new Subject();
-    this._isFetchingRevisions = new Subject();
+    this._fetchRevisionsRequests = new _rxjsBundlesRxMinJs.Subject();
+    this._isFetchingRevisions = new _rxjsBundlesRxMinJs.Subject();
     this._service = service;
 
-    this._lazyRevisionFetcher = this._fetchRevisionsRequests
-      .startWith(null) // Initially, no refresh requests applied.
-      .let(fastDebounce(FETCH_REVISIONS_DEBOUNCE_MS))
-      .switchMap(() =>
-        // Using `defer` will guarantee a fresh subscription / execution on retries,
-        // even though `_fetchSmartlogRevisions` returns a `refCount`ed shared Observable.
-        Observable.defer(() => this._fetchSmartlogRevisions())
-          .retry(FETCH_REVISIONS_RETRY_COUNT)
-          .catch(error => {
-            getLogger('nuclide-hg-repository-client').error(
-              'RevisionsCache Error:',
-              error,
-            );
-            // Failed to fetch smartlog, timeout and return an empty array
-            return Observable.of({revisions: [], fromFilesystem: true});
-          }),
-      )
-      .distinctUntilChanged(isEqualRevisions)
-      .do(revisions => this._revisions.next(revisions))
-      // $FlowFixMe
-      .shareReplay(1);
+    this._lazyRevisionFetcher = this._fetchRevisionsRequests.startWith(null) // Initially, no refresh requests applied.
+    .let((0, (_observable || _load_observable()).fastDebounce)(FETCH_REVISIONS_DEBOUNCE_MS)).switchMap(() =>
+    // Using `defer` will guarantee a fresh subscription / execution on retries,
+    // even though `_fetchSmartlogRevisions` returns a `refCount`ed shared Observable.
+    _rxjsBundlesRxMinJs.Observable.defer(() => this._fetchSmartlogRevisions()).retry(FETCH_REVISIONS_RETRY_COUNT).catch(error => {
+      (0, (_log4js || _load_log4js()).getLogger)('nuclide-hg-repository-client').error('RevisionsCache Error:', error);
+      // Failed to fetch smartlog, timeout and return an empty array
+      return _rxjsBundlesRxMinJs.Observable.of({ revisions: [], fromFilesystem: true });
+    })).distinctUntilChanged(isEqualRevisions).do(revisions => this._revisions.next(revisions))
+    // $FlowFixMe
+    .shareReplay(1);
   }
 
-  _fetchSmartlogRevisions(): Observable<RevisionInfoFetched> {
+  _fetchSmartlogRevisions() {
     this._isFetchingRevisions.next(true);
-    return this._service
-      .fetchSmartlogRevisions(this._workingDirectory)
-      .refCount()
-      .map(revisions => ({revisions, fromFilesystem: true}))
-      .timeout(FETCH_REVISIONS_TIMEOUT_MS)
-      .catch(err => {
-        if (err instanceof TimeoutError) {
-          throw new Error('Timed out fetching smartlog revisions');
-        }
-        throw err;
-      })
-      .finally(() => {
-        this._isFetchingRevisions.next(false);
-      });
+    return this._service.fetchSmartlogRevisions(this._workingDirectory).refCount().map(revisions => ({ revisions, fromFilesystem: true })).timeout(FETCH_REVISIONS_TIMEOUT_MS).catch(err => {
+      if (err instanceof _rxjsBundlesRxMinJs.TimeoutError) {
+        throw new Error('Timed out fetching smartlog revisions');
+      }
+      throw err;
+    }).finally(() => {
+      this._isFetchingRevisions.next(false);
+    });
   }
 
-  refreshRevisions(): void {
+  refreshRevisions() {
     this._fetchRevisionsRequests.next(null);
   }
 
-  getCachedRevisions(): RevisionInfoFetched {
+  getCachedRevisions() {
     return this._revisions.getValue();
   }
 
-  observeRevisionChanges(): Observable<RevisionInfoFetched> {
+  observeRevisionChanges() {
     return this._lazyRevisionFetcher.startWith(this.getCachedRevisions());
   }
 
-  observeIsFetchingRevisions(): Observable<boolean> {
+  observeIsFetchingRevisions() {
     return this._isFetchingRevisions.asObservable();
   }
 }
+exports.default = RevisionsCache;

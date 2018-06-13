@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ArchiveDirectory = undefined;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../../modules/nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../modules/nuclide-commons/UniversalDisposable'));
+}
+
+var _common;
+
+function _load_common() {
+  return _common = require('./common');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,107 +32,78 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ArchiveFileSystem} from './ArchiveFileSystem';
-import type {ArchiveFileAsDirectory} from './ArchiveFileAsDirectory';
-import type {ArchiveFile} from './ArchiveFile';
-import type {ParentDirectory} from './common';
+class ArchiveDirectory {
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getParentDir, fromEntry, rejectWrite} from './common';
-
-export class ArchiveDirectory {
-  _fs: ArchiveFileSystem;
-  _path: NuclideUri;
-
-  constructor(path: NuclideUri, fs: ArchiveFileSystem) {
+  constructor(path, fs) {
     this._fs = fs;
     this._path = path;
   }
 
-  create(mode?: number): Promise<boolean> {
-    return rejectWrite();
+  create(mode) {
+    return (0, (_common || _load_common()).rejectWrite)();
   }
 
-  onDidChange(callback: () => mixed): IDisposable {
-    return new UniversalDisposable();
+  onDidChange(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  isFile(): boolean {
+  isFile() {
     return false;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return true;
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return this._fs.exists(this._path);
   }
 
-  getPath(): NuclideUri {
+  getPath() {
     return this._path;
   }
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._path);
+  getBaseName() {
+    return (_nuclideUri || _load_nuclideUri()).default.basename(this._path);
   }
 
-  relativize(fullPath: NuclideUri): string {
-    return nuclideUri.relative(this._path, fullPath);
+  relativize(fullPath) {
+    return (_nuclideUri || _load_nuclideUri()).default.relative(this._path, fullPath);
   }
 
-  onDidRename(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidRename(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  onDidDelete(callback: () => void): IDisposable {
-    return new UniversalDisposable();
+  onDidDelete(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  getParent(): ParentDirectory {
-    return getParentDir(this._fs, this._path);
+  getParent() {
+    return (0, (_common || _load_common()).getParentDir)(this._fs, this._path);
   }
 
-  getFile(name: string): ArchiveFile {
-    const path = nuclideUri.join(this._path, name);
+  getFile(name) {
+    const path = (_nuclideUri || _load_nuclideUri()).default.join(this._path, name);
     return this._fs.newArchiveFile(path);
   }
 
-  getSubdirectory(name: string): ArchiveDirectory {
-    const path = nuclideUri.join(this._path, name);
+  getSubdirectory(name) {
+    const path = (_nuclideUri || _load_nuclideUri()).default.join(this._path, name);
     return this._fs.newArchiveDirectory(path);
   }
 
-  getEntries(
-    callback: (
-      error: ?atom$GetEntriesError,
-      entries: ?Array<ArchiveDirectory | ArchiveFile | ArchiveFileAsDirectory>,
-    ) => mixed,
-  ): void {
-    this._fs
-      .readdir(this._path)
-      .then(entries =>
-        entries.map(x => fromEntry(this._fs, this._path, true, x)),
-      )
-      .then(entries => callback(null, entries))
-      .catch(error => callback(error, null));
+  getEntries(callback) {
+    this._fs.readdir(this._path).then(entries => entries.map(x => (0, (_common || _load_common()).fromEntry)(this._fs, this._path, true, x))).then(entries => callback(null, entries)).catch(error => callback(error, null));
   }
 
-  contains(path: NuclideUri): boolean {
-    const seps = [
-      nuclideUri.ARCHIVE_SEPARATOR,
-      nuclideUri.pathSeparatorFor(path),
-    ];
-    return (
-      path.startsWith(this._path) &&
-      path.length > this._path.length &&
-      seps.includes(path.charAt(this._path.length))
-    );
+  contains(path) {
+    const seps = [(_nuclideUri || _load_nuclideUri()).default.ARCHIVE_SEPARATOR, (_nuclideUri || _load_nuclideUri()).default.pathSeparatorFor(path)];
+    return path.startsWith(this._path) && path.length > this._path.length && seps.includes(path.charAt(this._path.length));
   }
 }
+exports.ArchiveDirectory = ArchiveDirectory;

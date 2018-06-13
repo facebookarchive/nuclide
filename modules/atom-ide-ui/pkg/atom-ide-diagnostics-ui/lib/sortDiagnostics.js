@@ -1,3 +1,14 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = sortDiagnostics;
+
+
+/*
+ * Sorts the diagnostics according to given column and sort direction
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,35 +17,19 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow strict-local
+ *  strict-local
  * @format
  */
 
-import type {Row} from 'nuclide-commons-ui/Table';
-import type {
-  DiagnosticMessageKind,
-  DiagnosticMessageType,
-} from '../../atom-ide-diagnostics/lib/types';
-import type {DisplayDiagnostic} from './ui/DiagnosticsTable';
-
-import invariant from 'assert';
-
-type DiagnosticsComparison = (
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-) => number;
-
-/*
- * Sorts the diagnostics according to given column and sort direction
- */
-export default function sortDiagnostics(
-  diagnostics: Array<Row<DisplayDiagnostic>>,
-  sortedColumnName: $Keys<DisplayDiagnostic>,
-  sortDescending: boolean,
-): Array<Row<DisplayDiagnostic>> {
+function sortDiagnostics(diagnostics, sortedColumnName, sortDescending) {
   const compare = SORT_FUNCTIONS[sortedColumnName];
-  invariant(compare != null);
+
+  if (!(compare != null)) {
+    throw new Error('Invariant violation: "compare != null"');
+  }
   // Don't sort in place.
+
+
   const sorted = diagnostics.slice().sort(compare);
   // We can't just reverse the sign of the comparison function because that would maintain the
   // ordering of "equal" items with respect to eachother.
@@ -42,53 +37,19 @@ export default function sortDiagnostics(
 }
 
 const SORT_FUNCTIONS = {
-  classification: compose(
-    compareClassification,
-    compareSource,
-    comparePath,
-    compareDescription,
-  ),
-  providerName: compose(
-    compareSource,
-    compareClassification,
-    compareDescription,
-    comparePath,
-  ),
-  description: compose(
-    compareDescription,
-    compareSource,
-    compareClassification,
-    comparePath,
-  ),
-  dir: compose(
-    comparePath,
-    compareSource,
-    compareClassification,
-    compareDescription,
-  ),
-  location: compose(
-    compareBasename,
-    comparePath,
-    compareClassification,
-    compareSource,
-    compareDescription,
-  ),
-  line: compose(
-    compareBasename,
-    comparePath,
-    compareClassification,
-    compareSource,
-    compareDescription,
-  ),
+  classification: compose(compareClassification, compareSource, comparePath, compareDescription),
+  providerName: compose(compareSource, compareClassification, compareDescription, comparePath),
+  description: compose(compareDescription, compareSource, compareClassification, comparePath),
+  dir: compose(comparePath, compareSource, compareClassification, compareDescription),
+  location: compose(compareBasename, comparePath, compareClassification, compareSource, compareDescription),
+  line: compose(compareBasename, comparePath, compareClassification, compareSource, compareDescription)
 };
 
 /**
  * Compose comparison functions so that, when one identifies the items as equal, the subsequent
  * functions are used to resolve the abiguity.
  */
-function compose(
-  ...comparisons: Array<DiagnosticsComparison>
-): DiagnosticsComparison {
+function compose(...comparisons) {
   return (a, b) => {
     for (const compare of comparisons) {
       const val = compare(a, b);
@@ -100,28 +61,13 @@ function compose(
   };
 }
 
-function compareClassification(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
-  return (
-    compareClassificationKind(
-      a.data.classification.kind,
-      b.data.classification.kind,
-    ) ||
-    compareClassificationSeverity(
-      a.data.classification.severity,
-      b.data.classification.severity,
-    )
-  );
+function compareClassification(a, b) {
+  return compareClassificationKind(a.data.classification.kind, b.data.classification.kind) || compareClassificationSeverity(a.data.classification.severity, b.data.classification.severity);
 }
 
 const KIND_ORDER = ['review', 'lint'];
 
-function compareClassificationKind(
-  a: ?DiagnosticMessageKind,
-  b: ?DiagnosticMessageKind,
-): number {
+function compareClassificationKind(a, b) {
   const aKind = a || 'lint';
   const bKind = b || 'lint';
   return KIND_ORDER.indexOf(aKind) - KIND_ORDER.indexOf(bKind);
@@ -129,31 +75,19 @@ function compareClassificationKind(
 
 const SEVERITY_ORDER = ['Info', 'Warning', 'Error'];
 
-function compareClassificationSeverity(
-  a: DiagnosticMessageType,
-  b: DiagnosticMessageType,
-): number {
+function compareClassificationSeverity(a, b) {
   return SEVERITY_ORDER.indexOf(a) - SEVERITY_ORDER.indexOf(b);
 }
 
-function compareSource(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
+function compareSource(a, b) {
   return compareStrings(a.data.providerName, b.data.providerName);
 }
 
-function compareDescription(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
+function compareDescription(a, b) {
   return compareStrings(a.data.description.text, b.data.description.text);
 }
 
-function comparePath(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
+function comparePath(a, b) {
   const aLocation = a.data.location;
   const bLocation = b.data.location;
   if (aLocation == null && bLocation == null) {
@@ -169,17 +103,12 @@ function comparePath(
   if (pathComparison !== 0) {
     return pathComparison;
   }
-  const aLine =
-    aLocation.locationInFile == null ? 0 : aLocation.locationInFile.line;
-  const bLine =
-    bLocation.locationInFile == null ? 0 : bLocation.locationInFile.line;
+  const aLine = aLocation.locationInFile == null ? 0 : aLocation.locationInFile.line;
+  const bLine = bLocation.locationInFile == null ? 0 : bLocation.locationInFile.line;
   return compareNumbers(aLine, bLine);
 }
 
-function compareBasename(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
+function compareBasename(a, b) {
   const aLocationInFile = a.data.location && a.data.location.locationInFile;
   const bLocationInFile = b.data.location && b.data.location.locationInFile;
   if (aLocationInFile == null && bLocationInFile == null) {
@@ -191,16 +120,13 @@ function compareBasename(
   if (bLocationInFile == null) {
     return 1;
   }
-  return (
-    compareStrings(aLocationInFile.basename, bLocationInFile.basename) ||
-    compareNumbers(aLocationInFile.line, bLocationInFile.line)
-  );
+  return compareStrings(aLocationInFile.basename, bLocationInFile.basename) || compareNumbers(aLocationInFile.line, bLocationInFile.line);
 }
 
-function compareStrings(a: string, b: string): number {
+function compareStrings(a, b) {
   return a.toLowerCase().localeCompare(b.toLowerCase());
 }
 
-function compareNumbers(a: number, b: number): number {
+function compareNumbers(a, b) {
   return a - b;
 }

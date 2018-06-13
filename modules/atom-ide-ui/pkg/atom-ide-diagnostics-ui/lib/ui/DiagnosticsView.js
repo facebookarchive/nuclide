@@ -1,3 +1,102 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('../../../../../nuclide-commons/analytics'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../../../../nuclide-commons/UniversalDisposable'));
+}
+
+var _DiagnosticsTable;
+
+function _load_DiagnosticsTable() {
+  return _DiagnosticsTable = _interopRequireDefault(require('./DiagnosticsTable'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _showModal;
+
+function _load_showModal() {
+  return _showModal = _interopRequireDefault(require('../../../../../nuclide-commons-ui/showModal'));
+}
+
+var _Toggle;
+
+function _load_Toggle() {
+  return _Toggle = require('../../../../../nuclide-commons-ui/Toggle');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('../../../../../nuclide-commons-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('../../../../../nuclide-commons-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('../../../../../nuclide-commons-ui/ToolbarRight');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('../../../../../nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('../../../../../nuclide-commons-ui/ButtonGroup');
+}
+
+var _FilterButton;
+
+function _load_FilterButton() {
+  return _FilterButton = _interopRequireDefault(require('./FilterButton'));
+}
+
+var _RegExpFilter;
+
+function _load_RegExpFilter() {
+  return _RegExpFilter = _interopRequireDefault(require('../../../../../nuclide-commons-ui/RegExpFilter'));
+}
+
+var _SettingsModal;
+
+function _load_SettingsModal() {
+  return _SettingsModal = _interopRequireDefault(require('./SettingsModal'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,91 +105,57 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  DiagnosticMessage,
-  DiagnosticMessageKind,
-  UiConfig,
-} from '../../../atom-ide-diagnostics/lib/types';
-import type {DiagnosticGroup} from '../types';
-import type {
-  RegExpFilterChange,
-  RegExpFilterValue,
-} from 'nuclide-commons-ui/RegExpFilter';
+class DiagnosticsView extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-import analytics from 'nuclide-commons/analytics';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import DiagnosticsTable from './DiagnosticsTable';
-import nullthrows from 'nullthrows';
-import showModal from 'nuclide-commons-ui/showModal';
-import {Toggle} from 'nuclide-commons-ui/Toggle';
-import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
-import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import * as React from 'react';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import FilterButton from './FilterButton';
-import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
-import SettingsModal from './SettingsModal';
+    return _temp = super(...args), this._showSettings = () => {
+      (0, (_showModal || _load_showModal()).default)(() => _react.createElement((_SettingsModal || _load_SettingsModal()).default, { config: this.props.uiConfig }));
+    }, this._handleShowTracesChange = isChecked => {
+      (_analytics || _load_analytics()).default.track('diagnostics-panel-toggle-show-traces', {
+        isChecked: isChecked.toString()
+      });
+      this.props.onShowTracesChange.call(null, isChecked);
+    }, this._handleFilterByActiveTextEditorChange = shouldFilter => {
+      (_analytics || _load_analytics()).default.track('diagnostics-panel-toggle-current-file', {
+        isChecked: shouldFilter.toString()
+      });
+      this.props.onFilterByActiveTextEditorChange.call(null, shouldFilter);
+    }, this._openAllFilesWithErrors = () => {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'diagnostics:open-all-files-with-errors');
+    }, this._handleFocus = event => {
+      if (this._table == null) {
+        return;
+      }
+      let el = event.target;
+      while (el != null) {
+        if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+          return;
+        }
+        el = el.parentElement;
+      }
+      this._table.focus();
+    }, _temp;
+  }
 
-export type Props = {
-  diagnostics: Array<DiagnosticMessage>,
-  filterByActiveTextEditor: boolean,
-  onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
-  showDirectoryColumn: boolean,
-  showTraces: boolean,
-  onShowTracesChange: (isChecked: boolean) => mixed,
-  gotoMessageLocation: (
-    message: DiagnosticMessage,
-    options: {|focusEditor: boolean|},
-  ) => void,
-  selectMessage: (message: DiagnosticMessage) => void,
-  selectedMessage: ?DiagnosticMessage,
-  supportedMessageKinds: Set<DiagnosticMessageKind>,
-  uiConfig: UiConfig,
-  isVisible: boolean,
-  // Used by the DiagnosticsViewModel.
-  autoVisibility: boolean, // eslint-disable-line react/no-unused-prop-types
-
-  hiddenGroups: Set<DiagnosticGroup>,
-  onTypeFilterChange: (type: DiagnosticGroup) => mixed,
-  textFilter: RegExpFilterValue,
-  onTextFilterChange: (change: RegExpFilterChange) => mixed,
-};
-
-/**
- * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
- */
-export default class DiagnosticsView extends React.Component<Props> {
-  _diagnosticsTableWrapperEl: ?HTMLDivElement;
-  _disposables: ?UniversalDisposable;
-  _filterComponent: ?RegExpFilter;
-  _table: ?DiagnosticsTable;
-
-  shouldComponentUpdate(nextProps: Props): boolean {
+  shouldComponentUpdate(nextProps) {
     return nextProps.isVisible;
   }
 
   componentDidMount() {
-    this._disposables = new UniversalDisposable(
-      atom.commands.add(
-        nullthrows(this._diagnosticsTableWrapperEl),
-        'atom-ide:filter',
-        () => this._focusFilter(),
-      ),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add((0, (_nullthrows || _load_nullthrows()).default)(this._diagnosticsTableWrapperEl), 'atom-ide:filter', () => this._focusFilter()));
   }
 
   componentWillUnmount() {
-    nullthrows(this._disposables).dispose();
+    (0, (_nullthrows || _load_nullthrows()).default)(this._disposables).dispose();
   }
 
-  render(): React.Element<any> {
-    const {diagnostics, showDirectoryColumn, showTraces} = this.props;
+  render() {
+    const { diagnostics, showDirectoryColumn, showTraces } = this.props;
 
     const groups = ['errors', 'warnings', 'info'];
     if (this.props.supportedMessageKinds.has('review')) {
@@ -100,136 +165,104 @@ export default class DiagnosticsView extends React.Component<Props> {
       groups.push('action');
     }
 
-    const showFullDescriptionToggle = diagnostics.find(
-      diagnostic =>
-        // flowlint-next-line sketchy-null-string:off
-        diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
-    );
+    const showFullDescriptionToggle = diagnostics.find(diagnostic =>
+    // flowlint-next-line sketchy-null-string:off
+    diagnostic.trace || diagnostic.text && diagnostic.text.includes('\n'));
 
-    return (
-      <div
-        onFocus={this._handleFocus}
-        tabIndex={-1}
-        style={{
+    return _react.createElement(
+      'div',
+      {
+        onFocus: this._handleFocus,
+        tabIndex: -1,
+        style: {
           display: 'flex',
           flex: 1,
           flexDirection: 'column',
-          width: '100%',
-        }}>
-        <Toolbar location="top">
-          <ToolbarLeft>
-            <ButtonGroup className="inline-block">
-              {groups.map(group => (
-                <FilterButton
-                  key={group}
-                  group={group}
-                  selected={!this.props.hiddenGroups.has(group)}
-                  onClick={() => {
-                    this.props.onTypeFilterChange(group);
-                  }}
-                />
-              ))}
-            </ButtonGroup>
-            <RegExpFilter
-              ref={component => (this._filterComponent = component)}
-              value={this.props.textFilter}
-              onChange={this.props.onTextFilterChange}
-            />
-            {/* TODO: This will probably change to a dropdown to also accommodate Head Changes */}
-            <Toggle
-              className="inline-block"
-              onChange={this._handleFilterByActiveTextEditorChange}
-              toggled={this.props.filterByActiveTextEditor}
-              label="Current File Only"
-            />
-          </ToolbarLeft>
-          <ToolbarRight>
-            {showFullDescriptionToggle ? (
-              <Toggle
-                className="inline-block"
-                onChange={this._handleShowTracesChange}
-                toggled={this.props.showTraces}
-                label="Full Description"
-              />
-            ) : null}
-            <Button
-              onClick={this._openAllFilesWithErrors}
-              size={ButtonSizes.SMALL}
-              disabled={diagnostics.length === 0}
-              className="inline-block"
-              title="Open All">
-              Open All
-            </Button>
-            <Button
-              icon="gear"
-              size={ButtonSizes.SMALL}
-              onClick={this._showSettings}
-            />
-          </ToolbarRight>
-        </Toolbar>
-        <div
-          className="atom-ide-filterable"
-          ref={el => (this._diagnosticsTableWrapperEl = el)}
-          style={{display: 'flex', flexDirection: 'column'}}>
-          <DiagnosticsTable
-            ref={table => {
-              this._table = table;
-            }}
-            showFileName={!this.props.filterByActiveTextEditor}
-            diagnostics={diagnostics}
-            showDirectoryColumn={showDirectoryColumn}
-            showTraces={showTraces}
-            selectedMessage={this.props.selectedMessage}
-            selectMessage={this.props.selectMessage}
-            gotoMessageLocation={this.props.gotoMessageLocation}
-          />
-        </div>
-      </div>
+          width: '100%'
+        } },
+      _react.createElement(
+        (_Toolbar || _load_Toolbar()).Toolbar,
+        { location: 'top' },
+        _react.createElement(
+          (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+          null,
+          _react.createElement(
+            (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+            { className: 'inline-block' },
+            groups.map(group => _react.createElement((_FilterButton || _load_FilterButton()).default, {
+              key: group,
+              group: group,
+              selected: !this.props.hiddenGroups.has(group),
+              onClick: () => {
+                this.props.onTypeFilterChange(group);
+              }
+            }))
+          ),
+          _react.createElement((_RegExpFilter || _load_RegExpFilter()).default, {
+            ref: component => this._filterComponent = component,
+            value: this.props.textFilter,
+            onChange: this.props.onTextFilterChange
+          }),
+          _react.createElement((_Toggle || _load_Toggle()).Toggle, {
+            className: 'inline-block',
+            onChange: this._handleFilterByActiveTextEditorChange,
+            toggled: this.props.filterByActiveTextEditor,
+            label: 'Current File Only'
+          })
+        ),
+        _react.createElement(
+          (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+          null,
+          showFullDescriptionToggle ? _react.createElement((_Toggle || _load_Toggle()).Toggle, {
+            className: 'inline-block',
+            onChange: this._handleShowTracesChange,
+            toggled: this.props.showTraces,
+            label: 'Full Description'
+          }) : null,
+          _react.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              onClick: this._openAllFilesWithErrors,
+              size: (_Button || _load_Button()).ButtonSizes.SMALL,
+              disabled: diagnostics.length === 0,
+              className: 'inline-block',
+              title: 'Open All' },
+            'Open All'
+          ),
+          _react.createElement((_Button || _load_Button()).Button, {
+            icon: 'gear',
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._showSettings
+          })
+        )
+      ),
+      _react.createElement(
+        'div',
+        {
+          className: 'atom-ide-filterable',
+          ref: el => this._diagnosticsTableWrapperEl = el,
+          style: { display: 'flex', flexDirection: 'column' } },
+        _react.createElement((_DiagnosticsTable || _load_DiagnosticsTable()).default, {
+          ref: table => {
+            this._table = table;
+          },
+          showFileName: !this.props.filterByActiveTextEditor,
+          diagnostics: diagnostics,
+          showDirectoryColumn: showDirectoryColumn,
+          showTraces: showTraces,
+          selectedMessage: this.props.selectedMessage,
+          selectMessage: this.props.selectMessage,
+          gotoMessageLocation: this.props.gotoMessageLocation
+        })
+      )
     );
   }
 
-  _showSettings = (): void => {
-    showModal(() => <SettingsModal config={this.props.uiConfig} />);
-  };
-
-  _handleShowTracesChange = (isChecked: boolean): void => {
-    analytics.track('diagnostics-panel-toggle-show-traces', {
-      isChecked: isChecked.toString(),
-    });
-    this.props.onShowTracesChange.call(null, isChecked);
-  };
-
-  _handleFilterByActiveTextEditorChange = (shouldFilter: boolean): void => {
-    analytics.track('diagnostics-panel-toggle-current-file', {
-      isChecked: shouldFilter.toString(),
-    });
-    this.props.onFilterByActiveTextEditorChange.call(null, shouldFilter);
-  };
-
-  _openAllFilesWithErrors = (): void => {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'diagnostics:open-all-files-with-errors',
-    );
-  };
-
-  _focusFilter(): void {
+  _focusFilter() {
     if (this._filterComponent != null) {
       this._filterComponent.focus();
     }
   }
 
-  _handleFocus = (event: SyntheticMouseEvent<*>): void => {
-    if (this._table == null) {
-      return;
-    }
-    let el = event.target;
-    while (el != null) {
-      if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
-        return;
-      }
-      el = (el: any).parentElement;
-    }
-    this._table.focus();
-  };
 }
+exports.default = DiagnosticsView;

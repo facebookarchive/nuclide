@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = prettyPrintTypes;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +11,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow strict
+ *  strict
  * @format
  */
 
@@ -47,39 +53,22 @@ function last(arr) {
   return arr[arr.length - 1];
 }
 
-type Element = {
-  start: number,
-  end: number,
-  groups: Array<Group>,
-};
-
-type Group = {
-  elements: Array<Element>,
-  openChar: string,
-  closeChar: string,
-  exactChar: '|' | '',
-  isExact: boolean,
-  start: number,
-  end: number,
-  parentGroup: ?Group,
-};
-
 function parseGroups(str) {
-  const rootGroup: Group = {
-    elements: [{start: 0, end: -1, groups: []}],
+  const rootGroup = {
+    elements: [{ start: 0, end: -1, groups: [] }],
     isExact: false,
     exactChar: '',
     openChar: '',
     closeChar: '',
     start: 0,
     end: str.length - 1,
-    parentGroup: null,
+    parentGroup: null
   };
 
-  let currentGroup: Group = rootGroup;
+  let currentGroup = rootGroup;
   let i = 0;
 
-  function pushGroup(isExact: boolean) {
+  function pushGroup(isExact) {
     const group = {
       start: i,
       end: -1,
@@ -88,12 +77,12 @@ function parseGroups(str) {
       exactChar: isExact ? '|' : '',
       isExact,
       elements: [],
-      parentGroup: currentGroup,
+      parentGroup: currentGroup
     };
     if (isExact) {
       i++;
     }
-    group.elements.push({start: i + 1, end: -1, groups: []});
+    group.elements.push({ start: i + 1, end: -1, groups: [] });
     const currentElement = last(currentGroup.elements);
     currentElement.groups.push(group);
     currentGroup = group;
@@ -114,7 +103,7 @@ function parseGroups(str) {
   function pushElement() {
     const currentElement = last(currentGroup.elements);
     currentElement.end = i + 1;
-    currentGroup.elements.push({start: i + 1, end: -1, groups: []});
+    currentGroup.elements.push({ start: i + 1, end: -1, groups: [] });
   }
 
   for (; i < str.length; ++i) {
@@ -122,10 +111,7 @@ function parseGroups(str) {
       pushGroup(str[i] === '{' && str[i + 1] === '|');
     }
 
-    if (
-      closeGroup.indexOf(str[i]) !== -1 &&
-      currentGroup.closeChar === str[i]
-    ) {
+    if (closeGroup.indexOf(str[i]) !== -1 && currentGroup.closeChar === str[i]) {
       popGroup();
     }
 
@@ -150,7 +136,7 @@ function printGroups(str, rootGroup, max) {
   function printMultiLineGroup(group, indent) {
     let output = group.openChar + group.exactChar + '\n';
     group.elements.forEach(element => {
-      output += printElement(element, indent + 1, /* singleLine */ false);
+      output += printElement(element, indent + 1, /* singleLine */false);
     });
     output += getIndent(indent) + group.exactChar + group.closeChar;
     return output;
@@ -159,7 +145,7 @@ function printGroups(str, rootGroup, max) {
   function printSingleLineGroupWithoutEnforcingChildren(group, indent) {
     let output = group.openChar + group.exactChar;
     group.elements.forEach(childGroup => {
-      output += printElement(childGroup, indent, /* singleLine */ false).trim();
+      output += printElement(childGroup, indent, /* singleLine */false).trim();
     });
     return output + group.exactChar + group.closeChar;
   }
@@ -167,7 +153,7 @@ function printGroups(str, rootGroup, max) {
   function printSingleLineGroup(group, indent) {
     let output = group.openChar + group.exactChar;
     group.elements.forEach(childGroup => {
-      output += printElement(childGroup, indent, /* singleLine */ true);
+      output += printElement(childGroup, indent, /* singleLine */true);
     });
     return output + group.exactChar + group.closeChar;
   }
@@ -220,10 +206,7 @@ function isGroupValid(group) {
   return true;
 }
 
-export default function prettyPrintTypes(
-  str: string,
-  max: number = 40,
-): string {
+function prettyPrintTypes(str, max = 40) {
   const rootGroup = parseGroups(str);
   if (!isGroupValid(rootGroup)) {
     return str;
