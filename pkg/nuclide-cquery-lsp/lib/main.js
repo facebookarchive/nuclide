@@ -21,8 +21,8 @@ import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-refe
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
-import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
+import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
 import type {CqueryProject} from '../../nuclide-cquery-lsp-rpc/lib/types';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {

@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {CqueryProject} from './types';
-
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -44,53 +42,23 @@ function staticInitializationOptions(): Object {
   };
 }
 
-export async function getInitializationOptions(
-  project: CqueryProject,
-): Promise<?Object> {
-  let options;
-  if (project.hasCompilationDb) {
-    options = await getInitializationOptionsWithCompilationDb(
-      project.projectRoot,
-      project.compilationDbDir,
-    );
-  } else if (project.defaultFlags != null) {
-    options = await getInitializationOptionsWithoutCompilationDb(
-      project.projectRoot,
-      project.defaultFlags,
-    );
-  }
-  if (options != null) {
-    try {
-      // $FlowFB
-      options = require('./fb-init-options').default(options, project);
-    } catch (e) {}
-  }
+export function getInitializationOptions(
+  cacheDirectory: string,
+  compilationDatabaseDirectory: string,
+): Object {
+  let options = {
+    ...staticInitializationOptions(),
+    cacheDirectory,
+    compilationDatabaseDirectory,
+  };
+  try {
+    // $FlowFB
+    options = require('./fb-init-options').default(options);
+  } catch (e) {}
   return options;
 }
 
-async function getInitializationOptionsWithCompilationDb(
-  projectRoot: string,
-  compilationDbDir: string,
-): Promise<Object> {
-  return {
-    ...staticInitializationOptions(),
-    compilationDatabaseDirectory: compilationDbDir,
-    cacheDirectory: await createCacheDir(compilationDbDir),
-  };
-}
-
-async function getInitializationOptionsWithoutCompilationDb(
-  projectRoot: string,
-  defaultFlags: string[],
-): Promise<Object> {
-  return {
-    ...staticInitializationOptions(),
-    extraClangArguments: defaultFlags,
-    cacheDirectory: await createCacheDir(projectRoot),
-  };
-}
-
-async function createCacheDir(rootDir: string) {
+export async function createCacheDir(rootDir: string) {
   const dir = nuclideUri.join(
     os.tmpdir(),
     'cquery',

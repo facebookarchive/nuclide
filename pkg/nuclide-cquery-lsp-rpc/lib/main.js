@@ -20,7 +20,6 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
   LanguageService,
   FileDiagnosticMap,
@@ -29,25 +28,34 @@ import type {
   FormatOptions,
   FileDiagnosticMessage,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {
-  LogLevel,
-  AdditionalLogFile,
-} from '../../nuclide-logging/lib/rpc-types';
-import type {
-  FileNotifier,
-  FileVersion,
-} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {CqueryProject, RequestLocationsResult} from './types';
 
 import invariant from 'assert';
+import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getOriginalEnvironment} from 'nuclide-commons/process';
 import which from 'nuclide-commons/which';
 import {getLogger} from 'log4js';
+import {forkHostServices} from '../../nuclide-language-service-rpc';
 import {FileCache} from '../../nuclide-open-files-rpc';
-import {findNearestCompilationDbDir as _findNearestCompilationDbDir} from './CompilationDatabaseFinder';
+import {
+  findNearestCompilationDbDir as _findNearestCompilationDbDir,
+  COMPILATION_DATABASE_FILE,
+} from './CompilationDatabaseFinder';
+import {getInitializationOptions, createCacheDir} from './CqueryInitialization';
+import {CqueryLanguageClient} from './CqueryLanguageClient';
 import CqueryLanguageServer from './CqueryLanguageServer';
+
+const EXTENSIONS = ['.cpp', '.h', '.hpp', '.cc', '.m', 'mm'];
 
 export interface CqueryLanguageService extends LanguageService {
   freshenIndexForFile(file: NuclideUri): Promise<void>;
@@ -213,12 +221,54 @@ export async function createCqueryService(params: {|
   const fileCache = params.fileNotifier;
   invariant(fileCache instanceof FileCache);
 
-  return new CqueryLanguageServer(
-    languageId, // id
-    command, // command
+  const forkedHost = await forkHostServices(params.host, logger);
+  const multiLsp = new CqueryLanguageServer(forkedHost);
+  const cqueryFactory = async (projectRoot: string) => {
+    const cacheDirectory = await createCacheDir(projectRoot);
+    const initalizationOptions = getInitializationOptions(
+      cacheDirectory,
+      projectRoot,
+    );
+    const logFile = nuclideUri.join(cacheDirectory, '..', 'diagnostics');
+    const [, host] = await Promise.all([
+      multiLsp.hasObservedDiagnostics(),
+      forkHostServices(params.host, logger),
+    ]);
+    const stderrFd = await fsPromise.open(
+      nuclideUri.join(cacheDirectory, '..', 'stderr'),
+      'a',
+    );
+    const spawnOptions = {
+      stdio: ['pipe', 'pipe', stderrFd],
+      env: {...(await getOriginalEnvironment())},
+    };
+
+    const lsp = new CqueryLanguageClient(
+      logger,
+      fileCache,
+      host,
+      command,
+      command,
+      ['--language-server', '--log-file', logFile],
+      spawnOptions,
+      projectRoot,
+      EXTENSIONS,
+      initalizationOptions,
+      5 * 60 * 1000, // 5 minutes
+      logFile,
+      {id: projectRoot, label: projectRoot},
+    );
+    lsp.start(); // Kick off 'Initializing'...
+    return lsp;
+  };
+  multiLsp.initialize(
     logger,
     fileCache,
-    params.host,
-    params.enableLibclangLogs,
+    forkedHost,
+    ['.buckconfig', COMPILATION_DATABASE_FILE],
+    'nearest',
+    EXTENSIONS,
+    cqueryFactory,
   );
+  return (multiLsp: CqueryLanguageService);
 }

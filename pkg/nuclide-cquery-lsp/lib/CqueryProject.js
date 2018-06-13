@@ -20,7 +20,7 @@ import {
   getClangRequestSettings,
   getServerSettings,
 } from '../../nuclide-clang/lib/libclang';
-import {COMPILATION_DATABASE_FILE} from '../../nuclide-cquery-lsp-rpc/lib/CqueryProjectManager';
+import {COMPILATION_DATABASE_FILE} from '../../nuclide-cquery-lsp-rpc/lib/CompilationDatabaseFinder';
 import {
   getCqueryLSPServiceByNuclideUri,
   getClangServiceByNuclideUri,
