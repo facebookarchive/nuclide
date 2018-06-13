@@ -11,9 +11,10 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {CqueryProject, RequestLocationsResult} from './types';
+import type {RequestLocationsResult} from './types';
 import type {CqueryLanguageService} from '..';
 
+import fsPromise from 'nuclide-commons/fsPromise';
 import {MultiProjectLanguageService} from '../../nuclide-language-service-rpc';
 import {CqueryLanguageClient} from './CqueryLanguageClient';
 
@@ -60,5 +61,19 @@ export default class CqueryLanguageServer
     }
   }
 
-  async deleteProject(project: CqueryProject): Promise<void> {}
+  async restartProcessForFile(file: NuclideUri): Promise<void> {
+    const projectDir = await this.findProjectDir(file);
+    const cqueryProcess = await this.getLanguageServiceForFile(file);
+    if (projectDir != null && cqueryProcess != null) {
+      const cacheDir = cqueryProcess.getCacheDirectory();
+      this._processes.delete(projectDir);
+      await fsPromise.rimraf(cacheDir);
+    } else {
+      this._host.consoleNotification(
+        this._languageId,
+        'warning',
+        'Could not restart: no cquery index found for ' + file,
+      );
+    }
+  }
 }

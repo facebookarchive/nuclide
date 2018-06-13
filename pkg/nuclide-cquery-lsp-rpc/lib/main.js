@@ -37,7 +37,7 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {CqueryProject, RequestLocationsResult} from './types';
+import type {RequestLocationsResult} from './types';
 
 import invariant from 'assert';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -59,12 +59,12 @@ const EXTENSIONS = ['.c', '.cpp', '.h', '.hpp', '.cc', '.tcc', '.m', 'mm'];
 
 export interface CqueryLanguageService extends LanguageService {
   freshenIndexForFile(file: NuclideUri): Promise<void>;
+  restartProcessForFile(file: NuclideUri): Promise<void>;
   requestLocationsCommand(
     methodName: string,
     path: NuclideUri,
     point: atom$Point,
   ): Promise<RequestLocationsResult>;
-  deleteProject(project: CqueryProject): Promise<void>;
   // Below copied from LanguageService
   // TODO pelmers: why doesn't service-parser handle extends?
   getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>;
@@ -260,6 +260,7 @@ export async function createCqueryService(params: {|
       initializationOptions,
       5 * 60 * 1000, // 5 minutes
       logFile,
+      cacheDirectory,
       {id: projectRoot, label: projectRoot},
     );
     lsp.start(); // Kick off 'Initializing'...

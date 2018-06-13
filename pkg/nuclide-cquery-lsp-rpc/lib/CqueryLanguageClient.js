@@ -63,6 +63,7 @@ export class CqueryLanguageClient extends LspLanguageService {
   _projectKey: string;
   _progressInfo: ProgressInfo;
   _logFile: string;
+  _cacheDirectory: string;
   _progressSubscription: ?Subscription;
 
   start(): Promise<void> {
@@ -83,6 +84,7 @@ export class CqueryLanguageClient extends LspLanguageService {
     initializationOptions: Object,
     additionalLogFilesRetentionPeriod: number,
     logFile: string,
+    cacheDirectory: string,
     progressInfo: ProgressInfo,
     useOriginalEnvironment?: boolean = false,
   ) {
@@ -102,6 +104,7 @@ export class CqueryLanguageClient extends LspLanguageService {
       useOriginalEnvironment,
     );
     this._logFile = logFile;
+    this._cacheDirectory = cacheDirectory;
     this._progressInfo = progressInfo;
   }
 
@@ -159,6 +162,10 @@ export class CqueryLanguageClient extends LspLanguageService {
       this._progressSubscription.unsubscribe();
     }
     super.dispose();
+  }
+
+  getCacheDirectory(): string {
+    return this._cacheDirectory;
   }
 
   _createOutlineTreeHierarchy(

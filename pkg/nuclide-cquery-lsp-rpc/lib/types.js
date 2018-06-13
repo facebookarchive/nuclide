@@ -17,24 +17,6 @@ export type RequestLocationsResult = Array<{
   range: atom$Range,
 }>;
 
-export type CqueryProjectWithCompilationDb = {
-  hasCompilationDb: true,
-  compilationDbDir: NuclideUri,
-  flagsFile: NuclideUri,
-  projectRoot: NuclideUri,
-};
-export type CqueryProjectWithoutCompilationDb = {
-  hasCompilationDb: false,
-  defaultFlags: ?Array<string>,
-  projectRoot: NuclideUri,
-};
-
-export type CqueryProject =
-  | CqueryProjectWithCompilationDb
-  | CqueryProjectWithoutCompilationDb;
-
-export type CqueryProjectKey = string;
-
 export type SimpleToken = {
   text: string,
   isBreak: boolean,

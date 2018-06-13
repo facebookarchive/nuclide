@@ -14,10 +14,7 @@ import type {FindReferencesViewService} from 'atom-ide-ui/pkg/atom-ide-find-refe
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {CqueryLanguageService} from '../../nuclide-cquery-lsp-rpc';
-import type {
-  CqueryProject,
-  RequestLocationsResult,
-} from '../../nuclide-cquery-lsp-rpc/lib/types';
+import type {RequestLocationsResult} from '../../nuclide-cquery-lsp-rpc/lib/types';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -44,7 +41,6 @@ import {
 import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getCqueryLSPServiceByConnection} from '../../nuclide-remote-connection';
-import {determineCqueryProject} from './CqueryProject';
 import {wordUnderPoint} from './utils';
 
 const NUCLIDE_CQUERY_GK = 'nuclide_cquery_lsp';
@@ -61,6 +57,7 @@ type SaveState = {
 class CqueryNullLanguageService extends NullLanguageService
   implements CqueryLanguageService {
   async freshenIndexForFile(file: NuclideUri): Promise<void> {}
+  async restartProcessForFile(file: NuclideUri): Promise<void> {}
   async requestLocationsCommand(
     methodName: string,
     path: NuclideUri,
@@ -68,8 +65,6 @@ class CqueryNullLanguageService extends NullLanguageService
   ): Promise<RequestLocationsResult> {
     return [];
   }
-
-  async deleteProject(project: CqueryProject): Promise<void> {}
 }
 
 function addCommands(
@@ -97,9 +92,8 @@ function addCommands(
           const path: ?NuclideUri = editor.getPath();
           const service = await atomService.getLanguageServiceForUri(path);
           if (path != null && service != null) {
-            const project = await determineCqueryProject(path);
             await resetForSource(editor);
-            await service.deleteProject(project);
+            await service.restartProcessForFile(path);
           }
         }
       },

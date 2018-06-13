@@ -12,6 +12,7 @@
 import type {Message} from 'vscode-jsonrpc';
 
 import child_process from 'child_process';
+import {getLogger} from 'log4js';
 import SafeStreamMessageReader from 'nuclide-commons/SafeStreamMessageReader';
 import {StreamMessageWriter} from 'vscode-jsonrpc';
 
@@ -19,6 +20,9 @@ import {StreamMessageWriter} from 'vscode-jsonrpc';
 const loggingFile = process.argv[2];
 const recordingFile = process.argv[3];
 const libclangLogging = process.argv[4] === 'true';
+
+const logger = getLogger('nuclide-cquery-wrapper');
+let cqueryProcess: child_process$ChildProcess;
 
 const handlers: {
   [key: string]: (Message, (Message) => mixed) => mixed,
@@ -30,23 +34,11 @@ const handlers: {
   },
 };
 
-onChildSpawn(
-  child_process.spawn(
-    'cquery',
-    ['--log-file', loggingFile, '--record', recordingFile],
-    {
-      env: {LIBCLANG_LOGGING: libclangLogging ? 1 : 0, ...process.env},
-      // only pipe stdin, and inherit out/err
-      stdio: ['pipe', process.stdout, process.stderr],
-    },
-  ),
-);
-
 function onChildSpawn(childProcess): void {
   const reader = new SafeStreamMessageReader(process.stdin);
   const writer = new StreamMessageWriter(childProcess.stdin);
 
-  // If child exits, we should too.
+  // If child process quits, we also quit.
   childProcess.on('exit', code => process.exit(code));
   childProcess.on('close', code => process.exit(code));
 
@@ -55,10 +47,30 @@ function onChildSpawn(childProcess): void {
     // Message would have a method if it's a request or notification.
     const method: ?string = ((message: any): {method: ?string}).method;
     if (method != null && handlers[method] != null) {
-      // console.error('OVERRIDING ' + JSON.stringify(request.method));
-      handlers[method](message, callback);
+      try {
+        handlers[method](message, callback);
+      } catch (e) {
+        logger.error(`Error in ${method} override handler:`, e);
+      }
     } else {
       callback(message);
     }
   });
 }
+
+function spawnChild() {
+  cqueryProcess = child_process.spawn(
+    'cquery',
+    ['--log-file', loggingFile, '--record', recordingFile],
+    {
+      env: libclangLogging
+        ? {LIBCLANG_LOGGING: 1, ...process.env}
+        : process.env,
+      // only pipe stdin, and inherit out/err
+      stdio: ['pipe', process.stdout, process.stderr],
+    },
+  );
+  onChildSpawn(cqueryProcess);
+}
+
+spawnChild();
