@@ -110,6 +110,9 @@ function getAutoImportSettings() {
   // their settings and send DidChangeConfiguration requests to the server.
   // TODO: Observe settings changes + send to the server.
   return {
+    componentModulePathFilter: featureConfig.get(
+      'nuclide-js-imports-client.componentModulePathFilter',
+    ),
     diagnosticsWhitelist: featureConfig.get(
       'nuclide-js-imports-client.diagnosticsWhitelist',
     ),

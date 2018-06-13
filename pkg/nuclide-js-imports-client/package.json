@@ -35,6 +35,12 @@
         "FATAL",
         "OFF"
       ]
+    },
+    "componentModulePathFilter": {
+      "title": "Component Module Path Filter",
+      "type": "string",
+      "default": "js/components",
+      "description": "Only React components with paths containing this substring will be indexed by Component Tools."
     }
   },
   "nuclide": {

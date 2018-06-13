@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {ComponentDefinition} from '../../../nuclide-ui-component-tools-common/lib/types';
 import type {ConfigFromFlow} from '../Config';
 import type {JSExport} from './types';
 
@@ -19,7 +20,7 @@ import DiskCache from '../../../commons-node/DiskCache';
 import {serializeConfig} from '../Config';
 
 const CACHE_DIR = nuclideUri.join(os.tmpdir(), 'nuclide-js-imports-cache');
-const CACHE_VERSION = 2; // Bump this for any breaking changes.
+const CACHE_VERSION = 3; // Bump this for any breaking changes.
 
 export type CacheParams = {
   root: string,
@@ -30,6 +31,11 @@ export type FileWithHash = {
   filePath: string,
   sha1: string,
 };
+
+export type CacheValue = {|
+  exports: Array<JSExport>,
+  componentDefinition?: ComponentDefinition,
+|};
 
 function getCachePath({root, configFromFlow}: CacheParams): string {
   const hash = crypto.createHash('sha1');
@@ -45,10 +51,7 @@ function getCacheKey({filePath, sha1}: FileWithHash) {
   return `${filePath}:${sha1.substr(0, 8)}`;
 }
 
-export default class ExportCache extends DiskCache<
-  FileWithHash,
-  Array<JSExport>,
-> {
+export default class ExportCache extends DiskCache<FileWithHash, CacheValue> {
   constructor(params: CacheParams) {
     super(getCachePath(params), getCacheKey);
   }

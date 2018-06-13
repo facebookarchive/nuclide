@@ -26,8 +26,14 @@ import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
 import {getHasteName, hasteReduceName} from './HasteUtils';
 import {watchDirectory, getFileIndex} from './file-index';
+import {
+  UI_COMPONENT_TOOLS_INDEXING_GK,
+  getComponentDefinitionFromAst,
+} from '../../../nuclide-ui-component-tools-common';
+import passesGK from '../../../commons-node/passesGK';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ComponentDefinition} from '../../../nuclide-ui-component-tools-common/lib/types';
 import type {HasteSettings} from '../Config';
 import type {JSExport} from './types';
 import type {FileChange} from 'nuclide-watchman-helpers';
@@ -51,6 +57,7 @@ export type ExportUpdateForFile = {
   file: NuclideUri,
   sha1?: string,
   exports: Array<JSExport>,
+  componentDefinition?: ComponentDefinition,
 };
 
 async function main() {
@@ -85,10 +92,16 @@ async function main() {
       sendUpdatesBatched(message);
       message.forEach(update => {
         if (update.sha1 != null) {
-          newCache.set(
-            {filePath: update.file, sha1: update.sha1},
-            update.exports,
-          );
+          const key = {filePath: update.file, sha1: update.sha1};
+          const value = {exports: update.exports};
+          if (update.componentDefinition != null) {
+            newCache.set(key, {
+              ...value,
+              componentDefinition: update.componentDefinition,
+            });
+          } else {
+            newCache.set(key, value);
+          }
         }
       });
     },
@@ -180,7 +193,8 @@ export function indexDirectory(
           updateType: 'setExports',
           file: filePath,
           sha1,
-          exports: cached,
+          exports: cached.exports,
+          componentDefinition: cached.componentDefinition,
         });
         return;
       }
@@ -312,7 +326,7 @@ function getExportsForFileWithMain(
   });
 }
 
-async function getExportsForFile(
+export async function getExportsForFile(
   file: NuclideUri,
   hasteSettings: HasteSettings,
   fileContents_?: string,
@@ -348,7 +362,21 @@ async function getExportsForFile(
         jsExport.hasteName = hasteName;
       });
     }
-    return {...update, exports};
+
+    const updateObj: ExportUpdateForFile = {...update, exports};
+    const componentModulePathFilter = process.env.componentModulePathFilter;
+
+    if (
+      (await passesGK(UI_COMPONENT_TOOLS_INDEXING_GK)) &&
+      (componentModulePathFilter == null ||
+        file.includes(componentModulePathFilter))
+    ) {
+      const definition = getComponentDefinitionFromAst(file, ast);
+      if (definition != null) {
+        updateObj.componentDefinition = definition;
+      }
+    }
+    return updateObj;
   } catch (err) {
     logger.error(`Unexpected error indexing ${file}`, err);
     return null;
@@ -453,7 +481,8 @@ async function handleNodeModule(
         updateType: 'setExports',
         file: entryPoint,
         sha1,
-        exports: cachedUpdate,
+        exports: cachedUpdate.exports,
+        componentDefinition: cachedUpdate.componentDefinition,
       };
     }
     // TODO(hansonw): How do we handle haste modules inside Node modules?

@@ -10,6 +10,7 @@
  */
 
 import child_process from 'child_process';
+import DefinitionManager from '../../../nuclide-ui-component-tools-common/lib/definitionManager';
 import {ExportManager} from './ExportManager';
 import {UndefinedSymbolManager} from './UndefinedSymbolManager';
 import * as babylon from 'babylon';
@@ -48,13 +49,17 @@ const LARGE_FILE_LIMIT = 2000000;
 const MAX_CRASHES = 3;
 
 export class AutoImportsManager {
+  componentModulePathFilter: ?string;
+  definitionManager: DefinitionManager;
   suggestedImports: Map<NuclideUri, Array<ImportSuggestion>>;
   exportsManager: ExportManager;
   undefinedSymbolsManager: UndefinedSymbolManager;
   crashes: number;
   worker: ?child_process$ChildProcess;
 
-  constructor(globals: Array<string>) {
+  constructor(globals: Array<string>, componentModulePathFilter?: string) {
+    this.componentModulePathFilter = componentModulePathFilter;
+    this.definitionManager = new DefinitionManager();
     this.suggestedImports = new Map();
     this.exportsManager = new ExportManager();
     this.undefinedSymbolsManager = new UndefinedSymbolManager(globals);
@@ -76,6 +81,9 @@ export class AutoImportsManager {
     const worker = child_process.fork(
       nuclideUri.join(__dirname, 'AutoImportsWorker-entry.js'),
       [root],
+      {
+        env: {componentModulePathFilter: this.componentModulePathFilter},
+      },
     );
     worker.on('message', (updateForFile: Array<ExportUpdateForFile>) => {
       updateForFile.forEach(this.handleUpdateForFile.bind(this));
@@ -135,9 +143,12 @@ export class AutoImportsManager {
   }
 
   handleUpdateForFile(update: ExportUpdateForFile) {
-    const {updateType, file, exports} = update;
+    const {componentDefinition, updateType, file, exports} = update;
     switch (updateType) {
       case 'setExports':
+        if (componentDefinition != null) {
+          this.definitionManager.addDefinition(componentDefinition);
+        }
         this.exportsManager.setExportsForFile(file, exports);
         break;
       case 'deleteExports':

@@ -77,7 +77,6 @@ let commandExecuter = new CommandExecutor(
 connection.onInitialize(
   (params): InitializeResult => {
     const root = params.rootPath || process.cwd();
-    logger.debug('Server initialized.');
     const eslintGlobals = getEslintGlobals(root);
     const flowConfig = getConfigFromFlow(root);
     shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
@@ -85,7 +84,10 @@ connection.onInitialize(
       flowConfig.moduleDirs,
       shouldUseRequires(params, root),
     );
-    autoImportsManager = new AutoImportsManager(eslintGlobals);
+    autoImportsManager = new AutoImportsManager(
+      eslintGlobals,
+      params.initializationOptions.componentModulePathFilter,
+    );
     autoImportsManager.indexAndWatchDirectory(root);
     completion = new Completions(
       documents,
