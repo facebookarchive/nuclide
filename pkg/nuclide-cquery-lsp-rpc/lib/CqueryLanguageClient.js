@@ -12,9 +12,8 @@
 // Provides some extra commands on top of base Lsp.
 import type {CodeAction, OutlineTree} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Subscription, ConnectableObservable} from 'rxjs';
+import type {Subscription} from 'rxjs';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {FileDiagnosticMap} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileCache} from '../../nuclide-open-files-rpc';
 import type {
   TextEdit,
@@ -227,21 +226,6 @@ export class CqueryLanguageClient extends LspLanguageService {
       }
     }
     return super._convertCommands_CodeActions(outputCommands);
-  }
-
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
-    // Only emit diagnostics for files in the project.
-    return super
-      .observeDiagnostics()
-      .refCount()
-      .do(diagnosticMap => {
-        for (const [file] of diagnosticMap) {
-          if (!this._isFileInProject(file)) {
-            diagnosticMap.delete(file);
-          }
-        }
-      })
-      .publish();
   }
 
   async _notifyOnFail(success: boolean, falseMessage: string): Promise<void> {
