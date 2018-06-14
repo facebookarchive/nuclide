@@ -15,11 +15,20 @@
  * shared by all thrift services.
  */
 
+export type createThriftClientOptions = {
+  port: number,
+};
+
 export type createThriftServerOptions = {
   ports: string,
 };
 
 export interface IThriftServiceServer {
+  initialize(): Promise<void>;
+  close(): void;
+}
+
+export interface IThriftServiceClient {
   initialize(): Promise<void>;
   close(): void;
 }
