@@ -16,6 +16,7 @@ import analytics from 'nuclide-commons/analytics';
 import getFragmentGrammar from 'nuclide-commons-atom/getFragmentGrammar';
 import {arrayRemove} from 'nuclide-commons/collection';
 import {getLogger} from 'log4js';
+import {asyncFind} from 'nuclide-commons/promise';
 
 const logger = getLogger('nuclide-type-hint');
 
@@ -35,7 +36,22 @@ export default class TypeHintManager {
   async datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
     const grammar = editor.getGrammar();
     const {scopeName} = grammar;
-    const [provider] = this._getMatchingProvidersForScopeName(scopeName);
+    const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
+
+    return asyncFind(
+      matchingProviders.map(provider =>
+        this._getDatatipFromProvider(editor, position, grammar, provider),
+      ),
+      x => x,
+    );
+  }
+
+  async _getDatatipFromProvider(
+    editor: TextEditor,
+    position: atom$Point,
+    grammar: atom$Grammar,
+    provider: TypeHintProvider,
+  ): Promise<?Datatip> {
     if (provider == null) {
       return null;
     }
@@ -54,24 +70,30 @@ export default class TypeHintManager {
       return;
     }
     const {hint, range} = typeHint;
+    const {scopeName} = grammar;
     // We track the timing above, but we still want to know the number of popups that are shown.
     analytics.track('type-hint-popup', {
       scope: scopeName,
       message: hint,
     });
 
-    const markedStrings: Array<MarkedString> = hint.map(h => {
-      // Flow doesn't like it when I don't specify these as literals.
-      if (h.type === 'snippet') {
-        return {
-          type: 'snippet',
-          value: h.value,
-          grammar: getFragmentGrammar(grammar),
-        };
-      } else {
-        return {type: 'markdown', value: h.value};
-      }
-    });
+    const markedStrings: Array<MarkedString> = hint
+      .filter(h => {
+        // Ignore all results of length 0. Maybe the next provider will do better?
+        return h.value.length > 0;
+      })
+      .map(h => {
+        // Flow doesn't like it when I don't specify these as literals.
+        if (h.type === 'snippet') {
+          return {
+            type: 'snippet',
+            value: h.value,
+            grammar: getFragmentGrammar(grammar),
+          };
+        } else {
+          return {type: 'markdown', value: h.value};
+        }
+      });
 
     if (markedStrings.length === 0) {
       return null;
