@@ -95,7 +95,6 @@
   ],
   "android": [
     "nuclide-adb-logcat",
-    "nuclide-adb-sdb",
     "nuclide-buck",
     "nuclide-debugger-native",
     "nuclide-device-panel",

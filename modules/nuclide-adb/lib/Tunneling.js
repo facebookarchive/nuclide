@@ -1,11 +1,12 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -19,8 +20,8 @@ import {SimpleCache} from 'nuclide-commons/SimpleCache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable, Subject} from 'rxjs';
 import consumeFirstProvider from 'nuclide-commons-atom/consumeFirstProvider';
-import {getAdbServiceByNuclideUri} from 'nuclide-adb';
-import {track} from '../../nuclide-analytics';
+import {getAdbServiceByNuclideUri} from './utils';
+import {track} from 'nuclide-commons/analytics';
 
 export type AdbTunnelingOptions = {
   adbMismatchErrorMessage?: string,

@@ -92,10 +92,6 @@
     "name": "RemoteCommandService"
   },
   {
-    "implementation": "../nuclide-adb-sdb-rpc/lib/SdbService.js",
-    "name": "SdbService"
-  },
-  {
     "implementation": "../nuclide-socket-rpc/lib/SocketService.js",
     "name": "SocketService"
   },

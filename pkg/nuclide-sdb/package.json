@@ -1,8 +1,8 @@
 {
-  "name": "nuclide-adb-sdb-base",
+  "name": "nuclide-sdb",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Utilities for adb and sdb for Nuclide",
+  "description": "Utilities for sdb",
   "author": "NEEDS OWNER",
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {

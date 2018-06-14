@@ -22,7 +22,7 @@ import {
   isAdbTunneled,
   startTunnelingAdb as plainStartTunnelingAdb,
   stopTunnelingAdb,
-} from '../../../nuclide-adb-sdb-base/lib/Tunneling';
+} from 'nuclide-adb/lib/Tunneling';
 import {AdbTunnelButton} from '../ui/AdbTunnelButton';
 import * as React from 'react';
 
@@ -31,7 +31,7 @@ try {
   const {
     fbStartTunnelingAdb,
     // $eslint-disable-next-line $FlowFB
-  } = require('../../../nuclide-adb-sdb-base/lib/fb-Tunneling');
+  } = require('nuclide-adb/lib/fb-Tunneling');
   startTunnelingAdb = fbStartTunnelingAdb;
 } catch (e) {}
 

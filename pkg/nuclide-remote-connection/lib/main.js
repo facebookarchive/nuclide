@@ -81,7 +81,6 @@ import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenF
 import typeof * as HhvmDebuggerService from '../../nuclide-debugger-hhvm-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
@@ -203,10 +202,6 @@ export function getRemoteCommandServiceByNuclideUri(
   uri: NuclideUri,
 ): RemoteCommandService {
   return nullthrows(getServiceByNuclideUri('RemoteCommandService', uri));
-}
-
-export function getSdbServiceByNuclideUri(uri: NuclideUri): SdbService {
-  return nullthrows(getServiceByNuclideUri('SdbService', uri));
 }
 
 export function getSocketServiceByNuclideUri(uri: NuclideUri): SocketService {
