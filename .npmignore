@@ -25,3 +25,4 @@ BUCK
 /pkg/fb-java-rpc/**/*.java
 /pkg/fb-java-rpc/.idea
 /pkg/fb-java-rpc/*.iml
+/pkg/fb-java/eclipse.jdt.ls
