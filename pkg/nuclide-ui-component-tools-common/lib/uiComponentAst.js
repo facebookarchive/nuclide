@@ -43,13 +43,17 @@ function isComponent(node: Node): boolean {
   return node.type === 'ClassDeclaration' && node.superClass;
 }
 
+function getComponentNode(componentName: string, ast: File): ?Node {
+  return ast.program.body.find(
+    n => isComponent(n) && n.id && n.id.name === componentName,
+  );
+}
+
 function getTypeParameterNames(
   componentName: string,
   ast: File,
 ): Array<string> {
-  const componentNode = ast.program.body.find(
-    n => isComponent(n) && n.id && n.id.name === componentName,
-  );
+  const componentNode = getComponentNode(componentName, ast);
   if (!componentNode) {
     return [];
   }
@@ -95,11 +99,78 @@ function getLeadingComment(node: Node): ?string {
     .join('\n');
 }
 
+function getDefaultPropsFromIdentifier(
+  identifier: string,
+  ast: File,
+): Array<string> {
+  for (let i = 0; i < ast.program.body.length; i++) {
+    const node = ast.program.body[i];
+    if (node.type !== 'VariableDeclaration') {
+      continue;
+    }
+
+    const expr = node.declarations.find(
+      n =>
+        n.type === 'VariableDeclarator' &&
+        n.id.type === 'Identifier' &&
+        n.id.name === identifier,
+    );
+    if (!expr) {
+      continue;
+    }
+
+    if (expr.init && expr.init.type === 'ObjectExpression') {
+      return getDefaultPropsFromObjectExpression(expr.init);
+    }
+    return [];
+  }
+  return [];
+}
+
+function getDefaultPropsFromObjectExpression(expr: Node): Array<string> {
+  return expr.properties
+    .filter(n => n.type === 'ObjectProperty' && n.key.type === 'Identifier')
+    .map(n => n.key.name);
+}
+
+export function getDefaultPropNames(
+  componentName: string,
+  ast: File,
+): Array<string> {
+  const componentNode = getComponentNode(componentName, ast);
+  if (
+    !componentNode ||
+    !componentNode.body ||
+    componentNode.body.type !== 'ClassBody'
+  ) {
+    return [];
+  }
+
+  const defaultPropsStaticNode = componentNode.body.body.find(
+    n =>
+      n.type === 'ClassProperty' && n.static && n.key.name === 'defaultProps',
+  );
+  if (!defaultPropsStaticNode) {
+    return [];
+  }
+  if (defaultPropsStaticNode.value.type === 'Identifier') {
+    return getDefaultPropsFromIdentifier(
+      defaultPropsStaticNode.value.name,
+      ast,
+    );
+  } else if (defaultPropsStaticNode.value.type === 'ObjectExpression') {
+    return getDefaultPropsFromObjectExpression(defaultPropsStaticNode.value);
+  }
+
+  return [];
+}
+
 export function getRequiredPropsFromAst(
   componentName: string,
   ast: File,
 ): Array<ComponentProp> {
   const typeParameterNames = getTypeParameterNames(componentName, ast);
+
   const requiredProps = ast.program.body
     .filter(
       node =>
