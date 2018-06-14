@@ -15,6 +15,7 @@ import {
   type TextEdit,
   CompletionItemKind,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+import type DefinitionManager from '../../nuclide-ui-component-tools-common/lib/definitionManager';
 import type {ImportType} from './lib/ImportFormatter';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
@@ -53,15 +54,18 @@ const IMPORT_STATEMENT_REGEXES = {
 };
 
 export class Completions {
+  definitionManager: DefinitionManager;
   documents: TextDocuments;
   autoImportsManager: AutoImportsManager;
   importsFormatter: ImportFormatter;
 
   constructor(
+    definitionManager: DefinitionManager,
     documents: TextDocuments,
     autoImportsManager: AutoImportsManager,
     importsFormatter: ImportFormatter,
   ) {
+    this.definitionManager = definitionManager;
     this.documents = documents;
     this.autoImportsManager = autoImportsManager;
     this.importsFormatter = importsFormatter;
@@ -74,9 +78,8 @@ export class Completions {
     const {position, textDocument} = textDocumentPosition;
 
     // TODO(seansegal): Handle imports broken up on multiple lines.
-    const line = this.documents
-      .get(textDocument.uri)
-      .buffer.lineForRow(position.line);
+    const document = this.documents.get(textDocument.uri);
+    const line = document.buffer.lineForRow(position.line);
 
     if (
       positionIsAtLineEnd(line, position) &&
@@ -105,6 +108,11 @@ export class Completions {
               position.line,
             );
       }
+    } else {
+      return this.definitionManager.getCompletions(
+        document,
+        textDocumentPosition,
+      );
     }
     return [];
   }

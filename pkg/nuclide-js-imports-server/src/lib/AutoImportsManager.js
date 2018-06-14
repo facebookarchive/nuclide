@@ -66,6 +66,10 @@ export class AutoImportsManager {
     this.crashes = 0;
   }
 
+  getDefinitionManager(): DefinitionManager {
+    return this.definitionManager;
+  }
+
   // Only indexes the file (used for testing purposes)
   indexFile(fileUri: NuclideUri, code: string): void {
     const ast = parseFile(code);

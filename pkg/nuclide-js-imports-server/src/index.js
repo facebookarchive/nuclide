@@ -61,6 +61,7 @@ const shouldProvideFlags = {
 let autoImportsManager = new AutoImportsManager([]);
 let importFormatter = new ImportFormatter([], false);
 let completion = new Completions(
+  autoImportsManager.getDefinitionManager(),
   documents,
   autoImportsManager,
   importFormatter,
@@ -90,6 +91,7 @@ connection.onInitialize(
     );
     autoImportsManager.indexAndWatchDirectory(root);
     completion = new Completions(
+      autoImportsManager.getDefinitionManager(),
       documents,
       autoImportsManager,
       importFormatter,
