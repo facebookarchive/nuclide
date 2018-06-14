@@ -112,6 +112,17 @@ export function getRequiredPropsFromAst(
         typeParameterNames.includes(node.declaration.id.name),
     )
     .reduce((props: Array<string>, node: Node) => {
+      // Ensure the node has a type annotation assigned to it.
+      if (
+        !node.declaration.right ||
+        !node.declaration.right.properties ||
+        node.declaration.right.type !== 'ObjectTypeAnnotation'
+      ) {
+        // It may not be an object of properties, ignore it if not. It may be
+        // something like $Rest.
+        return props;
+      }
+
       const required = node.declaration.right.properties
         // There could be properties with a type such as
         // ObjectTypeSpreadProperty which would require more logic to
