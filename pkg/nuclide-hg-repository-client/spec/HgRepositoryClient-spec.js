@@ -31,8 +31,8 @@ describe('HgRepositoryClient', () => {
   const projectDirectory = new Directory(tempSubDir);
   const repoOptions = {
     originURL: 'http://test.com/testproj',
-    workingDirectory,
-    projectRootDirectory: projectDirectory,
+    workingDirectoryPath: tempDir,
+    projectDirectoryPath: tempSubDir,
   };
 
   // Manufactures the absolute path of a file that should pass as being

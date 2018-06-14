@@ -11,7 +11,7 @@
 
 import typeof * as HgServiceType from '../../nuclide-hg-rpc/lib/HgService';
 
-import {Directory, GitRepository} from 'atom';
+import {GitRepository} from 'atom';
 import {repositoryContainsPath} from '../../nuclide-vcs-base';
 import {runCommand} from 'nuclide-commons/process';
 import MockHgService from '../../nuclide-hg-rpc/__mocks__/MockHgService';
@@ -72,8 +72,8 @@ describe('repositoryContainsPath', () => {
         /* options */
         {
           originURL: 'testURL',
-          workingDirectory: new Directory(repoRoot),
-          projectRootDirectory: new Directory(repoRoot),
+          workingDirectoryPath: repoRoot,
+          projectDirectoryPath: repoRoot,
         },
       );
 

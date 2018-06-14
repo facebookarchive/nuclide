@@ -20,7 +20,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {runCommand} from 'nuclide-commons/process';
 import {diffSets} from 'nuclide-commons/observable';
-import {Directory} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
@@ -331,32 +330,7 @@ export function repositoryContainsPath(
   repository: atom$Repository,
   filePath: NuclideUri,
 ): boolean {
-  const workingDirectoryPath = repository.getWorkingDirectory();
-  if (pathsAreEqual(workingDirectoryPath, filePath)) {
-    return true;
-  }
-
-  if (repository.getType() === 'git') {
-    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
-    return rootGitProjectDirectory.contains(filePath);
-  } else if (repository.getType() === 'hg') {
-    const hgRepository = ((repository: any): HgRepositoryClient);
-    return hgRepository._sharedMembers.workingDirectory.contains(filePath);
-  }
-  throw new Error(
-    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.',
-  );
-}
-
-/**
- * @param filePath1 An absolute file path.
- * @param filePath2 An absolute file path.
- * @return Whether the file paths are equal, accounting for trailing slashes.
- */
-function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  const realPath1 = nuclideUri.resolve(filePath1);
-  const realPath2 = nuclideUri.resolve(filePath2);
-  return realPath1 === realPath2;
+  return nuclideUri.contains(repository.getWorkingDirectory(), filePath);
 }
 
 export function getMultiRootFileChanges(

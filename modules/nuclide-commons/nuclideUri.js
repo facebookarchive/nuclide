@@ -372,7 +372,7 @@ function nuclideUriToUri(uri: NuclideUri): string {
 }
 
 /**
- * Returns true if child is equal to, or is a proper child of parent.
+ * Returns true if child is equal to, or is a proper descendant of parent.
  */
 function contains(parent: NuclideUri, child: NuclideUri): boolean {
   _testForIllegalUri(parent);

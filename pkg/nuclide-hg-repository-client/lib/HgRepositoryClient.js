@@ -71,10 +71,10 @@ type HgRepositoryOptions = {
   originURL: ?string,
 
   /** The working directory of this repository. */
-  workingDirectory: atom$Directory | RemoteDirectory,
+  workingDirectoryPath: NuclideUri,
 
   /** The root directory that is opened in Atom, which this Repository serves. */
-  projectRootDirectory?: atom$Directory,
+  projectDirectoryPath?: NuclideUri,
 };
 
 /**
@@ -130,7 +130,6 @@ function getRevisionStatusCache(
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {mapTransform} from 'nuclide-commons/collection';
@@ -157,9 +156,8 @@ export class HgRepositoryClient {
   _sharedMembers: {
     rootRepo: HgRepositoryClient,
     path: string,
-    workingDirectory: atom$Directory | RemoteDirectory,
-    workingDirectoryPath: string,
-    projectDirectory: ?atom$Directory,
+    workingDirectoryPath: NuclideUri,
+    projectDirectoryPath: ?NuclideUri,
     repoSubscriptions: Promise<?HgRepositorySubscriptions>,
     originURL: ?string,
     service: HgService,
@@ -198,9 +196,8 @@ export class HgRepositoryClient {
 
     this._sharedMembers.rootRepo = this;
     this._sharedMembers.path = repoPath;
-    this._sharedMembers.workingDirectory = options.workingDirectory;
-    this._sharedMembers.workingDirectoryPath = options.workingDirectory.getPath();
-    this._sharedMembers.projectDirectory = options.projectRootDirectory;
+    this._sharedMembers.workingDirectoryPath = options.workingDirectoryPath;
+    this._sharedMembers.projectDirectoryPath = options.projectDirectoryPath;
     this._sharedMembers.originURL = options.originURL;
     this._sharedMembers.service = hgService;
     this._sharedMembers.isInConflict = false;
@@ -211,7 +208,7 @@ export class HgRepositoryClient {
     );
     this._sharedMembers.revisionStatusCache = getRevisionStatusCache(
       this._sharedMembers.revisionsCache,
-      this._sharedMembers.workingDirectory.getPath(),
+      this._sharedMembers.workingDirectoryPath,
     );
     this._sharedMembers.revisionIdToFileChanges = new LRU({max: 100});
     this._sharedMembers.fileContentsAtRevisionIds = new LRU({max: 20});
@@ -364,7 +361,7 @@ export class HgRepositoryClient {
   async getAdditionalLogFiles(
     deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
-    const path = this._sharedMembers.workingDirectory.getPath();
+    const path = this._sharedMembers.workingDirectoryPath;
     const prefix = nuclideUri.isRemote(path)
       ? `${nuclideUri.getHostname(path)}:`
       : '';
@@ -553,18 +550,13 @@ export class HgRepositoryClient {
   }
 
   getWorkingDirectory(): string {
-    return this._sharedMembers.workingDirectory.getPath();
+    return this._sharedMembers.workingDirectoryPath;
   }
 
   // @return The path of the root project folder in Atom that this
   // HgRepositoryClient provides information about.
   getProjectDirectory(): string {
-    return this.getInternalProjectDirectory().getPath();
-  }
-
-  // This function exists to be shadowed
-  getInternalProjectDirectory(): atom$Directory {
-    return nullthrows(this._sharedMembers.projectDirectory);
+    return nullthrows(this._sharedMembers.projectDirectoryPath);
   }
 
   // TODO This is a stub.
@@ -573,7 +565,10 @@ export class HgRepositoryClient {
   }
 
   relativize(filePath: NuclideUri): string {
-    return this._sharedMembers.workingDirectory.relativize(filePath);
+    return nuclideUri.relative(
+      this._sharedMembers.workingDirectoryPath,
+      filePath,
+    );
   }
 
   // TODO This is a stub.
@@ -745,16 +740,13 @@ export class HgRepositoryClient {
    * defined as 'relevant' if it is within the project directory opened within the repo.
    */
   isPathRelevant(filePath: NuclideUri): boolean {
-    return (
-      this.getInternalProjectDirectory().contains(filePath) ||
-      this.getInternalProjectDirectory().getPath() === filePath
-    );
+    return nuclideUri.contains(this.getProjectDirectory(), filePath);
   }
 
   isPathRelevantToRepository(filePath: NuclideUri): boolean {
-    return (
-      this._sharedMembers.workingDirectory.contains(filePath) ||
-      this._sharedMembers.workingDirectory.getPath() === filePath
+    return nuclideUri.contains(
+      this._sharedMembers.workingDirectoryPath,
+      filePath,
     );
   }
 

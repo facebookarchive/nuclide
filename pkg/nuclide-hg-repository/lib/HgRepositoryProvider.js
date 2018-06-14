@@ -9,7 +9,8 @@
  * @format
  */
 
-import {Directory} from 'atom';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {trackTiming} from '../../nuclide-analytics';
 import {
@@ -45,7 +46,7 @@ function getRepositoryDescription(
 ): ?{
   originURL: ?string,
   repoPath: string,
-  workingDirectory: atom$Directory | RemoteDirectory,
+  workingDirectoryPath: NuclideUri,
 } {
   if (directory instanceof RemoteDirectory) {
     const repositoryDescription = directory.getHgRepositoryDescription();
@@ -57,7 +58,6 @@ function getRepositoryDescription(
     }
     const serverConnection = directory._server;
     const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
-    const workingDirectoryLocalPath = workingDirectoryPath;
     // These paths are all relative to the remote fs. We need to turn these into URIs.
     const repoUri = serverConnection.getUriOfRemotePath(repoPath);
     const workingDirectoryUri = serverConnection.getUriOfRemotePath(
@@ -66,8 +66,7 @@ function getRepositoryDescription(
     return {
       originURL,
       repoPath: repoUri,
-      workingDirectory: serverConnection.createDirectory(workingDirectoryUri),
-      workingDirectoryLocalPath,
+      workingDirectoryPath: workingDirectoryUri,
     };
   } else {
     const repositoryDescription = findHgRepository(directory.getPath());
@@ -78,7 +77,7 @@ function getRepositoryDescription(
     return {
       originURL,
       repoPath,
-      workingDirectory: new Directory(workingDirectoryPath),
+      workingDirectoryPath,
     };
   }
 }
@@ -88,11 +87,15 @@ export default class HgRepositoryProvider {
   // the underlying HgRepositoryClient.
   _activeRepositoryClients: Map<string, RefCountedRepo> = new Map();
 
-  repositoryForDirectory(directory: Directory): Promise<?HgRepositoryClient> {
+  repositoryForDirectory(
+    directory: atom$Directory | RemoteDirectory,
+  ): Promise<?HgRepositoryClient> {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
 
-  repositoryForDirectorySync(directory: Directory): ?HgRepositoryClient {
+  repositoryForDirectorySync(
+    directory: atom$Directory | RemoteDirectory,
+  ): ?HgRepositoryClient {
     return trackTiming('hg-repository.repositoryForDirectorySync', () => {
       try {
         const repositoryDescription = getRepositoryDescription(directory);
@@ -100,7 +103,11 @@ export default class HgRepositoryProvider {
           return null;
         }
 
-        const {originURL, repoPath, workingDirectory} = repositoryDescription;
+        const {
+          originURL,
+          repoPath,
+          workingDirectoryPath,
+        } = repositoryDescription;
 
         // extend the underlying instance of HgRepositoryClient to prevent
         // having multiple clients for multiple project roots inside the same
@@ -111,9 +118,9 @@ export default class HgRepositoryProvider {
         if (activeRepoClientInfo != null) {
           activeRepoClientInfo.refCount++;
         } else {
-          const hgService = getHgServiceByNuclideUri(directory.getPath());
+          const hgService = getHgServiceByNuclideUri(workingDirectoryPath);
           const activeRepoClient = new HgRepositoryClient(repoPath, hgService, {
-            workingDirectory,
+            workingDirectoryPath,
             originURL,
           });
 
@@ -130,8 +137,8 @@ export default class HgRepositoryProvider {
 
         /* eslint-disable no-inner-declarations */
         function ProjectHgRepositoryClient() {
-          this.getInternalProjectDirectory = function(): atom$Directory {
-            return directory;
+          this.getProjectDirectory = function(): NuclideUri {
+            return directory.getPath();
           };
 
           this.destroy = function(): void {
