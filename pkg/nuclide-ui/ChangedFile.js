@@ -17,7 +17,6 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
-import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -261,6 +260,7 @@ export default class ChangedFile extends React.Component<Props> {
       displayPath,
       filePath,
       fileStatus,
+      rootPath,
       onFileChosen,
       onOpenFileInDiffView,
       onForgetFile,
@@ -321,8 +321,6 @@ export default class ChangedFile extends React.Component<Props> {
       onFileChosen != null ? () => onFileChosen(filePath) : null;
 
     const statusName = FileChangeStatusToLabel[fileStatus];
-    const projectRelativePath =
-      getAtomProjectRelativePath(filePath) || filePath;
     const checkbox =
       isChecked != null ? (
         <Checkbox
@@ -331,6 +329,7 @@ export default class ChangedFile extends React.Component<Props> {
           onChange={this._onCheckboxChange}
         />
       ) : null;
+    const relativePath = nuclideUri.relative(rootPath, filePath);
     return (
       <li
         data-name={displayPath}
@@ -351,7 +350,7 @@ export default class ChangedFile extends React.Component<Props> {
           />
           <PathWithFileIcon
             path={displayPath}
-            title={`${statusName}:${LF}${projectRelativePath}${LF}(Click to open in Nuclide)`}
+            title={`${statusName}:${LF}${relativePath}${LF}(Click to open in Nuclide)`}
           />
         </span>
         {actions}
